@@ -1,0 +1,38 @@
+# Flutter
+build/
+.dart_tool/
+.build_user/
+.packages
+.flutter-plugins
+.flutter-plugins-dependencies
+
+# IDE
+.idea/
+.vscode/
+*.iml
+*.swp
+*.swo
+
+# macOS
+.DS_Store
+
+# Distribution
+dist/
+device_gateway.zip
+
+# Platform ephemeral
+android/.gradle/
+android/core/.cxx/
+android/local.properties
+android/key.properties
+ios/Pods/
+ios/.symlinks/
+ios/build/
+macos/Pods/
+macos/.symlinks/
+macos/Flutter/ephemeral/
+windows/flutter/ephemeral/
+
+# Generated code (uncomment if you use build_runner)
+# lib/**/*.freezed.dart
+# lib/**/*.g.dart

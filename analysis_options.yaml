@@ -1,0 +1,28 @@
+include: package:flutter_lints/recommended.yaml
+
+linter:
+  rules:
+    - prefer_const_constructors
+    - prefer_const_declarations
+    - prefer_const_literals_to_create_immutables
+    - unnecessary_import
+    - avoid_print
+    - prefer_single_quotes
+    - sort_child_properties_last
+    - use_key_in_widget_constructors
+    - prefer_final_locals
+    - unnecessary_late
+    - avoid_unnecessary_containers
+    - sized_box_for_whitespace
+
+analyzer:
+  errors:
+    unused_import: warning
+    unused_local_variable: warning
+    dead_code: warning
+  exclude:
+    - "**/*.g.dart"
+    - "**/*.freezed.dart"
+    - "**/generated/**"
+    - "lib/l10n/intl/**"
+    - "lib/sdk/**"

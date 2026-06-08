@@ -1,0 +1,219 @@
+import 'package:fl_clash/xboard/features/subscription/pages/xboard_home_page.dart';
+import 'package:fl_clash/xboard/features/subscription/pages/subscription_page.dart';
+import 'package:fl_clash/xboard/features/payment/pages/plans.dart';
+import 'package:fl_clash/xboard/features/payment/pages/plan_purchase_page.dart';
+import 'package:fl_clash/xboard/features/payment/pages/payment_gateway_page.dart';
+import 'package:fl_clash/xboard/features/invite/pages/invite_page.dart';
+import 'package:fl_clash/xboard/features/mine/pages/mine_page.dart';
+import 'package:fl_clash/xboard/features/mine/pages/account_info_page.dart';
+import 'package:fl_clash/xboard/features/mine/pages/device_page.dart';
+import 'package:fl_clash/xboard/features/mine/pages/gift_card_page.dart';
+import 'package:fl_clash/xboard/features/auth/pages/login_page.dart';
+import 'package:fl_clash/xboard/domain/domain.dart';
+import 'package:fl_clash/views/logs.dart';
+import 'package:fl_clash/widgets/scaffold.dart';
+import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
+
+import 'shell_layout.dart';
+
+/// XBoard 路由定义
+/// 使用 go_router 实现类型安全的声明式路由
+///
+/// 分支布局（StatefulShellRoute）：
+///   Branch 0: /        — 首页（桌面 idx 0，移动 idx 0）
+///   Branch 1: /plans   — 套餐（桌面 idx 1，移动 idx 1）
+///   Branch 2: /invite  — 邀请（idx 2）
+///   Branch 3: /mine    — 我的（idx 3），子路由 /mine/gift-card
+///   Branch 4: /logs    — 日志（logCapture 开启时可见，idx 4）
+
+final List<RouteBase> routes = [
+  // StatefulShellRoute - 包含导航栏的主框架，保持各分支状态
+  StatefulShellRoute.indexedStack(
+    builder: (context, state, navigationShell) {
+      return AdaptiveShellLayout(child: navigationShell);
+    },
+    branches: [
+      // Branch 0: 首页
+      StatefulShellBranch(
+        routes: [
+          GoRoute(
+            path: '/',
+            name: 'home',
+            pageBuilder: (context, state) => const NoTransitionPage(
+              child: XBoardHomePage(),
+            ),
+          ),
+        ],
+      ),
+
+      // Branch 1: 套餐列表
+      StatefulShellBranch(
+        routes: [
+          GoRoute(
+            path: '/plans',
+            name: 'plans',
+            pageBuilder: (context, state) => const NoTransitionPage(
+              child: PlansView(),
+            ),
+          ),
+        ],
+      ),
+
+      // Branch 2: 邀请（桌面端"邀请"导航项）
+      StatefulShellBranch(
+        routes: [
+          GoRoute(
+            path: '/invite',
+            name: 'invite',
+            pageBuilder: (context, state) => const NoTransitionPage(
+              child: InvitePage(),
+            ),
+          ),
+        ],
+      ),
+
+      // Branch 3: 我的（个人中心）
+      StatefulShellBranch(
+        routes: [
+          GoRoute(
+            path: '/mine',
+            name: 'mine',
+            pageBuilder: (context, state) => const NoTransitionPage(
+              child: MinePage(),
+            ),
+            routes: [
+              GoRoute(
+                path: 'account',
+                name: 'account',
+                pageBuilder: (context, state) => const MaterialPage(
+                  child: AccountInfoPage(),
+                ),
+              ),
+              GoRoute(
+                path: 'invite',
+                name: 'mine_invite',
+                pageBuilder: (context, state) => const MaterialPage(
+                  child: InvitePage(),
+                ),
+              ),
+              GoRoute(
+                path: 'subscription',
+                name: 'mine_subscription',
+                pageBuilder: (context, state) => const MaterialPage(
+                  child: SubscriptionPage(),
+                ),
+              ),
+              GoRoute(
+                path: 'devices',
+                name: 'devices',
+                pageBuilder: (context, state) => const MaterialPage(
+                  child: DeviceManagementPage(),
+                ),
+              ),
+              GoRoute(
+                path: 'gift-card',
+                name: 'gift_card',
+                pageBuilder: (context, state) => const MaterialPage(
+                  child: GiftCardPage(),
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+
+      // Branch 4: 日志（logCapture 开启时在导航栏可见）
+      StatefulShellBranch(
+        routes: [
+          GoRoute(
+            path: '/logs',
+            name: 'logs',
+            pageBuilder: (context, state) => const NoTransitionPage(
+              child: _LogsPage(),
+            ),
+          ),
+        ],
+      ),
+    ],
+  ),
+
+  // 套餐购买页面（全屏，不在 Shell 内）
+  GoRoute(
+    path: '/plans/purchase',
+    name: 'plan_purchase',
+    pageBuilder: (context, state) {
+      final plan = state.extra as DomainPlan;
+      return MaterialPage(
+        child: PlanPurchasePage(plan: plan),
+      );
+    },
+  ),
+
+  // 支付网关页面
+  GoRoute(
+    path: '/payment/gateway',
+    name: 'payment_gateway',
+    pageBuilder: (context, state) {
+      final params = state.extra as Map<String, dynamic>?;
+      return MaterialPage(
+        child: PaymentGatewayPage(
+          paymentUrl: params?['paymentUrl'] as String? ?? '',
+          tradeNo: params?['tradeNo'] as String? ?? '',
+        ),
+      );
+    },
+  ),
+
+  // 订阅详情页面
+  GoRoute(
+    path: '/subscription',
+    name: 'subscription',
+    pageBuilder: (context, state) => const MaterialPage(
+      child: SubscriptionPage(),
+    ),
+  ),
+
+  // 登录页面
+  GoRoute(
+    path: '/login',
+    name: 'login',
+    pageBuilder: (context, state) => const MaterialPage(
+      child: LoginPage(),
+    ),
+  ),
+];
+
+/// 日志页面（包裹 LogsView，提供 CommonScaffold 以支持 PageMixin 动作/搜索）
+class _LogsPage extends StatelessWidget {
+  const _LogsPage();
+
+  @override
+  Widget build(BuildContext context) {
+    return const CommonScaffold(
+      title: '日志',
+      body: LogsView(),
+    );
+  }
+}
+
+/// 不带过渡动画的 Page
+class NoTransitionPage<T> extends Page<T> {
+  const NoTransitionPage({
+    required this.child,
+    super.key,
+    super.name,
+  });
+
+  final Widget child;
+
+  @override
+  Route<T> createRoute(BuildContext context) {
+    return PageRouteBuilder<T>(
+      settings: this,
+      pageBuilder: (context, animation, secondaryAnimation) => child,
+      transitionDuration: Duration.zero,
+      reverseTransitionDuration: Duration.zero,
+    );
+  }
+}

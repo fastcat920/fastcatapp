@@ -1,0 +1,13 @@
+build/
+dist/
+.dart_tool/
+.git/
+android/.gradle/
+ios/Pods/
+ios/.symlinks/
+.metadata
+*.dmg
+*.apk
+*.jks
+release_config*.json
+encrypt_config.py

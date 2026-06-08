@@ -1,0 +1,49 @@
+# XBoard 客户端配置文件
+# 填写远程配置源 URL，客户端启动时自动拉取面板域名
+
+app_name: 快猫
+app_name_en: fastcat
+
+# 面板类型：xboard 或 v2board
+# 必须与远程 config.json 中的 panel_type 一致
+panel_type: v2board
+
+# API 路径前缀（默认 /api/v1）
+# XBoard/V2Board 使用 /api/v1，PPanel 使用 /v1
+# 远程配置中的 api_prefix 字段可覆盖此值
+api_prefix: /api/v1
+
+# 功能开关（本地兜底值，远程 OSS 配置中 features 字段可覆盖）
+features:
+  traffic_details_enabled: true
+  knowledge_base_enabled: true
+  gift_card_enabled: true
+  join_group_enabled: true
+  orders_enabled: true
+  devices_enabled: false
+  tickets_enabled: false
+  balance_enabled: true
+
+# 远程配置源
+# 支持多个源，按顺序尝试，第一个成功的生效
+# 所有源均使用相同的 XOR+Base64 加密（密钥硬编码在客户端）
+contact_fallback:
+  website: "https://fastcat2.com"
+  crisp_website_id: "d5182e08-1faa-4fa9-b3c2-2a34f1975d5f"
+  
+startup_cache:
+  enabled: true
+  ttl_hours: 72
+  probe_timeout_ms: 3000
+
+remote_config:
+  # 每个源的最大重试次数（默认 3，0 表示不重试只尝试一次）
+  max_retries: 2     
+  sources:
+    
+    - name: "source_0"
+      url: https://cat922-1407081939.cos.ap-chengdu.myqcloud.com/cat.json
+    - name: "source_1"
+      url: https://cat921.oss-cn-hongkong.aliyuncs.com/cat.json
+    - name: "source_2"
+      url: https://162.14.118.116:17541/down/HRaOMNsEQyBo.json

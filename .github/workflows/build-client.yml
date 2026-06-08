@@ -1,0 +1,100 @@
+name: Build Client
+
+on:
+  workflow_dispatch:
+    inputs:
+      build_android:
+        description: Build Android APK
+        type: boolean
+        default: true
+      build_windows:
+        description: Build Windows amd64 client
+        type: boolean
+        default: true
+  push:
+    tags:
+      - "v*"
+
+jobs:
+  android:
+    name: Android APK
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push' || inputs.build_android
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: "3.27.4"
+          channel: stable
+          cache: true
+
+      - name: Flutter doctor
+        run: flutter doctor -v
+
+      - name: Get packages
+        run: flutter pub get
+
+      - name: Build APK
+        env:
+          XOR_KEY: ${{ secrets.XOR_KEY }}
+        run: bash scripts/package_apk.sh
+
+      - name: Upload APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: fastcat-android-apk
+          path: dist/*.apk
+          if-no-files-found: error
+
+  windows:
+    name: Windows amd64
+    runs-on: windows-latest
+    if: github.event_name == 'push' || inputs.build_windows
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: "3.27.4"
+          channel: stable
+          cache: true
+
+      - name: Setup Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: "1.20.x"
+          cache-dependency-path: core/go.sum
+
+      - name: Setup Rust
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Enable Windows desktop
+        run: flutter config --enable-windows-desktop
+
+      - name: Flutter doctor
+        run: flutter doctor -v
+
+      - name: Get packages
+        run: flutter pub get
+
+      - name: Build Windows client
+        shell: pwsh
+        env:
+          XOR_KEY: ${{ secrets.XOR_KEY }}
+        run: dart run setup.dart windows --arch amd64 --out app --env stable
+
+      - name: Upload Windows artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: fastcat-windows-amd64
+          path: |
+            dist/**/*.zip
+            dist/**/*.exe
+          if-no-files-found: error

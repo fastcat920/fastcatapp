@@ -1,0 +1,27 @@
+# XBoard-Mihomo 客户端配置示例
+# 复制此文件为 config.yaml 并填写你的信息
+#
+# 快速开始：只需修改 remote_config.sources[0].url，填入你托管的 config.json 地址
+
+# 面板类型：xboard 或 v2board
+# 必须与远程 config.json 中的 panel_type 字段一致
+panel_type: xboard
+
+# 远程配置源
+# 客户端启动时从这里拉取面板域名列表（domains）
+#
+# 支持多个源，客户端按顺序尝试，第一个成功的生效
+# 所有源使用 XOR+Base64 加密（密钥在 remote_config_manager.dart 的 _xorKey）
+# 明文 JSON 同样被接受，encrypt_config.py 可生成加密版本
+remote_config:
+  sources:
+    # 主配置源（推荐：OSS / CDN）
+    - url: https://your-oss1.example.com/config.json
+
+    # 备用配置源（可选）
+    # - url: https://your-oss2.example.com/config.json
+
+  # 超时与重试（可选，以下为默认值）
+  # timeout_seconds: 10
+  # max_retries: 3
+  # retry_delay_seconds: 2

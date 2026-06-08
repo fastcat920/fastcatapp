@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Device Gateway · Admin</title>
+<link rel="stylesheet" href="/admin/static/admin.css">
+</head>
+<body>
+<div id="auth">
+  <h1>Device Gateway</h1>
+  <p>请输入 Admin Token</p>
+  <form id="auth-form">
+    <input type="password" id="token-input" placeholder="X-Admin-Token" autofocus>
+    <button type="submit">进入</button>
+  </form>
+  <p id="auth-error"></p>
+</div>
+
+<div id="app" style="display:none">
+  <nav>
+    <span class="brand">Device Gateway</span>
+    <a href="#dashboard" class="nav-link active" data-tab="dashboard">仪表盘</a>
+    <a href="#users" class="nav-link" data-tab="users">用户管理</a>
+    <a href="#audit" class="nav-link" data-tab="audit">审计日志</a>
+    <button id="logout-btn">退出</button>
+  </nav>
+
+  <section id="tab-dashboard" class="tab-content active">
+    <div class="stats"></div>
+  </section>
+
+  <section id="tab-users" class="tab-content">
+    <div class="toolbar">
+      <input type="search" id="user-search" placeholder="搜索邮箱或用户 ID...">
+    </div>
+    <table id="users-table">
+      <thead>
+        <tr>
+          <th>邮箱</th>
+          <th>套餐</th>
+          <th>设备</th>
+          <th>上限</th>
+          <th>最后同步</th>
+          <th>操作</th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+    <div id="user-devices" class="panel" style="display:none">
+      <div class="panel-header">
+        <span id="device-panel-title"></span>
+        <button class="close-panel">&times;</button>
+      </div>
+      <div class="user-info"></div>
+      <table id="devices-table">
+        <thead>
+          <tr>
+            <th>设备名称</th>
+            <th>平台</th>
+            <th>版本</th>
+            <th>状态</th>
+            <th>最后在线</th>
+            <th>IP</th>
+            <th>操作</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+      <div class="limit-control">
+        <label>设备上限覆盖：</label>
+        <input type="number" id="limit-input" min="1" placeholder="留空恢复默认">
+        <button id="save-limit">保存</button>
+        <button id="clear-limit" class="danger-soft">恢复默认</button>
+      </div>
+    </div>
+  </section>
+
+  <section id="tab-audit" class="tab-content">
+    <table id="audit-table">
+      <thead>
+        <tr>
+          <th>时间</th>
+          <th>操作</th>
+          <th>用户</th>
+          <th>设备</th>
+          <th>IP</th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+    <button id="load-more-audit" style="display:none">加载更多</button>
+  </section>
+</div>
+
+<script src="/admin/static/admin.js"></script>
+</body>
+</html>

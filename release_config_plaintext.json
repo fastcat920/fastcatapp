@@ -1,0 +1,44 @@
+{
+  "config_version": 1,
+  "panel_type": "xboard",
+
+  "domains": [
+    "https://api.your-domain.com",
+    "https://api2.your-domain.com"
+  ],
+
+  "update": {
+    "min_version": "",
+    "changelog": "",
+    "latest": {
+      "android": { "version": "1.0.0", "url": "https://your-oss.com/app-release.apk", "force": false },
+      "windows": { "version": "1.0.0", "url": "https://your-oss.com/app-setup.exe", "force": false },
+      "macos":   { "version": "1.0.0", "url": "https://your-oss.com/app.dmg", "force": false },
+      "linux":   { "version": "1.0.0", "url": "https://your-oss.com/app.tar.gz", "force": false }
+    }
+  },
+
+  "contact": {
+    "telegram_group": "",
+    "website": "",
+    "crisp_website_id": "",
+    "salesmartly_token": ""
+  },
+
+  "features": {
+    "invite_enabled": true,
+    "purchase_enabled": true,
+    "traffic_details_enabled": true,
+    "knowledge_base_enabled": true,
+    "gift_card_enabled": true,
+    "join_group_enabled": true,
+    "orders_enabled": true,
+    "devices_enabled": true,
+    "tickets_enabled": true,
+    "balance_enabled": true
+  },
+
+  "ticket": {
+    "imgbb_api_key": ""
+  }
+}

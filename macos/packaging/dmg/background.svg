@@ -1,0 +1,28 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="640" height="420" viewBox="0 0 640 420">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#ffffff"/>
+      <stop offset="1" stop-color="#f3f6fb"/>
+    </linearGradient>
+    <linearGradient id="guide" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#4f6fb8"/>
+      <stop offset="1" stop-color="#2f6df6"/>
+    </linearGradient>
+    <filter id="softShadow" x="-25%" y="-25%" width="150%" height="150%">
+      <feDropShadow dx="0" dy="8" stdDeviation="12" flood-color="#1f2a44" flood-opacity="0.12"/>
+    </filter>
+  </defs>
+
+  <rect width="640" height="420" fill="url(#bg)"/>
+  <rect x="24" y="24" width="592" height="372" rx="28" fill="#ffffff" opacity="0.76"/>
+
+  <text x="320" y="78" text-anchor="middle" font-family="-apple-system, BlinkMacSystemFont, PingFang SC, Helvetica Neue, Arial, sans-serif" font-size="28" font-weight="700" fill="#1f2937">安装快猫</text>
+  <text x="320" y="112" text-anchor="middle" font-family="-apple-system, BlinkMacSystemFont, PingFang SC, Helvetica Neue, Arial, sans-serif" font-size="16" fill="#64748b">将左侧应用拖动到右侧 Applications 文件夹</text>
+
+  <g filter="url(#softShadow)">
+    <path d="M262 224 C292 198 346 198 376 224" fill="none" stroke="url(#guide)" stroke-width="8" stroke-linecap="round"/>
+    <path d="M366 232 L394 238 L382 212" fill="none" stroke="#2f6df6" stroke-width="8" stroke-linecap="round" stroke-linejoin="round"/>
+  </g>
+
+  <text x="320" y="370" text-anchor="middle" font-family="-apple-system, BlinkMacSystemFont, PingFang SC, Helvetica Neue, Arial, sans-serif" font-size="13" fill="#94a3b8">按箭头方向拖动应用图标完成安装</text>
+</svg>

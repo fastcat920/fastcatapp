@@ -1,0 +1,28 @@
+display_name: Apex
+package_name: Apex
+maintainer:
+  name: chen08209
+  email: chen08209@gmail.com
+
+priority: optional
+section: x11
+installed_size: 6604
+essential: false
+icon: ./assets/images/icon.png
+
+dependencies:
+  - libayatana-appindicator3-dev
+  - libkeybinder-3.0-dev
+
+keywords:
+  - Apex
+  - Clash
+  - ClashMeta
+  - Proxy
+
+generic_name: Apex
+
+categories:
+  - Network
+
+startup_notify: true

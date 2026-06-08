@@ -1,0 +1,18 @@
+display_name: Apex
+
+icon: ./assets/images/icon.png
+
+keywords:
+  - Apex
+  - Clash
+  - ClashMeta
+  - Proxy
+
+generic_name: Apex
+
+categories:
+  - Network
+
+startup_notify: true
+
+include: []

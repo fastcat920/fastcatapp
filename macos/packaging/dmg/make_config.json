@@ -1,0 +1,30 @@
+{
+  "title": "fastcat",
+  "background": ".background/background.png",
+  "format": "UDZO",
+  "icon-size": 144,
+  "window": {
+    "position": {
+      "x": 220,
+      "y": 120
+    },
+    "size": {
+      "width": 640,
+      "height": 420
+    }
+  },
+  "contents": [
+    {
+      "x": 172,
+      "y": 236,
+      "type": "file",
+      "path": "快猫.app"
+    },
+    {
+      "x": 476,
+      "y": 236,
+      "type": "link",
+      "path": "/Applications"
+    }
+  ]
+}
