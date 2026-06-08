@@ -908,6 +908,25 @@ end tell
     await _getMacosDependencies();
     _applyMacosTrayTitleFontSize();
 
+    // For universal builds, patch Release.xcconfig so Xcode compiles
+    // fat arm64+x86_64 binaries instead of host-arch only.
+    String? releaseConfigBackup;
+    final releaseConfigPath = join(
+      current, 'macos', 'Runner', 'Configs', 'Release.xcconfig');
+    final releaseConfigFile = File(releaseConfigPath);
+    if (archName == 'universal' && releaseConfigFile.existsSync()) {
+      releaseConfigBackup = releaseConfigFile.readAsStringSync();
+      var updated = releaseConfigBackup;
+      if (!updated.contains('ONLY_ACTIVE_ARCH')) {
+        updated += '\nONLY_ACTIVE_ARCH = NO\n';
+      }
+      if (!updated.contains('ARCHS = arm64')) {
+        updated += 'ARCHS = arm64 x86_64\n';
+      }
+      releaseConfigFile.writeAsStringSync(updated);
+      print('[setup.dart]   ✅ Release.xcconfig patched for universal build');
+    }
+
     await Build.exec(
       [
         "flutter",
@@ -918,6 +937,11 @@ end tell
       ],
       name: "build macos app",
     );
+
+    if (releaseConfigBackup != null) {
+      releaseConfigFile.writeAsStringSync(releaseConfigBackup);
+      print('[setup.dart]   ✅ Release.xcconfig restored');
+    }
 
     final productName = Platform.environment["APP_NAME"]?.isNotEmpty == true
         ? Platform.environment["APP_NAME"]!

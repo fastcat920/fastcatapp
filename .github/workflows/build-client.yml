@@ -27,6 +27,10 @@ on:
         description: Build macOS amd64 DMG
         type: boolean
         default: true
+      build_macos_universal:
+        description: Build macOS universal DMG (arm64+amd64)
+        type: boolean
+        default: true
   push:
     tags:
       - "v*"
@@ -319,5 +323,48 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: fastcat-macos-amd64
+          path: dist/*.dmg
+          if-no-files-found: error
+
+  macos-universal:
+    name: macOS Universal DMG
+    runs-on: macos-latest
+    if: github.event_name == 'push' || inputs.build_macos_universal
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: "3.27.4"
+          channel: stable
+          cache: true
+
+      - name: Setup Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: "1.20.x"
+          cache-dependency-path: core/go.sum
+
+      - name: Enable macOS desktop
+        run: flutter config --enable-macos-desktop
+
+      - name: Flutter doctor
+        run: flutter doctor -v
+
+      - name: Get packages
+        run: flutter pub get
+
+      - name: Build macOS universal DMG
+        env:
+          XOR_KEY: ${{ secrets.XOR_KEY }}
+        run: dart run setup.dart macos --arch universal --out app --env stable
+
+      - name: Upload macOS universal DMG
+        uses: actions/upload-artifact@v4
+        with:
+          name: fastcat-macos-universal
           path: dist/*.dmg
           if-no-files-found: error
