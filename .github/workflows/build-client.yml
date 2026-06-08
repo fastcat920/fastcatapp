@@ -151,26 +151,183 @@ jobs:
         run: dart run setup.dart windows --arch amd64 --out app --env stable
 
 
+      - name: Build Windows exe with Inno Setup
+        shell: pwsh
+        run: |
+          $iscc = Get-Command iscc -ErrorAction Stop | Select-Object -ExpandProperty Source
+          Write-Host "Using iscc: $iscc"
+
+          # Find the Flutter build output
+          $buildOut = "build\windows\x64\runner\Release"
+          if (-not (Test-Path $buildOut)) {
+            Write-Error "Flutter build output not found: $buildOut"
+            exit 1
+          }
+
+          # Read make_config.yaml for values
+          $config = Get-Content "windows\packaging\exe\make_config.yaml" -Raw
+
+          function Get-YamlValue($text, $key) {
+            if ($text -match "^${key}:\s*(.+)$") {
+              return $matches[1].Trim()
+            }
+            return ""
+          }
+          $appName = Get-YamlValue $config "display_name"
+          if (-not $appName) { $appName = Get-YamlValue $config "app_name" }
+          $exeName = Get-YamlValue $config "executable_name"
+          if (-not $exeName) { $exeName = "fastcat.exe" }
+          $outputName = Get-YamlValue $config "output_base_file_name"
+          if (-not $outputName) { $outputName = $exeName }
+          $publisher = Get-YamlValue $config "publisher"
+          $publisherUrl = Get-YamlValue $config "publisher_url"
+          $iconFile = Get-YamlValue $config "setup_icon_file"
+          $appId = Get-YamlValue $config "app_id"
+          if (-not $appId) { $appId = "{{" + (New-Guid).Guid + "}}" }
+
+          # Read version from pubspec.yaml or use build name
+          $pubspec = Get-Content "pubspec.yaml" -Raw
+          $version = "1.0.0"
+          if ($pubspec -match "^version:\s*(.+)$") {
+            $version = ($matches[1] -split '\+')[0].Trim()
+          }
+
+          # Create rendered ISS file
+          $issTemplate = Get-Content "windows\packaging\exe\inno_setup.iss" -Raw
+          $issRendered = $issTemplate `
+            -replace '\{\{APP_ID\}\}', $appId `
+            -replace '\{\{APP_VERSION\}\}', $version `
+            -replace '\{\{DISPLAY_NAME\}\}', $appName `
+            -replace '\{\{PUBLISHER_NAME\}\}', $publisher `
+            -replace '\{\{PUBLISHER_URL\}\}', $publisherUrl `
+            -replace '\{\{OUTPUT_BASE_FILENAME\}\}', ([System.IO.Path]::GetFileNameWithoutExtension($outputName)) `
+            -replace '\{\{EXECUTABLE_NAME\}\}', ([System.IO.Path]::GetFileName($exeName)) `
+            -replace '\{\{SETUP_ICON_FILE\}\}', $iconFile `
+            -replace '\{\{SOURCE_DIR\}\}', $buildOut `
+            -replace '\{\{PRIVILEGES_REQUIRED\}\}', "admin" `
+            -replace '\{\{ARCH\}\}', "x64" `
+            -replace '\{\{CREATE_DESKTOP_ICON\}\}', "true"
+
+          # Handle locales: replace the complex loop with simple en+zh
+          $issRendered = $issRendered -replace '\{% for locale in LOCALES %\}[\s\S]*?\{% endfor %\}', @'
+Name: "english"; MessagesFile: "compiler:Default.isl"
+Name: "chineseSimplified"; MessagesFile: "compiler:Languages\ChineseSimplified.isl"
+'@
+
+          $issPath = "build\setup.iss"
+          $issRendered | Set-Content -Path $issPath -Encoding UTF8
+          Write-Host "Rendered ISS written to $issPath"
+
+          # Run Inno Setup
+          & $iscc $issPath
+          if ($LASTEXITCODE -ne 0) {
+            Write-Error "iscc failed with exit code $LASTEXITCODE"
+            exit 1
+          }
+
+          # Copy exe to dist/
+          $exeFile = Join-Path (Get-Location) "$outputName"
+          # iscc outputs to OutputDir which is "." relative to the ISS file
+          $exeFile = Join-Path (Split-Path $issPath -Parent) "$outputName"
+          if (-not (Test-Path $exeFile)) {
+            $exeFile = Join-Path (Get-Location) "$outputName"
+          }
+          if (-not (Test-Path $exeFile)) {
+            # Search for the exe
+            $found = Get-ChildItem -Path . -Recurse -Filter "$outputName" -ErrorAction SilentlyContinue | Select-Object -First 1
+            if ($found) { $exeFile = $found.FullName }
+          }
+          if (Test-Path $exeFile) {
+            New-Item -ItemType Directory -Path dist -Force | Out-Null
+            Copy-Item $exeFile "dist\" -Force
+            Write-Host "Copied $exeFile to dist/"
+          } else {
+            Write-Error "Exe file not found: $outputName"
+            Get-ChildItem -Path . -Recurse -Filter "*.exe" -ErrorAction SilentlyContinue | Select-Object FullName, Length | ForEach-Object { Write-Host "Found exe: $($_.FullName) ($($_.Length) bytes)" }
+            exit 1
+          }
+
+      - name: Build Windows exe installer
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = "Stop"
+          $iscc = Get-Command iscc | Select-Object -ExpandProperty Source
+          Write-Host "iscc: $iscc"
+
+          $buildOut = "build\windows\x64\runner\Release"
+          if (-not (Test-Path $buildOut)) { throw "Flutter build not found: $buildOut" }
+
+          # Parse make_config.yaml
+          $cfg = Get-Content "windows\packaging\exe\make_config.yaml" -Raw
+          function yv($k) { if ($cfg -match "(?m)^${k}:\s*(.+)$") { $matches[1].Trim() } else { "" } }
+          $display = yv "display_name"; if (-not $display) { $display = yv "app_name" }
+          $exe    = yv "executable_name"; if (-not $exe) { $exe = "fastcat.exe" }
+          $out    = yv "output_base_file_name"; if (-not $out) { $out = $exe }
+          $pub    = yv "publisher"
+          $pubUrl = yv "publisher_url"
+          $icon   = yv "setup_icon_file"
+          $appId  = yv "app_id"; if (-not $appId) { $appId = "{" + [guid]::NewGuid() + "}" }
+
+          $ver = "1.0.0"
+          $ps = Get-Content "pubspec.yaml" -Raw
+          if ($ps -match "(?m)^version:\s*(.+)$") { $ver = ($matches[1] -split '\+')[0].Trim() }
+
+          # Render ISS template
+          $iss = (Get-Content "windows\packaging\exe\inno_setup.iss" -Raw) `
+            -replace '\{\{APP_ID\}\}', $appId `
+            -replace '\{\{APP_VERSION\}\}', $ver `
+            -replace '\{\{DISPLAY_NAME\}\}', $display `
+            -replace '\{\{PUBLISHER_NAME\}\}', $pub `
+            -replace '\{\{PUBLISHER_URL\}\}', $pubUrl `
+            -replace '\{\{OUTPUT_BASE_FILENAME\}\}', ([IO.Path]::GetFileNameWithoutExtension($out)) `
+            -replace '\{\{EXECUTABLE_NAME\}\}', ([IO.Path]::GetFileName($exe)) `
+            -replace '\{\{SETUP_ICON_FILE\}\}', $icon `
+            -replace '\{\{SOURCE_DIR\}\}', $buildOut `
+            -replace '\{\{PRIVILEGES_REQUIRED\}\}', "admin" `
+            -replace '\{\{ARCH\}\}', "x64" `
+            -replace '\{\{CREATE_DESKTOP_ICON\}\}', "true"
+
+          # Replace locale template loop
+          $iss = $iss -replace '(?s)\{% for locale in LOCALES %\}.*?\{% endfor %\}',
+            'Name: "english"; MessagesFile: "compiler:Default.isl"'
+          $iss = $iss -replace '(?s)\{% if .*?%\}.*?\{% endif %\}', ''
+
+          $issFile = "build\setup.iss"
+          New-Item -Force -ItemType Directory (Split-Path $issFile) | Out-Null
+          [IO.File]::WriteAllText((Resolve-Path ".").Path + "\" + $issFile, $iss)
+          Write-Host "ISS written to $issFile"
+
+          & $iscc $issFile
+          if ($LASTEXITCODE -ne 0) { throw "iscc failed: $LASTEXITCODE" }
+
+          # Find and copy exe
+          $exeFile = Join-Path (Split-Path $issFile -Parent) "$out"
+          if (-not (Test-Path $exeFile)) {
+            $exeFile = Join-Path (Get-Location) "$out"
+          }
+          if (-not (Test-Path $exeFile)) {
+            $found = Get-ChildItem -Recurse -Filter "$out" -ErrorAction SilentlyContinue | Select -First 1
+            if ($found) { $exeFile = $found.FullName }
+          }
+          if (Test-Path $exeFile) {
+            New-Item -Force -ItemType Directory dist | Out-Null
+            Copy-Item $exeFile dist\ -Force
+            Write-Host "Exe copied to dist/"
+          } else {
+            Write-Host "WARNING: exe not found, searching..."
+            Get-ChildItem -Recurse -Filter *.exe -ErrorAction SilentlyContinue | Select FullName, Length | ft -AutoSize
+            throw "Exe file not produced"
+          }
+
       - name: List dist contents
         shell: pwsh
         if: always()
         run: |
-          Write-Host "=== dist/ contents ==="
-          if (Test-Path dist) {
-            Get-ChildItem -Path dist -Recurse | Select-Object FullName, Length
-          } else {
-            Write-Host "dist/ directory does not exist"
-          }
-          Write-Host ""
-          Write-Host "=== Searching workspace for .zip and .exe files ==="
-          Get-ChildItem -Path . -Recurse -Include *.zip,*.exe -ErrorAction SilentlyContinue | Select-Object FullName, Length
-          Write-Host ""
-          Write-Host "=== build/windows/ contents ==="
-          if (Test-Path build/windows) {
-            Get-ChildItem -Path build/windows -Recurse -Depth 2 -ErrorAction SilentlyContinue | Select-Object FullName, Length
-          } else {
-            Write-Host "build/windows/ does not exist"
-          }
+          Write-Host "=== dist/ ==="
+          if (Test-Path dist) { Get-ChildItem dist -Recurse | Select FullName, Length }
+          else { Write-Host "dist/ absent" }
+          Write-Host "=== all .exe .zip ==="
+          Get-ChildItem . -Recurse -Include *.zip,*.exe -ErrorAction SilentlyContinue | Select FullName, Length
 
       - name: Upload Windows artifacts
         uses: actions/upload-artifact@v4
