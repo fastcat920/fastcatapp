@@ -32,6 +32,11 @@ if [ -f "$APK_SRC" ]; then
   fi
   echo "✓ $APK_DST"
 else
+  echo "→ Re-running Gradle with stacktrace for diagnostics..."
+  (
+    cd android
+    ./gradlew assembleMobileRelease --stacktrace --no-daemon
+  ) || true
   echo "✗ APK not found after build"
   exit "$BUILD_EXIT"
 fi
