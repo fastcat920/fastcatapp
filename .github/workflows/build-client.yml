@@ -107,6 +107,16 @@ jobs:
         shell: pwsh
         run: choco install innosetup --no-progress -y
 
+      - name: Verify Inno Setup
+        shell: pwsh
+        run: |
+          if (Get-Command iscc -ErrorAction SilentlyContinue) {
+            Write-Host "Inno Setup found at: $(Get-Command iscc | Select-Object -ExpandProperty Source)"
+          } else {
+            Write-Host "WARNING: iscc.exe not on PATH"
+            Get-ChildItem "C:\Program Files*\Inno Setup*\iscc.exe" -ErrorAction SilentlyContinue | ForEach-Object { Write-Host "Found: $($_.FullName)" }
+          }
+
       - name: Enable Windows desktop
         run: flutter config --enable-windows-desktop
 
@@ -136,9 +146,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: fastcat-windows-amd64
-          path: |
-            dist/**/*.zip
-            dist/**/*.exe
+          path: dist/**
           if-no-files-found: error
 
   ios:
