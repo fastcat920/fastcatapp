@@ -19,16 +19,8 @@ on:
         description: Build Linux amd64 packages
         type: boolean
         default: true
-      build_macos_arm64:
-        description: Build macOS arm64 DMG
-        type: boolean
-        default: true
-      build_macos_amd64:
-        description: Build macOS amd64 DMG
-        type: boolean
-        default: true
-      build_macos_universal:
-        description: Build macOS universal DMG (arm64+amd64)
+      build_macos:
+        description: Build macOS Universal DMG (arm64+amd64)
         type: boolean
         default: true
   push:
@@ -240,96 +232,10 @@ jobs:
             dist/**/*.rpm
           if-no-files-found: error
 
-  macos-arm64:
-    name: macOS arm64 DMG
-    runs-on: macos-latest
-    if: github.event_name == 'push' || inputs.build_macos_arm64
-
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Setup Flutter
-        uses: subosito/flutter-action@v2
-        with:
-          flutter-version: "3.27.4"
-          channel: stable
-          cache: true
-
-      - name: Setup Go
-        uses: actions/setup-go@v5
-        with:
-          go-version: "1.20.x"
-          cache-dependency-path: core/go.sum
-
-      - name: Enable macOS desktop
-        run: flutter config --enable-macos-desktop
-
-      - name: Flutter doctor
-        run: flutter doctor -v
-
-      - name: Get packages
-        run: flutter pub get
-
-      - name: Build macOS arm64 DMG
-        env:
-          XOR_KEY: ${{ secrets.XOR_KEY }}
-        run: dart run setup.dart macos --arch arm64 --out app --env stable
-
-      - name: Upload macOS arm64 DMG
-        uses: actions/upload-artifact@v4
-        with:
-          name: fastcat-macos-arm64
-          path: dist/*.dmg
-          if-no-files-found: error
-
-  macos-amd64:
-    name: macOS amd64 DMG
-    runs-on: macos-13
-    if: github.event_name == 'push' || inputs.build_macos_amd64
-
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Setup Flutter
-        uses: subosito/flutter-action@v2
-        with:
-          flutter-version: "3.27.4"
-          channel: stable
-          cache: true
-
-      - name: Setup Go
-        uses: actions/setup-go@v5
-        with:
-          go-version: "1.20.x"
-          cache-dependency-path: core/go.sum
-
-      - name: Enable macOS desktop
-        run: flutter config --enable-macos-desktop
-
-      - name: Flutter doctor
-        run: flutter doctor -v
-
-      - name: Get packages
-        run: flutter pub get
-
-      - name: Build macOS amd64 DMG
-        env:
-          XOR_KEY: ${{ secrets.XOR_KEY }}
-        run: dart run setup.dart macos --arch amd64 --out app --env stable
-
-      - name: Upload macOS amd64 DMG
-        uses: actions/upload-artifact@v4
-        with:
-          name: fastcat-macos-amd64
-          path: dist/*.dmg
-          if-no-files-found: error
-
-  macos-universal:
+  macos:
     name: macOS Universal DMG
     runs-on: macos-latest
-    if: github.event_name == 'push' || inputs.build_macos_universal
+    if: github.event_name == 'push' || inputs.build_macos
 
     steps:
       - name: Checkout
@@ -365,6 +271,6 @@ jobs:
       - name: Upload macOS universal DMG
         uses: actions/upload-artifact@v4
         with:
-          name: fastcat-macos-universal
+          name: fastcat-macos
           path: dist/*.dmg
           if-no-files-found: error
