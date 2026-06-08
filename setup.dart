@@ -170,12 +170,26 @@ class Build {
         Platform.isWindows ? "appdmg.cmd" : "appdmg",
       );
 
+  static String get pubCacheBin {
+    if (Platform.isWindows) {
+      final localAppData = Platform.environment["LOCALAPPDATA"];
+      if (localAppData != null && localAppData.isNotEmpty) {
+        return join(localAppData, "Pub", "Cache", "bin");
+      }
+      final userProfile = Platform.environment["USERPROFILE"] ?? "";
+      return join(userProfile, "AppData", "Local", "Pub", "Cache", "bin");
+    }
+    final home = Platform.environment["HOME"] ?? "";
+    return join(home, ".pub-cache", "bin");
+  }
+
   static Map<String, String> commandEnvironment([
     Map<String, String>? overrides,
   ]) {
     final env = Map<String, String>.from(Platform.environment);
     final pathParts = [
       join(current, ".dart_tool", "npm", "node_modules", ".bin"),
+      pubCacheBin,
       "/opt/homebrew/bin",
       "/usr/local/bin",
       "/usr/bin",
@@ -184,7 +198,9 @@ class Build {
       "/sbin",
       if (env["PATH"] != null) env["PATH"]!,
     ];
-    env["PATH"] = pathParts.where((part) => part.isNotEmpty).join(":");
+    env["PATH"] = pathParts
+        .where((part) => part.isNotEmpty)
+        .join(Platform.isWindows ? ";" : ":");
     if (overrides != null) {
       env.addAll(overrides);
     }
@@ -372,19 +388,29 @@ class Build {
       "flutter_distributor",
     );
 
+    if (File(join(distributorDir, "pubspec.yaml")).existsSync()) {
+      await exec(
+        name: "clean distributor",
+        Build.getExecutable("flutter clean"),
+        workingDirectory: distributorDir,
+      );
+      await exec(
+        name: "get distributor dependencies",
+        Build.getExecutable("flutter pub get"),
+        workingDirectory: distributorDir,
+      );
+      await exec(
+        name: "activate local distributor",
+        Build.getExecutable("dart pub global activate -s path $distributorDir"),
+      );
+      return;
+    }
+
+    print(
+        "[setup.dart] local flutter_distributor not found, activating pub.dev package");
     await exec(
-      name: "clean distributor",
-      Build.getExecutable("flutter clean"),
-      workingDirectory: distributorDir,
-    );
-    await exec(
-      name: "upgrade distributor",
-      Build.getExecutable("flutter pub upgrade"),
-      workingDirectory: distributorDir,
-    );
-    await exec(
-      name: "get distributor",
-      Build.getExecutable("dart pub global activate -s path $distributorDir"),
+      name: "activate flutter_distributor",
+      Build.getExecutable("dart pub global activate flutter_distributor"),
     );
   }
 
