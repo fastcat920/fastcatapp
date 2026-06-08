@@ -1312,7 +1312,7 @@ end tell
           target: target,
           targets: "zip,exe",
           args:
-              " --description $archName --build-dart-define=CORE_SHA256=$token$ddArgs",
+              " --build-dart-define=CORE_SHA256=$token$ddArgs",
           env: env,
         );
         return;
@@ -1334,7 +1334,7 @@ end tell
           target: target,
           targets: targets,
           args:
-              " --description $archName --build-target-platform $defaultTarget$ddArgs",
+              " --build-target-platform $defaultTarget$ddArgs",
           env: env,
         );
         return;
