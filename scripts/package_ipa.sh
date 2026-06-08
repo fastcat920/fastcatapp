@@ -9,6 +9,7 @@ fi
 
 VER=$(grep '^version:' pubspec.yaml | awk '{print $2}')
 echo "→ Building IPA for fastcat ${VER}..."
+mkdir -p dist
 
 flutter build ipa --release --no-codesign --dart-define=XOR_KEY="${XOR_KEY}"
 
