@@ -1369,6 +1369,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "xboardTokenExpiredTitle": MessageLookupByLibrary.simpleMessage("ログイン期限切れ"),
     "xboardToolsSettings": MessageLookupByLibrary.simpleMessage("ツール設定"),
     "xboardTotal": MessageLookupByLibrary.simpleMessage("Total"),
+    "xboardTotalTraffic": MessageLookupByLibrary.simpleMessage("合計"),
     "xboardTraffic": MessageLookupByLibrary.simpleMessage("トラフィック"),
     "xboardTrafficDetails": MessageLookupByLibrary.simpleMessage(
       "Traffic details",

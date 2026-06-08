@@ -1963,6 +1963,7 @@ class MessageLookup extends MessageLookupByLibrary {
       "Tools Settings",
     ),
     "xboardTotal": MessageLookupByLibrary.simpleMessage("Total"),
+    "xboardTotalTraffic": MessageLookupByLibrary.simpleMessage("Total"),
     "xboardTraffic": MessageLookupByLibrary.simpleMessage("Traffic"),
     "xboardTrafficDetails": MessageLookupByLibrary.simpleMessage(
       "Traffic details",

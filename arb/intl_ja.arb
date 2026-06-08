@@ -501,6 +501,7 @@
   "xboardExpiryTime": "有効期限",
   "xboardUsed": "使用済み",
   "xboardUsedTraffic": "使用済み",
+  "xboardTotalTraffic": "合計",
   "xboardValidityPeriod": "有効期間",
   "xboardDays": "日",
   "xboardMonthlyPayment": "月払い",

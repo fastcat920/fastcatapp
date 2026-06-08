@@ -500,6 +500,7 @@
   "xboardExpiryTime": "Expiry time",
   "xboardUsed": "Used",
   "xboardUsedTraffic": "Used",
+  "xboardTotalTraffic": "Total",
   "xboardValidityPeriod": "Expires",
   "xboardDays": "days",
   "xboardMonthlyPayment": "Monthly",

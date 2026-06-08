@@ -3955,6 +3955,16 @@ class AppLocalizations {
     return Intl.message('Used', name: 'xboardUsedTraffic', desc: '', args: []);
   }
 
+  /// `Total`
+  String get xboardTotalTraffic {
+    return Intl.message(
+      'Total',
+      name: 'xboardTotalTraffic',
+      desc: '',
+      args: [],
+    );
+  }
+
   /// `Expires`
   String get xboardValidityPeriod {
     return Intl.message(

@@ -1343,6 +1343,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "xboardTokenExpiredTitle": MessageLookupByLibrary.simpleMessage("登录已过期"),
     "xboardToolsSettings": MessageLookupByLibrary.simpleMessage("工具设置"),
     "xboardTotal": MessageLookupByLibrary.simpleMessage("总计"),
+    "xboardTotalTraffic": MessageLookupByLibrary.simpleMessage("总计"),
     "xboardTraffic": MessageLookupByLibrary.simpleMessage("流量"),
     "xboardTrafficDetails": MessageLookupByLibrary.simpleMessage("流量明细"),
     "xboardTrafficExhausted": MessageLookupByLibrary.simpleMessage("流量已用完"),

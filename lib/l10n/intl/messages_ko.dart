@@ -1575,6 +1575,7 @@ class MessageLookup extends MessageLookupByLibrary {
     ),
     "xboardToolsSettings": MessageLookupByLibrary.simpleMessage("도구 설정"),
     "xboardTotal": MessageLookupByLibrary.simpleMessage("전체"),
+    "xboardTotalTraffic": MessageLookupByLibrary.simpleMessage("총계"),
     "xboardTraffic": MessageLookupByLibrary.simpleMessage("트래픽"),
     "xboardTrafficDetails": MessageLookupByLibrary.simpleMessage("트래픽 상세"),
     "xboardTrafficExhausted": MessageLookupByLibrary.simpleMessage(

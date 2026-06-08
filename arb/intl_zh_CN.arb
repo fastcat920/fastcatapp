@@ -505,6 +505,7 @@
   "xboardExpiryTime": "过期时间",
   "xboardUsed": "已用",
   "xboardUsedTraffic": "已用",
+  "xboardTotalTraffic": "总计",
   "xboardValidityPeriod": "有效期",
   "xboardDays": "天",
   "xboardMonthlyPayment": "月付",

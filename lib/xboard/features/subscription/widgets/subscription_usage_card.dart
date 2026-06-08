@@ -594,7 +594,7 @@ class SubscriptionUsageCard extends ConsumerWidget {
 
           // ── 已用流量 ──
           Text(
-            '${prefixUsedTraffic ? '${AppLocalizations.of(context).xboardUsedTraffic} ' : ''}${_formatBytes(usedTraffic)} / ${_formatBytes(totalTraffic)}',
+            '${prefixUsedTraffic ? '${AppLocalizations.of(context).xboardUsedTraffic} ' : ''}${_formatBytes(usedTraffic)} / ${AppLocalizations.of(context).xboardTotalTraffic} ${_formatBytes(totalTraffic)}',
             style: theme.textTheme.bodySmall?.copyWith(
               fontWeight: FontWeight.w600,
               color: usedTrafficColor,
@@ -809,7 +809,7 @@ class SubscriptionUsageCard extends ConsumerWidget {
           ),
           const SizedBox(height: 5),
           Text(
-            '${prefixUsedTraffic ? '${AppLocalizations.of(context).xboardUsedTraffic} ' : ''}${_formatBytes(usedTraffic)} / ${_formatBytes(totalTraffic)}',
+            '${prefixUsedTraffic ? '${AppLocalizations.of(context).xboardUsedTraffic} ' : ''}${_formatBytes(usedTraffic)} / ${AppLocalizations.of(context).xboardTotalTraffic} ${_formatBytes(totalTraffic)}',
             style: theme.textTheme.bodySmall?.copyWith(
               color: usedTrafficColor,
               fontWeight: FontWeight.w500,

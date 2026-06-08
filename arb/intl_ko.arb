@@ -500,6 +500,7 @@
   "xboardExpiryTime": "expiry time",
   "xboardUsed": "사용됨",
   "xboardUsedTraffic": "사용됨 트래픽",
+  "xboardTotalTraffic": "총계",
   "xboardValidityPeriod": "validity 기간",
   "xboardDays": "일",
   "xboardMonthlyPayment": "월간 결제",
