@@ -1308,9 +1308,17 @@ end tell
             ? await Build.calcSha256(corePaths.first)
             : null;
         await Build.buildHelper(target, token!);
+        // Build zip and exe separately so errors are visible per-target
         await _buildDistributor(
           target: target,
-          targets: "zip,exe",
+          targets: "zip",
+          args:
+              " --build-dart-define=CORE_SHA256=$token$ddArgs",
+          env: env,
+        );
+        await _buildDistributor(
+          target: target,
+          targets: "exe",
           args:
               " --build-dart-define=CORE_SHA256=$token$ddArgs",
           env: env,
