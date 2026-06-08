@@ -117,6 +117,24 @@ jobs:
             Get-ChildItem "C:\Program Files*\Inno Setup*\iscc.exe" -ErrorAction SilentlyContinue | ForEach-Object { Write-Host "Found: $($_.FullName)" }
           }
 
+      - name: Link Inno Setup to expected path
+        shell: pwsh
+        run: |
+          $innoDirs = Get-ChildItem "C:\Program Files\Inno Setup*" -Directory -ErrorAction SilentlyContinue
+          if ($innoDirs) {
+            $target = $innoDirs[0].FullName
+            $link = "C:\Program Files (x86)\Inno Setup 6"
+            if (-not (Test-Path $link)) {
+              New-Item -ItemType Junction -Path $link -Target $target -Force | Out-Null
+              Write-Host "Junction created: $link -> $target"
+            } else {
+              Write-Host "Junction already exists: $link"
+            }
+            "INNO_SETUP_HOME=$target" >> $env:GITHUB_ENV
+          } else {
+            Write-Host "No Inno Setup directory found under C:\Program Files"
+          }
+
       - name: Enable Windows desktop
         run: flutter config --enable-windows-desktop
 
