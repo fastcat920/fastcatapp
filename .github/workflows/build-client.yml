@@ -141,11 +141,23 @@ jobs:
         shell: pwsh
         if: always()
         run: |
+          Write-Host "=== dist/ contents ==="
           if (Test-Path dist) {
             Get-ChildItem -Path dist -Recurse | Select-Object FullName, Length
           } else {
             Write-Host "dist/ directory does not exist"
           }
+          Write-Host ""
+          Write-Host "=== Searching workspace for .zip and .exe files ==="
+          Get-ChildItem -Path . -Recurse -Include *.zip,*.exe -ErrorAction SilentlyContinue | Select-Object FullName, Length
+          Write-Host ""
+          Write-Host "=== build/windows/ contents ==="
+          if (Test-Path build/windows) {
+            Get-ChildItem -Path build/windows -Recurse -Depth 2 -ErrorAction SilentlyContinue | Select-Object FullName, Length
+          } else {
+            Write-Host "build/windows/ does not exist"
+          }
+
       - name: Upload Windows artifacts
         uses: actions/upload-artifact@v4
         with:
