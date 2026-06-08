@@ -1341,17 +1341,6 @@ end tell
       case Target.android:
         _applyDartConstant();
         _applyAndroidAppName();
-        final platformMap = {
-          Arch.arm: "android-arm",
-          Arch.arm64: "android-arm64",
-          Arch.amd64: "android-x64",
-        };
-        final defaultArches = [Arch.arm, Arch.arm64, Arch.amd64];
-        final selectedArches = defaultArches
-            .where((element) => arch == null ? true : element == arch)
-            .toList();
-        final targetPlatforms =
-            selectedArches.map((e) => platformMap[e]).join(",");
 
         final distDir = Directory(Build.distPath);
         if (!distDir.existsSync()) {
@@ -1360,17 +1349,46 @@ end tell
 
         final dartDefines = _dartDefineList(env);
 
-        // Only the mobile APK is built. The mobile package still contains
-        // runtime large-screen/remote-control adaptations for projector/TV use.
+        // Only the mobile APK is built.
         final androidFlavor = Platform.environment['ANDROID_FLAVOR'] ?? '';
         if (androidFlavor.isNotEmpty && androidFlavor != 'mobile') {
           throw Exception('Unsupported Android flavor: $androidFlavor');
         }
-        final flavors = ['mobile'];
-        print('Android flavors to build: $flavors');
+        final flavor = 'mobile';
 
-        for (final flavor in flavors) {
-          print('\n========== Building $flavor APK ==========');
+        final apkOutputDir = join(
+          current,
+          'build',
+          'app',
+          'outputs',
+          'flutter-apk',
+        );
+
+        // Define the three APK variants to build
+        final variants = [
+          {
+            'suffix': 'armeabi-v7a',
+            'targetPlatform': 'android-arm',
+            'srcApk': join(apkOutputDir, 'app-$flavor-armeabi-v7a-release.apk'),
+          },
+          {
+            'suffix': 'arm64-v8a',
+            'targetPlatform': 'android-arm64',
+            'srcApk': join(apkOutputDir, 'app-$flavor-arm64-v8a-release.apk'),
+          },
+          {
+            'suffix': 'universal',
+            'targetPlatform': 'android-arm,android-arm64',
+            'srcApk': join(apkOutputDir, 'app-$flavor-release.apk'),
+          },
+        ];
+
+        for (final variant in variants) {
+          final suffix = variant['suffix'] as String;
+          final targetPlatform = variant['targetPlatform'] as String;
+          final srcApk = variant['srcApk'] as String;
+
+          print('\n========== Building $flavor APK ($suffix) ==========');
           await Build.exec(
             [
               'flutter',
@@ -1380,33 +1398,20 @@ end tell
               '--flavor',
               flavor,
               '--target-platform',
-              targetPlatforms,
+              targetPlatform,
               ...dartDefines,
             ],
-            name: 'build $flavor APK',
+            name: 'build $flavor APK ($suffix)',
           );
 
-          // Copy universal APK (contains all selected ABIs) to dist/
-          final apkOutputDir = join(
-            current,
-            'build',
-            'app',
-            'outputs',
-            'flutter-apk',
-          );
-          final universalSrcCandidates = [
-            join(apkOutputDir, 'app-$flavor-release.apk'),
-            join(apkOutputDir, 'app-release.apk'),
-          ];
-          final universalSrc = universalSrcCandidates
-              .firstWhere((path) => File(path).existsSync(), orElse: () => '');
-          if (universalSrc.isEmpty) {
-            throw Exception(
-                'Universal APK not found. Tried: ${universalSrcCandidates.join(", ")}');
+          // Copy APK to dist/
+          final srcFile = File(srcApk);
+          if (!srcFile.existsSync()) {
+            throw Exception('APK not found: $srcApk');
           }
-          final dstApk =
-              join(Build.distPath, '${Build.appName}-$flavor-universal.apk');
-          Build.copyFile(universalSrc, dstApk);
+          final dstApk = join(
+              Build.distPath, '${Build.appName}-$flavor-$suffix.apk');
+          Build.copyFile(srcApk, dstApk);
           print('  ✅ $dstApk');
         }
         return;
