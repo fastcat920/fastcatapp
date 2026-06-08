@@ -19,10 +19,6 @@ on:
         description: Build Linux amd64 packages
         type: boolean
         default: true
-      build_linux_arm64:
-        description: Build Linux arm64 deb package
-        type: boolean
-        default: true
       build_macos:
         description: Build macOS Universal DMG (arm64+amd64)
         type: boolean
@@ -261,71 +257,6 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: fastcat-linux-amd64
-          path: dist/**
-          if-no-files-found: error
-
-  linux-arm64:
-    name: Linux arm64 deb
-    runs-on: ubuntu-24.04-arm
-    if: github.event_name == 'push' || inputs.build_linux_arm64
-
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Setup Flutter
-        uses: subosito/flutter-action@v2
-        with:
-          flutter-version: "3.27.4"
-          channel: stable
-          cache: true
-
-      - name: Setup Go
-        uses: actions/setup-go@v5
-        with:
-          go-version: "1.20.x"
-          cache-dependency-path: core/go.sum
-
-      - name: Enable Linux desktop
-        run: flutter config --enable-linux-desktop
-
-      - name: Install Linux build prerequisites
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y \
-            clang \
-            cmake \
-            libgtk-3-dev \
-            liblzma-dev \
-            libwebkit2gtk-4.1-dev \
-            ninja-build \
-            pkg-config
-
-      - name: Flutter doctor
-        run: flutter doctor -v
-
-      - name: Get packages
-        run: flutter pub get
-
-      - name: Build Linux arm64 deb
-        env:
-          XOR_KEY: ${{ secrets.XOR_KEY }}
-        run: dart run setup.dart linux --arch arm64 --out app --env stable
-
-      - name: List dist contents
-        shell: bash
-        if: always()
-        run: |
-          if [ -d dist ]; then
-            find dist -type f -exec ls -lh {} \;
-          else
-            echo "dist/ directory does not exist"
-          fi
-
-      - name: Upload Linux arm64 deb
-        uses: actions/upload-artifact@v4
-        with:
-          name: fastcat-linux-arm64
           path: dist/**
           if-no-files-found: error
 
