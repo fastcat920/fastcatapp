@@ -22,7 +22,7 @@ on:
       build_linux_arm64:
         description: Build Linux arm64 deb package
         type: boolean
-        default: false
+        default: true
       build_macos:
         description: Build macOS Universal DMG (arm64+amd64)
         type: boolean
