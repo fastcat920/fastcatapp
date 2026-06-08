@@ -230,14 +230,21 @@ jobs:
           XOR_KEY: ${{ secrets.XOR_KEY }}
         run: dart run setup.dart linux --arch amd64 --out app --env stable
 
+      - name: List dist contents
+        shell: bash
+        if: always()
+        run: |
+          if [ -d dist ]; then
+            find dist -type f -exec ls -lh {} \;
+          else
+            echo "dist/ directory does not exist"
+          fi
+
       - name: Upload Linux artifacts
         uses: actions/upload-artifact@v4
         with:
           name: fastcat-linux-amd64
-          path: |
-            dist/**/*.AppImage
-            dist/**/*.deb
-            dist/**/*.rpm
+          path: dist/**
           if-no-files-found: error
 
   macos:
