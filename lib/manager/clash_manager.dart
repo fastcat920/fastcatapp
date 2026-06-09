@@ -83,17 +83,24 @@ class _ClashContainerState extends ConsumerState<ClashManager>
   @override
   void onLog(Log log) {
     ref.read(logsProvider.notifier).addLog(log);
-    if (log.logLevel == LogLevel.error) {
+    if (log.logLevel == LogLevel.error || log.logLevel == LogLevel.warning) {
       final payload = log.payload;
-      // 过滤延迟测试超时/请求失败等噪声日志
-      final isUrlTestNoise =
-          (payload.contains('http://') || payload.contains('https://')) &&
-              (payload.contains('timeout') ||
-                  payload.contains('refused') ||
-                  payload.contains('reset') ||
-                  payload.contains('no such host') ||
-                  payload.contains('url test'));
-      if (!isUrlTestNoise) {
+      // 过滤延迟测试/代理拨测/连接测试产生的噪声日志:
+      // 包含 URL、dial tcp/udp 的都是代理测速或健康检查,
+      // 属于正常业务行为,不需要弹窗打扰用户。
+      final isTestNoise = payload.contains('http://') ||
+          payload.contains('https://') ||
+          payload.contains('dial tcp') ||
+          payload.contains('dial udp') ||
+          payload.contains('url test') ||
+          payload.contains('delay test') ||
+          payload.contains('health check') ||
+          payload.contains('proxied request') ||
+          payload.contains('connection refused') ||
+          payload.contains('i/o timeout') ||
+          payload.contains('connectex:') ||
+          payload.contains('no such host');
+      if (!isTestNoise) {
         globalState.showNotifier(payload);
       }
     }
