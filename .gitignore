@@ -36,3 +36,4 @@ windows/flutter/ephemeral/
 # Generated code (uncomment if you use build_runner)
 # lib/**/*.freezed.dart
 # lib/**/*.g.dart
+android/app/keystore.jks

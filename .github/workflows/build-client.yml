@@ -66,6 +66,25 @@ jobs:
       - name: Get packages
         run: flutter pub get
 
+      - name: Setup Android signing keystore
+        env:
+          KEYSTORE_BASE64: ${{ secrets.KEYSTORE_BASE64 }}
+          KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
+          KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
+          KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
+        run: |
+          if [ -n "$KEYSTORE_BASE64" ] && [ -n "$KEYSTORE_PASSWORD" ]; then
+            echo "$KEYSTORE_BASE64" | base64 -d > android/app/keystore.jks
+            cat > android/local.properties << PROPS
+          storePassword=$KEYSTORE_PASSWORD
+          keyAlias=$KEY_ALIAS
+          keyPassword=$KEY_PASSWORD
+          PROPS
+            echo "✓ Release keystore configured"
+          else
+            echo "i KEYSTORE_BASE64 not set, will use debug keystore (signature will vary per build)"
+          fi
+
       - name: Build APK
         env:
           XOR_KEY: ${{ secrets.XOR_KEY }}
