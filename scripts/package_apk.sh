@@ -26,24 +26,24 @@ find build -name "*.apk" -type f 2>/dev/null || true
 mkdir -p dist
 
 # Find arm64-v8a APK
-V8A_SRC=$(find build -name "*arm64*v8a*.apk" -o -name "*arm64-v8a*.apk" 2>/dev/null | head -1)
-V7A_SRC=$(find build -name "*armeabi*v7a*.apk" -o -name "*armeabi-v7a*.apk" 2>/dev/null | head -1)
+V8A_SRC=$(find build -name "*arm64*v8a*.apk" -o -name "*arm64-v8a*.apk" 2>/dev/null | head -1 || true)
+V7A_SRC=$(find build -name "*armeabi*v7a*.apk" -o -name "*armeabi-v7a*.apk" 2>/dev/null | head -1 || true)
 
 copied=0
 if [ -n "${V8A_SRC:-}" ] && [ -f "$V8A_SRC" ]; then
   cp "$V8A_SRC" "dist/fastcat-${VER}-arm64-v8a-release.apk"
   echo "✓ dist/fastcat-${VER}-arm64-v8a-release.apk (from $V8A_SRC)"
-  ((copied++))
+  copied=$((copied + 1))
 fi
 if [ -n "${V7A_SRC:-}" ] && [ -f "$V7A_SRC" ]; then
   cp "$V7A_SRC" "dist/fastcat-${VER}-armeabi-v7a-release.apk"
   echo "✓ dist/fastcat-${VER}-armeabi-v7a-release.apk (from $V7A_SRC)"
-  ((copied++))
+  copied=$((copied + 1))
 fi
 
 if [ "$copied" -gt 0 ]; then
   if [ "$BUILD_EXIT" -ne 0 ]; then
-    echo "i Flutter reported a build error, but the APKs were produced."
+    echo "i Flutter CLI reported an error, but APKs were produced successfully."
   fi
 else
   echo "→ Re-running Gradle with stacktrace for diagnostics..."
