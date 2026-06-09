@@ -84,7 +84,18 @@ class _ClashContainerState extends ConsumerState<ClashManager>
   void onLog(Log log) {
     ref.read(logsProvider.notifier).addLog(log);
     if (log.logLevel == LogLevel.error) {
-      globalState.showNotifier(log.payload);
+      final payload = log.payload;
+      // 过滤延迟测试超时/请求失败等噪声日志
+      final isUrlTestNoise =
+          (payload.contains('http://') || payload.contains('https://')) &&
+              (payload.contains('timeout') ||
+                  payload.contains('refused') ||
+                  payload.contains('reset') ||
+                  payload.contains('no such host') ||
+                  payload.contains('url test'));
+      if (!isUrlTestNoise) {
+        globalState.showNotifier(payload);
+      }
     }
     super.onLog(log);
   }
