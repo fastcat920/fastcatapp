@@ -29,6 +29,13 @@ class V2BoardOrderAdapter implements OrderApi {
   }
 
   @override
+  Future<OrdersPageResult> getOrdersPage({required int page, int pageSize = 30}) async {
+    final response = await _api.fetchUserOrders(page: page, pageSize: pageSize);
+    final orders = response.data.map(_mapOrder).toList();
+    return OrdersPageResult(orders: orders, total: response.total ?? orders.length);
+  }
+
+  @override
   Future<String> createOrder(int planId, String period,
       {String? couponCode, int? depositAmount}) async {
     final response = await _api.createOrder(

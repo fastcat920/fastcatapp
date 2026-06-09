@@ -4,6 +4,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_xboard_sdk/flutter_xboard_sdk.dart';
 import 'package:fl_clash/l10n/l10n.dart';
+import 'package:fl_clash/xboard/adapter/initialization/sdk_provider.dart';
 import 'package:fl_clash/xboard/adapter/state/order_state.dart';
 import 'package:fl_clash/xboard/features/payment/pages/order_detail_page.dart';
 import 'package:fl_clash/xboard/features/shared/styles/styles.dart';
@@ -16,59 +17,95 @@ class OrderPage extends ConsumerStatefulWidget {
   ConsumerState<OrderPage> createState() => _OrderPageState();
 }
 
-class _OrderPageState extends ConsumerState<OrderPage>
-    with SingleTickerProviderStateMixin {
-  @override
-  void activate() {
-    super.activate();
-  }
-
-  @override
-  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
-    super.debugFillProperties(properties);
-  }
-
-  late final AnimationController _refreshAnim;
+class _OrderPageState extends ConsumerState<OrderPage> {
+  final _scrollController = ScrollController();
+  final _orders = <OrderModel>[];
+  bool _isLoading = true;
+  bool _isLoadingMore = false;
+  bool _hasMore = true;
+  int _currentPage = 1;
+  Object? _error;
+  int _total = 0;
+  static const _pageSize = 30;
 
   @override
   void initState() {
     super.initState();
-    _refreshAnim = AnimationController(
-      vsync: this,
-      duration: const Duration(milliseconds: 700),
-    );
+    _scrollController.addListener(_onScroll);
+    _loadFirstPage();
   }
 
   @override
   void dispose() {
-    _refreshAnim.dispose();
+    _scrollController.dispose();
     super.dispose();
   }
 
-  Future<void> _doRefresh() async {
-    _refreshAnim.repeat();
-    try {
-      clearGetOrdersCache();
-      ref.invalidate(getOrdersProvider);
-      await ref.read(getOrdersProvider.future);
-    } catch (_) {}
-    if (mounted) {
-      final remaining = 1.0 - _refreshAnim.value;
-      if (remaining > 0.01) {
-        await _refreshAnim.animateTo(
-          1.0,
-          duration: Duration(milliseconds: (remaining * 700).round()),
-        );
-      }
-      _refreshAnim.stop();
-      _refreshAnim.reset();
+  void _onScroll() {
+    if (_isLoadingMore || !_hasMore) return;
+    final maxScroll = _scrollController.position.maxScrollExtent;
+    final currentScroll = _scrollController.position.pixels;
+    if (maxScroll - currentScroll < 200) {
+      _loadNextPage();
     }
+  }
+
+  Future<void> _loadFirstPage() async {
+    setState(() {
+      _isLoading = true;
+      _error = null;
+    });
+    try {
+      final sdk = await ref.read(xboardSdkProvider.future);
+      final result =
+          await sdk.order.getOrdersPage(page: 1, pageSize: _pageSize);
+      if (!mounted) return;
+      setState(() {
+        _orders.clear();
+        _orders.addAll(result.orders);
+        _currentPage = 1;
+        _total = result.total;
+        _hasMore = _orders.length < _total;
+        _isLoading = false;
+      });
+    } catch (e) {
+      if (!mounted) return;
+      setState(() {
+        _error = e;
+        _isLoading = false;
+      });
+    }
+  }
+
+  Future<void> _loadNextPage() async {
+    if (_isLoadingMore || !_hasMore) return;
+    setState(() => _isLoadingMore = true);
+    try {
+      final sdk = await ref.read(xboardSdkProvider.future);
+      final result = await sdk.order.getOrdersPage(
+        page: _currentPage + 1,
+        pageSize: _pageSize,
+      );
+      if (!mounted) return;
+      setState(() {
+        _orders.addAll(result.orders);
+        _currentPage++;
+        _hasMore = _orders.length < result.total;
+        _isLoadingMore = false;
+      });
+    } catch (e) {
+      if (!mounted) return;
+      setState(() => _isLoadingMore = false);
+    }
+  }
+
+  Future<void> _doRefresh() async {
+    clearGetOrdersCache();
+    await _loadFirstPage();
   }
 
   @override
   Widget build(BuildContext context) {
-    final ordersAsync = ref.watch(getOrdersProvider);
-
     final isDark = Theme.of(context).brightness == Brightness.dark;
     return Scaffold(
       backgroundColor: isDark ? null : XbUiTokens.pageBackgroundLight,
@@ -88,41 +125,73 @@ class _OrderPageState extends ConsumerState<OrderPage>
             ),
         ],
       ),
-      body: ordersAsync.when(
-        loading: () => const Center(child: CircularProgressIndicator()),
-        error: (e, _) => _ErrorView(
-          message: e.toString(),
-          onRetry: _doRefresh,
+      body: _buildBody(context),
+    );
+  }
+
+  Widget _buildBody(BuildContext context) {
+    if (_isLoading) {
+      return const Center(child: CircularProgressIndicator());
+    }
+    if (_error != null) {
+      return _ErrorView(
+        message: _error.toString(),
+        onRetry: _loadFirstPage,
+      );
+    }
+    if (_orders.isEmpty) {
+      return const _EmptyView();
+    }
+    return RefreshIndicator(
+      onRefresh: _doRefresh,
+      child: ListView.builder(
+        controller: _scrollController,
+        padding: XbUiTokens.pagePadding,
+        itemCount: _orders.length + (_hasMore ? 1 : 0),
+        itemBuilder: (context, index) {
+          if (index == _orders.length) {
+            return _LoadingMoreIndicator(isLoadingMore: _isLoadingMore);
+          }
+          final order = _orders[index];
+          return _OrderCard(
+            order: order,
+            onTap: order.tradeNo == null || order.tradeNo!.isEmpty
+                ? null
+                : () => Navigator.of(context).push(
+                      MaterialPageRoute(
+                        builder: (_) => OrderDetailPage(
+                          tradeNo: order.tradeNo!,
+                          discountAmount: order.couponPrice != null
+                              ? order.couponPrice! / 100
+                              : order.discountAmount != null
+                                  ? order.discountAmount! / 100
+                                  : null,
+                        ),
+                      ),
+                    ),
+          );
+        },
+      ),
+    );
+  }
+}
+
+class _LoadingMoreIndicator extends StatelessWidget {
+  final bool isLoadingMore;
+  const _LoadingMoreIndicator({required this.isLoadingMore});
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 20),
+      child: Center(
+        child: SizedBox(
+          width: 24,
+          height: 24,
+          child: isLoadingMore
+              ? const CircularProgressIndicator(strokeWidth: 2)
+              : null,
         ),
-        data: (orders) => orders.isEmpty
-            ? _EmptyView()
-            : RefreshIndicator(
-                onRefresh: _doRefresh,
-                child: ListView.builder(
-                  padding: XbUiTokens.pagePadding,
-                  itemCount: orders.length,
-                  itemBuilder: (context, index) {
-                    final order = orders[index];
-                    return _OrderCard(
-                      order: order,
-                      onTap: order.tradeNo == null || order.tradeNo!.isEmpty
-                          ? null
-                          : () => Navigator.of(context).push(
-                                MaterialPageRoute(
-                                  builder: (_) => OrderDetailPage(
-                                    tradeNo: order.tradeNo!,
-                                    discountAmount: order.couponPrice != null
-                                        ? order.couponPrice! / 100
-                                        : order.discountAmount != null
-                                            ? order.discountAmount! / 100
-                                            : null,
-                                  ),
-                                ),
-                              ),
-                    );
-                  },
-                ),
-              ),
       ),
     );
   }
@@ -164,6 +233,8 @@ class _ErrorView extends StatelessWidget {
 }
 
 class _EmptyView extends StatelessWidget {
+  const _EmptyView();
+
   @override
   Widget build(BuildContext context) {
     return Center(
@@ -186,10 +257,7 @@ class _OrderCard extends StatelessWidget {
   final OrderModel order;
   final VoidCallback? onTap;
 
-  const _OrderCard({
-    required this.order,
-    this.onTap,
-  });
+  const _OrderCard({required this.order, this.onTap});
 
   @override
   Widget build(BuildContext context) {
@@ -218,14 +286,10 @@ class _OrderCard extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // 套餐名 + 状态
               Row(
                 children: [
                   Expanded(
-                    child: Text(
-                      planName,
-                      style: XbUiText.cardTitle(context),
-                    ),
+                    child: Text(planName, style: XbUiText.cardTitle(context)),
                   ),
                   Container(
                     padding:
@@ -244,16 +308,12 @@ class _OrderCard extends StatelessWidget {
                   ),
                   if (onTap != null) ...[
                     const SizedBox(width: 4),
-                    Icon(
-                      Icons.chevron_right,
-                      size: 20,
-                      color: theme.colorScheme.onSurfaceVariant,
-                    ),
+                    Icon(Icons.chevron_right,
+                        size: 20, color: theme.colorScheme.onSurfaceVariant),
                   ],
                 ],
               ),
               const SizedBox(height: 8),
-              // 周期 + 金额
               Row(
                 children: [
                   Icon(Icons.access_time_outlined,
@@ -272,7 +332,6 @@ class _OrderCard extends StatelessWidget {
                   ),
                 ],
               ),
-              // 创建时间
               if (order.createdAt != null) ...[
                 const SizedBox(height: 6),
                 Text(
@@ -282,7 +341,6 @@ class _OrderCard extends StatelessWidget {
                           theme.colorScheme.onSurface.withValues(alpha: 0.45)),
                 ),
               ],
-              // 订单号
               if (order.tradeNo != null) ...[
                 const SizedBox(height: 4),
                 Text(
