@@ -160,9 +160,17 @@ jobs:
           $buildOut = "build\windows\x64\runner\Release"
           if (-not (Test-Path $buildOut)) { throw "Flutter build not found: $buildOut" }
 
-          # Parse make_config.yaml
+          # Parse make_config.yaml (strip quotes from YAML values)
           $cfg = Get-Content "windows\packaging\exe\make_config.yaml" -Raw
-          function yv($k) { if ($cfg -match "(?m)^${k}:\s*(.+)$") { $matches[1].Trim() } else { "" } }
+          function yv($k) {
+            if ($cfg -match "(?m)^${k}:\s*(.+)$") {
+              $v = $matches[1].Trim()
+              # Strip surrounding quotes if present (YAML-quoted values)
+              if ($v -match '^"(.*)"$' -or $v -match "^'(.*)'$") { $v = $matches[1] }
+              return $v
+            }
+            return ""
+          }
           $display = yv "display_name"; if (-not $display) { $display = yv "app_name" }
           $exe    = yv "executable_name"; if (-not $exe) { $exe = "fastcat.exe" }
           $out    = yv "output_base_file_name"; if (-not $out) { $out = $exe }
@@ -190,10 +198,19 @@ jobs:
             -replace '\{\{ARCH\}\}', "x64" `
             -replace '\{\{CREATE_DESKTOP_ICON\}\}', "true"
 
-          # Replace locale template loop
+          # Replace locale template loop with en+zh
           $iss = $iss -replace '(?s)\{% for locale in LOCALES %\}.*?\{% endfor %\}',
-            'Name: "english"; MessagesFile: "compiler:Default.isl"'
-          $iss = $iss -replace '(?s)\{% if .*?%\}.*?\{% endif %\}', ''
+            @'
+Name: "english"; MessagesFile: "compiler:Default.isl"
+Name: "chineseSimplified"; MessagesFile: "..\\windows\\packaging\\exe\\ChineseSimplified.isl"
+'@
+          # Replace CREATE_DESKTOP_ICON conditional with checkedonce
+          $iss = $iss -replace '\{% if CREATE_DESKTOP_ICON != true %\}unchecked\{% else %\}checkedonce\{% endif %\}', 'checkedonce'
+          # Replace PRIVILEGES_REQUIRED conditional with runascurrentuser
+          $iss = $iss -replace '\{% if PRIVILEGES_REQUIRED == .admin. %\}runascurrentuser\{% endif %\}', 'runascurrentuser'
+          # Clean up any remaining template tags
+          $iss = $iss -replace '\{%[^%]*%\}', ''
+          $iss = $iss -replace '\{\{[^}]*\}\}', ''
 
           $issFile = "build\setup.iss"
           New-Item -Force -ItemType Directory (Split-Path $issFile) | Out-Null
