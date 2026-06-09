@@ -157,7 +157,7 @@ jobs:
           $iscc = Get-Command iscc | Select-Object -ExpandProperty Source
           Write-Host "iscc: $iscc"
 
-          $buildOut = "build\windows\x64\runner\Release"
+          $buildOut = (Resolve-Path "build\windows\x64\runner\Release").Path
           if (-not (Test-Path $buildOut)) { throw "Flutter build not found: $buildOut" }
 
           # Parse make_config.yaml (strip quotes from YAML values)
