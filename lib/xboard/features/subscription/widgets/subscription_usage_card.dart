@@ -957,7 +957,10 @@ class SubscriptionUsageCard extends ConsumerWidget {
   String _buildResetText(BuildContext context, DateTime? nextReset,
       [int? resetDay]) {
     final l10n = AppLocalizations.of(context);
-    if (resetDay != null && resetDay >= 0) {
+    if (resetDay != null && resetDay == 0) {
+      return l10n.xboardResetTrafficToday;
+    }
+    if (resetDay != null && resetDay > 0) {
       return l10n.xboardResetTrafficInDays(resetDay);
     }
     if (nextReset == null) return l10n.xboardResetTrafficByPlanCycle;

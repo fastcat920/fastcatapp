@@ -1497,6 +1497,9 @@ class MessageLookup extends MessageLookupByLibrary {
       "초기화 트래픽 확인 내용",
     ),
     "xboardResetTrafficInDays": m41,
+    "xboardResetTrafficToday": MessageLookupByLibrary.simpleMessage(
+      "사용된 트래픽이 오늘 재설정되었습니다",
+    ),
     "xboardRetry": MessageLookupByLibrary.simpleMessage("재시도"),
     "xboardRetryGet": MessageLookupByLibrary.simpleMessage("재시도 GET"),
     "xboardReturn": MessageLookupByLibrary.simpleMessage("return"),

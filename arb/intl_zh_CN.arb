@@ -1145,6 +1145,10 @@
       }
     }
   },
+  "xboardResetTrafficToday": "已用流量已在今天重置",
+  "@xboardResetTrafficToday": {
+    "description": "Shown when traffic reset day is 0 (today)"
+  },
   "xboardMyServices": "我的服务",
   "xboardSoftwareSettings": "软件设置",
   "xboardMine": "我的",

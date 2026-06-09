@@ -1867,6 +1867,9 @@ class MessageLookup extends MessageLookupByLibrary {
       "This will reset the used traffic, but will not extend the plan duration. Continue?",
     ),
     "xboardResetTrafficInDays": m41,
+    "xboardResetTrafficToday": MessageLookupByLibrary.simpleMessage(
+      "Used traffic has been reset today",
+    ),
     "xboardRetry": MessageLookupByLibrary.simpleMessage("Retry"),
     "xboardRetryGet": MessageLookupByLibrary.simpleMessage("Retry"),
     "xboardReturn": MessageLookupByLibrary.simpleMessage("Return"),

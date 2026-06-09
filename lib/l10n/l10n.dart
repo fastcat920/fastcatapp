@@ -8090,6 +8090,16 @@ class AppLocalizations {
     );
   }
 
+
+  /// `Used traffic has been reset today`
+  String get xboardResetTrafficToday {
+    return Intl.message(
+      'Used traffic has been reset today',
+      name: 'xboardResetTrafficToday',
+      desc: '',
+      args: [],
+    );
+  }
   /// `My services`
   String get xboardMyServices {
     return Intl.message(

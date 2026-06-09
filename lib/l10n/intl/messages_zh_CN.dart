@@ -1283,6 +1283,9 @@ class MessageLookup extends MessageLookupByLibrary {
       "此操作将重置已使用的流量，但不会增加套餐时长，是否继续？",
     ),
     "xboardResetTrafficInDays": m41,
+    "xboardResetTrafficToday": MessageLookupByLibrary.simpleMessage(
+      "已用流量已在今天重置",
+    ),
     "xboardRetry": MessageLookupByLibrary.simpleMessage("重试"),
     "xboardRetryGet": MessageLookupByLibrary.simpleMessage("重新获取"),
     "xboardReturn": MessageLookupByLibrary.simpleMessage("返回"),

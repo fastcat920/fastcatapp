@@ -920,6 +920,10 @@
       }
     }
   },
+  "xboardResetTrafficToday": "利用済み通信量は本日リセットされました",
+  "@xboardResetTrafficToday": {
+    "description": "Shown when traffic reset day is 0 (today)"
+  },
   "xboardMyServices": "My services",
   "xboardSoftwareSettings": "Software settings",
   "xboardMine": "マイページ",

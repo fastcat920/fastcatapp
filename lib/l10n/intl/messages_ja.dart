@@ -1286,6 +1286,9 @@ class MessageLookup extends MessageLookupByLibrary {
       "この操作により使用済みトラフィックがリセットされますが、プラン期間は延長されません。続行しますか？",
     ),
     "xboardResetTrafficInDays": m41,
+    "xboardResetTrafficToday": MessageLookupByLibrary.simpleMessage(
+      "利用済み通信量は本日リセットされました",
+    ),
     "xboardRetry": MessageLookupByLibrary.simpleMessage("再試行"),
     "xboardRetryGet": MessageLookupByLibrary.simpleMessage("再試行"),
     "xboardReturn": MessageLookupByLibrary.simpleMessage("戻る"),
