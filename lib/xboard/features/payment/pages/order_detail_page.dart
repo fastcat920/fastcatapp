@@ -49,6 +49,9 @@ class _OrderDetailPageState extends ConsumerState<OrderDetailPage> {
   bool _isSubmitting = false;
   bool _isChecking = false;
   bool _isCanceling = false;
+  double? _couponPrice;
+  double? _refundAmount;
+  double? _surplusAmount;
   DomainPlan? _resolvedOrderPlan;
   int? _resolvedOrderPlanId;
   int? _resolvingPlanId;
@@ -63,7 +66,25 @@ class _OrderDetailPageState extends ConsumerState<OrderDetailPage> {
       await ref.read(xboardPaymentProvider.notifier).loadPaymentMethods();
       await ref.read(xboardSubscriptionProvider.notifier).refreshPlans();
       await ref.read(xboardSubscriptionProvider.notifier).autoRefreshIfNeeded();
+      _fetchOrderExtras();
     });
+  }
+
+  Future<void> _fetchOrderExtras() async {
+    try {
+      final httpService = XBoardSDK.instance.httpService;
+      final result = await httpService.getRequest(
+        '/user/order/detail?trade_no=${widget.tradeNo}',
+      );
+      final data = result['data'] as Map<String, dynamic>?;
+      if (data != null && mounted) {
+        setState(() {
+          _couponPrice = (data['coupon_price'] as num?)?.toDouble();
+          _refundAmount = (data['refund_amount'] as num?)?.toDouble();
+          _surplusAmount = (data['surplus_amount'] as num?)?.toDouble();
+        });
+      }
+    } catch (_) {}
   }
 
   @override
@@ -101,6 +122,9 @@ class _OrderDetailPageState extends ConsumerState<OrderDetailPage> {
                 finalPrice: widget.finalPrice,
                 discountAmount: widget.discountAmount,
                 balanceUsed: widget.balanceUsed,
+                couponPrice: _couponPrice,
+                refundAmount: _refundAmount,
+                surplusAmount: _surplusAmount,
                 methodsAsync: methodsAsync,
                 globalPaymentMethods: globalPaymentMethods,
                 plans: plans,
@@ -156,6 +180,9 @@ class _OrderDetailPageState extends ConsumerState<OrderDetailPage> {
             finalPrice: widget.finalPrice,
             discountAmount: widget.discountAmount,
             balanceUsed: widget.balanceUsed,
+            couponPrice: _couponPrice,
+            refundAmount: _refundAmount,
+            surplusAmount: _surplusAmount,
             methodsAsync: methodsAsync,
             globalPaymentMethods: globalPaymentMethods,
             plans: plans,
@@ -452,6 +479,9 @@ class _OrderDetailContent extends StatelessWidget {
   final double? finalPrice;
   final double? discountAmount;
   final double? balanceUsed;
+  final double? couponPrice;
+  final double? refundAmount;
+  final double? surplusAmount;
   final AsyncValue<List<PaymentMethodModel>> methodsAsync;
   final List<DomainPaymentMethod> globalPaymentMethods;
   final List<DomainPlan> plans;
@@ -476,6 +506,9 @@ class _OrderDetailContent extends StatelessWidget {
     required this.finalPrice,
     required this.discountAmount,
     required this.balanceUsed,
+    required this.couponPrice,
+    required this.refundAmount,
+    required this.surplusAmount,
     required this.methodsAsync,
     required this.globalPaymentMethods,
     required this.plans,
@@ -512,6 +545,9 @@ class _OrderDetailContent extends StatelessWidget {
       balanceUsed: balanceUsed,
       orderBalanceAmount: order?.balanceAmount,
       accountBalance: userInfo?.balanceInYuan,
+      couponPrice: couponPrice,
+      refundAmount: refundAmount,
+      surplusAmount: surplusAmount,
     );
 
     return LayoutBuilder(
@@ -675,6 +711,8 @@ class _PaymentMethodsSection extends StatelessWidget {
 class _OrderPricing {
   final double packageAmount;
   final double discountAmount;
+  final double refundAmount;
+  final double surplusAmount;
   final double balanceUsed;
   final double payableAmount;
   final bool needExternalPayment;
@@ -682,6 +720,8 @@ class _OrderPricing {
   const _OrderPricing({
     required this.packageAmount,
     required this.discountAmount,
+    required this.refundAmount,
+    required this.surplusAmount,
     required this.balanceUsed,
     required this.payableAmount,
     required this.needExternalPayment,
@@ -697,6 +737,9 @@ class _OrderPricing {
     required double? balanceUsed,
     required double? orderBalanceAmount,
     required double? accountBalance,
+    double? couponPrice,
+    double? refundAmount,
+    double? surplusAmount,
   }) {
     final planPrice = _priceForPeriod(plan, period);
     final backendTotalAmount = _amountFromCents(order?.totalAmount);
@@ -727,9 +770,13 @@ class _OrderPricing {
     final discount = order != null
         ? (packageAmount - payableBeforeBalance).clamp(0.0, double.infinity)
         : (discountAmount ?? 0);
+    final refund = _amountFromCents(refundAmount);
+    final surplus = _amountFromCents(surplusAmount);
     return _OrderPricing(
       packageAmount: packageAmount,
       discountAmount: discount,
+      refundAmount: refund,
+      surplusAmount: surplus,
       balanceUsed: computedBalance,
       payableAmount: payableAmount,
       needExternalPayment: payableAmount > 0,
@@ -770,24 +817,29 @@ class _ProductInfoCard extends StatelessWidget {
             trafficFallback ??
             AppLocalizations.of(context).xboardPlanBased);
 
+    final isDeposit = effectivePeriod == 'deposit';
+    final children = <Widget>[
+      _InfoRow(
+          label: AppLocalizations.of(context).xboardPlanName,
+          value: planName),
+      const SizedBox(height: 12),
+      _InfoRow(
+          label: AppLocalizations.of(context).xboardPeriod,
+          value: _formatPeriod(context, effectivePeriod)),
+    ];
+    if (!isDeposit) {
+      children.addAll([
+        const SizedBox(height: 12),
+        _InfoRow(
+            label: AppLocalizations.of(context).xboardTraffic,
+            value: traffic),
+      ]);
+    }
+
     return _InfoCard(
       title: AppLocalizations.of(context).xboardProductInfo,
       icon: Icons.inventory_2_outlined,
-      child: Column(
-        children: [
-          _InfoRow(
-              label: AppLocalizations.of(context).xboardPlanName,
-              value: planName),
-          const SizedBox(height: 12),
-          _InfoRow(
-              label: AppLocalizations.of(context).xboardPeriod,
-              value: _formatPeriod(context, effectivePeriod)),
-          const SizedBox(height: 12),
-          _InfoRow(
-              label: AppLocalizations.of(context).xboardTraffic,
-              value: traffic),
-        ],
-      ),
+      child: Column(children: children),
     );
   }
 }
@@ -854,6 +906,30 @@ class _OrderInfoCard extends StatelessWidget {
             valueWeight: FontWeight.w700,
             valueColor: Theme.of(context).colorScheme.primary,
           ),
+          if (pricing.discountAmount > 0) ...[
+            const SizedBox(height: 12),
+            _InfoRow(
+              label: AppLocalizations.of(context).xboardDiscountAmount,
+              value: '-¥${pricing.discountAmount.toStringAsFixed(2)}',
+              valueColor: XbUiStatusColor.success(context),
+            ),
+          ],
+          if (pricing.refundAmount > 0) ...[
+            const SizedBox(height: 12),
+            _InfoRow(
+              label: AppLocalizations.of(context).xboardRefundAmount,
+              value: '-¥${pricing.refundAmount.toStringAsFixed(2)}',
+              valueColor: XbUiStatusColor.info(context),
+            ),
+          ],
+          if (pricing.surplusAmount > 0) ...[
+            const SizedBox(height: 12),
+            _InfoRow(
+              label: AppLocalizations.of(context).xboardSurplusAmount,
+              value: '-¥${pricing.surplusAmount.toStringAsFixed(2)}',
+              valueColor: XbUiStatusColor.muted(context),
+            ),
+          ],
           if (shouldShowBalance) ...[
             const SizedBox(height: 12),
             _InfoRow(
@@ -873,7 +949,7 @@ class _OrderInfoCard extends StatelessWidget {
           Row(
             children: [
               Text(
-                AppLocalizations.of(context).xboardActualPaidAmount,
+                AppLocalizations.of(context).xboardTotal,
                 style: Theme.of(context).textTheme.titleSmall?.copyWith(
                       color: Theme.of(context).colorScheme.onSurfaceVariant,
                       fontWeight: FontWeight.w600,

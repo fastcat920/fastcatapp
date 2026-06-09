@@ -7305,6 +7305,26 @@ class AppLocalizations {
     );
   }
 
+  /// `Refund amount`
+  String get xboardRefundAmount {
+    return Intl.message(
+      'Refund amount',
+      name: 'xboardRefundAmount',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Surplus amount`
+  String get xboardSurplusAmount {
+    return Intl.message(
+      'Surplus amount',
+      name: 'xboardSurplusAmount',
+      desc: '',
+      args: [],
+    );
+  }
+
   /// `Docs center`
   String get xboardDocsCenter {
     return Intl.message(
@@ -7600,6 +7620,16 @@ class AppLocalizations {
     );
   }
 
+  /// `Order amount`
+  String get xboardOrderAmount {
+    return Intl.message(
+      'Order amount',
+      name: 'xboardOrderAmount',
+      desc: '',
+      args: [],
+    );
+  }
+
   /// `Payable amount`
   String get xboardActualPaidAmount {
     return Intl.message(
@@ -7615,6 +7645,16 @@ class AppLocalizations {
     return Intl.message(
       'Deducted balance',
       name: 'xboardDeductedBalance',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Deductible balance`
+  String get xboardDeductibleBalance {
+    return Intl.message(
+      'Deductible balance',
+      name: 'xboardDeductibleBalance',
       desc: '',
       args: [],
     );

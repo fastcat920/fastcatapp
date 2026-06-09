@@ -324,18 +324,10 @@ class _PlanPurchasePageState extends ConsumerState<PlanPurchasePage> {
 
       _logger.debug('[购买] 订单创建成功: $tradeNo');
 
-      // 计算实付金额
+      // 计算订单金额
       final currentPrice = _getCurrentPrice();
       final displayFinalPrice = _finalPrice ?? _getCurrentPrice();
-      final balanceToUse = _userBalance != null && _userBalance! > 0
-          ? (_userBalance! > displayFinalPrice
-              ? displayFinalPrice
-              : _userBalance!)
-          : 0.0;
-      final actualPayAmount = displayFinalPrice - balanceToUse;
 
-      _logger.debug(
-          '[购买] 实付金额: $actualPayAmount (优惠后价格: $displayFinalPrice, 已抵扣余额: $balanceToUse)');
 
       if (!mounted) return;
       Navigator.of(context).push(
@@ -347,7 +339,7 @@ class _PlanPurchasePageState extends ConsumerState<PlanPurchasePage> {
             originalPrice: currentPrice,
             finalPrice: displayFinalPrice,
             discountAmount: _discountAmount,
-            balanceUsed: balanceToUse,
+            balanceUsed: 0.0,
           ),
         ),
       );
