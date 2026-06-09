@@ -14,9 +14,18 @@ class V2BoardOrderAdapter implements OrderApi {
   V2BoardOrderAdapter(this._api, this._couponApi);
 
   @override
-  Future<List<OrderModel>> getOrders({int page = 1, int pageSize = 10}) async {
-    final response = await _api.fetchUserOrders();
-    return response.data.map(_mapOrder).toList();
+  Future<List<OrderModel>> getOrders({int page = 1, int pageSize = 20}) async {
+    final allOrders = <Order>[];
+    var currentPage = page;
+    while (true) {
+      final response = await _api.fetchUserOrders(page: currentPage, pageSize: pageSize);
+      final data = response.data;
+      if (data.isEmpty) break;
+      allOrders.addAll(data);
+      if (data.length < pageSize) break;
+      currentPage++;
+    }
+    return allOrders.map(_mapOrder).toList();
   }
 
   @override

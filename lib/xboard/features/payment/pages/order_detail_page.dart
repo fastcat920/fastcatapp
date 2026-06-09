@@ -775,7 +775,8 @@ class _OrderPricing {
         : ((finalPrice ?? packageAmount) - computedBalance)
             .clamp(0.0, double.infinity);
 
-    final discount = couponPrice ?? discountAmount ?? 0;
+    final effectiveCoupon = (couponPrice != null && couponPrice > 0) ? couponPrice : null;
+    final discount = effectiveCoupon ?? discountAmount ?? 0;
     final refund = _amountFromCents(refundAmount);
     final surplus = _amountFromCents(surplusAmount);
     return _OrderPricing(
