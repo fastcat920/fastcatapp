@@ -14,7 +14,7 @@ class V2BoardOrderAdapter implements OrderApi {
   V2BoardOrderAdapter(this._api, this._couponApi);
 
   @override
-  Future<List<OrderModel>> getOrders({int page = 1, int pageSize = 20}) async {
+  Future<List<OrderModel>> getOrders({int page = 1, int pageSize = 30}) async {
     final allOrders = <Order>[];
     var currentPage = page;
     while (true) {

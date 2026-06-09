@@ -10,7 +10,7 @@ class XBoardOrderApi {
 
   XBoardOrderApi(this._httpService);
 
-  Future<OrderResponse> fetchUserOrders({int page = 1, int pageSize = 20}) async {
+  Future<OrderResponse> fetchUserOrders({int page = 1, int pageSize = 30}) async {
     try {
       final params = '?page=$page&pageSize=$pageSize';
       final result = await _httpService.getRequest("/user/order/fetch$params");
