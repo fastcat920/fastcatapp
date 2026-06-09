@@ -190,7 +190,7 @@ jobs:
             }
             return ""
           }
-          $display = yv "display_name"; if (-not $display) { $display = yv "app_name" }
+          $display = yv "display_name"; if (-not $display) { $display = yv "app_name" }; Write-Host "DISPLAY_NAME resolved to: $display"
           $exe    = yv "executable_name"; if (-not $exe) { $exe = "fastcat.exe" }
           $out    = yv "output_base_file_name"; if (-not $out) { $out = $exe }
           $pub    = yv "publisher"
