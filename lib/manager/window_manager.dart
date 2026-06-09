@@ -7,7 +7,6 @@ import 'package:fl_clash/providers/app.dart';
 import 'package:fl_clash/providers/config.dart';
 import 'package:fl_clash/state.dart';
 import 'package:fl_clash/xboard/config/xboard_config.dart';
-import 'package:fl_clash/xboard/features/auth/utils/customer_service_helper.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:window_ext/window_ext.dart';
@@ -206,9 +205,6 @@ class _WindowHeaderState extends State<WindowHeader> {
     isPinNotifier.value = await windowManager.isAlwaysOnTop();
   }
 
-  void _openCustomerService(BuildContext ctx) {
-    CustomerServiceHelper.open(ctx);
-  }
 
   _buildActions() {
     final iconColor = Theme.of(context).colorScheme.onSurfaceVariant;
@@ -216,19 +212,6 @@ class _WindowHeaderState extends State<WindowHeader> {
     const btnSize = 32.0;
     return Row(
       children: [
-        // 在线客服
-        if (CustomerServiceHelper.isAvailable)
-          SizedBox(
-            width: btnSize,
-            height: btnSize,
-            child: IconButton(
-              onPressed: () => _openCustomerService(context),
-              padding: EdgeInsets.zero,
-              icon: Icon(Icons.support_agent_outlined,
-                  size: iconSize, color: iconColor),
-              tooltip: '在线客服',
-            ),
-          ),
         // 置顶
         SizedBox(
           width: btnSize,
