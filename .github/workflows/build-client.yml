@@ -199,11 +199,10 @@ jobs:
             -replace '\{\{CREATE_DESKTOP_ICON\}\}', "true"
 
           # Replace locale template loop with en+zh
-          $iss = $iss -replace '(?s)\{% for locale in LOCALES %\}.*?\{% endfor %\}',
-            @'
-Name: "english"; MessagesFile: "compiler:Default.isl"
-Name: "chineseSimplified"; MessagesFile: "..\\windows\\packaging\\exe\\ChineseSimplified.isl"
-'@
+          $nl = [Environment]::NewLine
+          $locales = 'Name: "english"; MessagesFile: "compiler:Default.isl"' + $nl +
+                     'Name: "chineseSimplified"; MessagesFile: "..\\windows\\packaging\\exe\\ChineseSimplified.isl"'
+          $iss = $iss -replace '(?s)\{% for locale in LOCALES %\}.*?\{% endfor %\}', $locales
           # Replace CREATE_DESKTOP_ICON conditional with checkedonce
           $iss = $iss -replace '\{% if CREATE_DESKTOP_ICON != true %\}unchecked\{% else %\}checkedonce\{% endif %\}', 'checkedonce'
           # Replace PRIVILEGES_REQUIRED conditional with runascurrentuser
