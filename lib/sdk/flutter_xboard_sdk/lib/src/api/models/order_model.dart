@@ -26,6 +26,9 @@ class OrderModel with _$OrderModel {
         toJson: _toUnixTimestamp)
     DateTime? createdAt,
     @JsonKey(name: 'plan') OrderPlanModel? orderPlan,
+    @JsonKey(name: 'coupon_price') double? couponPrice,
+    @JsonKey(name: 'coupon_code') String? couponCode,
+    @JsonKey(name: 'discount_amount') double? discountAmount,
   }) = _OrderModel;
 
   factory OrderModel.fromJson(Map<String, dynamic> json) =>

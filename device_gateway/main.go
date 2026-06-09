@@ -192,6 +192,9 @@ func main() {
 		store: store,
 		client: &http.Client{
 			Timeout: cfg.HTTPTimeout,
+			Transport: &http.Transport{
+				ResponseHeaderTimeout: 5 * time.Second,
+			},
 		},
 		key: deriveKey(cfg.TokenSecret),
 		log: logger,
@@ -1693,7 +1696,6 @@ func (s *Server) businessURL(path, rawQuery string) (string, error) {
 // until one succeeds. makeReq is called with each base URL to construct the
 // request; if makeReq returns an error for a given URL, that URL is skipped.
 func (s *Server) tryBusinessURLs(ctx context.Context, makeReq func(baseURL string) (*http.Request, error)) (*http.Response, error) {
-	const perURLTimeout = 5 * time.Second
 	var lastErr error
 	urls := s.businessURLs()
 	for i, baseURL := range urls {
@@ -1702,10 +1704,7 @@ func (s *Server) tryBusinessURLs(ctx context.Context, makeReq func(baseURL strin
 			lastErr = err
 			continue
 		}
-		urlCtx, cancel := context.WithTimeout(ctx, perURLTimeout)
-		req = req.WithContext(urlCtx)
 		resp, err := s.client.Do(req)
-		cancel()
 		if err != nil {
 			s.log.Printf("business request to %s failed (%d/%d): %v", baseURL, i+1, len(urls), err)
 			lastErr = err

@@ -37,6 +37,12 @@ mixin _$OrderModel {
   DateTime? get createdAt => throw _privateConstructorUsedError;
   @JsonKey(name: 'plan')
   OrderPlanModel? get orderPlan => throw _privateConstructorUsedError;
+  @JsonKey(name: 'coupon_price')
+  double? get couponPrice => throw _privateConstructorUsedError;
+  @JsonKey(name: 'coupon_code')
+  String? get couponCode => throw _privateConstructorUsedError;
+  @JsonKey(name: 'discount_amount')
+  double? get discountAmount => throw _privateConstructorUsedError;
 
   /// Serializes this OrderModel to a JSON map.
   Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
@@ -66,7 +72,10 @@ abstract class $OrderModelCopyWith<$Res> {
           fromJson: _fromUnixTimestamp,
           toJson: _toUnixTimestamp)
       DateTime? createdAt,
-      @JsonKey(name: 'plan') OrderPlanModel? orderPlan});
+      @JsonKey(name: 'plan') OrderPlanModel? orderPlan,
+      @JsonKey(name: 'coupon_price') double? couponPrice,
+      @JsonKey(name: 'coupon_code') String? couponCode,
+      @JsonKey(name: 'discount_amount') double? discountAmount});
 
   $OrderPlanModelCopyWith<$Res>? get orderPlan;
 }
@@ -94,6 +103,9 @@ class _$OrderModelCopyWithImpl<$Res, $Val extends OrderModel>
     Object? status = freezed,
     Object? createdAt = freezed,
     Object? orderPlan = freezed,
+    Object? couponPrice = freezed,
+    Object? couponCode = freezed,
+    Object? discountAmount = freezed,
   }) {
     return _then(_value.copyWith(
       planId: freezed == planId
@@ -128,6 +140,18 @@ class _$OrderModelCopyWithImpl<$Res, $Val extends OrderModel>
           ? _value.orderPlan
           : orderPlan // ignore: cast_nullable_to_non_nullable
               as OrderPlanModel?,
+      couponPrice: freezed == couponPrice
+          ? _value.couponPrice
+          : couponPrice // ignore: cast_nullable_to_non_nullable
+              as double?,
+      couponCode: freezed == couponCode
+          ? _value.couponCode
+          : couponCode // ignore: cast_nullable_to_non_nullable
+              as String?,
+      discountAmount: freezed == discountAmount
+          ? _value.discountAmount
+          : discountAmount // ignore: cast_nullable_to_non_nullable
+              as double?,
     ) as $Val);
   }
 
@@ -166,7 +190,10 @@ abstract class _$$OrderModelImplCopyWith<$Res>
           fromJson: _fromUnixTimestamp,
           toJson: _toUnixTimestamp)
       DateTime? createdAt,
-      @JsonKey(name: 'plan') OrderPlanModel? orderPlan});
+      @JsonKey(name: 'plan') OrderPlanModel? orderPlan,
+      @JsonKey(name: 'coupon_price') double? couponPrice,
+      @JsonKey(name: 'coupon_code') String? couponCode,
+      @JsonKey(name: 'discount_amount') double? discountAmount});
 
   @override
   $OrderPlanModelCopyWith<$Res>? get orderPlan;
@@ -193,6 +220,9 @@ class __$$OrderModelImplCopyWithImpl<$Res>
     Object? status = freezed,
     Object? createdAt = freezed,
     Object? orderPlan = freezed,
+    Object? couponPrice = freezed,
+    Object? couponCode = freezed,
+    Object? discountAmount = freezed,
   }) {
     return _then(_$OrderModelImpl(
       planId: freezed == planId
@@ -227,6 +257,18 @@ class __$$OrderModelImplCopyWithImpl<$Res>
           ? _value.orderPlan
           : orderPlan // ignore: cast_nullable_to_non_nullable
               as OrderPlanModel?,
+      couponPrice: freezed == couponPrice
+          ? _value.couponPrice
+          : couponPrice // ignore: cast_nullable_to_non_nullable
+              as double?,
+      couponCode: freezed == couponCode
+          ? _value.couponCode
+          : couponCode // ignore: cast_nullable_to_non_nullable
+              as String?,
+      discountAmount: freezed == discountAmount
+          ? _value.discountAmount
+          : discountAmount // ignore: cast_nullable_to_non_nullable
+              as double?,
     ));
   }
 }
@@ -246,7 +288,10 @@ class _$OrderModelImpl implements _OrderModel {
           fromJson: _fromUnixTimestamp,
           toJson: _toUnixTimestamp)
       this.createdAt,
-      @JsonKey(name: 'plan') this.orderPlan});
+      @JsonKey(name: 'plan') this.orderPlan,
+      @JsonKey(name: 'coupon_price') this.couponPrice,
+      @JsonKey(name: 'coupon_code') this.couponCode,
+      @JsonKey(name: 'discount_amount') this.discountAmount});
 
   factory _$OrderModelImpl.fromJson(Map<String, dynamic> json) =>
       _$$OrderModelImplFromJson(json);
@@ -276,10 +321,19 @@ class _$OrderModelImpl implements _OrderModel {
   @override
   @JsonKey(name: 'plan')
   final OrderPlanModel? orderPlan;
+  @override
+  @JsonKey(name: 'coupon_price')
+  final double? couponPrice;
+  @override
+  @JsonKey(name: 'coupon_code')
+  final String? couponCode;
+  @override
+  @JsonKey(name: 'discount_amount')
+  final double? discountAmount;
 
   @override
   String toString() {
-    return 'OrderModel(planId: $planId, tradeNo: $tradeNo, totalAmount: $totalAmount, balanceAmount: $balanceAmount, period: $period, status: $status, createdAt: $createdAt, orderPlan: $orderPlan)';
+    return 'OrderModel(planId: $planId, tradeNo: $tradeNo, totalAmount: $totalAmount, balanceAmount: $balanceAmount, period: $period, status: $status, createdAt: $createdAt, orderPlan: $orderPlan, couponPrice: $couponPrice, couponCode: $couponCode, discountAmount: $discountAmount)';
   }
 
   @override
@@ -298,13 +352,30 @@ class _$OrderModelImpl implements _OrderModel {
             (identical(other.createdAt, createdAt) ||
                 other.createdAt == createdAt) &&
             (identical(other.orderPlan, orderPlan) ||
-                other.orderPlan == orderPlan));
+                other.orderPlan == orderPlan) &&
+            (identical(other.couponPrice, couponPrice) ||
+                other.couponPrice == couponPrice) &&
+            (identical(other.couponCode, couponCode) ||
+                other.couponCode == couponCode) &&
+            (identical(other.discountAmount, discountAmount) ||
+                other.discountAmount == discountAmount));
   }
 
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
-  int get hashCode => Object.hash(runtimeType, planId, tradeNo, totalAmount,
-      balanceAmount, period, status, createdAt, orderPlan);
+  int get hashCode => Object.hash(
+      runtimeType,
+      planId,
+      tradeNo,
+      totalAmount,
+      balanceAmount,
+      period,
+      status,
+      createdAt,
+      orderPlan,
+      couponPrice,
+      couponCode,
+      discountAmount);
 
   /// Create a copy of OrderModel
   /// with the given fields replaced by the non-null parameter values.
@@ -335,7 +406,10 @@ abstract class _OrderModel implements OrderModel {
               fromJson: _fromUnixTimestamp,
               toJson: _toUnixTimestamp)
           final DateTime? createdAt,
-          @JsonKey(name: 'plan') final OrderPlanModel? orderPlan}) =
+          @JsonKey(name: 'plan') final OrderPlanModel? orderPlan,
+          @JsonKey(name: 'coupon_price') final double? couponPrice,
+          @JsonKey(name: 'coupon_code') final String? couponCode,
+          @JsonKey(name: 'discount_amount') final double? discountAmount}) =
       _$OrderModelImpl;
 
   factory _OrderModel.fromJson(Map<String, dynamic> json) =
@@ -366,6 +440,15 @@ abstract class _OrderModel implements OrderModel {
   @override
   @JsonKey(name: 'plan')
   OrderPlanModel? get orderPlan;
+  @override
+  @JsonKey(name: 'coupon_price')
+  double? get couponPrice;
+  @override
+  @JsonKey(name: 'coupon_code')
+  String? get couponCode;
+  @override
+  @JsonKey(name: 'discount_amount')
+  double? get discountAmount;
 
   /// Create a copy of OrderModel
   /// with the given fields replaced by the non-null parameter values.

@@ -775,7 +775,8 @@ class _OrderPricing {
         : ((finalPrice ?? packageAmount) - computedBalance)
             .clamp(0.0, double.infinity);
 
-    final effectiveCoupon = (couponPrice != null && couponPrice > 0) ? couponPrice : null;
+    final effectiveCoupon =
+        (couponPrice != null && couponPrice > 0) ? couponPrice : null;
     final discount = effectiveCoupon ?? discountAmount ?? 0;
     final refund = _amountFromCents(refundAmount);
     final surplus = _amountFromCents(surplusAmount);
@@ -827,8 +828,7 @@ class _ProductInfoCard extends StatelessWidget {
     final isDeposit = effectivePeriod == 'deposit';
     final children = <Widget>[
       _InfoRow(
-          label: AppLocalizations.of(context).xboardPlanName,
-          value: planName),
+          label: AppLocalizations.of(context).xboardPlanName, value: planName),
       const SizedBox(height: 12),
       _InfoRow(
           label: AppLocalizations.of(context).xboardPeriod,
@@ -838,8 +838,7 @@ class _ProductInfoCard extends StatelessWidget {
       children.addAll([
         const SizedBox(height: 12),
         _InfoRow(
-            label: AppLocalizations.of(context).xboardTraffic,
-            value: traffic),
+            label: AppLocalizations.of(context).xboardTraffic, value: traffic),
       ]);
     }
 
@@ -920,6 +919,16 @@ class _OrderInfoCard extends StatelessWidget {
               value: '-¥${pricing.discountAmount.toStringAsFixed(2)}',
               valueColor: XbUiStatusColor.success(context),
             ),
+            if (order != null &&
+                order!.couponCode != null &&
+                order!.couponCode!.isNotEmpty) ...[
+              const SizedBox(height: 12),
+              _InfoRow(
+                label: '优惠码',
+                value: order!.couponCode!,
+                valueFontSize: 12,
+              ),
+            ],
           ],
           if (pricing.surplusAmount > 0) ...[
             const SizedBox(height: 12),

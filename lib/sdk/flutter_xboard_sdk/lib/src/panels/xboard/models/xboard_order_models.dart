@@ -27,6 +27,9 @@ class Order with _$Order {
         toJson: _toUnixTimestamp)
     DateTime? createdAt,
     @JsonKey(name: 'plan') OrderPlan? orderPlan,
+    @JsonKey(name: 'coupon_price') double? couponPrice,
+    @JsonKey(name: 'coupon_code') String? couponCode,
+    @JsonKey(name: 'discount_amount') double? discountAmount,
   }) = _Order;
 
   factory Order.fromJson(Map<String, dynamic> json) => _$OrderFromJson(json);

@@ -102,6 +102,9 @@ class V2BoardOrderAdapter implements OrderApi {
       period: order.period,
       status: order.status,
       createdAt: order.createdAt,
+      couponPrice: order.couponPrice,
+      couponCode: order.couponCode,
+      discountAmount: order.discountAmount,
       orderPlan:
           order.orderPlan != null ? _mapOrderPlan(order.orderPlan!) : null,
     );

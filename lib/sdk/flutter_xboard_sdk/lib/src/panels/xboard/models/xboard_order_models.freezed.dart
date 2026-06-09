@@ -37,6 +37,12 @@ mixin _$Order {
   DateTime? get createdAt => throw _privateConstructorUsedError;
   @JsonKey(name: 'plan')
   OrderPlan? get orderPlan => throw _privateConstructorUsedError;
+  @JsonKey(name: 'coupon_price')
+  double? get couponPrice => throw _privateConstructorUsedError;
+  @JsonKey(name: 'coupon_code')
+  String? get couponCode => throw _privateConstructorUsedError;
+  @JsonKey(name: 'discount_amount')
+  double? get discountAmount => throw _privateConstructorUsedError;
 
   /// Serializes this Order to a JSON map.
   Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
@@ -64,7 +70,10 @@ abstract class $OrderCopyWith<$Res> {
           fromJson: _fromUnixTimestamp,
           toJson: _toUnixTimestamp)
       DateTime? createdAt,
-      @JsonKey(name: 'plan') OrderPlan? orderPlan});
+      @JsonKey(name: 'plan') OrderPlan? orderPlan,
+      @JsonKey(name: 'coupon_price') double? couponPrice,
+      @JsonKey(name: 'coupon_code') String? couponCode,
+      @JsonKey(name: 'discount_amount') double? discountAmount});
 
   $OrderPlanCopyWith<$Res>? get orderPlan;
 }
@@ -92,6 +101,9 @@ class _$OrderCopyWithImpl<$Res, $Val extends Order>
     Object? status = freezed,
     Object? createdAt = freezed,
     Object? orderPlan = freezed,
+    Object? couponPrice = freezed,
+    Object? couponCode = freezed,
+    Object? discountAmount = freezed,
   }) {
     return _then(_value.copyWith(
       planId: freezed == planId
@@ -126,6 +138,18 @@ class _$OrderCopyWithImpl<$Res, $Val extends Order>
           ? _value.orderPlan
           : orderPlan // ignore: cast_nullable_to_non_nullable
               as OrderPlan?,
+      couponPrice: freezed == couponPrice
+          ? _value.couponPrice
+          : couponPrice // ignore: cast_nullable_to_non_nullable
+              as double?,
+      couponCode: freezed == couponCode
+          ? _value.couponCode
+          : couponCode // ignore: cast_nullable_to_non_nullable
+              as String?,
+      discountAmount: freezed == discountAmount
+          ? _value.discountAmount
+          : discountAmount // ignore: cast_nullable_to_non_nullable
+              as double?,
     ) as $Val);
   }
 
@@ -163,7 +187,10 @@ abstract class _$$OrderImplCopyWith<$Res> implements $OrderCopyWith<$Res> {
           fromJson: _fromUnixTimestamp,
           toJson: _toUnixTimestamp)
       DateTime? createdAt,
-      @JsonKey(name: 'plan') OrderPlan? orderPlan});
+      @JsonKey(name: 'plan') OrderPlan? orderPlan,
+      @JsonKey(name: 'coupon_price') double? couponPrice,
+      @JsonKey(name: 'coupon_code') String? couponCode,
+      @JsonKey(name: 'discount_amount') double? discountAmount});
 
   @override
   $OrderPlanCopyWith<$Res>? get orderPlan;
@@ -190,6 +217,9 @@ class __$$OrderImplCopyWithImpl<$Res>
     Object? status = freezed,
     Object? createdAt = freezed,
     Object? orderPlan = freezed,
+    Object? couponPrice = freezed,
+    Object? couponCode = freezed,
+    Object? discountAmount = freezed,
   }) {
     return _then(_$OrderImpl(
       planId: freezed == planId
@@ -224,6 +254,18 @@ class __$$OrderImplCopyWithImpl<$Res>
           ? _value.orderPlan
           : orderPlan // ignore: cast_nullable_to_non_nullable
               as OrderPlan?,
+      couponPrice: freezed == couponPrice
+          ? _value.couponPrice
+          : couponPrice // ignore: cast_nullable_to_non_nullable
+              as double?,
+      couponCode: freezed == couponCode
+          ? _value.couponCode
+          : couponCode // ignore: cast_nullable_to_non_nullable
+              as String?,
+      discountAmount: freezed == discountAmount
+          ? _value.discountAmount
+          : discountAmount // ignore: cast_nullable_to_non_nullable
+              as double?,
     ));
   }
 }
@@ -243,7 +285,10 @@ class _$OrderImpl implements _Order {
           fromJson: _fromUnixTimestamp,
           toJson: _toUnixTimestamp)
       this.createdAt,
-      @JsonKey(name: 'plan') this.orderPlan});
+      @JsonKey(name: 'plan') this.orderPlan,
+      @JsonKey(name: 'coupon_price') this.couponPrice,
+      @JsonKey(name: 'coupon_code') this.couponCode,
+      @JsonKey(name: 'discount_amount') this.discountAmount});
 
   factory _$OrderImpl.fromJson(Map<String, dynamic> json) =>
       _$$OrderImplFromJson(json);
@@ -273,10 +318,19 @@ class _$OrderImpl implements _Order {
   @override
   @JsonKey(name: 'plan')
   final OrderPlan? orderPlan;
+  @override
+  @JsonKey(name: 'coupon_price')
+  final double? couponPrice;
+  @override
+  @JsonKey(name: 'coupon_code')
+  final String? couponCode;
+  @override
+  @JsonKey(name: 'discount_amount')
+  final double? discountAmount;
 
   @override
   String toString() {
-    return 'Order(planId: $planId, tradeNo: $tradeNo, totalAmount: $totalAmount, balanceAmount: $balanceAmount, period: $period, status: $status, createdAt: $createdAt, orderPlan: $orderPlan)';
+    return 'Order(planId: $planId, tradeNo: $tradeNo, totalAmount: $totalAmount, balanceAmount: $balanceAmount, period: $period, status: $status, createdAt: $createdAt, orderPlan: $orderPlan, couponPrice: $couponPrice, couponCode: $couponCode, discountAmount: $discountAmount)';
   }
 
   @override
@@ -295,13 +349,30 @@ class _$OrderImpl implements _Order {
             (identical(other.createdAt, createdAt) ||
                 other.createdAt == createdAt) &&
             (identical(other.orderPlan, orderPlan) ||
-                other.orderPlan == orderPlan));
+                other.orderPlan == orderPlan) &&
+            (identical(other.couponPrice, couponPrice) ||
+                other.couponPrice == couponPrice) &&
+            (identical(other.couponCode, couponCode) ||
+                other.couponCode == couponCode) &&
+            (identical(other.discountAmount, discountAmount) ||
+                other.discountAmount == discountAmount));
   }
 
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
-  int get hashCode => Object.hash(runtimeType, planId, tradeNo, totalAmount,
-      balanceAmount, period, status, createdAt, orderPlan);
+  int get hashCode => Object.hash(
+      runtimeType,
+      planId,
+      tradeNo,
+      totalAmount,
+      balanceAmount,
+      period,
+      status,
+      createdAt,
+      orderPlan,
+      couponPrice,
+      couponCode,
+      discountAmount);
 
   /// Create a copy of Order
   /// with the given fields replaced by the non-null parameter values.
@@ -321,18 +392,22 @@ class _$OrderImpl implements _Order {
 
 abstract class _Order implements Order {
   const factory _Order(
-      {@JsonKey(name: 'plan_id') final int? planId,
-      @JsonKey(name: 'trade_no') final String? tradeNo,
-      @JsonKey(name: 'total_amount') final double? totalAmount,
-      @JsonKey(name: 'balance_amount') final double? balanceAmount,
-      final String? period,
-      final int? status,
-      @JsonKey(
-          name: 'created_at',
-          fromJson: _fromUnixTimestamp,
-          toJson: _toUnixTimestamp)
-      final DateTime? createdAt,
-      @JsonKey(name: 'plan') final OrderPlan? orderPlan}) = _$OrderImpl;
+          {@JsonKey(name: 'plan_id') final int? planId,
+          @JsonKey(name: 'trade_no') final String? tradeNo,
+          @JsonKey(name: 'total_amount') final double? totalAmount,
+          @JsonKey(name: 'balance_amount') final double? balanceAmount,
+          final String? period,
+          final int? status,
+          @JsonKey(
+              name: 'created_at',
+              fromJson: _fromUnixTimestamp,
+              toJson: _toUnixTimestamp)
+          final DateTime? createdAt,
+          @JsonKey(name: 'plan') final OrderPlan? orderPlan,
+          @JsonKey(name: 'coupon_price') final double? couponPrice,
+          @JsonKey(name: 'coupon_code') final String? couponCode,
+          @JsonKey(name: 'discount_amount') final double? discountAmount}) =
+      _$OrderImpl;
 
   factory _Order.fromJson(Map<String, dynamic> json) = _$OrderImpl.fromJson;
 
@@ -361,6 +436,15 @@ abstract class _Order implements Order {
   @override
   @JsonKey(name: 'plan')
   OrderPlan? get orderPlan;
+  @override
+  @JsonKey(name: 'coupon_price')
+  double? get couponPrice;
+  @override
+  @JsonKey(name: 'coupon_code')
+  String? get couponCode;
+  @override
+  @JsonKey(name: 'discount_amount')
+  double? get discountAmount;
 
   /// Create a copy of Order
   /// with the given fields replaced by the non-null parameter values.

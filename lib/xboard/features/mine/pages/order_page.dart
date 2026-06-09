@@ -111,6 +111,8 @@ class _OrderPageState extends ConsumerState<OrderPage>
                                 MaterialPageRoute(
                                   builder: (_) => OrderDetailPage(
                                     tradeNo: order.tradeNo!,
+                                    discountAmount: order.couponPrice ??
+                                        order.discountAmount,
                                   ),
                                 ),
                               ),

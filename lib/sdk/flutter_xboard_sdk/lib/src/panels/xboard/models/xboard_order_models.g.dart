@@ -17,6 +17,9 @@ _$OrderImpl _$$OrderImplFromJson(Map<String, dynamic> json) => _$OrderImpl(
       orderPlan: json['plan'] == null
           ? null
           : OrderPlan.fromJson(json['plan'] as Map<String, dynamic>),
+      couponPrice: (json['coupon_price'] as num?)?.toDouble(),
+      couponCode: json['coupon_code'] as String?,
+      discountAmount: (json['discount_amount'] as num?)?.toDouble(),
     );
 
 Map<String, dynamic> _$$OrderImplToJson(_$OrderImpl instance) =>
@@ -29,6 +32,9 @@ Map<String, dynamic> _$$OrderImplToJson(_$OrderImpl instance) =>
       'status': instance.status,
       'created_at': _toUnixTimestamp(instance.createdAt),
       'plan': instance.orderPlan,
+      'coupon_price': instance.couponPrice,
+      'coupon_code': instance.couponCode,
+      'discount_amount': instance.discountAmount,
     };
 
 _$OrderPlanImpl _$$OrderPlanImplFromJson(Map<String, dynamic> json) =>
