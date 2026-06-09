@@ -522,12 +522,11 @@ class _DelayBadge extends ConsumerWidget {
     final delay = ref.watch(getDelayProvider(proxyName: proxyName));
     if (delay == null) return const SizedBox.shrink();
 
-    final isTimeout = delay <= 0;
-    final Color color = isTimeout
-        ? XbUiStatusColor.error(context)
-        : delay < 500
-            ? XbUiStatusColor.success(context)
-            : XbUiStatusColor.pending(context);
+    // delay == -1: 实际超时; delay == 0: 尚未测试/测速中, 不显示徽章
+    if (delay <= 0) return const SizedBox.shrink();
+    final Color color = delay < 500
+        ? XbUiStatusColor.success(context)
+        : XbUiStatusColor.pending(context);
 
     return Container(
       margin: const EdgeInsets.only(right: 6),
@@ -538,7 +537,7 @@ class _DelayBadge extends ConsumerWidget {
         border: Border.all(color: color.withValues(alpha: 0.35)),
       ),
       child: Text(
-        isTimeout ? AppLocalizations.of(context).xboardTimeout : '${delay}ms',
+        '${delay}ms',
         style: TextStyle(
           fontSize: 11,
           fontWeight: FontWeight.w600,
