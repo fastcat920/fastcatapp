@@ -7305,10 +7305,10 @@ class AppLocalizations {
     );
   }
 
-  /// `Refund amount`
+  /// `Refund to wallet`
   String get xboardRefundAmount {
     return Intl.message(
-      'Refund amount',
+      'Refund to wallet',
       name: 'xboardRefundAmount',
       desc: '',
       args: [],

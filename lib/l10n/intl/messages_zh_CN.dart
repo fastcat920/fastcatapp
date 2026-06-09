@@ -1255,7 +1255,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "xboardRedeemSuccess": MessageLookupByLibrary.simpleMessage("兑换成功"),
     "xboardRefresh": MessageLookupByLibrary.simpleMessage("刷新"),
     "xboardRefreshStatus": MessageLookupByLibrary.simpleMessage("刷新状态"),
-    "xboardRefundAmount": MessageLookupByLibrary.simpleMessage("退回金额"),
+    "xboardRefundAmount": MessageLookupByLibrary.simpleMessage("退回钱包金额"),
     "xboardRegister": MessageLookupByLibrary.simpleMessage("注册"),
     "xboardRegisterFailed": MessageLookupByLibrary.simpleMessage("注册失败"),
     "xboardRegisterSuccess": MessageLookupByLibrary.simpleMessage(

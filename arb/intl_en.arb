@@ -1037,7 +1037,7 @@
   "xboardCurrentPlanBased": "Based on current plan",
   "xboardCustomRechargeAmount": "Custom recharge amount",
   "xboardDiscountAmount": "Discount amount",
-  "xboardRefundAmount": "Refund amount",
+  "xboardRefundAmount": "Refund to wallet",
   "xboardWalletBalance": "Wallet balance",
   "xboardSurplusAmount": "Surplus amount",
   "xboardDocsCenter": "Docs center",

@@ -1829,7 +1829,9 @@ class MessageLookup extends MessageLookupByLibrary {
     "xboardRefreshStatus": MessageLookupByLibrary.simpleMessage(
       "Refresh status",
     ),
-    "xboardRefundAmount": MessageLookupByLibrary.simpleMessage("Refund amount"),
+    "xboardRefundAmount": MessageLookupByLibrary.simpleMessage(
+      "Refund to wallet",
+    ),
     "xboardRegister": MessageLookupByLibrary.simpleMessage("Register"),
     "xboardRegisterFailed": MessageLookupByLibrary.simpleMessage(
       "Registration failed",

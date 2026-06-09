@@ -775,9 +775,7 @@ class _OrderPricing {
         : ((finalPrice ?? packageAmount) - computedBalance)
             .clamp(0.0, double.infinity);
 
-    final discount = couponPrice != null
-        ? _amountFromCents(couponPrice)
-        : (discountAmount ?? 0);
+    final discount = couponPrice ?? discountAmount ?? 0;
     final refund = _amountFromCents(refundAmount);
     final surplus = _amountFromCents(surplusAmount);
     return _OrderPricing(
@@ -943,7 +941,7 @@ class _OrderInfoCard extends StatelessWidget {
           if (pricing.refundAmount > 0) ...[
             const SizedBox(height: 12),
             _InfoRow(
-              label: '${AppLocalizations.of(context).xboardRefundAmount}（${AppLocalizations.of(context).xboardWalletBalance}）',
+              label: AppLocalizations.of(context).xboardRefundAmount,
               value: '¥${pricing.refundAmount.toStringAsFixed(2)}',
               valueColor: XbUiStatusColor.info(context),
             ),

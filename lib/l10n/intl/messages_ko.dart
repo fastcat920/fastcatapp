@@ -1467,7 +1467,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "xboardRedeemSuccess": MessageLookupByLibrary.simpleMessage("redeem 성공"),
     "xboardRefresh": MessageLookupByLibrary.simpleMessage("새로고침"),
     "xboardRefreshStatus": MessageLookupByLibrary.simpleMessage("새로고침 상태"),
-    "xboardRefundAmount": MessageLookupByLibrary.simpleMessage("환불 금액"),
+    "xboardRefundAmount": MessageLookupByLibrary.simpleMessage("지갑 환불"),
     "xboardRegister": MessageLookupByLibrary.simpleMessage("가입"),
     "xboardRegisterFailed": MessageLookupByLibrary.simpleMessage("가입 실패"),
     "xboardRegisterSuccess": MessageLookupByLibrary.simpleMessage("가입 성공"),

@@ -1256,7 +1256,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "xboardRedeemSuccess": MessageLookupByLibrary.simpleMessage("交換成功"),
     "xboardRefresh": MessageLookupByLibrary.simpleMessage("更新"),
     "xboardRefreshStatus": MessageLookupByLibrary.simpleMessage("ステータスを更新"),
-    "xboardRefundAmount": MessageLookupByLibrary.simpleMessage("返金額"),
+    "xboardRefundAmount": MessageLookupByLibrary.simpleMessage("ウォレット返金"),
     "xboardRegister": MessageLookupByLibrary.simpleMessage("登録"),
     "xboardRegisterFailed": MessageLookupByLibrary.simpleMessage("登録失敗"),
     "xboardRegisterSuccess": MessageLookupByLibrary.simpleMessage(

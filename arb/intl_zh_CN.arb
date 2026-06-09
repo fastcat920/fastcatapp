@@ -1038,7 +1038,7 @@
   "xboardCurrentPlanBased": "基于当前套餐",
   "xboardCustomRechargeAmount": "自定义充值金额",
   "xboardDiscountAmount": "优惠金额",
-  "xboardRefundAmount": "退回金额",
+  "xboardRefundAmount": "退回钱包金额",
   "xboardWalletBalance": "钱包余额",
   "xboardSurplusAmount": "旧套餐折抵金额",
   "xboardDocsCenter": "文档中心",

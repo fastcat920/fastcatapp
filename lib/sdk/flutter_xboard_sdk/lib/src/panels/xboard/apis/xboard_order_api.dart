@@ -63,12 +63,19 @@ class XBoardOrderApi {
       );
     }
 
-    final orders = rawOrders
-        .whereType<Map>()
-        .map((item) => Order.fromJson(
-              item.map((key, value) => MapEntry(key.toString(), value)),
-            ))
-        .toList();
+    final orders = <Order>[];
+    for (final item in rawOrders) {
+      if (item is! Map) continue;
+      try {
+        orders.add(Order.fromJson(
+          item.map((key, value) => MapEntry(key.toString(), value)),
+        ));
+      } catch (e) {
+        // ignore: avoid_print
+        print('[fastcat][XBoardOrderApi] _parseOrderResponse: 跳过解析失败的订单'
+            ' (${e.runtimeType}: ${e.toString().substring(0, 200.clamp(0, e.toString().length))})');
+      }
+    }
 
     return OrderResponse(data: orders, total: total);
   }
