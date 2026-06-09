@@ -7315,6 +7315,16 @@ class AppLocalizations {
     );
   }
 
+  /// `Wallet balance`
+  String get xboardWalletBalance {
+    return Intl.message(
+      'Wallet balance',
+      name: 'xboardWalletBalance',
+      desc: '',
+      args: [],
+    );
+  }
+
   /// `Surplus amount`
   String get xboardSurplusAmount {
     return Intl.message(
@@ -7650,10 +7660,10 @@ class AppLocalizations {
     );
   }
 
-  /// `Deductible balance`
+  /// `Available balance`
   String get xboardDeductibleBalance {
     return Intl.message(
-      'Deductible balance',
+      'Available balance',
       name: 'xboardDeductibleBalance',
       desc: '',
       args: [],

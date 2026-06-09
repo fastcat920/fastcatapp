@@ -1390,7 +1390,7 @@ class MessageLookup extends MessageLookupByLibrary {
       "Deducted balance",
     ),
     "xboardDeductibleBalance": MessageLookupByLibrary.simpleMessage(
-      "Deductible balance",
+      "Available balance",
     ),
     "xboardDeductibleDuringPayment": MessageLookupByLibrary.simpleMessage(
       "Deductible during payment",
@@ -2049,6 +2049,9 @@ class MessageLookup extends MessageLookupByLibrary {
     ),
     "xboardWaitingPaymentCompletion": MessageLookupByLibrary.simpleMessage(
       "Waiting for payment completion",
+    ),
+    "xboardWalletBalance": MessageLookupByLibrary.simpleMessage(
+      "Wallet balance",
     ),
     "xboardYearlyPayment": MessageLookupByLibrary.simpleMessage("Yearly"),
     "years": MessageLookupByLibrary.simpleMessage("Years"),

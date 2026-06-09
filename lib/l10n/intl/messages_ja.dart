@@ -888,7 +888,7 @@ class MessageLookup extends MessageLookupByLibrary {
     ),
     "xboardDays": MessageLookupByLibrary.simpleMessage("日"),
     "xboardDeductedBalance": MessageLookupByLibrary.simpleMessage("差し引き残高"),
-    "xboardDeductibleBalance": MessageLookupByLibrary.simpleMessage("控除可能残高"),
+    "xboardDeductibleBalance": MessageLookupByLibrary.simpleMessage("使用可能残高"),
     "xboardDeductibleDuringPayment": MessageLookupByLibrary.simpleMessage(
       "支払い時に控除可能",
     ),
@@ -1444,6 +1444,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "xboardWaitingPaymentCompletion": MessageLookupByLibrary.simpleMessage(
       "支払い完了を待機中",
     ),
+    "xboardWalletBalance": MessageLookupByLibrary.simpleMessage("ウォレット残高"),
     "xboardYearlyPayment": MessageLookupByLibrary.simpleMessage("年払い"),
     "years": MessageLookupByLibrary.simpleMessage("年"),
     "zh_CN": MessageLookupByLibrary.simpleMessage("簡体字中国語"),

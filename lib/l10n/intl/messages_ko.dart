@@ -1107,7 +1107,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "xboardDeductedBalance": MessageLookupByLibrary.simpleMessage(
       "deducted 잔액",
     ),
-    "xboardDeductibleBalance": MessageLookupByLibrary.simpleMessage("공제 가능 잔액"),
+    "xboardDeductibleBalance": MessageLookupByLibrary.simpleMessage("사용 가능 잔액"),
     "xboardDeductibleDuringPayment": MessageLookupByLibrary.simpleMessage(
       "deductible during 결제",
     ),
@@ -1648,6 +1648,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "xboardWaitingPaymentCompletion": MessageLookupByLibrary.simpleMessage(
       "waiting 결제 completion",
     ),
+    "xboardWalletBalance": MessageLookupByLibrary.simpleMessage("지갑 잔액"),
     "xboardYearlyPayment": MessageLookupByLibrary.simpleMessage("연간 결제"),
     "years": MessageLookupByLibrary.simpleMessage("years"),
     "zh_CN": MessageLookupByLibrary.simpleMessage("중국어 간체"),

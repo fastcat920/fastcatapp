@@ -959,7 +959,7 @@ class MessageLookup extends MessageLookupByLibrary {
     ),
     "xboardDays": MessageLookupByLibrary.simpleMessage("天"),
     "xboardDeductedBalance": MessageLookupByLibrary.simpleMessage("已抵扣余额"),
-    "xboardDeductibleBalance": MessageLookupByLibrary.simpleMessage("可抵扣余额"),
+    "xboardDeductibleBalance": MessageLookupByLibrary.simpleMessage("可使用余额"),
     "xboardDeductibleDuringPayment": MessageLookupByLibrary.simpleMessage(
       "支付时可抵扣",
     ),
@@ -1402,6 +1402,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "xboardWaitingPaymentCompletion": MessageLookupByLibrary.simpleMessage(
       "等待支付完成",
     ),
+    "xboardWalletBalance": MessageLookupByLibrary.simpleMessage("钱包余额"),
     "xboardYearlyPayment": MessageLookupByLibrary.simpleMessage("年付"),
     "years": MessageLookupByLibrary.simpleMessage("年"),
     "zh_CN": MessageLookupByLibrary.simpleMessage("中文简体"),

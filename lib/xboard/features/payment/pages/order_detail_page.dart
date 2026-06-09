@@ -57,6 +57,7 @@ class _OrderDetailPageState extends ConsumerState<OrderDetailPage> {
   int? _resolvingPlanId;
   Timer? _paymentStatusTimer;
   bool _isAutoChecking = false;
+  bool _extrasLoaded = false;
 
   @override
   void initState() {
@@ -82,9 +83,14 @@ class _OrderDetailPageState extends ConsumerState<OrderDetailPage> {
           _couponPrice = (data['coupon_price'] as num?)?.toDouble();
           _refundAmount = (data['refund_amount'] as num?)?.toDouble();
           _surplusAmount = (data['surplus_amount'] as num?)?.toDouble();
+          _extrasLoaded = true;
         });
+      } else if (mounted) {
+        setState(() => _extrasLoaded = true);
       }
-    } catch (_) {}
+    } catch (_) {
+      if (mounted) setState(() => _extrasLoaded = true);
+    }
   }
 
   @override
@@ -168,6 +174,9 @@ class _OrderDetailPageState extends ConsumerState<OrderDetailPage> {
             period: period,
             plan: resolvedPlan,
           )) {
+            return const Center(child: CircularProgressIndicator());
+          }
+          if (!_extrasLoaded) {
             return const Center(child: CircularProgressIndicator());
           }
 
@@ -765,10 +774,9 @@ class _OrderPricing {
         ? backendTotalAmount
         : ((finalPrice ?? packageAmount) - computedBalance)
             .clamp(0.0, double.infinity);
-    final payableBeforeBalance = payableAmount + computedBalance;
 
-    final discount = order != null
-        ? (packageAmount - payableBeforeBalance).clamp(0.0, double.infinity)
+    final discount = couponPrice != null
+        ? _amountFromCents(couponPrice)
         : (discountAmount ?? 0);
     final refund = _amountFromCents(refundAmount);
     final surplus = _amountFromCents(surplusAmount);
@@ -914,14 +922,6 @@ class _OrderInfoCard extends StatelessWidget {
               valueColor: XbUiStatusColor.success(context),
             ),
           ],
-          if (pricing.refundAmount > 0) ...[
-            const SizedBox(height: 12),
-            _InfoRow(
-              label: AppLocalizations.of(context).xboardRefundAmount,
-              value: '-¥${pricing.refundAmount.toStringAsFixed(2)}',
-              valueColor: XbUiStatusColor.info(context),
-            ),
-          ],
           if (pricing.surplusAmount > 0) ...[
             const SizedBox(height: 12),
             _InfoRow(
@@ -938,6 +938,14 @@ class _OrderInfoCard extends StatelessWidget {
               valueFontSize: 14,
               valueWeight: FontWeight.w700,
               valueColor: Theme.of(context).colorScheme.primary,
+            ),
+          ],
+          if (pricing.refundAmount > 0) ...[
+            const SizedBox(height: 12),
+            _InfoRow(
+              label: '${AppLocalizations.of(context).xboardRefundAmount}（${AppLocalizations.of(context).xboardWalletBalance}）',
+              value: '¥${pricing.refundAmount.toStringAsFixed(2)}',
+              valueColor: XbUiStatusColor.info(context),
             ),
           ],
           const SizedBox(height: 14),
