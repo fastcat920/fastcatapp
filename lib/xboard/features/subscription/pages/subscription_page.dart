@@ -202,6 +202,17 @@ class _SubscriptionPageState extends State<SubscriptionPage>
             ),
           ),
         ),
+        Padding(
+          padding: const EdgeInsets.only(left: 16, right: 16, bottom: 10),
+          child: Center(
+            child: Text(
+              AppLocalizations.of(context).xboardTrafficLogHint,
+              style: XbUiText.bodySmall(context).copyWith(
+                color: theme.colorScheme.onSurfaceVariant.withValues(alpha: 0.5),
+              ),
+            ),
+          ),
+        ),
       ],
     );
   }

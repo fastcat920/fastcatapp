@@ -13,7 +13,14 @@ class V2BoardOrderApi {
   Future<OrderResponse> fetchUserOrders() async {
     try {
       final result = await _httpService.getRequest('/user/order/fetch');
-      return _parseOrderResponse(result);
+      final response = _parseOrderResponse(result);
+      if (response.data.isEmpty) {
+        // ignore: avoid_print
+        print('[fastcat][V2BoardOrderApi] fetchUserOrders: 解析后订单列表为空。'
+          ' raw data 类型: ${result['data']?.runtimeType}',
+        );
+      }
+      return response;
     } catch (e) {
       if (e is XBoardException) rethrow;
       throw ApiException('V2Board 获取订单列表失败: $e');
@@ -40,7 +47,20 @@ class V2BoardOrderApi {
                   .toList();
       total ??= (dataField['total'] as num?)?.toInt();
     } else {
-      rawOrders = const [];
+      // ── 兜底：data 不是 List/Map，尝试从其他 key 提取 ──
+      final altKeys = ['orders', 'list', 'items'];
+      rawOrders = altKeys
+          .map((k) => result[k])
+          .whereType<List>()
+          .firstOrNull ??
+          const [];
+
+      // ignore: avoid_print
+        print('[fastcat][V2BoardOrderApi] _parseOrderResponse: data 字段类型异常'
+        ' (${dataField.runtimeType})，'
+        'rawOrders 从 altKeys 提取: ${rawOrders.length} 条。'
+        ' result keys: ${result.keys}',
+      );
     }
 
     final orders = rawOrders

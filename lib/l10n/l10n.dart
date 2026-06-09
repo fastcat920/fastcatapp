@@ -55,14 +55,14 @@ class AppLocalizations {
     return Localizations.of<AppLocalizations>(context, AppLocalizations);
   }
 
-  /// `Rule`
+  /// `Smart Routing`
   String get rule {
-    return Intl.message('Rule', name: 'rule', desc: '', args: []);
+    return Intl.message('Smart Routing', name: 'rule', desc: '', args: []);
   }
 
-  /// `Global`
+  /// `Global Proxy`
   String get global {
-    return Intl.message('Global', name: 'global', desc: '', args: []);
+    return Intl.message('Global Proxy', name: 'global', desc: '', args: []);
   }
 
   /// `Direct`
@@ -375,9 +375,14 @@ class AppLocalizations {
     );
   }
 
-  /// `Auto launch`
+  /// `Start on Boot`
   String get autoLaunch {
-    return Intl.message('Auto launch', name: 'autoLaunch', desc: '', args: []);
+    return Intl.message(
+      'Start on Boot',
+      name: 'autoLaunch',
+      desc: '',
+      args: [],
+    );
   }
 
   /// `Follow the system self startup`
@@ -925,9 +930,9 @@ class AppLocalizations {
     return Intl.message('LogLevel', name: 'logLevel', desc: '', args: []);
   }
 
-  /// `Show`
+  /// `Show Window`
   String get show {
-    return Intl.message('Show', name: 'show', desc: '', args: []);
+    return Intl.message('Show Window', name: 'show', desc: '', args: []);
   }
 
   /// `Exit`
@@ -1860,14 +1865,14 @@ class AppLocalizations {
     );
   }
 
-  /// `Start`
+  /// `Connect`
   String get start {
-    return Intl.message('Start', name: 'start', desc: '', args: []);
+    return Intl.message('Connect', name: 'start', desc: '', args: []);
   }
 
-  /// `Stop`
+  /// `Disconnect`
   String get stop {
-    return Intl.message('Stop', name: 'stop', desc: '', args: []);
+    return Intl.message('Disconnect', name: 'stop', desc: '', args: []);
   }
 
   /// `Processing app related settings`
@@ -7910,6 +7915,16 @@ class AppLocalizations {
     return Intl.message(
       'Traffic details',
       name: 'xboardTrafficDetails',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Only showing traffic data from the last 30 days`
+  String get xboardTrafficLogHint {
+    return Intl.message(
+      'Only showing traffic data from the last 30 days',
+      name: 'xboardTrafficLogHint',
       desc: '',
       args: [],
     );

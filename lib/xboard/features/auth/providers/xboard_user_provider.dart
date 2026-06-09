@@ -12,6 +12,7 @@ import 'package:flutter_xboard_sdk/flutter_xboard_sdk.dart'
 import 'package:fl_clash/xboard/adapter/state/user_state.dart';
 import 'package:fl_clash/xboard/adapter/state/subscription_state.dart';
 import 'package:fl_clash/xboard/adapter/state/plan_state.dart';
+import 'package:fl_clash/xboard/adapter/state/order_state.dart';
 import 'package:fl_clash/xboard/adapter/initialization/sdk_provider.dart';
 import 'package:fl_clash/xboard/features/domain_status/providers/domain_status_provider.dart';
 import 'package:fl_clash/xboard/features/initialization/initialization.dart';
@@ -773,9 +774,11 @@ class XBoardUserAuthNotifier extends Notifier<UserAuthState> {
     clearGetUserInfoCache();
     clearGetSubscriptionCache();
     clearGetPlansCache();
+    clearGetOrdersCache();
     ref.invalidate(getUserInfoProvider);
     ref.invalidate(getSubscriptionProvider);
     ref.invalidate(getPlansProvider);
+    ref.invalidate(getOrdersProvider);
   }
 
   void _startPostLoginSubscriptionImport(String? url, int generation) {
@@ -1243,9 +1246,11 @@ class XBoardUserAuthNotifier extends Notifier<UserAuthState> {
       clearGetUserInfoCache();
       clearGetSubscriptionCache();
       clearGetPlansCache();
+      clearGetOrdersCache();
       ref.invalidate(getUserInfoProvider);
       ref.invalidate(getSubscriptionProvider);
       ref.invalidate(getPlansProvider);
+      ref.invalidate(getOrdersProvider);
     } catch (e) {
       _logger.warning('清理 Provider 缓存失败: $e');
     }

@@ -1,3 +1,4 @@
+// ignore_for_file: avoid_print
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_xboard_sdk/flutter_xboard_sdk.dart';
@@ -12,11 +13,15 @@ part 'generated/order_state.g.dart';
 @riverpod
 Future<List<OrderModel>> getOrders(Ref ref) async {
   final sdk = await ref.watch(xboardSdkProvider.future);
-  return ApiRequestCache.get<List<OrderModel>>(
-    'xboard:orders',
+  final orders = await ApiRequestCache.get<List<OrderModel>>(
+    'xboard:orders:${identityHashCode(sdk)}',
     ttl: const Duration(minutes: 1),
     fetch: sdk.order.getOrders,
   );
+  if (orders.isEmpty) {
+    print('[fastcat][getOrders] ⚠️ 订单列表为空 sdkHash=${identityHashCode(sdk)}');
+  }
+  return orders;
 }
 
 /// 获取单个订单
@@ -24,7 +29,7 @@ Future<List<OrderModel>> getOrders(Ref ref) async {
 Future<OrderModel?> getOrder(Ref ref, String tradeNo) async {
   final sdk = await ref.watch(xboardSdkProvider.future);
   return ApiRequestCache.get<OrderModel?>(
-    'xboard:order:$tradeNo',
+    'xboard:order:${identityHashCode(sdk)}:$tradeNo',
     ttl: const Duration(seconds: 30),
     fetch: () => sdk.order.getOrder(tradeNo),
   );
@@ -36,7 +41,7 @@ Future<List<PaymentMethodModel>> getOrderPaymentMethods(
     Ref ref, String tradeNo) async {
   final sdk = await ref.watch(xboardSdkProvider.future);
   return ApiRequestCache.get<List<PaymentMethodModel>>(
-    'xboard:order_payment_methods:$tradeNo',
+    'xboard:order_payment_methods:${identityHashCode(sdk)}:$tradeNo',
     ttl: const Duration(minutes: 5),
     fetch: () => sdk.order.getPaymentMethods(tradeNo),
   );
@@ -51,13 +56,13 @@ Future<CouponModel?> checkCoupon(Ref ref,
 }
 
 void clearGetOrdersCache() {
-  ApiRequestCache.invalidate('xboard:orders');
+  ApiRequestCache.invalidatePrefix('xboard:orders:');
 }
 
 void clearGetOrderCache(String tradeNo) {
-  ApiRequestCache.invalidate('xboard:order:$tradeNo');
+  ApiRequestCache.invalidatePrefix('xboard:order:');
 }
 
 void clearGetOrderPaymentMethodsCache(String tradeNo) {
-  ApiRequestCache.invalidate('xboard:order_payment_methods:$tradeNo');
+  ApiRequestCache.invalidatePrefix('xboard:order_payment_methods:');
 }
