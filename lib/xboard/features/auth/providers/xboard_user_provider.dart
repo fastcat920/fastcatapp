@@ -604,10 +604,10 @@ class XBoardUserAuthNotifier extends Notifier<UserAuthState> {
         state = state.copyWith(
           isLoading: false,
           errorMessage: noNetwork
-              ? '无法连接服务器，请检查网络后重试'
+              ? '[NETWORK_ERROR]'
               : configFailed
-                  ? '配置加载失败，请稍后再试'
-                  : '账号或密码错误',
+                  ? '[CONFIG_LOAD_FAILED]'
+                  : '[CREDENTIALS_ERROR]',
         );
         return false;
       }
@@ -705,6 +705,24 @@ class XBoardUserAuthNotifier extends Notifier<UserAuthState> {
       return true;
     } catch (e) {
       _logger.info('登录出错: $e (${e.runtimeType})');
+
+      // 网络层面的错误（本机断网、DNS 解析失败、连接超时等）
+      final errStr = e.toString();
+      final isNetworkError = errStr.contains('SocketException') ||
+          errStr.contains('HandshakeException') ||
+          errStr.contains('Connection refused') ||
+          errStr.contains('No address associated') ||
+          errStr.contains('Network is unreachable') ||
+          errStr.contains('Connection reset') ||
+          errStr.contains('Host lookup failed') ||
+          e is TimeoutException;
+      if (isNetworkError) {
+        state = state.copyWith(
+          isLoading: false,
+          errorMessage: '[NETWORK_ERROR]',
+        );
+        return false;
+      }
 
       // 业务错误（密码错误/账号封禁等）直接展示后端消息，不重试
       if (e is ApiException) {
@@ -809,11 +827,14 @@ class XBoardUserAuthNotifier extends Notifier<UserAuthState> {
     if (codeMatch != null) {
       final code = codeMatch.group(1)!;
       final rest = message.substring(codeMatch.end);
+      if (code == 'NETWORK_ERROR') {
+        return '[NETWORK_ERROR]';
+      }
       if (code == 'BACKEND_UNREACHABLE' || code == 'BUSINESS_LOGIN_FAILED') {
-        return '无法连接服务器，请稍后重试';
+        return '[CONFIG_LOAD_FAILED]';
       }
       if (code == 'CREDENTIALS_REQUIRED' || code == 'DEVICE_ID_REQUIRED') {
-        return '请求参数错误，请更新应用后重试';
+        return '[CREDENTIALS_ERROR]';
       }
       // 未知 code，去掉前缀展示原始消息
       return rest.isNotEmpty ? rest : '登录失败，请稍后重试';
@@ -827,7 +848,7 @@ class XBoardUserAuthNotifier extends Notifier<UserAuthState> {
         lower.contains('invalid credentials') ||
         lower.contains('unauthorized') ||
         lower.contains('email or password')) {
-      return '账号或密码错误';
+      return '[CREDENTIALS_ERROR]';
     }
     if (message.contains('DEVICE_LIMIT_EXCEEDED') ||
         lower.contains('device limit exceeded')) {

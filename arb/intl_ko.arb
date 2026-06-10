@@ -1214,5 +1214,8 @@
   "xboardDeviceRemoveTitle": "기기 삭제 제목",
   "xboardDeviceRemoveCurrentConfirm": "기기 삭제 현재 확인",
   "xboardDeviceSummary": "기기 summary: {count}: {limit}",
-  "xboardGotIt": "확인"
+  "xboardGotIt": "확인",
+  "xboardLoginErrorNetwork": "네트워크 오류, 로컬 네트워크 상태를 확인하세요",
+  "xboardLoginErrorConfigLoad": "구성 로드 실패, 나중에 다시 시도하세요",
+  "xboardLoginErrorCredentials": "계정 또는 비밀번호 오류, 계정과 비밀번호를 확인하세요"
 }
