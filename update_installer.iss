@@ -5,6 +5,16 @@
 #define MyBinaryName "fastcat"
 #endif
 
+#ifndef MyAppName
+#define MyAppName "fastcat"
+#endif
+#ifndef MyAppVersion
+#define MyAppVersion "1.0.0"
+#endif
+#ifndef MyAppId
+#define MyAppId "9534642D-C46F-4EF0-8B3F-EF152ABEC560"
+#endif
+
 [Setup]
 AppName={#MyAppName}
 AppVersion={#MyAppVersion}
