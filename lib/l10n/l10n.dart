@@ -3280,36 +3280,6 @@ class AppLocalizations {
     );
   }
 
-  /// `Network error, please check your local network`
-  String get xboardLoginErrorNetwork {
-    return Intl.message(
-      'Network error, please check your local network',
-      name: 'xboardLoginErrorNetwork',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Configuration load failed, please try again later`
-  String get xboardLoginErrorConfigLoad {
-    return Intl.message(
-      'Configuration load failed, please try again later',
-      name: 'xboardLoginErrorConfigLoad',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Invalid credentials, please check your account and password`
-  String get xboardLoginErrorCredentials {
-    return Intl.message(
-      'Invalid credentials, please check your account and password',
-      name: 'xboardLoginErrorCredentials',
-      desc: '',
-      args: [],
-    );
-  }
-
   /// `Registration successful! Redirecting to login page...`
   String get xboardRegisterSuccess {
     return Intl.message(
@@ -8120,16 +8090,16 @@ class AppLocalizations {
     );
   }
 
+
   /// `Used traffic has been reset today`
   String get xboardResetTrafficToday {
     return Intl.message(
       'Used traffic has been reset today',
       name: 'xboardResetTrafficToday',
-      desc: 'Shown when traffic reset day is 0 (today)',
+      desc: '',
       args: [],
     );
   }
-
   /// `My services`
   String get xboardMyServices {
     return Intl.message(
@@ -8648,36 +8618,6 @@ class AppLocalizations {
   /// `Got it`
   String get xboardGotIt {
     return Intl.message('Got it', name: 'xboardGotIt', desc: '', args: []);
-  }
-
-  /// `Network error, please check your local network`
-  String get xboardLoginErrorNetwork {
-    return Intl.message(
-      'Network error, please check your local network',
-      name: 'xboardLoginErrorNetwork',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Configuration load failed, please try again later`
-  String get xboardLoginErrorConfigLoad {
-    return Intl.message(
-      'Configuration load failed, please try again later',
-      name: 'xboardLoginErrorConfigLoad',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Invalid credentials, please check your account and password`
-  String get xboardLoginErrorCredentials {
-    return Intl.message(
-      'Invalid credentials, please check your account and password',
-      name: 'xboardLoginErrorCredentials',
-      desc: '',
-      args: [],
-    );
   }
 }
 

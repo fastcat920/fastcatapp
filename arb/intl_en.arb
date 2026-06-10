@@ -1214,8 +1214,5 @@
   "xboardDeviceRemoveTitle": "Remove device",
   "xboardDeviceRemoveCurrentConfirm": "This is your current device. Removing it will log you out immediately.",
   "xboardDeviceSummary": "{count} active · Limit {limit}",
-  "xboardGotIt": "Got it",
-  "xboardLoginErrorNetwork": "Network error, please check your local network",
-  "xboardLoginErrorConfigLoad": "Configuration load failed, please try again later",
-  "xboardLoginErrorCredentials": "Invalid credentials, please check your account and password"
+  "xboardGotIt": "Got it"
 }

@@ -995,8 +995,5 @@
   "xboardDeviceRemoveTitle": "デバイスを削除",
   "xboardDeviceRemoveCurrentConfirm": "このデバイスは現在ログイン中のデバイスです。削除するとすぐにログアウトされます。",
   "xboardDeviceSummary": "{count} 台アクティブ · 上限 {limit}",
-  "xboardGotIt": "了解",
-  "xboardLoginErrorNetwork": "ネットワークエラー、ローカルネットワークを確認してください",
-  "xboardLoginErrorConfigLoad": "設定の読み込みに失敗しました。しばらくしてから再試行してください",
-  "xboardLoginErrorCredentials": "アカウントまたはパスワードが間違っています。確認してください"
+  "xboardGotIt": "了解"
 }

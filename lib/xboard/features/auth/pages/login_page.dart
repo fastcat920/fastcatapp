@@ -133,45 +133,16 @@ class _LoginPageState extends ConsumerState<LoginPage> {
   }
 
   String _normalizeLoginError(String message) {
-    final al = appLocalizations;
-    // Provider 侧带 [CODE] 前缀的精确匹配
-    if (message.startsWith('[NETWORK_ERROR]')) {
-      return al.xboardLoginErrorNetwork;
-    }
-    if (message.startsWith('[CONFIG_LOAD_FAILED]') ||
-        message.startsWith('[BACKEND_UNREACHABLE]') ||
-        message.startsWith('[BUSINESS_LOGIN_FAILED]')) {
-      return al.xboardLoginErrorConfigLoad;
-    }
-    if (message.startsWith('[CREDENTIALS_ERROR]') ||
-        message.startsWith('[CREDENTIALS_REQUIRED]') ||
-        message.startsWith('[DEVICE_ID_REQUIRED]')) {
-      return al.xboardLoginErrorCredentials;
-    }
-    // 降级：旧格式文本匹配
     final lower = message.toLowerCase();
-    if (message.contains('SocketException') ||
-        message.contains('TimeoutException') ||
-        message.contains('HandshakeException') ||
-        lower.contains('connection refused') ||
-        lower.contains('no address associated') ||
-        lower.contains('network is unreachable')) {
-      return al.xboardLoginErrorNetwork;
-    }
     if (message == '登录失败' ||
         message.contains('登陆失败') ||
         message.contains('登录失败') ||
         lower.contains('invalid credentials') ||
         lower.contains('unauthorized') ||
         lower.contains('email or password')) {
-      return al.xboardLoginErrorCredentials;
+      return '账号或密码错误';
     }
-    if (message.contains('DEVICE_LIMIT_EXCEEDED') ||
-        lower.contains('device limit exceeded')) {
-      return message;
-    }
-    // 兜底：无法识别时当作配置加载失败
-    return al.xboardLoginErrorConfigLoad;
+    return message;
   }
 
   Future<void> _openOfficialWebsite(BuildContext context) async {

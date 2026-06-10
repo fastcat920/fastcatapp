@@ -1215,8 +1215,5 @@
   "xboardDeviceRemoveTitle": "移除设备",
   "xboardDeviceRemoveCurrentConfirm": "这台设备是当前登录设备，移除后会立即退出登录。",
   "xboardDeviceSummary": "活跃 {count} 台 · 限额 {limit}",
-  "xboardGotIt": "知道了",
-  "xboardLoginErrorNetwork": "网络错误，请先检查本机网络状态",
-  "xboardLoginErrorConfigLoad": "配置加载失败，请稍后再试",
-  "xboardLoginErrorCredentials": "账号或密码错误，请先检查账号密码"
+  "xboardGotIt": "知道了"
 }

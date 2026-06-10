@@ -1086,20 +1086,8 @@ class MessageLookup extends MessageLookupByLibrary {
     "xboardLocalIP": MessageLookupByLibrary.simpleMessage("本机IP"),
     "xboardLoggedIn": MessageLookupByLibrary.simpleMessage("已登录"),
     "xboardLogin": MessageLookupByLibrary.simpleMessage("登录"),
-    "xboardLoginErrorConfigLoad": MessageLookupByLibrary.simpleMessage(
-      "配置加载失败，请稍后再试",
-    ),
-    "xboardLoginErrorCredentials": MessageLookupByLibrary.simpleMessage(
-      "账号或密码错误，请先检查账号密码",
-    ),
-    "xboardLoginErrorNetwork": MessageLookupByLibrary.simpleMessage(
-      "网络错误，请先检查本机网络状态",
-    ),
     "xboardLoginExpired": MessageLookupByLibrary.simpleMessage("登录已过期，请重新登录"),
     "xboardLoginFailed": MessageLookupByLibrary.simpleMessage("登录失败"),
-    "xboardLoginErrorNetwork": MessageLookupByLibrary.simpleMessage("网络错误，请先检查本机网络状态"),
-    "xboardLoginErrorConfigLoad": MessageLookupByLibrary.simpleMessage("配置加载失败，请稍后再试"),
-    "xboardLoginErrorCredentials": MessageLookupByLibrary.simpleMessage("账号或密码错误，请先检查账号密码"),
     "xboardLoginSuccess": MessageLookupByLibrary.simpleMessage("登录成功"),
     "xboardLoginToViewSubscription": MessageLookupByLibrary.simpleMessage(
       "请登录后查看套餐使用情况",

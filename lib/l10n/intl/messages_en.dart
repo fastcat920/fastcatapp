@@ -1566,22 +1566,10 @@ class MessageLookup extends MessageLookupByLibrary {
     "xboardLocalIP": MessageLookupByLibrary.simpleMessage("Local IP"),
     "xboardLoggedIn": MessageLookupByLibrary.simpleMessage("Logged In"),
     "xboardLogin": MessageLookupByLibrary.simpleMessage("Login"),
-    "xboardLoginErrorConfigLoad": MessageLookupByLibrary.simpleMessage(
-      "Configuration load failed, please try again later",
-    ),
-    "xboardLoginErrorCredentials": MessageLookupByLibrary.simpleMessage(
-      "Invalid credentials, please check your account and password",
-    ),
-    "xboardLoginErrorNetwork": MessageLookupByLibrary.simpleMessage(
-      "Network error, please check your local network",
-    ),
     "xboardLoginExpired": MessageLookupByLibrary.simpleMessage(
       "Login expired, please login again",
     ),
     "xboardLoginFailed": MessageLookupByLibrary.simpleMessage("Login failed"),
-    "xboardLoginErrorNetwork": MessageLookupByLibrary.simpleMessage("Network error, please check your local network"),
-    "xboardLoginErrorConfigLoad": MessageLookupByLibrary.simpleMessage("Configuration load failed, please try again later"),
-    "xboardLoginErrorCredentials": MessageLookupByLibrary.simpleMessage("Invalid credentials, please check your account and password"),
     "xboardLoginSuccess": MessageLookupByLibrary.simpleMessage(
       "Login successful",
     ),
