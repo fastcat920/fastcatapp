@@ -1308,6 +1308,17 @@ end tell
             ? await Build.calcSha256(corePaths.first)
             : null;
         await Build.buildHelper(target, token!);
+        await Build.exec(
+          [
+            "flutter",
+            "build",
+            "windows",
+            "--release",
+            ..._dartDefineList(env),
+            '--dart-define=CORE_SHA256=$token',
+          ],
+          name: "build windows app",
+        );
         // Build zip via flutter_distributor; exe is built in CI workflow directly
         await _buildDistributor(
           target: target,
