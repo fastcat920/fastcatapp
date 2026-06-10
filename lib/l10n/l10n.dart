@@ -8649,8 +8649,8 @@ class AppLocalizations {
   String get xboardGotIt {
     return Intl.message('Got it', name: 'xboardGotIt', desc: '', args: []);
   }
+}
 
-  
 class AppLocalizationDelegate extends LocalizationsDelegate<AppLocalizations> {
   const AppLocalizationDelegate();
 
