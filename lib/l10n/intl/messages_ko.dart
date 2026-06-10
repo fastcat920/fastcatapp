@@ -1260,15 +1260,6 @@ class MessageLookup extends MessageLookupByLibrary {
     "xboardLocalIP": MessageLookupByLibrary.simpleMessage("로컬 IP"),
     "xboardLoggedIn": MessageLookupByLibrary.simpleMessage("logged IN"),
     "xboardLogin": MessageLookupByLibrary.simpleMessage("로그인"),
-    "xboardLoginErrorConfigLoad": MessageLookupByLibrary.simpleMessage(
-      "구성 로드 실패, 나중에 다시 시도하세요",
-    ),
-    "xboardLoginErrorCredentials": MessageLookupByLibrary.simpleMessage(
-      "계정 또는 비밀번호 오류, 계정과 비밀번호를 확인하세요",
-    ),
-    "xboardLoginErrorNetwork": MessageLookupByLibrary.simpleMessage(
-      "네트워크 오류, 로컬 네트워크 상태를 확인하세요",
-    ),
     "xboardLoginExpired": MessageLookupByLibrary.simpleMessage("로그인 만료됨"),
     "xboardLoginFailed": MessageLookupByLibrary.simpleMessage("로그인 실패"),
     "xboardLoginErrorNetwork": MessageLookupByLibrary.simpleMessage("네트워크 오류, 로컬 네트워크 상태를 확인하세요"),

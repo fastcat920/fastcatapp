@@ -1033,15 +1033,6 @@ class MessageLookup extends MessageLookupByLibrary {
     "xboardLocalIP": MessageLookupByLibrary.simpleMessage("ローカルIP"),
     "xboardLoggedIn": MessageLookupByLibrary.simpleMessage("ログイン済み"),
     "xboardLogin": MessageLookupByLibrary.simpleMessage("ログイン"),
-    "xboardLoginErrorConfigLoad": MessageLookupByLibrary.simpleMessage(
-      "設定の読み込みに失敗しました。しばらくしてから再試行してください",
-    ),
-    "xboardLoginErrorCredentials": MessageLookupByLibrary.simpleMessage(
-      "アカウントまたはパスワードが間違っています。確認してください",
-    ),
-    "xboardLoginErrorNetwork": MessageLookupByLibrary.simpleMessage(
-      "ネットワークエラー、ローカルネットワークを確認してください",
-    ),
     "xboardLoginExpired": MessageLookupByLibrary.simpleMessage(
       "ログインが期限切れです、再度ログインしてください",
     ),
