@@ -39,7 +39,7 @@ dependencies:
   ffi: ^2.1.2
   re_editor:
     git:
-      url: https://gitcode.com/gh_mirrors/re/re-editor.git
+      url: https://github.com/reqable/re-editor.git
       ref: 8a7dbc5836f3dfeb2f723e3ed11bd51e325f9c0e  # main (pinned)
   re_highlight: ^0.0.3
   archive: ^3.6.1
@@ -58,7 +58,7 @@ dependencies:
   material_color_utilities: any
   flutter_js:
     git:
-      url: https://gitcode.com/gh_mirrors/fl/flutter_js.git
+      url: https://github.com/abner/flutter_js.git
       ref: c3d4bba92278577c6cc73e7b10a69b358f23768b  # master (pinned)
   yaml: ^3.1.3
   flutter_svg: ^2.1.0
