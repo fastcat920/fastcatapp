@@ -1579,6 +1579,9 @@ class MessageLookup extends MessageLookupByLibrary {
       "Login expired, please login again",
     ),
     "xboardLoginFailed": MessageLookupByLibrary.simpleMessage("Login failed"),
+    "xboardLoginErrorNetwork": MessageLookupByLibrary.simpleMessage("Network error, please check your local network"),
+    "xboardLoginErrorConfigLoad": MessageLookupByLibrary.simpleMessage("Configuration load failed, please try again later"),
+    "xboardLoginErrorCredentials": MessageLookupByLibrary.simpleMessage("Invalid credentials, please check your account and password"),
     "xboardLoginSuccess": MessageLookupByLibrary.simpleMessage(
       "Login successful",
     ),

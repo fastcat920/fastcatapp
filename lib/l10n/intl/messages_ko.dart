@@ -1271,6 +1271,9 @@ class MessageLookup extends MessageLookupByLibrary {
     ),
     "xboardLoginExpired": MessageLookupByLibrary.simpleMessage("로그인 만료됨"),
     "xboardLoginFailed": MessageLookupByLibrary.simpleMessage("로그인 실패"),
+    "xboardLoginErrorNetwork": MessageLookupByLibrary.simpleMessage("네트워크 오류, 로컬 네트워크 상태를 확인하세요"),
+    "xboardLoginErrorConfigLoad": MessageLookupByLibrary.simpleMessage("구성 로드 실패, 나중에 다시 시도하세요"),
+    "xboardLoginErrorCredentials": MessageLookupByLibrary.simpleMessage("계정 또는 비밀번호 오류, 계정과 비밀번호를 확인하세요"),
     "xboardLoginSuccess": MessageLookupByLibrary.simpleMessage("로그인 성공"),
     "xboardLoginToViewSubscription": MessageLookupByLibrary.simpleMessage(
       "로그인 TO 보기 구독",
