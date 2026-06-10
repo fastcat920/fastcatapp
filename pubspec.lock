@@ -628,7 +628,7 @@ packages:
       path: "."
       ref: c3d4bba92278577c6cc73e7b10a69b358f23768b
       resolved-ref: c3d4bba92278577c6cc73e7b10a69b358f23768b
-      url: "https://gitcode.com/gh_mirrors/fl/flutter_js.git"
+      url: "https://github.com/abner/flutter_js.git"
     source: git
     version: "0.8.7"
   flutter_lints:
@@ -1386,7 +1386,7 @@ packages:
       path: "."
       ref: "8a7dbc5836f3dfeb2f723e3ed11bd51e325f9c0e"
       resolved-ref: "8a7dbc5836f3dfeb2f723e3ed11bd51e325f9c0e"
-      url: "https://gitcode.com/gh_mirrors/re/re-editor.git"
+      url: "https://github.com/abner/re-editor.git"
     source: git
     version: "0.8.0"
   re_highlight:
