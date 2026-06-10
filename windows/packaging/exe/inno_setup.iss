@@ -7,6 +7,7 @@ AppPublisherURL={{PUBLISHER_URL}}
 AppSupportURL={{PUBLISHER_URL}}
 AppUpdatesURL={{PUBLISHER_URL}}
 DefaultDirName={sd}\{{DISPLAY_NAME}}
+UsePreviousAppDir=no
 DisableDirPage=no
 DisableProgramGroupPage=yes
 OutputDir=.

@@ -20,6 +20,7 @@ AppName={#MyAppName}
 AppVersion={#MyAppVersion}
 AppId={{{#MyAppId}}
 DefaultDirName={sd}\{#MyAppName}
+UsePreviousAppDir=no
 DisableDirPage=no
 DisableProgramGroupPage=yes
 OutputDir=dist
