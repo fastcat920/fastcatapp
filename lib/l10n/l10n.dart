@@ -8650,7 +8650,37 @@ class AppLocalizations {
     return Intl.message('Got it', name: 'xboardGotIt', desc: '', args: []);
   }
 
-  
+  /// `Network error, please check your local network`
+  String get xboardLoginErrorNetwork {
+    return Intl.message(
+      'Network error, please check your local network',
+      name: 'xboardLoginErrorNetwork',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Configuration load failed, please try again later`
+  String get xboardLoginErrorConfigLoad {
+    return Intl.message(
+      'Configuration load failed, please try again later',
+      name: 'xboardLoginErrorConfigLoad',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Invalid credentials, please check your account and password`
+  String get xboardLoginErrorCredentials {
+    return Intl.message(
+      'Invalid credentials, please check your account and password',
+      name: 'xboardLoginErrorCredentials',
+      desc: '',
+      args: [],
+    );
+  }
+}
+
 class AppLocalizationDelegate extends LocalizationsDelegate<AppLocalizations> {
   const AppLocalizationDelegate();
 
