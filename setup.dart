@@ -1642,7 +1642,7 @@ void _applyWindowsAppName() {
   if (makeConfigFile.existsSync()) {
     var content = makeConfigFile.readAsStringSync();
     content = _replaceYamlValue(content, 'app_name', appName);
-    content = _replaceYamlValue(content, 'display_name', appNameEn);
+    content = _replaceYamlValue(content, 'display_name', appName);
     content = _replaceYamlValue(content, 'executable_name', exeName);
     content = _replaceYamlValue(content, 'output_base_file_name', exeName);
     makeConfigFile.writeAsStringSync(content);
