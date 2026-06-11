@@ -235,7 +235,7 @@ class _MinePageState extends ConsumerState<MinePage>
         onRefresh: _doRefresh,
         child: ListView(
           physics: const AlwaysScrollableScrollPhysics(),
-          padding: const EdgeInsets.fromLTRB(16, 12, 16, 12),
+          padding: const EdgeInsets.fromLTRB(16, 6, 16, 12),
           children: [
             if (isDesktop) ...[
               Row(

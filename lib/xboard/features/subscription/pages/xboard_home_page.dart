@@ -327,7 +327,7 @@ class _XBoardHomePageState extends ConsumerState<XBoardHomePage>
                               ),
                             ),
                           if (isDesktop && !compactMode)
-                            const SizedBox(height: 2),
+                            const SizedBox(height: 12),
                           // ── 未连接显示公告，已连接显示套餐信息。空间不足时隐藏，优先保留主操作区。 ──
                           if (showTopInfo)
                             if (isDesktop)
