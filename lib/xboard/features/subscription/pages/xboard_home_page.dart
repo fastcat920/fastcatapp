@@ -191,8 +191,7 @@ class _XBoardHomePageState extends ConsumerState<XBoardHomePage>
             color: Theme.of(context).brightness == Brightness.dark
                 ? Theme.of(context).colorScheme.surface
                 : const Color(0xFFFAFBFD),
-            child: SafeArea(
-              child: LayoutBuilder(
+            child: LayoutBuilder(
                 builder: (context, constraints) {
                   // 桌面端：响应式最大宽度
                   final contentMaxWidth = double.infinity;
@@ -406,7 +405,6 @@ class _XBoardHomePageState extends ConsumerState<XBoardHomePage>
                   );
                 },
               ),
-            ),
           );
         },
       ),
