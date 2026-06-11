@@ -262,7 +262,7 @@ class _XBoardHomePageState extends ConsumerState<XBoardHomePage>
                           if (isDesktop && !compactMode)
                             Padding(
                               padding: const EdgeInsets.fromLTRB(
-                                  horizontalPadding, 6, horizontalPadding, 12),
+                                  horizontalPadding, 6, horizontalPadding, 0),
                               child: Row(
                                 mainAxisAlignment:
                                     MainAxisAlignment.spaceBetween,
