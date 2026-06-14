@@ -914,17 +914,29 @@ end tell
     final releaseConfigPath = join(
       current, 'macos', 'Runner', 'Configs', 'Release.xcconfig');
     final releaseConfigFile = File(releaseConfigPath);
-    if (archName == 'universal' && releaseConfigFile.existsSync()) {
+    if (archName != null && releaseConfigFile.existsSync()) {
       releaseConfigBackup = releaseConfigFile.readAsStringSync();
       var updated = releaseConfigBackup;
-      if (!updated.contains('ONLY_ACTIVE_ARCH')) {
-        updated += '\nONLY_ACTIVE_ARCH = NO\n';
-      }
-      if (!updated.contains('ARCHS = arm64')) {
-        updated += 'ARCHS = arm64 x86_64\n';
+      if (archName == 'universal') {
+        if (!updated.contains('ONLY_ACTIVE_ARCH')) {
+          updated += '\nONLY_ACTIVE_ARCH = NO\n';
+        }
+        if (!updated.contains('ARCHS = arm64')) {
+          updated += 'ARCHS = arm64 x86_64\n';
+        }
+        print('[setup.dart]   ✅ Release.xcconfig patched for universal build');
+      } else {
+        if (!updated.contains('ONLY_ACTIVE_ARCH')) {
+          updated += '\nONLY_ACTIVE_ARCH = NO\n';
+        }
+        if (!updated.contains('ARCHS = ')) {
+          updated += 'ARCHS = $archName\n';
+        } else {
+          updated = updated.replaceFirst(RegExp(r'ARCHS = .*'), 'ARCHS = $archName');
+        }
+        print('[setup.dart]   ✅ Release.xcconfig patched for $archName build');
       }
       releaseConfigFile.writeAsStringSync(updated);
-      print('[setup.dart]   ✅ Release.xcconfig patched for universal build');
     }
 
     await Build.exec(
