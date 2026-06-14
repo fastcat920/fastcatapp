@@ -19,8 +19,12 @@ on:
         description: Build Linux amd64 packages
         type: boolean
         default: true
-      build_macos:
-        description: Build macOS Universal DMG (arm64+amd64)
+      build_macos_arm64:
+        description: Build macOS ARM64 DMG
+        type: boolean
+        default: true
+      build_macos_x86_64:
+        description: Build macOS x86_64 DMG
         type: boolean
         default: true
   push:
@@ -388,10 +392,10 @@ jobs:
           path: dist/**
           if-no-files-found: error
 
-  macos:
-    name: macOS Universal DMG
+  macos-arm64:
+    name: macOS ARM64 DMG
     runs-on: macos-latest
-    if: github.event_name == 'push' || inputs.build_macos
+    if: github.event_name == 'push' || inputs.build_macos_arm64
 
     steps:
       - name: Checkout
@@ -419,14 +423,57 @@ jobs:
       - name: Get packages
         run: flutter pub get
 
-      - name: Build macOS universal DMG
+      - name: Build macOS arm64 DMG
         env:
           XOR_KEY: ${{ secrets.XOR_KEY }}
-        run: dart run setup.dart macos --arch universal --out app --env stable
+        run: dart run setup.dart macos --arch arm64 --out app --env stable
 
-      - name: Upload macOS universal DMG
+      - name: Upload macOS arm64 DMG
         uses: actions/upload-artifact@v4
         with:
-          name: fastcat-macos
+          name: fastcat-macos-arm64
+          path: dist/*.dmg
+          if-no-files-found: error
+
+  macos-x86_64:
+    name: macOS x86_64 DMG
+    runs-on: macos-13
+    if: github.event_name == 'push' || inputs.build_macos_x86_64
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: "3.27.4"
+          channel: stable
+          cache: true
+
+      - name: Setup Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: "1.20.x"
+          cache-dependency-path: core/go.sum
+
+      - name: Enable macOS desktop
+        run: flutter config --enable-macos-desktop
+
+      - name: Flutter doctor
+        run: flutter doctor -v
+
+      - name: Get packages
+        run: flutter pub get
+
+      - name: Build macOS x86_64 DMG
+        env:
+          XOR_KEY: ${{ secrets.XOR_KEY }}
+        run: dart run setup.dart macos --arch amd64 --out app --env stable
+
+      - name: Upload macOS x86_64 DMG
+        uses: actions/upload-artifact@v4
+        with:
+          name: fastcat-macos-x86_64
           path: dist/*.dmg
           if-no-files-found: error

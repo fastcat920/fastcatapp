@@ -985,9 +985,10 @@ end tell
     final dmgConfigSourcePath =
         join(current, "macos", "packaging", "dmg", "make_config.json");
     final version = Build.appVersion;
+    final String archSuffix = (archName != null && archName != 'universal') ? '-$archName' : '';
     final dmgFileName = version.isNotEmpty
-        ? '${productName}-${version}.dmg'
-        : '${productName}.dmg';
+        ? '${productName}-${version}$archSuffix.dmg'
+        : '${productName}$archSuffix.dmg';
     final dmgFile = File(join(Build.distPath, dmgFileName));
     if (dmgFile.existsSync()) {
       dmgFile.deleteSync();
