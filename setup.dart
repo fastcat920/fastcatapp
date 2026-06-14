@@ -917,6 +917,8 @@ end tell
     if (archName != null && releaseConfigFile.existsSync()) {
       releaseConfigBackup = releaseConfigFile.readAsStringSync();
       var updated = releaseConfigBackup;
+      // Xcode uses x86_64, not amd64
+      final xcodeArchName = archName == 'amd64' ? 'x86_64' : archName;
       if (archName == 'universal') {
         if (!updated.contains('ONLY_ACTIVE_ARCH')) {
           updated += '\nONLY_ACTIVE_ARCH = NO\n';
@@ -930,11 +932,11 @@ end tell
           updated += '\nONLY_ACTIVE_ARCH = NO\n';
         }
         if (!updated.contains('ARCHS = ')) {
-          updated += 'ARCHS = $archName\n';
+          updated += 'ARCHS = $xcodeArchName\n';
         } else {
-          updated = updated.replaceFirst(RegExp(r'ARCHS = .*'), 'ARCHS = $archName');
+          updated = updated.replaceFirst(RegExp(r'ARCHS = .*'), 'ARCHS = $xcodeArchName');
         }
-        print('[setup.dart]   ✅ Release.xcconfig patched for $archName build');
+        print('[setup.dart]   ✅ Release.xcconfig patched for $archName build (ARCHS=$xcodeArchName)');
       }
       releaseConfigFile.writeAsStringSync(updated);
     }
