@@ -158,9 +158,9 @@ class _LoginPageState extends ConsumerState<LoginPage> {
         lower.contains('network is unreachable')) {
       return al.xboardLoginErrorNetwork;
     }
-    if (message == '登录失败' ||
-        message.contains('登陆失败') ||
-        message.contains('登录失败') ||
+    final trimmed = message.trim();
+    if (trimmed == '登录失败' ||
+        trimmed == '登陆失败' ||
         lower.contains('invalid credentials') ||
         lower.contains('unauthorized') ||
         lower.contains('email or password')) {
@@ -170,8 +170,8 @@ class _LoginPageState extends ConsumerState<LoginPage> {
         lower.contains('device limit exceeded')) {
       return message;
     }
-    // 兜底：无法识别时当作配置加载失败
-    return al.xboardLoginErrorConfigLoad;
+    // 后端业务错误保留 API 返回的真实提示，例如登录限制、账号状态等。
+    return message;
   }
 
   Future<void> _openOfficialWebsite(BuildContext context) async {

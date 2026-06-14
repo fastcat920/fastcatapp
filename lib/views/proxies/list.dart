@@ -9,7 +9,7 @@ import 'package:fl_clash/providers/state.dart';
 import 'package:fl_clash/state.dart';
 import 'package:fl_clash/xboard/features/shared/styles/styles.dart';
 import 'package:fl_clash/widgets/widgets.dart';
-import 'package:flutter/material.dart';
+import 'package:flutter/material.dart' hide RoundedSuperellipseBorder;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'card.dart';

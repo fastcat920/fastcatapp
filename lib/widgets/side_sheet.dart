@@ -2,8 +2,8 @@ import 'dart:ui';
 
 import 'package:fl_clash/common/color.dart';
 import 'package:fl_clash/common/rounded_superellipse_border.dart';
-import 'package:flutter/material.dart';
-import 'package:flutter/rendering.dart';
+import 'package:flutter/material.dart' hide RoundedSuperellipseBorder;
+import 'package:flutter/rendering.dart' hide RoundedSuperellipseBorder;
 
 const Duration _bottomSheetEnterDuration = Duration(milliseconds: 300);
 const Duration _bottomSheetExitDuration = Duration(milliseconds: 200);

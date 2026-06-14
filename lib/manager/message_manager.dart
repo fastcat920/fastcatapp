@@ -4,7 +4,7 @@ import 'dart:math';
 import 'package:fl_clash/common/common.dart';
 import 'package:fl_clash/models/models.dart';
 import 'package:fl_clash/widgets/fade_box.dart';
-import 'package:flutter/material.dart';
+import 'package:flutter/material.dart' hide RoundedSuperellipseBorder;
 
 class MessageManager extends StatefulWidget {
   final Widget child;

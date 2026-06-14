@@ -1,5 +1,7 @@
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'dart:async';
+import 'dart:convert';
+import 'dart:io';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:fl_clash/xboard/features/auth/auth.dart';
@@ -726,16 +728,18 @@ class XBoardUserAuthNotifier extends Notifier<UserAuthState> {
 
       // 业务错误（密码错误/账号封禁等）直接展示后端消息，不重试
       if (e is ApiException) {
+        final apiMessage = await _resolveLoginApiMessage(email, password, e);
         state = state.copyWith(
           isLoading: false,
-          errorMessage: _normalizeLoginError(e.message),
+          errorMessage: _normalizeLoginError(apiMessage ?? e.message),
         );
         return false;
       }
       if (e is AuthException) {
+        final apiMessage = await _resolveLoginApiMessage(email, password, e);
         state = state.copyWith(
           isLoading: false,
-          errorMessage: _normalizeLoginError(e.message),
+          errorMessage: _normalizeLoginError(apiMessage ?? e.message),
         );
         return false;
       }
@@ -770,6 +774,90 @@ class XBoardUserAuthNotifier extends Notifier<UserAuthState> {
       );
       return false;
     }
+  }
+
+  Future<String?> _resolveLoginApiMessage(
+    String email,
+    String password,
+    dynamic error,
+  ) async {
+    if (!_looksLikeGatewayRoutingFailure(error)) return null;
+
+    final apiPrefix = XBoardConfig.provider.getApiPrefix();
+    for (final baseUrl in XBoardConfig.allPanelUrls) {
+      final message = await _fetchDirectLoginErrorMessage(
+        baseUrl,
+        apiPrefix,
+        email,
+        password,
+      );
+      if (message != null && message.trim().isNotEmpty) {
+        _logger.info('从业务 API 获取登录失败提示: $message');
+        return message;
+      }
+    }
+    return null;
+  }
+
+  bool _looksLikeGatewayRoutingFailure(dynamic error) {
+    if (error.code == 404) return true;
+    final lower = error.message.toLowerCase();
+    return lower.contains('<html') ||
+        lower.contains('404 not found') ||
+        lower.contains('nginx');
+  }
+
+  Future<String?> _fetchDirectLoginErrorMessage(
+    String baseUrl,
+    String apiPrefix,
+    String email,
+    String password,
+  ) async {
+    HttpClient? client;
+    try {
+      final normalizedBase = baseUrl.trim().replaceAll(RegExp(r'/$'), '');
+      final normalizedPrefix =
+          apiPrefix.startsWith('/') ? apiPrefix : '/$apiPrefix';
+      final uri = Uri.parse(
+        '$normalizedBase$normalizedPrefix/passport/auth/login',
+      );
+
+      client = HttpClient();
+      client.connectionTimeout = const Duration(seconds: 6);
+      client.findProxy = (_) => 'DIRECT';
+      client.badCertificateCallback = (_, __, ___) => true;
+      final request = await client.postUrl(uri).timeout(
+            const Duration(seconds: 6),
+          );
+      request.headers.contentType = ContentType.json;
+      request.headers.set(HttpHeaders.acceptHeader, 'application/json');
+      request.add(utf8.encode(jsonEncode({
+        'email': email,
+        'password': password,
+      })));
+      final response = await request.close().timeout(
+            const Duration(seconds: 8),
+          );
+      final body = await utf8.decodeStream(response).timeout(
+            const Duration(seconds: 8),
+          );
+      final decoded = jsonDecode(body);
+      if (decoded is Map) {
+        final message = decoded['message'] ?? decoded['error'];
+        if (message != null && message.toString().trim().isNotEmpty) {
+          return message.toString();
+        }
+        final data = decoded['data'];
+        if (data is String && data.trim().isNotEmpty) {
+          return data;
+        }
+      }
+    } catch (e) {
+      _logger.info('直连业务 API 获取登录失败提示失败: $baseUrl, $e');
+    } finally {
+      client?.close(force: true);
+    }
+    return null;
   }
 
   Future<void> _refreshSdkForLogin() async {
@@ -842,9 +930,9 @@ class XBoardUserAuthNotifier extends Notifier<UserAuthState> {
 
     // 降级：旧格式走文本匹配
     final lower = message.toLowerCase();
-    if (message == '登录失败' ||
-        message.contains('登陆失败') ||
-        message.contains('登录失败') ||
+    final trimmed = message.trim();
+    if (trimmed == '登录失败' ||
+        trimmed == '登陆失败' ||
         lower.contains('invalid credentials') ||
         lower.contains('unauthorized') ||
         lower.contains('email or password')) {

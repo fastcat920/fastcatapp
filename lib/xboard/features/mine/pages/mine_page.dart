@@ -132,11 +132,14 @@ class _MinePageState extends ConsumerState<MinePage>
       margin: EdgeInsets.zero,
       elevation: isDark ? 0 : 1,
       shadowColor: isDark ? null : Colors.black.withValues(alpha: 0.08),
-      color: isDark ? null : Colors.white,
+      color: isDark ? theme.colorScheme.surfaceContainerLow : Colors.white,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(20),
         side: isDark
-            ? BorderSide.none
+            ? BorderSide(
+                color: theme.colorScheme.outline.withValues(alpha: 0.18),
+                width: 1,
+              )
             : const BorderSide(color: Color(0xFFEEF0F4), width: 1),
       ),
       child: ListTile(
@@ -293,11 +296,14 @@ class _MinePageState extends ConsumerState<MinePage>
       margin: EdgeInsets.zero,
       elevation: isDark ? 0 : 1,
       shadowColor: isDark ? null : Colors.black.withValues(alpha: 0.08),
-      color: isDark ? null : Colors.white,
+      color: isDark ? theme.colorScheme.surfaceContainerLow : Colors.white,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(20),
         side: isDark
-            ? BorderSide.none
+            ? BorderSide(
+                color: theme.colorScheme.outline.withValues(alpha: 0.18),
+                width: 1,
+              )
             : const BorderSide(color: Color(0xFFEEF0F4), width: 1),
       ),
       child: Column(

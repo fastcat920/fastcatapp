@@ -5,9 +5,9 @@ import 'package:collection/collection.dart';
 import 'package:fl_clash/common/rounded_superellipse_border.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/gestures.dart';
-import 'package:flutter/material.dart';
+import 'package:flutter/material.dart' hide RoundedSuperellipseBorder;
 import 'package:flutter/physics.dart';
-import 'package:flutter/rendering.dart';
+import 'package:flutter/rendering.dart' hide RoundedSuperellipseBorder;
 
 const EdgeInsetsGeometry _kHorizontalItemPadding =
     EdgeInsets.symmetric(vertical: 2, horizontal: 3);
