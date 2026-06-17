@@ -87,11 +87,11 @@ class ClashService extends ClashHandlerInterface {
   reStart() async {
     if (isStarting == true) return;
     isStarting = true;
-    socketCompleter = Completer();
     try {
       if (process != null) {
         await shutdown();
       }
+      socketCompleter = Completer();
       final serverSocket = await serverCompleter.future;
       // macOS 和 Windows 用 TCP，传端口号；Linux 用 Unix Socket，传路径
       final arg = (Platform.isWindows || Platform.isMacOS)
@@ -117,10 +117,11 @@ class ClashService extends ClashHandlerInterface {
       // macOS: 移除 Gatekeeper quarantine 属性，防止下载的 DMG 安装后核心被阻止执行
       if (Platform.isMacOS) {
         try {
-          await Process.run('xattr', ['-rd', 'com.apple.quarantine', appPath.corePath]);
+          await Process.run(
+              'xattr', ['-rd', 'com.apple.quarantine', appPath.corePath]);
         } catch (_) {}
       }
-      process = await Process.start(
+      final startedProcess = await Process.start(
         appPath.corePath,
         [
           arg,
@@ -131,6 +132,7 @@ class ClashService extends ClashHandlerInterface {
             ? ProcessStartMode.detachedWithStdio
             : ProcessStartMode.normal,
       );
+      process = startedProcess;
       process?.stdout.listen((_) {});
       process?.stderr
           .transform(const Utf8Decoder(allowMalformed: true))
@@ -143,7 +145,10 @@ class ClashService extends ClashHandlerInterface {
       // 注意：Windows 以 detachedWithStdio 启动，Dart 不支持对 detached 进程
       // 访问 exitCode（会抛 StateError: Process is detached），必须跳过
       if (!Platform.isWindows) {
-        process?.exitCode.then((code) {
+        startedProcess.exitCode.then((code) {
+          if (!identical(process, startedProcess)) {
+            return;
+          }
           if (code != 0 && !socketCompleter.isCompleted) {
             final err = "Core process exited with code $code";
             commonPrint.log(err);
@@ -190,9 +195,15 @@ class ClashService extends ClashHandlerInterface {
   }
 
   _destroySocket() async {
-    if (socketCompleter.isCompleted) {
+    if (!socketCompleter.isCompleted) {
+      return;
+    }
+    try {
       final lastSocket = await socketCompleter.future;
       await lastSocket.close();
+    } catch (e) {
+      commonPrint.log("_destroySocket skipped: $e");
+    } finally {
       socketCompleter = Completer();
     }
   }

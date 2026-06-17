@@ -34,6 +34,9 @@ class _XBoardConnectButtonState extends ConsumerState<XBoardConnectButton>
   bool isStart = false;
   bool _isCheckingSubscription = false;
   bool _isSwitching = false;
+
+  bool get _isBusy => _isCheckingSubscription || _isSwitching;
+
   @override
   void initState() {
     super.initState();
@@ -71,9 +74,7 @@ class _XBoardConnectButtonState extends ConsumerState<XBoardConnectButton>
   }
 
   Future<void> handleSwitchStart() async {
-    if (_isSwitching ||
-        _isCheckingSubscription ||
-        globalState.appController.isCoreSwitching) {
+    if (_isBusy || globalState.appController.isCoreSwitching) {
       return;
     }
     final currentlyRunning = ref.read(runTimeProvider) != null;
@@ -91,13 +92,21 @@ class _XBoardConnectButtonState extends ConsumerState<XBoardConnectButton>
     }
 
     // 开始连接前：先刷新服务端订阅状态，避免首页缓存滞后时仍然放行连接。
-    _isCheckingSubscription = true;
+    if (mounted) {
+      setState(() => _isCheckingSubscription = true);
+    } else {
+      _isCheckingSubscription = true;
+    }
     try {
       await ref
           .read(xboardUserProvider.notifier)
           .refreshSubscriptionInfo(importProfile: false);
     } finally {
-      _isCheckingSubscription = false;
+      if (mounted) {
+        setState(() => _isCheckingSubscription = false);
+      } else {
+        _isCheckingSubscription = false;
+      }
     }
     if (!mounted) return;
 
@@ -235,11 +244,20 @@ class _XBoardConnectButtonState extends ConsumerState<XBoardConnectButton>
             clipBehavior: Clip.antiAlias,
             materialTapTargetSize: MaterialTapTargetSize.padded,
             heroTag: 'xboard_connect_button',
-            onPressed: _isSwitching ? null : handleSwitchStart,
-            icon: AnimatedIcon(
-              icon: AnimatedIcons.play_pause,
-              progress: _animation,
-            ),
+            onPressed: _isBusy ? null : handleSwitchStart,
+            icon: _isBusy
+                ? const SizedBox(
+                    width: 20,
+                    height: 20,
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2.5,
+                      color: Colors.white,
+                    ),
+                  )
+                : AnimatedIcon(
+                    icon: AnimatedIcons.play_pause,
+                    progress: _animation,
+                  ),
             label: SizedBox(
               width: textWidth * _animation.value,
               child: child!,
@@ -299,9 +317,9 @@ class _XBoardConnectButtonState extends ConsumerState<XBoardConnectButton>
               child: TVFocusable(
                 autofocus: system.isTV,
                 borderRadius: BorderRadius.circular(outerSize / 2),
-                onPressed: handleSwitchStart,
+                onPressed: _isBusy ? null : handleSwitchStart,
                 child: GestureDetector(
-                  onTap: _isSwitching ? null : handleSwitchStart,
+                  onTap: _isBusy ? null : handleSwitchStart,
                   child: SizedBox(
                     width: outerSize,
                     height: outerSize,
@@ -352,7 +370,7 @@ class _XBoardConnectButtonState extends ConsumerState<XBoardConnectButton>
                                 ),
                                 child: AnimatedSwitcher(
                                   duration: const Duration(milliseconds: 250),
-                                  child: _isSwitching
+                                  child: _isBusy
                                       ? SizedBox(
                                           key: const ValueKey('switching'),
                                           width: iconSize,

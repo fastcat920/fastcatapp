@@ -35,7 +35,12 @@ class VPNItem extends ConsumerWidget {
 }
 
 class TUNItem extends ConsumerWidget {
-  const TUNItem({super.key});
+  const TUNItem({
+    super.key,
+    this.closeOnChanged = false,
+  });
+
+  final bool closeOnChanged;
 
   @override
   Widget build(BuildContext context, ref) {
@@ -55,6 +60,13 @@ class TUNItem extends ConsumerWidget {
                   enable: value,
                 ),
               );
+          if (closeOnChanged) {
+            try {
+              Navigator.of(context).pop();
+            } catch (_) {
+              // 弹窗可能已经关闭，忽略异常
+            }
+          }
         },
       ),
     );

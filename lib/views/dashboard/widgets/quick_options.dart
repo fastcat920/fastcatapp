@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:fl_clash/common/common.dart';
 import 'package:fl_clash/providers/config.dart';
+import 'package:fl_clash/state.dart';
 import 'package:fl_clash/views/config/network.dart';
 import 'package:fl_clash/widgets/widgets.dart';
 import 'package:flutter/material.dart';
@@ -19,19 +20,7 @@ class TUNButton extends StatelessWidget {
           showSheet(
             context: context,
             builder: (_, type) {
-              return AdaptiveSheetScaffold(
-                type: type,
-                body: generateListView(
-                  generateSection(
-                    items: [
-                      if (system.isDesktop) const TUNItem(),
-                      if (Platform.isMacOS) const AutoSetSystemDnsItem(),
-                      const TunStackItem(),
-                    ],
-                  ),
-                ),
-                title: appLocalizations.tun,
-              );
+              return _TunSheetContent(type: type);
             },
           );
         },
@@ -71,6 +60,9 @@ class TUNButton extends StatelessWidget {
                   return Switch(
                     value: enable,
                     onChanged: (value) {
+                      if (value) {
+                        globalState.appController.resetTunAdminDenied();
+                      }
                       ref.read(patchClashConfigProvider.notifier).updateState(
                             (state) => state.copyWith.tun(
                               enable: value,
@@ -84,6 +76,40 @@ class TUNButton extends StatelessWidget {
           ),
         ),
       ),
+    );
+  }
+}
+
+
+class _TunSheetContent extends ConsumerWidget {
+  const _TunSheetContent({required this.type});
+
+  final SheetType type;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    // 监听 TUN 开关状态变化，变化后自动关闭弹窗
+    ref.listen(
+      patchClashConfigProvider.select((s) => s.tun.enable),
+      (prev, next) {
+        if (prev != next) {
+          Navigator.of(context).pop();
+        }
+      },
+    );
+
+    return AdaptiveSheetScaffold(
+      type: type,
+      body: generateListView(
+        generateSection(
+          items: [
+            if (system.isDesktop) const TUNItem(closeOnChanged: true),
+            if (Platform.isMacOS) const AutoSetSystemDnsItem(),
+            const TunStackItem(),
+          ],
+        ),
+      ),
+      title: appLocalizations.tun,
     );
   }
 }

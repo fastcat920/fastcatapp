@@ -55,9 +55,9 @@ Future<T?> showSheet<T>({
     true => showModalBottomSheet<T>(
         context: context,
         isScrollControlled: props.isScrollControlled,
-        builder: (_) {
+        builder: (sheetContext) {
           return SafeArea(
-            child: builder(context, SheetType.bottomSheet),
+            child: builder(sheetContext, SheetType.bottomSheet),
           );
         },
         showDragHandle: false,
@@ -71,8 +71,8 @@ Future<T?> showSheet<T>({
           maxWidth: props.maxWidth ?? 360,
         ),
         filter: props.blur ? commonFilter : null,
-        builder: (_) {
-          return builder(context, SheetType.sideSheet);
+        builder: (sheetContext) {
+          return builder(sheetContext, SheetType.sideSheet);
         },
       ),
   };

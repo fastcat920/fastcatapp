@@ -22,6 +22,16 @@ import 'common/common.dart';
 import 'models/models.dart';
 import 'views/profiles/override_profile.dart';
 
+class _TunAdminResult {
+  const _TunAdminResult({
+    required this.enableTun,
+    required this.didRestartCore,
+  });
+
+  final bool enableTun;
+  final bool didRestartCore;
+}
+
 class AppController {
   int? lastProfileModified;
 
@@ -105,11 +115,15 @@ class AppController {
     }, args: [groupName, proxyName]);
   }
 
-  restartCore() async {
+  restartCore({
+    bool setupProfile = true,
+    bool restoreStart = true,
+  }) async {
     commonPrint.log('restart core');
+    final wasStart = _ref.read(runTimeProvider.notifier).isStart;
     await clashService?.reStart();
-    await _initCore();
-    if (_ref.read(runTimeProvider.notifier).isStart) {
+    await _initCore(setupProfile: setupProfile);
+    if (restoreStart && wasStart) {
       globalState.startTime = null; // 重启后计时归零
       await globalState.handleStart();
     }
@@ -325,21 +339,39 @@ class AppController {
 
   Future<void> _updateClashConfig() async {
     final updateParams = _ref.read(updateParamsProvider);
+    final wasStart = _ref.read(runTimeProvider.notifier).isStart;
     final res = await _requestAdmin(updateParams.tun.enable);
     if (res.isError) {
       return;
     }
-    final realTunEnable = _ref.read(realTunEnableProvider);
+    final adminResult = res.data!;
+    if (adminResult.didRestartCore) {
+      await _ref.read(currentProfileProvider)?.checkAndUpdate();
+      await _setupClashConfigWithTun(
+        _ref.read(patchClashConfigProvider),
+        adminResult.enableTun,
+      );
+      _ref.read(realTunEnableProvider.notifier).value = adminResult.enableTun;
+      await updateGroups();
+      await updateProviders();
+      if (wasStart) {
+        globalState.startTime = null;
+        await globalState.handleStart();
+      }
+      return;
+    }
     final message = await clashCore.updateConfig(
       updateParams.copyWith.tun(
-        enable: realTunEnable,
+        enable: adminResult.enableTun,
       ),
     );
     if (message.isNotEmpty) throw message;
+    _ref.read(realTunEnableProvider.notifier).value = adminResult.enableTun;
   }
 
-  Future<Result<bool>> _requestAdmin(bool enableTun) async {
+  Future<Result<_TunAdminResult>> _requestAdmin(bool enableTun) async {
     final realTunEnable = _ref.read(realTunEnableProvider);
+    var didRestartCore = false;
     if (enableTun != realTunEnable && realTunEnable == false) {
       // 本会话已拒绝过 UAC，不再重复弹出
       if (_tunAdminDenied) {
@@ -348,7 +380,6 @@ class AppController {
         final code = await system.authorizeCore();
         switch (code) {
           case AuthorizeCode.success:
-            await restartCore();
             // 验证服务是否真的起来了（Win11 可能批准 UAC 但服务启动失败）
             final isAdminNow = await system.checkIsAdmin();
             if (!isAdminNow) {
@@ -356,6 +387,8 @@ class AppController {
               enableTun = false;
               break;
             }
+            await restartCore(setupProfile: false, restoreStart: false);
+            didRestartCore = true;
             break;
           case AuthorizeCode.none:
             break;
@@ -366,8 +399,12 @@ class AppController {
         }
       }
     }
-    _ref.read(realTunEnableProvider.notifier).value = enableTun;
-    return Result.success(enableTun);
+    return Result.success(
+      _TunAdminResult(
+        enableTun: enableTun,
+        didRestartCore: didRestartCore,
+      ),
+    );
   }
 
   Future<void> setupClashConfig() async {
@@ -384,12 +421,25 @@ class AppController {
   _setupClashConfig() async {
     await _ref.read(currentProfileProvider)?.checkAndUpdate();
     final patchConfig = _ref.read(patchClashConfigProvider);
+    final wasStart = _ref.read(runTimeProvider.notifier).isStart;
     final res = await _requestAdmin(patchConfig.tun.enable);
     if (res.isError) {
       return;
     }
-    final realTunEnable = _ref.read(realTunEnableProvider);
-    final realPatchConfig = patchConfig.copyWith.tun(enable: realTunEnable);
+    final adminResult = res.data!;
+    await _setupClashConfigWithTun(patchConfig, adminResult.enableTun);
+    _ref.read(realTunEnableProvider.notifier).value = adminResult.enableTun;
+    if (adminResult.didRestartCore && wasStart) {
+      globalState.startTime = null;
+      await globalState.handleStart();
+    }
+  }
+
+  Future<void> _setupClashConfigWithTun(
+    ClashConfig patchConfig,
+    bool enableTun,
+  ) async {
+    final realPatchConfig = patchConfig.copyWith.tun(enable: enableTun);
     final params = await globalState.getSetupParams(
       pathConfig: realPatchConfig,
     );
@@ -773,7 +823,7 @@ class AppController {
     await handleExit();
   }
 
-  Future<void> _initCore() async {
+  Future<void> _initCore({bool setupProfile = true}) async {
     if (!Platform.isIOS) {
       final isInit = await clashCore.isInit;
       if (!isInit) {
@@ -783,7 +833,9 @@ class AppController {
         );
       }
     }
-    await applyProfile(silence: true);
+    if (setupProfile) {
+      await applyProfile(silence: true);
+    }
 
     // iOS always-on: start the tunnel in idle mode so mihomo is available
     // for IPC (delay tests, proxy queries) before the user taps "connect".
