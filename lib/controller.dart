@@ -356,7 +356,7 @@ class AppController {
               enableTun = false;
               break;
             }
-            return Result.error('');
+            break;
           case AuthorizeCode.none:
             break;
           case AuthorizeCode.error:

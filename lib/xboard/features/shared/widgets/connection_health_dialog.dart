@@ -221,12 +221,11 @@ class ConnectionHealthDialog extends ConsumerWidget {
     if (sdk.isInitialized) {
       final baseUrl = sdk.httpService.baseUrl.trim();
       if (baseUrl.isNotEmpty) {
-        return '${gatewayDisplayLabel(baseUrl)}'
-            '${_normalizeApiPrefix(sdk.httpService.apiPrefix)}';
+        return gatewayDisplayLabel(baseUrl);
       }
     }
     if (fallback == null) return '';
-    return '${gatewayDisplayLabel(fallback.baseUrl)}${fallback.apiPrefix}';
+    return gatewayDisplayLabel(fallback.baseUrl);
   }
 
   static String _normalizeApiPrefix(String value) {
