@@ -61,10 +61,12 @@ class TUNItem extends ConsumerWidget {
                 ),
               );
           if (closeOnChanged) {
+            debugPrint('[TUNItem] closeOnChanged=true, 尝试 pop');
             try {
-              Navigator.of(context).pop();
-            } catch (_) {
-              // 弹窗可能已经关闭，忽略异常
+              Navigator.of(context, rootNavigator: true).pop();
+              debugPrint('[TUNItem] pop() 成功');
+            } catch (e) {
+              debugPrint('[TUNItem] pop() 失败: $e');
             }
           }
         },

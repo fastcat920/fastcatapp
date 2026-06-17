@@ -80,26 +80,50 @@ class TUNButton extends StatelessWidget {
   }
 }
 
-
-class _TunSheetContent extends ConsumerWidget {
+class _TunSheetContent extends ConsumerStatefulWidget {
   const _TunSheetContent({required this.type});
 
   final SheetType type;
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    // 监听 TUN 开关状态变化，变化后自动关闭弹窗
+  ConsumerState<_TunSheetContent> createState() => _TunSheetContentState();
+}
+
+class _TunSheetContentState extends ConsumerState<_TunSheetContent> {
+  @override
+  void initState() {
+    super.initState();
+    // 在 initState 注册监听，避免 rebuild 丢失订阅
     ref.listen(
       patchClashConfigProvider.select((s) => s.tun.enable),
       (prev, next) {
-        if (prev != next) {
-          Navigator.of(context).pop();
+        debugPrint('[TunSheet] TUN状态变化: $prev -> $next, mounted=$mounted');
+        if (prev != next && mounted) {
+          debugPrint('[TunSheet] 尝试关闭弹窗...');
+          try {
+            final nav = Navigator.of(context, rootNavigator: true);
+            debugPrint('[TunSheet] Navigator found, popping...');
+            nav.pop();
+            debugPrint('[TunSheet] pop() 调用完成');
+          } catch (e, stack) {
+            debugPrint('[TunSheet] pop() 失败: $e');
+            debugPrint('[TunSheet] 尝试 rootNavigator...');
+            try {
+              Navigator.of(context, rootNavigator: true).pop();
+              debugPrint('[TunSheet] rootNavigator pop() 成功');
+            } catch (e2) {
+              debugPrint('[TunSheet] rootNavigator pop() 也失败: $e2');
+            }
+          }
         }
       },
     );
+  }
 
+  @override
+  Widget build(BuildContext context) {
     return AdaptiveSheetScaffold(
-      type: type,
+      type: widget.type,
       body: generateListView(
         generateSection(
           items: [
