@@ -129,7 +129,7 @@ class SubscriptionStatusDialog extends StatelessWidget {
   String _getTitle(BuildContext context) {
     switch (statusResult.type) {
       case SubscriptionStatusType.noSubscription:
-        return '无可用套餐';
+        return AppLocalizations.of(context).xboardNoAvailableSubscription;
       case SubscriptionStatusType.expired:
         return AppLocalizations.of(context).xboardSubscriptionHasExpired;
       case SubscriptionStatusType.exhausted:
@@ -141,7 +141,7 @@ class SubscriptionStatusDialog extends StatelessWidget {
 
   String _getContent(BuildContext context) {
     if (statusResult.type == SubscriptionStatusType.noSubscription) {
-      return '请购买套餐后使用';
+      return AppLocalizations.of(context).xboardPurchaseSubscriptionToUse;
     }
     return statusResult.getDetailMessage(context) ??
         statusResult.getMessage(context);
@@ -310,7 +310,7 @@ class SubscriptionStatusDialog extends StatelessWidget {
                   WidgetStatePropertyAll(XbUiStatusColor.pending(context)),
             ),
             icon: const Icon(Icons.restart_alt, size: 18),
-            label: const Text('重置流量'),
+            label: Text(AppLocalizations.of(context).xboardResetTraffic),
           ),
         ),
       );
@@ -353,7 +353,7 @@ class SubscriptionStatusDialog extends StatelessWidget {
   String _getPrimaryButtonText(BuildContext context) {
     switch (statusResult.type) {
       case SubscriptionStatusType.noSubscription:
-        return '购买套餐';
+        return AppLocalizations.of(context).xboardBuyPlan;
       case SubscriptionStatusType.expired:
         return AppLocalizations.of(context).xboardRenewPlan;
       case SubscriptionStatusType.exhausted:
@@ -365,7 +365,7 @@ class SubscriptionStatusDialog extends StatelessWidget {
 
   String _getSecondaryButtonText(BuildContext context) {
     if (statusResult.type == SubscriptionStatusType.noSubscription) {
-      return '取消';
+      return AppLocalizations.of(context).cancel;
     }
     return AppLocalizations.of(context).xboardHandleLater;
   }

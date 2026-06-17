@@ -2,6 +2,7 @@ import 'dart:async';
 import 'package:fl_clash/enum/enum.dart';
 import 'package:fl_clash/models/models.dart';
 import 'package:fl_clash/providers/providers.dart';
+import 'package:fl_clash/state.dart';
 import 'package:fl_clash/views/proxies/proxies.dart';
 import 'package:fl_clash/widgets/widgets.dart';
 import 'package:flutter/material.dart';
@@ -196,14 +197,14 @@ class _NodeSelectorBarState extends ConsumerState<NodeSelectorBar> {
       {String? displayName}) {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
-    final isDark = theme.brightness == Brightness.dark;
     final cardRadius = BorderRadius.circular(XbUiTokens.radiusCard);
     return TVFocusable(
       borderRadius: cardRadius,
       onPressed: () => _handleOpenProxiesView(context),
       child: Material(
-        color: isDark ? colorScheme.surfaceContainerLow : Colors.white,
+        color: XbUiCardStyle.background(context),
         borderRadius: cardRadius,
+        clipBehavior: Clip.antiAlias,
         child: InkWell(
           onTap: () => _handleOpenProxiesView(context),
           borderRadius: cardRadius,
@@ -211,9 +212,7 @@ class _NodeSelectorBarState extends ConsumerState<NodeSelectorBar> {
             decoration: BoxDecoration(
               borderRadius: cardRadius,
               border: Border.all(
-                color: isDark
-                    ? colorScheme.outline.withValues(alpha: 0.18)
-                    : XbUiTokens.cardBorderLight,
+                color: XbUiCardStyle.shape(context).side.color,
               ),
             ),
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
@@ -260,9 +259,7 @@ class _NodeSelectorBarState extends ConsumerState<NodeSelectorBar> {
                 _DelayBadge(proxyName: proxy.name),
                 Icon(
                   Icons.chevron_right,
-                  color: isDark
-                      ? Theme.of(context).colorScheme.onSurfaceVariant
-                      : const Color(0xFF9CA3B4),
+                  color: Theme.of(context).colorScheme.onSurfaceVariant,
                   size: 22,
                 ),
               ],
@@ -274,17 +271,11 @@ class _NodeSelectorBarState extends ConsumerState<NodeSelectorBar> {
   }
 
   Widget _buildLoadingState(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
     return Container(
       decoration: BoxDecoration(
-        color: isDark
-            ? Theme.of(context)
-                .colorScheme
-                .surfaceContainerHighest
-                .withValues(alpha: 0.15)
-            : Colors.white,
+        color: XbUiCardStyle.background(context),
         borderRadius: BorderRadius.circular(XbUiTokens.radiusCard),
-        border: isDark ? null : Border.all(color: XbUiTokens.cardBorderLight),
+        border: Border.all(color: XbUiCardStyle.shape(context).side.color),
       ),
       padding: const EdgeInsets.all(14),
       child: Row(
@@ -334,17 +325,12 @@ class _NodeSelectorBarState extends ConsumerState<NodeSelectorBar> {
   }
 
   Widget _buildEmptyState(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final importState = ref.watch(profileImportProvider);
     return Container(
       decoration: BoxDecoration(
-        color: isDark
-            ? Theme.of(context)
-                .colorScheme
-                .surfaceContainerHighest
-                .withValues(alpha: 0.15)
-            : Colors.white,
+        color: XbUiCardStyle.background(context),
         borderRadius: BorderRadius.circular(XbUiTokens.radiusCard),
-        border: isDark ? null : Border.all(color: XbUiTokens.cardBorderLight),
+        border: Border.all(color: XbUiCardStyle.shape(context).side.color),
       ),
       padding: const EdgeInsets.all(14),
       child: Row(
@@ -378,21 +364,48 @@ class _NodeSelectorBarState extends ConsumerState<NodeSelectorBar> {
               ],
             ),
           ),
+          TextButton(
+            onPressed: importState.isImporting ? null : _reloadNodes,
+            style: XbUiButton.textChipPrimary(context),
+            child: Text(
+              AppLocalizations.of(context).xboardReloadNodes,
+              style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w500),
+            ),
+          ),
+          const SizedBox(width: 8),
           ElevatedButton(
-            onPressed: () => _handleOpenProxiesView(context),
+            onPressed: importState.isImporting
+                ? null
+                : () => _handleOpenProxiesView(context),
             style: XbUiButton.filledPrimary(context).copyWith(
               minimumSize: const WidgetStatePropertyAll(Size(56, 30)),
               padding: const WidgetStatePropertyAll(
                   EdgeInsets.symmetric(horizontal: 10)),
             ),
-            child: const Text(
-              '切换',
-              style: TextStyle(fontSize: 12, fontWeight: FontWeight.w500),
+            child: Text(
+              AppLocalizations.of(context).xboardSwitch,
+              style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w500),
             ),
           ),
         ],
       ),
     );
+  }
+
+  Future<void> _reloadNodes() async {
+    if (ref.read(profileImportProvider).isImporting) return;
+    final subscriptionUrl = ref.read(subscriptionInfoProvider)?.subscribeUrl;
+    if (subscriptionUrl != null && subscriptionUrl.isNotEmpty) {
+      final ok = await ref
+          .read(profileImportProvider.notifier)
+          .importSubscription(subscriptionUrl, forceRefresh: true);
+      if (ok && mounted) {
+        _startPostImportGrace();
+      }
+      return;
+    }
+    await globalState.appController.applyProfile(silence: true);
+    await globalState.appController.updateGroups();
   }
 
   void _openProxiesView(BuildContext context) {
@@ -478,6 +491,7 @@ class _NodeSelectorBarState extends ConsumerState<NodeSelectorBar> {
     }
     if (_lastProxyName != currentProxy.name) {
       _lastProxyName = currentProxy.name;
+      autoLatencyService.onNodeChanged();
     }
   }
 }

@@ -8,6 +8,7 @@ import 'package:fl_clash/xboard/features/mine/pages/mine_page.dart';
 import 'package:fl_clash/xboard/features/mine/pages/account_info_page.dart';
 import 'package:fl_clash/xboard/features/mine/pages/device_page.dart';
 import 'package:fl_clash/xboard/features/mine/pages/gift_card_page.dart';
+import 'package:fl_clash/xboard/features/mine/pages/order_page.dart';
 import 'package:fl_clash/xboard/features/auth/pages/login_page.dart';
 import 'package:fl_clash/xboard/domain/domain.dart';
 import 'package:fl_clash/views/logs.dart';
@@ -102,6 +103,13 @@ final List<RouteBase> routes = [
                 name: 'mine_subscription',
                 pageBuilder: (context, state) => const MaterialPage(
                   child: SubscriptionPage(),
+                ),
+              ),
+              GoRoute(
+                path: 'orders',
+                name: 'orders',
+                pageBuilder: (context, state) => const MaterialPage(
+                  child: OrderPage(),
                 ),
               ),
               GoRoute(

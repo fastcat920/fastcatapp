@@ -143,13 +143,29 @@ class _LoginPageState extends ConsumerState<LoginPage> {
         message.startsWith('[BUSINESS_LOGIN_FAILED]')) {
       return al.xboardLoginErrorConfigLoad;
     }
+    if (message.startsWith('[ACCOUNT_DISABLED]')) {
+      return al.xboardAccountBannedDetail;
+    }
+    // 账号禁用/封禁优先于密码错误：即使 Provider 误包 [CREDENTIALS_ERROR]，
+    // 只要原始消息包含禁用关键词，都应展示账号状态而非密码错误。
+    final lower = message.toLowerCase();
+    if (lower.contains('disabled') ||
+        lower.contains('banned') ||
+        lower.contains('suspended') ||
+        lower.contains('frozen') ||
+        message.contains('禁用') ||
+        message.contains('封禁') ||
+        message.contains('停用') ||
+        message.contains('停止使用') ||
+        message.contains('冻结')) {
+      return al.xboardAccountBannedDetail;
+    }
     if (message.startsWith('[CREDENTIALS_ERROR]') ||
         message.startsWith('[CREDENTIALS_REQUIRED]') ||
         message.startsWith('[DEVICE_ID_REQUIRED]')) {
       return al.xboardLoginErrorCredentials;
     }
     // 降级：旧格式文本匹配
-    final lower = message.toLowerCase();
     if (message.contains('SocketException') ||
         message.contains('TimeoutException') ||
         message.contains('HandshakeException') ||
@@ -163,12 +179,29 @@ class _LoginPageState extends ConsumerState<LoginPage> {
         trimmed == '登陆失败' ||
         lower.contains('invalid credentials') ||
         lower.contains('unauthorized') ||
-        lower.contains('email or password')) {
+        lower.contains('email or password') ||
+        lower.contains('password error') ||
+        lower.contains('wrong password') ||
+        lower.contains('user not found') ||
+        lower.contains('account not found') ||
+        message.contains('密码错误') ||
+        message.contains('账号或密码') ||
+        message.contains('用户不存在') ||
+        message.contains('邮箱不存在')) {
       return al.xboardLoginErrorCredentials;
+    }
+    if (lower.contains('too many') ||
+        lower.contains('rate limit') ||
+        lower.contains('login limit') ||
+        lower.contains('temporarily locked') ||
+        message.contains('频繁') ||
+        message.contains('限制') ||
+        message.contains('稍后再试')) {
+      return al.xboardLoginErrorLimited;
     }
     if (message.contains('DEVICE_LIMIT_EXCEEDED') ||
         lower.contains('device limit exceeded')) {
-      return message;
+      return al.xboardLoginErrorDeviceLimit;
     }
     // 后端业务错误保留 API 返回的真实提示，例如登录限制、账号状态等。
     return message;

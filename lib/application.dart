@@ -21,8 +21,7 @@ import 'package:fl_clash/xboard/core/logger/capture_logger.dart'
 import 'package:flutter_xboard_sdk/flutter_xboard_sdk.dart';
 import 'package:fl_clash/xboard/router/app_router.dart' as xboard_router;
 import 'package:fl_clash/xboard/features/initialization/initialization.dart';
-import 'package:fl_clash/xboard/features/notice/notice.dart';
-import 'package:fl_clash/xboard/features/shared/widgets/notice_banner.dart';
+import 'package:fl_clash/xboard/features/auth/services/device_heartbeat_service.dart';
 
 class Application extends ConsumerStatefulWidget {
   const Application({
@@ -33,7 +32,8 @@ class Application extends ConsumerStatefulWidget {
   ConsumerState<Application> createState() => ApplicationState();
 }
 
-class ApplicationState extends ConsumerState<Application> {
+class ApplicationState extends ConsumerState<Application>
+    with WidgetsBindingObserver {
   Timer? _autoUpdateProfilesTaskTimer;
   // Router 只创建一次，通过 refresh() 触发 redirect 重新求值
   // 避免每次 auth 状态变化都重建 GoRouter 导致 StatefulShellRoute 重置（Windows 空白屏）
@@ -59,8 +59,12 @@ class ApplicationState extends ConsumerState<Application> {
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
     _autoUpdateProfilesTask();
     globalState.appController = AppController(context, ref);
+    unawaited(
+      XBoardDeviceHeartbeatService.markActive(reason: 'app_start'),
+    );
 
     // Router 只创建一次，redirect 每次都从 Riverpod 读取最新 auth 状态
     _router = GoRouter(
@@ -158,6 +162,14 @@ class ApplicationState extends ConsumerState<Application> {
     ref.listenManual(
       xboardUserProvider,
       (previous, next) {
+        if (previous?.isAuthenticated != true && next.isAuthenticated) {
+          unawaited(
+            XBoardDeviceHeartbeatService.markActive(
+              reason: 'auth_ready',
+              force: true,
+            ),
+          );
+        }
         if (previous?.isAuthenticated != next.isAuthenticated ||
             previous?.isInitialized != next.isInitialized) {
           WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -198,6 +210,18 @@ class ApplicationState extends ConsumerState<Application> {
     );
   }
 
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed) {
+      unawaited(
+        XBoardDeviceHeartbeatService.markActive(
+          reason: 'app_resumed',
+          force: true,
+        ),
+      );
+    }
+  }
+
   /// 使用新域名服务架构进行快速认证检查
   void _performQuickAuthWithDomainService() {
     // quickAuth() 直接读取 SharedPreferences，不依赖 SDK 是否初始化
@@ -224,9 +248,10 @@ class ApplicationState extends ConsumerState<Application> {
 
         // 检查是否有更新
         final updateState = ref.read(updateCheckProvider);
-        if (updateState.hasUpdate && mounted) {
+        if (!mounted) return;
+        if (updateState.hasUpdate) {
           final currentContext = globalState.navigatorKey.currentContext;
-          if (currentContext != null) {
+          if (currentContext != null && currentContext.mounted) {
             debugPrint('[Application] 发现新版本，显示更新弹窗');
             // 显示更新弹窗
             showDialog(
@@ -329,7 +354,7 @@ class ApplicationState extends ConsumerState<Application> {
                 GlobalCupertinoLocalizations.delegate,
                 GlobalWidgetsLocalizations.delegate
               ],
-              builder: (_, child) {
+              builder: (context, child) {
                 // Flux 式加载遮罩：loading 状态用 Widget 表达，不再作为路由
                 // GoRouter Navigator 始终挂载（child 始终在树中），navigatorKey 始终有效
                 // 遮罩仅在 isInitialized=false 时覆盖在 GoRouter 内容上方
@@ -360,7 +385,7 @@ class ApplicationState extends ConsumerState<Application> {
 
                 // TV 10ft UI: text scale 1.3x + overscan-safe padding (5%)
                 if (system.isTV) {
-                  final mq = MediaQuery.of(_);
+                  final mq = MediaQuery.of(context);
                   content = MediaQuery(
                     data: mq.copyWith(
                       textScaler: const TextScaler.linear(1.3),
@@ -484,6 +509,7 @@ class ApplicationState extends ConsumerState<Application> {
   @override
   Future<void> dispose() async {
     try {
+      WidgetsBinding.instance.removeObserver(this);
       linkManager.destroy();
       _autoUpdateProfilesTaskTimer?.cancel();
 

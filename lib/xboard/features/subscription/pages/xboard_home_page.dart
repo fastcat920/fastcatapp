@@ -32,11 +32,6 @@ class XBoardHomePage extends ConsumerStatefulWidget {
 
 class _XBoardHomePageState extends ConsumerState<XBoardHomePage>
     with AutomaticKeepAliveClientMixin {
-  @override
-  void deactivate() {
-    super.deactivate();
-  }
-
   bool _hasInitialized = false;
   bool _hasCheckedSubscriptionStatus = false;
   bool _hasRequestedStartupLatencyTest = false;
@@ -192,219 +187,215 @@ class _XBoardHomePageState extends ConsumerState<XBoardHomePage>
                 ? Theme.of(context).colorScheme.surface
                 : const Color(0xFFFAFBFD),
             child: LayoutBuilder(
-                builder: (context, constraints) {
-                  // 桌面端：响应式最大宽度
-                  final contentMaxWidth = double.infinity;
+              builder: (context, constraints) {
+                // 桌面端：响应式最大宽度
+                const contentMaxWidth = double.infinity;
 
-                  final compactMode =
-                      isTvHome || (!isDesktop && constraints.maxHeight < 560);
-                  final isLandscapeHome =
-                      constraints.maxWidth > constraints.maxHeight;
-                  final isPortraitHome =
-                      constraints.maxHeight >= constraints.maxWidth;
-                  final showTopInfo = !compactMode;
-                  final topInfoTopGap = isDesktop ? 0.0 : 12.0;
-                  final shouldCompactConnectButton =
-                      compactMode || isLandscapeHome;
-                  final connectButtonScale =
-                      shouldCompactConnectButton ? 0.9 : 1.0;
-                  final connectButtonSize = 151.2 * connectButtonScale;
-                  final buttonSlotHeight = 168.0 * connectButtonScale;
-                  const connectionStatusGap = 5.0;
-                  const statusRowHeight = 36.0;
-                  const outboundModeHeight = 48.0;
-                  const nodeSelectorHeight = 56.0;
-                  const sectionGap = 4.0;
-                  final nodeBottomInset = compactMode
-                      ? (isLandscapeHome ? 24.0 : 22.0)
-                      : (isPortraitHome ? 8.0 : 18.0);
-                  final headerHeight = isDesktop && !compactMode ? 42.0 : 0.0;
-                  final topInfoHeight = showTopInfo
-                      ? topInfoSlotHeight +
-                          topInfoTopGap +
-                          (isDesktop ? 8.0 : 0.0)
-                      : 0.0;
-                  final minBottomGap = compactMode ? 16.0 : 28.0;
-                  final fixedHeight = headerHeight +
-                      topInfoHeight +
-                      buttonSlotHeight +
-                      connectionStatusGap +
-                      statusRowHeight +
-                      outboundModeHeight +
-                      nodeSelectorHeight +
-                      nodeBottomInset +
-                      12.0 +
-                      minBottomGap;
-                  final availableGap =
-                      (constraints.maxHeight - fixedHeight).clamp(0.0, 240.0);
-                  final minTopGapForLowerHalf = (constraints.maxHeight * 0.5 -
-                          headerHeight -
-                          topInfoHeight -
-                          buttonSlotHeight / 2)
-                      .clamp(0.0, availableGap);
-                  final targetTopGap =
-                      availableGap * (compactMode ? 0.28 : 0.36);
-                  final adaptiveTopGap = targetTopGap < minTopGapForLowerHalf
-                      ? minTopGapForLowerHalf
-                      : targetTopGap;
-                  final adaptiveBottomGap =
-                      minBottomGap + (availableGap - adaptiveTopGap);
+                final compactMode =
+                    isTvHome || (!isDesktop && constraints.maxHeight < 560);
+                final isLandscapeHome =
+                    constraints.maxWidth > constraints.maxHeight;
+                final isPortraitHome =
+                    constraints.maxHeight >= constraints.maxWidth;
+                final showTopInfo = !compactMode;
+                final topInfoTopGap = isDesktop ? 0.0 : 12.0;
+                final shouldCompactConnectButton =
+                    compactMode || isLandscapeHome;
+                final connectButtonScale =
+                    shouldCompactConnectButton ? 0.9 : 1.0;
+                final connectButtonSize = 151.2 * connectButtonScale;
+                final buttonSlotHeight = 168.0 * connectButtonScale;
+                const connectionStatusGap = 5.0;
+                const statusRowHeight = 40.0;
+                const outboundModeHeight = 48.0;
+                const nodeSelectorHeight = 56.0;
+                const sectionGap = 4.0;
+                final nodeBottomInset = compactMode
+                    ? (isLandscapeHome ? 24.0 : 22.0)
+                    : (isPortraitHome ? 8.0 : 18.0);
+                final headerHeight = isDesktop && !compactMode ? 42.0 : 0.0;
+                final topInfoHeight = showTopInfo
+                    ? topInfoSlotHeight +
+                        topInfoTopGap +
+                        (isDesktop ? 8.0 : 0.0)
+                    : 0.0;
+                final minBottomGap = compactMode ? 16.0 : 28.0;
+                final fixedHeight = headerHeight +
+                    topInfoHeight +
+                    buttonSlotHeight +
+                    connectionStatusGap +
+                    statusRowHeight +
+                    outboundModeHeight +
+                    nodeSelectorHeight +
+                    nodeBottomInset +
+                    12.0 +
+                    minBottomGap;
+                final availableGap =
+                    (constraints.maxHeight - fixedHeight).clamp(0.0, 240.0);
+                final minTopGapForLowerHalf = (constraints.maxHeight * 0.5 -
+                        headerHeight -
+                        topInfoHeight -
+                        buttonSlotHeight / 2)
+                    .clamp(0.0, availableGap);
+                final targetTopGap = availableGap * (compactMode ? 0.28 : 0.36);
+                final adaptiveTopGap = targetTopGap < minTopGapForLowerHalf
+                    ? minTopGapForLowerHalf
+                    : targetTopGap;
+                final adaptiveBottomGap =
+                    minBottomGap + (availableGap - adaptiveTopGap);
 
-                  // 纯 Flex 布局：优先保留连接按钮、模式切换和线路选择。
-                  return Center(
-                    child: ConstrainedBox(
-                      constraints: BoxConstraints(
-                        maxWidth: contentMaxWidth,
-                      ),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.stretch,
-                        children: [
-                          if (isDesktop && !compactMode)
-                            Padding(
-                              padding: const EdgeInsets.fromLTRB(
-                                  horizontalPadding, 6, horizontalPadding, 0),
-                              child: Row(
-                                mainAxisAlignment:
-                                    MainAxisAlignment.spaceBetween,
-                                children: [
-                                  const _HomeBrandHeader(),
-                                  Row(
-                                    mainAxisSize: MainAxisSize.min,
-                                    children: [
-                                      TextButton.icon(
-                                        style:
-                                            XbUiButton.textChipPrimary(context),
-                                        icon: _isCheckingWebsite
-                                            ? SizedBox(
-                                                width: 18,
-                                                height: 18,
-                                                child:
-                                                    CircularProgressIndicator(
-                                                  strokeWidth: 2,
-                                                  color: Theme.of(context)
-                                                      .colorScheme
-                                                      .primary,
-                                                ),
-                                              )
-                                            : Icon(
-                                                Icons.language_outlined,
-                                                size: 18,
+                // 纯 Flex 布局：优先保留连接按钮、模式切换和线路选择。
+                return Center(
+                  child: ConstrainedBox(
+                    constraints: const BoxConstraints(
+                      maxWidth: contentMaxWidth,
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        if (isDesktop && !compactMode)
+                          Padding(
+                            padding: const EdgeInsets.fromLTRB(
+                                horizontalPadding, 6, horizontalPadding, 0),
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                const _HomeBrandHeader(),
+                                Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    TextButton.icon(
+                                      style:
+                                          XbUiButton.textChipPrimary(context),
+                                      icon: _isCheckingWebsite
+                                          ? SizedBox(
+                                              width: 18,
+                                              height: 18,
+                                              child: CircularProgressIndicator(
+                                                strokeWidth: 2,
                                                 color: Theme.of(context)
                                                     .colorScheme
                                                     .primary,
                                               ),
-                                        label: Text(
-                                          _isCheckingWebsite
-                                              ? AppLocalizations.of(context)
-                                                  .checking
-                                              : AppLocalizations.of(context)
-                                                  .officialWebsite,
-                                          style: TextStyle(
-                                            color: Theme.of(context)
-                                                .colorScheme
-                                                .primary,
-                                          ),
-                                        ),
-                                        onPressed: _isCheckingWebsite
-                                            ? null
-                                            : () =>
-                                                _openOfficialWebsite(context),
-                                      ),
-                                      IconButton(
-                                        icon: Icon(
-                                          Icons.menu_open,
+                                            )
+                                          : Icon(
+                                              Icons.language_outlined,
+                                              size: 18,
+                                              color: Theme.of(context)
+                                                  .colorScheme
+                                                  .primary,
+                                            ),
+                                      label: Text(
+                                        _isCheckingWebsite
+                                            ? AppLocalizations.of(context)
+                                                .checking
+                                            : AppLocalizations.of(context)
+                                                .officialWebsite,
+                                        style: TextStyle(
                                           color: Theme.of(context)
                                               .colorScheme
-                                              .onSurfaceVariant,
+                                              .primary,
                                         ),
-                                        tooltip: 'TUN',
-                                        onPressed: () => _showVpnSheet(context),
                                       ),
-                                    ],
-                                  ),
-                                ],
-                              ),
-                            ),
-                          if (isDesktop && !compactMode)
-                            const SizedBox(height: 12),
-                          // ── 未连接显示公告，已连接显示套餐信息。空间不足时隐藏，优先保留主操作区。 ──
-                          if (showTopInfo)
-                            if (isDesktop)
-                              Padding(
-                                padding: const EdgeInsets.only(
-                                    left: horizontalPadding,
-                                    right: horizontalPadding,
-                                    top: 0),
-                                child: SizedBox(
-                                  height: topInfoSlotHeight,
-                                  child: Align(
-                                    alignment: Alignment.topCenter,
-                                    child: _buildTopInfoSection(),
-                                  ),
+                                      onPressed: _isCheckingWebsite
+                                          ? null
+                                          : () => _openOfficialWebsite(context),
+                                    ),
+                                    IconButton(
+                                      icon: Icon(
+                                        Icons.menu_open,
+                                        color: Theme.of(context)
+                                            .colorScheme
+                                            .onSurfaceVariant,
+                                      ),
+                                      tooltip: 'TUN',
+                                      onPressed: () => _showVpnSheet(context),
+                                    ),
+                                  ],
                                 ),
-                              )
-                            else
-                              Padding(
-                                padding: EdgeInsets.only(
+                              ],
+                            ),
+                          ),
+                        if (isDesktop && !compactMode)
+                          const SizedBox(height: 12),
+                        // ── 未连接显示公告，已连接显示套餐信息。空间不足时隐藏，优先保留主操作区。 ──
+                        if (showTopInfo)
+                          if (isDesktop)
+                            Padding(
+                              padding: const EdgeInsets.only(
                                   left: horizontalPadding,
                                   right: horizontalPadding,
-                                  top: topInfoTopGap,
-                                ),
-                                child: SizedBox(
-                                  height: topInfoSlotHeight,
-                                  child: Align(
-                                    alignment: Alignment.topCenter,
-                                    child: _buildTopInfoSection(),
-                                  ),
-                                ),
-                              ),
-                          // ── 主操作区按可用高度自适应，按钮中心不高于屏幕中线 ──
-                          SizedBox(height: adaptiveTopGap),
-                          // ── 连接按钮（仅圆圈，Flexible 自动缩放）──
-                          SizedBox(
-                            height: buttonSlotHeight,
-                            child: Center(
+                                  top: 0),
                               child: SizedBox(
-                                width: connectButtonSize,
-                                height: connectButtonSize,
-                                child: XBoardConnectButton(
-                                  isFloating: false,
-                                  outerSize: connectButtonSize,
+                                height: topInfoSlotHeight,
+                                child: Align(
+                                  alignment: Alignment.topCenter,
+                                  child: _buildTopInfoSection(),
+                                ),
+                              ),
+                            )
+                          else
+                            Padding(
+                              padding: EdgeInsets.only(
+                                left: horizontalPadding,
+                                right: horizontalPadding,
+                                top: topInfoTopGap,
+                              ),
+                              child: SizedBox(
+                                height: topInfoSlotHeight,
+                                child: Align(
+                                  alignment: Alignment.topCenter,
+                                  child: _buildTopInfoSection(),
                                 ),
                               ),
                             ),
-                          ),
-                          const SizedBox(height: connectionStatusGap),
-                          // ── 状态文字（独立于按钮，固定高度不被 Flex 压缩）──
-                          _buildConnectionStatusRow(),
-                          // ── 模式选择：在状态文字和底部节点选择之间居中 ──
-                          SizedBox(height: adaptiveBottomGap / 2),
-                          const SizedBox(
-                            height: outboundModeHeight,
-                            child: Padding(
-                              padding: EdgeInsets.symmetric(
-                                  horizontal: horizontalPadding),
-                              child: XBoardOutboundMode(),
+                        // ── 主操作区按可用高度自适应，按钮中心不高于屏幕中线 ──
+                        SizedBox(height: adaptiveTopGap),
+                        // ── 连接按钮（仅圆圈，Flexible 自动缩放）──
+                        SizedBox(
+                          height: buttonSlotHeight,
+                          child: Center(
+                            child: SizedBox(
+                              width: connectButtonSize,
+                              height: connectButtonSize,
+                              child: XBoardConnectButton(
+                                isFloating: false,
+                                outerSize: connectButtonSize,
+                              ),
                             ),
                           ),
-                          SizedBox(height: adaptiveBottomGap / 2),
-                          // ── 节点选择器保持在下方，作为最后的线路切换入口 ──
-                          const SizedBox(height: sectionGap),
-                          const SizedBox(
-                            height: nodeSelectorHeight,
-                            child: Padding(
-                              padding: EdgeInsets.symmetric(
-                                  horizontal: horizontalPadding),
-                              child: NodeSelectorBar(),
-                            ),
+                        ),
+                        const SizedBox(height: connectionStatusGap),
+                        // ── 状态文字（独立于按钮，固定高度不被 Flex 压缩）──
+                        _buildConnectionStatusRow(),
+                        // ── 模式选择：在状态文字和底部节点选择之间居中 ──
+                        SizedBox(height: adaptiveBottomGap / 2),
+                        const SizedBox(
+                          height: outboundModeHeight,
+                          child: Padding(
+                            padding: EdgeInsets.symmetric(
+                                horizontal: horizontalPadding),
+                            child: XBoardOutboundMode(),
                           ),
-                          SizedBox(height: nodeBottomInset),
-                        ],
-                      ),
+                        ),
+                        SizedBox(height: adaptiveBottomGap / 2),
+                        // ── 节点选择器保持在下方，作为最后的线路切换入口 ──
+                        const SizedBox(height: sectionGap),
+                        const SizedBox(
+                          height: nodeSelectorHeight,
+                          child: Padding(
+                            padding: EdgeInsets.symmetric(
+                                horizontal: horizontalPadding),
+                            child: NodeSelectorBar(),
+                          ),
+                        ),
+                        SizedBox(height: nodeBottomInset),
+                      ],
                     ),
-                  );
-                },
-              ),
+                  ),
+                );
+              },
+            ),
           );
         },
       ),
@@ -427,11 +418,11 @@ class _XBoardHomePageState extends ConsumerState<XBoardHomePage>
                 ? Theme.of(context).colorScheme.surfaceContainer
                 : Colors.white,
             clipBehavior: Clip.antiAlias,
-            child: SizedBox(
+            child: const SizedBox(
               width: 260,
               child: Column(
                 mainAxisSize: MainAxisSize.min,
-                children: const [
+                children: [
                   TUNItem(),
                 ],
               ),
@@ -527,7 +518,7 @@ class _XBoardHomePageState extends ConsumerState<XBoardHomePage>
 
   Widget _buildConnectionStatusRow() {
     return SizedBox(
-      height: 36,
+      height: 40,
       child: Center(
         child: _buildStatusText(),
       ),
@@ -537,7 +528,7 @@ class _XBoardHomePageState extends ConsumerState<XBoardHomePage>
   Widget _buildStatusText() {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     return SizedBox(
-      height: 34,
+      height: 38,
       child: Consumer(
         builder: (_, ref, __) {
           final runTime = ref.watch(runTimeProvider);
@@ -551,15 +542,18 @@ class _XBoardHomePageState extends ConsumerState<XBoardHomePage>
                 Text(
                   AppLocalizations.of(context).notConnected,
                   style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                        fontSize: 13,
+                        height: 1,
                         fontWeight: FontWeight.bold,
                         color: Theme.of(context).colorScheme.onSurface,
                       ),
                 ),
-                const SizedBox(height: 2),
+                const SizedBox(height: 1),
                 Text(
                   AppLocalizations.of(context).tapToConnect,
                   style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                        fontSize: 11,
+                        fontSize: 10.5,
+                        height: 1,
                         color: Theme.of(context)
                             .colorScheme
                             .onSurface
@@ -577,17 +571,20 @@ class _XBoardHomePageState extends ConsumerState<XBoardHomePage>
               Text(
                 AppLocalizations.of(context).connected,
                 style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                      fontSize: 13,
+                      height: 1,
                       fontWeight: FontWeight.bold,
                       color: isDark
                           ? Colors.green.shade300
                           : Colors.green.shade700,
                     ),
               ),
-              const SizedBox(height: 2),
+              const SizedBox(height: 1),
               Text(
                 utils.getTimeText(runTime),
                 style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                      fontSize: 11,
+                      fontSize: 10.5,
+                      height: 1,
                       color: Theme.of(context)
                           .colorScheme
                           .onSurface

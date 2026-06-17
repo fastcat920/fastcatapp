@@ -92,7 +92,7 @@ class MessageLookup extends MessageLookupByLibrary {
 
   static String m35(amount) => "잔액 with 금액: ${amount}";
 
-  static String m36(count, limit) => "기기 summary: ${count}: ${limit}";
+  static String m36(count, limit) => "활성 ${count}대 · 한도 ${limit}";
 
   static String m37(date) => "만료됨 ON date: ${date}";
 
@@ -100,11 +100,15 @@ class MessageLookup extends MessageLookupByLibrary {
 
   static String m39(date, days) => "만료 ON with 일: ${date}: ${days}";
 
-  static String m40(error) => "redeem 실패 with 오류: ${error}";
+  static String m40(count) => "후보 ${count}개";
 
-  static String m41(days) => "초기화 트래픽 IN 일: ${days}";
+  static String m41(count) => "노드 ${count}개";
 
-  static String m42(time) => "실행 중 time: ${time}";
+  static String m42(error) => "redeem 실패 with 오류: ${error}";
+
+  static String m43(days) => "초기화 트래픽 IN 일: ${days}";
+
+  static String m44(time) => "실행 중 time: ${time}";
 
   final messages = _notInlinedMessages(_notInlinedMessages);
   static Map<String, Function> _notInlinedMessages(_) => <String, Function>{
@@ -1010,12 +1014,14 @@ class MessageLookup extends MessageLookupByLibrary {
       "BUY 더보기 트래픽 OR upgrade",
     ),
     "xboardBuyNow": MessageLookupByLibrary.simpleMessage("BUY NOW"),
+    "xboardBuyPlan": MessageLookupByLibrary.simpleMessage("요금제 구매"),
     "xboardBuyoutPlan": MessageLookupByLibrary.simpleMessage("buyout 요금제"),
     "xboardCancel": MessageLookupByLibrary.simpleMessage("취소"),
     "xboardCancelOrder": MessageLookupByLibrary.simpleMessage("취소 주문"),
     "xboardCancelPayment": MessageLookupByLibrary.simpleMessage("취소 결제"),
     "xboardCanceling": MessageLookupByLibrary.simpleMessage("canceling"),
     "xboardChangePassword": MessageLookupByLibrary.simpleMessage("변경 비밀번호"),
+    "xboardCheckOrders": MessageLookupByLibrary.simpleMessage("주문 보기"),
     "xboardCheckPaymentFailed": MessageLookupByLibrary.simpleMessage(
       "확인 결제 실패",
     ),
@@ -1065,11 +1071,18 @@ class MessageLookup extends MessageLookupByLibrary {
     "xboardConnectGlobalQualityNodes": MessageLookupByLibrary.simpleMessage(
       "연결 전역 품질 노드",
     ),
+    "xboardConnectionHealth": MessageLookupByLibrary.simpleMessage("연결 상태"),
+    "xboardConnectionHealthSubtitle": MessageLookupByLibrary.simpleMessage(
+      "서버, 구독, 노드, 기기 상태를 확인합니다",
+    ),
     "xboardConnectionTimeout": MessageLookupByLibrary.simpleMessage(
       "연결 시간이 초과되었습니다. 네트워크 연결을 확인하세요",
     ),
     "xboardContactCustomerService": MessageLookupByLibrary.simpleMessage(
       "고객지원",
+    ),
+    "xboardCopyDiagnosticBundle": MessageLookupByLibrary.simpleMessage(
+      "진단 패키지 복사",
     ),
     "xboardCopyFailed": MessageLookupByLibrary.simpleMessage("복사 실패"),
     "xboardCopyInviteCode": MessageLookupByLibrary.simpleMessage("복사 초대 코드"),
@@ -1094,6 +1107,11 @@ class MessageLookup extends MessageLookupByLibrary {
       "creating 주문 please wait",
     ),
     "xboardCurrentBalance": MessageLookupByLibrary.simpleMessage("현재 잔액"),
+    "xboardCurrentBusinessApi": MessageLookupByLibrary.simpleMessage(
+      "현재 비즈니스 API",
+    ),
+    "xboardCurrentDomain": MessageLookupByLibrary.simpleMessage("현재 도메인"),
+    "xboardCurrentGateway": MessageLookupByLibrary.simpleMessage("현재 게이트웨이"),
     "xboardCurrentNode": MessageLookupByLibrary.simpleMessage("현재 노드"),
     "xboardCurrentPassword": MessageLookupByLibrary.simpleMessage("현재 비밀번호"),
     "xboardCurrentPlanBased": MessageLookupByLibrary.simpleMessage(
@@ -1118,6 +1136,7 @@ class MessageLookup extends MessageLookupByLibrary {
       "기기 현재 기기 label",
     ),
     "xboardDeviceExpired": MessageLookupByLibrary.simpleMessage("기기 만료됨"),
+    "xboardDeviceHealth": MessageLookupByLibrary.simpleMessage("기기 상태"),
     "xboardDeviceHistory": MessageLookupByLibrary.simpleMessage("기기 기록"),
     "xboardDeviceHistoryHint": MessageLookupByLibrary.simpleMessage("기기 기록 힌트"),
     "xboardDeviceLabelId": MessageLookupByLibrary.simpleMessage("기기 label ID"),
@@ -1155,6 +1174,9 @@ class MessageLookup extends MessageLookupByLibrary {
       "기기 알 수 없음 버전",
     ),
     "xboardDeviceUnlimited": MessageLookupByLibrary.simpleMessage("기기 무제한"),
+    "xboardDiagnosticBundleCopied": MessageLookupByLibrary.simpleMessage(
+      "진단 패키지가 복사되었습니다",
+    ),
     "xboardDiscountAmount": MessageLookupByLibrary.simpleMessage("discount 금액"),
     "xboardDiscounted": MessageLookupByLibrary.simpleMessage("discounted"),
     "xboardDiscountedPrice": MessageLookupByLibrary.simpleMessage(
@@ -1200,6 +1222,8 @@ class MessageLookup extends MessageLookupByLibrary {
     "xboardFair": MessageLookupByLibrary.simpleMessage("보통"),
     "xboardForceUpdate": MessageLookupByLibrary.simpleMessage("force 업데이트"),
     "xboardForgotPassword": MessageLookupByLibrary.simpleMessage("잊음 비밀번호"),
+    "xboardGatewayCandidateCount": m40,
+    "xboardGatewayStatus": MessageLookupByLibrary.simpleMessage("게이트웨이 상태"),
     "xboardGetGroupLinkFailed": MessageLookupByLibrary.simpleMessage(
       "GET 그룹 링크 실패",
     ),
@@ -1225,6 +1249,8 @@ class MessageLookup extends MessageLookupByLibrary {
     "xboardHalfYearlyPayment": MessageLookupByLibrary.simpleMessage("반년 연간 결제"),
     "xboardHandleLater": MessageLookupByLibrary.simpleMessage("handle later"),
     "xboardHandlingFee": MessageLookupByLibrary.simpleMessage("handling FEE"),
+    "xboardHealthLastEvent": MessageLookupByLibrary.simpleMessage("최근 이벤트"),
+    "xboardHealthy": MessageLookupByLibrary.simpleMessage("정상"),
     "xboardHigh": MessageLookupByLibrary.simpleMessage("높음"),
     "xboardHighSpeedNetwork": MessageLookupByLibrary.simpleMessage(
       "높음 속도 네트워크",
@@ -1233,7 +1259,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "xboardImportFailed": MessageLookupByLibrary.simpleMessage("가져오기 실패"),
     "xboardImportSuccess": MessageLookupByLibrary.simpleMessage("가져오기 성공"),
     "xboardImportingSubscription": MessageLookupByLibrary.simpleMessage(
-      "importing 구독",
+      "구독 가져오는 중",
     ),
     "xboardInsufficientBalance": MessageLookupByLibrary.simpleMessage(
       "insufficient 잔액",
@@ -1260,11 +1286,23 @@ class MessageLookup extends MessageLookupByLibrary {
     "xboardLocalIP": MessageLookupByLibrary.simpleMessage("로컬 IP"),
     "xboardLoggedIn": MessageLookupByLibrary.simpleMessage("logged IN"),
     "xboardLogin": MessageLookupByLibrary.simpleMessage("로그인"),
+    "xboardLoginErrorConfigLoad": MessageLookupByLibrary.simpleMessage(
+      "구성 로드 실패, 나중에 다시 시도하세요",
+    ),
+    "xboardLoginErrorCredentials": MessageLookupByLibrary.simpleMessage(
+      "계정 또는 비밀번호 오류, 계정과 비밀번호를 확인하세요",
+    ),
+    "xboardLoginErrorDeviceLimit": MessageLookupByLibrary.simpleMessage(
+      "기기 한도에 도달했습니다. 먼저 오프라인 기기를 해제하세요.",
+    ),
+    "xboardLoginErrorLimited": MessageLookupByLibrary.simpleMessage(
+      "로그인 시도가 너무 많습니다. 잠시 후 다시 시도하세요.",
+    ),
+    "xboardLoginErrorNetwork": MessageLookupByLibrary.simpleMessage(
+      "네트워크 오류, 로컬 네트워크 상태를 확인하세요",
+    ),
     "xboardLoginExpired": MessageLookupByLibrary.simpleMessage("로그인 만료됨"),
     "xboardLoginFailed": MessageLookupByLibrary.simpleMessage("로그인 실패"),
-    "xboardLoginErrorNetwork": MessageLookupByLibrary.simpleMessage("네트워크 오류, 로컬 네트워크 상태를 확인하세요"),
-    "xboardLoginErrorConfigLoad": MessageLookupByLibrary.simpleMessage("구성 로드 실패, 나중에 다시 시도하세요"),
-    "xboardLoginErrorCredentials": MessageLookupByLibrary.simpleMessage("계정 또는 비밀번호 오류, 계정과 비밀번호를 확인하세요"),
     "xboardLoginSuccess": MessageLookupByLibrary.simpleMessage("로그인 성공"),
     "xboardLoginToViewSubscription": MessageLookupByLibrary.simpleMessage(
       "로그인 TO 보기 구독",
@@ -1279,6 +1317,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "xboardLogoutFailed": MessageLookupByLibrary.simpleMessage("로그아웃 실패"),
     "xboardLogoutSuccess": MessageLookupByLibrary.simpleMessage("로그아웃 성공"),
     "xboardLow": MessageLookupByLibrary.simpleMessage("낮음"),
+    "xboardManageDevices": MessageLookupByLibrary.simpleMessage("기기 관리"),
     "xboardMedium": MessageLookupByLibrary.simpleMessage("중간"),
     "xboardMine": MessageLookupByLibrary.simpleMessage("내 정보"),
     "xboardMissingRequiredField": MessageLookupByLibrary.simpleMessage(
@@ -1290,19 +1329,23 @@ class MessageLookup extends MessageLookupByLibrary {
     "xboardMyServices": MessageLookupByLibrary.simpleMessage("MY services"),
     "xboardMyTickets": MessageLookupByLibrary.simpleMessage("MY 티켓"),
     "xboardMyWallet": MessageLookupByLibrary.simpleMessage("MY 지갑"),
+    "xboardNeedsAttention": MessageLookupByLibrary.simpleMessage("확인 필요"),
     "xboardNetworkConnectionFailed": MessageLookupByLibrary.simpleMessage(
       "네트워크 connection 실패",
     ),
     "xboardNewVersionFound": MessageLookupByLibrary.simpleMessage("새 버전 found"),
     "xboardNext": MessageLookupByLibrary.simpleMessage("next"),
     "xboardNoAvailableNodes": MessageLookupByLibrary.simpleMessage(
-      "없음 사용 가능 노드",
+      "사용 가능한 노드 없음",
     ),
     "xboardNoAvailablePlan": MessageLookupByLibrary.simpleMessage(
       "없음 사용 가능 요금제",
     ),
     "xboardNoAvailableSubscription": MessageLookupByLibrary.simpleMessage(
       "없음 사용 가능 구독",
+    ),
+    "xboardNoGatewayActive": MessageLookupByLibrary.simpleMessage(
+      "활성 게이트웨이 없음",
     ),
     "xboardNoInternetConnection": MessageLookupByLibrary.simpleMessage(
       "없음 internet connection",
@@ -1317,11 +1360,16 @@ class MessageLookup extends MessageLookupByLibrary {
     ),
     "xboardNoTicketRecords": MessageLookupByLibrary.simpleMessage("없음 티켓 기록"),
     "xboardNoTrafficRecords": MessageLookupByLibrary.simpleMessage("없음 트래픽 기록"),
+    "xboardNodeCount": m41,
+    "xboardNodeHealth": MessageLookupByLibrary.simpleMessage("노드 상태"),
     "xboardNodeName": MessageLookupByLibrary.simpleMessage("노드 이름"),
     "xboardNodeSelection": MessageLookupByLibrary.simpleMessage("노드 선택"),
     "xboardNone": MessageLookupByLibrary.simpleMessage("없음"),
     "xboardNormal": MessageLookupByLibrary.simpleMessage("정상"),
     "xboardNotLoggedIn": MessageLookupByLibrary.simpleMessage("NOT logged IN"),
+    "xboardOfflineButActive": MessageLookupByLibrary.simpleMessage(
+      "오프라인, 한도 사용 중",
+    ),
     "xboardOneTimePayment": MessageLookupByLibrary.simpleMessage("ONE time 결제"),
     "xboardOpenPaymentFailed": MessageLookupByLibrary.simpleMessage("열기 결제 실패"),
     "xboardOpenPaymentLinkFailed": MessageLookupByLibrary.simpleMessage(
@@ -1406,6 +1454,9 @@ class MessageLookup extends MessageLookupByLibrary {
     ),
     "xboardPaymentSuccess": MessageLookupByLibrary.simpleMessage("결제 성공"),
     "xboardPaymentSuccessful": MessageLookupByLibrary.simpleMessage("결제 성공"),
+    "xboardPendingOrdersHint": MessageLookupByLibrary.simpleMessage(
+      "결제 후 반영되지 않았다면 주문 상태를 새로고침하세요.",
+    ),
     "xboardPeriod": MessageLookupByLibrary.simpleMessage("기간"),
     "xboardPlanBased": MessageLookupByLibrary.simpleMessage("요금제 based"),
     "xboardPlanExpiryReminder": MessageLookupByLibrary.simpleMessage(
@@ -1465,16 +1516,23 @@ class MessageLookup extends MessageLookupByLibrary {
     ),
     "xboardRechargeNow": MessageLookupByLibrary.simpleMessage("충전 NOW"),
     "xboardRedeemFailed": MessageLookupByLibrary.simpleMessage("redeem 실패"),
-    "xboardRedeemFailedWithError": m40,
+    "xboardRedeemFailedWithError": m42,
     "xboardRedeemNow": MessageLookupByLibrary.simpleMessage("redeem NOW"),
     "xboardRedeemSuccess": MessageLookupByLibrary.simpleMessage("redeem 성공"),
     "xboardRefresh": MessageLookupByLibrary.simpleMessage("새로고침"),
-    "xboardRefreshStatus": MessageLookupByLibrary.simpleMessage("새로고침 상태"),
+    "xboardRefreshStatus": MessageLookupByLibrary.simpleMessage("상태 새로고침"),
     "xboardRefundAmount": MessageLookupByLibrary.simpleMessage("지갑 환불"),
     "xboardRegister": MessageLookupByLibrary.simpleMessage("가입"),
     "xboardRegisterFailed": MessageLookupByLibrary.simpleMessage("가입 실패"),
     "xboardRegisterSuccess": MessageLookupByLibrary.simpleMessage("가입 성공"),
+    "xboardReleaseOfflineDevices": MessageLookupByLibrary.simpleMessage(
+      "오프라인 기기 해제",
+    ),
+    "xboardReleaseOfflineDevicesConfirm": MessageLookupByLibrary.simpleMessage(
+      "오프라인 상태이지만 기기 한도를 차지하는 기기를 제거합니다. 현재 기기에는 영향이 없습니다. 계속할까요?",
+    ),
     "xboardReload": MessageLookupByLibrary.simpleMessage("다시 불러오기"),
+    "xboardReloadNodes": MessageLookupByLibrary.simpleMessage("노드 다시 로드"),
     "xboardRelogin": MessageLookupByLibrary.simpleMessage("relogin"),
     "xboardRemainingBalance": MessageLookupByLibrary.simpleMessage("남음 잔액"),
     "xboardRememberPassword": MessageLookupByLibrary.simpleMessage(
@@ -1492,14 +1550,14 @@ class MessageLookup extends MessageLookupByLibrary {
     "xboardResetCurrentPlanTraffic": MessageLookupByLibrary.simpleMessage(
       "초기화 현재 요금제 트래픽",
     ),
-    "xboardResetTraffic": MessageLookupByLibrary.simpleMessage("초기화 트래픽"),
+    "xboardResetTraffic": MessageLookupByLibrary.simpleMessage("트래픽 초기화"),
     "xboardResetTrafficByPlanCycle": MessageLookupByLibrary.simpleMessage(
       "초기화 트래픽 BY 요금제 cycle",
     ),
     "xboardResetTrafficConfirmContent": MessageLookupByLibrary.simpleMessage(
       "초기화 트래픽 확인 내용",
     ),
-    "xboardResetTrafficInDays": m41,
+    "xboardResetTrafficInDays": m43,
     "xboardResetTrafficToday": MessageLookupByLibrary.simpleMessage(
       "사용된 트래픽이 오늘 재설정되었습니다",
     ),
@@ -1509,7 +1567,8 @@ class MessageLookup extends MessageLookupByLibrary {
     "xboardReturnAfterPaymentAutoDetect": MessageLookupByLibrary.simpleMessage(
       "return after 결제 자동 detect",
     ),
-    "xboardRunningTime": m42,
+    "xboardRunDiagnosis": MessageLookupByLibrary.simpleMessage("검사 실행"),
+    "xboardRunningTime": m44,
     "xboardSecureEncryption": MessageLookupByLibrary.simpleMessage(
       "secure encryption",
     ),
@@ -1527,8 +1586,12 @@ class MessageLookup extends MessageLookupByLibrary {
       "보내기 인증 코드",
     ),
     "xboardServerError": MessageLookupByLibrary.simpleMessage("서버 오류"),
+    "xboardServerStatus": MessageLookupByLibrary.simpleMessage("서버 상태"),
     "xboardSetup": MessageLookupByLibrary.simpleMessage("setup"),
     "xboardSixMonthCycle": MessageLookupByLibrary.simpleMessage("SIX 월 cycle"),
+    "xboardSmartLatencyStarted": MessageLookupByLibrary.simpleMessage(
+      "스마트 지연 테스트를 시작했습니다",
+    ),
     "xboardSmartRouting": MessageLookupByLibrary.simpleMessage("smart routing"),
     "xboardSoftwareSettings": MessageLookupByLibrary.simpleMessage(
       "software 설정",
@@ -1545,6 +1608,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "xboardSubscriptionHasExpired": MessageLookupByLibrary.simpleMessage(
       "구독 HAS 만료됨",
     ),
+    "xboardSubscriptionHealth": MessageLookupByLibrary.simpleMessage("구독 상태"),
     "xboardSubscriptionInfo": MessageLookupByLibrary.simpleMessage("구독 정보"),
     "xboardSubscriptionLink": MessageLookupByLibrary.simpleMessage("구독 링크"),
     "xboardSubscriptionLinkCopied": MessageLookupByLibrary.simpleMessage(
@@ -1554,6 +1618,10 @@ class MessageLookup extends MessageLookupByLibrary {
     "xboardSubscriptionStatus": MessageLookupByLibrary.simpleMessage("구독 상태"),
     "xboardSurplusAmount": MessageLookupByLibrary.simpleMessage("이전 요금제 차감 금액"),
     "xboardSwitch": MessageLookupByLibrary.simpleMessage("switch"),
+    "xboardSyncingSubscription": MessageLookupByLibrary.simpleMessage(
+      "계정 구독 정보를 동기화하는 중...",
+    ),
+    "xboardTestCurrentNode": MessageLookupByLibrary.simpleMessage("현재 노드 테스트"),
     "xboardTestLatency": MessageLookupByLibrary.simpleMessage("지연 시간 테스트"),
     "xboardTesting": MessageLookupByLibrary.simpleMessage("테스트 중"),
     "xboardThirtySixMonthCycle": MessageLookupByLibrary.simpleMessage(

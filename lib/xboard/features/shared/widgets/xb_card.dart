@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:fl_clash/xboard/features/shared/styles/styles.dart';
+
 class XBCard extends StatelessWidget {
   final Widget child;
   final EdgeInsetsGeometry? padding;
@@ -22,30 +24,34 @@ class XBCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
-    final isDark = Theme.of(context).brightness == Brightness.dark;
     final defaultBorderRadius = BorderRadius.circular(20);
+    final shape = XbUiCardStyle.shape(context);
+    final shadowColor = XbUiCardStyle.shadowColor(context);
 
     final bgColor = backgroundColor ??
         (isSelected
-          ? (isDark ? colorScheme.primaryContainer : colorScheme.primaryContainer.withAlpha(77))
-          : (isDark ? colorScheme.surfaceContainer : Colors.white));
+            ? colorScheme.primaryContainer
+            : XbUiCardStyle.background(context));
 
     return Container(
       margin: margin,
       decoration: BoxDecoration(
         borderRadius: borderRadius ?? defaultBorderRadius,
-        boxShadow: isDark ? null : [
-          BoxShadow(
-            color: colorScheme.primary.withAlpha(15),
-            blurRadius: 16,
-            offset: const Offset(0, 4),
-          ),
-        ],
+        boxShadow: shadowColor == null
+            ? null
+            : [
+                BoxShadow(
+                  color: shadowColor,
+                  blurRadius: 16,
+                  offset: const Offset(0, 4),
+                ),
+              ],
       ),
       child: Material(
         elevation: elevation ?? 0,
         borderRadius: borderRadius ?? defaultBorderRadius,
         color: bgColor,
+        clipBehavior: Clip.antiAlias,
         child: InkWell(
           onTap: onTap,
           borderRadius: borderRadius ?? defaultBorderRadius,
@@ -58,10 +64,10 @@ class XBCard extends StatelessWidget {
                       color: colorScheme.primary,
                       width: 2,
                     )
-                  : (isDark ? null : Border.all(
-                      color: const Color(0xFFEEF0F4),
-                      width: 1,
-                    )),
+                  : Border.all(
+                      color: shape.side.color,
+                      width: shape.side.width,
+                    ),
             ),
             child: child,
           ),

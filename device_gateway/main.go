@@ -9,8 +9,8 @@ import (
 	"crypto/rand"
 	"crypto/sha256"
 	"crypto/tls"
-	"encoding/base64"
 	"embed"
+	"encoding/base64"
 	"encoding/hex"
 	"encoding/json"
 	"errors"
@@ -353,8 +353,6 @@ func extractOSSConfig(data []byte) (domains, gatewayURLs []string, err error) {
 
 	return domains, gatewayURLs, nil
 }
-
-
 
 func loadConfig(logger *log.Logger) (Config, error) {
 	sessionHours := envInt("DG_SESSION_TTL_HOURS", 720)
@@ -1672,7 +1670,6 @@ func (s *Server) businessBaseURL() string {
 	return ""
 }
 
-
 func (s *Server) businessURLFor(baseURL, path, rawQuery string) (string, error) {
 	base, err := url.Parse(baseURL)
 	if err != nil {
@@ -1692,6 +1689,7 @@ func (s *Server) businessURL(path, rawQuery string) (string, error) {
 	base.RawQuery = rawQuery
 	return base.String(), nil
 }
+
 // tryBusinessURLs executes a request against every business URL in order
 // until one succeeds. makeReq is called with each base URL to construct the
 // request; if makeReq returns an error for a given URL, that URL is skipped.
@@ -1728,7 +1726,6 @@ func (s *Server) tryBusinessURLs(ctx context.Context, makeReq func(baseURL strin
 	}
 	return nil, errors.New("no business URLs configured")
 }
-
 
 func (s *Server) businessSubscribeURL(ctx context.Context, sessionCtx *SessionContext) (string, error) {
 	if sessionCtx.Session.BusinessSubURLCipher != "" {
@@ -1817,19 +1814,55 @@ func (s *Server) hashValue(scope, value string) string {
 
 func (s *Server) clientIP(r *http.Request) string {
 	if s.cfg.TrustForwardedFor {
-		if forwarded := r.Header.Get("X-Forwarded-For"); forwarded != "" {
-			parts := strings.Split(forwarded, ",")
-			return strings.TrimSpace(parts[0])
+		if cloudflareIP := cleanPublicIP(r.Header.Get("CF-Connecting-IP")); cloudflareIP != "" {
+			return cloudflareIP
 		}
-		if realIP := r.Header.Get("X-Real-IP"); realIP != "" {
-			return strings.TrimSpace(realIP)
+		if forwardedIP := firstPublicIP(r.Header.Get("X-Forwarded-For")); forwardedIP != "" {
+			return forwardedIP
+		}
+		if realIP := cleanPublicIP(r.Header.Get("X-Real-IP")); realIP != "" {
+			return realIP
 		}
 	}
-	host, _, err := net.SplitHostPort(r.RemoteAddr)
-	if err != nil {
-		return r.RemoteAddr
+	return remoteHost(r.RemoteAddr)
+}
+
+func firstPublicIP(headerValue string) string {
+	for _, part := range strings.Split(headerValue, ",") {
+		if ip := cleanPublicIP(part); ip != "" {
+			return ip
+		}
+	}
+	return ""
+}
+
+func cleanPublicIP(raw string) string {
+	host := remoteHost(strings.TrimSpace(raw))
+	ip := net.ParseIP(host)
+	if ip == nil || !isPublicIP(ip) {
+		return ""
 	}
 	return host
+}
+
+func remoteHost(raw string) string {
+	if raw == "" {
+		return ""
+	}
+	host, _, err := net.SplitHostPort(raw)
+	if err == nil {
+		return strings.Trim(host, "[]")
+	}
+	return strings.Trim(raw, "[]")
+}
+
+func isPublicIP(ip net.IP) bool {
+	return !ip.IsLoopback() &&
+		!ip.IsPrivate() &&
+		!ip.IsUnspecified() &&
+		!ip.IsMulticast() &&
+		!ip.IsLinkLocalUnicast() &&
+		!ip.IsLinkLocalMulticast()
 }
 
 func LoadStore(path string) (*Store, error) {
@@ -1965,7 +1998,7 @@ func publicDevice(device *DeviceRecord, currentDeviceID string) map[string]any {
 		"revoked_at":   timePtrString(device.RevokedAt),
 		"revoked_by":   device.RevokedBy,
 		"last_ip":      device.LastIP,
-		"is_online":   device.Status == statusActive && time.Since(device.LastSeenAt) < 5*time.Minute,
+		"is_online":    device.Status == statusActive && time.Since(device.LastSeenAt) < 5*time.Minute,
 		"is_current":   currentDeviceID != "" && device.ID == currentDeviceID,
 	}
 }

@@ -2,6 +2,7 @@
 library;
 
 export 'badge_icon.dart';
+export 'connection_health_dialog.dart';
 export 'language_selector.dart';
 export 'notice_banner.dart';
 export 'node_selector_bar.dart';

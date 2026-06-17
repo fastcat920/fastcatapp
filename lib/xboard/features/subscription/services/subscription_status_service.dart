@@ -99,8 +99,10 @@ class SubscriptionStatusService {
       if (remainingDays < 0) {
         return SubscriptionStatusResult(
           type: SubscriptionStatusType.expired,
-          messageBuilder: (context) => '套餐已到期，请先续费套餐',
-          detailMessageBuilder: (context) => '套餐已到期，请先续费套餐',
+          messageBuilder: (context) =>
+              AppLocalizations.of(context).xboardSubscriptionHasExpired,
+          detailMessageBuilder: (context) =>
+              AppLocalizations.of(context).xboardRenewToContinue,
           expiredAt: expiredAt,
           remainingDays: remainingDays,
           needsDialog: true,
@@ -191,8 +193,10 @@ class SubscriptionStatusService {
     if (usageRatio >= 1.0) {
       return SubscriptionStatusResult(
         type: SubscriptionStatusType.exhausted,
-        messageBuilder: (context) => '套餐流量已用完，请重置流量或升级套餐。',
-        detailMessageBuilder: (context) => '套餐流量已用完，请重置流量或升级套餐。',
+        messageBuilder: (context) =>
+            AppLocalizations.of(context).xboardTrafficUsedUp,
+        detailMessageBuilder: (context) =>
+            AppLocalizations.of(context).subscriptionTrafficExhaustedDetail,
         needsDialog: true,
       );
     }

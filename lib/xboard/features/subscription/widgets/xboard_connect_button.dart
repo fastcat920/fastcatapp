@@ -1,13 +1,13 @@
 import 'package:fl_clash/common/common.dart';
-import 'package:fl_clash/enum/enum.dart';
+import 'package:fl_clash/l10n/l10n.dart';
 import 'package:fl_clash/providers/providers.dart';
 import 'package:fl_clash/state.dart';
 import 'package:fl_clash/widgets/widgets.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:fl_clash/xboard/features/auth/providers/xboard_user_provider.dart';
+import 'package:fl_clash/xboard/features/latency/services/auto_latency_service.dart';
 import 'package:fl_clash/xboard/features/subscription/services/reset_traffic_order_flow.dart';
 import 'package:fl_clash/xboard/features/subscription/services/subscription_guard_service.dart';
 import 'package:fl_clash/xboard/features/subscription/services/subscription_status_service.dart';
@@ -29,20 +29,11 @@ class XBoardConnectButton extends ConsumerStatefulWidget {
 
 class _XBoardConnectButtonState extends ConsumerState<XBoardConnectButton>
     with SingleTickerProviderStateMixin {
-  @override
-  void activate() {
-    super.activate();
-  }
-
-  @override
-  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
-    super.debugFillProperties(properties);
-  }
-
   late AnimationController _controller;
   late Animation<double> _animation;
   bool isStart = false;
   bool _isCheckingSubscription = false;
+  bool _isSwitching = false;
   @override
   void initState() {
     super.initState();
@@ -80,35 +71,37 @@ class _XBoardConnectButtonState extends ConsumerState<XBoardConnectButton>
   }
 
   Future<void> handleSwitchStart() async {
-    if (_isCheckingSubscription) return;
+    if (_isSwitching ||
+        _isCheckingSubscription ||
+        globalState.appController.isCoreSwitching) {
+      return;
+    }
+    final currentlyRunning = ref.read(runTimeProvider) != null;
     // 断开连接：不拦截，停止守护
-    if (isStart) {
-      isStart = false;
-      setState(() {});
-      updateController();
+    if (currentlyRunning) {
+      setState(() => _isSwitching = true);
       subscriptionGuardService.stopGuard();
-      debouncer.call(
-        FunctionTag.updateStatus,
-        () {
-          globalState.appController.updateStatus(false);
-        },
-        duration: commonDuration,
-      );
+      autoLatencyService.onConnectionStatusChanged(false);
+      try {
+        await globalState.appController.updateStatus(false);
+      } finally {
+        if (mounted) setState(() => _isSwitching = false);
+      }
       return;
     }
 
-    // 开始连接前：本地校验订阅状态
-    var blockStatus = subscriptionGuardService.checkBeforeConnect();
-    if (blockStatus?.type == SubscriptionStatusType.noSubscription) {
-      _isCheckingSubscription = true;
-      try {
-        await ref.read(xboardUserProvider.notifier).refreshSubscriptionInfo();
-        blockStatus = subscriptionGuardService.checkBeforeConnect();
-      } finally {
-        _isCheckingSubscription = false;
-      }
-      if (!mounted) return;
+    // 开始连接前：先刷新服务端订阅状态，避免首页缓存滞后时仍然放行连接。
+    _isCheckingSubscription = true;
+    try {
+      await ref
+          .read(xboardUserProvider.notifier)
+          .refreshSubscriptionInfo(importProfile: false);
+    } finally {
+      _isCheckingSubscription = false;
     }
+    if (!mounted) return;
+
+    final blockStatus = subscriptionGuardService.checkBeforeConnect();
     if (blockStatus != null) {
       if (blockStatus.type == SubscriptionStatusType.noSubscription ||
           blockStatus.type == SubscriptionStatusType.expired ||
@@ -120,6 +113,7 @@ class _XBoardConnectButtonState extends ConsumerState<XBoardConnectButton>
           onResetTraffic: blockStatus.type == SubscriptionStatusType.exhausted
               ? _openResetTrafficOrder
               : null,
+          onRefresh: _refreshSubscriptionStatus,
         );
       } else {
         // 订阅无效，toast 提示，不连接
@@ -128,18 +122,20 @@ class _XBoardConnectButtonState extends ConsumerState<XBoardConnectButton>
       return;
     }
 
-    // 订阅有效，正常连接 + 启动守护
-    isStart = true;
-    setState(() {});
-    updateController();
-    subscriptionGuardService.startGuard();
-    debouncer.call(
-      FunctionTag.updateStatus,
-      () {
-        globalState.appController.updateStatus(true);
-      },
-      duration: commonDuration,
-    );
+    setState(() => _isSwitching = true);
+    try {
+      final started = await globalState.appController.updateStatus(true);
+      final isActuallyRunning = ref.read(runTimeProvider) != null;
+      if (started && isActuallyRunning) {
+        subscriptionGuardService.startGuard();
+        autoLatencyService.onConnectionStatusChanged(true);
+      } else {
+        subscriptionGuardService.stopGuard();
+        autoLatencyService.onConnectionStatusChanged(false);
+      }
+    } finally {
+      if (mounted) setState(() => _isSwitching = false);
+    }
   }
 
   void _openPlans() {
@@ -152,6 +148,38 @@ class _XBoardConnectButtonState extends ConsumerState<XBoardConnectButton>
       context: context,
       ref: ref,
     );
+  }
+
+  Future<void> _refreshSubscriptionStatus() async {
+    await ref
+        .read(xboardUserProvider.notifier)
+        .refreshSubscriptionInfo(importProfile: false);
+    if (!mounted) return;
+
+    final blockStatus = subscriptionGuardService.checkBeforeConnect();
+    if (blockStatus == null) {
+      XBoardNotification.showSuccess(
+        AppLocalizations.of(context).subscriptionValid,
+      );
+      return;
+    }
+
+    if (blockStatus.type == SubscriptionStatusType.noSubscription ||
+        blockStatus.type == SubscriptionStatusType.expired ||
+        blockStatus.type == SubscriptionStatusType.exhausted) {
+      SubscriptionStatusDialog.show(
+        context,
+        blockStatus,
+        onPurchase: _openPlans,
+        onResetTraffic: blockStatus.type == SubscriptionStatusType.exhausted
+            ? _openResetTrafficOrder
+            : null,
+        onRefresh: _refreshSubscriptionStatus,
+      );
+      return;
+    }
+
+    XBoardNotification.showError(blockStatus.getMessage(context));
   }
 
   updateController() {
@@ -206,10 +234,8 @@ class _XBoardConnectButtonState extends ConsumerState<XBoardConnectButton>
           return FloatingActionButton.extended(
             clipBehavior: Clip.antiAlias,
             materialTapTargetSize: MaterialTapTargetSize.padded,
-            heroTag: "xboard_connect_button",
-            onPressed: () {
-              handleSwitchStart();
-            },
+            heroTag: 'xboard_connect_button',
+            onPressed: _isSwitching ? null : handleSwitchStart,
             icon: AnimatedIcon(
               icon: AnimatedIcons.play_pause,
               progress: _animation,
@@ -275,7 +301,7 @@ class _XBoardConnectButtonState extends ConsumerState<XBoardConnectButton>
                 borderRadius: BorderRadius.circular(outerSize / 2),
                 onPressed: handleSwitchStart,
                 child: GestureDetector(
-                  onTap: handleSwitchStart,
+                  onTap: _isSwitching ? null : handleSwitchStart,
                   child: SizedBox(
                     width: outerSize,
                     height: outerSize,
@@ -326,12 +352,22 @@ class _XBoardConnectButtonState extends ConsumerState<XBoardConnectButton>
                                 ),
                                 child: AnimatedSwitcher(
                                   duration: const Duration(milliseconds: 250),
-                                  child: Icon(
-                                    btnIcon,
-                                    key: ValueKey(isStart),
-                                    size: iconSize,
-                                    color: iconColor,
-                                  ),
+                                  child: _isSwitching
+                                      ? SizedBox(
+                                          key: const ValueKey('switching'),
+                                          width: iconSize,
+                                          height: iconSize,
+                                          child: CircularProgressIndicator(
+                                            strokeWidth: 2.5,
+                                            color: iconColor,
+                                          ),
+                                        )
+                                      : Icon(
+                                          btnIcon,
+                                          key: ValueKey(isStart),
+                                          size: iconSize,
+                                          color: iconColor,
+                                        ),
                                 ),
                               ),
                             ),

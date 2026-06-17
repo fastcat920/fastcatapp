@@ -17,6 +17,23 @@ class XbUiTokens {
 class XbUiCardStyle {
   XbUiCardStyle._();
 
+  static Color background(BuildContext context) {
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+    return isDark ? theme.colorScheme.surfaceContainerLow : Colors.white;
+  }
+
+  static Color? shadowColor(BuildContext context) {
+    final theme = Theme.of(context);
+    return theme.brightness == Brightness.dark
+        ? null
+        : Colors.black.withValues(alpha: 0.08);
+  }
+
+  static double elevation(BuildContext context) {
+    return Theme.of(context).brightness == Brightness.dark ? 0 : 1;
+  }
+
   static RoundedRectangleBorder shape(
     BuildContext context, {
     double radius = XbUiTokens.radiusCard,
@@ -26,7 +43,10 @@ class XbUiCardStyle {
     return RoundedRectangleBorder(
       borderRadius: BorderRadius.circular(radius),
       side: isDark
-          ? BorderSide.none
+          ? BorderSide(
+              color: theme.colorScheme.outline.withValues(alpha: 0.14),
+              width: 1,
+            )
           : const BorderSide(color: XbUiTokens.cardBorderLight, width: 1),
     );
   }

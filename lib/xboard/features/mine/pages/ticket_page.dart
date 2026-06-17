@@ -159,6 +159,7 @@ class _TicketCard extends StatelessWidget {
 
     final isDark = theme.brightness == Brightness.dark;
     return Card(
+      clipBehavior: Clip.antiAlias,
       elevation: 0,
       margin: XbUiTokens.listCardGapBottom10,
       color: isDark ? null : Colors.white,

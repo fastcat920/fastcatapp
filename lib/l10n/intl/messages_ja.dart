@@ -74,11 +74,15 @@ class MessageLookup extends MessageLookupByLibrary {
 
   static String m39(date, days) => "${date} に期限切れ、残り ${days} 日";
 
-  static String m40(error) => "交換失敗: ${error}";
+  static String m40(count) => "${count} 件の候補";
 
-  static String m41(days) => "利用済み通信量は ${days} 日後にリセットされます";
+  static String m41(count) => "${count} 件のノード";
 
-  static String m42(time) => "実行時間: ${time}";
+  static String m42(error) => "交換失敗: ${error}";
+
+  static String m43(days) => "利用済み通信量は ${days} 日後にリセットされます";
+
+  static String m44(time) => "実行時間: ${time}";
 
   final messages = _notInlinedMessages(_notInlinedMessages);
   static Map<String, Function> _notInlinedMessages(_) => <String, Function>{
@@ -785,6 +789,7 @@ class MessageLookup extends MessageLookupByLibrary {
       "より多くのトラフィックを購入するかプランをアップグレードしてください",
     ),
     "xboardBuyNow": MessageLookupByLibrary.simpleMessage("今すぐ購入"),
+    "xboardBuyPlan": MessageLookupByLibrary.simpleMessage("プランを購入"),
     "xboardBuyoutPlan": MessageLookupByLibrary.simpleMessage("買い切りプラン"),
     "xboardCancel": MessageLookupByLibrary.simpleMessage("キャンセル"),
     "xboardCancelOrder": MessageLookupByLibrary.simpleMessage("Cancel order"),
@@ -793,6 +798,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "xboardChangePassword": MessageLookupByLibrary.simpleMessage(
       "Change password",
     ),
+    "xboardCheckOrders": MessageLookupByLibrary.simpleMessage("注文を確認"),
     "xboardCheckPaymentFailed": MessageLookupByLibrary.simpleMessage(
       "支払い状況の確認に失敗しました",
     ),
@@ -844,11 +850,18 @@ class MessageLookup extends MessageLookupByLibrary {
     "xboardConnectGlobalQualityNodes": MessageLookupByLibrary.simpleMessage(
       "グローバル品質ノードに接続",
     ),
+    "xboardConnectionHealth": MessageLookupByLibrary.simpleMessage("接続ヘルス"),
+    "xboardConnectionHealthSubtitle": MessageLookupByLibrary.simpleMessage(
+      "サーバー、サブスクリプション、ノード、デバイスの状態を確認",
+    ),
     "xboardConnectionTimeout": MessageLookupByLibrary.simpleMessage(
       "接続タイムアウト、ネットワーク接続を確認してください",
     ),
     "xboardContactCustomerService": MessageLookupByLibrary.simpleMessage(
       "カスタマーサービス",
+    ),
+    "xboardCopyDiagnosticBundle": MessageLookupByLibrary.simpleMessage(
+      "診断パックをコピー",
     ),
     "xboardCopyFailed": MessageLookupByLibrary.simpleMessage("コピーに失敗しました"),
     "xboardCopyInviteCode": MessageLookupByLibrary.simpleMessage("招待コードをコピー"),
@@ -875,6 +888,11 @@ class MessageLookup extends MessageLookupByLibrary {
     "xboardCurrentBalance": MessageLookupByLibrary.simpleMessage(
       "Current balance",
     ),
+    "xboardCurrentBusinessApi": MessageLookupByLibrary.simpleMessage(
+      "現在の業務API",
+    ),
+    "xboardCurrentDomain": MessageLookupByLibrary.simpleMessage("現在のドメイン"),
+    "xboardCurrentGateway": MessageLookupByLibrary.simpleMessage("現在のゲートウェイ"),
     "xboardCurrentNode": MessageLookupByLibrary.simpleMessage("現在のノード"),
     "xboardCurrentPassword": MessageLookupByLibrary.simpleMessage(
       "Current password",
@@ -899,6 +917,7 @@ class MessageLookup extends MessageLookupByLibrary {
       "現在のデバイス",
     ),
     "xboardDeviceExpired": MessageLookupByLibrary.simpleMessage("期限切れ"),
+    "xboardDeviceHealth": MessageLookupByLibrary.simpleMessage("デバイス状態"),
     "xboardDeviceHistory": MessageLookupByLibrary.simpleMessage("履歴"),
     "xboardDeviceHistoryHint": MessageLookupByLibrary.simpleMessage(
       "90日以内の削除記録のみ保持され、それ以前の記録は自動的に削除されます。",
@@ -932,6 +951,9 @@ class MessageLookup extends MessageLookupByLibrary {
       "不明なバージョン",
     ),
     "xboardDeviceUnlimited": MessageLookupByLibrary.simpleMessage("無制限"),
+    "xboardDiagnosticBundleCopied": MessageLookupByLibrary.simpleMessage(
+      "診断パックをコピーしました",
+    ),
     "xboardDiscountAmount": MessageLookupByLibrary.simpleMessage(
       "Discount amount",
     ),
@@ -977,6 +999,8 @@ class MessageLookup extends MessageLookupByLibrary {
     "xboardFair": MessageLookupByLibrary.simpleMessage("普通"),
     "xboardForceUpdate": MessageLookupByLibrary.simpleMessage("強制更新"),
     "xboardForgotPassword": MessageLookupByLibrary.simpleMessage("パスワードを忘れた"),
+    "xboardGatewayCandidateCount": m40,
+    "xboardGatewayStatus": MessageLookupByLibrary.simpleMessage("ゲートウェイ状態"),
     "xboardGetGroupLinkFailed": MessageLookupByLibrary.simpleMessage(
       "グループリンク取得失敗",
     ),
@@ -1003,12 +1027,14 @@ class MessageLookup extends MessageLookupByLibrary {
     ),
     "xboardHalfYearlyPayment": MessageLookupByLibrary.simpleMessage("半年払い"),
     "xboardHandleLater": MessageLookupByLibrary.simpleMessage("後で処理"),
+    "xboardHealthLastEvent": MessageLookupByLibrary.simpleMessage("最新イベント"),
+    "xboardHealthy": MessageLookupByLibrary.simpleMessage("正常"),
     "xboardHigh": MessageLookupByLibrary.simpleMessage("High"),
     "xboardHighSpeedNetwork": MessageLookupByLibrary.simpleMessage("高速ネットワーク"),
     "xboardImportFailed": MessageLookupByLibrary.simpleMessage("インポート失敗"),
     "xboardImportSuccess": MessageLookupByLibrary.simpleMessage("インポート成功"),
     "xboardImportingSubscription": MessageLookupByLibrary.simpleMessage(
-      "Importing subscription",
+      "サブスクリプションをインポート中",
     ),
     "xboardInsufficientBalance": MessageLookupByLibrary.simpleMessage("残高不足"),
     "xboardInvalidCredentials": MessageLookupByLibrary.simpleMessage(
@@ -1033,13 +1059,25 @@ class MessageLookup extends MessageLookupByLibrary {
     "xboardLocalIP": MessageLookupByLibrary.simpleMessage("ローカルIP"),
     "xboardLoggedIn": MessageLookupByLibrary.simpleMessage("ログイン済み"),
     "xboardLogin": MessageLookupByLibrary.simpleMessage("ログイン"),
+    "xboardLoginErrorConfigLoad": MessageLookupByLibrary.simpleMessage(
+      "設定の読み込みに失敗しました。しばらくしてから再試行してください",
+    ),
+    "xboardLoginErrorCredentials": MessageLookupByLibrary.simpleMessage(
+      "アカウントまたはパスワードが間違っています。確認してください",
+    ),
+    "xboardLoginErrorDeviceLimit": MessageLookupByLibrary.simpleMessage(
+      "デバイス上限に達しました。先にオフラインデバイスを解放してください。",
+    ),
+    "xboardLoginErrorLimited": MessageLookupByLibrary.simpleMessage(
+      "ログイン試行が多すぎます。しばらくしてから再試行してください。",
+    ),
+    "xboardLoginErrorNetwork": MessageLookupByLibrary.simpleMessage(
+      "ネットワークエラー、ローカルネットワークを確認してください",
+    ),
     "xboardLoginExpired": MessageLookupByLibrary.simpleMessage(
       "ログインが期限切れです、再度ログインしてください",
     ),
     "xboardLoginFailed": MessageLookupByLibrary.simpleMessage("ログイン失敗"),
-    "xboardLoginErrorNetwork": MessageLookupByLibrary.simpleMessage("ネットワークエラー、ローカルネットワークを確認してください"),
-    "xboardLoginErrorConfigLoad": MessageLookupByLibrary.simpleMessage("設定の読み込みに失敗しました。しばらくしてから再試行してください"),
-    "xboardLoginErrorCredentials": MessageLookupByLibrary.simpleMessage("アカウントまたはパスワードが間違っています。確認してください"),
     "xboardLoginSuccess": MessageLookupByLibrary.simpleMessage("ログイン成功"),
     "xboardLoginToViewSubscription": MessageLookupByLibrary.simpleMessage(
       "サブスクリプション使用状況を確認するにはログインしてください",
@@ -1052,6 +1090,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "xboardLogoutFailed": MessageLookupByLibrary.simpleMessage("ログアウト失敗"),
     "xboardLogoutSuccess": MessageLookupByLibrary.simpleMessage("ログアウトしました"),
     "xboardLow": MessageLookupByLibrary.simpleMessage("Low"),
+    "xboardManageDevices": MessageLookupByLibrary.simpleMessage("デバイスを管理"),
     "xboardMedium": MessageLookupByLibrary.simpleMessage("Medium"),
     "xboardMine": MessageLookupByLibrary.simpleMessage("マイページ"),
     "xboardMissingRequiredField": MessageLookupByLibrary.simpleMessage(
@@ -1063,6 +1102,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "xboardMyServices": MessageLookupByLibrary.simpleMessage("My services"),
     "xboardMyTickets": MessageLookupByLibrary.simpleMessage("My tickets"),
     "xboardMyWallet": MessageLookupByLibrary.simpleMessage("My wallet"),
+    "xboardNeedsAttention": MessageLookupByLibrary.simpleMessage("確認が必要"),
     "xboardNetworkConnectionFailed": MessageLookupByLibrary.simpleMessage(
       "ネットワーク接続に失敗しました、ネットワーク設定を確認してください",
     ),
@@ -1078,6 +1118,9 @@ class MessageLookup extends MessageLookupByLibrary {
     ),
     "xboardNoAvailableSubscription": MessageLookupByLibrary.simpleMessage(
       "利用可能なサブスクリプションがありません",
+    ),
+    "xboardNoGatewayActive": MessageLookupByLibrary.simpleMessage(
+      "有効なゲートウェイがありません",
     ),
     "xboardNoInternetConnection": MessageLookupByLibrary.simpleMessage(
       "インターネット接続がありません、ネットワーク設定を確認してください",
@@ -1100,6 +1143,8 @@ class MessageLookup extends MessageLookupByLibrary {
     "xboardNoTrafficRecords": MessageLookupByLibrary.simpleMessage(
       "No traffic records",
     ),
+    "xboardNodeCount": m41,
+    "xboardNodeHealth": MessageLookupByLibrary.simpleMessage("ノード状態"),
     "xboardNodeName": MessageLookupByLibrary.simpleMessage("ノード名"),
     "xboardNodeSelection": MessageLookupByLibrary.simpleMessage(
       "Node selection",
@@ -1107,6 +1152,9 @@ class MessageLookup extends MessageLookupByLibrary {
     "xboardNone": MessageLookupByLibrary.simpleMessage("なし"),
     "xboardNormal": MessageLookupByLibrary.simpleMessage("Normal"),
     "xboardNotLoggedIn": MessageLookupByLibrary.simpleMessage("未ログイン"),
+    "xboardOfflineButActive": MessageLookupByLibrary.simpleMessage(
+      "オフライン・枠使用中",
+    ),
     "xboardOneTimePayment": MessageLookupByLibrary.simpleMessage("一回払い"),
     "xboardOpenPaymentFailed": MessageLookupByLibrary.simpleMessage(
       "支払いページを開けませんでした",
@@ -1193,6 +1241,9 @@ class MessageLookup extends MessageLookupByLibrary {
     "xboardPaymentSuccessful": MessageLookupByLibrary.simpleMessage(
       "🎉 支払い成功！",
     ),
+    "xboardPendingOrdersHint": MessageLookupByLibrary.simpleMessage(
+      "支払い済みで反映されない場合は、注文状態を更新してください。",
+    ),
     "xboardPeriod": MessageLookupByLibrary.simpleMessage("Period"),
     "xboardPlanBased": MessageLookupByLibrary.simpleMessage("Based on plan"),
     "xboardPlanExpiryReminder": MessageLookupByLibrary.simpleMessage(
@@ -1254,18 +1305,25 @@ class MessageLookup extends MessageLookupByLibrary {
     ),
     "xboardRechargeNow": MessageLookupByLibrary.simpleMessage("Recharge now"),
     "xboardRedeemFailed": MessageLookupByLibrary.simpleMessage("交換失敗"),
-    "xboardRedeemFailedWithError": m40,
+    "xboardRedeemFailedWithError": m42,
     "xboardRedeemNow": MessageLookupByLibrary.simpleMessage("Redeem now"),
     "xboardRedeemSuccess": MessageLookupByLibrary.simpleMessage("交換成功"),
     "xboardRefresh": MessageLookupByLibrary.simpleMessage("更新"),
-    "xboardRefreshStatus": MessageLookupByLibrary.simpleMessage("ステータスを更新"),
+    "xboardRefreshStatus": MessageLookupByLibrary.simpleMessage("状態を更新"),
     "xboardRefundAmount": MessageLookupByLibrary.simpleMessage("ウォレット返金"),
     "xboardRegister": MessageLookupByLibrary.simpleMessage("登録"),
     "xboardRegisterFailed": MessageLookupByLibrary.simpleMessage("登録失敗"),
     "xboardRegisterSuccess": MessageLookupByLibrary.simpleMessage(
       "登録成功！ログインページにリダイレクトしています...",
     ),
+    "xboardReleaseOfflineDevices": MessageLookupByLibrary.simpleMessage(
+      "オフラインデバイスを解放",
+    ),
+    "xboardReleaseOfflineDevicesConfirm": MessageLookupByLibrary.simpleMessage(
+      "オフラインのままデバイス枠を使用しているデバイスを削除します。現在のデバイスには影響しません。続行しますか？",
+    ),
     "xboardReload": MessageLookupByLibrary.simpleMessage("再読み込み"),
+    "xboardReloadNodes": MessageLookupByLibrary.simpleMessage("ノードを再読み込み"),
     "xboardRelogin": MessageLookupByLibrary.simpleMessage("再ログイン"),
     "xboardRemainingBalance": MessageLookupByLibrary.simpleMessage("残り"),
     "xboardRememberPassword": MessageLookupByLibrary.simpleMessage("パスワードを記憶"),
@@ -1281,14 +1339,14 @@ class MessageLookup extends MessageLookupByLibrary {
     "xboardResetCurrentPlanTraffic": MessageLookupByLibrary.simpleMessage(
       "Reset current plan traffic",
     ),
-    "xboardResetTraffic": MessageLookupByLibrary.simpleMessage("Reset traffic"),
+    "xboardResetTraffic": MessageLookupByLibrary.simpleMessage("トラフィックをリセット"),
     "xboardResetTrafficByPlanCycle": MessageLookupByLibrary.simpleMessage(
       "Reset traffic by plan cycle",
     ),
     "xboardResetTrafficConfirmContent": MessageLookupByLibrary.simpleMessage(
       "この操作により使用済みトラフィックがリセットされますが、プラン期間は延長されません。続行しますか？",
     ),
-    "xboardResetTrafficInDays": m41,
+    "xboardResetTrafficInDays": m43,
     "xboardResetTrafficToday": MessageLookupByLibrary.simpleMessage(
       "利用済み通信量は本日リセットされました",
     ),
@@ -1298,7 +1356,8 @@ class MessageLookup extends MessageLookupByLibrary {
     "xboardReturnAfterPaymentAutoDetect": MessageLookupByLibrary.simpleMessage(
       "3. 支払い後にアプリに戻ると、システムが自動検出します",
     ),
-    "xboardRunningTime": m42,
+    "xboardRunDiagnosis": MessageLookupByLibrary.simpleMessage("チェックを実行"),
+    "xboardRunningTime": m44,
     "xboardSecureEncryption": MessageLookupByLibrary.simpleMessage("セキュア暗号化"),
     "xboardSelectPaymentPeriod": MessageLookupByLibrary.simpleMessage(
       "支払い期間を選択",
@@ -1311,8 +1370,12 @@ class MessageLookup extends MessageLookupByLibrary {
       "認証コードを送信",
     ),
     "xboardServerError": MessageLookupByLibrary.simpleMessage("サーバーエラー"),
+    "xboardServerStatus": MessageLookupByLibrary.simpleMessage("サーバー状態"),
     "xboardSetup": MessageLookupByLibrary.simpleMessage("設定"),
     "xboardSixMonthCycle": MessageLookupByLibrary.simpleMessage("6ヶ月サイクル"),
+    "xboardSmartLatencyStarted": MessageLookupByLibrary.simpleMessage(
+      "スマート遅延テストを開始しました",
+    ),
     "xboardSmartRouting": MessageLookupByLibrary.simpleMessage("Smart routing"),
     "xboardSoftwareSettings": MessageLookupByLibrary.simpleMessage(
       "Software settings",
@@ -1333,6 +1396,9 @@ class MessageLookup extends MessageLookupByLibrary {
     "xboardSubscriptionHasExpired": MessageLookupByLibrary.simpleMessage(
       "サブスクリプションが期限切れです",
     ),
+    "xboardSubscriptionHealth": MessageLookupByLibrary.simpleMessage(
+      "サブスクリプション状態",
+    ),
     "xboardSubscriptionInfo": MessageLookupByLibrary.simpleMessage(
       "サブスクリプション情報",
     ),
@@ -1350,6 +1416,10 @@ class MessageLookup extends MessageLookupByLibrary {
     ),
     "xboardSurplusAmount": MessageLookupByLibrary.simpleMessage("旧プラン充当額"),
     "xboardSwitch": MessageLookupByLibrary.simpleMessage("切り替え"),
+    "xboardSyncingSubscription": MessageLookupByLibrary.simpleMessage(
+      "アカウントのサブスクリプションを同期中...",
+    ),
+    "xboardTestCurrentNode": MessageLookupByLibrary.simpleMessage("現在のノードをテスト"),
     "xboardTestLatency": MessageLookupByLibrary.simpleMessage("Test latency"),
     "xboardTesting": MessageLookupByLibrary.simpleMessage("テスト中"),
     "xboardThirtySixMonthCycle": MessageLookupByLibrary.simpleMessage(

@@ -211,6 +211,11 @@ class HttpService {
       _dio.interceptors.add(InterceptorsWrapper(
         onError: (error, handler) async {
           final statusCode = error.response?.statusCode ?? 0;
+          if ((statusCode >= 200 && statusCode < 300) ||
+              _isAuthBusinessError(error)) {
+            handler.next(error);
+            return;
+          }
           final requestKind = _classifyRequest(error.requestOptions.path);
           if (!_shouldTriggerFailover(error, requestKind)) {
             handler.next(error);
@@ -265,8 +270,7 @@ class HttpService {
               // （如用户凭据在该实例无效），应继续尝试下一个 URL
               final respData = response.data;
               if (respData is Map && respData['success'] == false) {
-                SdkLogger.w(
-                    '[HttpService] 候选 URL 返回业务失败，继续尝试下一个');
+                SdkLogger.w('[HttpService] 候选 URL 返回业务失败，继续尝试下一个');
                 onEndpointFailure?.call(
                   HttpEndpointConfig(
                     baseUrl: cleanUrl,
@@ -299,8 +303,7 @@ class HttpService {
             }
           }
 
-          SdkLogger.w(
-              '[HttpService] ⛔ 故障转移耗尽（$retryCount 次），放弃重试');
+          SdkLogger.w('[HttpService] ⛔ 故障转移耗尽（$retryCount 次），放弃重试');
           handler.next(error);
         },
       ));
@@ -680,7 +683,7 @@ class HttpService {
 
         if (statusCode == 401) {
           return AuthException(errorMessage);
-        } else if (statusCode >= 400 && statusCode < 500) {
+        } else if (statusCode >= 200 && statusCode < 500) {
           return ApiException(errorMessage, statusCode);
         } else {
           return NetworkException(errorMessage);
@@ -766,7 +769,8 @@ class HttpService {
     if (path.contains('/passport/auth/')) {
       return RequestFailoverKind.auth;
     }
-    if (path.contains('/user/getSubscribe') || path.contains('/client/subscribe')) {
+    if (path.contains('/user/getSubscribe') ||
+        path.contains('/client/subscribe')) {
       return RequestFailoverKind.subscription;
     }
     if (path.contains('/user/devices')) {
@@ -805,6 +809,23 @@ class HttpService {
     }
   }
 
+  bool _isAuthBusinessError(DioException error) {
+    final message = [
+      error.message,
+      error.error?.toString(),
+      error.response?.data?.toString(),
+    ].whereType<String>().join('\n').toLowerCase();
+    return message.contains('disabled') ||
+        message.contains('banned') ||
+        message.contains('suspended') ||
+        message.contains('frozen') ||
+        message.contains('禁用') ||
+        message.contains('封禁') ||
+        message.contains('停用') ||
+        message.contains('停止使用') ||
+        message.contains('冻结');
+  }
+
   String _maskGatewayAddress(String raw) {
     final clean = raw.endsWith('/') ? raw.substring(0, raw.length - 1) : raw;
     final uri = Uri.tryParse(clean);
@@ -826,9 +847,8 @@ class HttpService {
       final maskedSecond = second.length <= 2
           ? '${second[0]}*'
           : '${second.substring(0, 1)}***${second.substring(second.length - 1)}';
-      final prefix = hostParts.length > 2
-          ? '${hostParts.first.substring(0, 1)}***.'
-          : '';
+      final prefix =
+          hostParts.length > 2 ? '${hostParts.first.substring(0, 1)}***.' : '';
       return '${uri.scheme}://$prefix$maskedSecond.$root';
     }
     return '${uri.scheme}://${host.substring(0, 1)}***';

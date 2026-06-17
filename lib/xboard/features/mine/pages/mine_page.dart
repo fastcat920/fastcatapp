@@ -4,7 +4,6 @@ import 'package:fl_clash/common/common.dart';
 import 'package:fl_clash/models/models.dart' as fl_models;
 import 'package:fl_clash/providers/providers.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:fl_clash/l10n/l10n.dart';
@@ -31,16 +30,6 @@ class MinePage extends ConsumerStatefulWidget {
 
 class _MinePageState extends ConsumerState<MinePage>
     with SingleTickerProviderStateMixin {
-  @override
-  void activate() {
-    super.activate();
-  }
-
-  @override
-  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
-    super.debugFillProperties(properties);
-  }
-
   late final AnimationController _refreshAnim;
   StreamSubscription? _configSub;
 
@@ -129,6 +118,7 @@ class _MinePageState extends ConsumerState<MinePage>
         userState.subscriptionInfo?.email ??
         '';
     return Card(
+      clipBehavior: Clip.antiAlias,
       margin: EdgeInsets.zero,
       elevation: isDark ? 0 : 1,
       shadowColor: isDark ? null : Colors.black.withValues(alpha: 0.08),
@@ -293,6 +283,7 @@ class _MinePageState extends ConsumerState<MinePage>
   Widget _buildServicesCard(BuildContext context, WidgetRef ref,
       DomainUser? userInfo, ThemeData theme, bool isDark) {
     return Card(
+      clipBehavior: Clip.antiAlias,
       margin: EdgeInsets.zero,
       elevation: isDark ? 0 : 1,
       shadowColor: isDark ? null : Colors.black.withValues(alpha: 0.08),
@@ -415,6 +406,7 @@ class _MinePageState extends ConsumerState<MinePage>
   Widget _buildSettingsCard(
       BuildContext context, bool isDesktop, ThemeData theme, bool isDark) {
     return Card(
+      clipBehavior: Clip.antiAlias,
       margin: EdgeInsets.zero,
       elevation: isDark ? 0 : 1,
       shadowColor: isDark ? null : Colors.black.withValues(alpha: 0.08),
@@ -518,6 +510,7 @@ class _MinePageState extends ConsumerState<MinePage>
     Color? iconBgColor,
     Color? labelColor,
     String? trailingText,
+    String? subtitle,
   }) {
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
@@ -540,6 +533,13 @@ class _MinePageState extends ConsumerState<MinePage>
       visualDensity: const VisualDensity(vertical: -1.5),
       leading: leadingWidget,
       title: Text(label, style: TextStyle(color: labelColor)),
+      subtitle: subtitle == null
+          ? null
+          : Text(
+              subtitle,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+            ),
       trailing: Row(
         mainAxisSize: MainAxisSize.min,
         children: [

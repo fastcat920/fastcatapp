@@ -710,6 +710,13 @@ class XBoardUserAuthNotifier extends Notifier<UserAuthState> {
 
       // 网络层面的错误（本机断网、DNS 解析失败、连接超时等）
       final errStr = e.toString();
+      if (_isAccountDisabledMessage(errStr)) {
+        state = state.copyWith(
+          isLoading: false,
+          errorMessage: _normalizeLoginError(errStr),
+        );
+        return false;
+      }
       final isNetworkError = errStr.contains('SocketException') ||
           errStr.contains('HandshakeException') ||
           errStr.contains('Connection refused') ||
@@ -910,6 +917,10 @@ class XBoardUserAuthNotifier extends Notifier<UserAuthState> {
   }
 
   String _normalizeLoginError(String message) {
+    // 账号禁用/封禁优先识别，输出统一 code 以便 LoginPage 精确映射
+    if (_isAccountDisabledMessage(message)) {
+      return '[ACCOUNT_DISABLED] $message';
+    }
     // 优先按网关 error code 精确分流（格式: [CODE] message）
     final codeMatch = RegExp(r'^\[([A-Z_]+)\]\s*').firstMatch(message);
     if (codeMatch != null) {
@@ -943,6 +954,19 @@ class XBoardUserAuthNotifier extends Notifier<UserAuthState> {
       return '设备数量已达上限，请移除旧设备或升级套餐';
     }
     return message;
+  }
+
+  bool _isAccountDisabledMessage(String message) {
+    final lower = message.toLowerCase();
+    return lower.contains('disabled') ||
+        lower.contains('banned') ||
+        lower.contains('suspended') ||
+        lower.contains('frozen') ||
+        message.contains('禁用') ||
+        message.contains('封禁') ||
+        message.contains('停用') ||
+        message.contains('停止使用') ||
+        message.contains('冻结');
   }
 
   Future<bool> register(String email, String password, String? inviteCode,
@@ -1102,7 +1126,7 @@ class XBoardUserAuthNotifier extends Notifier<UserAuthState> {
     }
   }
 
-  Future<void> refreshSubscriptionInfo() async {
+  Future<void> refreshSubscriptionInfo({bool importProfile = true}) async {
     if (!state.isAuthenticated) {
       return;
     }
@@ -1151,14 +1175,14 @@ class XBoardUserAuthNotifier extends Notifier<UserAuthState> {
       }
 
       // 触发订阅导入流程
-      if (subscriptionData?.subscribeUrl.isNotEmpty == true) {
+      if (importProfile && subscriptionData?.subscribeUrl.isNotEmpty == true) {
         _logger.info('[手动刷新] 开始导入订阅配置: ${subscriptionData!.subscribeUrl}');
         _logger.info('[手动刷新] 使用强制刷新模式，跳过重复检测');
         ref.read(profileImportProvider.notifier).importSubscription(
               subscriptionData.subscribeUrl,
               forceRefresh: true,
             );
-      } else {
+      } else if (importProfile) {
         _logger.info('[手动刷新] 订阅链接为空，跳过导入');
       }
     } catch (e) {

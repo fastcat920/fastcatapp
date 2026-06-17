@@ -8,7 +8,7 @@ import 'package:fl_clash/xboard/core/core.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 // 初始化文件级日志器
-final _logger = FileLogger('auto_latency_service.dart');
+const _logger = FileLogger('auto_latency_service.dart');
 
 class AutoLatencyService {
   static final AutoLatencyService _instance = AutoLatencyService._internal();
@@ -21,6 +21,8 @@ class AutoLatencyService {
   WidgetRef? _ref;
   final Map<String, DateTime> _proxyTestCache = {};
   static const int _cacheMinutes = 2;
+  static const Duration _nodeChangeDebounce = Duration(milliseconds: 800);
+  static const Duration _periodicInterval = Duration(minutes: 10);
 
   // 操作协调器已废弃
   // final OperationCoordinator _coordinator = OperationCoordinator();
@@ -181,14 +183,27 @@ class AutoLatencyService {
   Timer? _nodeChangeTimer;
 
   void onNodeChanged() {
-    // 已禁用节点切换自动测试
+    _nodeChangeTimer?.cancel();
+    _nodeChangeTimer = Timer(_nodeChangeDebounce, () {
+      testCurrentNode();
+    });
   }
 
   void onConnectionStatusChanged(bool isConnected) {
-    // 已禁用连接状态变化自动测试
+    if (!isConnected) return;
+    Future.delayed(const Duration(seconds: 2), () {
+      testCurrentNode();
+    });
   }
+
   void _startPeriodicTesting() {
-    // 已禁用自动定期测试
+    _periodicTimer?.cancel();
+    _periodicTimer = Timer.periodic(_periodicInterval, (_) {
+      if (_ref == null || !_isRefValid()) return;
+      final isConnected = _ref!.read(runTimeProvider) != null;
+      if (!isConnected) return;
+      testCurrentNode();
+    });
   }
   bool _shouldTestProxy(String proxyName) {
     final lastTestTime = _proxyTestCache[proxyName];
@@ -235,7 +250,7 @@ class AutoLatencyService {
       }
       _logger.debug('当前模式: $mode, 组数量: ${groups.length}', null);
 
-      Group? currentGroup = _findCurrentGroup(groups, selectedMap, mode);
+      final currentGroup = _findCurrentGroup(groups, selectedMap, mode);
       if (currentGroup == null || currentGroup.all.isEmpty) {
         _logger.debug('当前组为空或无代理节点');
         return null;
@@ -245,7 +260,7 @@ class AutoLatencyService {
           '找到当前组: ${currentGroup.name}, 类型: ${currentGroup.type}, 节点数: ${currentGroup.all.length}',
           null);
 
-      Proxy? selectedProxy =
+      final selectedProxy =
           _getSelectedProxyFromGroup(currentGroup, selectedMap, groups);
       if (selectedProxy != null) {
         _logger.debug('最终选中的代理: ${selectedProxy.name}');
@@ -297,13 +312,13 @@ class AutoLatencyService {
 
   Proxy? _getSelectedProxyFromGroup(
       Group group, Map<String, String> selectedMap, List<Group> allGroups) {
-    final selectedProxyName = selectedMap[group.name] ?? "";
+    final selectedProxyName = selectedMap[group.name] ?? '';
     _logger.debug('组 ${group.name} 的选中代理: $selectedProxyName');
 
-    String realNodeName = "";
+    String realNodeName = '';
 
     if (group.type == GroupType.URLTest || group.type == GroupType.Fallback) {
-      realNodeName = group.now?.isNotEmpty == true ? group.now! : "";
+      realNodeName = group.now?.isNotEmpty == true ? group.now! : '';
       if (realNodeName.isEmpty && group.all.isNotEmpty) {
         realNodeName = group.all.first.name;
         _logger.debug('${group.type}组now为空，使用第一个节点: $realNodeName');
@@ -324,12 +339,12 @@ class AutoLatencyService {
           } else if (group.all.any((p) => p.name == selectedProxyName)) {
             realNodeName = selectedProxyName;
           } else {
-            realNodeName = group.all.isNotEmpty ? group.all.first.name : "";
+            realNodeName = group.all.isNotEmpty ? group.all.first.name : '';
             _logger.debug('选中的代理不存在，使用默认节点: $realNodeName');
           }
         }
       } else {
-        realNodeName = group.all.isNotEmpty ? group.all.first.name : "";
+        realNodeName = group.all.isNotEmpty ? group.all.first.name : '';
         _logger.debug('未选择代理，使用默认节点: $realNodeName');
       }
       _logger.debug('Selector组当前节点: $realNodeName');

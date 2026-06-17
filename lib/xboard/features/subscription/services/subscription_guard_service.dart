@@ -191,6 +191,9 @@ class SubscriptionGuardService {
           : 0;
       if (profileSubInfo != null) {
         return profileSubInfo.copyWith(
+          upload: subscriptionInfo.uploadedBytes,
+          download: subscriptionInfo.downloadedBytes,
+          total: subscriptionInfo.transferLimit,
           expire: subscriptionExpire > 0
               ? subscriptionExpire
               : profileSubInfo.expire,

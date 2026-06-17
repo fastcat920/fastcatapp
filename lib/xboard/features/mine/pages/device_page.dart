@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/foundation.dart';
 import 'dart:io';
 import 'package:fl_clash/common/common.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -28,16 +27,6 @@ class DeviceManagementPage extends ConsumerStatefulWidget {
 
 class _DeviceManagementPageState extends ConsumerState<DeviceManagementPage>
     with SingleTickerProviderStateMixin {
-  @override
-  void activate() {
-    super.activate();
-  }
-
-  @override
-  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
-    super.debugFillProperties(properties);
-  }
-
   late final AnimationController _refreshAnim;
   late Future<_DevicePageData> _future;
 
@@ -161,7 +150,6 @@ class _DeviceManagementPageState extends ConsumerState<DeviceManagementPage>
     throw lastError ?? Exception('设备网关请求失败');
   }
 
-
   List<_DeviceGatewayEndpoint> _resolveDeviceGatewayEndpoints() {
     final endpoints = <_DeviceGatewayEndpoint>[];
     final seen = <String>{};
@@ -231,10 +219,12 @@ class _DeviceManagementPageState extends ConsumerState<DeviceManagementPage>
       builder: (dialogContext) => AlertDialog(
         shape: XbUiDialog.shape(),
         backgroundColor: XbUiDialog.background(dialogContext),
-        title: Text(AppLocalizations.of(dialogContext).xboardDeviceRemoveTitle, style: XbUiText.sectionTitle(dialogContext)),
+        title: Text(AppLocalizations.of(dialogContext).xboardDeviceRemoveTitle,
+            style: XbUiText.sectionTitle(dialogContext)),
         content: Text(
           device.isCurrent
-              ? AppLocalizations.of(dialogContext).xboardDeviceRemoveCurrentConfirm
+              ? AppLocalizations.of(dialogContext)
+                  .xboardDeviceRemoveCurrentConfirm
               : '${AppLocalizations.of(dialogContext).remove} "${device.deviceName}"?',
         ),
         actions: [
@@ -263,7 +253,8 @@ class _DeviceManagementPageState extends ConsumerState<DeviceManagementPage>
     );
 
     if (!mounted) return;
-    XBoardNotification.showSuccess(AppLocalizations.of(context).xboardDeviceRemoved);
+    XBoardNotification.showSuccess(
+        AppLocalizations.of(context).xboardDeviceRemoved);
 
     if (device.isCurrent) {
       await ref.read(xboardUserProvider.notifier).logout();
@@ -273,6 +264,56 @@ class _DeviceManagementPageState extends ConsumerState<DeviceManagementPage>
       return;
     }
 
+    await _refreshPage();
+  }
+
+  Future<void> _releaseOfflineDevices(_DevicePageData data) async {
+    final targets = data.offlineActiveDevices;
+    if (targets.isEmpty) return;
+
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        shape: XbUiDialog.shape(),
+        backgroundColor: XbUiDialog.background(dialogContext),
+        title: Text(
+          AppLocalizations.of(dialogContext).xboardReleaseOfflineDevices,
+          style: XbUiText.sectionTitle(dialogContext),
+        ),
+        content: Text(
+          AppLocalizations.of(dialogContext).xboardReleaseOfflineDevicesConfirm,
+        ),
+        actions: [
+          OutlinedButton(
+            onPressed: () => Navigator.of(dialogContext).pop(false),
+            style: XbUiButton.outlinedNeutral(dialogContext),
+            child: Text(AppLocalizations.of(dialogContext).cancel),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.of(dialogContext).pop(true),
+            style: XbUiButton.filledDanger(dialogContext),
+            child: Text(AppLocalizations.of(dialogContext).remove),
+          ),
+        ],
+      ),
+    );
+    if (confirmed != true) return;
+
+    final sdk = await ref.read(xboardSdkProvider.future);
+    for (final device in targets) {
+      await _requestFromDeviceGateway<void>(
+        sdk,
+        (http, headers) => http.deleteRequest(
+          '/user/devices/${device.id}',
+          headers: headers,
+        ),
+      );
+    }
+
+    if (!mounted) return;
+    XBoardNotification.showSuccess(
+      AppLocalizations.of(context).xboardDeviceRemoved,
+    );
     await _refreshPage();
   }
 
@@ -299,8 +340,11 @@ class _DeviceManagementPageState extends ConsumerState<DeviceManagementPage>
       appBar: AppBar(
         title: Text(AppLocalizations.of(context).xboardDeviceManagement),
         actions: [
-if (Platform.isLinux || Platform.isWindows || Platform.isMacOS || system.isTV)
-                      _buildRefreshButton(),
+          if (Platform.isLinux ||
+              Platform.isWindows ||
+              Platform.isMacOS ||
+              system.isTV)
+            _buildRefreshButton(),
         ],
       ),
       body: FutureBuilder<_DevicePageData>(
@@ -374,56 +418,75 @@ if (Platform.isLinux || Platform.isWindows || Platform.isMacOS || system.isTV)
 
   Widget _buildSummaryCard(_DevicePageData data) {
     final theme = Theme.of(context);
-    final isDark = theme.brightness == Brightness.dark;
-    final effectiveLimitText =
-        data.deviceLimit == null ? '无限制' : '${data.deviceLimit} 台';
+    final l10n = AppLocalizations.of(context);
+    final effectiveLimitText = data.deviceLimit == null
+        ? l10n.xboardDeviceUnlimited
+        : '${data.deviceLimit}';
     return Card(
-      elevation: isDark ? 0 : 1,
+      elevation: XbUiCardStyle.elevation(context),
       margin: EdgeInsets.zero,
-      shadowColor: isDark ? null : Colors.black.withValues(alpha: 0.08),
-      color: isDark ? null : Colors.white,
+      shadowColor: XbUiCardStyle.shadowColor(context),
+      color: XbUiCardStyle.background(context),
       shape: XbUiCardStyle.shape(context),
       child: Padding(
         padding: const EdgeInsets.all(16),
-        child: Row(
+        child: Column(
           children: [
-            Container(
-              width: 44,
-              height: 44,
-              decoration: BoxDecoration(
-                color: theme.colorScheme.primary.withValues(alpha: 0.10),
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: Icon(
-                Icons.devices_outlined,
-                color: theme.colorScheme.primary,
-              ),
-            ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(AppLocalizations.of(context).xboardDeviceCurrentDeviceLabel, style: XbUiText.cardTitle(context)),
-                  const SizedBox(height: 4),
-                  Text(
-                    AppLocalizations.of(context).xboardDeviceSummary(data.activeCount, effectiveLimitText),
-                    style: XbUiText.bodySmall(
-                      context,
-                      color: theme.colorScheme.onSurfaceVariant,
-                    ),
+            Row(
+              children: [
+                Container(
+                  width: 44,
+                  height: 44,
+                  decoration: BoxDecoration(
+                    color: theme.colorScheme.primary.withValues(alpha: 0.10),
+                    borderRadius: BorderRadius.circular(12),
                   ),
-                  const SizedBox(height: 6),
-                  Text(
-                    AppLocalizations.of(context).xboardDeviceAutoOfflineHint,
-                    style: XbUiText.bodySmall(
-                      context,
-                      color: theme.colorScheme.outline,
-                    ),
+                  child: Icon(
+                    Icons.devices_outlined,
+                    color: theme.colorScheme.primary,
                   ),
-                ],
-              ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(l10n.xboardDeviceCurrentDeviceLabel,
+                          style: XbUiText.cardTitle(context)),
+                      const SizedBox(height: 4),
+                      Text(
+                        l10n.xboardDeviceSummary(
+                            data.activeCount, effectiveLimitText),
+                        style: XbUiText.bodySmall(
+                          context,
+                          color: theme.colorScheme.onSurfaceVariant,
+                        ),
+                      ),
+                      const SizedBox(height: 6),
+                      Text(
+                        l10n.xboardDeviceAutoOfflineHint,
+                        style: XbUiText.bodySmall(
+                          context,
+                          color: theme.colorScheme.outline,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
             ),
+            if (data.offlineActiveDevices.isNotEmpty) ...[
+              const SizedBox(height: 14),
+              Align(
+                alignment: Alignment.centerLeft,
+                child: FilledButton.icon(
+                  onPressed: () => _releaseOfflineDevices(data),
+                  style: XbUiButton.filledDanger(context),
+                  icon: const Icon(Icons.link_off_outlined),
+                  label: Text(l10n.xboardReleaseOfflineDevices),
+                ),
+              ),
+            ],
           ],
         ),
       ),
@@ -464,16 +527,14 @@ if (Platform.isLinux || Platform.isWindows || Platform.isMacOS || system.isTV)
     );
   }
 
-  Widget _buildHistorySection(
-      BuildContext context, List<Widget> historyCards) {
+  Widget _buildHistorySection(BuildContext context, List<Widget> historyCards) {
     final theme = Theme.of(context);
-    final isDark = theme.brightness == Brightness.dark;
 
     return Card(
-      elevation: isDark ? 0 : 1,
+      elevation: XbUiCardStyle.elevation(context),
       margin: EdgeInsets.zero,
-      shadowColor: isDark ? null : Colors.black.withValues(alpha: 0.08),
-      color: isDark ? null : Colors.white,
+      shadowColor: XbUiCardStyle.shadowColor(context),
+      color: XbUiCardStyle.background(context),
       shape: XbUiCardStyle.shape(context),
       child: ExpansionTile(
         tilePadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 4),
@@ -525,19 +586,20 @@ if (Platform.isLinux || Platform.isWindows || Platform.isMacOS || system.isTV)
 
   Widget _buildDeviceCard(_DeviceRecordView device) {
     final theme = Theme.of(context);
-    final isDark = theme.brightness == Brightness.dark;
     final isRevoked = device.status == 'revoked';
     final statusColor = device.isActive
-        ? (device.isOnline ? XbUiStatusColor.success(context) : XbUiStatusColor.pending(context))
+        ? (device.isOnlineEffective
+            ? XbUiStatusColor.success(context)
+            : XbUiStatusColor.pending(context))
         : isRevoked
             ? XbUiStatusColor.error(context)
             : theme.colorScheme.primary;
 
     return Card(
-      elevation: isDark ? 0 : 1,
+      elevation: XbUiCardStyle.elevation(context),
       margin: EdgeInsets.zero,
-      shadowColor: isDark ? null : Colors.black.withValues(alpha: 0.08),
-      color: isDark ? null : Colors.white,
+      shadowColor: XbUiCardStyle.shadowColor(context),
+      color: XbUiCardStyle.background(context),
       shape: XbUiCardStyle.shape(context),
       child: Padding(
         padding: const EdgeInsets.all(14),
@@ -552,8 +614,12 @@ if (Platform.isLinux || Platform.isWindows || Platform.isMacOS || system.isTV)
                     style: XbUiText.cardTitle(context),
                   ),
                 ),
-                _statusBadge(context, device.status, statusColor,
-                    isOnline: device.isOnline),
+                _statusBadge(
+                  context,
+                  device.status,
+                  statusColor,
+                  isOnline: device.isOnlineEffective,
+                ),
                 const SizedBox(width: 8),
                 if (!isRevoked)
                   IconButton(
@@ -576,18 +642,20 @@ if (Platform.isLinux || Platform.isWindows || Platform.isMacOS || system.isTV)
                 _infoChip(
                   context,
                   Icons.monitor_heart_outlined,
-                  device.appVersion.isEmpty ? AppLocalizations.of(context).xboardDeviceUnknownVersion : device.appVersion,
+                  device.appVersion.isEmpty
+                      ? AppLocalizations.of(context).xboardDeviceUnknownVersion
+                      : device.appVersion,
                 ),
                 _infoChip(
                   context,
                   Icons.schedule_outlined,
-                  '最后在线 ${_formatDateTime(device.lastSeenAt)}',
+                  '${AppLocalizations.of(context).xboardDeviceLabelLastOnline} ${_formatDateTime(device.lastSeenAt)}',
                 ),
               ],
             ),
             const SizedBox(height: 8),
             Text(
-              '设备标识：${device.id}',
+              '${AppLocalizations.of(context).xboardDeviceLabelId}: ${device.id}',
               style: XbUiText.bodySmall(
                 context,
                 color: theme.colorScheme.onSurfaceVariant,
@@ -596,7 +664,7 @@ if (Platform.isLinux || Platform.isWindows || Platform.isMacOS || system.isTV)
             if (device.osVersion.isNotEmpty) ...[
               const SizedBox(height: 4),
               Text(
-                '系统版本：${device.osVersion}',
+                '${AppLocalizations.of(context).xboardDeviceLabelOsVersion}: ${device.osVersion}',
                 style: XbUiText.bodySmall(
                   context,
                   color: theme.colorScheme.onSurfaceVariant,
@@ -606,7 +674,7 @@ if (Platform.isLinux || Platform.isWindows || Platform.isMacOS || system.isTV)
             if (device.lastIp.isNotEmpty) ...[
               const SizedBox(height: 4),
               Text(
-                '最近 IP：${device.lastIp}',
+                '${AppLocalizations.of(context).xboardDeviceLabelLastIp}: ${device.lastIp}',
                 style: XbUiText.bodySmall(
                   context,
                   color: theme.colorScheme.onSurfaceVariant,
@@ -616,7 +684,7 @@ if (Platform.isLinux || Platform.isWindows || Platform.isMacOS || system.isTV)
             if (device.revokedAt != null) ...[
               const SizedBox(height: 4),
               Text(
-                '移除时间：${_formatDateTime(device.revokedAt!)}',
+                '${AppLocalizations.of(context).xboardDeviceLabelRevokedAt}: ${_formatDateTime(device.revokedAt!)}',
                 style: XbUiText.bodySmall(
                   context,
                   color: theme.colorScheme.onSurfaceVariant,
@@ -626,7 +694,7 @@ if (Platform.isLinux || Platform.isWindows || Platform.isMacOS || system.isTV)
             if (device.revokedBy.isNotEmpty) ...[
               const SizedBox(height: 4),
               Text(
-                '移除来源：${device.revokedBy}',
+                '${AppLocalizations.of(context).xboardDeviceLabelRevokedBy}: ${device.revokedBy}',
                 style: XbUiText.bodySmall(
                   context,
                   color: theme.colorScheme.onSurfaceVariant,
@@ -653,10 +721,12 @@ if (Platform.isLinux || Platform.isWindows || Platform.isMacOS || system.isTV)
       {bool isOnline = false}) {
     final label = switch (status) {
       'active' when isOnline => AppLocalizations.of(context).xboardDeviceOnline,
-      'active' => AppLocalizations.of(context).xboardDeviceOffline,
+      'active' => AppLocalizations.of(context).xboardOfflineButActive,
       'revoked' => AppLocalizations.of(context).xboardDeviceRevoked,
       'expired' => AppLocalizations.of(context).xboardDeviceExpired,
-      _ => status.isEmpty ? AppLocalizations.of(context).xboardDeviceUnknown : status,
+      _ => status.isEmpty
+          ? AppLocalizations.of(context).xboardDeviceUnknown
+          : status,
     };
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
@@ -748,6 +818,10 @@ class _DevicePageData {
     this.activeCount = 0,
     this.deviceLimit,
   });
+
+  List<_DeviceRecordView> get offlineActiveDevices => activeDevices
+      .where((device) => !device.isCurrent && !device.isOnlineEffective)
+      .toList();
 }
 
 class _DeviceRecordView {
@@ -782,6 +856,16 @@ class _DeviceRecordView {
   });
 
   bool get isActive => status == 'active';
+
+  bool get isOnlineEffective {
+    if (!isActive) return false;
+    if (isOnline) return true;
+    final now = DateTime.now();
+    final lastSeen = lastSeenAt.toLocal();
+    if (lastSeen.year <= 1970) return false;
+    final diff = now.difference(lastSeen).abs();
+    return diff <= const Duration(minutes: 5);
+  }
 
   factory _DeviceRecordView.fromJson(Map<String, dynamic> json) {
     return _DeviceRecordView(

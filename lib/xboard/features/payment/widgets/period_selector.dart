@@ -157,7 +157,11 @@ class _PeriodCard extends StatelessWidget {
     final verticalSpacing = (3 * scaleFactor).clamp(2.0, 5.0);
     final priceSpacing = (4 * scaleFactor).clamp(3.0, 6.0);
 
-    return InkWell(
+    return Material(
+      color: Colors.transparent,
+      borderRadius: BorderRadius.circular(borderRadius),
+      clipBehavior: Clip.antiAlias,
+      child: InkWell(
       onTap: onTap,
       borderRadius: BorderRadius.circular(borderRadius),
       child: Container(
@@ -265,6 +269,7 @@ class _PeriodCard extends StatelessWidget {
           ],
         ),
       ),
+    ),
     );
   }
 }

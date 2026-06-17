@@ -425,6 +425,11 @@ class Build {
       destinationDirectory.createSync(recursive: true);
     }
     try {
+      final destinationType =
+          FileSystemEntity.typeSync(destinationFilePath, followLinks: false);
+      if (destinationType != FileSystemEntityType.notFound) {
+        File(destinationFilePath).deleteSync(recursive: true);
+      }
       sourceFile.copySync(destinationFilePath);
       print("File copied successfully!");
     } catch (e) {
@@ -1293,6 +1298,11 @@ end tell
       final universalDir = Directory(dirname(universalPath));
       if (!universalDir.existsSync()) {
         universalDir.createSync(recursive: true);
+      }
+      final universalPathType =
+          FileSystemEntity.typeSync(universalPath, followLinks: false);
+      if (universalPathType != FileSystemEntityType.notFound) {
+        File(universalPath).deleteSync(recursive: true);
       }
       await Build.exec(
         [

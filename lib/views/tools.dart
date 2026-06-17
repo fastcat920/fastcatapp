@@ -9,6 +9,7 @@ import 'package:fl_clash/views/about.dart';
 import 'package:fl_clash/views/application_setting.dart';
 import 'package:fl_clash/views/config/config.dart';
 import 'package:fl_clash/widgets/widgets.dart';
+import 'package:fl_clash/xboard/features/shared/widgets/connection_health_dialog.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
@@ -60,8 +61,9 @@ class _ToolboxViewState extends ConsumerState<ToolsView> {
       title: appLocalizations.other,
       items: [
         if (logCapture) const _LogsItem(),
-        if (enableDeveloperMode) _DeveloperItem(),
-        _InfoItem(),
+        if (enableDeveloperMode) const _DeveloperItem(),
+        const _ConnectionHealthItem(),
+        const _InfoItem(),
       ],
     );
   }
@@ -70,11 +72,11 @@ class _ToolboxViewState extends ConsumerState<ToolsView> {
     return generateSectionV2(
       title: appLocalizations.settings,
       items: [
-        _LocaleItem(),
-        _ThemeItem(),
-        if (Platform.isWindows) _LoopbackItem(),
-        _ConfigItem(),
-        _SettingItem(),
+        const _LocaleItem(),
+        const _ThemeItem(),
+        if (Platform.isWindows) const _LoopbackItem(),
+        const _ConfigItem(),
+        const _SettingItem(),
       ],
     );
   }
@@ -174,11 +176,11 @@ class _LoopbackItem extends StatelessWidget {
       subtitle: Text(appLocalizations.loopbackDesc),
       onTap: () {
         final exePath =
-            join(dirname(Platform.resolvedExecutable), "EnableLoopback.exe");
+            join(dirname(Platform.resolvedExecutable), 'EnableLoopback.exe');
         if (!File(exePath).existsSync()) {
           globalState.showMessage(
             title: appLocalizations.loopback,
-            message: TextSpan(text: "EnableLoopback.exe 未找到"),
+            message: const TextSpan(text: 'EnableLoopback.exe 未找到'),
           );
           return;
         }
@@ -188,7 +190,7 @@ class _LoopbackItem extends StatelessWidget {
         if (!ok) {
           globalState.showMessage(
             title: appLocalizations.loopback,
-            message: TextSpan(text: "启动失败，请检查系统权限设置"),
+            message: const TextSpan(text: '启动失败，请检查系统权限设置'),
           );
         }
       },
@@ -230,6 +232,19 @@ class _SettingItem extends StatelessWidget {
   }
 }
 
+class _ConnectionHealthItem extends StatelessWidget {
+  const _ConnectionHealthItem();
+
+  @override
+  Widget build(BuildContext context) {
+    return ListItem(
+      leading: const Icon(Icons.health_and_safety_outlined),
+      title: Text(appLocalizations.xboardConnectionHealth),
+      onTap: () => ConnectionHealthDialog.show(context),
+    );
+  }
+}
+
 class _InfoItem extends StatelessWidget {
   const _InfoItem();
 
@@ -251,13 +266,13 @@ class _LogsItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return ListItem.open(
-      leading: const Icon(Icons.list_alt_outlined),
-      title: const Text('日志'),
-      subtitle: const Text('日志捕获记录'),
+    return const ListItem.open(
+      leading: Icon(Icons.list_alt_outlined),
+      title: Text('日志'),
+      subtitle: Text('日志捕获记录'),
       delegate: OpenDelegate(
         title: '日志',
-        widget: const LogsView(),
+        widget: LogsView(),
       ),
     );
   }

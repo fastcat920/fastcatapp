@@ -107,11 +107,15 @@ class MessageLookup extends MessageLookupByLibrary {
 
   static String m39(date, days) => "Expires on ${date}, ${days} days remaining";
 
-  static String m40(error) => "Redeem failed: ${error}";
+  static String m40(count) => "${count} candidates";
 
-  static String m41(days) => "Used traffic will reset in ${days} days";
+  static String m41(count) => "${count} nodes";
 
-  static String m42(time) => "Running time: ${time}";
+  static String m42(error) => "Redeem failed: ${error}";
+
+  static String m43(days) => "Used traffic will reset in ${days} days";
+
+  static String m44(time) => "Running time: ${time}";
 
   final messages = _notInlinedMessages(_notInlinedMessages);
   static Map<String, Function> _notInlinedMessages(_) => <String, Function>{
@@ -1264,6 +1268,7 @@ class MessageLookup extends MessageLookupByLibrary {
       "Please buy more traffic or upgrade plan",
     ),
     "xboardBuyNow": MessageLookupByLibrary.simpleMessage("Buy Now"),
+    "xboardBuyPlan": MessageLookupByLibrary.simpleMessage("Buy plan"),
     "xboardBuyoutPlan": MessageLookupByLibrary.simpleMessage("Buyout plan"),
     "xboardCancel": MessageLookupByLibrary.simpleMessage("Cancel"),
     "xboardCancelOrder": MessageLookupByLibrary.simpleMessage("Cancel order"),
@@ -1274,6 +1279,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "xboardChangePassword": MessageLookupByLibrary.simpleMessage(
       "Change password",
     ),
+    "xboardCheckOrders": MessageLookupByLibrary.simpleMessage("View orders"),
     "xboardCheckPaymentFailed": MessageLookupByLibrary.simpleMessage(
       "Failed to check payment status",
     ),
@@ -1333,11 +1339,20 @@ class MessageLookup extends MessageLookupByLibrary {
     "xboardConnectGlobalQualityNodes": MessageLookupByLibrary.simpleMessage(
       "Connect to global quality nodes",
     ),
+    "xboardConnectionHealth": MessageLookupByLibrary.simpleMessage(
+      "Connection Health",
+    ),
+    "xboardConnectionHealthSubtitle": MessageLookupByLibrary.simpleMessage(
+      "Check server, subscription, node, and device status",
+    ),
     "xboardConnectionTimeout": MessageLookupByLibrary.simpleMessage(
       "Connection timeout, please check network connection",
     ),
     "xboardContactCustomerService": MessageLookupByLibrary.simpleMessage(
       "Contact Customer Service",
+    ),
+    "xboardCopyDiagnosticBundle": MessageLookupByLibrary.simpleMessage(
+      "Copy diagnostics",
     ),
     "xboardCopyFailed": MessageLookupByLibrary.simpleMessage("Copy failed"),
     "xboardCopyInviteCode": MessageLookupByLibrary.simpleMessage(
@@ -1372,7 +1387,16 @@ class MessageLookup extends MessageLookupByLibrary {
     "xboardCurrentBalance": MessageLookupByLibrary.simpleMessage(
       "Current balance",
     ),
-    "xboardCurrentNode": MessageLookupByLibrary.simpleMessage("Current Node"),
+    "xboardCurrentBusinessApi": MessageLookupByLibrary.simpleMessage(
+      "Current business API",
+    ),
+    "xboardCurrentDomain": MessageLookupByLibrary.simpleMessage(
+      "Current domain",
+    ),
+    "xboardCurrentGateway": MessageLookupByLibrary.simpleMessage(
+      "Current gateway",
+    ),
+    "xboardCurrentNode": MessageLookupByLibrary.simpleMessage("Current node"),
     "xboardCurrentPassword": MessageLookupByLibrary.simpleMessage(
       "Current password",
     ),
@@ -1402,6 +1426,7 @@ class MessageLookup extends MessageLookupByLibrary {
       "Current device",
     ),
     "xboardDeviceExpired": MessageLookupByLibrary.simpleMessage("Expired"),
+    "xboardDeviceHealth": MessageLookupByLibrary.simpleMessage("Device status"),
     "xboardDeviceHistory": MessageLookupByLibrary.simpleMessage("History"),
     "xboardDeviceHistoryHint": MessageLookupByLibrary.simpleMessage(
       "Only removal records within 90 days are kept. Older records will be automatically cleaned up.",
@@ -1447,6 +1472,9 @@ class MessageLookup extends MessageLookupByLibrary {
       "Unknown version",
     ),
     "xboardDeviceUnlimited": MessageLookupByLibrary.simpleMessage("Unlimited"),
+    "xboardDiagnosticBundleCopied": MessageLookupByLibrary.simpleMessage(
+      "Diagnostics copied",
+    ),
     "xboardDiscountAmount": MessageLookupByLibrary.simpleMessage(
       "Discount amount",
     ),
@@ -1498,6 +1526,10 @@ class MessageLookup extends MessageLookupByLibrary {
     "xboardForgotPassword": MessageLookupByLibrary.simpleMessage(
       "Forgot Password",
     ),
+    "xboardGatewayCandidateCount": m40,
+    "xboardGatewayStatus": MessageLookupByLibrary.simpleMessage(
+      "Gateway status",
+    ),
     "xboardGetGroupLinkFailed": MessageLookupByLibrary.simpleMessage(
       "Failed to get group link",
     ),
@@ -1527,6 +1559,10 @@ class MessageLookup extends MessageLookupByLibrary {
     ),
     "xboardHandleLater": MessageLookupByLibrary.simpleMessage("Handle later"),
     "xboardHandlingFee": MessageLookupByLibrary.simpleMessage("Handling fee"),
+    "xboardHealthLastEvent": MessageLookupByLibrary.simpleMessage(
+      "Latest event",
+    ),
+    "xboardHealthy": MessageLookupByLibrary.simpleMessage("Healthy"),
     "xboardHigh": MessageLookupByLibrary.simpleMessage("High"),
     "xboardHighSpeedNetwork": MessageLookupByLibrary.simpleMessage(
       "High-speed network",
@@ -1566,13 +1602,25 @@ class MessageLookup extends MessageLookupByLibrary {
     "xboardLocalIP": MessageLookupByLibrary.simpleMessage("Local IP"),
     "xboardLoggedIn": MessageLookupByLibrary.simpleMessage("Logged In"),
     "xboardLogin": MessageLookupByLibrary.simpleMessage("Login"),
+    "xboardLoginErrorConfigLoad": MessageLookupByLibrary.simpleMessage(
+      "Configuration load failed, please try again later",
+    ),
+    "xboardLoginErrorCredentials": MessageLookupByLibrary.simpleMessage(
+      "Invalid credentials, please check your account and password",
+    ),
+    "xboardLoginErrorDeviceLimit": MessageLookupByLibrary.simpleMessage(
+      "Device limit reached. Release an offline device first.",
+    ),
+    "xboardLoginErrorLimited": MessageLookupByLibrary.simpleMessage(
+      "Too many login attempts. Please try again later.",
+    ),
+    "xboardLoginErrorNetwork": MessageLookupByLibrary.simpleMessage(
+      "Network error, please check your local network",
+    ),
     "xboardLoginExpired": MessageLookupByLibrary.simpleMessage(
       "Login expired, please login again",
     ),
     "xboardLoginFailed": MessageLookupByLibrary.simpleMessage("Login failed"),
-    "xboardLoginErrorNetwork": MessageLookupByLibrary.simpleMessage("Network error, please check your local network"),
-    "xboardLoginErrorConfigLoad": MessageLookupByLibrary.simpleMessage("Configuration load failed, please try again later"),
-    "xboardLoginErrorCredentials": MessageLookupByLibrary.simpleMessage("Invalid credentials, please check your account and password"),
     "xboardLoginSuccess": MessageLookupByLibrary.simpleMessage(
       "Login successful",
     ),
@@ -1591,6 +1639,9 @@ class MessageLookup extends MessageLookupByLibrary {
     ),
     "xboardLogoutSuccess": MessageLookupByLibrary.simpleMessage("Signed out"),
     "xboardLow": MessageLookupByLibrary.simpleMessage("Low"),
+    "xboardManageDevices": MessageLookupByLibrary.simpleMessage(
+      "Manage devices",
+    ),
     "xboardMedium": MessageLookupByLibrary.simpleMessage("Medium"),
     "xboardMine": MessageLookupByLibrary.simpleMessage("Mine"),
     "xboardMissingRequiredField": MessageLookupByLibrary.simpleMessage(
@@ -1604,6 +1655,9 @@ class MessageLookup extends MessageLookupByLibrary {
     "xboardMyServices": MessageLookupByLibrary.simpleMessage("My services"),
     "xboardMyTickets": MessageLookupByLibrary.simpleMessage("My tickets"),
     "xboardMyWallet": MessageLookupByLibrary.simpleMessage("My wallet"),
+    "xboardNeedsAttention": MessageLookupByLibrary.simpleMessage(
+      "Needs attention",
+    ),
     "xboardNetworkConnectionFailed": MessageLookupByLibrary.simpleMessage(
       "Network connection failed, please check network settings",
     ),
@@ -1619,6 +1673,9 @@ class MessageLookup extends MessageLookupByLibrary {
     ),
     "xboardNoAvailableSubscription": MessageLookupByLibrary.simpleMessage(
       "No available subscription",
+    ),
+    "xboardNoGatewayActive": MessageLookupByLibrary.simpleMessage(
+      "No active gateway",
     ),
     "xboardNoInternetConnection": MessageLookupByLibrary.simpleMessage(
       "No internet connection, please check network settings",
@@ -1641,6 +1698,8 @@ class MessageLookup extends MessageLookupByLibrary {
     "xboardNoTrafficRecords": MessageLookupByLibrary.simpleMessage(
       "No traffic records",
     ),
+    "xboardNodeCount": m41,
+    "xboardNodeHealth": MessageLookupByLibrary.simpleMessage("Node status"),
     "xboardNodeName": MessageLookupByLibrary.simpleMessage("Node Name"),
     "xboardNodeSelection": MessageLookupByLibrary.simpleMessage(
       "Node selection",
@@ -1648,6 +1707,9 @@ class MessageLookup extends MessageLookupByLibrary {
     "xboardNone": MessageLookupByLibrary.simpleMessage("None"),
     "xboardNormal": MessageLookupByLibrary.simpleMessage("Normal"),
     "xboardNotLoggedIn": MessageLookupByLibrary.simpleMessage("Not Logged In"),
+    "xboardOfflineButActive": MessageLookupByLibrary.simpleMessage(
+      "Offline, using slot",
+    ),
     "xboardOneTimePayment": MessageLookupByLibrary.simpleMessage("One-time"),
     "xboardOpenPaymentFailed": MessageLookupByLibrary.simpleMessage(
       "Failed to open payment page",
@@ -1756,6 +1818,9 @@ class MessageLookup extends MessageLookupByLibrary {
     "xboardPaymentSuccessful": MessageLookupByLibrary.simpleMessage(
       "🎉 Payment successful!",
     ),
+    "xboardPendingOrdersHint": MessageLookupByLibrary.simpleMessage(
+      "If you paid but it has not arrived, refresh the order status.",
+    ),
     "xboardPeriod": MessageLookupByLibrary.simpleMessage("Period"),
     "xboardPlanBased": MessageLookupByLibrary.simpleMessage("Based on plan"),
     "xboardPlanExpiryReminder": MessageLookupByLibrary.simpleMessage(
@@ -1823,7 +1888,7 @@ class MessageLookup extends MessageLookupByLibrary {
     ),
     "xboardRechargeNow": MessageLookupByLibrary.simpleMessage("Recharge now"),
     "xboardRedeemFailed": MessageLookupByLibrary.simpleMessage("Redeem failed"),
-    "xboardRedeemFailedWithError": m40,
+    "xboardRedeemFailedWithError": m42,
     "xboardRedeemNow": MessageLookupByLibrary.simpleMessage("Redeem now"),
     "xboardRedeemSuccess": MessageLookupByLibrary.simpleMessage(
       "Redeem successful",
@@ -1842,7 +1907,14 @@ class MessageLookup extends MessageLookupByLibrary {
     "xboardRegisterSuccess": MessageLookupByLibrary.simpleMessage(
       "Registration successful! Redirecting to login page...",
     ),
+    "xboardReleaseOfflineDevices": MessageLookupByLibrary.simpleMessage(
+      "Release offline devices",
+    ),
+    "xboardReleaseOfflineDevicesConfirm": MessageLookupByLibrary.simpleMessage(
+      "This will remove offline devices that still occupy your device limit. Your current device will not be affected. Continue?",
+    ),
     "xboardReload": MessageLookupByLibrary.simpleMessage("Reload"),
+    "xboardReloadNodes": MessageLookupByLibrary.simpleMessage("Reload nodes"),
     "xboardRelogin": MessageLookupByLibrary.simpleMessage("Login Again"),
     "xboardRemainingBalance": MessageLookupByLibrary.simpleMessage("Remaining"),
     "xboardRememberPassword": MessageLookupByLibrary.simpleMessage(
@@ -1869,7 +1941,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "xboardResetTrafficConfirmContent": MessageLookupByLibrary.simpleMessage(
       "This will reset the used traffic, but will not extend the plan duration. Continue?",
     ),
-    "xboardResetTrafficInDays": m41,
+    "xboardResetTrafficInDays": m43,
     "xboardResetTrafficToday": MessageLookupByLibrary.simpleMessage(
       "Used traffic has been reset today",
     ),
@@ -1879,7 +1951,8 @@ class MessageLookup extends MessageLookupByLibrary {
     "xboardReturnAfterPaymentAutoDetect": MessageLookupByLibrary.simpleMessage(
       "3. Return to app after payment, system will detect automatically",
     ),
-    "xboardRunningTime": m42,
+    "xboardRunDiagnosis": MessageLookupByLibrary.simpleMessage("Run check"),
+    "xboardRunningTime": m44,
     "xboardSecureEncryption": MessageLookupByLibrary.simpleMessage(
       "Secure encryption",
     ),
@@ -1899,9 +1972,13 @@ class MessageLookup extends MessageLookupByLibrary {
       "Send Verification Code",
     ),
     "xboardServerError": MessageLookupByLibrary.simpleMessage("Server error"),
+    "xboardServerStatus": MessageLookupByLibrary.simpleMessage("Server status"),
     "xboardSetup": MessageLookupByLibrary.simpleMessage("Setup"),
     "xboardSixMonthCycle": MessageLookupByLibrary.simpleMessage(
       "6-month cycle",
+    ),
+    "xboardSmartLatencyStarted": MessageLookupByLibrary.simpleMessage(
+      "Smart latency test started",
     ),
     "xboardSmartRouting": MessageLookupByLibrary.simpleMessage("Smart routing"),
     "xboardSoftwareSettings": MessageLookupByLibrary.simpleMessage(
@@ -1923,6 +2000,9 @@ class MessageLookup extends MessageLookupByLibrary {
     "xboardSubscriptionHasExpired": MessageLookupByLibrary.simpleMessage(
       "Subscription has expired",
     ),
+    "xboardSubscriptionHealth": MessageLookupByLibrary.simpleMessage(
+      "Subscription status",
+    ),
     "xboardSubscriptionInfo": MessageLookupByLibrary.simpleMessage(
       "Subscription information",
     ),
@@ -1942,6 +2022,12 @@ class MessageLookup extends MessageLookupByLibrary {
       "Surplus amount",
     ),
     "xboardSwitch": MessageLookupByLibrary.simpleMessage("Switch"),
+    "xboardSyncingSubscription": MessageLookupByLibrary.simpleMessage(
+      "Syncing account subscription...",
+    ),
+    "xboardTestCurrentNode": MessageLookupByLibrary.simpleMessage(
+      "Test current node",
+    ),
     "xboardTestLatency": MessageLookupByLibrary.simpleMessage("Test latency"),
     "xboardTesting": MessageLookupByLibrary.simpleMessage("Testing"),
     "xboardThirtySixMonthCycle": MessageLookupByLibrary.simpleMessage(

@@ -152,7 +152,7 @@ class SubscriptionUsageCard extends ConsumerWidget {
           const SizedBox(width: 12),
           Expanded(
             child: Text(
-              '正在同步账号订阅信息...',
+              AppLocalizations.of(context).xboardSyncingSubscription,
               style: theme.textTheme.bodyMedium?.copyWith(
                 color: theme.colorScheme.onSurface.withValues(alpha: 0.75),
               ),
@@ -1058,28 +1058,39 @@ class SubscriptionUsageCard extends ConsumerWidget {
   }
 
   double _getProgressValue() {
-    if (profileSubscriptionInfo != null && profileSubscriptionInfo!.total > 0) {
-      final used =
-          profileSubscriptionInfo!.upload + profileSubscriptionInfo!.download;
-      return used / profileSubscriptionInfo!.total;
+    final totalTraffic = _getTotalTraffic();
+    if (totalTraffic > 0) {
+      return _getUsedTraffic() / totalTraffic;
     }
     return 0.0;
   }
 
   double _getUsedTraffic() {
-    if (profileSubscriptionInfo != null) {
+    if (subscriptionInfo != null) {
+      return subscriptionInfo!.totalUsedBytes.toDouble();
+    }
+    if (userInfo != null) {
+      return userInfo!.totalUsedBytes.toDouble();
+    }
+    if (profileSubscriptionInfo != null && profileSubscriptionInfo!.total > 0) {
       return (profileSubscriptionInfo!.upload +
               profileSubscriptionInfo!.download)
           .toDouble();
     }
-    return 0;
+    return 0.0;
   }
 
   double _getTotalTraffic() {
+    if (subscriptionInfo != null && subscriptionInfo!.transferLimit > 0) {
+      return subscriptionInfo!.transferLimit.toDouble();
+    }
+    if (userInfo != null && userInfo!.transferLimit > 0) {
+      return userInfo!.transferLimit.toDouble();
+    }
     if (profileSubscriptionInfo != null && profileSubscriptionInfo!.total > 0) {
       return profileSubscriptionInfo!.total.toDouble();
     }
-    return userInfo?.transferLimit.toDouble() ?? 0;
+    return 0;
   }
 
   Color _getProgressColor(double progress, ThemeData theme) {

@@ -5,7 +5,6 @@ linter:
     - prefer_const_constructors
     - prefer_const_declarations
     - prefer_const_literals_to_create_immutables
-    - unnecessary_import
     - avoid_print
     - prefer_single_quotes
     - sort_child_properties_last

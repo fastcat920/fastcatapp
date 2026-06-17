@@ -44,7 +44,8 @@ class OrderDetailPage extends ConsumerStatefulWidget {
   ConsumerState<OrderDetailPage> createState() => _OrderDetailPageState();
 }
 
-class _OrderDetailPageState extends ConsumerState<OrderDetailPage> {
+class _OrderDetailPageState extends ConsumerState<OrderDetailPage>
+    with WidgetsBindingObserver {
   String? _selectedMethodId;
   bool _isSubmitting = false;
   bool _isChecking = false;
@@ -62,6 +63,7 @@ class _OrderDetailPageState extends ConsumerState<OrderDetailPage> {
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
     Future.microtask(() async {
       ref.read(xboardPaymentProvider);
       await ref.read(xboardPaymentProvider.notifier).loadPaymentMethods();
@@ -95,8 +97,17 @@ class _OrderDetailPageState extends ConsumerState<OrderDetailPage> {
 
   @override
   void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
     _stopAutoCheckPaymentStatus();
     super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    super.didChangeAppLifecycleState(state);
+    if (state == AppLifecycleState.resumed) {
+      _refreshPaymentStatusAfterResume();
+    }
   }
 
   @override
@@ -276,6 +287,27 @@ class _OrderDetailPageState extends ConsumerState<OrderDetailPage> {
   void _stopAutoCheckPaymentStatus() {
     _paymentStatusTimer?.cancel();
     _paymentStatusTimer = null;
+  }
+
+  Future<void> _refreshPaymentStatusAfterResume() async {
+    if (!mounted || _isChecking || _isSubmitting || _isCanceling) return;
+    try {
+      clearGetOrderCache(widget.tradeNo);
+      clearGetOrderPaymentMethodsCache(widget.tradeNo);
+      ref.invalidate(getOrderProvider(widget.tradeNo));
+      ref.invalidate(getOrderPaymentMethodsProvider(widget.tradeNo));
+      final order = await ref.read(getOrderProvider(widget.tradeNo).future);
+      if (!mounted) return;
+      if (order?.status == 3 || order?.status == 4) {
+        await _handlePaymentSuccess();
+      } else if (order?.status == 0) {
+        _startAutoCheckPaymentStatus();
+      } else {
+        _stopAutoCheckPaymentStatus();
+      }
+    } catch (e) {
+      _logger.warning('返回应用后刷新支付状态失败: $e');
+    }
   }
 
   void _resolveOrderPlanIfNeeded({
@@ -775,8 +807,9 @@ class _OrderPricing {
         : ((finalPrice ?? packageAmount) - computedBalance)
             .clamp(0.0, double.infinity);
 
-    final couponAmount =
-        (couponPrice != null && couponPrice > 0) ? _amountFromCents(couponPrice) : null;
+    final couponAmount = (couponPrice != null && couponPrice > 0)
+        ? _amountFromCents(couponPrice)
+        : null;
     final discount = couponAmount ?? discountAmount ?? 0;
     final refund = _amountFromCents(refundAmount);
     final surplus = _amountFromCents(surplusAmount);
@@ -875,7 +908,11 @@ class _OrderInfoCard extends StatelessWidget {
             value: order?.tradeNo ?? tradeNo,
             valueFontSize: 11,
             valueWeight: FontWeight.w500,
-            trailing: InkWell(
+            trailing: Material(
+              color: Colors.transparent,
+              borderRadius: BorderRadius.circular(8),
+              clipBehavior: Clip.antiAlias,
+              child: InkWell(
               borderRadius: BorderRadius.circular(8),
               onTap: () async {
                 await Clipboard.setData(
@@ -895,6 +932,7 @@ class _OrderInfoCard extends StatelessWidget {
                   color: Theme.of(context).colorScheme.primary,
                 ),
               ),
+            ),
             ),
           ),
           const SizedBox(height: 12),
@@ -1089,7 +1127,11 @@ class _PaymentMethodTile extends StatelessWidget {
         ? theme.colorScheme.primary
         : theme.colorScheme.outline.withValues(alpha: 0.16);
 
-    return InkWell(
+    return Material(
+      color: Colors.transparent,
+      borderRadius: BorderRadius.circular(12),
+      clipBehavior: Clip.antiAlias,
+      child: InkWell(
       borderRadius: BorderRadius.circular(12),
       onTap: onTap,
       child: Container(
@@ -1136,6 +1178,7 @@ class _PaymentMethodTile extends StatelessWidget {
           ],
         ),
       ),
+    ),
     );
   }
 }

@@ -12,6 +12,41 @@ import (
 	"time"
 )
 
+func TestClientIPPrefersTrustedPublicForwardedHeaders(t *testing.T) {
+	server := &Server{cfg: Config{TrustForwardedFor: true}}
+	req := httptest.NewRequest(http.MethodGet, "/healthz", nil)
+	req.RemoteAddr = "127.0.0.1:52318"
+	req.Header.Set("X-Forwarded-For", "127.0.0.1, 10.0.0.4, 203.0.113.9")
+	req.Header.Set("X-Real-IP", "198.51.100.7")
+
+	if got := server.clientIP(req); got != "203.0.113.9" {
+		t.Fatalf("clientIP() = %q, want first public forwarded IP", got)
+	}
+}
+
+func TestClientIPPrefersCloudflareConnectingIP(t *testing.T) {
+	server := &Server{cfg: Config{TrustForwardedFor: true}}
+	req := httptest.NewRequest(http.MethodGet, "/healthz", nil)
+	req.RemoteAddr = "127.0.0.1:52318"
+	req.Header.Set("CF-Connecting-IP", "198.51.100.8")
+	req.Header.Set("X-Forwarded-For", "203.0.113.9")
+
+	if got := server.clientIP(req); got != "198.51.100.8" {
+		t.Fatalf("clientIP() = %q, want CF-Connecting-IP", got)
+	}
+}
+
+func TestClientIPFallsBackToRemoteAddrWhenUntrusted(t *testing.T) {
+	server := &Server{cfg: Config{TrustForwardedFor: false}}
+	req := httptest.NewRequest(http.MethodGet, "/healthz", nil)
+	req.RemoteAddr = "127.0.0.1:52318"
+	req.Header.Set("X-Forwarded-For", "203.0.113.9")
+
+	if got := server.clientIP(req); got != "127.0.0.1" {
+		t.Fatalf("clientIP() = %q, want remote addr", got)
+	}
+}
+
 func TestDeviceLimitAndSubscriptionRewrite(t *testing.T) {
 	var business *httptest.Server
 	business = httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -61,7 +96,7 @@ func TestDeviceLimitAndSubscriptionRewrite(t *testing.T) {
 	}
 	server := &Server{
 		cfg: Config{
-			BusinessBaseURLs: []string{    business.URL,},
+			BusinessBaseURLs:   []string{business.URL},
 			APIPrefix:          "/api/v1",
 			DataFile:           store.path,
 			AdminToken:         "admin-token",
@@ -192,7 +227,7 @@ func TestKickOldestRevokesUntilWithinLimit(t *testing.T) {
 
 	server := &Server{
 		cfg: Config{
-			BusinessBaseURLs: []string{    business.URL,},
+			BusinessBaseURLs:   []string{business.URL},
 			APIPrefix:          "/api/v1",
 			DataFile:           store.path,
 			AdminToken:         "admin-token",

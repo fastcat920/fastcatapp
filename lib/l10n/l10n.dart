@@ -3280,36 +3280,6 @@ class AppLocalizations {
     );
   }
 
-  /// `Network error, please check your local network`
-  String get xboardLoginErrorNetwork {
-    return Intl.message(
-      'Network error, please check your local network',
-      name: 'xboardLoginErrorNetwork',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Configuration load failed, please try again later`
-  String get xboardLoginErrorConfigLoad {
-    return Intl.message(
-      'Configuration load failed, please try again later',
-      name: 'xboardLoginErrorConfigLoad',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Invalid credentials, please check your account and password`
-  String get xboardLoginErrorCredentials {
-    return Intl.message(
-      'Invalid credentials, please check your account and password',
-      name: 'xboardLoginErrorCredentials',
-      desc: '',
-      args: [],
-    );
-  }
-
   /// `Registration successful! Redirecting to login page...`
   String get xboardRegisterSuccess {
     return Intl.message(
@@ -3425,10 +3395,10 @@ class AppLocalizations {
     );
   }
 
-  /// `Current Node`
+  /// `Current node`
   String get xboardCurrentNode {
     return Intl.message(
-      'Current Node',
+      'Current node',
       name: 'xboardCurrentNode',
       desc: '',
       args: [],
@@ -8645,9 +8615,349 @@ class AppLocalizations {
     );
   }
 
+  /// `Connection Health`
+  String get xboardConnectionHealth {
+    return Intl.message(
+      'Connection Health',
+      name: 'xboardConnectionHealth',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Check server, subscription, node, and device status`
+  String get xboardConnectionHealthSubtitle {
+    return Intl.message(
+      'Check server, subscription, node, and device status',
+      name: 'xboardConnectionHealthSubtitle',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Server status`
+  String get xboardServerStatus {
+    return Intl.message(
+      'Server status',
+      name: 'xboardServerStatus',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Gateway status`
+  String get xboardGatewayStatus {
+    return Intl.message(
+      'Gateway status',
+      name: 'xboardGatewayStatus',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Subscription status`
+  String get xboardSubscriptionHealth {
+    return Intl.message(
+      'Subscription status',
+      name: 'xboardSubscriptionHealth',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Node status`
+  String get xboardNodeHealth {
+    return Intl.message(
+      'Node status',
+      name: 'xboardNodeHealth',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Device status`
+  String get xboardDeviceHealth {
+    return Intl.message(
+      'Device status',
+      name: 'xboardDeviceHealth',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Healthy`
+  String get xboardHealthy {
+    return Intl.message('Healthy', name: 'xboardHealthy', desc: '', args: []);
+  }
+
+  /// `Needs attention`
+  String get xboardNeedsAttention {
+    return Intl.message(
+      'Needs attention',
+      name: 'xboardNeedsAttention',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Current gateway`
+  String get xboardCurrentGateway {
+    return Intl.message(
+      'Current gateway',
+      name: 'xboardCurrentGateway',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Current business API`
+  String get xboardCurrentBusinessApi {
+    return Intl.message(
+      'Current business API',
+      name: 'xboardCurrentBusinessApi',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `{count} candidates`
+  String xboardGatewayCandidateCount(Object count) {
+    return Intl.message(
+      '$count candidates',
+      name: 'xboardGatewayCandidateCount',
+      desc: '',
+      args: [count],
+    );
+  }
+
+  /// `No active gateway`
+  String get xboardNoGatewayActive {
+    return Intl.message(
+      'No active gateway',
+      name: 'xboardNoGatewayActive',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Current domain`
+  String get xboardCurrentDomain {
+    return Intl.message(
+      'Current domain',
+      name: 'xboardCurrentDomain',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `{count} nodes`
+  String xboardNodeCount(Object count) {
+    return Intl.message(
+      '$count nodes',
+      name: 'xboardNodeCount',
+      desc: '',
+      args: [count],
+    );
+  }
+
+  /// `Run check`
+  String get xboardRunDiagnosis {
+    return Intl.message(
+      'Run check',
+      name: 'xboardRunDiagnosis',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Test current node`
+  String get xboardTestCurrentNode {
+    return Intl.message(
+      'Test current node',
+      name: 'xboardTestCurrentNode',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Manage devices`
+  String get xboardManageDevices {
+    return Intl.message(
+      'Manage devices',
+      name: 'xboardManageDevices',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `View orders`
+  String get xboardCheckOrders {
+    return Intl.message(
+      'View orders',
+      name: 'xboardCheckOrders',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Smart latency test started`
+  String get xboardSmartLatencyStarted {
+    return Intl.message(
+      'Smart latency test started',
+      name: 'xboardSmartLatencyStarted',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `If you paid but it has not arrived, refresh the order status.`
+  String get xboardPendingOrdersHint {
+    return Intl.message(
+      'If you paid but it has not arrived, refresh the order status.',
+      name: 'xboardPendingOrdersHint',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Syncing account subscription...`
+  String get xboardSyncingSubscription {
+    return Intl.message(
+      'Syncing account subscription...',
+      name: 'xboardSyncingSubscription',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Buy plan`
+  String get xboardBuyPlan {
+    return Intl.message('Buy plan', name: 'xboardBuyPlan', desc: '', args: []);
+  }
+
+  /// `Latest event`
+  String get xboardHealthLastEvent {
+    return Intl.message(
+      'Latest event',
+      name: 'xboardHealthLastEvent',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Copy diagnostics`
+  String get xboardCopyDiagnosticBundle {
+    return Intl.message(
+      'Copy diagnostics',
+      name: 'xboardCopyDiagnosticBundle',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Diagnostics copied`
+  String get xboardDiagnosticBundleCopied {
+    return Intl.message(
+      'Diagnostics copied',
+      name: 'xboardDiagnosticBundleCopied',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Release offline devices`
+  String get xboardReleaseOfflineDevices {
+    return Intl.message(
+      'Release offline devices',
+      name: 'xboardReleaseOfflineDevices',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `This will remove offline devices that still occupy your device limit. Your current device will not be affected. Continue?`
+  String get xboardReleaseOfflineDevicesConfirm {
+    return Intl.message(
+      'This will remove offline devices that still occupy your device limit. Your current device will not be affected. Continue?',
+      name: 'xboardReleaseOfflineDevicesConfirm',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Offline, using slot`
+  String get xboardOfflineButActive {
+    return Intl.message(
+      'Offline, using slot',
+      name: 'xboardOfflineButActive',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Reload nodes`
+  String get xboardReloadNodes {
+    return Intl.message(
+      'Reload nodes',
+      name: 'xboardReloadNodes',
+      desc: '',
+      args: [],
+    );
+  }
+
   /// `Got it`
   String get xboardGotIt {
     return Intl.message('Got it', name: 'xboardGotIt', desc: '', args: []);
+  }
+
+  /// `Network error, please check your local network`
+  String get xboardLoginErrorNetwork {
+    return Intl.message(
+      'Network error, please check your local network',
+      name: 'xboardLoginErrorNetwork',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Configuration load failed, please try again later`
+  String get xboardLoginErrorConfigLoad {
+    return Intl.message(
+      'Configuration load failed, please try again later',
+      name: 'xboardLoginErrorConfigLoad',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Invalid credentials, please check your account and password`
+  String get xboardLoginErrorCredentials {
+    return Intl.message(
+      'Invalid credentials, please check your account and password',
+      name: 'xboardLoginErrorCredentials',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Too many login attempts. Please try again later.`
+  String get xboardLoginErrorLimited {
+    return Intl.message(
+      'Too many login attempts. Please try again later.',
+      name: 'xboardLoginErrorLimited',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Device limit reached. Release an offline device first.`
+  String get xboardLoginErrorDeviceLimit {
+    return Intl.message(
+      'Device limit reached. Release an offline device first.',
+      name: 'xboardLoginErrorDeviceLimit',
+      desc: '',
+      args: [],
+    );
   }
 }
 
