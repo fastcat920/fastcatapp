@@ -40,16 +40,8 @@ class AppPath {
   }
 
   String get corePath {
-    final coreNames = Platform.isWindows
-        ? const ["ApexCore.exe", "fastcatCore.exe"]
-        : const ["ApexCore", "fastcatCore"];
-    for (final name in coreNames) {
-      final path = join(executableDirPath, name);
-      if (File(path).existsSync()) {
-        return path;
-      }
-    }
-    return join(executableDirPath, coreNames.first);
+    final coreName = Platform.isWindows ? "fastcatCore.exe" : "fastcatCore";
+    return join(executableDirPath, coreName);
   }
 
   String get helperPath {

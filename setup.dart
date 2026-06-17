@@ -911,8 +911,8 @@ end tell
     // For universal builds, patch Release.xcconfig so Xcode compiles
     // fat arm64+x86_64 binaries instead of host-arch only.
     String? releaseConfigBackup;
-    final releaseConfigPath = join(
-      current, 'macos', 'Runner', 'Configs', 'Release.xcconfig');
+    final releaseConfigPath =
+        join(current, 'macos', 'Runner', 'Configs', 'Release.xcconfig');
     final releaseConfigFile = File(releaseConfigPath);
     if (archName != null && releaseConfigFile.existsSync()) {
       releaseConfigBackup = releaseConfigFile.readAsStringSync();
@@ -934,9 +934,11 @@ end tell
         if (!updated.contains('ARCHS = ')) {
           updated += 'ARCHS = $xcodeArchName\n';
         } else {
-          updated = updated.replaceFirst(RegExp(r'ARCHS = .*'), 'ARCHS = $xcodeArchName');
+          updated = updated.replaceFirst(
+              RegExp(r'ARCHS = .*'), 'ARCHS = $xcodeArchName');
         }
-        print('[setup.dart]   ✅ Release.xcconfig patched for $archName build (ARCHS=$xcodeArchName)');
+        print(
+            '[setup.dart]   ✅ Release.xcconfig patched for $archName build (ARCHS=$xcodeArchName)');
       }
       releaseConfigFile.writeAsStringSync(updated);
     }
@@ -979,6 +981,16 @@ end tell
     if (!builtApp.existsSync()) {
       throw "Built macOS app not found: ${builtApp.path}";
     }
+    final legacyCoreFile = File(join(
+      builtApp.path,
+      "Contents",
+      "MacOS",
+      "ApexCore",
+    ));
+    if (legacyCoreFile.existsSync()) {
+      legacyCoreFile.deleteSync();
+      print('[setup.dart]   ✅ removed legacy ApexCore from macOS app bundle');
+    }
 
     final dmgRoot = Directory(join(Build.distPath, "dmg-root"));
     if (dmgRoot.existsSync()) {
@@ -999,7 +1011,8 @@ end tell
     final dmgConfigSourcePath =
         join(current, "macos", "packaging", "dmg", "make_config.json");
     final version = Build.appVersion;
-    final String archSuffix = (archName != null && archName != 'universal') ? '-$archName' : '';
+    final String archSuffix =
+        (archName != null && archName != 'universal') ? '-$archName' : '';
     final dmgFileName = version.isNotEmpty
         ? '${productName}-${version}$archSuffix.dmg'
         : '${productName}$archSuffix.dmg';
@@ -1338,8 +1351,7 @@ end tell
         await _buildDistributor(
           target: target,
           targets: "zip",
-          args:
-              " --build-dart-define=CORE_SHA256=$token$ddArgs",
+          args: " --build-dart-define=CORE_SHA256=$token$ddArgs",
           env: env,
         );
         return;
@@ -1360,8 +1372,7 @@ end tell
         await _buildDistributor(
           target: target,
           targets: targets,
-          args:
-              " --build-target-platform $defaultTarget$ddArgs",
+          args: " --build-target-platform $defaultTarget$ddArgs",
           env: env,
         );
         return;
@@ -1436,8 +1447,8 @@ end tell
           if (!srcFile.existsSync()) {
             throw Exception('APK not found: $srcApk');
           }
-          final dstApk = join(
-              Build.distPath, '${Build.appName}-$flavor-$suffix.apk');
+          final dstApk =
+              join(Build.distPath, '${Build.appName}-$flavor-$suffix.apk');
           Build.copyFile(srcApk, dstApk);
           print('  ✅ $dstApk');
         }
