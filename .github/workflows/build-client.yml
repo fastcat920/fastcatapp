@@ -66,6 +66,9 @@ jobs:
       - name: Flutter doctor
         run: flutter doctor -v
 
+      - name: Clean build cache
+        run: flutter clean
+
       - name: Get packages
         run: flutter pub get
 
@@ -177,6 +180,9 @@ jobs:
 
       - name: Flutter doctor
         run: flutter doctor -v
+
+      - name: Clean build cache
+        run: flutter clean
 
       - name: Get packages
         run: flutter pub get
@@ -311,6 +317,9 @@ jobs:
       - name: Flutter doctor
         run: flutter doctor -v
 
+      - name: Clean build cache
+        run: flutter clean
+
       - name: Get packages
         run: flutter pub get
 
@@ -366,6 +375,9 @@ jobs:
       - name: Flutter doctor
         run: flutter doctor -v
 
+      - name: Clean build cache
+        run: flutter clean
+
       - name: Get packages
         run: flutter pub get
 
@@ -418,6 +430,9 @@ jobs:
 
       - name: Flutter doctor
         run: flutter doctor -v
+
+      - name: Clean build cache
+        run: flutter clean
 
       - name: Get packages
         run: flutter pub get
