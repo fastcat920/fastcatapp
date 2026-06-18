@@ -1,7 +1,6 @@
 import 'package:fl_clash/common/common.dart';
 import 'package:fl_clash/enum/enum.dart';
 import 'package:fl_clash/providers/providers.dart';
-import 'package:fl_clash/providers/state.dart';
 import 'package:fl_clash/state.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -51,7 +50,7 @@ class _StartButtonState extends ConsumerState<StartButton>
   }
 
   handleSwitchStart() {
-    if (ref.read(isCoreSwitchingProvider)) return;
+    if (globalState.isCoreSwitchingNotifier.value) return;
     isStart = !isStart;
     updateController();
     debouncer.call(
@@ -75,105 +74,109 @@ class _StartButtonState extends ConsumerState<StartButton>
 
   @override
   Widget build(BuildContext context) {
-    final isCoreSwitching = ref.watch(isCoreSwitchingProvider);
-
-    if (isCoreSwitching) {
-      return Theme(
-        data: Theme.of(context).copyWith(
-          floatingActionButtonTheme: const FloatingActionButtonThemeData(
-            sizeConstraints: BoxConstraints(
-              minWidth: 56,
-              maxWidth: 200,
-            ),
-          ),
-        ),
-        child: FloatingActionButton(
-          clipBehavior: Clip.antiAlias,
-          materialTapTargetSize: MaterialTapTargetSize.padded,
-          heroTag: null,
-          onPressed: null,
-          child: SizedBox(
-            height: 24,
-            width: 24,
-            child: CircularProgressIndicator(
-              strokeWidth: 2.5,
-              color: Theme.of(context).colorScheme.onPrimaryContainer,
-            ),
-          ),
-        ),
-      );
-    }
-
-    final state = ref.watch(startButtonSelectorStateProvider);
-    if (!state.isInit || !state.hasProfile) {
-      return Container();
-    }
-    return Theme(
-      data: Theme.of(context).copyWith(
-        floatingActionButtonTheme: FloatingActionButtonThemeData(
-          sizeConstraints: BoxConstraints(
-            minWidth: 56,
-            maxWidth: 200,
-          ),
-        ),
-      ),
-      child: AnimatedBuilder(
-        animation: _controller.view,
-        builder: (_, child) {
-          final textWidth = globalState.measure
-                  .computeTextSize(
-                    Text(
-                      utils.getTimeDifference(
-                        DateTime.now(),
-                      ),
-                      style: context.textTheme.titleMedium?.toSoftBold,
-                    ),
-                  )
-                  .width +
-              16;
-          return FloatingActionButton(
-            clipBehavior: Clip.antiAlias,
-            materialTapTargetSize: MaterialTapTargetSize.padded,
-            heroTag: null,
-            onPressed: () {
-              handleSwitchStart();
-            },
-            child: Row(
-              mainAxisSize: MainAxisSize.max,
-              children: [
-                Container(
-                  height: 56,
-                  width: 56,
-                  alignment: Alignment.center,
-                  child: AnimatedIcon(
-                    icon: AnimatedIcons.play_pause,
-                    progress: _animation,
-                  ),
+    return ValueListenableBuilder<bool>(
+      valueListenable: globalState.isCoreSwitchingNotifier,
+      builder: (context, isCoreSwitching, child) {
+        if (isCoreSwitching) {
+          return Theme(
+            data: Theme.of(context).copyWith(
+              floatingActionButtonTheme: const FloatingActionButtonThemeData(
+                sizeConstraints: BoxConstraints(
+                  minWidth: 56,
+                  maxWidth: 200,
                 ),
-                SizedBox(
-                  width: textWidth * _animation.value,
-                  child: child!,
-                )
-              ],
+              ),
+            ),
+            child: FloatingActionButton(
+              clipBehavior: Clip.antiAlias,
+              materialTapTargetSize: MaterialTapTargetSize.padded,
+              heroTag: null,
+              onPressed: null,
+              child: SizedBox(
+                height: 24,
+                width: 24,
+                child: CircularProgressIndicator(
+                  strokeWidth: 2.5,
+                  color: Theme.of(context).colorScheme.onPrimaryContainer,
+                ),
+              ),
             ),
           );
-        },
-        child: Consumer(
-          builder: (_, ref, __) {
-            final runTime = ref.watch(runTimeProvider);
-            final text = utils.getTimeText(runTime);
-            return Text(
-              text,
-              maxLines: 1,
-              overflow: TextOverflow.visible,
-              style:
-                  Theme.of(context).textTheme.titleMedium?.toSoftBold.copyWith(
+        }
+
+        final state = ref.watch(startButtonSelectorStateProvider);
+        if (!state.isInit || !state.hasProfile) {
+          return const SizedBox.shrink();
+        }
+        return Theme(
+          data: Theme.of(context).copyWith(
+            floatingActionButtonTheme: FloatingActionButtonThemeData(
+              sizeConstraints: BoxConstraints(
+                minWidth: 56,
+                maxWidth: 200,
+              ),
+            ),
+          ),
+          child: AnimatedBuilder(
+            animation: _controller.view,
+            builder: (_, animatedChild) {
+              final textWidth = globalState.measure
+                      .computeTextSize(
+                        Text(
+                          utils.getTimeDifference(DateTime.now()),
+                          style: context.textTheme.titleMedium?.toSoftBold,
+                        ),
+                      )
+                      .width +
+                  16;
+              return FloatingActionButton(
+                clipBehavior: Clip.antiAlias,
+                materialTapTargetSize: MaterialTapTargetSize.padded,
+                heroTag: null,
+                onPressed: () {
+                  handleSwitchStart();
+                },
+                child: Row(
+                  mainAxisSize: MainAxisSize.max,
+                  children: [
+                    Container(
+                      height: 56,
+                      width: 56,
+                      alignment: Alignment.center,
+                      child: AnimatedIcon(
+                        icon: AnimatedIcons.play_pause,
+                        progress: _animation,
+                      ),
+                    ),
+                    SizedBox(
+                      width: textWidth * _animation.value,
+                      child: animatedChild!,
+                    )
+                  ],
+                ),
+              );
+            },
+            child: Consumer(
+              builder: (_, ref, __) {
+                final runTime = ref.watch(runTimeProvider);
+                final text = utils.getTimeText(runTime);
+                return Text(
+                  text,
+                  maxLines: 1,
+                  overflow: TextOverflow.visible,
+                  style: Theme.of(context)
+                      .textTheme
+                      .titleMedium
+                      ?.toSoftBold
+                      .copyWith(
                         color: context.colorScheme.onPrimaryContainer,
                       ),
-            );
-          },
-        ),
-      ),
+                );
+              },
+            ),
+          ),
+        );
+      },
     );
   }
 }

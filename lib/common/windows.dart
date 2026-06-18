@@ -199,6 +199,7 @@ class Windows {
   }
 
   Future<bool> registerService() async {
+    commonPrint.log("FASTCAT_V2 registerService: new timeouts 8s/3s/4s");
     if (await request.pingHelper()) return true;
 
     // 预检：helper 二进制必须存在才能继续

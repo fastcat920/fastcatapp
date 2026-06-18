@@ -663,7 +663,3 @@ VM2<bool, bool> autoSetSystemDnsState(Ref ref) {
     b: autoSetSystemDns,
   );
 }
-
-/// Whether the core is currently switching (TUN enable/disable, config update, etc).
-/// When true, the connect button shows a loading state and stops responding to clicks.
-final isCoreSwitchingProvider = StateProvider<bool>((ref) => false);

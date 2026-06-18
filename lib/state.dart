@@ -43,6 +43,8 @@ class GlobalState {
   late Color accentColor;
   CorePalette? corePalette;
   DateTime? startTime;
+  final isCoreSwitchingNotifier = ValueNotifier<bool>(false);
+
   UpdateTasks tasks = [];
   final navigatorKey = GlobalKey<NavigatorState>();
   AppController? _appController;
@@ -67,9 +69,8 @@ class GlobalState {
 
   initApp(int version) async {
     coreSHA256 = const String.fromEnvironment("CORE_SHA256");
-    isPre =
-        const String.fromEnvironment("APP_ENV", defaultValue: 'stable') !=
-            'stable';
+    isPre = const String.fromEnvironment("APP_ENV", defaultValue: 'stable') !=
+        'stable';
     appState = AppState(
       version: version,
       viewSize: Size.zero,
@@ -139,7 +140,10 @@ class GlobalState {
     } catch (e) {
       // VPN start failed — reset state and show error to user
       startTime = null;
-      final msg = e.toString().replaceFirst('PlatformException(VPN_ERROR, ', '').replaceFirst(RegExp(r', null, null\)$'), '');
+      final msg = e
+          .toString()
+          .replaceFirst('PlatformException(VPN_ERROR, ', '')
+          .replaceFirst(RegExp(r', null, null\)$'), '');
       commonPrint.log("VPN start failed: $msg");
       showNotifier("VPN启动失败: $msg");
       return;
