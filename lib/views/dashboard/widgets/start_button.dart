@@ -1,6 +1,7 @@
 import 'package:fl_clash/common/common.dart';
 import 'package:fl_clash/enum/enum.dart';
 import 'package:fl_clash/providers/providers.dart';
+import 'package:fl_clash/providers/state.dart';
 import 'package:fl_clash/state.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -50,6 +51,7 @@ class _StartButtonState extends ConsumerState<StartButton>
   }
 
   handleSwitchStart() {
+    if (ref.read(isCoreSwitchingProvider)) return;
     isStart = !isStart;
     updateController();
     debouncer.call(
@@ -73,6 +75,35 @@ class _StartButtonState extends ConsumerState<StartButton>
 
   @override
   Widget build(BuildContext context) {
+    final isCoreSwitching = ref.watch(isCoreSwitchingProvider);
+
+    if (isCoreSwitching) {
+      return Theme(
+        data: Theme.of(context).copyWith(
+          floatingActionButtonTheme: const FloatingActionButtonThemeData(
+            sizeConstraints: BoxConstraints(
+              minWidth: 56,
+              maxWidth: 200,
+            ),
+          ),
+        ),
+        child: FloatingActionButton(
+          clipBehavior: Clip.antiAlias,
+          materialTapTargetSize: MaterialTapTargetSize.padded,
+          heroTag: null,
+          onPressed: null,
+          child: SizedBox(
+            height: 24,
+            width: 24,
+            child: CircularProgressIndicator(
+              strokeWidth: 2.5,
+              color: Theme.of(context).colorScheme.onPrimaryContainer,
+            ),
+          ),
+        ),
+      );
+    }
+
     final state = ref.watch(startButtonSelectorStateProvider);
     if (!state.isInit || !state.hasProfile) {
       return Container();

@@ -157,8 +157,7 @@ class Windows {
   /// state: 1=STOPPED, 2=START_PENDING, 4=RUNNING
   Map<String, int> _parseScQuery(String output) {
     final stateMatch = RegExp(r'STATE\s*:\s*(\d+)').firstMatch(output);
-    final exitMatch =
-        RegExp(r'WIN32_EXIT_CODE\s*:\s*(\d+)').firstMatch(output);
+    final exitMatch = RegExp(r'WIN32_EXIT_CODE\s*:\s*(\d+)').firstMatch(output);
     return {
       'state': int.tryParse(stateMatch?.group(1) ?? '0') ?? 0,
       'win32ExitCode': int.tryParse(exitMatch?.group(1) ?? '0') ?? 0,
@@ -168,12 +167,11 @@ class Windows {
   /// 轮询 sc query，精确等待服务进入 RUNNING(4) 状态。
   /// 一旦检测到 STOPPED + win32ExitCode!=0（启动失败），立即返回 false，
   /// 不等超时——这是 service 方式失败的核心诊断手段。
-  Future<bool> _waitForServiceRunning({int maxMs = 12000}) async {
-    final steps = maxMs ~/ 500;
+  Future<bool> _waitForServiceRunning({int maxMs = 8000}) async {
+    final steps = maxMs ~/ 300;
     for (int i = 0; i < steps; i++) {
-      await Future.delayed(const Duration(milliseconds: 500));
-      final result =
-          await _runHidden('sc', ['query', appHelperService]);
+      await Future.delayed(const Duration(milliseconds: 300));
+      final result = await _runHidden('sc', ['query', appHelperService]);
       if (result.exitCode != 0) continue; // 服务条目尚未写入注册表，继续等
       final info = _parseScQuery(result.stdout.toString());
       final state = info['state'] ?? 0;
@@ -181,8 +179,8 @@ class Windows {
       if (state == 4) return true; // RUNNING ✓
       if (state == 1 && exitCode != 0) {
         // STOPPED + 错误码：服务启动失败，快速退出
-        commonPrint.log(
-            'registerService: service STOPPED win32ExitCode=$exitCode');
+        commonPrint
+            .log('registerService: service STOPPED win32ExitCode=$exitCode');
         return false;
       }
       // state=1 exitCode=0（刚 create 未 start）或 state=2（START_PENDING）→ 继续等
@@ -191,10 +189,10 @@ class Windows {
   }
 
   /// 轮询 pingHelper HTTP 端口，最多等 [maxMs] 毫秒
-  Future<bool> _waitForHelper({int maxMs = 4000}) async {
-    final steps = maxMs ~/ 500;
+  Future<bool> _waitForHelper({int maxMs = 3000}) async {
+    final steps = maxMs ~/ 300;
     for (int i = 0; i < steps; i++) {
-      await Future.delayed(const Duration(milliseconds: 500));
+      await Future.delayed(const Duration(milliseconds: 300));
       if (await request.pingHelper()) return true;
     }
     return false;
@@ -219,18 +217,26 @@ class Windows {
     final svcCmd = [
       '/c',
       if (status == WindowsHelperServiceStatus.presence) ...[
-        'sc', 'delete', appHelperService, '&&',
+        'sc',
+        'delete',
+        appHelperService,
+        '&&',
       ],
-      'sc', 'create', appHelperService,
+      'sc',
+      'create',
+      appHelperService,
       'binPath= "$helperExe"',
-      'start= auto', '&&',
-      'sc', 'start', appHelperService,
+      'start= auto',
+      '&&',
+      'sc',
+      'start',
+      appHelperService,
     ].join(' ');
 
     if (runas('cmd.exe', svcCmd)) {
-      if (await _waitForServiceRunning(maxMs: 12000)) {
+      if (await _waitForServiceRunning(maxMs: 8000)) {
         // 服务进程已进入 RUNNING，等 HTTP 服务器就绪（通常 <1s）
-        if (await _waitForHelper(maxMs: 4000)) return true;
+        if (await _waitForHelper(maxMs: 3000)) return true;
         commonPrint.log('registerService: service running but HTTP not ready');
       }
       commonPrint.log('registerService: service phase failed, trying fallback');
@@ -240,7 +246,7 @@ class Windows {
     // 适用于 Win11 Smart App Control / 安全策略阻止服务安装的场景
     commonPrint.log('registerService: launching helper as elevated process');
     if (runas(helperExe, '')) {
-      if (await _waitForHelper(maxMs: 6000)) return true;
+      if (await _waitForHelper(maxMs: 4000)) return true;
       commonPrint.log('registerService: direct elevated process timed out');
     }
 

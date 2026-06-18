@@ -132,6 +132,7 @@ class AppController {
   Future<bool> updateStatus(bool isStart) async {
     if (_isCoreSwitching) return false;
     _isCoreSwitching = true;
+    _ref.read(isCoreSwitchingProvider.notifier).state = true;
     unawaited(XBoardDeviceHeartbeatService.markActive(
       reason: isStart ? 'proxy_start' : 'proxy_stop',
       force: true,
@@ -176,6 +177,7 @@ class AppController {
       }
     } finally {
       _isCoreSwitching = false;
+      _ref.read(isCoreSwitchingProvider.notifier).state = false;
     }
   }
 
@@ -321,6 +323,7 @@ class AppController {
   Future<void> updateClashConfig() async {
     if (_isCoreSwitching) return;
     _isCoreSwitching = true;
+    _ref.read(isCoreSwitchingProvider.notifier).state = true;
     final commonScaffoldState = globalState.homeScaffoldKey.currentState;
     try {
       if (commonScaffoldState?.mounted == true) {
@@ -334,6 +337,7 @@ class AppController {
       }
     } finally {
       _isCoreSwitching = false;
+      _ref.read(isCoreSwitchingProvider.notifier).state = false;
     }
   }
 
