@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:io';
 
 import 'package:fl_clash/common/common.dart';
@@ -90,17 +91,24 @@ class _TunSheetContent extends ConsumerStatefulWidget {
 }
 
 class _TunSheetContentState extends ConsumerState<_TunSheetContent> {
+  static const _autoCloseDelay = Duration(milliseconds: 700);
+
   ProviderSubscription<bool>? _tunEnableSub;
+  Timer? _autoCloseTimer;
 
   @override
   void initState() {
     super.initState();
-    // Auto-close sheet when TUN is toggled from switch or elsewhere
+    // Let the switch animation finish before closing the sheet.
     _tunEnableSub = ref.listenManual<bool>(
       patchClashConfigProvider.select((s) => s.tun.enable),
       (prev, next) {
         if (prev != next && mounted) {
-          Navigator.maybeOf(context)?.maybePop();
+          _autoCloseTimer?.cancel();
+          _autoCloseTimer = Timer(_autoCloseDelay, () {
+            if (!mounted) return;
+            Navigator.maybeOf(context)?.maybePop();
+          });
         }
       },
     );
@@ -108,6 +116,7 @@ class _TunSheetContentState extends ConsumerState<_TunSheetContent> {
 
   @override
   void dispose() {
+    _autoCloseTimer?.cancel();
     _tunEnableSub?.close();
     super.dispose();
   }
