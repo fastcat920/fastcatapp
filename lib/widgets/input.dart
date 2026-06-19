@@ -48,7 +48,7 @@ class OptionsDialog<T> extends StatelessWidget {
                     value: option,
                     groupValue: value,
                     onChanged: (T? value) {
-                      Navigator.of(context).pop(value);
+                      Navigator.of(context).pop(OptionsDialogResult<T?>(value));
                     },
                   ),
                   title: Text(textBuilder(option)),
@@ -59,6 +59,12 @@ class OptionsDialog<T> extends StatelessWidget {
       ),
     );
   }
+}
+
+class OptionsDialogResult<T> {
+  const OptionsDialogResult(this.value);
+
+  final T value;
 }
 
 class CommonCheckBox extends StatelessWidget {

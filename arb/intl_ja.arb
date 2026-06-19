@@ -793,107 +793,107 @@
   "xboardCommissionConfirmed": "確認済み",
   "generateInviteCode": "招待コードを生成",
   "noInviteCode": "招待コードはありません",
-  "xboardAccountBanned": "Account banned",
-  "xboardAccountBannedDetail": "This account has been banned. Please contact support.",
+  "xboardAccountBanned": "アカウント停止中",
+  "xboardAccountBannedDetail": "このアカウントは停止されています。サポートにお問い合わせください。",
   "xboardAccountInfo": "マイアカウント",
-  "xboardAccountManagement": "Account management",
-  "xboardBalancePay": "Pay with balance",
-  "xboardCancelOrder": "Cancel order",
-  "xboardCanceling": "Canceling...",
-  "xboardChangePassword": "Change password",
-  "xboardCheckPaymentStatus": "Check payment status",
-  "xboardConfirmChange": "Confirm change",
-  "xboardConfirmRenewPlan": "Confirm renewal",
-  "xboardConfirmResetTraffic": "Confirm traffic reset",
-  "xboardCreateTicket": "Create ticket",
-  "xboardCreateTicketHint": "Create a ticket to contact support.",
-  "xboardCreatedAt": "Created at",
-  "xboardCurrentBalance": "Current balance",
-  "xboardCurrentPassword": "Current password",
-  "xboardCurrentPlanBased": "Based on current plan",
-  "xboardCustomRechargeAmount": "Custom recharge amount",
-  "xboardDiscountAmount": "Discount amount",
+  "xboardAccountManagement": "アカウント管理",
+  "xboardBalancePay": "残高で支払う",
+  "xboardCancelOrder": "注文をキャンセル",
+  "xboardCanceling": "キャンセル中...",
+  "xboardChangePassword": "パスワード変更",
+  "xboardCheckPaymentStatus": "支払い状況を確認",
+  "xboardConfirmChange": "変更を確認",
+  "xboardConfirmRenewPlan": "更新を確認",
+  "xboardConfirmResetTraffic": "通信量リセットを確認",
+  "xboardCreateTicket": "チケットを作成",
+  "xboardCreateTicketHint": "サポートに連絡するためのチケットを作成します。",
+  "xboardCreatedAt": "作成日時",
+  "xboardCurrentBalance": "現在の残高",
+  "xboardCurrentPassword": "現在のパスワード",
+  "xboardCurrentPlanBased": "現在のプラン基準",
+  "xboardCustomRechargeAmount": "任意のチャージ金額",
+  "xboardDiscountAmount": "割引額",
   "xboardRefundAmount": "ウォレット返金",
   "xboardWalletBalance": "ウォレット残高",
   "xboardSurplusAmount": "旧プラン充当額",
-  "xboardDocsCenter": "Docs center",
-  "xboardEmailUnavailable": "Email unavailable",
-  "xboardEnterAmount": "Enter amount",
-  "xboardEnterGiftCardCode": "Enter gift card code",
-  "xboardGiftCardCode": "Gift card code",
-  "xboardGiftCardRedeem": "Gift card redeem",
-  "xboardGlobalProxy": "Global proxy",
-  "xboardHigh": "High",
-  "xboardImportingSubscription": "Importing subscription",
-  "xboardLow": "Low",
-  "xboardMedium": "Medium",
-  "xboardMyTickets": "My tickets",
-  "xboardMyWallet": "My wallet",
-  "xboardNoOrderRecords": "No order records",
-  "xboardNoPaymentMethods": "No payment methods",
-  "xboardNoTicketRecords": "No ticket records",
-  "xboardNoTrafficRecords": "No traffic records",
-  "xboardNodeSelection": "Node selection",
-  "xboardNormal": "Normal",
-  "xboardOrderInfo": "Order info",
-  "xboardOrderLoadingFailed": "Failed to load order",
-  "xboardOrderRecords": "Order records",
-  "xboardOrderStatus": "Order status",
-  "xboardOrderStatusCancelled": "Cancelled",
-  "xboardOrderStatusCompleted": "Completed",
-  "xboardOrderStatusOffset": "Offset",
-  "xboardOrderStatusOpening": "Activating",
-  "xboardPackageAmount": "Package amount",
+  "xboardDocsCenter": "ドキュメントセンター",
+  "xboardEmailUnavailable": "メールアドレスは使用できません",
+  "xboardEnterAmount": "金額を入力",
+  "xboardEnterGiftCardCode": "ギフトカードコードを入力",
+  "xboardGiftCardCode": "ギフトカードコード",
+  "xboardGiftCardRedeem": "ギフトカード交換",
+  "xboardGlobalProxy": "グローバルプロキシ",
+  "xboardHigh": "高",
+  "xboardImportingSubscription": "サブスクリプションをインポート中",
+  "xboardLow": "低",
+  "xboardMedium": "中",
+  "xboardMyTickets": "マイチケット",
+  "xboardMyWallet": "マイウォレット",
+  "xboardNoOrderRecords": "注文記録なし",
+  "xboardNoPaymentMethods": "支払い方法なし",
+  "xboardNoTicketRecords": "チケット記録なし",
+  "xboardNoTrafficRecords": "通信量記録なし",
+  "xboardNodeSelection": "ノード選択",
+  "xboardNormal": "通常",
+  "xboardOrderInfo": "注文情報",
+  "xboardOrderLoadingFailed": "注文の読み込みに失敗しました",
+  "xboardOrderRecords": "注文履歴",
+  "xboardOrderStatus": "注文状態",
+  "xboardOrderStatusCancelled": "キャンセル済み",
+  "xboardOrderStatusCompleted": "完了",
+  "xboardOrderStatusOffset": "相殺",
+  "xboardOrderStatusOpening": "有効化中",
+  "xboardPackageAmount": "パッケージ金額",
   "xboardOriginalPrice": "元の価格",
   "xboardDiscountedPrice": "割引後価格",
-  "xboardPayNow": "Pay now",
-  "xboardPayableAmount": "Payable amount",
+  "xboardPayNow": "今すぐ支払う",
+  "xboardPayableAmount": "支払金額",
   "xboardOrderAmount": "注文金額",
   "xboardActualPaidAmount": "支払金額",
   "xboardDeductedBalance": "差し引き残高",
   "xboardDeductibleBalance": "使用可能残高",
   "xboardRemainingBalance": "残り",
-  "xboardPaymentMethods": "Payment methods",
-  "xboardPeriod": "Period",
-  "xboardPlanBased": "Based on plan",
+  "xboardPaymentMethods": "支払い方法",
+  "xboardPeriod": "期間",
+  "xboardPlanBased": "プラン基準",
   "xboardPlanExpiryReminder": "プラン期限切れメール通知",
-  "xboardPlanName": "Plan name",
-  "xboardPleaseWait": "Please wait",
-  "xboardPriority": "Priority",
-  "xboardProductInfo": "Product info",
-  "xboardRecharge": "Recharge",
-  "xboardRechargeBalance": "Recharge balance",
-  "xboardRechargeBalanceTip": "The recharge amount will be added to your account balance.",
-  "xboardRechargeNow": "Recharge now",
-  "xboardRedeemNow": "Redeem now",
-  "xboardResetCurrentPlanTraffic": "Reset current plan traffic",
-  "xboardResetTraffic": "Reset traffic",
-  "xboardResetTrafficByPlanCycle": "Reset traffic by plan cycle",
+  "xboardPlanName": "プラン名",
+  "xboardPleaseWait": "しばらくお待ちください",
+  "xboardPriority": "優先度",
+  "xboardProductInfo": "商品情報",
+  "xboardRecharge": "チャージ",
+  "xboardRechargeBalance": "残高をチャージ",
+  "xboardRechargeBalanceTip": "チャージ金額はアカウント残高に追加されます。",
+  "xboardRechargeNow": "今すぐチャージ",
+  "xboardRedeemNow": "今すぐ交換",
+  "xboardResetCurrentPlanTraffic": "現在のプラン通信量をリセット",
+  "xboardResetTraffic": "通信量をリセット",
+  "xboardResetTrafficByPlanCycle": "プラン周期で通信量をリセット",
   "xboardResetTrafficConfirmContent": "この操作により使用済みトラフィックがリセットされますが、プラン期間は延長されません。続行しますか？",
-  "xboardSelectRechargeAmount": "Select recharge amount",
-  "xboardSmartRouting": "Smart routing",
-  "xboardSubmitTicket": "Submit ticket",
-  "xboardSubmitting": "Submitting...",
-  "xboardTestLatency": "Test latency",
-  "xboardTicketClosed": "Closed",
-  "xboardTicketDescription": "Description",
-  "xboardTicketDescriptionHint": "Describe your issue in detail",
-  "xboardTicketPendingReply": "Pending reply",
-  "xboardTicketReplied": "Replied",
-  "xboardTicketTitle": "Ticket title",
-  "xboardTicketTitleHint": "Enter ticket title",
-  "xboardTotal": "Total",
-  "xboardTrafficDetails": "Traffic details",
+  "xboardSelectRechargeAmount": "チャージ金額を選択",
+  "xboardSmartRouting": "スマートルーティング",
+  "xboardSubmitTicket": "チケットを送信",
+  "xboardSubmitting": "送信中...",
+  "xboardTestLatency": "遅延をテスト",
+  "xboardTicketClosed": "クローズ済み",
+  "xboardTicketDescription": "説明",
+  "xboardTicketDescriptionHint": "問題を詳しく説明してください",
+  "xboardTicketPendingReply": "返信待ち",
+  "xboardTicketReplied": "返信済み",
+  "xboardTicketTitle": "チケットタイトル",
+  "xboardTicketTitleHint": "チケットタイトルを入力",
+  "xboardTotal": "合計",
+  "xboardTrafficDetails": "通信量詳細",
   "xboardTrafficLogHint": "過去1か月分のトラフィックのみ表示",
   "xboardTrafficExhaustedRenewConfirmContent": "プランを更新しても通信量はすぐにはリセットされません。すぐに利用するには、通信量をリセットするかプランを変更してください。続行しますか？",
   "xboardTrafficReminder": "トラフィック使用量メール通知",
-  "xboardUnknownPeriod": "Unknown period",
-  "xboardUnknownPlan": "Unknown plan",
-  "xboardUnlimitedSpeed": "Unlimited speed",
-  "xboardUpdateNodes": "Update nodes",
-  "xboardUploadImage": "Upload image",
-  "xboardUseBalance": "Use balance",
-  "xboardExpiredOnDate": "Expired on {date}",
+  "xboardUnknownPeriod": "不明な期間",
+  "xboardUnknownPlan": "不明なプラン",
+  "xboardUnlimitedSpeed": "速度無制限",
+  "xboardUpdateNodes": "ノードを更新",
+  "xboardUploadImage": "画像をアップロード",
+  "xboardUseBalance": "残高を使用",
+  "xboardExpiredOnDate": "{date} に期限切れ",
   "@xboardExpiredOnDate": {
     "placeholders": {
       "date": {
@@ -924,8 +924,8 @@
   "@xboardResetTrafficToday": {
     "description": "Shown when traffic reset day is 0 (today)"
   },
-  "xboardMyServices": "My services",
-  "xboardSoftwareSettings": "Software settings",
+  "xboardMyServices": "マイサービス",
+  "xboardSoftwareSettings": "ソフトウェア設定",
   "xboardMine": "マイページ",
   "logout": "ログアウト",
   "confirmLogout": "終了確認",
@@ -1035,5 +1035,254 @@
   "xboardLoginErrorConfigLoad": "設定の読み込みに失敗しました。しばらくしてから再試行してください",
   "xboardLoginErrorCredentials": "アカウントまたはパスワードが間違っています。確認してください",
   "xboardLoginErrorLimited": "ログイン試行が多すぎます。しばらくしてから再試行してください。",
-  "xboardLoginErrorDeviceLimit": "デバイス上限に達しました。先にオフラインデバイスを解放してください。"
+  "xboardLoginErrorDeviceLimit": "デバイス上限に達しました。先にオフラインデバイスを解放してください。",
+  "xboardSelectPaymentMethod": "支払い方法を選択",
+  "xboardHandlingFee": "手数料",
+  "forgotPassword": "パスワードをお忘れですか",
+  "resetPassword": "パスワードをリセット",
+  "setNewPassword": "新しいパスワードを設定",
+  "enterEmailForReset": "メールアドレスを入力してください。確認コードを送信します",
+  "verificationCodeSent": "確認コードをメールに送信しました。ご確認ください",
+  "sendCodeFailed": "確認コードの送信に失敗しました",
+  "verificationCodeSentTo": "確認コードを {email} に送信しました。確認コードと新しいパスワードを入力してください",
+  "@verificationCodeSentTo": {
+    "placeholders": {
+      "email": {
+        "type": "String"
+      }
+    }
+  },
+  "emailAddress": "メールアドレス",
+  "pleaseEnterEmail": "メールアドレスを入力してください",
+  "pleaseEnterValidEmail": "有効なメールアドレスを入力してください",
+  "sendVerificationCode": "確認コードを送信",
+  "verificationCode": "確認コード",
+  "pleaseEnterVerificationCode": "メール確認コードを入力してください",
+  "pleaseEnterValidVerificationCode": "有効な確認コードを入力してください",
+  "newPassword": "新しいパスワード",
+  "pleaseEnterNewPassword": "新しいパスワードを入力してください",
+  "confirmNewPassword": "新しいパスワードを確認",
+  "pleaseConfirmNewPassword": "新しいパスワードを再入力してください",
+  "passwordMismatch": "パスワードが一致しません",
+  "passwordResetSuccessful": "パスワードをリセットしました。新しいパスワードでログインしてください",
+  "passwordResetFailed": "パスワードのリセットに失敗しました",
+  "resendVerificationCode": "確認コードを再送信",
+  "rememberPassword": "パスワードを覚えていますか？",
+  "backToLogin": "ログインに戻る",
+  "passwordMinLength": "パスワードは6文字以上である必要があります",
+  "registerSuccessSaveCredentials": "登録成功 - 認証情報を保存中:",
+  "credentialsSaved": "認証情報を保存しました",
+  "registrationFailed": "登録に失敗しました: {e}",
+  "@registrationFailed": {
+    "placeholders": {
+      "e": {
+        "type": "Object"
+      }
+    }
+  },
+  "pleaseEnterEmailAddress": "メールアドレスを入力してください",
+  "pleaseEnterValidEmailAddress": "有効なメールアドレスを入力してください",
+  "verificationCodeSentCheckEmail": "確認コードを送信しました。メールをご確認ください",
+  "sendVerificationCodeFailed": "確認コードの送信に失敗しました: {e}",
+  "@sendVerificationCodeFailed": {
+    "placeholders": {
+      "e": {
+        "type": "Object"
+      }
+    }
+  },
+  "inviteCodeRequired": "招待コードが必要です",
+  "inviteCodeRequiredMessage": "登録には招待コードが必要です。登録済みユーザーに連絡して招待コードを取得してから登録してください。",
+  "iUnderstand": "了解しました",
+  "createAccount": "アカウントを作成",
+  "fillInfoToRegister": "以下の情報を入力して登録を完了してください",
+  "pleaseEnterYourEmailAddress": "メールアドレスを入力してください",
+  "pleaseEnterAtLeast8CharsPassword": "8文字以上のパスワードを入力してください",
+  "pleaseEnterPassword": "パスワードを入力してください",
+  "passwordMin8Chars": "パスワードは8文字以上である必要があります",
+  "pleaseConfirmPassword": "パスワードを確認してください",
+  "pleaseReEnterPassword": "パスワードを再入力してください",
+  "passwordsDoNotMatch": "パスワードが一致しません",
+  "emailVerificationCode": "メール確認コード",
+  "pleaseEnterEmailVerificationCode": "メール確認コードを入力してください",
+  "verificationCode6Digits": "確認コードは6桁である必要があります",
+  "inviteCode": "招待コード",
+  "pleaseEnterInviteCode": "招待コードを入力してください",
+  "inviteCodeOptional": "招待コード（任意）",
+  "inviteCodeIncorrect": "招待コードが間違っている可能性があります。確認して再入力してください",
+  "loading": "読み込み中...",
+  "registerAccount": "アカウント登録",
+  "alreadyHaveAccount": "すでにアカウントをお持ちですか？",
+  "loginNow": "今すぐログイン",
+  "invite": "招待",
+  "xboard": "ホーム",
+  "xboardHome": "ホーム",
+  "userCenter": "ユーザーセンター",
+  "inviteRules": "招待ルール",
+  "inviteRegisterReward": "友だちを招待して登録・購読してもらうとコミッションを獲得できます",
+  "friendInviteReward": "招待した友だちが支払うとコミッションを獲得できます",
+  "currentCommissionRate": "現在のコミッション率: {rate}%",
+  "@currentCommissionRate": {
+    "placeholders": {
+      "rate": {
+        "type": "String"
+      }
+    }
+  },
+  "commissionSettled": "友だちの購読後にコミッションが確定します",
+  "withdrawalAvailable": "利用可能なコミッションは出金できます",
+  "myInviteQr": "マイ招待QR",
+  "saveQr": "QRを保存",
+  "copyInviteLink": "リンクをコピー",
+  "generatingInviteCode": "招待コードを生成中...",
+  "inviteCodeGenFailed": "招待コードの生成に失敗しました",
+  "checkNetwork": "ネットワークを確認して再試行してください",
+  "inviteStats": "招待統計",
+  "totalInvites": "招待数",
+  "commissionRate": "率",
+  "totalCommission": "収益",
+  "walletDetails": "ウォレット詳細",
+  "transfer": "振替",
+  "availableCommission": "利用可能",
+  "pendingCommission": "保留中",
+  "walletBalance": "残高",
+  "commissionHistory": "コミッション履歴",
+  "withdraw": "出金",
+  "noCommissionRecord": "コミッション記録なし",
+  "viewHistory": "履歴を表示",
+  "loadMore": "さらに読み込む",
+  "copiedToClipboard": "クリップボードにコピーしました",
+  "saveQrCodeFeature": "QR保存機能は近日対応予定です",
+  "inviteLinkCopied": "招待リンクをコピーしました。友だちに共有してください",
+  "withdrawCommission": "コミッションを出金",
+  "withdrawableAmount": "出金可能額: {amount}",
+  "@withdrawableAmount": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "visitWebVersion": "出金するにはWeb版をご利用ください",
+  "completeWithdrawal": "Web版で完全な出金機能を利用できます",
+  "goToWeb": "Webへ移動",
+  "cannotOpenBrowser": "ブラウザを開けません。手動でWebにアクセスしてください",
+  "openWebFailed": "Webを開けませんでした。手動でアクセスしてください",
+  "cannotGetWebUrl": "Web URLを取得できません。サポートにお問い合わせください",
+  "transferToWallet": "ウォレットへ振替",
+  "transferSuccess": "振替成功！",
+  "transferring": "振替中...",
+  "transferAmount": "振替金額",
+  "enterTransferAmount": "振替金額を入力",
+  "maxTransferable": "最大振替可能額: ¥{amount}",
+  "@maxTransferable": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "transferNote": "振替後の残高はアプリ内購入に使用できます",
+  "confirmTransfer": "振替を確認",
+  "enterTransferAmountError": "振替金額を入力してください",
+  "invalidTransferAmount": "有効な振替金額を入力してください",
+  "transferAmountExceeded": "振替金額は ¥{amount} を超えられません",
+  "@transferAmountExceeded": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "transferSuccessMsg": "振替成功！¥{amount} をウォレットへ移動しました",
+  "@transferSuccessMsg": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "transferFailed": "振替に失敗しました: {error}",
+  "@transferFailed": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "totalRecords": "全 {count} 件",
+  "@totalRecords": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "pageNumber": "{page} ページ",
+  "@pageNumber": {
+    "placeholders": {
+      "page": {
+        "type": "int"
+      }
+    }
+  },
+  "orderNumber": "注文: {orderNo}",
+  "@orderNumber": {
+    "placeholders": {
+      "orderNo": {
+        "type": "String"
+      }
+    }
+  },
+  "orderAmount": "注文金額: {amount}",
+  "@orderAmount": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "close": "閉じる",
+  "refresh": "更新",
+  "switchTheme": "テーマを切り替え",
+  "selectTheme": "テーマを選択",
+  "complete": "完了",
+  "noInvitationData": "招待データなし",
+  "newMessageFromSupport": "サポートから新しいメッセージがあります",
+  "xboardCoreStageCheckingHelper": "helper を確認中",
+  "xboardCoreStageStartingService": "サービスを起動中",
+  "xboardCoreStageHelperReady": "helper を再利用済み",
+  "xboardCoreStageCoreConnecting": "Core に再接続中",
+  "xboardCoreStageTunApplying": "TUN を適用中",
+  "xboardCoreStageConnected": "接続済み",
+  "xboardCoreStageStopping": "切断中",
+  "xboardCoreStageFailed": "接続に失敗しました",
+  "xboardCheckingSubscription": "サブスクリプションを確認中",
+  "xboardConnecting": "接続中",
+  "xboardDisconnecting": "切断中",
+  "xboardHealthSubscriptionImport": "サブスクリプションインポート: {message}",
+  "@xboardHealthSubscriptionImport": {
+    "placeholders": {
+      "message": {
+        "type": "String"
+      }
+    }
+  },
+  "xboardHealthCoreRunning": "実行中",
+  "xboardHealthTunApplied": "適用済み",
+  "xboardHealthTunPending": "適用待ち",
+  "xboardHealthEnabled": "有効",
+  "xboardHealthDisabled": "無効",
+  "xboardHealthDns": "DNS",
+  "xboardHealthDnsCustom": "カスタム DNS を使用",
+  "xboardHealthDnsDefault": "デフォルト DNS を使用",
+  "xboardOneClickRepair": "ワンクリック修復",
+  "xboardRepairCompleted": "修復完了",
+  "xboardHealthHelper": "Helper",
+  "xboardHealthHelperNotRequired": "このプラットフォームでは Windows helper は不要です",
+  "xboardHealthHelperAvailable": "利用可能",
+  "xboardHealthHelperUnavailable": "利用不可",
+  "xboardHealthHelperNoResponse": "helper HTTP が応答していません",
+  "xboardHealthHelperChecking": "確認中",
+  "xboardHealthHelperCheckFailed": "確認に失敗しました"
 }

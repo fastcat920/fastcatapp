@@ -20,6 +20,8 @@ typedef String MessageIfAbsent(String messageStr, List<dynamic> args);
 class MessageLookup extends MessageLookupByLibrary {
   String get localeName => 'ja';
 
+  static String m0(rate) => "現在のコミッション率: ${rate}%";
+
   static String m1(label) => "選択された${label}を削除してもよろしいですか？";
 
   static String m2(label) => "現在の${label}を削除してもよろしいですか？";
@@ -29,6 +31,8 @@ class MessageLookup extends MessageLookupByLibrary {
   static String m4(label) => "現在の${label}は既に存在しています";
 
   static String m5(error) => "ログアウト失敗：${error}";
+
+  static String m6(amount) => "最大振替可能額: ¥${amount}";
 
   static String m7(label) => "現在${label}はありません";
 
@@ -42,15 +46,33 @@ class MessageLookup extends MessageLookupByLibrary {
 
   static String m12(error) => "アップロードに失敗しました: ${error}";
 
+  static String m13(amount) => "注文金額: ${amount}";
+
+  static String m14(orderNo) => "注文: ${orderNo}";
+
+  static String m15(page) => "${page} ページ";
+
   static String m16(label) => "${label} は 1024 から 49151 の間でなければなりません";
 
+  static String m17(e) => "登録に失敗しました: ${e}";
+
   static String m18(count) => "${count} 項目が選択されています";
+
+  static String m19(e) => "確認コードの送信に失敗しました: ${e}";
 
   static String m20(date) => "プランは${date}に期限切れになりました。継続利用には更新してください";
 
   static String m21(days) => "プランは${days}日後に期限切れになります。タイムリーに更新してください";
 
   static String m22(days) => "サブスクリプションは${days}日後に期限切れになります";
+
+  static String m23(count) => "全 ${count} 件";
+
+  static String m24(amount) => "振替金額は ¥${amount} を超えられません";
+
+  static String m25(error) => "振替に失敗しました: ${error}";
+
+  static String m26(amount) => "振替成功！¥${amount} をウォレットへ移動しました";
 
   static String m27(version) => "現在のバージョン: ${version}";
 
@@ -62,13 +84,17 @@ class MessageLookup extends MessageLookupByLibrary {
 
   static String m31(label) => "${label}はURLである必要があります";
 
+  static String m32(email) => "確認コードを ${email} に送信しました。確認コードと新しいパスワードを入力してください";
+
   static String m33(error) => "送信に失敗しました: ${error}";
+
+  static String m34(amount) => "出金可能額: ${amount}";
 
   static String m35(amount) => "¥${amount}";
 
   static String m36(count, limit) => "${count} 台アクティブ · 上限 ${limit}";
 
-  static String m37(date) => "Expired on ${date}";
+  static String m37(date) => "${date} に期限切れ";
 
   static String m38(date) => "有効期限 ${date}";
 
@@ -76,13 +102,15 @@ class MessageLookup extends MessageLookupByLibrary {
 
   static String m40(count) => "${count} 件の候補";
 
-  static String m41(count) => "${count} 件のノード";
+  static String m41(message) => "サブスクリプションインポート: ${message}";
 
-  static String m42(error) => "交換失敗: ${error}";
+  static String m42(count) => "${count} 件のノード";
 
-  static String m43(days) => "利用済み通信量は ${days} 日後にリセットされます";
+  static String m43(error) => "交換失敗: ${error}";
 
-  static String m44(time) => "実行時間: ${time}";
+  static String m44(days) => "利用済み通信量は ${days} 日後にリセットされます";
+
+  static String m45(time) => "実行時間: ${time}";
 
   final messages = _notInlinedMessages(_notInlinedMessages);
   static Map<String, Function> _notInlinedMessages(_) => <String, Function>{
@@ -121,6 +149,9 @@ class MessageLookup extends MessageLookupByLibrary {
     ),
     "allowLan": MessageLookupByLibrary.simpleMessage("LANを許可"),
     "allowLanDesc": MessageLookupByLibrary.simpleMessage("LAN経由でのプロキシアクセスを許可"),
+    "alreadyHaveAccount": MessageLookupByLibrary.simpleMessage(
+      "すでにアカウントをお持ちですか？",
+    ),
     "app": MessageLookupByLibrary.simpleMessage("アプリ"),
     "appAccessControl": MessageLookupByLibrary.simpleMessage("アプリアクセス制御"),
     "appDesc": MessageLookupByLibrary.simpleMessage("アプリ関連設定の処理"),
@@ -142,6 +173,8 @@ class MessageLookup extends MessageLookupByLibrary {
     "autoSetSystemDns": MessageLookupByLibrary.simpleMessage("オートセットシステムDNS"),
     "autoUpdate": MessageLookupByLibrary.simpleMessage("自動更新"),
     "autoUpdateInterval": MessageLookupByLibrary.simpleMessage("自動更新間隔（分）"),
+    "availableCommission": MessageLookupByLibrary.simpleMessage("利用可能"),
+    "backToLogin": MessageLookupByLibrary.simpleMessage("ログインに戻る"),
     "backup": MessageLookupByLibrary.simpleMessage("バックアップ"),
     "backupAndRecovery": MessageLookupByLibrary.simpleMessage("バックアップと復元"),
     "backupAndRecoveryDesc": MessageLookupByLibrary.simpleMessage(
@@ -162,25 +195,46 @@ class MessageLookup extends MessageLookupByLibrary {
       "システムアプリの除外を解除",
     ),
     "cancelSelectAll": MessageLookupByLibrary.simpleMessage("全選択解除"),
+    "cannotGetWebUrl": MessageLookupByLibrary.simpleMessage(
+      "Web URLを取得できません。サポートにお問い合わせください",
+    ),
+    "cannotOpenBrowser": MessageLookupByLibrary.simpleMessage(
+      "ブラウザを開けません。手動でWebにアクセスしてください",
+    ),
     "checkError": MessageLookupByLibrary.simpleMessage("確認エラー"),
+    "checkNetwork": MessageLookupByLibrary.simpleMessage(
+      "ネットワークを確認して再試行してください",
+    ),
     "checkUpdate": MessageLookupByLibrary.simpleMessage("更新を確認"),
     "checkUpdateError": MessageLookupByLibrary.simpleMessage("アプリは最新版です"),
     "checking": MessageLookupByLibrary.simpleMessage("確認中..."),
     "clearData": MessageLookupByLibrary.simpleMessage("データを消去"),
     "clipboardExport": MessageLookupByLibrary.simpleMessage("クリップボードにエクスポート"),
     "clipboardImport": MessageLookupByLibrary.simpleMessage("クリップボードからインポート"),
+    "close": MessageLookupByLibrary.simpleMessage("閉じる"),
     "color": MessageLookupByLibrary.simpleMessage("カラー"),
     "colorSchemes": MessageLookupByLibrary.simpleMessage("カラースキーム"),
     "columns": MessageLookupByLibrary.simpleMessage("列"),
+    "commissionHistory": MessageLookupByLibrary.simpleMessage("コミッション履歴"),
+    "commissionRate": MessageLookupByLibrary.simpleMessage("率"),
+    "commissionSettled": MessageLookupByLibrary.simpleMessage(
+      "友だちの購読後にコミッションが確定します",
+    ),
     "compatible": MessageLookupByLibrary.simpleMessage("互換モード"),
     "compatibleDesc": MessageLookupByLibrary.simpleMessage(
       "有効化すると一部機能を失いますが、Clashの完全サポートを獲得",
+    ),
+    "complete": MessageLookupByLibrary.simpleMessage("完了"),
+    "completeWithdrawal": MessageLookupByLibrary.simpleMessage(
+      "Web版で完全な出金機能を利用できます",
     ),
     "configurationError": MessageLookupByLibrary.simpleMessage(
       "アプリケーション設定エラー、サポートにお問い合わせください",
     ),
     "confirm": MessageLookupByLibrary.simpleMessage("確認"),
     "confirmLogout": MessageLookupByLibrary.simpleMessage("終了確認"),
+    "confirmNewPassword": MessageLookupByLibrary.simpleMessage("新しいパスワードを確認"),
+    "confirmTransfer": MessageLookupByLibrary.simpleMessage("振替を確認"),
     "connected": MessageLookupByLibrary.simpleMessage("接続済み"),
     "connections": MessageLookupByLibrary.simpleMessage("接続"),
     "connectionsDesc": MessageLookupByLibrary.simpleMessage("現在の接続データを表示"),
@@ -189,8 +243,12 @@ class MessageLookup extends MessageLookupByLibrary {
     "contactSupport": MessageLookupByLibrary.simpleMessage("サポート"),
     "content": MessageLookupByLibrary.simpleMessage("内容"),
     "contentScheme": MessageLookupByLibrary.simpleMessage("コンテンツテーマ"),
+    "copiedToClipboard": MessageLookupByLibrary.simpleMessage(
+      "クリップボードにコピーしました",
+    ),
     "copy": MessageLookupByLibrary.simpleMessage("コピー"),
     "copyEnvVar": MessageLookupByLibrary.simpleMessage("環境変数をコピー"),
+    "copyInviteLink": MessageLookupByLibrary.simpleMessage("リンクをコピー"),
     "copyLink": MessageLookupByLibrary.simpleMessage("リンクをコピー"),
     "copySuccess": MessageLookupByLibrary.simpleMessage("コピー成功"),
     "core": MessageLookupByLibrary.simpleMessage("コア"),
@@ -198,6 +256,9 @@ class MessageLookup extends MessageLookupByLibrary {
     "country": MessageLookupByLibrary.simpleMessage("国"),
     "crashTest": MessageLookupByLibrary.simpleMessage("クラッシュテスト"),
     "create": MessageLookupByLibrary.simpleMessage("作成"),
+    "createAccount": MessageLookupByLibrary.simpleMessage("アカウントを作成"),
+    "credentialsSaved": MessageLookupByLibrary.simpleMessage("認証情報を保存しました"),
+    "currentCommissionRate": m0,
     "cut": MessageLookupByLibrary.simpleMessage("切り取り"),
     "dark": MessageLookupByLibrary.simpleMessage("ダーク"),
     "dashboard": MessageLookupByLibrary.simpleMessage("ダッシュボード"),
@@ -237,9 +298,18 @@ class MessageLookup extends MessageLookupByLibrary {
     "domainStatusUnavailable": MessageLookupByLibrary.simpleMessage("サービス利用不可"),
     "download": MessageLookupByLibrary.simpleMessage("ダウンロード"),
     "edit": MessageLookupByLibrary.simpleMessage("編集"),
+    "emailAddress": MessageLookupByLibrary.simpleMessage("メールアドレス"),
+    "emailVerificationCode": MessageLookupByLibrary.simpleMessage("メール確認コード"),
     "emptyTip": m3,
     "en": MessageLookupByLibrary.simpleMessage("英語"),
     "enableOverride": MessageLookupByLibrary.simpleMessage("上書きを有効化"),
+    "enterEmailForReset": MessageLookupByLibrary.simpleMessage(
+      "メールアドレスを入力してください。確認コードを送信します",
+    ),
+    "enterTransferAmount": MessageLookupByLibrary.simpleMessage("振替金額を入力"),
+    "enterTransferAmountError": MessageLookupByLibrary.simpleMessage(
+      "振替金額を入力してください",
+    ),
     "entries": MessageLookupByLibrary.simpleMessage(" エントリ"),
     "exclude": MessageLookupByLibrary.simpleMessage("最近のタスクから非表示"),
     "excludeDesc": MessageLookupByLibrary.simpleMessage(
@@ -270,17 +340,27 @@ class MessageLookup extends MessageLookupByLibrary {
     "fileIsUpdate": MessageLookupByLibrary.simpleMessage(
       "ファイルが変更されました。保存しますか？",
     ),
+    "fillInfoToRegister": MessageLookupByLibrary.simpleMessage(
+      "以下の情報を入力して登録を完了してください",
+    ),
     "filterSystemApp": MessageLookupByLibrary.simpleMessage("システムアプリを除外"),
     "findProcessMode": MessageLookupByLibrary.simpleMessage("プロセス検出"),
     "findProcessModeDesc": MessageLookupByLibrary.simpleMessage(
       "有効化するとパフォーマンスが若干低下します",
     ),
     "fontFamily": MessageLookupByLibrary.simpleMessage("フォントファミリー"),
+    "forgotPassword": MessageLookupByLibrary.simpleMessage("パスワードをお忘れですか"),
     "fourColumns": MessageLookupByLibrary.simpleMessage("4列"),
+    "friendInviteReward": MessageLookupByLibrary.simpleMessage(
+      "招待した友だちが支払うとコミッションを獲得できます",
+    ),
     "fruitSaladScheme": MessageLookupByLibrary.simpleMessage("フルーツサラダ"),
     "general": MessageLookupByLibrary.simpleMessage("一般"),
     "generalDesc": MessageLookupByLibrary.simpleMessage("一般設定を変更"),
     "generateInviteCode": MessageLookupByLibrary.simpleMessage("招待コードを生成"),
+    "generatingInviteCode": MessageLookupByLibrary.simpleMessage(
+      "招待コードを生成中...",
+    ),
     "geoData": MessageLookupByLibrary.simpleMessage("地域データ"),
     "geodataLoader": MessageLookupByLibrary.simpleMessage("Geo低メモリモード"),
     "geodataLoaderDesc": MessageLookupByLibrary.simpleMessage(
@@ -291,6 +371,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "global": MessageLookupByLibrary.simpleMessage("グローバルプロキシ"),
     "go": MessageLookupByLibrary.simpleMessage("移動"),
     "goDownload": MessageLookupByLibrary.simpleMessage("ダウンロードへ"),
+    "goToWeb": MessageLookupByLibrary.simpleMessage("Webへ移動"),
     "hasCacheChange": MessageLookupByLibrary.simpleMessage("変更をキャッシュしますか？"),
     "hostsDesc": MessageLookupByLibrary.simpleMessage("ホストを追加"),
     "hotkeyConflict": MessageLookupByLibrary.simpleMessage("ホットキー競合"),
@@ -299,6 +380,7 @@ class MessageLookup extends MessageLookupByLibrary {
       "キーボードでアプリを制御",
     ),
     "hours": MessageLookupByLibrary.simpleMessage("時間"),
+    "iUnderstand": MessageLookupByLibrary.simpleMessage("了解しました"),
     "icon": MessageLookupByLibrary.simpleMessage("アイコン"),
     "iconConfiguration": MessageLookupByLibrary.simpleMessage("アイコン設定"),
     "iconStyle": MessageLookupByLibrary.simpleMessage("アイコンスタイル"),
@@ -313,6 +395,30 @@ class MessageLookup extends MessageLookupByLibrary {
     "internet": MessageLookupByLibrary.simpleMessage("インターネット"),
     "interval": MessageLookupByLibrary.simpleMessage("インターバル"),
     "intranetIP": MessageLookupByLibrary.simpleMessage("イントラネットIP"),
+    "invalidTransferAmount": MessageLookupByLibrary.simpleMessage(
+      "有効な振替金額を入力してください",
+    ),
+    "invite": MessageLookupByLibrary.simpleMessage("招待"),
+    "inviteCode": MessageLookupByLibrary.simpleMessage("招待コード"),
+    "inviteCodeGenFailed": MessageLookupByLibrary.simpleMessage(
+      "招待コードの生成に失敗しました",
+    ),
+    "inviteCodeIncorrect": MessageLookupByLibrary.simpleMessage(
+      "招待コードが間違っている可能性があります。確認して再入力してください",
+    ),
+    "inviteCodeOptional": MessageLookupByLibrary.simpleMessage("招待コード（任意）"),
+    "inviteCodeRequired": MessageLookupByLibrary.simpleMessage("招待コードが必要です"),
+    "inviteCodeRequiredMessage": MessageLookupByLibrary.simpleMessage(
+      "登録には招待コードが必要です。登録済みユーザーに連絡して招待コードを取得してから登録してください。",
+    ),
+    "inviteLinkCopied": MessageLookupByLibrary.simpleMessage(
+      "招待リンクをコピーしました。友だちに共有してください",
+    ),
+    "inviteRegisterReward": MessageLookupByLibrary.simpleMessage(
+      "友だちを招待して登録・購読してもらうとコミッションを獲得できます",
+    ),
+    "inviteRules": MessageLookupByLibrary.simpleMessage("招待ルール"),
+    "inviteStats": MessageLookupByLibrary.simpleMessage("招待統計"),
     "ipcidr": MessageLookupByLibrary.simpleMessage("IPCIDR"),
     "ipv6Desc": MessageLookupByLibrary.simpleMessage("有効化するとIPv6トラフィックを受信可能"),
     "ipv6InboundDesc": MessageLookupByLibrary.simpleMessage("IPv6インバウンドを許可"),
@@ -328,6 +434,8 @@ class MessageLookup extends MessageLookupByLibrary {
     "light": MessageLookupByLibrary.simpleMessage("ライト"),
     "list": MessageLookupByLibrary.simpleMessage("リスト"),
     "listen": MessageLookupByLibrary.simpleMessage("リスン"),
+    "loadMore": MessageLookupByLibrary.simpleMessage("さらに読み込む"),
+    "loading": MessageLookupByLibrary.simpleMessage("読み込み中..."),
     "local": MessageLookupByLibrary.simpleMessage("ローカル"),
     "localBackupDesc": MessageLookupByLibrary.simpleMessage("ローカルにデータをバックアップ"),
     "localRecoveryDesc": MessageLookupByLibrary.simpleMessage("ファイルからデータを復元"),
@@ -335,6 +443,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "logcat": MessageLookupByLibrary.simpleMessage("ログキャット"),
     "logcatDesc": MessageLookupByLibrary.simpleMessage("無効化するとログエントリを非表示"),
     "loggedOutSuccess": MessageLookupByLibrary.simpleMessage("ログアウトしました"),
+    "loginNow": MessageLookupByLibrary.simpleMessage("今すぐログイン"),
     "logout": MessageLookupByLibrary.simpleMessage("ログアウト"),
     "logoutConfirmMsg": MessageLookupByLibrary.simpleMessage(
       "現在のアカウントから退出しますか？再度ログインが必要です。",
@@ -346,6 +455,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "loopback": MessageLookupByLibrary.simpleMessage("ループバック解除ツール"),
     "loopbackDesc": MessageLookupByLibrary.simpleMessage("UWPループバック解除用"),
     "loose": MessageLookupByLibrary.simpleMessage("疎"),
+    "maxTransferable": m6,
     "memoryInfo": MessageLookupByLibrary.simpleMessage("メモリ情報"),
     "messageTest": MessageLookupByLibrary.simpleMessage("メッセージテスト"),
     "messageTestTip": MessageLookupByLibrary.simpleMessage("これはメッセージです。"),
@@ -360,6 +470,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "monochromeScheme": MessageLookupByLibrary.simpleMessage("モノクローム"),
     "months": MessageLookupByLibrary.simpleMessage("月"),
     "more": MessageLookupByLibrary.simpleMessage("詳細"),
+    "myInviteQr": MessageLookupByLibrary.simpleMessage("マイ招待QR"),
     "name": MessageLookupByLibrary.simpleMessage("名前"),
     "nameSort": MessageLookupByLibrary.simpleMessage("名前順"),
     "nameserver": MessageLookupByLibrary.simpleMessage("ネームサーバー"),
@@ -373,10 +484,16 @@ class MessageLookup extends MessageLookupByLibrary {
     "networkDetection": MessageLookupByLibrary.simpleMessage("ネットワーク検出"),
     "networkSpeed": MessageLookupByLibrary.simpleMessage("ネットワーク速度"),
     "neutralScheme": MessageLookupByLibrary.simpleMessage("ニュートラル"),
+    "newMessageFromSupport": MessageLookupByLibrary.simpleMessage(
+      "サポートから新しいメッセージがあります",
+    ),
+    "newPassword": MessageLookupByLibrary.simpleMessage("新しいパスワード"),
+    "noCommissionRecord": MessageLookupByLibrary.simpleMessage("コミッション記録なし"),
     "noData": MessageLookupByLibrary.simpleMessage("データなし"),
     "noHotKey": MessageLookupByLibrary.simpleMessage("ホットキーなし"),
     "noIcon": MessageLookupByLibrary.simpleMessage("なし"),
     "noInfo": MessageLookupByLibrary.simpleMessage("情報なし"),
+    "noInvitationData": MessageLookupByLibrary.simpleMessage("招待データなし"),
     "noInviteCode": MessageLookupByLibrary.simpleMessage("招待コードはありません"),
     "noMoreInfoDesc": MessageLookupByLibrary.simpleMessage("追加情報なし"),
     "noNetwork": MessageLookupByLibrary.simpleMessage("ネットワークなし"),
@@ -455,7 +572,12 @@ class MessageLookup extends MessageLookupByLibrary {
     "onlyStatisticsProxyDesc": MessageLookupByLibrary.simpleMessage(
       "有効化するとプロキシトラフィックのみ統計",
     ),
+    "openWebFailed": MessageLookupByLibrary.simpleMessage(
+      "Webを開けませんでした。手動でアクセスしてください",
+    ),
     "options": MessageLookupByLibrary.simpleMessage("オプション"),
+    "orderAmount": m13,
+    "orderNumber": m14,
     "other": MessageLookupByLibrary.simpleMessage("その他"),
     "otherContributors": MessageLookupByLibrary.simpleMessage("その他の貢献者"),
     "outboundMode": MessageLookupByLibrary.simpleMessage("アウトバウンドモード"),
@@ -469,21 +591,82 @@ class MessageLookup extends MessageLookupByLibrary {
       "スクリプトモードでは有効になりません",
     ),
     "overrideOriginRules": MessageLookupByLibrary.simpleMessage("元のルールを上書き"),
+    "pageNumber": m15,
     "palette": MessageLookupByLibrary.simpleMessage("パレット"),
     "password": MessageLookupByLibrary.simpleMessage("パスワード"),
+    "passwordMin8Chars": MessageLookupByLibrary.simpleMessage(
+      "パスワードは8文字以上である必要があります",
+    ),
+    "passwordMinLength": MessageLookupByLibrary.simpleMessage(
+      "パスワードは6文字以上である必要があります",
+    ),
+    "passwordMismatch": MessageLookupByLibrary.simpleMessage("パスワードが一致しません"),
+    "passwordResetFailed": MessageLookupByLibrary.simpleMessage(
+      "パスワードのリセットに失敗しました",
+    ),
+    "passwordResetSuccessful": MessageLookupByLibrary.simpleMessage(
+      "パスワードをリセットしました。新しいパスワードでログインしてください",
+    ),
+    "passwordsDoNotMatch": MessageLookupByLibrary.simpleMessage("パスワードが一致しません"),
     "paste": MessageLookupByLibrary.simpleMessage("貼り付け"),
+    "pendingCommission": MessageLookupByLibrary.simpleMessage("保留中"),
     "plans": MessageLookupByLibrary.simpleMessage("プラン"),
     "pleaseBindWebDAV": MessageLookupByLibrary.simpleMessage(
       "WebDAVをバインドしてください",
     ),
+    "pleaseConfirmNewPassword": MessageLookupByLibrary.simpleMessage(
+      "新しいパスワードを再入力してください",
+    ),
+    "pleaseConfirmPassword": MessageLookupByLibrary.simpleMessage(
+      "パスワードを確認してください",
+    ),
+    "pleaseEnterAtLeast8CharsPassword": MessageLookupByLibrary.simpleMessage(
+      "8文字以上のパスワードを入力してください",
+    ),
+    "pleaseEnterEmail": MessageLookupByLibrary.simpleMessage(
+      "メールアドレスを入力してください",
+    ),
+    "pleaseEnterEmailAddress": MessageLookupByLibrary.simpleMessage(
+      "メールアドレスを入力してください",
+    ),
+    "pleaseEnterEmailVerificationCode": MessageLookupByLibrary.simpleMessage(
+      "メール確認コードを入力してください",
+    ),
+    "pleaseEnterInviteCode": MessageLookupByLibrary.simpleMessage(
+      "招待コードを入力してください",
+    ),
+    "pleaseEnterNewPassword": MessageLookupByLibrary.simpleMessage(
+      "新しいパスワードを入力してください",
+    ),
+    "pleaseEnterPassword": MessageLookupByLibrary.simpleMessage(
+      "パスワードを入力してください",
+    ),
     "pleaseEnterScriptName": MessageLookupByLibrary.simpleMessage(
       "スクリプト名を入力してください",
+    ),
+    "pleaseEnterValidEmail": MessageLookupByLibrary.simpleMessage(
+      "有効なメールアドレスを入力してください",
+    ),
+    "pleaseEnterValidEmailAddress": MessageLookupByLibrary.simpleMessage(
+      "有効なメールアドレスを入力してください",
+    ),
+    "pleaseEnterValidVerificationCode": MessageLookupByLibrary.simpleMessage(
+      "有効な確認コードを入力してください",
+    ),
+    "pleaseEnterVerificationCode": MessageLookupByLibrary.simpleMessage(
+      "メール確認コードを入力してください",
     ),
     "pleaseEnterWithdrawAccount": MessageLookupByLibrary.simpleMessage(
       "出金口座を入力してください",
     ),
+    "pleaseEnterYourEmailAddress": MessageLookupByLibrary.simpleMessage(
+      "メールアドレスを入力してください",
+    ),
     "pleaseInputAdminPassword": MessageLookupByLibrary.simpleMessage(
       "管理者パスワードを入力",
+    ),
+    "pleaseReEnterPassword": MessageLookupByLibrary.simpleMessage(
+      "パスワードを再入力してください",
     ),
     "pleaseSelectWithdrawMethod": MessageLookupByLibrary.simpleMessage(
       "出金方法を選択してください",
@@ -549,7 +732,14 @@ class MessageLookup extends MessageLookupByLibrary {
     "recoverySuccess": MessageLookupByLibrary.simpleMessage("復元成功"),
     "redirPort": MessageLookupByLibrary.simpleMessage("Redirポート"),
     "redo": MessageLookupByLibrary.simpleMessage("やり直す"),
+    "refresh": MessageLookupByLibrary.simpleMessage("更新"),
     "regExp": MessageLookupByLibrary.simpleMessage("正規表現"),
+    "registerAccount": MessageLookupByLibrary.simpleMessage("アカウント登録"),
+    "registerSuccessSaveCredentials": MessageLookupByLibrary.simpleMessage(
+      "登録成功 - 認証情報を保存中:",
+    ),
+    "registrationFailed": m17,
+    "rememberPassword": MessageLookupByLibrary.simpleMessage("パスワードを覚えていますか？"),
     "remote": MessageLookupByLibrary.simpleMessage("リモート"),
     "remoteBackupDesc": MessageLookupByLibrary.simpleMessage(
       "WebDAVにデータをバックアップ",
@@ -561,7 +751,9 @@ class MessageLookup extends MessageLookupByLibrary {
     "rename": MessageLookupByLibrary.simpleMessage("リネーム"),
     "requests": MessageLookupByLibrary.simpleMessage("リクエスト"),
     "requestsDesc": MessageLookupByLibrary.simpleMessage("最近のリクエスト記録を表示"),
+    "resendVerificationCode": MessageLookupByLibrary.simpleMessage("確認コードを再送信"),
     "reset": MessageLookupByLibrary.simpleMessage("リセット"),
+    "resetPassword": MessageLookupByLibrary.simpleMessage("パスワードをリセット"),
     "resetTip": MessageLookupByLibrary.simpleMessage("リセットを確定"),
     "resources": MessageLookupByLibrary.simpleMessage("リソース"),
     "resourcesDesc": MessageLookupByLibrary.simpleMessage("外部リソース関連情報"),
@@ -582,13 +774,22 @@ class MessageLookup extends MessageLookupByLibrary {
     "ruleTarget": MessageLookupByLibrary.simpleMessage("ルール対象"),
     "save": MessageLookupByLibrary.simpleMessage("保存"),
     "saveChanges": MessageLookupByLibrary.simpleMessage("変更を保存しますか？"),
+    "saveQr": MessageLookupByLibrary.simpleMessage("QRを保存"),
+    "saveQrCodeFeature": MessageLookupByLibrary.simpleMessage(
+      "QR保存機能は近日対応予定です",
+    ),
     "saveTip": MessageLookupByLibrary.simpleMessage("保存してもよろしいですか？"),
     "script": MessageLookupByLibrary.simpleMessage("スクリプト"),
     "search": MessageLookupByLibrary.simpleMessage("検索"),
     "seconds": MessageLookupByLibrary.simpleMessage("秒"),
     "selectAll": MessageLookupByLibrary.simpleMessage("すべて選択"),
+    "selectTheme": MessageLookupByLibrary.simpleMessage("テーマを選択"),
     "selected": MessageLookupByLibrary.simpleMessage("選択済み"),
     "selectedCountTitle": m18,
+    "sendCodeFailed": MessageLookupByLibrary.simpleMessage("確認コードの送信に失敗しました"),
+    "sendVerificationCode": MessageLookupByLibrary.simpleMessage("確認コードを送信"),
+    "sendVerificationCodeFailed": m19,
+    "setNewPassword": MessageLookupByLibrary.simpleMessage("新しいパスワードを設定"),
     "settings": MessageLookupByLibrary.simpleMessage("設定"),
     "show": MessageLookupByLibrary.simpleMessage("ウィンドウを表示"),
     "shrink": MessageLookupByLibrary.simpleMessage("縮小"),
@@ -642,6 +843,7 @@ class MessageLookup extends MessageLookupByLibrary {
     ),
     "subscriptionValid": MessageLookupByLibrary.simpleMessage("サブスクリプション有効"),
     "subscriptionValidDetail": m22,
+    "switchTheme": MessageLookupByLibrary.simpleMessage("テーマを切り替え"),
     "sync": MessageLookupByLibrary.simpleMessage("同期"),
     "system": MessageLookupByLibrary.simpleMessage("システム"),
     "systemApp": MessageLookupByLibrary.simpleMessage("システムアプリ"),
@@ -669,8 +871,22 @@ class MessageLookup extends MessageLookupByLibrary {
     "toggle": MessageLookupByLibrary.simpleMessage("トグル"),
     "tonalSpotScheme": MessageLookupByLibrary.simpleMessage("トーンスポット"),
     "tools": MessageLookupByLibrary.simpleMessage("ツール"),
+    "totalCommission": MessageLookupByLibrary.simpleMessage("収益"),
+    "totalInvites": MessageLookupByLibrary.simpleMessage("招待数"),
+    "totalRecords": m23,
     "tproxyPort": MessageLookupByLibrary.simpleMessage("Tproxyポート"),
     "trafficUsage": MessageLookupByLibrary.simpleMessage("トラフィック使用量"),
+    "transfer": MessageLookupByLibrary.simpleMessage("振替"),
+    "transferAmount": MessageLookupByLibrary.simpleMessage("振替金額"),
+    "transferAmountExceeded": m24,
+    "transferFailed": m25,
+    "transferNote": MessageLookupByLibrary.simpleMessage(
+      "振替後の残高はアプリ内購入に使用できます",
+    ),
+    "transferSuccess": MessageLookupByLibrary.simpleMessage("振替成功！"),
+    "transferSuccessMsg": m26,
+    "transferToWallet": MessageLookupByLibrary.simpleMessage("ウォレットへ振替"),
+    "transferring": MessageLookupByLibrary.simpleMessage("振替中..."),
     "tun": MessageLookupByLibrary.simpleMessage("仮想ネットワークアダプタ（TUN）"),
     "tunDesc": MessageLookupByLibrary.simpleMessage("管理者モードでのみ有効"),
     "twoColumns": MessageLookupByLibrary.simpleMessage("2列"),
@@ -712,9 +928,25 @@ class MessageLookup extends MessageLookupByLibrary {
     "urlTip": m31,
     "useHosts": MessageLookupByLibrary.simpleMessage("ホストを使用"),
     "useSystemHosts": MessageLookupByLibrary.simpleMessage("システムホストを使用"),
+    "userCenter": MessageLookupByLibrary.simpleMessage("ユーザーセンター"),
     "value": MessageLookupByLibrary.simpleMessage("値"),
+    "verificationCode": MessageLookupByLibrary.simpleMessage("確認コード"),
+    "verificationCode6Digits": MessageLookupByLibrary.simpleMessage(
+      "確認コードは6桁である必要があります",
+    ),
+    "verificationCodeSent": MessageLookupByLibrary.simpleMessage(
+      "確認コードをメールに送信しました。ご確認ください",
+    ),
+    "verificationCodeSentCheckEmail": MessageLookupByLibrary.simpleMessage(
+      "確認コードを送信しました。メールをご確認ください",
+    ),
+    "verificationCodeSentTo": m32,
     "vibrantScheme": MessageLookupByLibrary.simpleMessage("ビブラント"),
     "view": MessageLookupByLibrary.simpleMessage("表示"),
+    "viewHistory": MessageLookupByLibrary.simpleMessage("履歴を表示"),
+    "visitWebVersion": MessageLookupByLibrary.simpleMessage(
+      "出金するにはWeb版をご利用ください",
+    ),
     "vpnDesc": MessageLookupByLibrary.simpleMessage("VPN関連設定の変更"),
     "vpnEnableDesc": MessageLookupByLibrary.simpleMessage(
       "VpnService経由で全システムトラフィックをルーティング",
@@ -723,9 +955,13 @@ class MessageLookup extends MessageLookupByLibrary {
       "HTTPプロキシをVpnServiceに接続",
     ),
     "vpnTip": MessageLookupByLibrary.simpleMessage("変更はVPN再起動後に有効"),
+    "walletBalance": MessageLookupByLibrary.simpleMessage("残高"),
+    "walletDetails": MessageLookupByLibrary.simpleMessage("ウォレット詳細"),
     "webDAVConfiguration": MessageLookupByLibrary.simpleMessage("WebDAV設定"),
     "whitelistMode": MessageLookupByLibrary.simpleMessage("ホワイトリストモード"),
+    "withdraw": MessageLookupByLibrary.simpleMessage("出金"),
     "withdrawAccount": MessageLookupByLibrary.simpleMessage("出金口座"),
+    "withdrawCommission": MessageLookupByLibrary.simpleMessage("コミッションを出金"),
     "withdrawMethod": MessageLookupByLibrary.simpleMessage("出金方法"),
     "withdrawRequestSubmitted": MessageLookupByLibrary.simpleMessage(
       "出金申請を送信しました",
@@ -740,20 +976,21 @@ class MessageLookup extends MessageLookupByLibrary {
     "withdrawSubmissionNote": MessageLookupByLibrary.simpleMessage(
       "出金申請はチケットシステム経由で送信されます。管理者の確認をお待ちください。",
     ),
+    "withdrawableAmount": m34,
+    "withdrawalAvailable": MessageLookupByLibrary.simpleMessage(
+      "利用可能なコミッションは出金できます",
+    ),
+    "xboard": MessageLookupByLibrary.simpleMessage("ホーム"),
     "xboard24HourCustomerService": MessageLookupByLibrary.simpleMessage(
       "24時間カスタマーサービスサポート",
     ),
     "xboardAccountBalance": MessageLookupByLibrary.simpleMessage("残高"),
-    "xboardAccountBanned": MessageLookupByLibrary.simpleMessage(
-      "Account banned",
-    ),
+    "xboardAccountBanned": MessageLookupByLibrary.simpleMessage("アカウント停止中"),
     "xboardAccountBannedDetail": MessageLookupByLibrary.simpleMessage(
-      "This account has been banned. Please contact support.",
+      "このアカウントは停止されています。サポートにお問い合わせください。",
     ),
     "xboardAccountInfo": MessageLookupByLibrary.simpleMessage("マイアカウント"),
-    "xboardAccountManagement": MessageLookupByLibrary.simpleMessage(
-      "Account management",
-    ),
+    "xboardAccountManagement": MessageLookupByLibrary.simpleMessage("アカウント管理"),
     "xboardActualPaidAmount": MessageLookupByLibrary.simpleMessage("支払金額"),
     "xboardAddLinkToConfig": MessageLookupByLibrary.simpleMessage(
       "設定にこのサブスクリプションリンクを追加",
@@ -778,9 +1015,7 @@ class MessageLookup extends MessageLookupByLibrary {
     ),
     "xboardAutoTesting": MessageLookupByLibrary.simpleMessage("自動テスト中"),
     "xboardBack": MessageLookupByLibrary.simpleMessage("戻る"),
-    "xboardBalancePay": MessageLookupByLibrary.simpleMessage(
-      "Pay with balance",
-    ),
+    "xboardBalancePay": MessageLookupByLibrary.simpleMessage("残高で支払う"),
     "xboardBalanceWithAmount": m35,
     "xboardBrowserNotOpenedTip": MessageLookupByLibrary.simpleMessage(
       "ブラウザが自動的に開かない場合は、\\\"再開\\\"をクリックするかリンクを手動でコピーしてください",
@@ -792,21 +1027,22 @@ class MessageLookup extends MessageLookupByLibrary {
     "xboardBuyPlan": MessageLookupByLibrary.simpleMessage("プランを購入"),
     "xboardBuyoutPlan": MessageLookupByLibrary.simpleMessage("買い切りプラン"),
     "xboardCancel": MessageLookupByLibrary.simpleMessage("キャンセル"),
-    "xboardCancelOrder": MessageLookupByLibrary.simpleMessage("Cancel order"),
+    "xboardCancelOrder": MessageLookupByLibrary.simpleMessage("注文をキャンセル"),
     "xboardCancelPayment": MessageLookupByLibrary.simpleMessage("支払いキャンセル"),
-    "xboardCanceling": MessageLookupByLibrary.simpleMessage("Canceling..."),
-    "xboardChangePassword": MessageLookupByLibrary.simpleMessage(
-      "Change password",
-    ),
+    "xboardCanceling": MessageLookupByLibrary.simpleMessage("キャンセル中..."),
+    "xboardChangePassword": MessageLookupByLibrary.simpleMessage("パスワード変更"),
     "xboardCheckOrders": MessageLookupByLibrary.simpleMessage("注文を確認"),
     "xboardCheckPaymentFailed": MessageLookupByLibrary.simpleMessage(
       "支払い状況の確認に失敗しました",
     ),
     "xboardCheckPaymentStatus": MessageLookupByLibrary.simpleMessage(
-      "Check payment status",
+      "支払い状況を確認",
     ),
     "xboardCheckStatus": MessageLookupByLibrary.simpleMessage("ステータス確認"),
     "xboardChecking": MessageLookupByLibrary.simpleMessage("確認中"),
+    "xboardCheckingSubscription": MessageLookupByLibrary.simpleMessage(
+      "サブスクリプションを確認中",
+    ),
     "xboardCleaningOldConfig": MessageLookupByLibrary.simpleMessage(
       "古い設定をクリーン中",
     ),
@@ -832,16 +1068,12 @@ class MessageLookup extends MessageLookupByLibrary {
     "xboardConfigurationError": MessageLookupByLibrary.simpleMessage("設定エラー"),
     "xboardConfirm": MessageLookupByLibrary.simpleMessage("確認"),
     "xboardConfirmAction": MessageLookupByLibrary.simpleMessage("確認"),
-    "xboardConfirmChange": MessageLookupByLibrary.simpleMessage(
-      "Confirm change",
-    ),
+    "xboardConfirmChange": MessageLookupByLibrary.simpleMessage("変更を確認"),
     "xboardConfirmPassword": MessageLookupByLibrary.simpleMessage("パスワード確認"),
     "xboardConfirmPurchase": MessageLookupByLibrary.simpleMessage("購入を確認"),
-    "xboardConfirmRenewPlan": MessageLookupByLibrary.simpleMessage(
-      "Confirm renewal",
-    ),
+    "xboardConfirmRenewPlan": MessageLookupByLibrary.simpleMessage("更新を確認"),
     "xboardConfirmResetTraffic": MessageLookupByLibrary.simpleMessage(
-      "Confirm traffic reset",
+      "通信量リセットを確認",
     ),
     "xboardCongratulationsSubscriptionActivated":
         MessageLookupByLibrary.simpleMessage(
@@ -850,6 +1082,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "xboardConnectGlobalQualityNodes": MessageLookupByLibrary.simpleMessage(
       "グローバル品質ノードに接続",
     ),
+    "xboardConnecting": MessageLookupByLibrary.simpleMessage("接続中"),
     "xboardConnectionHealth": MessageLookupByLibrary.simpleMessage("接続ヘルス"),
     "xboardConnectionHealthSubtitle": MessageLookupByLibrary.simpleMessage(
       "サーバー、サブスクリプション、ノード、デバイスの状態を確認",
@@ -871,38 +1104,50 @@ class MessageLookup extends MessageLookupByLibrary {
     "xboardCopySubscriptionLinkAbove": MessageLookupByLibrary.simpleMessage(
       "上記のサブスクリプションリンクをコピー",
     ),
+    "xboardCoreStageCheckingHelper": MessageLookupByLibrary.simpleMessage(
+      "helper を確認中",
+    ),
+    "xboardCoreStageConnected": MessageLookupByLibrary.simpleMessage("接続済み"),
+    "xboardCoreStageCoreConnecting": MessageLookupByLibrary.simpleMessage(
+      "Core に再接続中",
+    ),
+    "xboardCoreStageFailed": MessageLookupByLibrary.simpleMessage("接続に失敗しました"),
+    "xboardCoreStageHelperReady": MessageLookupByLibrary.simpleMessage(
+      "helper を再利用済み",
+    ),
+    "xboardCoreStageStartingService": MessageLookupByLibrary.simpleMessage(
+      "サービスを起動中",
+    ),
+    "xboardCoreStageStopping": MessageLookupByLibrary.simpleMessage("切断中"),
+    "xboardCoreStageTunApplying": MessageLookupByLibrary.simpleMessage(
+      "TUN を適用中",
+    ),
     "xboardCouponExpired": MessageLookupByLibrary.simpleMessage("クーポンが期限切れです"),
     "xboardCouponNotYetActive": MessageLookupByLibrary.simpleMessage(
       "クーポンはまだ有効ではありません",
     ),
     "xboardCouponOptional": MessageLookupByLibrary.simpleMessage("クーポン（オプション）"),
-    "xboardCreateTicket": MessageLookupByLibrary.simpleMessage("Create ticket"),
+    "xboardCreateTicket": MessageLookupByLibrary.simpleMessage("チケットを作成"),
     "xboardCreateTicketHint": MessageLookupByLibrary.simpleMessage(
-      "Create a ticket to contact support.",
+      "サポートに連絡するためのチケットを作成します。",
     ),
-    "xboardCreatedAt": MessageLookupByLibrary.simpleMessage("Created at"),
+    "xboardCreatedAt": MessageLookupByLibrary.simpleMessage("作成日時"),
     "xboardCreatingOrder": MessageLookupByLibrary.simpleMessage("注文を作成中"),
     "xboardCreatingOrderPleaseWait": MessageLookupByLibrary.simpleMessage(
       "新しい注文を作成しています。お待ちください",
     ),
-    "xboardCurrentBalance": MessageLookupByLibrary.simpleMessage(
-      "Current balance",
-    ),
+    "xboardCurrentBalance": MessageLookupByLibrary.simpleMessage("現在の残高"),
     "xboardCurrentBusinessApi": MessageLookupByLibrary.simpleMessage(
       "現在の業務API",
     ),
     "xboardCurrentDomain": MessageLookupByLibrary.simpleMessage("現在のドメイン"),
     "xboardCurrentGateway": MessageLookupByLibrary.simpleMessage("現在のゲートウェイ"),
     "xboardCurrentNode": MessageLookupByLibrary.simpleMessage("現在のノード"),
-    "xboardCurrentPassword": MessageLookupByLibrary.simpleMessage(
-      "Current password",
-    ),
-    "xboardCurrentPlanBased": MessageLookupByLibrary.simpleMessage(
-      "Based on current plan",
-    ),
+    "xboardCurrentPassword": MessageLookupByLibrary.simpleMessage("現在のパスワード"),
+    "xboardCurrentPlanBased": MessageLookupByLibrary.simpleMessage("現在のプラン基準"),
     "xboardCurrentVersion": MessageLookupByLibrary.simpleMessage("現在のバージョン"),
     "xboardCustomRechargeAmount": MessageLookupByLibrary.simpleMessage(
-      "Custom recharge amount",
+      "任意のチャージ金額",
     ),
     "xboardDays": MessageLookupByLibrary.simpleMessage("日"),
     "xboardDeductedBalance": MessageLookupByLibrary.simpleMessage("差し引き残高"),
@@ -954,27 +1199,26 @@ class MessageLookup extends MessageLookupByLibrary {
     "xboardDiagnosticBundleCopied": MessageLookupByLibrary.simpleMessage(
       "診断パックをコピーしました",
     ),
-    "xboardDiscountAmount": MessageLookupByLibrary.simpleMessage(
-      "Discount amount",
-    ),
+    "xboardDisconnecting": MessageLookupByLibrary.simpleMessage("切断中"),
+    "xboardDiscountAmount": MessageLookupByLibrary.simpleMessage("割引額"),
     "xboardDiscounted": MessageLookupByLibrary.simpleMessage("割引済み"),
     "xboardDiscountedPrice": MessageLookupByLibrary.simpleMessage("割引後価格"),
-    "xboardDocsCenter": MessageLookupByLibrary.simpleMessage("Docs center"),
+    "xboardDocsCenter": MessageLookupByLibrary.simpleMessage("ドキュメントセンター"),
     "xboardDownloadingConfig": MessageLookupByLibrary.simpleMessage(
       "設定ファイルをダウンロード中",
     ),
     "xboardEmail": MessageLookupByLibrary.simpleMessage("メール"),
     "xboardEmailUnavailable": MessageLookupByLibrary.simpleMessage(
-      "Email unavailable",
+      "メールアドレスは使用できません",
     ),
     "xboardEnableTun": MessageLookupByLibrary.simpleMessage("TUNを有効化"),
     "xboardEnjoyFastNetworkExperience": MessageLookupByLibrary.simpleMessage(
       "高速ネットワーク体験をお楽しみください",
     ),
-    "xboardEnterAmount": MessageLookupByLibrary.simpleMessage("Enter amount"),
+    "xboardEnterAmount": MessageLookupByLibrary.simpleMessage("金額を入力"),
     "xboardEnterCouponCode": MessageLookupByLibrary.simpleMessage("クーポンコードを入力"),
     "xboardEnterGiftCardCode": MessageLookupByLibrary.simpleMessage(
-      "Enter gift card code",
+      "ギフトカードコードを入力",
     ),
     "xboardEnterGiftCardCodeHint": MessageLookupByLibrary.simpleMessage(
       "ギフトカード引換コードを入力",
@@ -1005,20 +1249,16 @@ class MessageLookup extends MessageLookupByLibrary {
       "グループリンク取得失敗",
     ),
     "xboardGettingIP": MessageLookupByLibrary.simpleMessage("取得中..."),
-    "xboardGiftCardCode": MessageLookupByLibrary.simpleMessage(
-      "Gift card code",
-    ),
+    "xboardGiftCardCode": MessageLookupByLibrary.simpleMessage("ギフトカードコード"),
     "xboardGiftCardCodeLabel": MessageLookupByLibrary.simpleMessage(
       "ギフトカードコード",
     ),
-    "xboardGiftCardRedeem": MessageLookupByLibrary.simpleMessage(
-      "Gift card redeem",
-    ),
+    "xboardGiftCardRedeem": MessageLookupByLibrary.simpleMessage("ギフトカード交換"),
     "xboardGiftCardRedeemTitle": MessageLookupByLibrary.simpleMessage(
       "ギフトカード交換",
     ),
     "xboardGlobalNodes": MessageLookupByLibrary.simpleMessage("グローバルノード"),
-    "xboardGlobalProxy": MessageLookupByLibrary.simpleMessage("Global proxy"),
+    "xboardGlobalProxy": MessageLookupByLibrary.simpleMessage("グローバルプロキシ"),
     "xboardGood": MessageLookupByLibrary.simpleMessage("良好"),
     "xboardGotIt": MessageLookupByLibrary.simpleMessage("了解"),
     "xboardGroup": MessageLookupByLibrary.simpleMessage("グループ"),
@@ -1027,10 +1267,40 @@ class MessageLookup extends MessageLookupByLibrary {
     ),
     "xboardHalfYearlyPayment": MessageLookupByLibrary.simpleMessage("半年払い"),
     "xboardHandleLater": MessageLookupByLibrary.simpleMessage("後で処理"),
+    "xboardHandlingFee": MessageLookupByLibrary.simpleMessage("手数料"),
+    "xboardHealthCoreRunning": MessageLookupByLibrary.simpleMessage("実行中"),
+    "xboardHealthDisabled": MessageLookupByLibrary.simpleMessage("無効"),
+    "xboardHealthDns": MessageLookupByLibrary.simpleMessage("DNS"),
+    "xboardHealthDnsCustom": MessageLookupByLibrary.simpleMessage(
+      "カスタム DNS を使用",
+    ),
+    "xboardHealthDnsDefault": MessageLookupByLibrary.simpleMessage(
+      "デフォルト DNS を使用",
+    ),
+    "xboardHealthEnabled": MessageLookupByLibrary.simpleMessage("有効"),
+    "xboardHealthHelper": MessageLookupByLibrary.simpleMessage("Helper"),
+    "xboardHealthHelperAvailable": MessageLookupByLibrary.simpleMessage("利用可能"),
+    "xboardHealthHelperCheckFailed": MessageLookupByLibrary.simpleMessage(
+      "確認に失敗しました",
+    ),
+    "xboardHealthHelperChecking": MessageLookupByLibrary.simpleMessage("確認中"),
+    "xboardHealthHelperNoResponse": MessageLookupByLibrary.simpleMessage(
+      "helper HTTP が応答していません",
+    ),
+    "xboardHealthHelperNotRequired": MessageLookupByLibrary.simpleMessage(
+      "このプラットフォームでは Windows helper は不要です",
+    ),
+    "xboardHealthHelperUnavailable": MessageLookupByLibrary.simpleMessage(
+      "利用不可",
+    ),
     "xboardHealthLastEvent": MessageLookupByLibrary.simpleMessage("最新イベント"),
+    "xboardHealthSubscriptionImport": m41,
+    "xboardHealthTunApplied": MessageLookupByLibrary.simpleMessage("適用済み"),
+    "xboardHealthTunPending": MessageLookupByLibrary.simpleMessage("適用待ち"),
     "xboardHealthy": MessageLookupByLibrary.simpleMessage("正常"),
-    "xboardHigh": MessageLookupByLibrary.simpleMessage("High"),
+    "xboardHigh": MessageLookupByLibrary.simpleMessage("高"),
     "xboardHighSpeedNetwork": MessageLookupByLibrary.simpleMessage("高速ネットワーク"),
+    "xboardHome": MessageLookupByLibrary.simpleMessage("ホーム"),
     "xboardImportFailed": MessageLookupByLibrary.simpleMessage("インポート失敗"),
     "xboardImportSuccess": MessageLookupByLibrary.simpleMessage("インポート成功"),
     "xboardImportingSubscription": MessageLookupByLibrary.simpleMessage(
@@ -1089,9 +1359,9 @@ class MessageLookup extends MessageLookupByLibrary {
     "xboardLogoutConfirmTitle": MessageLookupByLibrary.simpleMessage("終了確認"),
     "xboardLogoutFailed": MessageLookupByLibrary.simpleMessage("ログアウト失敗"),
     "xboardLogoutSuccess": MessageLookupByLibrary.simpleMessage("ログアウトしました"),
-    "xboardLow": MessageLookupByLibrary.simpleMessage("Low"),
+    "xboardLow": MessageLookupByLibrary.simpleMessage("低"),
     "xboardManageDevices": MessageLookupByLibrary.simpleMessage("デバイスを管理"),
-    "xboardMedium": MessageLookupByLibrary.simpleMessage("Medium"),
+    "xboardMedium": MessageLookupByLibrary.simpleMessage("中"),
     "xboardMine": MessageLookupByLibrary.simpleMessage("マイページ"),
     "xboardMissingRequiredField": MessageLookupByLibrary.simpleMessage(
       "必須フィールドが不足しています",
@@ -1099,9 +1369,9 @@ class MessageLookup extends MessageLookupByLibrary {
     "xboardMonthlyPayment": MessageLookupByLibrary.simpleMessage("月払い"),
     "xboardMonthlyRenewal": MessageLookupByLibrary.simpleMessage("毎月更新"),
     "xboardMustUpdate": MessageLookupByLibrary.simpleMessage("更新必須"),
-    "xboardMyServices": MessageLookupByLibrary.simpleMessage("My services"),
-    "xboardMyTickets": MessageLookupByLibrary.simpleMessage("My tickets"),
-    "xboardMyWallet": MessageLookupByLibrary.simpleMessage("My wallet"),
+    "xboardMyServices": MessageLookupByLibrary.simpleMessage("マイサービス"),
+    "xboardMyTickets": MessageLookupByLibrary.simpleMessage("マイチケット"),
+    "xboardMyWallet": MessageLookupByLibrary.simpleMessage("マイウォレット"),
     "xboardNeedsAttention": MessageLookupByLibrary.simpleMessage("確認が必要"),
     "xboardNetworkConnectionFailed": MessageLookupByLibrary.simpleMessage(
       "ネットワーク接続に失敗しました、ネットワーク設定を確認してください",
@@ -1125,36 +1395,27 @@ class MessageLookup extends MessageLookupByLibrary {
     "xboardNoInternetConnection": MessageLookupByLibrary.simpleMessage(
       "インターネット接続がありません、ネットワーク設定を確認してください",
     ),
-    "xboardNoOrderRecords": MessageLookupByLibrary.simpleMessage(
-      "No order records",
-    ),
-    "xboardNoPaymentMethods": MessageLookupByLibrary.simpleMessage(
-      "No payment methods",
-    ),
+    "xboardNoOrderRecords": MessageLookupByLibrary.simpleMessage("注文記録なし"),
+    "xboardNoPaymentMethods": MessageLookupByLibrary.simpleMessage("支払い方法なし"),
     "xboardNoSubscriptionInfo": MessageLookupByLibrary.simpleMessage(
       "サブスクリプション情報がありません",
     ),
     "xboardNoSubscriptionPlans": MessageLookupByLibrary.simpleMessage(
       "サブスクリプションプランがありません",
     ),
-    "xboardNoTicketRecords": MessageLookupByLibrary.simpleMessage(
-      "No ticket records",
-    ),
-    "xboardNoTrafficRecords": MessageLookupByLibrary.simpleMessage(
-      "No traffic records",
-    ),
-    "xboardNodeCount": m41,
+    "xboardNoTicketRecords": MessageLookupByLibrary.simpleMessage("チケット記録なし"),
+    "xboardNoTrafficRecords": MessageLookupByLibrary.simpleMessage("通信量記録なし"),
+    "xboardNodeCount": m42,
     "xboardNodeHealth": MessageLookupByLibrary.simpleMessage("ノード状態"),
     "xboardNodeName": MessageLookupByLibrary.simpleMessage("ノード名"),
-    "xboardNodeSelection": MessageLookupByLibrary.simpleMessage(
-      "Node selection",
-    ),
+    "xboardNodeSelection": MessageLookupByLibrary.simpleMessage("ノード選択"),
     "xboardNone": MessageLookupByLibrary.simpleMessage("なし"),
-    "xboardNormal": MessageLookupByLibrary.simpleMessage("Normal"),
+    "xboardNormal": MessageLookupByLibrary.simpleMessage("通常"),
     "xboardNotLoggedIn": MessageLookupByLibrary.simpleMessage("未ログイン"),
     "xboardOfflineButActive": MessageLookupByLibrary.simpleMessage(
       "オフライン・枠使用中",
     ),
+    "xboardOneClickRepair": MessageLookupByLibrary.simpleMessage("ワンクリック修復"),
     "xboardOneTimePayment": MessageLookupByLibrary.simpleMessage("一回払い"),
     "xboardOpenPaymentFailed": MessageLookupByLibrary.simpleMessage(
       "支払いページを開けませんでした",
@@ -1168,34 +1429,26 @@ class MessageLookup extends MessageLookupByLibrary {
     "xboardOrderCreationFailed": MessageLookupByLibrary.simpleMessage(
       "注文作成に失敗しました",
     ),
-    "xboardOrderInfo": MessageLookupByLibrary.simpleMessage("Order info"),
+    "xboardOrderInfo": MessageLookupByLibrary.simpleMessage("注文情報"),
     "xboardOrderLoadingFailed": MessageLookupByLibrary.simpleMessage(
-      "Failed to load order",
+      "注文の読み込みに失敗しました",
     ),
     "xboardOrderNotFound": MessageLookupByLibrary.simpleMessage("注文が見つかりません"),
     "xboardOrderNumber": MessageLookupByLibrary.simpleMessage("注文番号"),
-    "xboardOrderRecords": MessageLookupByLibrary.simpleMessage("Order records"),
-    "xboardOrderStatus": MessageLookupByLibrary.simpleMessage("Order status"),
+    "xboardOrderRecords": MessageLookupByLibrary.simpleMessage("注文履歴"),
+    "xboardOrderStatus": MessageLookupByLibrary.simpleMessage("注文状態"),
     "xboardOrderStatusCancelled": MessageLookupByLibrary.simpleMessage(
-      "Cancelled",
+      "キャンセル済み",
     ),
-    "xboardOrderStatusCompleted": MessageLookupByLibrary.simpleMessage(
-      "Completed",
-    ),
-    "xboardOrderStatusOffset": MessageLookupByLibrary.simpleMessage("Offset"),
-    "xboardOrderStatusOpening": MessageLookupByLibrary.simpleMessage(
-      "Activating",
-    ),
+    "xboardOrderStatusCompleted": MessageLookupByLibrary.simpleMessage("完了"),
+    "xboardOrderStatusOffset": MessageLookupByLibrary.simpleMessage("相殺"),
+    "xboardOrderStatusOpening": MessageLookupByLibrary.simpleMessage("有効化中"),
     "xboardOrderStatusPending": MessageLookupByLibrary.simpleMessage("支払い待ち"),
     "xboardOriginalPrice": MessageLookupByLibrary.simpleMessage("元の価格"),
-    "xboardPackageAmount": MessageLookupByLibrary.simpleMessage(
-      "Package amount",
-    ),
+    "xboardPackageAmount": MessageLookupByLibrary.simpleMessage("パッケージ金額"),
     "xboardPassword": MessageLookupByLibrary.simpleMessage("パスワード"),
-    "xboardPayNow": MessageLookupByLibrary.simpleMessage("Pay now"),
-    "xboardPayableAmount": MessageLookupByLibrary.simpleMessage(
-      "Payable amount",
-    ),
+    "xboardPayNow": MessageLookupByLibrary.simpleMessage("今すぐ支払う"),
+    "xboardPayableAmount": MessageLookupByLibrary.simpleMessage("支払金額"),
     "xboardPaymentCancelled": MessageLookupByLibrary.simpleMessage(
       "支払いがキャンセルされました",
     ),
@@ -1224,9 +1477,7 @@ class MessageLookup extends MessageLookupByLibrary {
         MessageLookupByLibrary.simpleMessage(
           "支払い方法が確認されました。支払いページにリダイレクトする準備中です",
         ),
-    "xboardPaymentMethods": MessageLookupByLibrary.simpleMessage(
-      "Payment methods",
-    ),
+    "xboardPaymentMethods": MessageLookupByLibrary.simpleMessage("支払い方法"),
     "xboardPaymentPageAutoOpened": MessageLookupByLibrary.simpleMessage(
       "1. 支払いページが自動的に開かれました",
     ),
@@ -1244,13 +1495,13 @@ class MessageLookup extends MessageLookupByLibrary {
     "xboardPendingOrdersHint": MessageLookupByLibrary.simpleMessage(
       "支払い済みで反映されない場合は、注文状態を更新してください。",
     ),
-    "xboardPeriod": MessageLookupByLibrary.simpleMessage("Period"),
-    "xboardPlanBased": MessageLookupByLibrary.simpleMessage("Based on plan"),
+    "xboardPeriod": MessageLookupByLibrary.simpleMessage("期間"),
+    "xboardPlanBased": MessageLookupByLibrary.simpleMessage("プラン基準"),
     "xboardPlanExpiryReminder": MessageLookupByLibrary.simpleMessage(
       "プラン期限切れメール通知",
     ),
     "xboardPlanInfo": MessageLookupByLibrary.simpleMessage("プラン情報"),
-    "xboardPlanName": MessageLookupByLibrary.simpleMessage("Plan name"),
+    "xboardPlanName": MessageLookupByLibrary.simpleMessage("プラン名"),
     "xboardPlanNotFound": MessageLookupByLibrary.simpleMessage("プランが見つかりません"),
     "xboardPlans": MessageLookupByLibrary.simpleMessage("ストア"),
     "xboardPleaseEnterGiftCardCode": MessageLookupByLibrary.simpleMessage(
@@ -1259,16 +1510,16 @@ class MessageLookup extends MessageLookupByLibrary {
     "xboardPleaseSelectPaymentPeriod": MessageLookupByLibrary.simpleMessage(
       "支払い期間を選択してください",
     ),
-    "xboardPleaseWait": MessageLookupByLibrary.simpleMessage("Please wait"),
+    "xboardPleaseWait": MessageLookupByLibrary.simpleMessage("しばらくお待ちください"),
     "xboardPoor": MessageLookupByLibrary.simpleMessage("悪い"),
     "xboardPreparingImport": MessageLookupByLibrary.simpleMessage("インポートを準備中"),
     "xboardPreparingPaymentPage": MessageLookupByLibrary.simpleMessage(
       "支払いページを準備中、まもなくリダイレクトします",
     ),
     "xboardPrevious": MessageLookupByLibrary.simpleMessage("前へ"),
-    "xboardPriority": MessageLookupByLibrary.simpleMessage("Priority"),
+    "xboardPriority": MessageLookupByLibrary.simpleMessage("優先度"),
     "xboardProcessing": MessageLookupByLibrary.simpleMessage("処理中..."),
-    "xboardProductInfo": MessageLookupByLibrary.simpleMessage("Product info"),
+    "xboardProductInfo": MessageLookupByLibrary.simpleMessage("商品情報"),
     "xboardProfessionalSupport": MessageLookupByLibrary.simpleMessage(
       "プロフェッショナルサポート",
     ),
@@ -1296,17 +1547,15 @@ class MessageLookup extends MessageLookupByLibrary {
     ),
     "xboardPurchaseTraffic": MessageLookupByLibrary.simpleMessage("トラフィックを購入"),
     "xboardQuarterlyPayment": MessageLookupByLibrary.simpleMessage("四半期払い"),
-    "xboardRecharge": MessageLookupByLibrary.simpleMessage("Recharge"),
-    "xboardRechargeBalance": MessageLookupByLibrary.simpleMessage(
-      "Recharge balance",
-    ),
+    "xboardRecharge": MessageLookupByLibrary.simpleMessage("チャージ"),
+    "xboardRechargeBalance": MessageLookupByLibrary.simpleMessage("残高をチャージ"),
     "xboardRechargeBalanceTip": MessageLookupByLibrary.simpleMessage(
-      "The recharge amount will be added to your account balance.",
+      "チャージ金額はアカウント残高に追加されます。",
     ),
-    "xboardRechargeNow": MessageLookupByLibrary.simpleMessage("Recharge now"),
+    "xboardRechargeNow": MessageLookupByLibrary.simpleMessage("今すぐチャージ"),
     "xboardRedeemFailed": MessageLookupByLibrary.simpleMessage("交換失敗"),
-    "xboardRedeemFailedWithError": m42,
-    "xboardRedeemNow": MessageLookupByLibrary.simpleMessage("Redeem now"),
+    "xboardRedeemFailedWithError": m43,
+    "xboardRedeemNow": MessageLookupByLibrary.simpleMessage("今すぐ交換"),
     "xboardRedeemSuccess": MessageLookupByLibrary.simpleMessage("交換成功"),
     "xboardRefresh": MessageLookupByLibrary.simpleMessage("更新"),
     "xboardRefreshStatus": MessageLookupByLibrary.simpleMessage("状態を更新"),
@@ -1336,17 +1585,18 @@ class MessageLookup extends MessageLookupByLibrary {
     "xboardReopenPaymentPageTip": MessageLookupByLibrary.simpleMessage(
       "再度開くには、下の\\\"再開\\\"ボタンをクリックしてください",
     ),
+    "xboardRepairCompleted": MessageLookupByLibrary.simpleMessage("修復完了"),
     "xboardResetCurrentPlanTraffic": MessageLookupByLibrary.simpleMessage(
-      "Reset current plan traffic",
+      "現在のプラン通信量をリセット",
     ),
     "xboardResetTraffic": MessageLookupByLibrary.simpleMessage("トラフィックをリセット"),
     "xboardResetTrafficByPlanCycle": MessageLookupByLibrary.simpleMessage(
-      "Reset traffic by plan cycle",
+      "プラン周期で通信量をリセット",
     ),
     "xboardResetTrafficConfirmContent": MessageLookupByLibrary.simpleMessage(
       "この操作により使用済みトラフィックがリセットされますが、プラン期間は延長されません。続行しますか？",
     ),
-    "xboardResetTrafficInDays": m43,
+    "xboardResetTrafficInDays": m44,
     "xboardResetTrafficToday": MessageLookupByLibrary.simpleMessage(
       "利用済み通信量は本日リセットされました",
     ),
@@ -1357,14 +1607,17 @@ class MessageLookup extends MessageLookupByLibrary {
       "3. 支払い後にアプリに戻ると、システムが自動検出します",
     ),
     "xboardRunDiagnosis": MessageLookupByLibrary.simpleMessage("チェックを実行"),
-    "xboardRunningTime": m44,
+    "xboardRunningTime": m45,
     "xboardSecureEncryption": MessageLookupByLibrary.simpleMessage("セキュア暗号化"),
+    "xboardSelectPaymentMethod": MessageLookupByLibrary.simpleMessage(
+      "支払い方法を選択",
+    ),
     "xboardSelectPaymentPeriod": MessageLookupByLibrary.simpleMessage(
       "支払い期間を選択",
     ),
     "xboardSelectPeriod": MessageLookupByLibrary.simpleMessage("購入期間を選択してください"),
     "xboardSelectRechargeAmount": MessageLookupByLibrary.simpleMessage(
-      "Select recharge amount",
+      "チャージ金額を選択",
     ),
     "xboardSendVerificationCode": MessageLookupByLibrary.simpleMessage(
       "認証コードを送信",
@@ -1376,16 +1629,14 @@ class MessageLookup extends MessageLookupByLibrary {
     "xboardSmartLatencyStarted": MessageLookupByLibrary.simpleMessage(
       "スマート遅延テストを開始しました",
     ),
-    "xboardSmartRouting": MessageLookupByLibrary.simpleMessage("Smart routing"),
-    "xboardSoftwareSettings": MessageLookupByLibrary.simpleMessage(
-      "Software settings",
-    ),
+    "xboardSmartRouting": MessageLookupByLibrary.simpleMessage("スマートルーティング"),
+    "xboardSoftwareSettings": MessageLookupByLibrary.simpleMessage("ソフトウェア設定"),
     "xboardSpeedLimit": MessageLookupByLibrary.simpleMessage("速度制限"),
     "xboardStartProxy": MessageLookupByLibrary.simpleMessage("プロキシ開始"),
     "xboardStop": MessageLookupByLibrary.simpleMessage("停止"),
     "xboardStopProxy": MessageLookupByLibrary.simpleMessage("プロキシ停止"),
-    "xboardSubmitTicket": MessageLookupByLibrary.simpleMessage("Submit ticket"),
-    "xboardSubmitting": MessageLookupByLibrary.simpleMessage("Submitting..."),
+    "xboardSubmitTicket": MessageLookupByLibrary.simpleMessage("チケットを送信"),
+    "xboardSubmitting": MessageLookupByLibrary.simpleMessage("送信中..."),
     "xboardSubscription": MessageLookupByLibrary.simpleMessage("サブスクリプション"),
     "xboardSubscriptionCopied": MessageLookupByLibrary.simpleMessage(
       "サブスクリプションリンクをクリップボードにコピーしました",
@@ -1420,27 +1671,23 @@ class MessageLookup extends MessageLookupByLibrary {
       "アカウントのサブスクリプションを同期中...",
     ),
     "xboardTestCurrentNode": MessageLookupByLibrary.simpleMessage("現在のノードをテスト"),
-    "xboardTestLatency": MessageLookupByLibrary.simpleMessage("Test latency"),
+    "xboardTestLatency": MessageLookupByLibrary.simpleMessage("遅延をテスト"),
     "xboardTesting": MessageLookupByLibrary.simpleMessage("テスト中"),
     "xboardThirtySixMonthCycle": MessageLookupByLibrary.simpleMessage(
       "36ヶ月サイクル",
     ),
     "xboardThreeMonthCycle": MessageLookupByLibrary.simpleMessage("3ヶ月サイクル"),
     "xboardThreeYearPayment": MessageLookupByLibrary.simpleMessage("3年払い"),
-    "xboardTicketClosed": MessageLookupByLibrary.simpleMessage("Closed"),
-    "xboardTicketDescription": MessageLookupByLibrary.simpleMessage(
-      "Description",
-    ),
+    "xboardTicketClosed": MessageLookupByLibrary.simpleMessage("クローズ済み"),
+    "xboardTicketDescription": MessageLookupByLibrary.simpleMessage("説明"),
     "xboardTicketDescriptionHint": MessageLookupByLibrary.simpleMessage(
-      "Describe your issue in detail",
+      "問題を詳しく説明してください",
     ),
-    "xboardTicketPendingReply": MessageLookupByLibrary.simpleMessage(
-      "Pending reply",
-    ),
-    "xboardTicketReplied": MessageLookupByLibrary.simpleMessage("Replied"),
-    "xboardTicketTitle": MessageLookupByLibrary.simpleMessage("Ticket title"),
+    "xboardTicketPendingReply": MessageLookupByLibrary.simpleMessage("返信待ち"),
+    "xboardTicketReplied": MessageLookupByLibrary.simpleMessage("返信済み"),
+    "xboardTicketTitle": MessageLookupByLibrary.simpleMessage("チケットタイトル"),
     "xboardTicketTitleHint": MessageLookupByLibrary.simpleMessage(
-      "Enter ticket title",
+      "チケットタイトルを入力",
     ),
     "xboardTimeout": MessageLookupByLibrary.simpleMessage("タイムアウト"),
     "xboardTokenExpiredContent": MessageLookupByLibrary.simpleMessage(
@@ -1448,12 +1695,10 @@ class MessageLookup extends MessageLookupByLibrary {
     ),
     "xboardTokenExpiredTitle": MessageLookupByLibrary.simpleMessage("ログイン期限切れ"),
     "xboardToolsSettings": MessageLookupByLibrary.simpleMessage("ツール設定"),
-    "xboardTotal": MessageLookupByLibrary.simpleMessage("Total"),
+    "xboardTotal": MessageLookupByLibrary.simpleMessage("合計"),
     "xboardTotalTraffic": MessageLookupByLibrary.simpleMessage("合計"),
     "xboardTraffic": MessageLookupByLibrary.simpleMessage("トラフィック"),
-    "xboardTrafficDetails": MessageLookupByLibrary.simpleMessage(
-      "Traffic details",
-    ),
+    "xboardTrafficDetails": MessageLookupByLibrary.simpleMessage("通信量詳細"),
     "xboardTrafficExhausted": MessageLookupByLibrary.simpleMessage(
       "トラフィックを使い切りました",
     ),
@@ -1482,29 +1727,25 @@ class MessageLookup extends MessageLookupByLibrary {
     "xboardUnknownErrorRetry": MessageLookupByLibrary.simpleMessage(
       "不明なエラー、再試行してください",
     ),
-    "xboardUnknownPeriod": MessageLookupByLibrary.simpleMessage(
-      "Unknown period",
-    ),
-    "xboardUnknownPlan": MessageLookupByLibrary.simpleMessage("Unknown plan"),
+    "xboardUnknownPeriod": MessageLookupByLibrary.simpleMessage("不明な期間"),
+    "xboardUnknownPlan": MessageLookupByLibrary.simpleMessage("不明なプラン"),
     "xboardUnknownUser": MessageLookupByLibrary.simpleMessage("不明なユーザー"),
     "xboardUnlimited": MessageLookupByLibrary.simpleMessage("無制限"),
-    "xboardUnlimitedSpeed": MessageLookupByLibrary.simpleMessage(
-      "Unlimited speed",
-    ),
+    "xboardUnlimitedSpeed": MessageLookupByLibrary.simpleMessage("速度無制限"),
     "xboardUnselected": MessageLookupByLibrary.simpleMessage("未選択"),
     "xboardUnsupportedCouponType": MessageLookupByLibrary.simpleMessage(
       "サポートされていないクーポンタイプ",
     ),
     "xboardUpdateContent": MessageLookupByLibrary.simpleMessage("更新内容："),
     "xboardUpdateLater": MessageLookupByLibrary.simpleMessage("後で更新"),
-    "xboardUpdateNodes": MessageLookupByLibrary.simpleMessage("Update nodes"),
+    "xboardUpdateNodes": MessageLookupByLibrary.simpleMessage("ノードを更新"),
     "xboardUpdateNow": MessageLookupByLibrary.simpleMessage("今すぐ更新"),
     "xboardUpdateSubscriptionRegularly": MessageLookupByLibrary.simpleMessage(
       "定期的にサブスクリプションを更新して最新のノードを取得",
     ),
-    "xboardUploadImage": MessageLookupByLibrary.simpleMessage("Upload image"),
+    "xboardUploadImage": MessageLookupByLibrary.simpleMessage("画像をアップロード"),
     "xboardUsageInstructions": MessageLookupByLibrary.simpleMessage("使用方法"),
-    "xboardUseBalance": MessageLookupByLibrary.simpleMessage("Use balance"),
+    "xboardUseBalance": MessageLookupByLibrary.simpleMessage("残高を使用"),
     "xboardUsed": MessageLookupByLibrary.simpleMessage("使用済み"),
     "xboardUsedTraffic": MessageLookupByLibrary.simpleMessage("使用済み"),
     "xboardValidatingConfigFormat": MessageLookupByLibrary.simpleMessage(

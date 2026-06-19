@@ -352,7 +352,8 @@ class ListItem<T> extends StatelessWidget {
       final optionsDelegate = delegate as OptionsDelegate<T>;
       return _buildListTile(
         onTap: () async {
-          final value = await globalState.showCommonDialog<T>(
+          final result =
+              await globalState.showCommonDialog<OptionsDialogResult<T?>>(
             child: OptionsDialog<T>(
               title: optionsDelegate.title,
               options: optionsDelegate.options,
@@ -360,7 +361,8 @@ class ListItem<T> extends StatelessWidget {
               value: optionsDelegate.value,
             ),
           );
-          optionsDelegate.onChanged(value);
+          if (result == null) return;
+          optionsDelegate.onChanged(result.value);
         },
       );
     }

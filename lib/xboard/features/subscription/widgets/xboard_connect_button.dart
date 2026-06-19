@@ -160,14 +160,16 @@ class _XBoardConnectButtonState extends ConsumerState<XBoardConnectButton>
   }
 
   String _busyLabel(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     if (_isCheckingSubscription) {
-      return '检查订阅';
+      return l10n.xboardCheckingSubscription;
     }
     final status = globalState.coreSwitchStatusNotifier.value;
-    if (status.stage != CoreSwitchStage.idle && status.label.isNotEmpty) {
-      return status.label;
+    final statusLabel = status.localizedLabel(l10n);
+    if (status.stage != CoreSwitchStage.idle && statusLabel.isNotEmpty) {
+      return statusLabel;
     }
-    return isStart ? '正在断开' : '正在连接';
+    return isStart ? l10n.xboardDisconnecting : l10n.xboardConnecting;
   }
 
   void _openPlans() {

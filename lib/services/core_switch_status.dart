@@ -1,3 +1,5 @@
+import 'package:fl_clash/l10n/l10n.dart';
+
 enum CoreSwitchStage {
   idle,
   checkingHelper,
@@ -38,6 +40,23 @@ class CoreSwitchStatus {
       CoreSwitchStage.connected => '已连接',
       CoreSwitchStage.stopping => '正在断开',
       CoreSwitchStage.failed => '连接失败',
+    };
+  }
+
+  String localizedLabel(AppLocalizations l10n) {
+    if (message?.trim().isNotEmpty == true) {
+      return message!.trim();
+    }
+    return switch (stage) {
+      CoreSwitchStage.idle => '',
+      CoreSwitchStage.checkingHelper => l10n.xboardCoreStageCheckingHelper,
+      CoreSwitchStage.startingService => l10n.xboardCoreStageStartingService,
+      CoreSwitchStage.helperReady => l10n.xboardCoreStageHelperReady,
+      CoreSwitchStage.coreConnecting => l10n.xboardCoreStageCoreConnecting,
+      CoreSwitchStage.tunApplying => l10n.xboardCoreStageTunApplying,
+      CoreSwitchStage.connected => l10n.xboardCoreStageConnected,
+      CoreSwitchStage.stopping => l10n.xboardCoreStageStopping,
+      CoreSwitchStage.failed => l10n.xboardCoreStageFailed,
     };
   }
 

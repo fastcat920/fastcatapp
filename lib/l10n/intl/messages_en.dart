@@ -109,13 +109,15 @@ class MessageLookup extends MessageLookupByLibrary {
 
   static String m40(count) => "${count} candidates";
 
-  static String m41(count) => "${count} nodes";
+  static String m41(message) => "Subscription import: ${message}";
 
-  static String m42(error) => "Redeem failed: ${error}";
+  static String m42(count) => "${count} nodes";
 
-  static String m43(days) => "Used traffic will reset in ${days} days";
+  static String m43(error) => "Redeem failed: ${error}";
 
-  static String m44(time) => "Running time: ${time}";
+  static String m44(days) => "Used traffic will reset in ${days} days";
+
+  static String m45(time) => "Running time: ${time}";
 
   final messages = _notInlinedMessages(_notInlinedMessages);
   static Map<String, Function> _notInlinedMessages(_) => <String, Function>{
@@ -1288,6 +1290,9 @@ class MessageLookup extends MessageLookupByLibrary {
     ),
     "xboardCheckStatus": MessageLookupByLibrary.simpleMessage("Check status"),
     "xboardChecking": MessageLookupByLibrary.simpleMessage("Checking"),
+    "xboardCheckingSubscription": MessageLookupByLibrary.simpleMessage(
+      "Checking subscription",
+    ),
     "xboardCleaningOldConfig": MessageLookupByLibrary.simpleMessage(
       "Cleaning old configuration",
     ),
@@ -1339,6 +1344,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "xboardConnectGlobalQualityNodes": MessageLookupByLibrary.simpleMessage(
       "Connect to global quality nodes",
     ),
+    "xboardConnecting": MessageLookupByLibrary.simpleMessage("Connecting"),
     "xboardConnectionHealth": MessageLookupByLibrary.simpleMessage(
       "Connection Health",
     ),
@@ -1363,6 +1369,30 @@ class MessageLookup extends MessageLookupByLibrary {
     "xboardCopyPaymentLink": MessageLookupByLibrary.simpleMessage("Copy Link"),
     "xboardCopySubscriptionLinkAbove": MessageLookupByLibrary.simpleMessage(
       "Copy the subscription link above",
+    ),
+    "xboardCoreStageCheckingHelper": MessageLookupByLibrary.simpleMessage(
+      "Checking helper",
+    ),
+    "xboardCoreStageConnected": MessageLookupByLibrary.simpleMessage(
+      "Connected",
+    ),
+    "xboardCoreStageCoreConnecting": MessageLookupByLibrary.simpleMessage(
+      "Reconnecting core",
+    ),
+    "xboardCoreStageFailed": MessageLookupByLibrary.simpleMessage(
+      "Connection failed",
+    ),
+    "xboardCoreStageHelperReady": MessageLookupByLibrary.simpleMessage(
+      "Helper reused",
+    ),
+    "xboardCoreStageStartingService": MessageLookupByLibrary.simpleMessage(
+      "Starting service",
+    ),
+    "xboardCoreStageStopping": MessageLookupByLibrary.simpleMessage(
+      "Disconnecting",
+    ),
+    "xboardCoreStageTunApplying": MessageLookupByLibrary.simpleMessage(
+      "Applying TUN",
     ),
     "xboardCouponExpired": MessageLookupByLibrary.simpleMessage(
       "Coupon expired",
@@ -1475,6 +1505,9 @@ class MessageLookup extends MessageLookupByLibrary {
     "xboardDiagnosticBundleCopied": MessageLookupByLibrary.simpleMessage(
       "Diagnostics copied",
     ),
+    "xboardDisconnecting": MessageLookupByLibrary.simpleMessage(
+      "Disconnecting",
+    ),
     "xboardDiscountAmount": MessageLookupByLibrary.simpleMessage(
       "Discount amount",
     ),
@@ -1559,8 +1592,42 @@ class MessageLookup extends MessageLookupByLibrary {
     ),
     "xboardHandleLater": MessageLookupByLibrary.simpleMessage("Handle later"),
     "xboardHandlingFee": MessageLookupByLibrary.simpleMessage("Handling fee"),
+    "xboardHealthCoreRunning": MessageLookupByLibrary.simpleMessage("Running"),
+    "xboardHealthDisabled": MessageLookupByLibrary.simpleMessage("Disabled"),
+    "xboardHealthDns": MessageLookupByLibrary.simpleMessage("DNS"),
+    "xboardHealthDnsCustom": MessageLookupByLibrary.simpleMessage(
+      "Using custom DNS",
+    ),
+    "xboardHealthDnsDefault": MessageLookupByLibrary.simpleMessage(
+      "Using default DNS",
+    ),
+    "xboardHealthEnabled": MessageLookupByLibrary.simpleMessage("Enabled"),
+    "xboardHealthHelper": MessageLookupByLibrary.simpleMessage("Helper"),
+    "xboardHealthHelperAvailable": MessageLookupByLibrary.simpleMessage(
+      "Available",
+    ),
+    "xboardHealthHelperCheckFailed": MessageLookupByLibrary.simpleMessage(
+      "Check failed",
+    ),
+    "xboardHealthHelperChecking": MessageLookupByLibrary.simpleMessage(
+      "Checking",
+    ),
+    "xboardHealthHelperNoResponse": MessageLookupByLibrary.simpleMessage(
+      "Helper HTTP is not responding",
+    ),
+    "xboardHealthHelperNotRequired": MessageLookupByLibrary.simpleMessage(
+      "Windows helper is not required on this platform",
+    ),
+    "xboardHealthHelperUnavailable": MessageLookupByLibrary.simpleMessage(
+      "Unavailable",
+    ),
     "xboardHealthLastEvent": MessageLookupByLibrary.simpleMessage(
       "Latest event",
+    ),
+    "xboardHealthSubscriptionImport": m41,
+    "xboardHealthTunApplied": MessageLookupByLibrary.simpleMessage("Applied"),
+    "xboardHealthTunPending": MessageLookupByLibrary.simpleMessage(
+      "Waiting to apply",
     ),
     "xboardHealthy": MessageLookupByLibrary.simpleMessage("Healthy"),
     "xboardHigh": MessageLookupByLibrary.simpleMessage("High"),
@@ -1698,7 +1765,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "xboardNoTrafficRecords": MessageLookupByLibrary.simpleMessage(
       "No traffic records",
     ),
-    "xboardNodeCount": m41,
+    "xboardNodeCount": m42,
     "xboardNodeHealth": MessageLookupByLibrary.simpleMessage("Node status"),
     "xboardNodeName": MessageLookupByLibrary.simpleMessage("Node Name"),
     "xboardNodeSelection": MessageLookupByLibrary.simpleMessage(
@@ -1709,6 +1776,9 @@ class MessageLookup extends MessageLookupByLibrary {
     "xboardNotLoggedIn": MessageLookupByLibrary.simpleMessage("Not Logged In"),
     "xboardOfflineButActive": MessageLookupByLibrary.simpleMessage(
       "Offline, using slot",
+    ),
+    "xboardOneClickRepair": MessageLookupByLibrary.simpleMessage(
+      "One-click repair",
     ),
     "xboardOneTimePayment": MessageLookupByLibrary.simpleMessage("One-time"),
     "xboardOpenPaymentFailed": MessageLookupByLibrary.simpleMessage(
@@ -1888,7 +1958,7 @@ class MessageLookup extends MessageLookupByLibrary {
     ),
     "xboardRechargeNow": MessageLookupByLibrary.simpleMessage("Recharge now"),
     "xboardRedeemFailed": MessageLookupByLibrary.simpleMessage("Redeem failed"),
-    "xboardRedeemFailedWithError": m42,
+    "xboardRedeemFailedWithError": m43,
     "xboardRedeemNow": MessageLookupByLibrary.simpleMessage("Redeem now"),
     "xboardRedeemSuccess": MessageLookupByLibrary.simpleMessage(
       "Redeem successful",
@@ -1931,6 +2001,9 @@ class MessageLookup extends MessageLookupByLibrary {
     "xboardReopenPaymentPageTip": MessageLookupByLibrary.simpleMessage(
       "To reopen, click the \\\"Reopen\\\" button below",
     ),
+    "xboardRepairCompleted": MessageLookupByLibrary.simpleMessage(
+      "Repair completed",
+    ),
     "xboardResetCurrentPlanTraffic": MessageLookupByLibrary.simpleMessage(
       "Reset current plan traffic",
     ),
@@ -1941,7 +2014,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "xboardResetTrafficConfirmContent": MessageLookupByLibrary.simpleMessage(
       "This will reset the used traffic, but will not extend the plan duration. Continue?",
     ),
-    "xboardResetTrafficInDays": m43,
+    "xboardResetTrafficInDays": m44,
     "xboardResetTrafficToday": MessageLookupByLibrary.simpleMessage(
       "Used traffic has been reset today",
     ),
@@ -1952,7 +2025,7 @@ class MessageLookup extends MessageLookupByLibrary {
       "3. Return to app after payment, system will detect automatically",
     ),
     "xboardRunDiagnosis": MessageLookupByLibrary.simpleMessage("Run check"),
-    "xboardRunningTime": m44,
+    "xboardRunningTime": m45,
     "xboardSecureEncryption": MessageLookupByLibrary.simpleMessage(
       "Secure encryption",
     ),

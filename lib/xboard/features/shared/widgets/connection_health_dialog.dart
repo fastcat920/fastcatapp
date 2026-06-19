@@ -59,10 +59,13 @@ class ConnectionHealthDialog extends ConnectionHealthView {
   static Future<void> show(BuildContext context) {
     return Navigator.of(context).push<void>(
       MaterialPageRoute(
-        builder: (_) => Scaffold(
-          appBar: AppBar(title: Text(appLocalizations.xboardConnectionHealth)),
-          body: const ConnectionHealthView(),
-        ),
+        builder: (context) {
+          final l10n = AppLocalizations.of(context);
+          return Scaffold(
+            appBar: AppBar(title: Text(l10n.xboardConnectionHealth)),
+            body: const ConnectionHealthView(),
+          );
+        },
       ),
     );
   }
@@ -179,7 +182,7 @@ class ConnectionHealthView extends ConsumerWidget {
             if (subscriptionStatus?.getDetailMessage(context) != null)
               subscriptionStatus!.getDetailMessage(context)!,
             if (importState.message?.trim().isNotEmpty == true)
-              '订阅导入: ${importState.message}',
+              l10n.xboardHealthSubscriptionImport(importState.message!),
           ].join('\n'),
           healthy: subscriptionOk && !importState.isImporting,
         ),
@@ -198,31 +201,42 @@ class ConnectionHealthView extends ConsumerWidget {
         _HelperHealthRow(summary: helperStatus),
         _HealthRow(
           icon: Icons.power_settings_new,
-          title: 'Core',
-          value: globalState.appState.runTime != null ? '运行中' : '未连接',
-          detail: globalState.coreSwitchStatusNotifier.value.label,
+          title: l10n.core,
+          value: globalState.appState.runTime != null
+              ? l10n.xboardHealthCoreRunning
+              : l10n.notConnected,
+          detail: globalState.coreSwitchStatusNotifier.value.localizedLabel(
+            l10n,
+          ),
           healthy: globalState.appState.runTime != null,
         ),
         _HealthRow(
           icon: Icons.stacked_line_chart,
-          title: 'TUN',
-          value:
-              patchConfig.tun.enable ? (realTunEnable ? '已应用' : '等待应用') : '未开启',
+          title: l10n.action_tun,
+          value: patchConfig.tun.enable
+              ? (realTunEnable
+                  ? l10n.xboardHealthTunApplied
+                  : l10n.xboardHealthTunPending)
+              : l10n.xboardHealthDisabled,
           detail:
               'stack=${patchConfig.tun.stack.name}, route=${networkProps.routeMode.name}',
           healthy: !patchConfig.tun.enable || realTunEnable,
         ),
         _HealthRow(
           icon: Icons.dns_outlined,
-          title: 'DNS',
-          value: overrideDns ? '使用自定义 DNS' : '使用默认 DNS',
+          title: l10n.xboardHealthDns,
+          value: overrideDns
+              ? l10n.xboardHealthDnsCustom
+              : l10n.xboardHealthDnsDefault,
           detail: 'autoSetSystemDns=${networkProps.autoSetSystemDns}',
           healthy: true,
         ),
         _HealthRow(
           icon: Icons.settings_ethernet,
           title: l10n.systemProxy,
-          value: networkProps.systemProxy ? '已开启' : '未开启',
+          value: networkProps.systemProxy
+              ? l10n.xboardHealthEnabled
+              : l10n.xboardHealthDisabled,
           detail: 'running=${proxyState.isStart}, port=${proxyState.port}',
           healthy: !networkProps.systemProxy || proxyState.isStart,
         ),
@@ -230,7 +244,7 @@ class ConnectionHealthView extends ConsumerWidget {
         FilledButton.icon(
           onPressed: () => _repairConnection(context, ref),
           icon: const Icon(Icons.build_circle_outlined),
-          label: const Text('一键修复'),
+          label: Text(l10n.xboardOneClickRepair),
         ),
         const SizedBox(height: 8),
         OutlinedButton.icon(
@@ -289,16 +303,17 @@ class ConnectionHealthView extends ConsumerWidget {
     }
 
     final commonScaffoldState = context.commonScaffoldState;
+    final l10n = AppLocalizations.of(context);
     if (commonScaffoldState?.mounted == true) {
       await commonScaffoldState!.loadingRun<void>(
         runRepair,
-        title: '一键修复',
+        title: l10n.xboardOneClickRepair,
       );
     } else {
       await runRepair();
     }
     if (context.mounted) {
-      XBoardNotification.showSuccess('修复完成');
+      XBoardNotification.showSuccess(l10n.xboardRepairCompleted);
     }
   }
 
@@ -390,11 +405,12 @@ class _HelperHealthRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     if (!Platform.isWindows) {
-      return const _HealthRow(
+      return _HealthRow(
         icon: Icons.admin_panel_settings_outlined,
-        title: 'Helper',
-        value: '当前平台不需要 Windows helper',
+        title: l10n.xboardHealthHelper,
+        value: l10n.xboardHealthHelperNotRequired,
         healthy: true,
       );
     }
@@ -403,10 +419,12 @@ class _HelperHealthRow extends StatelessWidget {
         final healthy = status?.tokenMatches == true;
         return _HealthRow(
           icon: Icons.admin_panel_settings_outlined,
-          title: 'Helper',
-          value: healthy ? '可用' : '不可用',
+          title: l10n.xboardHealthHelper,
+          value: healthy
+              ? l10n.xboardHealthHelperAvailable
+              : l10n.xboardHealthHelperUnavailable,
           detail: status == null
-              ? 'helper HTTP 未响应'
+              ? l10n.xboardHealthHelperNoResponse
               : [
                   'version=${status.version.isEmpty ? '-' : status.version}',
                   'core=${status.coreRunning ? 'running' : 'stopped'}',
@@ -418,16 +436,16 @@ class _HelperHealthRow extends StatelessWidget {
           healthy: healthy,
         );
       },
-      loading: () => const _HealthRow(
+      loading: () => _HealthRow(
         icon: Icons.admin_panel_settings_outlined,
-        title: 'Helper',
-        value: '检查中',
+        title: l10n.xboardHealthHelper,
+        value: l10n.xboardHealthHelperChecking,
         healthy: true,
       ),
       error: (error, _) => _HealthRow(
         icon: Icons.admin_panel_settings_outlined,
-        title: 'Helper',
-        value: '检查失败',
+        title: l10n.xboardHealthHelper,
+        value: l10n.xboardHealthHelperCheckFailed,
         detail: SensitiveMasker.maskText(error.toString()),
         healthy: false,
       ),

@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:fl_clash/common/common.dart';
+import 'package:fl_clash/enum/enum.dart';
 import 'package:fl_clash/l10n/l10n.dart';
 import 'package:fl_clash/models/models.dart';
 import 'package:fl_clash/providers/providers.dart';
@@ -27,25 +28,49 @@ class ToolsView extends ConsumerStatefulWidget {
 }
 
 class _ToolboxViewState extends ConsumerState<ToolsView> {
-  _buildNavigationMenuItem(NavigationItem navigationItem) {
+  String _getPageLabelText(AppLocalizations l10n, PageLabel label) {
+    return switch (label) {
+      PageLabel.dashboard => l10n.dashboard,
+      PageLabel.proxies => l10n.proxies,
+      PageLabel.profiles => l10n.profiles,
+      PageLabel.tools => l10n.tools,
+      PageLabel.logs => l10n.logs,
+      PageLabel.requests => l10n.requests,
+      PageLabel.resources => l10n.resources,
+      PageLabel.connections => l10n.connections,
+      PageLabel.plans => l10n.plans,
+      PageLabel.xboard => l10n.xboard,
+      PageLabel.invite => l10n.invite,
+      PageLabel.userCenter => l10n.userCenter,
+    };
+  }
+
+  _buildNavigationMenuItem(
+    AppLocalizations l10n,
+    NavigationItem navigationItem,
+  ) {
+    final title = _getPageLabelText(l10n, navigationItem.label);
     return ListItem.open(
       leading: navigationItem.icon,
-      title: Text(Intl.message(navigationItem.label.name)),
+      title: Text(title),
       subtitle: navigationItem.description != null
           ? Text(Intl.message(navigationItem.description!))
           : null,
       delegate: OpenDelegate(
-        title: Intl.message(navigationItem.label.name),
+        title: title,
         widget: navigationItem.view,
       ),
     );
   }
 
-  Widget _buildNavigationMenu(List<NavigationItem> navigationItems) {
+  Widget _buildNavigationMenu(
+    AppLocalizations l10n,
+    List<NavigationItem> navigationItems,
+  ) {
     return Column(
       children: [
         for (final navigationItem in navigationItems) ...[
-          _buildNavigationMenuItem(navigationItem),
+          _buildNavigationMenuItem(l10n, navigationItem),
           navigationItems.last != navigationItem
               ? const Divider(
                   height: 0,
@@ -56,9 +81,13 @@ class _ToolboxViewState extends ConsumerState<ToolsView> {
     );
   }
 
-  Widget _getOtherList(bool enableDeveloperMode, bool logCapture) {
+  Widget _getOtherList(
+    AppLocalizations l10n,
+    bool enableDeveloperMode,
+    bool logCapture,
+  ) {
     return generateSectionV2(
-      title: appLocalizations.other,
+      title: l10n.other,
       items: [
         if (logCapture) const _LogsItem(),
         if (enableDeveloperMode) const _DeveloperItem(),
@@ -68,9 +97,9 @@ class _ToolboxViewState extends ConsumerState<ToolsView> {
     );
   }
 
-  Widget _getSettingList() {
+  Widget _getSettingList(AppLocalizations l10n) {
     return generateSectionV2(
-      title: appLocalizations.settings,
+      title: l10n.settings,
       items: [
         const _LocaleItem(),
         const _ThemeItem(),
@@ -83,6 +112,7 @@ class _ToolboxViewState extends ConsumerState<ToolsView> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     final vm2 = ref.watch(
       appSettingProvider.select(
         (state) =>
@@ -100,16 +130,16 @@ class _ToolboxViewState extends ConsumerState<ToolsView> {
             }
             return Column(
               children: [
-                ListHeader(title: appLocalizations.more),
+                ListHeader(title: l10n.more),
                 SectionCard(
-                  child: _buildNavigationMenu(state.navigationItems),
+                  child: _buildNavigationMenu(l10n, state.navigationItems),
                 ),
               ],
             );
           },
         ),
-        _getSettingList(),
-        _getOtherList(vm2.b, vm2.c),
+        _getSettingList(l10n),
+        _getOtherList(l10n, vm2.b, vm2.c),
       ],
     );
   }
@@ -118,30 +148,36 @@ class _ToolboxViewState extends ConsumerState<ToolsView> {
 class _LocaleItem extends ConsumerWidget {
   const _LocaleItem();
 
-  String _getLocaleString(Locale? locale) {
-    if (locale == null) return appLocalizations.defaultText;
-    return Intl.message(locale.toString());
+  String _getLocaleString(AppLocalizations l10n, Locale? locale) {
+    return switch (locale?.toString()) {
+      null => l10n.defaultText,
+      'en' => l10n.en,
+      'ja' => l10n.ja,
+      'ko' => l10n.ko,
+      'zh_CN' => l10n.zh_CN,
+      _ => locale!.toLanguageTag(),
+    };
   }
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = AppLocalizations.of(context);
     final locale =
         ref.watch(appSettingProvider.select((state) => state.locale));
-    final subTitle = locale ?? appLocalizations.defaultText;
     final currentLocale = utils.getLocaleForString(locale);
     return ListItem<Locale?>.options(
       leading: const Icon(Icons.language_outlined),
-      title: Text(appLocalizations.language),
-      subtitle: Text(Intl.message(subTitle)),
+      title: Text(l10n.language),
+      subtitle: Text(_getLocaleString(l10n, currentLocale)),
       delegate: OptionsDelegate(
-        title: appLocalizations.language,
+        title: l10n.language,
         options: [null, ...AppLocalizations.delegate.supportedLocales],
         onChanged: (Locale? locale) {
           ref.read(appSettingProvider.notifier).updateState(
                 (state) => state.copyWith(locale: locale?.toString()),
               );
         },
-        textBuilder: (locale) => _getLocaleString(locale),
+        textBuilder: (locale) => _getLocaleString(l10n, locale),
         value: currentLocale,
       ),
     );
@@ -153,12 +189,13 @@ class _ThemeItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     return ListItem.open(
       leading: const Icon(Icons.style),
-      title: Text(appLocalizations.theme),
-      subtitle: Text(appLocalizations.themeDesc),
+      title: Text(l10n.theme),
+      subtitle: Text(l10n.themeDesc),
       delegate: OpenDelegate(
-        title: appLocalizations.theme,
+        title: l10n.theme,
         widget: const ThemeView(),
       ),
     );
@@ -170,16 +207,17 @@ class _LoopbackItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     return ListItem(
       leading: const Icon(Icons.lock),
-      title: Text(appLocalizations.loopback),
-      subtitle: Text(appLocalizations.loopbackDesc),
+      title: Text(l10n.loopback),
+      subtitle: Text(l10n.loopbackDesc),
       onTap: () {
         final exePath =
             join(dirname(Platform.resolvedExecutable), 'EnableLoopback.exe');
         if (!File(exePath).existsSync()) {
           globalState.showMessage(
-            title: appLocalizations.loopback,
+            title: l10n.loopback,
             message: const TextSpan(text: 'EnableLoopback.exe 未找到'),
           );
           return;
@@ -189,7 +227,7 @@ class _LoopbackItem extends StatelessWidget {
         final ok = windows?.launch(exePath) ?? false;
         if (!ok) {
           globalState.showMessage(
-            title: appLocalizations.loopback,
+            title: l10n.loopback,
             message: const TextSpan(text: '启动失败，请检查系统权限设置'),
           );
         }
@@ -203,12 +241,13 @@ class _ConfigItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     return ListItem.open(
       leading: const Icon(Icons.edit),
-      title: Text(appLocalizations.basicConfig),
-      subtitle: Text(appLocalizations.basicConfigDesc),
+      title: Text(l10n.basicConfig),
+      subtitle: Text(l10n.basicConfigDesc),
       delegate: OpenDelegate(
-        title: appLocalizations.override,
+        title: l10n.override,
         widget: const ConfigView(),
       ),
     );
@@ -220,12 +259,13 @@ class _SettingItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     return ListItem.open(
       leading: const Icon(Icons.settings),
-      title: Text(appLocalizations.application),
-      subtitle: Text(appLocalizations.applicationDesc),
+      title: Text(l10n.application),
+      subtitle: Text(l10n.applicationDesc),
       delegate: OpenDelegate(
-        title: appLocalizations.application,
+        title: l10n.application,
         widget: const ApplicationSettingView(),
       ),
     );
@@ -237,12 +277,13 @@ class _ConnectionHealthItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     return ListItem.open(
       leading: const Icon(Icons.health_and_safety_outlined),
-      title: Text(appLocalizations.xboardConnectionHealth),
-      subtitle: Text(appLocalizations.xboardConnectionHealthSubtitle),
+      title: Text(l10n.xboardConnectionHealth),
+      subtitle: Text(l10n.xboardConnectionHealthSubtitle),
       delegate: OpenDelegate(
-        title: appLocalizations.xboardConnectionHealth,
+        title: l10n.xboardConnectionHealth,
         widget: const ConnectionHealthView(),
       ),
     );
@@ -254,11 +295,12 @@ class _InfoItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     return ListItem.open(
       leading: const Icon(Icons.info),
-      title: Text(appLocalizations.about),
+      title: Text(l10n.about),
       delegate: OpenDelegate(
-        title: appLocalizations.about,
+        title: l10n.about,
         widget: const AboutView(),
       ),
     );
@@ -270,13 +312,14 @@ class _LogsItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const ListItem.open(
-      leading: Icon(Icons.list_alt_outlined),
-      title: Text('日志'),
-      subtitle: Text('日志捕获记录'),
+    final l10n = AppLocalizations.of(context);
+    return ListItem.open(
+      leading: const Icon(Icons.list_alt_outlined),
+      title: Text(l10n.logs),
+      subtitle: Text(l10n.logsDesc),
       delegate: OpenDelegate(
-        title: '日志',
-        widget: LogsView(),
+        title: l10n.logs,
+        widget: const LogsView(),
       ),
     );
   }
@@ -287,11 +330,12 @@ class _DeveloperItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     return ListItem.open(
       leading: const Icon(Icons.developer_board),
-      title: Text(appLocalizations.developerMode),
+      title: Text(l10n.developerMode),
       delegate: OpenDelegate(
-        title: appLocalizations.developerMode,
+        title: l10n.developerMode,
         widget: const DeveloperView(),
       ),
     );

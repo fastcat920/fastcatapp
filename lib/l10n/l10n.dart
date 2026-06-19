@@ -8865,6 +8865,291 @@ class AppLocalizations {
     );
   }
 
+  /// `Checking helper`
+  String get xboardCoreStageCheckingHelper {
+    return Intl.message(
+      'Checking helper',
+      name: 'xboardCoreStageCheckingHelper',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Starting service`
+  String get xboardCoreStageStartingService {
+    return Intl.message(
+      'Starting service',
+      name: 'xboardCoreStageStartingService',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Helper reused`
+  String get xboardCoreStageHelperReady {
+    return Intl.message(
+      'Helper reused',
+      name: 'xboardCoreStageHelperReady',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Reconnecting core`
+  String get xboardCoreStageCoreConnecting {
+    return Intl.message(
+      'Reconnecting core',
+      name: 'xboardCoreStageCoreConnecting',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Applying TUN`
+  String get xboardCoreStageTunApplying {
+    return Intl.message(
+      'Applying TUN',
+      name: 'xboardCoreStageTunApplying',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Connected`
+  String get xboardCoreStageConnected {
+    return Intl.message(
+      'Connected',
+      name: 'xboardCoreStageConnected',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Disconnecting`
+  String get xboardCoreStageStopping {
+    return Intl.message(
+      'Disconnecting',
+      name: 'xboardCoreStageStopping',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Connection failed`
+  String get xboardCoreStageFailed {
+    return Intl.message(
+      'Connection failed',
+      name: 'xboardCoreStageFailed',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Checking subscription`
+  String get xboardCheckingSubscription {
+    return Intl.message(
+      'Checking subscription',
+      name: 'xboardCheckingSubscription',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Connecting`
+  String get xboardConnecting {
+    return Intl.message(
+      'Connecting',
+      name: 'xboardConnecting',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Disconnecting`
+  String get xboardDisconnecting {
+    return Intl.message(
+      'Disconnecting',
+      name: 'xboardDisconnecting',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Subscription import: {message}`
+  String xboardHealthSubscriptionImport(String message) {
+    return Intl.message(
+      'Subscription import: $message',
+      name: 'xboardHealthSubscriptionImport',
+      desc: '',
+      args: [message],
+    );
+  }
+
+  /// `Running`
+  String get xboardHealthCoreRunning {
+    return Intl.message(
+      'Running',
+      name: 'xboardHealthCoreRunning',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Applied`
+  String get xboardHealthTunApplied {
+    return Intl.message(
+      'Applied',
+      name: 'xboardHealthTunApplied',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Waiting to apply`
+  String get xboardHealthTunPending {
+    return Intl.message(
+      'Waiting to apply',
+      name: 'xboardHealthTunPending',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Enabled`
+  String get xboardHealthEnabled {
+    return Intl.message(
+      'Enabled',
+      name: 'xboardHealthEnabled',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Disabled`
+  String get xboardHealthDisabled {
+    return Intl.message(
+      'Disabled',
+      name: 'xboardHealthDisabled',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `DNS`
+  String get xboardHealthDns {
+    return Intl.message('DNS', name: 'xboardHealthDns', desc: '', args: []);
+  }
+
+  /// `Using custom DNS`
+  String get xboardHealthDnsCustom {
+    return Intl.message(
+      'Using custom DNS',
+      name: 'xboardHealthDnsCustom',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Using default DNS`
+  String get xboardHealthDnsDefault {
+    return Intl.message(
+      'Using default DNS',
+      name: 'xboardHealthDnsDefault',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `One-click repair`
+  String get xboardOneClickRepair {
+    return Intl.message(
+      'One-click repair',
+      name: 'xboardOneClickRepair',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Repair completed`
+  String get xboardRepairCompleted {
+    return Intl.message(
+      'Repair completed',
+      name: 'xboardRepairCompleted',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Helper`
+  String get xboardHealthHelper {
+    return Intl.message(
+      'Helper',
+      name: 'xboardHealthHelper',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Windows helper is not required on this platform`
+  String get xboardHealthHelperNotRequired {
+    return Intl.message(
+      'Windows helper is not required on this platform',
+      name: 'xboardHealthHelperNotRequired',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Available`
+  String get xboardHealthHelperAvailable {
+    return Intl.message(
+      'Available',
+      name: 'xboardHealthHelperAvailable',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Unavailable`
+  String get xboardHealthHelperUnavailable {
+    return Intl.message(
+      'Unavailable',
+      name: 'xboardHealthHelperUnavailable',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Helper HTTP is not responding`
+  String get xboardHealthHelperNoResponse {
+    return Intl.message(
+      'Helper HTTP is not responding',
+      name: 'xboardHealthHelperNoResponse',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Checking`
+  String get xboardHealthHelperChecking {
+    return Intl.message(
+      'Checking',
+      name: 'xboardHealthHelperChecking',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Check failed`
+  String get xboardHealthHelperCheckFailed {
+    return Intl.message(
+      'Check failed',
+      name: 'xboardHealthHelperCheckFailed',
+      desc: '',
+      args: [],
+    );
+  }
+
   /// `Release offline devices`
   String get xboardReleaseOfflineDevices {
     return Intl.message(

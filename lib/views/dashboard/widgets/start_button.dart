@@ -1,5 +1,6 @@
 import 'package:fl_clash/common/common.dart';
 import 'package:fl_clash/enum/enum.dart';
+import 'package:fl_clash/l10n/l10n.dart';
 import 'package:fl_clash/providers/providers.dart';
 import 'package:fl_clash/services/core_switch_status.dart';
 import 'package:fl_clash/state.dart';
@@ -82,9 +83,9 @@ class _StartButtonState extends ConsumerState<StartButton>
           return ValueListenableBuilder<CoreSwitchStatus>(
             valueListenable: globalState.coreSwitchStatusNotifier,
             builder: (context, status, _) {
-              final label = status.label.isEmpty
-                  ? appLocalizations.loading
-                  : status.label;
+              final l10n = AppLocalizations.of(context);
+              final statusLabel = status.localizedLabel(l10n);
+              final label = statusLabel.isEmpty ? l10n.loading : statusLabel;
               return Theme(
                 data: Theme.of(context).copyWith(
                   floatingActionButtonTheme:
