@@ -8355,6 +8355,36 @@ class AppLocalizations {
     );
   }
 
+  /// `Redeem failed: this gift card has already been used by this user`
+  String get xboardGiftCardAlreadyUsedByUser {
+    return Intl.message(
+      'Redeem failed: this gift card has already been used by this user',
+      name: 'xboardGiftCardAlreadyUsedByUser',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Redeem failed: this gift card does not exist`
+  String get xboardGiftCardNotFound {
+    return Intl.message(
+      'Redeem failed: this gift card does not exist',
+      name: 'xboardGiftCardNotFound',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Redeem successful: user information has been refreshed automatically`
+  String get xboardGiftCardRedeemSuccessRefreshed {
+    return Intl.message(
+      'Redeem successful: user information has been refreshed automatically',
+      name: 'xboardGiftCardRedeemSuccessRefreshed',
+      desc: '',
+      args: [],
+    );
+  }
+
   /// `Copy Invite Code`
   String get xboardCopyInviteCode {
     return Intl.message(

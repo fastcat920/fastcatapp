@@ -14,8 +14,10 @@ import 'package:fl_clash/xboard/config/xboard_config.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:fl_clash/views/tools.dart';
 import 'package:fl_clash/xboard/adapter/initialization/sdk_provider.dart';
+import 'package:fl_clash/xboard/features/mine/services/gift_card_redeem_service.dart';
 import 'package:fl_clash/xboard/features/subscription/widgets/subscription_usage_card.dart';
 import 'package:fl_clash/xboard/features/shared/styles/styles.dart';
+import 'package:fl_clash/xboard/utils/xboard_notification.dart';
 import 'order_page.dart';
 import 'ticket_page.dart';
 import 'package:fl_clash/xboard/features/docs/pages/docs_page.dart';
@@ -441,8 +443,8 @@ class _MinePageState extends ConsumerState<MinePage>
 
   // ─── 动作方法 ─────────────────────────────────────────────────────────────
 
-  void _showGiftCardSheet(BuildContext context) {
-    showModalBottomSheet(
+  Future<void> _showGiftCardSheet(BuildContext context) async {
+    final result = await showModalBottomSheet<GiftCardRedeemResult>(
       context: context,
       isScrollControlled: true,
       useSafeArea: true,
@@ -451,6 +453,12 @@ class _MinePageState extends ConsumerState<MinePage>
       ),
       builder: (_) => const _GiftCardSheet(),
     );
+    if (result == null || !mounted) return;
+    if (result.success) {
+      XBoardNotification.showSuccess(result.message);
+    } else {
+      XBoardNotification.showError(result.message);
+    }
   }
 
   // 加入群组：优先读远程配置文件 contact.telegram_group，回退到 API telegram_discuss_link
@@ -598,36 +606,22 @@ class _GiftCardSheetState extends ConsumerState<_GiftCardSheet> {
   }
 
   Future<void> _redeem() async {
+    final l10n = AppLocalizations.of(context);
     final code = _codeCtrl.text.trim();
     if (code.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-          content: Text(appLocalizations.xboardPleaseEnterGiftCardCode)));
+      ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(l10n.xboardPleaseEnterGiftCardCode)));
       return;
     }
     setState(() => _isSubmitting = true);
     try {
-      final sdk = await ref.read(xboardSdkProvider.future);
-      final isV2Board = XBoardConfig.provider.getPanelType() == 'v2board';
-      final endpoint =
-          isV2Board ? '/user/redeemgiftcard' : '/user/gift-card/redeem';
-      final body = isV2Board ? {'giftcard': code} : {'code': code};
-      final resp = await sdk.httpService.postRequest(endpoint, body);
+      final result = await GiftCardRedeemService.redeem(
+        ref: ref,
+        l10n: l10n,
+        code: code,
+      );
       if (mounted) {
-        final data = resp['data'];
-        final success = data != null && data != false;
-        final msg = resp['message'] as String? ??
-            (success
-                ? appLocalizations.xboardRedeemSuccess
-                : appLocalizations.xboardRedeemFailed);
-        Navigator.of(context).pop();
-        ScaffoldMessenger.of(context)
-            .showSnackBar(SnackBar(content: Text(msg)));
-      }
-    } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-            content: Text(
-                appLocalizations.xboardRedeemFailedWithError(e.toString()))));
+        Navigator.of(context).pop(result);
       }
     } finally {
       if (mounted) setState(() => _isSubmitting = false);

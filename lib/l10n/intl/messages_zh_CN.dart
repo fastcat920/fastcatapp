@@ -1083,9 +1083,17 @@ class MessageLookup extends MessageLookupByLibrary {
       "获取群组链接失败",
     ),
     "xboardGettingIP": MessageLookupByLibrary.simpleMessage("获取中..."),
+    "xboardGiftCardAlreadyUsedByUser": MessageLookupByLibrary.simpleMessage(
+      "兑换失败：该礼品卡已被该用户使用",
+    ),
     "xboardGiftCardCode": MessageLookupByLibrary.simpleMessage("礼品卡兑换码"),
     "xboardGiftCardCodeLabel": MessageLookupByLibrary.simpleMessage("礼品卡码"),
+    "xboardGiftCardNotFound": MessageLookupByLibrary.simpleMessage(
+      "兑换失败：该礼品卡不存在",
+    ),
     "xboardGiftCardRedeem": MessageLookupByLibrary.simpleMessage("礼品卡兑换"),
+    "xboardGiftCardRedeemSuccessRefreshed":
+        MessageLookupByLibrary.simpleMessage("兑换成功：已自动刷新用户信息"),
     "xboardGiftCardRedeemTitle": MessageLookupByLibrary.simpleMessage("礼品卡兑换"),
     "xboardGlobalNodes": MessageLookupByLibrary.simpleMessage("全球节点"),
     "xboardGlobalProxy": MessageLookupByLibrary.simpleMessage("全局代理"),

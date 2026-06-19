@@ -1249,11 +1249,19 @@ class MessageLookup extends MessageLookupByLibrary {
       "グループリンク取得失敗",
     ),
     "xboardGettingIP": MessageLookupByLibrary.simpleMessage("取得中..."),
+    "xboardGiftCardAlreadyUsedByUser": MessageLookupByLibrary.simpleMessage(
+      "交換失敗：このギフトカードはこのユーザーによって既に使用されています",
+    ),
     "xboardGiftCardCode": MessageLookupByLibrary.simpleMessage("ギフトカードコード"),
     "xboardGiftCardCodeLabel": MessageLookupByLibrary.simpleMessage(
       "ギフトカードコード",
     ),
+    "xboardGiftCardNotFound": MessageLookupByLibrary.simpleMessage(
+      "交換失敗：このギフトカードは存在しません",
+    ),
     "xboardGiftCardRedeem": MessageLookupByLibrary.simpleMessage("ギフトカード交換"),
+    "xboardGiftCardRedeemSuccessRefreshed":
+        MessageLookupByLibrary.simpleMessage("交換成功：ユーザー情報を自動更新しました"),
     "xboardGiftCardRedeemTitle": MessageLookupByLibrary.simpleMessage(
       "ギフトカード交換",
     ),

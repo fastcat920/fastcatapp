@@ -1567,14 +1567,23 @@ class MessageLookup extends MessageLookupByLibrary {
       "Failed to get group link",
     ),
     "xboardGettingIP": MessageLookupByLibrary.simpleMessage("Getting..."),
+    "xboardGiftCardAlreadyUsedByUser": MessageLookupByLibrary.simpleMessage(
+      "Redeem failed: this gift card has already been used by this user",
+    ),
     "xboardGiftCardCode": MessageLookupByLibrary.simpleMessage(
       "Gift card code",
     ),
     "xboardGiftCardCodeLabel": MessageLookupByLibrary.simpleMessage(
       "Gift Card Code",
     ),
+    "xboardGiftCardNotFound": MessageLookupByLibrary.simpleMessage(
+      "Redeem failed: this gift card does not exist",
+    ),
     "xboardGiftCardRedeem": MessageLookupByLibrary.simpleMessage(
       "Gift card redeem",
+    ),
+    "xboardGiftCardRedeemSuccessRefreshed": MessageLookupByLibrary.simpleMessage(
+      "Redeem successful: user information has been refreshed automatically",
     ),
     "xboardGiftCardRedeemTitle": MessageLookupByLibrary.simpleMessage(
       "Gift Card Redeem",

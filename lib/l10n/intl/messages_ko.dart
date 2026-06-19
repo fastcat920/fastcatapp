@@ -1253,13 +1253,21 @@ class MessageLookup extends MessageLookupByLibrary {
       "GET 그룹 링크 실패",
     ),
     "xboardGettingIP": MessageLookupByLibrary.simpleMessage("getting IP"),
+    "xboardGiftCardAlreadyUsedByUser": MessageLookupByLibrary.simpleMessage(
+      "교환 실패: 이 기프트 카드는 이미 이 사용자가 사용했습니다",
+    ),
     "xboardGiftCardCode": MessageLookupByLibrary.simpleMessage("기프트 카드 코드"),
     "xboardGiftCardCodeLabel": MessageLookupByLibrary.simpleMessage(
       "기프트 카드 코드 label",
     ),
+    "xboardGiftCardNotFound": MessageLookupByLibrary.simpleMessage(
+      "교환 실패: 이 기프트 카드가 존재하지 않습니다",
+    ),
     "xboardGiftCardRedeem": MessageLookupByLibrary.simpleMessage(
       "기프트 카드 redeem",
     ),
+    "xboardGiftCardRedeemSuccessRefreshed":
+        MessageLookupByLibrary.simpleMessage("교환 성공: 사용자 정보가 자동으로 새로고침되었습니다"),
     "xboardGiftCardRedeemTitle": MessageLookupByLibrary.simpleMessage(
       "기프트 카드 redeem 제목",
     ),
