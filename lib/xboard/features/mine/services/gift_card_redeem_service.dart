@@ -2,6 +2,7 @@ import 'package:fl_clash/l10n/l10n.dart';
 import 'package:fl_clash/xboard/adapter/initialization/sdk_provider.dart';
 import 'package:fl_clash/xboard/config/xboard_config.dart';
 import 'package:fl_clash/xboard/features/auth/providers/xboard_user_provider.dart';
+import 'package:fl_clash/xboard/utils/backend_message_mapper.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 class GiftCardRedeemResult {
@@ -50,39 +51,27 @@ class GiftCardRedeemService {
     } catch (error) {
       return GiftCardRedeemResult(
         success: false,
-        message: _failureMessage(l10n, error.toString()),
+        message: _failureMessage(l10n, BackendMessageMapper.rawMessage(error)),
       );
     }
   }
 
   static String _failureMessage(AppLocalizations l10n, String? rawMessage) {
-    final message = rawMessage?.trim() ?? '';
-    final lowerMessage = message.toLowerCase();
-    if (_matchesAlreadyUsed(message, lowerMessage)) {
+    if (BackendMessageMapper.matchesGiftCardAlreadyUsed(rawMessage)) {
       return l10n.xboardGiftCardAlreadyUsedByUser;
     }
-    if (_matchesNotFound(message, lowerMessage)) {
+    if (BackendMessageMapper.matchesGiftCardNotFound(rawMessage)) {
       return l10n.xboardGiftCardNotFound;
     }
-    if (message.isEmpty) {
+
+    final message = BackendMessageMapper.map(
+      rawMessage,
+      context: BackendMessageContext.giftCard,
+      fallback: l10n.xboardRedeemFailed,
+    );
+    if (message.isEmpty || message == l10n.xboardRedeemFailed) {
       return l10n.xboardRedeemFailed;
     }
     return l10n.xboardRedeemFailedWithError(message);
-  }
-
-  static bool _matchesAlreadyUsed(String message, String lowerMessage) {
-    return message.contains('已被') ||
-        message.contains('已使用') ||
-        lowerMessage.contains('already used') ||
-        lowerMessage.contains('has been used') ||
-        lowerMessage.contains('used by');
-  }
-
-  static bool _matchesNotFound(String message, String lowerMessage) {
-    return message.contains('不存在') ||
-        message.contains('无效') ||
-        lowerMessage.contains('not exist') ||
-        lowerMessage.contains('not found') ||
-        lowerMessage.contains('invalid');
   }
 }

@@ -20,8 +20,11 @@ class MessageManager extends StatefulWidget {
 
 class MessageManagerState extends State<MessageManager> {
   final _messagesNotifier = ValueNotifier<List<CommonMessage>>([]);
+  final _bottomMessagesNotifier = ValueNotifier<List<CommonMessage>>([]);
   final List<CommonMessage> _bufferMessages = [];
+  final List<CommonMessage> _bottomBufferMessages = [];
   bool _pushing = false;
+  bool _pushingBottom = false;
 
   @override
   void initState() {
@@ -31,21 +34,45 @@ class MessageManagerState extends State<MessageManager> {
   @override
   void dispose() {
     _messagesNotifier.dispose();
+    _bottomMessagesNotifier.dispose();
     super.dispose();
   }
 
   Future<void> message(String text, {VoidCallback? onTap}) async {
+    await _message(
+      text,
+      buffer: _bufferMessages,
+      onTap: onTap,
+      showMessage: _showMessage,
+    );
+  }
+
+  Future<void> bottomMessage(String text, {VoidCallback? onTap}) async {
+    await _message(
+      text,
+      buffer: _bottomBufferMessages,
+      onTap: onTap,
+      showMessage: _showBottomMessage,
+    );
+  }
+
+  Future<void> _message(
+    String text, {
+    required List<CommonMessage> buffer,
+    required Future<void> Function() showMessage,
+    VoidCallback? onTap,
+  }) async {
     final commonMessage = CommonMessage(
       id: utils.uuidV4,
       text: text,
       onTap: onTap,
     );
     commonPrint.log(text);
-    _bufferMessages.add(commonMessage);
-    await _showMessage();
+    buffer.add(commonMessage);
+    await showMessage();
   }
 
-  _showMessage() async {
+  Future<void> _showMessage() async {
     if (_pushing == true) {
       return;
     }
@@ -56,9 +83,9 @@ class MessageManagerState extends State<MessageManager> {
         ..add(
           commonMessage,
         );
-      await Future.delayed(Duration(seconds: 1));
+      await Future.delayed(const Duration(seconds: 1));
       Future.delayed(commonMessage.duration, () {
-        _handleRemove(commonMessage);
+        _handleRemove(commonMessage, _messagesNotifier);
       });
       if (_bufferMessages.isEmpty) {
         _pushing = false;
@@ -66,8 +93,30 @@ class MessageManagerState extends State<MessageManager> {
     }
   }
 
-  _handleRemove(CommonMessage commonMessage) async {
-    _messagesNotifier.value = List<CommonMessage>.from(_messagesNotifier.value)
+  Future<void> _showBottomMessage() async {
+    if (_pushingBottom == true) {
+      return;
+    }
+    _pushingBottom = true;
+    while (_bottomBufferMessages.isNotEmpty) {
+      final commonMessage = _bottomBufferMessages.removeAt(0);
+      _bottomMessagesNotifier.value = List.from(_bottomMessagesNotifier.value)
+        ..add(commonMessage);
+      await Future.delayed(const Duration(seconds: 1));
+      Future.delayed(commonMessage.duration, () {
+        _handleRemove(commonMessage, _bottomMessagesNotifier);
+      });
+      if (_bottomBufferMessages.isEmpty) {
+        _pushingBottom = false;
+      }
+    }
+  }
+
+  Future<void> _handleRemove(
+    CommonMessage commonMessage,
+    ValueNotifier<List<CommonMessage>> notifier,
+  ) async {
+    notifier.value = List<CommonMessage>.from(notifier.value)
       ..remove(commonMessage);
   }
 
@@ -76,76 +125,114 @@ class MessageManagerState extends State<MessageManager> {
     return Stack(
       children: [
         widget.child,
-        ValueListenableBuilder(
-          valueListenable: _messagesNotifier,
-          builder: (_, messages, __) {
-            return FadeThroughBox(
-              margin: EdgeInsets.only(
+        _MessageLayer(
+          messagesNotifier: _messagesNotifier,
+          onRemove: (message) => _handleRemove(message, _messagesNotifier),
+        ),
+        _MessageLayer(
+          messagesNotifier: _bottomMessagesNotifier,
+          alignment: Alignment.bottomCenter,
+          marginBuilder: (mediaQuery) => EdgeInsets.only(
+            bottom: max(mediaQuery.viewPadding.bottom,
+                    mediaQuery.viewInsets.bottom) +
+                16,
+            left: 12,
+            right: 12,
+          ),
+          onRemove: (message) =>
+              _handleRemove(message, _bottomMessagesNotifier),
+        ),
+      ],
+    );
+  }
+}
+
+class _MessageLayer extends StatelessWidget {
+  const _MessageLayer({
+    required this.messagesNotifier,
+    required this.onRemove,
+    this.alignment = Alignment.topRight,
+    this.marginBuilder,
+  });
+
+  final ValueNotifier<List<CommonMessage>> messagesNotifier;
+  final Alignment alignment;
+  final EdgeInsets Function(MediaQueryData mediaQuery)? marginBuilder;
+  final Future<void> Function(CommonMessage message) onRemove;
+
+  @override
+  Widget build(BuildContext context) {
+    return ValueListenableBuilder(
+      valueListenable: messagesNotifier,
+      builder: (_, messages, __) {
+        final mediaQuery = MediaQuery.of(context);
+        return FadeThroughBox(
+          margin: marginBuilder?.call(mediaQuery) ??
+              const EdgeInsets.only(
                 top: kToolbarHeight + 8,
                 left: 12,
                 right: 12,
               ),
-              alignment: Alignment.topRight,
-              child: messages.isEmpty
-                  ? SizedBox()
-                  : LayoutBuilder(
-                      key: Key(messages.last.id),
-                      builder: (_, constraints) {
-                        final message = messages.last;
+          alignment: alignment,
+          child: messages.isEmpty
+              ? const SizedBox()
+              : LayoutBuilder(
+                  key: Key(messages.last.id),
+                  builder: (_, constraints) {
+                    final message = messages.last;
 
-                        // 构建卡片内容
-                        final cardContent = Container(
-                          width: min(
-                            constraints.maxWidth,
-                            500,
-                          ),
-                          padding: EdgeInsets.symmetric(
-                            horizontal: 12,
-                            vertical: 16,
-                          ),
-                          child: Text(
-                            message.text,
-                          ),
-                        );
+                    final cardContent = Container(
+                      width: min(
+                        constraints.maxWidth,
+                        500,
+                      ),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 12,
+                        vertical: 16,
+                      ),
+                      child: Text(
+                        message.text,
+                      ),
+                    );
 
-                        // 如果有点击回调，整个卡片都可点击
-                        if (message.onTap != null) {
-                          return GestureDetector(
-                            onTap: () {
-                              message.onTap?.call();
-                              _handleRemove(message);
-                            },
-                            behavior: HitTestBehavior.opaque, // 整个区域可点击，包括空白处
-                            child: Card(
-                              shape: const RoundedSuperellipseBorder(
-                                borderRadius: BorderRadius.all(
-                                  Radius.circular(12.0),
-                                ),
-                              ),
-                              elevation: 10,
-                              color: context.colorScheme.surfaceContainerHigh,
-                              child: cardContent,
-                            ),
-                          );
-                        }
+                    if (message.onTap != null) {
+                      return GestureDetector(
+                        onTap: () {
+                          message.onTap?.call();
+                          onRemove(message);
+                        },
+                        behavior: HitTestBehavior.opaque,
+                        child: _MessageCard(child: cardContent),
+                      );
+                    }
 
-                        // 没有点击回调的普通卡片
-                        return Card(
-                          shape: const RoundedSuperellipseBorder(
-                            borderRadius: BorderRadius.all(
-                              Radius.circular(12.0),
-                            ),
-                          ),
-                          elevation: 10,
-                          color: context.colorScheme.surfaceContainerHigh,
-                          child: cardContent,
-                        );
-                      },
-                    ),
-            );
-          },
+                    return _MessageCard(child: cardContent);
+                  },
+                ),
+        );
+      },
+    );
+  }
+}
+
+class _MessageCard extends StatelessWidget {
+  const _MessageCard({
+    required this.child,
+  });
+
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) {
+    return Card(
+      shape: const RoundedSuperellipseBorder(
+        borderRadius: BorderRadius.all(
+          Radius.circular(12.0),
         ),
-      ],
+      ),
+      elevation: 10,
+      color: context.colorScheme.surfaceContainerHigh,
+      child: child,
     );
   }
 }

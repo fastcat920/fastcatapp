@@ -5,6 +5,7 @@ import 'package:fl_clash/xboard/core/core.dart';
 import 'package:fl_clash/xboard/domain/domain.dart';
 import 'package:flutter_xboard_sdk/flutter_xboard_sdk.dart';
 import 'package:fl_clash/xboard/adapter/state/payment_state.dart';
+import 'package:fl_clash/xboard/utils/backend_message_mapper.dart';
 
 // 初始化文件级日志器
 const _logger = FileLogger('xboard_payment_provider.dart');
@@ -216,7 +217,10 @@ class XBoardPaymentNotifier extends Notifier<void> {
       _logger.info('创建订单失败: $e');
       ref.read(userUIStateProvider.notifier).state = UIState(
         isLoading: false,
-        errorMessage: e.toString(),
+        errorMessage: BackendMessageMapper.mapError(
+          e,
+          context: BackendMessageContext.order,
+        ),
       );
       return null;
     }

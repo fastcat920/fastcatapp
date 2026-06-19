@@ -5,6 +5,7 @@ import 'package:fl_clash/common/common.dart';
 import 'package:fl_clash/xboard/features/invite/providers/invite_provider.dart';
 import 'package:fl_clash/xboard/features/shared/styles/styles.dart';
 import 'package:fl_clash/xboard/features/shared/widgets/tv_deferred_input.dart';
+import 'package:fl_clash/xboard/utils/backend_message_mapper.dart';
 
 class TransferDialog extends ConsumerStatefulWidget {
   const TransferDialog({super.key});
@@ -226,7 +227,14 @@ class _TransferDialogState extends ConsumerState<TransferDialog> {
             });
           }
         } else {
-          XBoardNotification.showError(appLocalizations.transferFailed("划转失败"));
+          final errorMessage = ref.read(inviteProvider).errorMessage;
+          XBoardNotification.showError(
+            errorMessage?.isNotEmpty == true
+                ? errorMessage!
+                : appLocalizations.transferFailed(
+                    appLocalizations.backendFallbackTransferFailed,
+                  ),
+          );
         }
       }
     } catch (e) {
@@ -236,7 +244,13 @@ class _TransferDialogState extends ConsumerState<TransferDialog> {
           _isSuccess = false;
         });
         XBoardNotification.showError(
-            appLocalizations.transferFailed(e.toString()));
+          appLocalizations.transferFailed(
+            BackendMessageMapper.mapError(
+              e,
+              context: BackendMessageContext.transfer,
+            ),
+          ),
+        );
       }
     }
   }

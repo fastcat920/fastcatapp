@@ -20,104 +20,109 @@ typedef String MessageIfAbsent(String messageStr, List<dynamic> args);
 class MessageLookup extends MessageLookupByLibrary {
   String get localeName => 'en';
 
-  static String m0(rate) => "Current commission rate: ${rate}%";
+  static String m0(limit) => "The minimum withdrawal commission is ${limit}";
 
-  static String m1(label) =>
+  static String m1(minute) =>
+      "Too many password errors, please try again after ${minute} minutes";
+
+  static String m2(rate) => "Current commission rate: ${rate}%";
+
+  static String m3(label) =>
       "Are you sure you want to delete the selected ${label}?";
 
-  static String m2(label) =>
+  static String m4(label) =>
       "Are you sure you want to delete the current ${label}?";
 
-  static String m3(label) => "${label} cannot be empty";
+  static String m5(label) => "${label} cannot be empty";
 
-  static String m4(label) => "Current ${label} already exists";
+  static String m6(label) => "Current ${label} already exists";
 
-  static String m5(error) => "Sign out failed: ${error}";
+  static String m7(error) => "Sign out failed: ${error}";
 
-  static String m6(amount) => "Max transferable: ¥${amount}";
+  static String m8(amount) => "Max transferable: ¥${amount}";
 
-  static String m7(label) => "No ${label} at the moment";
+  static String m9(label) => "No ${label} at the moment";
 
-  static String m8(label) => "${label} must be a number";
+  static String m10(label) => "${label} must be a number";
 
-  static String m9(statusCode) => "Failed to get messages: ${statusCode}";
+  static String m11(statusCode) => "Failed to get messages: ${statusCode}";
 
-  static String m10(error) => "Failed to select images: ${error}";
+  static String m12(error) => "Failed to select images: ${error}";
 
-  static String m11(method) => "Unsupported HTTP method: ${method}";
+  static String m13(method) => "Unsupported HTTP method: ${method}";
 
-  static String m12(error) => "Upload failed: ${error}";
+  static String m14(error) => "Upload failed: ${error}";
 
-  static String m13(amount) => "Order amount: ${amount}";
+  static String m15(amount) => "Order amount: ${amount}";
 
-  static String m14(orderNo) => "Order: ${orderNo}";
+  static String m16(orderNo) => "Order: ${orderNo}";
 
-  static String m15(page) => "Page ${page}";
+  static String m17(page) => "Page ${page}";
 
-  static String m16(label) => "${label} must be between 1024 and 49151";
+  static String m18(label) => "${label} must be between 1024 and 49151";
 
-  static String m17(e) => "Registration failed: ${e}";
+  static String m19(e) => "Registration failed: ${e}";
 
-  static String m18(count) => "${count} items have been selected";
+  static String m20(count) => "${count} items have been selected";
 
-  static String m19(e) => "Failed to send verification code: ${e}";
+  static String m21(e) => "Failed to send verification code: ${e}";
 
-  static String m20(date) =>
+  static String m22(date) =>
       "Plan expired on ${date}, please renew to continue using";
 
-  static String m21(days) =>
+  static String m23(days) =>
       "Plan will expire in ${days} days, please renew in time";
 
-  static String m22(days) => "Subscription will expire in ${days} days";
+  static String m24(days) => "Subscription will expire in ${days} days";
 
-  static String m23(count) => "Total ${count} records";
+  static String m25(count) => "Total ${count} records";
 
-  static String m24(amount) => "Transfer amount cannot exceed ¥${amount}";
+  static String m26(amount) => "Transfer amount cannot exceed ¥${amount}";
 
-  static String m25(error) => "Transfer failed: ${error}";
+  static String m27(error) => "Transfer failed: ${error}";
 
-  static String m26(amount) =>
+  static String m28(amount) =>
       "Transfer success! Transferred ¥${amount} to wallet";
 
-  static String m27(version) => "Current version: ${version}";
+  static String m29(version) => "Current version: ${version}";
 
-  static String m28(version) => "Force update: ${version}";
+  static String m30(version) => "Force update: ${version}";
 
-  static String m29(version) => "New version found: ${version}";
+  static String m31(version) => "New version found: ${version}";
 
-  static String m30(statusCode) =>
+  static String m32(statusCode) =>
       "Server returned error status code ${statusCode}";
 
-  static String m31(label) => "${label} must be a url";
+  static String m33(label) => "${label} must be a url";
 
-  static String m32(email) =>
+  static String m34(email) =>
       "Verification code has been sent to ${email}, please check and enter the verification code and new password";
 
-  static String m33(error) => "Submission failed: ${error}";
+  static String m35(error) => "Submission failed: ${error}";
 
-  static String m34(amount) => "Withdrawable amount: ${amount}";
+  static String m36(amount) => "Withdrawable amount: ${amount}";
 
-  static String m35(amount) => "¥${amount}";
+  static String m37(amount) => "¥${amount}";
 
-  static String m36(count, limit) => "${count} active · Limit ${limit}";
+  static String m38(count, limit) => "${count} active · Limit ${limit}";
 
-  static String m37(date) => "Expired on ${date}";
+  static String m39(date) => "Expired on ${date}";
 
-  static String m38(date) => "Valid until ${date}";
+  static String m40(date) => "Valid until ${date}";
 
-  static String m39(date, days) => "Expires on ${date}, ${days} days remaining";
+  static String m41(date, days) => "Expires on ${date}, ${days} days remaining";
 
-  static String m40(count) => "${count} candidates";
+  static String m42(count) => "${count} candidates";
 
-  static String m41(message) => "Subscription import: ${message}";
+  static String m43(message) => "Subscription import: ${message}";
 
-  static String m42(count) => "${count} nodes";
+  static String m44(count) => "${count} nodes";
 
-  static String m43(error) => "Redeem failed: ${error}";
+  static String m45(error) => "Redeem failed: ${error}";
 
-  static String m44(days) => "Used traffic will reset in ${days} days";
+  static String m46(days) => "Used traffic will reset in ${days} days";
 
-  static String m45(time) => "Running time: ${time}";
+  static String m47(time) => "Running time: ${time}";
 
   final messages = _notInlinedMessages(_notInlinedMessages);
   static Map<String, Function> _notInlinedMessages(_) => <String, Function>{
@@ -214,6 +219,167 @@ class MessageLookup extends MessageLookupByLibrary {
     ),
     "availableCommission": MessageLookupByLibrary.simpleMessage("Available"),
     "backToLogin": MessageLookupByLibrary.simpleMessage("Back to Login"),
+    "backendErrorAccountSuspended": MessageLookupByLibrary.simpleMessage(
+      "This account has been suspended",
+    ),
+    "backendErrorCouponEmpty": MessageLookupByLibrary.simpleMessage(
+      "Coupon cannot be empty",
+    ),
+    "backendErrorCouponExpired": MessageLookupByLibrary.simpleMessage(
+      "Coupon has expired",
+    ),
+    "backendErrorCouponInvalid": MessageLookupByLibrary.simpleMessage(
+      "Coupon is invalid",
+    ),
+    "backendErrorCouponLimitExceeded": MessageLookupByLibrary.simpleMessage(
+      "Coupon usage limit has been reached",
+    ),
+    "backendErrorCouponNotFound": MessageLookupByLibrary.simpleMessage(
+      "Coupon does not exist",
+    ),
+    "backendErrorEmailEmpty": MessageLookupByLibrary.simpleMessage(
+      "Email cannot be empty",
+    ),
+    "backendErrorEmailExists": MessageLookupByLibrary.simpleMessage(
+      "This email is already registered",
+    ),
+    "backendErrorEmailFormatInvalid": MessageLookupByLibrary.simpleMessage(
+      "Email format is incorrect",
+    ),
+    "backendErrorFailedToOpenTicket": MessageLookupByLibrary.simpleMessage(
+      "Failed to create withdrawal ticket",
+    ),
+    "backendErrorGiftCardAlreadyUsedByUser":
+        MessageLookupByLibrary.simpleMessage(
+          "This gift card has already been used by this user",
+        ),
+    "backendErrorGiftCardEmpty": MessageLookupByLibrary.simpleMessage(
+      "Gift card cannot be empty",
+    ),
+    "backendErrorGiftCardExpired": MessageLookupByLibrary.simpleMessage(
+      "This gift card has expired",
+    ),
+    "backendErrorGiftCardLimitReached": MessageLookupByLibrary.simpleMessage(
+      "This gift card has reached its usage limit",
+    ),
+    "backendErrorGiftCardNotFound": MessageLookupByLibrary.simpleMessage(
+      "This gift card does not exist",
+    ),
+    "backendErrorGiftCardNotYetValid": MessageLookupByLibrary.simpleMessage(
+      "This gift card is not yet valid",
+    ),
+    "backendErrorGiftCardTypeNotSuitable": MessageLookupByLibrary.simpleMessage(
+      "This gift card type is not applicable",
+    ),
+    "backendErrorGiftCardTypeUnknown": MessageLookupByLibrary.simpleMessage(
+      "Unknown gift card type",
+    ),
+    "backendErrorIncorrectEmailOrPassword":
+        MessageLookupByLibrary.simpleMessage("Incorrect email or password"),
+    "backendErrorInsufficientCommissionBalance":
+        MessageLookupByLibrary.simpleMessage("Insufficient commission balance"),
+    "backendErrorInviteCodeInvalid": MessageLookupByLibrary.simpleMessage(
+      "Invite code is invalid",
+    ),
+    "backendErrorInviteCodeNotFound": MessageLookupByLibrary.simpleMessage(
+      "Invite code does not exist",
+    ),
+    "backendErrorMinimumWithdrawalCommission": m0,
+    "backendErrorMinimumWithdrawalCommissionGeneric":
+        MessageLookupByLibrary.simpleMessage(
+          "The minimum withdrawal commission has not been reached",
+        ),
+    "backendErrorNewPasswordEmpty": MessageLookupByLibrary.simpleMessage(
+      "New password cannot be empty",
+    ),
+    "backendErrorOldPasswordWrong": MessageLookupByLibrary.simpleMessage(
+      "Old password is incorrect",
+    ),
+    "backendErrorOrderNotFound": MessageLookupByLibrary.simpleMessage(
+      "Order does not exist",
+    ),
+    "backendErrorPasswordEmpty": MessageLookupByLibrary.simpleMessage(
+      "Password cannot be empty",
+    ),
+    "backendErrorPasswordTooShort": MessageLookupByLibrary.simpleMessage(
+      "Password must be longer than 8 characters",
+    ),
+    "backendErrorPlanNotFound": MessageLookupByLibrary.simpleMessage(
+      "Plan does not exist",
+    ),
+    "backendErrorResetFailed": MessageLookupByLibrary.simpleMessage(
+      "Reset failed, please try again later",
+    ),
+    "backendErrorSaveFailed": MessageLookupByLibrary.simpleMessage(
+      "Save failed, please try again later",
+    ),
+    "backendErrorTicketClosed": MessageLookupByLibrary.simpleMessage(
+      "Ticket is closed",
+    ),
+    "backendErrorTicketNotFound": MessageLookupByLibrary.simpleMessage(
+      "Ticket does not exist",
+    ),
+    "backendErrorTooManyPasswordErrors": m1,
+    "backendErrorTooManyPasswordErrorsGeneric":
+        MessageLookupByLibrary.simpleMessage(
+          "Too many password errors, please try again later",
+        ),
+    "backendErrorTooManyRequests": MessageLookupByLibrary.simpleMessage(
+      "Too many requests, please try again later",
+    ),
+    "backendErrorTransferAmountEmpty": MessageLookupByLibrary.simpleMessage(
+      "Transfer amount cannot be empty",
+    ),
+    "backendErrorTransferAmountInvalid": MessageLookupByLibrary.simpleMessage(
+      "Transfer amount parameter is invalid",
+    ),
+    "backendErrorTransferFailed": MessageLookupByLibrary.simpleMessage(
+      "Transfer failed",
+    ),
+    "backendErrorUserNotFound": MessageLookupByLibrary.simpleMessage(
+      "User does not exist",
+    ),
+    "backendErrorVerificationCodeInvalid": MessageLookupByLibrary.simpleMessage(
+      "Verification code is incorrect",
+    ),
+    "backendErrorWithdrawNotSupported": MessageLookupByLibrary.simpleMessage(
+      "Withdrawal is currently not supported",
+    ),
+    "backendErrorWithdrawalAccountEmpty": MessageLookupByLibrary.simpleMessage(
+      "Withdrawal account cannot be empty",
+    ),
+    "backendErrorWithdrawalMethodEmpty": MessageLookupByLibrary.simpleMessage(
+      "Withdrawal method cannot be empty",
+    ),
+    "backendErrorWithdrawalMethodUnsupported":
+        MessageLookupByLibrary.simpleMessage("Unsupported withdrawal method"),
+    "backendFallbackCouponFailed": MessageLookupByLibrary.simpleMessage(
+      "Coupon check failed",
+    ),
+    "backendFallbackEmailVerifyFailed": MessageLookupByLibrary.simpleMessage(
+      "Failed to send verification code",
+    ),
+    "backendFallbackLoginFailed": MessageLookupByLibrary.simpleMessage(
+      "Login failed",
+    ),
+    "backendFallbackOperationFailed": MessageLookupByLibrary.simpleMessage(
+      "Operation failed",
+    ),
+    "backendFallbackOrderFailed": MessageLookupByLibrary.simpleMessage(
+      "Order operation failed",
+    ),
+    "backendFallbackPasswordFailed": MessageLookupByLibrary.simpleMessage(
+      "Password operation failed",
+    ),
+    "backendFallbackRegisterFailed": MessageLookupByLibrary.simpleMessage(
+      "Register failed",
+    ),
+    "backendFallbackTicketFailed": MessageLookupByLibrary.simpleMessage(
+      "Ticket operation failed",
+    ),
+    "backendFallbackTransferFailed": MessageLookupByLibrary.simpleMessage(
+      "Transfer failed",
+    ),
     "backup": MessageLookupByLibrary.simpleMessage("Backup"),
     "backupAndRecovery": MessageLookupByLibrary.simpleMessage(
       "Backup and Recovery",
@@ -317,7 +483,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "credentialsSaved": MessageLookupByLibrary.simpleMessage(
       "Credentials saved",
     ),
-    "currentCommissionRate": m0,
+    "currentCommissionRate": m2,
     "cut": MessageLookupByLibrary.simpleMessage("Cut"),
     "dark": MessageLookupByLibrary.simpleMessage("Dark"),
     "dashboard": MessageLookupByLibrary.simpleMessage("Dashboard"),
@@ -333,8 +499,8 @@ class MessageLookup extends MessageLookupByLibrary {
     "delay": MessageLookupByLibrary.simpleMessage("Delay"),
     "delaySort": MessageLookupByLibrary.simpleMessage("Sort by delay"),
     "delete": MessageLookupByLibrary.simpleMessage("Delete"),
-    "deleteMultipTip": m1,
-    "deleteTip": m2,
+    "deleteMultipTip": m3,
+    "deleteTip": m4,
     "desc": MessageLookupByLibrary.simpleMessage(
       "A multi-platform proxy client based on ClashMeta",
     ),
@@ -377,7 +543,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "emailVerificationCode": MessageLookupByLibrary.simpleMessage(
       "Email Verification Code",
     ),
-    "emptyTip": m3,
+    "emptyTip": m5,
     "en": MessageLookupByLibrary.simpleMessage("English"),
     "enableOverride": MessageLookupByLibrary.simpleMessage("Enable override"),
     "enterEmailForReset": MessageLookupByLibrary.simpleMessage(
@@ -394,7 +560,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "excludeDesc": MessageLookupByLibrary.simpleMessage(
       "When the app is in the background, the app is hidden from the recent task",
     ),
-    "existsTip": m4,
+    "existsTip": m6,
     "exit": MessageLookupByLibrary.simpleMessage("Exit"),
     "expand": MessageLookupByLibrary.simpleMessage("Standard"),
     "expirationTime": MessageLookupByLibrary.simpleMessage("Expiration time"),
@@ -508,9 +674,6 @@ class MessageLookup extends MessageLookupByLibrary {
     "inviteCodeGenFailed": MessageLookupByLibrary.simpleMessage(
       "Invite code generation failed",
     ),
-    "inviteCodeIncorrect": MessageLookupByLibrary.simpleMessage(
-      "Invite code may be incorrect, please check and re-enter",
-    ),
     "inviteCodeOptional": MessageLookupByLibrary.simpleMessage(
       "Invite Code (optional)",
     ),
@@ -567,7 +730,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "logoutConfirmMsg": MessageLookupByLibrary.simpleMessage(
       "Are you sure you want to sign out? You need to sign in again.",
     ),
-    "logoutFailed": m5,
+    "logoutFailed": m7,
     "logs": MessageLookupByLibrary.simpleMessage("Logs"),
     "logsDesc": MessageLookupByLibrary.simpleMessage("Log capture records"),
     "logsTest": MessageLookupByLibrary.simpleMessage("Logs test"),
@@ -576,7 +739,7 @@ class MessageLookup extends MessageLookupByLibrary {
       "Used for UWP loopback unlocking",
     ),
     "loose": MessageLookupByLibrary.simpleMessage("Loose"),
-    "maxTransferable": m6,
+    "maxTransferable": m8,
     "memoryInfo": MessageLookupByLibrary.simpleMessage("Memory info"),
     "messageTest": MessageLookupByLibrary.simpleMessage("Message test"),
     "messageTestTip": MessageLookupByLibrary.simpleMessage(
@@ -646,8 +809,8 @@ class MessageLookup extends MessageLookupByLibrary {
     "nullProfileDesc": MessageLookupByLibrary.simpleMessage(
       "No profile, Please add a profile",
     ),
-    "nullTip": m7,
-    "numberTip": m8,
+    "nullTip": m9,
+    "numberTip": m10,
     "officialWebsite": MessageLookupByLibrary.simpleMessage("Website"),
     "oneColumn": MessageLookupByLibrary.simpleMessage("One column"),
     "onlineSupport": MessageLookupByLibrary.simpleMessage("Support"),
@@ -678,7 +841,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "onlineSupportDisconnected": MessageLookupByLibrary.simpleMessage(
       "Disconnected",
     ),
-    "onlineSupportGetMessagesFailed": m9,
+    "onlineSupportGetMessagesFailed": m11,
     "onlineSupportInputHint": MessageLookupByLibrary.simpleMessage(
       "Please enter your question...",
     ),
@@ -688,7 +851,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "onlineSupportSelectImages": MessageLookupByLibrary.simpleMessage(
       "Select Images",
     ),
-    "onlineSupportSelectImagesFailed": m10,
+    "onlineSupportSelectImagesFailed": m12,
     "onlineSupportSend": MessageLookupByLibrary.simpleMessage("Send"),
     "onlineSupportSendImage": MessageLookupByLibrary.simpleMessage(
       "Send image",
@@ -705,8 +868,8 @@ class MessageLookup extends MessageLookupByLibrary {
     "onlineSupportTokenNotFound": MessageLookupByLibrary.simpleMessage(
       "Authentication token not found",
     ),
-    "onlineSupportUnsupportedHttpMethod": m11,
-    "onlineSupportUploadFailed": m12,
+    "onlineSupportUnsupportedHttpMethod": m13,
+    "onlineSupportUploadFailed": m14,
     "onlineSupportWebSocketConfigNotFound": MessageLookupByLibrary.simpleMessage(
       "Online support WebSocket configuration not found, please check configuration",
     ),
@@ -724,8 +887,8 @@ class MessageLookup extends MessageLookupByLibrary {
       "Failed to open web, please visit manually",
     ),
     "options": MessageLookupByLibrary.simpleMessage("Options"),
-    "orderAmount": m13,
-    "orderNumber": m14,
+    "orderAmount": m15,
+    "orderNumber": m16,
     "other": MessageLookupByLibrary.simpleMessage("Other"),
     "otherContributors": MessageLookupByLibrary.simpleMessage(
       "Other contributors",
@@ -745,7 +908,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "overrideOriginRules": MessageLookupByLibrary.simpleMessage(
       "Override the original rule",
     ),
-    "pageNumber": m15,
+    "pageNumber": m17,
     "palette": MessageLookupByLibrary.simpleMessage("Palette"),
     "password": MessageLookupByLibrary.simpleMessage("Password"),
     "passwordMin8Chars": MessageLookupByLibrary.simpleMessage(
@@ -839,7 +1002,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "portConflictTip": MessageLookupByLibrary.simpleMessage(
       "Please enter a different port",
     ),
-    "portTip": m16,
+    "portTip": m18,
     "preferH3Desc": MessageLookupByLibrary.simpleMessage(
       "Prioritize the use of DOH\'s http/3",
     ),
@@ -916,7 +1079,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "registerSuccessSaveCredentials": MessageLookupByLibrary.simpleMessage(
       "Registration successful - Saving credentials:",
     ),
-    "registrationFailed": m17,
+    "registrationFailed": m19,
     "rememberPassword": MessageLookupByLibrary.simpleMessage(
       "Remember your password?",
     ),
@@ -977,14 +1140,14 @@ class MessageLookup extends MessageLookupByLibrary {
     "selectAll": MessageLookupByLibrary.simpleMessage("Select all"),
     "selectTheme": MessageLookupByLibrary.simpleMessage("Select Theme"),
     "selected": MessageLookupByLibrary.simpleMessage("Selected"),
-    "selectedCountTitle": m18,
+    "selectedCountTitle": m20,
     "sendCodeFailed": MessageLookupByLibrary.simpleMessage(
       "Failed to send verification code",
     ),
     "sendVerificationCode": MessageLookupByLibrary.simpleMessage(
       "Send Verification Code",
     ),
-    "sendVerificationCodeFailed": m19,
+    "sendVerificationCodeFailed": m21,
     "setNewPassword": MessageLookupByLibrary.simpleMessage("Set New Password"),
     "settings": MessageLookupByLibrary.simpleMessage("Settings"),
     "show": MessageLookupByLibrary.simpleMessage("Show Window"),
@@ -1014,7 +1177,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "subscriptionExpired": MessageLookupByLibrary.simpleMessage(
       "Subscription expired",
     ),
-    "subscriptionExpiredDetail": m20,
+    "subscriptionExpiredDetail": m22,
     "subscriptionExpiresToday": MessageLookupByLibrary.simpleMessage(
       "Subscription expires today",
     ),
@@ -1024,7 +1187,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "subscriptionExpiringInDays": MessageLookupByLibrary.simpleMessage(
       "Subscription expiring soon",
     ),
-    "subscriptionExpiringInDaysDetail": m21,
+    "subscriptionExpiringInDaysDetail": m23,
     "subscriptionNoSubscription": MessageLookupByLibrary.simpleMessage(
       "No subscription",
     ),
@@ -1046,7 +1209,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "subscriptionValid": MessageLookupByLibrary.simpleMessage(
       "Subscription valid",
     ),
-    "subscriptionValidDetail": m22,
+    "subscriptionValidDetail": m24,
     "switchTheme": MessageLookupByLibrary.simpleMessage("Switch Theme"),
     "sync": MessageLookupByLibrary.simpleMessage("Sync"),
     "system": MessageLookupByLibrary.simpleMessage("System"),
@@ -1083,20 +1246,20 @@ class MessageLookup extends MessageLookupByLibrary {
     "tools": MessageLookupByLibrary.simpleMessage("Tools"),
     "totalCommission": MessageLookupByLibrary.simpleMessage("Earnings"),
     "totalInvites": MessageLookupByLibrary.simpleMessage("Invites"),
-    "totalRecords": m23,
+    "totalRecords": m25,
     "tproxyPort": MessageLookupByLibrary.simpleMessage("Tproxy Port"),
     "trafficUsage": MessageLookupByLibrary.simpleMessage("Traffic usage"),
     "transfer": MessageLookupByLibrary.simpleMessage("Transfer"),
     "transferAmount": MessageLookupByLibrary.simpleMessage("Transfer Amount"),
-    "transferAmountExceeded": m24,
-    "transferFailed": m25,
+    "transferAmountExceeded": m26,
+    "transferFailed": m27,
     "transferNote": MessageLookupByLibrary.simpleMessage(
       "Transferred balance can be used for in-app purchases",
     ),
     "transferSuccess": MessageLookupByLibrary.simpleMessage(
       "Transfer Success!",
     ),
-    "transferSuccessMsg": m26,
+    "transferSuccessMsg": m28,
     "transferToWallet": MessageLookupByLibrary.simpleMessage(
       "Transfer to Wallet",
     ),
@@ -1122,19 +1285,19 @@ class MessageLookup extends MessageLookupByLibrary {
     "updateCheckAllServersUnavailable": MessageLookupByLibrary.simpleMessage(
       "All configured update servers are unavailable",
     ),
-    "updateCheckCurrentVersion": m27,
-    "updateCheckForceUpdate": m28,
+    "updateCheckCurrentVersion": m29,
+    "updateCheckForceUpdate": m30,
     "updateCheckMustUpdate": MessageLookupByLibrary.simpleMessage(
       "Must Update",
     ),
-    "updateCheckNewVersionFound": m29,
+    "updateCheckNewVersionFound": m31,
     "updateCheckNoServerUrlsConfigured": MessageLookupByLibrary.simpleMessage(
       "No update server URLs configured, please check configuration",
     ),
     "updateCheckReleaseNotes": MessageLookupByLibrary.simpleMessage(
       "Release Notes:",
     ),
-    "updateCheckServerError": m30,
+    "updateCheckServerError": m32,
     "updateCheckServerTemporarilyUnavailable":
         MessageLookupByLibrary.simpleMessage(
           "Server temporarily unavailable, please try again later",
@@ -1151,7 +1314,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "urlDesc": MessageLookupByLibrary.simpleMessage(
       "Obtain profile through URL",
     ),
-    "urlTip": m31,
+    "urlTip": m33,
     "useHosts": MessageLookupByLibrary.simpleMessage("Use hosts"),
     "useSystemHosts": MessageLookupByLibrary.simpleMessage("Use system hosts"),
     "userCenter": MessageLookupByLibrary.simpleMessage("User Center"),
@@ -1168,7 +1331,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "verificationCodeSentCheckEmail": MessageLookupByLibrary.simpleMessage(
       "Verification code sent, please check your email",
     ),
-    "verificationCodeSentTo": m32,
+    "verificationCodeSentTo": m34,
     "vibrantScheme": MessageLookupByLibrary.simpleMessage("Vibrant"),
     "view": MessageLookupByLibrary.simpleMessage("View"),
     "viewHistory": MessageLookupByLibrary.simpleMessage("View History"),
@@ -1210,11 +1373,11 @@ class MessageLookup extends MessageLookupByLibrary {
     "withdrawSubmissionFailed": MessageLookupByLibrary.simpleMessage(
       "Submission failed",
     ),
-    "withdrawSubmissionFailedWithError": m33,
+    "withdrawSubmissionFailedWithError": m35,
     "withdrawSubmissionNote": MessageLookupByLibrary.simpleMessage(
       "The withdrawal request will be submitted through the ticket system. Please wait for admin review.",
     ),
-    "withdrawableAmount": m34,
+    "withdrawableAmount": m36,
     "withdrawalAvailable": MessageLookupByLibrary.simpleMessage(
       "Available commission can be withdrawn",
     ),
@@ -1262,7 +1425,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "xboardBalancePay": MessageLookupByLibrary.simpleMessage(
       "Pay with balance",
     ),
-    "xboardBalanceWithAmount": m35,
+    "xboardBalanceWithAmount": m37,
     "xboardBrowserNotOpenedTip": MessageLookupByLibrary.simpleMessage(
       "If browser doesn\'t open automatically, click \\\"Reopen\\\" or copy link manually",
     ),
@@ -1496,7 +1659,7 @@ class MessageLookup extends MessageLookupByLibrary {
       "Device removed",
     ),
     "xboardDeviceRevoked": MessageLookupByLibrary.simpleMessage("Removed"),
-    "xboardDeviceSummary": m36,
+    "xboardDeviceSummary": m38,
     "xboardDeviceUnknown": MessageLookupByLibrary.simpleMessage("Unknown"),
     "xboardDeviceUnknownVersion": MessageLookupByLibrary.simpleMessage(
       "Unknown version",
@@ -1538,9 +1701,9 @@ class MessageLookup extends MessageLookupByLibrary {
       "Enter gift card redemption code",
     ),
     "xboardExcellent": MessageLookupByLibrary.simpleMessage("Excellent"),
-    "xboardExpiredOnDate": m37,
-    "xboardExpiresOnDate": m38,
-    "xboardExpiresOnWithDays": m39,
+    "xboardExpiredOnDate": m39,
+    "xboardExpiresOnDate": m40,
+    "xboardExpiresOnWithDays": m41,
     "xboardExpiryTime": MessageLookupByLibrary.simpleMessage("Expiry time"),
     "xboardFailedToCheckPaymentStatus": MessageLookupByLibrary.simpleMessage(
       "Failed to check payment status",
@@ -1559,7 +1722,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "xboardForgotPassword": MessageLookupByLibrary.simpleMessage(
       "Forgot Password",
     ),
-    "xboardGatewayCandidateCount": m40,
+    "xboardGatewayCandidateCount": m42,
     "xboardGatewayStatus": MessageLookupByLibrary.simpleMessage(
       "Gateway status",
     ),
@@ -1633,7 +1796,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "xboardHealthLastEvent": MessageLookupByLibrary.simpleMessage(
       "Latest event",
     ),
-    "xboardHealthSubscriptionImport": m41,
+    "xboardHealthSubscriptionImport": m43,
     "xboardHealthTunApplied": MessageLookupByLibrary.simpleMessage("Applied"),
     "xboardHealthTunPending": MessageLookupByLibrary.simpleMessage(
       "Waiting to apply",
@@ -1774,7 +1937,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "xboardNoTrafficRecords": MessageLookupByLibrary.simpleMessage(
       "No traffic records",
     ),
-    "xboardNodeCount": m42,
+    "xboardNodeCount": m44,
     "xboardNodeHealth": MessageLookupByLibrary.simpleMessage("Node status"),
     "xboardNodeName": MessageLookupByLibrary.simpleMessage("Node Name"),
     "xboardNodeSelection": MessageLookupByLibrary.simpleMessage(
@@ -1967,7 +2130,7 @@ class MessageLookup extends MessageLookupByLibrary {
     ),
     "xboardRechargeNow": MessageLookupByLibrary.simpleMessage("Recharge now"),
     "xboardRedeemFailed": MessageLookupByLibrary.simpleMessage("Redeem failed"),
-    "xboardRedeemFailedWithError": m43,
+    "xboardRedeemFailedWithError": m45,
     "xboardRedeemNow": MessageLookupByLibrary.simpleMessage("Redeem now"),
     "xboardRedeemSuccess": MessageLookupByLibrary.simpleMessage(
       "Redeem successful",
@@ -2023,7 +2186,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "xboardResetTrafficConfirmContent": MessageLookupByLibrary.simpleMessage(
       "This will reset the used traffic, but will not extend the plan duration. Continue?",
     ),
-    "xboardResetTrafficInDays": m44,
+    "xboardResetTrafficInDays": m46,
     "xboardResetTrafficToday": MessageLookupByLibrary.simpleMessage(
       "Used traffic has been reset today",
     ),
@@ -2034,7 +2197,7 @@ class MessageLookup extends MessageLookupByLibrary {
       "3. Return to app after payment, system will detect automatically",
     ),
     "xboardRunDiagnosis": MessageLookupByLibrary.simpleMessage("Run check"),
-    "xboardRunningTime": m45,
+    "xboardRunningTime": m47,
     "xboardSecureEncryption": MessageLookupByLibrary.simpleMessage(
       "Secure encryption",
     ),

@@ -20,97 +20,101 @@ typedef String MessageIfAbsent(String messageStr, List<dynamic> args);
 class MessageLookup extends MessageLookupByLibrary {
   String get localeName => 'ko';
 
-  static String m0(rate) => "현재 커미션 rate: ${rate}";
+  static String m0(limit) => "현재 최소 출금 커미션은 ${limit}입니다";
 
-  static String m1(label) => "삭제 multip 안내: ${label}";
+  static String m1(minute) => "비밀번호 오류 횟수가 너무 많습니다. ${minute}분 후 다시 시도해 주세요";
 
-  static String m2(label) => "삭제 안내: ${label}";
+  static String m2(rate) => "현재 커미션 rate: ${rate}";
 
-  static String m3(label) => "비어 있음 안내: ${label}";
+  static String m3(label) => "삭제 multip 안내: ${label}";
 
-  static String m4(label) => "exists 안내: ${label}";
+  static String m4(label) => "삭제 안내: ${label}";
 
-  static String m5(error) => "로그아웃 실패: ${error}";
+  static String m5(label) => "비어 있음 안내: ${label}";
 
-  static String m6(amount) => "MAX transferable: ${amount}";
+  static String m6(label) => "exists 안내: ${label}";
 
-  static String m7(label) => "없음 안내: ${label}";
+  static String m7(error) => "로그아웃 실패: ${error}";
 
-  static String m8(label) => "number 안내: ${label}";
+  static String m8(amount) => "MAX transferable: ${amount}";
 
-  static String m9(statusCode) => "메시지 가져오기 실패: ${statusCode}";
+  static String m9(label) => "없음 안내: ${label}";
 
-  static String m10(error) => "지원 선택 이미지 실패: ${error}";
+  static String m10(label) => "number 안내: ${label}";
 
-  static String m11(method) => "지원하지 않는 HTTP 메서드: ${method}";
+  static String m11(statusCode) => "메시지 가져오기 실패: ${statusCode}";
 
-  static String m12(error) => "지원 업로드 실패: ${error}";
+  static String m12(error) => "지원 선택 이미지 실패: ${error}";
 
-  static String m13(amount) => "주문 금액: ${amount}";
+  static String m13(method) => "지원하지 않는 HTTP 메서드: ${method}";
 
-  static String m14(orderNo) => "주문 number: ${orderNo}";
+  static String m14(error) => "지원 업로드 실패: ${error}";
 
-  static String m15(page) => "page number: ${page}";
+  static String m15(amount) => "주문 금액: ${amount}";
 
-  static String m16(label) => "포트 안내: ${label}";
+  static String m16(orderNo) => "주문 number: ${orderNo}";
 
-  static String m17(e) => "registration 실패: ${e}";
+  static String m17(page) => "page number: ${page}";
 
-  static String m18(count) => "선택됨 count 제목: ${count}";
+  static String m18(label) => "포트 안내: ${label}";
 
-  static String m19(e) => "보내기 인증 코드 실패: ${e}";
+  static String m19(e) => "registration 실패: ${e}";
 
-  static String m20(date) => "구독 만료됨 상세: ${date}";
+  static String m20(count) => "선택됨 count 제목: ${count}";
 
-  static String m21(days) => "구독 expiring IN 일 상세: ${days}";
+  static String m21(e) => "보내기 인증 코드 실패: ${e}";
 
-  static String m22(days) => "구독 유효 상세: ${days}";
+  static String m22(date) => "구독 만료됨 상세: ${date}";
 
-  static String m23(count) => "전체 기록: ${count}";
+  static String m23(days) => "구독 expiring IN 일 상세: ${days}";
 
-  static String m24(amount) => "이체 금액 exceeded: ${amount}";
+  static String m24(days) => "구독 유효 상세: ${days}";
 
-  static String m25(error) => "이체 실패: ${error}";
+  static String m25(count) => "전체 기록: ${count}";
 
-  static String m26(amount) => "이체 성공 MSG: ${amount}";
+  static String m26(amount) => "이체 금액 exceeded: ${amount}";
 
-  static String m27(version) => "업데이트 확인 현재 버전: ${version}";
+  static String m27(error) => "이체 실패: ${error}";
 
-  static String m28(version) => "업데이트 확인 force 업데이트: ${version}";
+  static String m28(amount) => "이체 성공 MSG: ${amount}";
 
-  static String m29(version) => "업데이트 확인 새 버전 found: ${version}";
+  static String m29(version) => "업데이트 확인 현재 버전: ${version}";
 
-  static String m30(statusCode) => "업데이트 확인 서버 오류: ${statusCode}";
+  static String m30(version) => "업데이트 확인 force 업데이트: ${version}";
 
-  static String m31(label) => "URL 안내: ${label}";
+  static String m31(version) => "업데이트 확인 새 버전 found: ${version}";
 
-  static String m32(email) => "인증 코드 sent TO: ${email}";
+  static String m32(statusCode) => "업데이트 확인 서버 오류: ${statusCode}";
 
-  static String m33(error) => "출금 submission 실패 with 오류: ${error}";
+  static String m33(label) => "URL 안내: ${label}";
 
-  static String m34(amount) => "withdrawable 금액: ${amount}";
+  static String m34(email) => "인증 코드 sent TO: ${email}";
 
-  static String m35(amount) => "잔액 with 금액: ${amount}";
+  static String m35(error) => "출금 submission 실패 with 오류: ${error}";
 
-  static String m36(count, limit) => "활성 ${count}대 · 한도 ${limit}";
+  static String m36(amount) => "withdrawable 금액: ${amount}";
 
-  static String m37(date) => "만료됨 ON date: ${date}";
+  static String m37(amount) => "잔액 with 금액: ${amount}";
 
-  static String m38(date) => "만료 ON date: ${date}";
+  static String m38(count, limit) => "활성 ${count}대 · 한도 ${limit}";
 
-  static String m39(date, days) => "만료 ON with 일: ${date}: ${days}";
+  static String m39(date) => "만료됨 ON date: ${date}";
 
-  static String m40(count) => "후보 ${count}개";
+  static String m40(date) => "만료 ON date: ${date}";
 
-  static String m41(message) => "구독 가져오기: ${message}";
+  static String m41(date, days) => "만료 ON with 일: ${date}: ${days}";
 
-  static String m42(count) => "노드 ${count}개";
+  static String m42(count) => "후보 ${count}개";
 
-  static String m43(error) => "redeem 실패 with 오류: ${error}";
+  static String m43(message) => "구독 가져오기: ${message}";
 
-  static String m44(days) => "초기화 트래픽 IN 일: ${days}";
+  static String m44(count) => "노드 ${count}개";
 
-  static String m45(time) => "실행 중 time: ${time}";
+  static String m45(error) => "redeem 실패 with 오류: ${error}";
+
+  static String m46(days) => "초기화 트래픽 IN 일: ${days}";
+
+  static String m47(time) => "실행 중 time: ${time}";
 
   final messages = _notInlinedMessages(_notInlinedMessages);
   static Map<String, Function> _notInlinedMessages(_) => <String, Function>{
@@ -181,6 +185,163 @@ class MessageLookup extends MessageLookupByLibrary {
     ),
     "availableCommission": MessageLookupByLibrary.simpleMessage("사용 가능 커미션"),
     "backToLogin": MessageLookupByLibrary.simpleMessage("back TO 로그인"),
+    "backendErrorAccountSuspended": MessageLookupByLibrary.simpleMessage(
+      "이 계정은 사용이 중지되었습니다",
+    ),
+    "backendErrorCouponEmpty": MessageLookupByLibrary.simpleMessage(
+      "쿠폰을 입력해 주세요",
+    ),
+    "backendErrorCouponExpired": MessageLookupByLibrary.simpleMessage(
+      "쿠폰이 만료되었습니다",
+    ),
+    "backendErrorCouponInvalid": MessageLookupByLibrary.simpleMessage(
+      "쿠폰이 유효하지 않습니다",
+    ),
+    "backendErrorCouponLimitExceeded": MessageLookupByLibrary.simpleMessage(
+      "쿠폰 사용 한도에 도달했습니다",
+    ),
+    "backendErrorCouponNotFound": MessageLookupByLibrary.simpleMessage(
+      "쿠폰이 존재하지 않습니다",
+    ),
+    "backendErrorEmailEmpty": MessageLookupByLibrary.simpleMessage(
+      "이메일을 입력해 주세요",
+    ),
+    "backendErrorEmailExists": MessageLookupByLibrary.simpleMessage(
+      "이미 등록된 이메일입니다",
+    ),
+    "backendErrorEmailFormatInvalid": MessageLookupByLibrary.simpleMessage(
+      "이메일 형식이 올바르지 않습니다",
+    ),
+    "backendErrorFailedToOpenTicket": MessageLookupByLibrary.simpleMessage(
+      "출금 티켓 생성에 실패했습니다",
+    ),
+    "backendErrorGiftCardAlreadyUsedByUser":
+        MessageLookupByLibrary.simpleMessage("이 기프트 카드는 이미 이 사용자가 사용했습니다"),
+    "backendErrorGiftCardEmpty": MessageLookupByLibrary.simpleMessage(
+      "기프트 카드를 입력해 주세요",
+    ),
+    "backendErrorGiftCardExpired": MessageLookupByLibrary.simpleMessage(
+      "이 기프트 카드는 만료되었습니다",
+    ),
+    "backendErrorGiftCardLimitReached": MessageLookupByLibrary.simpleMessage(
+      "이 기프트 카드는 사용 한도에 도달했습니다",
+    ),
+    "backendErrorGiftCardNotFound": MessageLookupByLibrary.simpleMessage(
+      "이 기프트 카드가 존재하지 않습니다",
+    ),
+    "backendErrorGiftCardNotYetValid": MessageLookupByLibrary.simpleMessage(
+      "이 기프트 카드는 아직 유효하지 않습니다",
+    ),
+    "backendErrorGiftCardTypeNotSuitable": MessageLookupByLibrary.simpleMessage(
+      "이 기프트 카드 유형은 적용할 수 없습니다",
+    ),
+    "backendErrorGiftCardTypeUnknown": MessageLookupByLibrary.simpleMessage(
+      "알 수 없는 기프트 카드 유형입니다",
+    ),
+    "backendErrorIncorrectEmailOrPassword":
+        MessageLookupByLibrary.simpleMessage("이메일 또는 비밀번호가 올바르지 않습니다"),
+    "backendErrorInsufficientCommissionBalance":
+        MessageLookupByLibrary.simpleMessage("커미션 잔액이 부족합니다"),
+    "backendErrorInviteCodeInvalid": MessageLookupByLibrary.simpleMessage(
+      "초대 코드가 유효하지 않습니다",
+    ),
+    "backendErrorInviteCodeNotFound": MessageLookupByLibrary.simpleMessage(
+      "초대 코드가 존재하지 않습니다",
+    ),
+    "backendErrorMinimumWithdrawalCommission": m0,
+    "backendErrorMinimumWithdrawalCommissionGeneric":
+        MessageLookupByLibrary.simpleMessage("최소 출금 커미션 조건을 충족하지 못했습니다"),
+    "backendErrorNewPasswordEmpty": MessageLookupByLibrary.simpleMessage(
+      "새 비밀번호를 입력해 주세요",
+    ),
+    "backendErrorOldPasswordWrong": MessageLookupByLibrary.simpleMessage(
+      "기존 비밀번호가 올바르지 않습니다",
+    ),
+    "backendErrorOrderNotFound": MessageLookupByLibrary.simpleMessage(
+      "주문이 존재하지 않습니다",
+    ),
+    "backendErrorPasswordEmpty": MessageLookupByLibrary.simpleMessage(
+      "비밀번호를 입력해 주세요",
+    ),
+    "backendErrorPasswordTooShort": MessageLookupByLibrary.simpleMessage(
+      "비밀번호는 8자보다 길어야 합니다",
+    ),
+    "backendErrorPlanNotFound": MessageLookupByLibrary.simpleMessage(
+      "플랜이 존재하지 않습니다",
+    ),
+    "backendErrorResetFailed": MessageLookupByLibrary.simpleMessage(
+      "초기화에 실패했습니다. 잠시 후 다시 시도해 주세요",
+    ),
+    "backendErrorSaveFailed": MessageLookupByLibrary.simpleMessage(
+      "저장에 실패했습니다. 잠시 후 다시 시도해 주세요",
+    ),
+    "backendErrorTicketClosed": MessageLookupByLibrary.simpleMessage(
+      "티켓이 닫혀 있습니다",
+    ),
+    "backendErrorTicketNotFound": MessageLookupByLibrary.simpleMessage(
+      "티켓이 존재하지 않습니다",
+    ),
+    "backendErrorTooManyPasswordErrors": m1,
+    "backendErrorTooManyPasswordErrorsGeneric":
+        MessageLookupByLibrary.simpleMessage(
+          "비밀번호 오류 횟수가 너무 많습니다. 잠시 후 다시 시도해 주세요",
+        ),
+    "backendErrorTooManyRequests": MessageLookupByLibrary.simpleMessage(
+      "요청이 너무 많습니다. 잠시 후 다시 시도해 주세요",
+    ),
+    "backendErrorTransferAmountEmpty": MessageLookupByLibrary.simpleMessage(
+      "이체 금액을 입력해 주세요",
+    ),
+    "backendErrorTransferAmountInvalid": MessageLookupByLibrary.simpleMessage(
+      "이체 금액 파라미터가 올바르지 않습니다",
+    ),
+    "backendErrorTransferFailed": MessageLookupByLibrary.simpleMessage(
+      "이체에 실패했습니다",
+    ),
+    "backendErrorUserNotFound": MessageLookupByLibrary.simpleMessage(
+      "사용자가 존재하지 않습니다",
+    ),
+    "backendErrorVerificationCodeInvalid": MessageLookupByLibrary.simpleMessage(
+      "인증 코드가 올바르지 않습니다",
+    ),
+    "backendErrorWithdrawNotSupported": MessageLookupByLibrary.simpleMessage(
+      "현재 출금을 지원하지 않습니다",
+    ),
+    "backendErrorWithdrawalAccountEmpty": MessageLookupByLibrary.simpleMessage(
+      "출금 계정을 입력해 주세요",
+    ),
+    "backendErrorWithdrawalMethodEmpty": MessageLookupByLibrary.simpleMessage(
+      "출금 방식을 입력해 주세요",
+    ),
+    "backendErrorWithdrawalMethodUnsupported":
+        MessageLookupByLibrary.simpleMessage("지원하지 않는 출금 방식입니다"),
+    "backendFallbackCouponFailed": MessageLookupByLibrary.simpleMessage(
+      "쿠폰 확인에 실패했습니다",
+    ),
+    "backendFallbackEmailVerifyFailed": MessageLookupByLibrary.simpleMessage(
+      "인증 코드 전송에 실패했습니다",
+    ),
+    "backendFallbackLoginFailed": MessageLookupByLibrary.simpleMessage(
+      "로그인에 실패했습니다",
+    ),
+    "backendFallbackOperationFailed": MessageLookupByLibrary.simpleMessage(
+      "작업에 실패했습니다",
+    ),
+    "backendFallbackOrderFailed": MessageLookupByLibrary.simpleMessage(
+      "주문 작업에 실패했습니다",
+    ),
+    "backendFallbackPasswordFailed": MessageLookupByLibrary.simpleMessage(
+      "비밀번호 작업에 실패했습니다",
+    ),
+    "backendFallbackRegisterFailed": MessageLookupByLibrary.simpleMessage(
+      "가입에 실패했습니다",
+    ),
+    "backendFallbackTicketFailed": MessageLookupByLibrary.simpleMessage(
+      "티켓 작업에 실패했습니다",
+    ),
+    "backendFallbackTransferFailed": MessageLookupByLibrary.simpleMessage(
+      "이체에 실패했습니다",
+    ),
     "backup": MessageLookupByLibrary.simpleMessage("백업"),
     "backupAndRecovery": MessageLookupByLibrary.simpleMessage(
       "백업 AND recovery",
@@ -256,7 +417,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "credentialsSaved": MessageLookupByLibrary.simpleMessage(
       "credentials saved",
     ),
-    "currentCommissionRate": m0,
+    "currentCommissionRate": m2,
     "cut": MessageLookupByLibrary.simpleMessage("CUT"),
     "dark": MessageLookupByLibrary.simpleMessage("dark"),
     "dashboard": MessageLookupByLibrary.simpleMessage("대시보드"),
@@ -270,8 +431,8 @@ class MessageLookup extends MessageLookupByLibrary {
     "delay": MessageLookupByLibrary.simpleMessage("지연"),
     "delaySort": MessageLookupByLibrary.simpleMessage("지연 정렬"),
     "delete": MessageLookupByLibrary.simpleMessage("삭제"),
-    "deleteMultipTip": m1,
-    "deleteTip": m2,
+    "deleteMultipTip": m3,
+    "deleteTip": m4,
     "desc": MessageLookupByLibrary.simpleMessage("설명"),
     "detectionTip": MessageLookupByLibrary.simpleMessage("감지 안내"),
     "developerMode": MessageLookupByLibrary.simpleMessage("developer 모드"),
@@ -300,7 +461,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "edit": MessageLookupByLibrary.simpleMessage("편집"),
     "emailAddress": MessageLookupByLibrary.simpleMessage("이메일 주소"),
     "emailVerificationCode": MessageLookupByLibrary.simpleMessage("이메일 인증 코드"),
-    "emptyTip": m3,
+    "emptyTip": m5,
     "en": MessageLookupByLibrary.simpleMessage("영어"),
     "enableOverride": MessageLookupByLibrary.simpleMessage("활성화 오버라이드"),
     "enterEmailForReset": MessageLookupByLibrary.simpleMessage(
@@ -313,7 +474,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "entries": MessageLookupByLibrary.simpleMessage("entries"),
     "exclude": MessageLookupByLibrary.simpleMessage("exclude"),
     "excludeDesc": MessageLookupByLibrary.simpleMessage("exclude 설명"),
-    "existsTip": m4,
+    "existsTip": m6,
     "exit": MessageLookupByLibrary.simpleMessage("종료"),
     "expand": MessageLookupByLibrary.simpleMessage("expand"),
     "expirationTime": MessageLookupByLibrary.simpleMessage("expiration time"),
@@ -401,9 +562,6 @@ class MessageLookup extends MessageLookupByLibrary {
     "invite": MessageLookupByLibrary.simpleMessage("초대"),
     "inviteCode": MessageLookupByLibrary.simpleMessage("초대 코드"),
     "inviteCodeGenFailed": MessageLookupByLibrary.simpleMessage("초대 코드 GEN 실패"),
-    "inviteCodeIncorrect": MessageLookupByLibrary.simpleMessage(
-      "초대 코드 incorrect",
-    ),
     "inviteCodeOptional": MessageLookupByLibrary.simpleMessage(
       "초대 코드 optional",
     ),
@@ -444,14 +602,14 @@ class MessageLookup extends MessageLookupByLibrary {
     "loginNow": MessageLookupByLibrary.simpleMessage("로그인 NOW"),
     "logout": MessageLookupByLibrary.simpleMessage("로그아웃"),
     "logoutConfirmMsg": MessageLookupByLibrary.simpleMessage("로그아웃 확인 MSG"),
-    "logoutFailed": m5,
+    "logoutFailed": m7,
     "logs": MessageLookupByLibrary.simpleMessage("로그"),
     "logsDesc": MessageLookupByLibrary.simpleMessage("로그 설명"),
     "logsTest": MessageLookupByLibrary.simpleMessage("로그 테스트"),
     "loopback": MessageLookupByLibrary.simpleMessage("loopback"),
     "loopbackDesc": MessageLookupByLibrary.simpleMessage("loopback 설명"),
     "loose": MessageLookupByLibrary.simpleMessage("loose"),
-    "maxTransferable": m6,
+    "maxTransferable": m8,
     "memoryInfo": MessageLookupByLibrary.simpleMessage("memory 정보"),
     "messageTest": MessageLookupByLibrary.simpleMessage("메시지 테스트"),
     "messageTestTip": MessageLookupByLibrary.simpleMessage("메시지 테스트 안내"),
@@ -499,8 +657,8 @@ class MessageLookup extends MessageLookupByLibrary {
     "notConnected": MessageLookupByLibrary.simpleMessage("연결되지 않음"),
     "notSelectedTip": MessageLookupByLibrary.simpleMessage("NOT 선택됨 안내"),
     "nullProfileDesc": MessageLookupByLibrary.simpleMessage("없음 프로필 설명"),
-    "nullTip": m7,
-    "numberTip": m8,
+    "nullTip": m9,
+    "numberTip": m10,
     "officialWebsite": MessageLookupByLibrary.simpleMessage("웹사이트"),
     "oneColumn": MessageLookupByLibrary.simpleMessage("ONE column"),
     "onlineSupport": MessageLookupByLibrary.simpleMessage("온라인 지원"),
@@ -525,7 +683,7 @@ class MessageLookup extends MessageLookupByLibrary {
       "연결 오류",
     ),
     "onlineSupportDisconnected": MessageLookupByLibrary.simpleMessage("연결 해제됨"),
-    "onlineSupportGetMessagesFailed": m9,
+    "onlineSupportGetMessagesFailed": m11,
     "onlineSupportInputHint": MessageLookupByLibrary.simpleMessage(
       "질문을 입력하세요...",
     ),
@@ -533,7 +691,7 @@ class MessageLookup extends MessageLookupByLibrary {
       "아직 메시지가 없습니다. 메시지를 보내 상담을 시작하세요",
     ),
     "onlineSupportSelectImages": MessageLookupByLibrary.simpleMessage("이미지 선택"),
-    "onlineSupportSelectImagesFailed": m10,
+    "onlineSupportSelectImagesFailed": m12,
     "onlineSupportSend": MessageLookupByLibrary.simpleMessage("보내기"),
     "onlineSupportSendImage": MessageLookupByLibrary.simpleMessage("이미지 보내기"),
     "onlineSupportSendMessageFailed": MessageLookupByLibrary.simpleMessage(
@@ -546,8 +704,8 @@ class MessageLookup extends MessageLookupByLibrary {
     "onlineSupportTokenNotFound": MessageLookupByLibrary.simpleMessage(
       "인증 토큰을 찾을 수 없습니다",
     ),
-    "onlineSupportUnsupportedHttpMethod": m11,
-    "onlineSupportUploadFailed": m12,
+    "onlineSupportUnsupportedHttpMethod": m13,
+    "onlineSupportUploadFailed": m14,
     "onlineSupportWebSocketConfigNotFound":
         MessageLookupByLibrary.simpleMessage(
           "온라인 지원 WebSocket 설정을 찾을 수 없습니다. 설정을 확인하세요",
@@ -560,8 +718,8 @@ class MessageLookup extends MessageLookupByLibrary {
     ),
     "openWebFailed": MessageLookupByLibrary.simpleMessage("열기 웹 실패"),
     "options": MessageLookupByLibrary.simpleMessage("options"),
-    "orderAmount": m13,
-    "orderNumber": m14,
+    "orderAmount": m15,
+    "orderNumber": m16,
     "other": MessageLookupByLibrary.simpleMessage("기타"),
     "otherContributors": MessageLookupByLibrary.simpleMessage(
       "기타 contributors",
@@ -577,7 +735,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "overrideOriginRules": MessageLookupByLibrary.simpleMessage(
       "오버라이드 origin rules",
     ),
-    "pageNumber": m15,
+    "pageNumber": m17,
     "palette": MessageLookupByLibrary.simpleMessage("palette"),
     "password": MessageLookupByLibrary.simpleMessage("비밀번호"),
     "passwordMin8Chars": MessageLookupByLibrary.simpleMessage(
@@ -663,7 +821,7 @@ class MessageLookup extends MessageLookupByLibrary {
     ),
     "port": MessageLookupByLibrary.simpleMessage("포트"),
     "portConflictTip": MessageLookupByLibrary.simpleMessage("포트 conflict 안내"),
-    "portTip": m16,
+    "portTip": m18,
     "preferH3Desc": MessageLookupByLibrary.simpleMessage("prefer H 3 설명"),
     "pressKeyboard": MessageLookupByLibrary.simpleMessage("press keyboard"),
     "preview": MessageLookupByLibrary.simpleMessage("preview"),
@@ -728,7 +886,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "registerSuccessSaveCredentials": MessageLookupByLibrary.simpleMessage(
       "가입 성공 저장 credentials",
     ),
-    "registrationFailed": m17,
+    "registrationFailed": m19,
     "rememberPassword": MessageLookupByLibrary.simpleMessage("remember 비밀번호"),
     "remote": MessageLookupByLibrary.simpleMessage("원격"),
     "remoteBackupDesc": MessageLookupByLibrary.simpleMessage("원격 백업 설명"),
@@ -775,10 +933,10 @@ class MessageLookup extends MessageLookupByLibrary {
     "selectAll": MessageLookupByLibrary.simpleMessage("선택 ALL"),
     "selectTheme": MessageLookupByLibrary.simpleMessage("선택 테마"),
     "selected": MessageLookupByLibrary.simpleMessage("선택됨"),
-    "selectedCountTitle": m18,
+    "selectedCountTitle": m20,
     "sendCodeFailed": MessageLookupByLibrary.simpleMessage("보내기 코드 실패"),
     "sendVerificationCode": MessageLookupByLibrary.simpleMessage("보내기 인증 코드"),
-    "sendVerificationCodeFailed": m19,
+    "sendVerificationCodeFailed": m21,
     "setNewPassword": MessageLookupByLibrary.simpleMessage("SET 새 비밀번호"),
     "settings": MessageLookupByLibrary.simpleMessage("설정"),
     "show": MessageLookupByLibrary.simpleMessage("창 표시"),
@@ -802,7 +960,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "subRule": MessageLookupByLibrary.simpleMessage("SUB 규칙"),
     "submit": MessageLookupByLibrary.simpleMessage("submit"),
     "subscriptionExpired": MessageLookupByLibrary.simpleMessage("구독 만료됨"),
-    "subscriptionExpiredDetail": m20,
+    "subscriptionExpiredDetail": m22,
     "subscriptionExpiresToday": MessageLookupByLibrary.simpleMessage(
       "구독 만료 오늘",
     ),
@@ -812,7 +970,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "subscriptionExpiringInDays": MessageLookupByLibrary.simpleMessage(
       "구독 expiring IN 일",
     ),
-    "subscriptionExpiringInDaysDetail": m21,
+    "subscriptionExpiringInDaysDetail": m23,
     "subscriptionNoSubscription": MessageLookupByLibrary.simpleMessage(
       "구독 없음 구독",
     ),
@@ -832,7 +990,7 @@ class MessageLookup extends MessageLookupByLibrary {
       "구독 트래픽 exhausted 상세",
     ),
     "subscriptionValid": MessageLookupByLibrary.simpleMessage("구독 유효"),
-    "subscriptionValidDetail": m22,
+    "subscriptionValidDetail": m24,
     "switchTheme": MessageLookupByLibrary.simpleMessage("switch 테마"),
     "sync": MessageLookupByLibrary.simpleMessage("sync"),
     "system": MessageLookupByLibrary.simpleMessage("시스템"),
@@ -867,16 +1025,16 @@ class MessageLookup extends MessageLookupByLibrary {
     "tools": MessageLookupByLibrary.simpleMessage("도구"),
     "totalCommission": MessageLookupByLibrary.simpleMessage("전체 커미션"),
     "totalInvites": MessageLookupByLibrary.simpleMessage("전체 invites"),
-    "totalRecords": m23,
+    "totalRecords": m25,
     "tproxyPort": MessageLookupByLibrary.simpleMessage("tproxy 포트"),
     "trafficUsage": MessageLookupByLibrary.simpleMessage("트래픽 사용량"),
     "transfer": MessageLookupByLibrary.simpleMessage("이체"),
     "transferAmount": MessageLookupByLibrary.simpleMessage("이체 금액"),
-    "transferAmountExceeded": m24,
-    "transferFailed": m25,
+    "transferAmountExceeded": m26,
+    "transferFailed": m27,
     "transferNote": MessageLookupByLibrary.simpleMessage("이체 note"),
     "transferSuccess": MessageLookupByLibrary.simpleMessage("이체 성공"),
-    "transferSuccessMsg": m26,
+    "transferSuccessMsg": m28,
     "transferToWallet": MessageLookupByLibrary.simpleMessage("이체 TO 지갑"),
     "transferring": MessageLookupByLibrary.simpleMessage("transferring"),
     "tun": MessageLookupByLibrary.simpleMessage("TUN"),
@@ -894,19 +1052,19 @@ class MessageLookup extends MessageLookupByLibrary {
     "updateCheckAllServersUnavailable": MessageLookupByLibrary.simpleMessage(
       "업데이트 확인 ALL servers 사용 불가",
     ),
-    "updateCheckCurrentVersion": m27,
-    "updateCheckForceUpdate": m28,
+    "updateCheckCurrentVersion": m29,
+    "updateCheckForceUpdate": m30,
     "updateCheckMustUpdate": MessageLookupByLibrary.simpleMessage(
       "업데이트 확인 must 업데이트",
     ),
-    "updateCheckNewVersionFound": m29,
+    "updateCheckNewVersionFound": m31,
     "updateCheckNoServerUrlsConfigured": MessageLookupByLibrary.simpleMessage(
       "업데이트 확인 없음 서버 URL configured",
     ),
     "updateCheckReleaseNotes": MessageLookupByLibrary.simpleMessage(
       "업데이트 확인 release notes",
     ),
-    "updateCheckServerError": m30,
+    "updateCheckServerError": m32,
     "updateCheckServerTemporarilyUnavailable":
         MessageLookupByLibrary.simpleMessage("업데이트 확인 서버 temporarily 사용 불가"),
     "updateCheckServerUrlNotConfigured": MessageLookupByLibrary.simpleMessage(
@@ -921,7 +1079,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "upload": MessageLookupByLibrary.simpleMessage("업로드"),
     "url": MessageLookupByLibrary.simpleMessage("URL"),
     "urlDesc": MessageLookupByLibrary.simpleMessage("URL 설명"),
-    "urlTip": m31,
+    "urlTip": m33,
     "useHosts": MessageLookupByLibrary.simpleMessage("USE hosts"),
     "useSystemHosts": MessageLookupByLibrary.simpleMessage("USE 시스템 hosts"),
     "userCenter": MessageLookupByLibrary.simpleMessage("개인 센터"),
@@ -934,7 +1092,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "verificationCodeSentCheckEmail": MessageLookupByLibrary.simpleMessage(
       "인증 코드 sent 확인 이메일",
     ),
-    "verificationCodeSentTo": m32,
+    "verificationCodeSentTo": m34,
     "vibrantScheme": MessageLookupByLibrary.simpleMessage("vibrant scheme"),
     "view": MessageLookupByLibrary.simpleMessage("보기"),
     "viewHistory": MessageLookupByLibrary.simpleMessage("보기 기록"),
@@ -964,11 +1122,11 @@ class MessageLookup extends MessageLookupByLibrary {
     "withdrawSubmissionFailed": MessageLookupByLibrary.simpleMessage(
       "출금 submission 실패",
     ),
-    "withdrawSubmissionFailedWithError": m33,
+    "withdrawSubmissionFailedWithError": m35,
     "withdrawSubmissionNote": MessageLookupByLibrary.simpleMessage(
       "출금 submission note",
     ),
-    "withdrawableAmount": m34,
+    "withdrawableAmount": m36,
     "withdrawalAvailable": MessageLookupByLibrary.simpleMessage(
       "withdrawal 사용 가능",
     ),
@@ -1008,7 +1166,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "xboardAutoTesting": MessageLookupByLibrary.simpleMessage("자동 테스트 중"),
     "xboardBack": MessageLookupByLibrary.simpleMessage("back"),
     "xboardBalancePay": MessageLookupByLibrary.simpleMessage("잔액 결제"),
-    "xboardBalanceWithAmount": m35,
+    "xboardBalanceWithAmount": m37,
     "xboardBrowserNotOpenedTip": MessageLookupByLibrary.simpleMessage(
       "브라우저 NOT opened 안내",
     ),
@@ -1192,7 +1350,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "xboardDeviceRemoveTitle": MessageLookupByLibrary.simpleMessage("기기 삭제 제목"),
     "xboardDeviceRemoved": MessageLookupByLibrary.simpleMessage("기기 removed"),
     "xboardDeviceRevoked": MessageLookupByLibrary.simpleMessage("기기 revoked"),
-    "xboardDeviceSummary": m36,
+    "xboardDeviceSummary": m38,
     "xboardDeviceUnknown": MessageLookupByLibrary.simpleMessage("기기 알 수 없음"),
     "xboardDeviceUnknownVersion": MessageLookupByLibrary.simpleMessage(
       "기기 알 수 없음 버전",
@@ -1228,9 +1386,9 @@ class MessageLookup extends MessageLookupByLibrary {
       "enter 기프트 카드 코드 힌트",
     ),
     "xboardExcellent": MessageLookupByLibrary.simpleMessage("매우 좋음"),
-    "xboardExpiredOnDate": m37,
-    "xboardExpiresOnDate": m38,
-    "xboardExpiresOnWithDays": m39,
+    "xboardExpiredOnDate": m39,
+    "xboardExpiresOnDate": m40,
+    "xboardExpiresOnWithDays": m41,
     "xboardExpiryTime": MessageLookupByLibrary.simpleMessage("expiry time"),
     "xboardFailedToCheckPaymentStatus": MessageLookupByLibrary.simpleMessage(
       "실패 TO 확인 결제 상태",
@@ -1247,7 +1405,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "xboardFair": MessageLookupByLibrary.simpleMessage("보통"),
     "xboardForceUpdate": MessageLookupByLibrary.simpleMessage("force 업데이트"),
     "xboardForgotPassword": MessageLookupByLibrary.simpleMessage("잊음 비밀번호"),
-    "xboardGatewayCandidateCount": m40,
+    "xboardGatewayCandidateCount": m42,
     "xboardGatewayStatus": MessageLookupByLibrary.simpleMessage("게이트웨이 상태"),
     "xboardGetGroupLinkFailed": MessageLookupByLibrary.simpleMessage(
       "GET 그룹 링크 실패",
@@ -1308,7 +1466,7 @@ class MessageLookup extends MessageLookupByLibrary {
       "사용 불가",
     ),
     "xboardHealthLastEvent": MessageLookupByLibrary.simpleMessage("최근 이벤트"),
-    "xboardHealthSubscriptionImport": m41,
+    "xboardHealthSubscriptionImport": m43,
     "xboardHealthTunApplied": MessageLookupByLibrary.simpleMessage("적용됨"),
     "xboardHealthTunPending": MessageLookupByLibrary.simpleMessage("적용 대기 중"),
     "xboardHealthy": MessageLookupByLibrary.simpleMessage("정상"),
@@ -1421,7 +1579,7 @@ class MessageLookup extends MessageLookupByLibrary {
     ),
     "xboardNoTicketRecords": MessageLookupByLibrary.simpleMessage("없음 티켓 기록"),
     "xboardNoTrafficRecords": MessageLookupByLibrary.simpleMessage("없음 트래픽 기록"),
-    "xboardNodeCount": m42,
+    "xboardNodeCount": m44,
     "xboardNodeHealth": MessageLookupByLibrary.simpleMessage("노드 상태"),
     "xboardNodeName": MessageLookupByLibrary.simpleMessage("노드 이름"),
     "xboardNodeSelection": MessageLookupByLibrary.simpleMessage("노드 선택"),
@@ -1578,7 +1736,7 @@ class MessageLookup extends MessageLookupByLibrary {
     ),
     "xboardRechargeNow": MessageLookupByLibrary.simpleMessage("충전 NOW"),
     "xboardRedeemFailed": MessageLookupByLibrary.simpleMessage("redeem 실패"),
-    "xboardRedeemFailedWithError": m43,
+    "xboardRedeemFailedWithError": m45,
     "xboardRedeemNow": MessageLookupByLibrary.simpleMessage("redeem NOW"),
     "xboardRedeemSuccess": MessageLookupByLibrary.simpleMessage("redeem 성공"),
     "xboardRefresh": MessageLookupByLibrary.simpleMessage("새로고침"),
@@ -1620,7 +1778,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "xboardResetTrafficConfirmContent": MessageLookupByLibrary.simpleMessage(
       "초기화 트래픽 확인 내용",
     ),
-    "xboardResetTrafficInDays": m44,
+    "xboardResetTrafficInDays": m46,
     "xboardResetTrafficToday": MessageLookupByLibrary.simpleMessage(
       "사용된 트래픽이 오늘 재설정되었습니다",
     ),
@@ -1631,7 +1789,7 @@ class MessageLookup extends MessageLookupByLibrary {
       "return after 결제 자동 detect",
     ),
     "xboardRunDiagnosis": MessageLookupByLibrary.simpleMessage("검사 실행"),
-    "xboardRunningTime": m45,
+    "xboardRunningTime": m47,
     "xboardSecureEncryption": MessageLookupByLibrary.simpleMessage(
       "secure encryption",
     ),

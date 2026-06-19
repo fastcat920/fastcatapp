@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:fl_clash/xboard/adapter/initialization/sdk_provider.dart';
+import 'package:fl_clash/xboard/utils/backend_message_mapper.dart';
 import 'package:fl_clash/xboard/utils/xboard_notification.dart';
 
 Future<void> showChangePasswordSheet(
@@ -76,13 +77,21 @@ class _ChangePasswordSheetState extends ConsumerState<_ChangePasswordSheet> {
           Navigator.of(context).pop();
           XBoardNotification.showSuccess('密码修改成功');
         } else {
-          final msg = resp['message'] as String? ?? '修改失败';
+          final msg = BackendMessageMapper.map(
+            resp['message'] as String?,
+            context: BackendMessageContext.password,
+          );
           XBoardNotification.showError(msg);
         }
       }
     } catch (e) {
       if (mounted) {
-        XBoardNotification.showError('修改失败: $e');
+        XBoardNotification.showError(
+          BackendMessageMapper.mapError(
+            e,
+            context: BackendMessageContext.password,
+          ),
+        );
       }
     } finally {
       if (mounted) setState(() => _isSubmitting = false);

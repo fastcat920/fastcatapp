@@ -5,6 +5,7 @@ import 'package:fl_clash/common/common.dart';
 import 'package:fl_clash/xboard/features/invite/providers/invite_provider.dart';
 import 'package:fl_clash/xboard/features/shared/styles/styles.dart';
 import 'package:fl_clash/xboard/features/shared/widgets/tv_deferred_input.dart';
+import 'package:fl_clash/xboard/utils/backend_message_mapper.dart';
 
 class WithdrawDialog extends ConsumerStatefulWidget {
   const WithdrawDialog({super.key});
@@ -266,8 +267,12 @@ class _WithdrawDialogState extends ConsumerState<WithdrawDialog> {
             });
           }
         } else {
+          final errorMessage = ref.read(inviteProvider).errorMessage;
           XBoardNotification.showError(
-              appLocalizations.withdrawSubmissionFailed);
+            errorMessage?.isNotEmpty == true
+                ? errorMessage!
+                : appLocalizations.withdrawSubmissionFailed,
+          );
         }
       }
     } catch (e) {
@@ -277,7 +282,13 @@ class _WithdrawDialogState extends ConsumerState<WithdrawDialog> {
           _isSuccess = false;
         });
         XBoardNotification.showError(
-            appLocalizations.withdrawSubmissionFailedWithError(e.toString()));
+          appLocalizations.withdrawSubmissionFailedWithError(
+            BackendMessageMapper.mapError(
+              e,
+              context: BackendMessageContext.withdraw,
+            ),
+          ),
+        );
       }
     }
   }

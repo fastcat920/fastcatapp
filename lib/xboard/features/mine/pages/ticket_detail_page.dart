@@ -10,6 +10,7 @@ import 'package:fl_clash/xboard/config/xboard_config.dart';
 import 'package:fl_clash/xboard/features/shared/widgets/tv_deferred_input.dart';
 import 'package:fl_clash/xboard/features/shared/styles/styles.dart';
 import 'package:fl_clash/xboard/features/mine/services/imgbb_service.dart';
+import 'package:fl_clash/xboard/utils/backend_message_mapper.dart';
 import 'package:fl_clash/xboard/utils/xboard_notification.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -71,7 +72,12 @@ class _TicketDetailPageState extends ConsumerState<TicketDetailPage> {
       }
     } catch (e) {
       if (mounted) {
-        XBoardNotification.showError('回复失败: $e');
+        XBoardNotification.showError(
+          '回复失败: ${BackendMessageMapper.mapError(
+            e,
+            context: BackendMessageContext.ticket,
+          )}',
+        );
       }
     } finally {
       if (mounted) setState(() => _isReplying = false);
@@ -110,7 +116,12 @@ class _TicketDetailPageState extends ConsumerState<TicketDetailPage> {
       }
     } catch (e) {
       if (mounted) {
-        XBoardNotification.showError('操作失败: $e');
+        XBoardNotification.showError(
+          '操作失败: ${BackendMessageMapper.mapError(
+            e,
+            context: BackendMessageContext.ticket,
+          )}',
+        );
       }
     }
   }

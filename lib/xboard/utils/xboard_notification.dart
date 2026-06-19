@@ -8,24 +8,26 @@ import 'package:fl_clash/state.dart';
 class XBoardNotification {
   XBoardNotification._();
 
-  /// 显示错误通知（顶层通知，自动消失）
+  /// 显示错误通知（底部顶层通知，自动消失）
   static void showError(String message) {
-    _showTop('❌ $message');
+    _showBottom('❌ $message');
   }
 
-  /// 显示成功通知（顶层通知，自动消失）
+  /// 显示成功通知（底部顶层通知，自动消失）
   static void showSuccess(String message) {
-    _showTop('✅ $message');
+    _showBottom('✅ $message');
   }
 
-  /// 显示普通通知（顶层通知，自动消失）
+  /// 显示普通通知（底部顶层通知，自动消失）
   static void showInfo(String message) {
-    _showTop(message);
+    _showBottom(message);
   }
 
-  static void _showTop(String message) {
+  static void _showBottom(String message) {
     final context = globalState.navigatorKey.currentContext;
     if (context != null && context.mounted) {
+      final shown = context.showBottomNotifier(message);
+      if (shown != null) return;
       context.showSnackBar(message);
       return;
     }

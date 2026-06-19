@@ -270,6 +270,99 @@ func TestKickOldestRevokesUntilWithinLimit(t *testing.T) {
 	}
 }
 
+func TestProxyPassesThroughBusinessErrorBody(t *testing.T) {
+	var business *httptest.Server
+	business = httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "application/json")
+		switch r.URL.Path {
+		case "/api/v1/passport/auth/login":
+			_ = json.NewEncoder(w).Encode(map[string]any{
+				"success": true,
+				"data": map[string]any{
+					"auth_data": "Bearer business-auth-token",
+				},
+			})
+		case "/api/v1/user/getSubscribe":
+			_ = json.NewEncoder(w).Encode(map[string]any{
+				"success": true,
+				"data": map[string]any{
+					"email":        "user@example.com",
+					"uuid":         "business-user-1",
+					"device_limit": 5,
+				},
+			})
+		case "/api/v1/user/redeemgiftcard":
+			if r.Header.Get("Authorization") != "Bearer business-auth-token" {
+				w.WriteHeader(http.StatusUnauthorized)
+				_ = json.NewEncoder(w).Encode(map[string]any{
+					"message": "missing business token",
+				})
+				return
+			}
+			w.WriteHeader(http.StatusInternalServerError)
+			_ = json.NewEncoder(w).Encode(map[string]any{
+				"message": "The gift card does not exist",
+			})
+		default:
+			w.WriteHeader(http.StatusNotFound)
+		}
+	}))
+	defer business.Close()
+
+	store, err := LoadStore(filepath.Join(t.TempDir(), "store.json"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	server := &Server{
+		cfg: Config{
+			BusinessBaseURLs:   []string{business.URL},
+			APIPrefix:          "/api/v1",
+			DataFile:           store.path,
+			AdminToken:         "admin-token",
+			TokenSecret:        "test-secret",
+			SessionTTL:         time.Hour,
+			DevicePolicy:       policyStrict,
+			DefaultDeviceLimit: 5,
+			HTTPTimeout:        3 * time.Second,
+		},
+		store:  store,
+		client: business.Client(),
+		key:    deriveKey("test-secret"),
+	}
+	gateway := httptest.NewServer(server.routes())
+	defer gateway.Close()
+
+	loginBody, _ := json.Marshal(map[string]any{
+		"email":       "user@example.com",
+		"password":    "password",
+		"device_id":   "device-a",
+		"device_name": "Test Device",
+		"platform":    "test",
+	})
+	loginResp, loginRespBody := postJSON(t, gateway.URL+"/api/v1/passport/auth/login", loginBody, "")
+	if loginResp.StatusCode != http.StatusOK {
+		t.Fatalf("login status = %d body=%s", loginResp.StatusCode, loginRespBody)
+	}
+	authToken := stringFromNested(loginRespBody, "data", "auth_data")
+	if authToken == "" {
+		t.Fatalf("missing gateway auth token: %s", loginRespBody)
+	}
+
+	redeemBody, _ := json.Marshal(map[string]any{
+		"giftcard": "bad-card",
+	})
+	redeemResp, redeemRespBody := postJSON(t, gateway.URL+"/api/v1/user/redeemgiftcard", redeemBody, authToken)
+	if redeemResp.StatusCode != http.StatusInternalServerError {
+		t.Fatalf("redeem status = %d body=%s", redeemResp.StatusCode, redeemRespBody)
+	}
+	if got := stringFromTop(redeemRespBody, "message"); got != "The gift card does not exist" {
+		t.Fatalf("redeem message = %q body=%s", got, redeemRespBody)
+	}
+	if got := stringFromTop(redeemRespBody, "code"); got == "BUSINESS_PROXY_FAILED" {
+		t.Fatalf("gateway wrapped backend error instead of passing it through: %s", redeemRespBody)
+	}
+}
+
 func postJSON(t *testing.T, url string, body []byte, auth string) (*http.Response, []byte) {
 	t.Helper()
 	req, err := http.NewRequest(http.MethodPost, url, bytes.NewReader(body))

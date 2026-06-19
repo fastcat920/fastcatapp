@@ -12,6 +12,11 @@ extension BuildContextExtension on BuildContext {
         ?.message(text, onTap: onTap);
   }
 
+  showBottomNotifier(String text, {VoidCallback? onTap}) {
+    return findAncestorStateOfType<MessageManagerState>()
+        ?.bottomMessage(text, onTap: onTap);
+  }
+
   showSnackBar(
     String message, {
     SnackBarAction? action,

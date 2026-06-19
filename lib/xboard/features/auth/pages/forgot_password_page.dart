@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:fl_clash/xboard/features/shared/shared.dart';
 import 'package:flutter_xboard_sdk/flutter_xboard_sdk.dart';
 import 'package:fl_clash/l10n/l10n.dart';
+import 'package:fl_clash/xboard/utils/backend_message_mapper.dart';
 import 'package:go_router/go_router.dart';
 
 class ForgotPasswordPage extends ConsumerStatefulWidget {
@@ -13,7 +14,7 @@ class ForgotPasswordPage extends ConsumerStatefulWidget {
 }
 
 enum ResetPasswordStep {
-  sendCode,    // 发送验证码步骤
+  sendCode, // 发送验证码步骤
   resetPassword // 重置密码步骤
 }
 
@@ -23,12 +24,12 @@ class _ForgotPasswordPageState extends ConsumerState<ForgotPasswordPage> {
   final _codeController = TextEditingController();
   final _passwordController = TextEditingController();
   final _confirmPasswordController = TextEditingController();
-  
+
   ResetPasswordStep _currentStep = ResetPasswordStep.sendCode;
   bool _isLoading = false;
   bool _obscurePassword = true;
   bool _obscureConfirmPassword = true;
-  
+
   @override
   void dispose() {
     _emailController.dispose();
@@ -46,20 +47,26 @@ class _ForgotPasswordPageState extends ConsumerState<ForgotPasswordPage> {
     setState(() {
       _isLoading = true;
     });
-    
+
     try {
       // 使用 SDK 发送验证码
       await XBoardSDK.instance.auth.sendEmailVerifyCode(_emailController.text);
-      
+
       if (mounted) {
         setState(() {
           _currentStep = ResetPasswordStep.resetPassword;
         });
-        XBoardNotification.showSuccess(AppLocalizations.of(context).verificationCodeSent);
+        XBoardNotification.showSuccess(
+            AppLocalizations.of(context).verificationCodeSent);
       }
     } catch (e) {
       if (mounted) {
-        XBoardNotification.showError('${AppLocalizations.of(context).sendCodeFailed}: $e');
+        XBoardNotification.showError(
+          '${AppLocalizations.of(context).sendCodeFailed}: ${BackendMessageMapper.mapError(
+            e,
+            context: BackendMessageContext.emailVerify,
+          )}',
+        );
       }
     } finally {
       if (mounted) {
@@ -76,14 +83,15 @@ class _ForgotPasswordPageState extends ConsumerState<ForgotPasswordPage> {
     }
 
     if (_passwordController.text != _confirmPasswordController.text) {
-      XBoardNotification.showError(AppLocalizations.of(context).passwordMismatch);
+      XBoardNotification.showError(
+          AppLocalizations.of(context).passwordMismatch);
       return;
     }
 
     setState(() {
       _isLoading = true;
     });
-    
+
     try {
       // 使用 AuthRepository 重置密码
       // 使用 SDK 重置密码
@@ -92,18 +100,24 @@ class _ForgotPasswordPageState extends ConsumerState<ForgotPasswordPage> {
         _codeController.text,
         _passwordController.text,
       );
-      
+
       if (!success) {
         throw Exception('重置密码失败');
       }
-      
+
       if (mounted) {
-        XBoardNotification.showSuccess(AppLocalizations.of(context).passwordResetSuccessful);
+        XBoardNotification.showSuccess(
+            AppLocalizations.of(context).passwordResetSuccessful);
         context.pop();
       }
     } catch (e) {
       if (mounted) {
-        XBoardNotification.showError('${AppLocalizations.of(context).passwordResetFailed}: $e');
+        XBoardNotification.showError(
+          '${AppLocalizations.of(context).passwordResetFailed}: ${BackendMessageMapper.mapError(
+            e,
+            context: BackendMessageContext.password,
+          )}',
+        );
       }
     } finally {
       if (mounted) {
@@ -122,6 +136,7 @@ class _ForgotPasswordPageState extends ConsumerState<ForgotPasswordPage> {
       _confirmPasswordController.clear();
     });
   }
+
   Widget _buildSendCodeStep() {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -129,8 +144,8 @@ class _ForgotPasswordPageState extends ConsumerState<ForgotPasswordPage> {
         Text(
           AppLocalizations.of(context).enterEmailForReset,
           style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-            color: Theme.of(context).colorScheme.onSurfaceVariant,
-          ),
+                color: Theme.of(context).colorScheme.onSurfaceVariant,
+              ),
         ),
         const SizedBox(height: 32),
         XBInputField(
@@ -192,10 +207,11 @@ class _ForgotPasswordPageState extends ConsumerState<ForgotPasswordPage> {
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         Text(
-          AppLocalizations.of(context).verificationCodeSentTo(_emailController.text),
+          AppLocalizations.of(context)
+              .verificationCodeSentTo(_emailController.text),
           style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-            color: Theme.of(context).colorScheme.onSurfaceVariant,
-          ),
+                color: Theme.of(context).colorScheme.onSurfaceVariant,
+              ),
         ),
         const SizedBox(height: 32),
         XBInputField(
@@ -210,7 +226,8 @@ class _ForgotPasswordPageState extends ConsumerState<ForgotPasswordPage> {
               return AppLocalizations.of(context).pleaseEnterVerificationCode;
             }
             if (value.length < 4) {
-              return AppLocalizations.of(context).pleaseEnterValidVerificationCode;
+              return AppLocalizations.of(context)
+                  .pleaseEnterValidVerificationCode;
             }
             return null;
           },
@@ -225,7 +242,9 @@ class _ForgotPasswordPageState extends ConsumerState<ForgotPasswordPage> {
           enabled: !_isLoading,
           suffixIcon: IconButton(
             icon: Icon(
-              _obscurePassword ? Icons.visibility_outlined : Icons.visibility_off_outlined,
+              _obscurePassword
+                  ? Icons.visibility_outlined
+                  : Icons.visibility_off_outlined,
             ),
             onPressed: () {
               setState(() {
@@ -253,7 +272,9 @@ class _ForgotPasswordPageState extends ConsumerState<ForgotPasswordPage> {
           enabled: !_isLoading,
           suffixIcon: IconButton(
             icon: Icon(
-              _obscureConfirmPassword ? Icons.visibility_outlined : Icons.visibility_off_outlined,
+              _obscureConfirmPassword
+                  ? Icons.visibility_outlined
+                  : Icons.visibility_off_outlined,
             ),
             onPressed: () {
               setState(() {
@@ -323,7 +344,9 @@ class _ForgotPasswordPageState extends ConsumerState<ForgotPasswordPage> {
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
     return Scaffold(
-      backgroundColor: colorScheme.brightness == Brightness.dark ? colorScheme.surface : const Color(0xFFFAFBFD),
+      backgroundColor: colorScheme.brightness == Brightness.dark
+          ? colorScheme.surface
+          : const Color(0xFFFAFBFD),
       body: XBContainer(
         child: Column(
           children: [
@@ -346,11 +369,13 @@ class _ForgotPasswordPageState extends ConsumerState<ForgotPasswordPage> {
                   ),
                   const SizedBox(width: 16),
                   Text(
-                    _currentStep == ResetPasswordStep.sendCode ? AppLocalizations.of(context).resetPassword : AppLocalizations.of(context).setNewPassword,
+                    _currentStep == ResetPasswordStep.sendCode
+                        ? AppLocalizations.of(context).resetPassword
+                        : AppLocalizations.of(context).setNewPassword,
                     style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                      color: colorScheme.onSurface,
-                      fontWeight: FontWeight.bold,
-                    ),
+                          color: colorScheme.onSurface,
+                          fontWeight: FontWeight.bold,
+                        ),
                   ),
                 ],
               ),
@@ -375,9 +400,12 @@ class _ForgotPasswordPageState extends ConsumerState<ForgotPasswordPage> {
                           children: [
                             Text(
                               AppLocalizations.of(context).rememberPassword,
-                              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                                color: colorScheme.onSurfaceVariant,
-                              ),
+                              style: Theme.of(context)
+                                  .textTheme
+                                  .bodyMedium
+                                  ?.copyWith(
+                                    color: colorScheme.onSurfaceVariant,
+                                  ),
                             ),
                             TextButton(
                               onPressed: () => context.pop(),
@@ -403,4 +431,4 @@ class _ForgotPasswordPageState extends ConsumerState<ForgotPasswordPage> {
       ),
     );
   }
-} 
+}

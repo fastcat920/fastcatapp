@@ -11,6 +11,7 @@ import 'package:fl_clash/xboard/features/shared/shared.dart';
 import 'package:fl_clash/xboard/config/xboard_config.dart';
 import 'package:fl_clash/xboard/config/utils/website_url_resolver.dart';
 import 'package:fl_clash/xboard/adapter/initialization/sdk_provider.dart';
+import 'package:fl_clash/xboard/utils/backend_message_mapper.dart';
 import 'package:fl_clash/xboard/utils/xboard_notification.dart';
 
 const _gatewayOverrideUrl = String.fromEnvironment('XBOARD_GATEWAY_URL');
@@ -203,8 +204,12 @@ class _LoginPageState extends ConsumerState<LoginPage> {
         lower.contains('device limit exceeded')) {
       return al.xboardLoginErrorDeviceLimit;
     }
-    // 后端业务错误保留 API 返回的真实提示，例如登录限制、账号状态等。
-    return message;
+    // 后端业务错误优先映射为本地化提示，未命中时保留 API 原始提示。
+    return BackendMessageMapper.map(
+      message,
+      context: BackendMessageContext.login,
+      fallback: message,
+    );
   }
 
   Future<void> _openOfficialWebsite(BuildContext context) async {

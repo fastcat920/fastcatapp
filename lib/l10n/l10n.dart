@@ -6000,16 +6000,6 @@ class AppLocalizations {
     );
   }
 
-  /// `Invite code may be incorrect, please check and re-enter`
-  String get inviteCodeIncorrect {
-    return Intl.message(
-      'Invite code may be incorrect, please check and re-enter',
-      name: 'inviteCodeIncorrect',
-      desc: '',
-      args: [],
-    );
-  }
-
   /// `Loading...`
   String get loading {
     return Intl.message('Loading...', name: 'loading', desc: '', args: []);
@@ -8222,6 +8212,556 @@ class AppLocalizations {
       name: 'withdrawSubmissionFailedWithError',
       desc: '',
       args: [error],
+    );
+  }
+
+  /// `Incorrect email or password`
+  String get backendErrorIncorrectEmailOrPassword {
+    return Intl.message(
+      'Incorrect email or password',
+      name: 'backendErrorIncorrectEmailOrPassword',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `This account has been suspended`
+  String get backendErrorAccountSuspended {
+    return Intl.message(
+      'This account has been suspended',
+      name: 'backendErrorAccountSuspended',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Email cannot be empty`
+  String get backendErrorEmailEmpty {
+    return Intl.message(
+      'Email cannot be empty',
+      name: 'backendErrorEmailEmpty',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Email format is incorrect`
+  String get backendErrorEmailFormatInvalid {
+    return Intl.message(
+      'Email format is incorrect',
+      name: 'backendErrorEmailFormatInvalid',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Password cannot be empty`
+  String get backendErrorPasswordEmpty {
+    return Intl.message(
+      'Password cannot be empty',
+      name: 'backendErrorPasswordEmpty',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Password must be longer than 8 characters`
+  String get backendErrorPasswordTooShort {
+    return Intl.message(
+      'Password must be longer than 8 characters',
+      name: 'backendErrorPasswordTooShort',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Verification code is incorrect`
+  String get backendErrorVerificationCodeInvalid {
+    return Intl.message(
+      'Verification code is incorrect',
+      name: 'backendErrorVerificationCodeInvalid',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Invite code is invalid`
+  String get backendErrorInviteCodeInvalid {
+    return Intl.message(
+      'Invite code is invalid',
+      name: 'backendErrorInviteCodeInvalid',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Invite code does not exist`
+  String get backendErrorInviteCodeNotFound {
+    return Intl.message(
+      'Invite code does not exist',
+      name: 'backendErrorInviteCodeNotFound',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `This email is already registered`
+  String get backendErrorEmailExists {
+    return Intl.message(
+      'This email is already registered',
+      name: 'backendErrorEmailExists',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Gift card cannot be empty`
+  String get backendErrorGiftCardEmpty {
+    return Intl.message(
+      'Gift card cannot be empty',
+      name: 'backendErrorGiftCardEmpty',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `User does not exist`
+  String get backendErrorUserNotFound {
+    return Intl.message(
+      'User does not exist',
+      name: 'backendErrorUserNotFound',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `This gift card does not exist`
+  String get backendErrorGiftCardNotFound {
+    return Intl.message(
+      'This gift card does not exist',
+      name: 'backendErrorGiftCardNotFound',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `This gift card is not yet valid`
+  String get backendErrorGiftCardNotYetValid {
+    return Intl.message(
+      'This gift card is not yet valid',
+      name: 'backendErrorGiftCardNotYetValid',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `This gift card has expired`
+  String get backendErrorGiftCardExpired {
+    return Intl.message(
+      'This gift card has expired',
+      name: 'backendErrorGiftCardExpired',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `This gift card has reached its usage limit`
+  String get backendErrorGiftCardLimitReached {
+    return Intl.message(
+      'This gift card has reached its usage limit',
+      name: 'backendErrorGiftCardLimitReached',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `This gift card has already been used by this user`
+  String get backendErrorGiftCardAlreadyUsedByUser {
+    return Intl.message(
+      'This gift card has already been used by this user',
+      name: 'backendErrorGiftCardAlreadyUsedByUser',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `This gift card type is not applicable`
+  String get backendErrorGiftCardTypeNotSuitable {
+    return Intl.message(
+      'This gift card type is not applicable',
+      name: 'backendErrorGiftCardTypeNotSuitable',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Unknown gift card type`
+  String get backendErrorGiftCardTypeUnknown {
+    return Intl.message(
+      'Unknown gift card type',
+      name: 'backendErrorGiftCardTypeUnknown',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Save failed, please try again later`
+  String get backendErrorSaveFailed {
+    return Intl.message(
+      'Save failed, please try again later',
+      name: 'backendErrorSaveFailed',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Withdrawal method cannot be empty`
+  String get backendErrorWithdrawalMethodEmpty {
+    return Intl.message(
+      'Withdrawal method cannot be empty',
+      name: 'backendErrorWithdrawalMethodEmpty',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Withdrawal account cannot be empty`
+  String get backendErrorWithdrawalAccountEmpty {
+    return Intl.message(
+      'Withdrawal account cannot be empty',
+      name: 'backendErrorWithdrawalAccountEmpty',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Withdrawal is currently not supported`
+  String get backendErrorWithdrawNotSupported {
+    return Intl.message(
+      'Withdrawal is currently not supported',
+      name: 'backendErrorWithdrawNotSupported',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Unsupported withdrawal method`
+  String get backendErrorWithdrawalMethodUnsupported {
+    return Intl.message(
+      'Unsupported withdrawal method',
+      name: 'backendErrorWithdrawalMethodUnsupported',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Failed to create withdrawal ticket`
+  String get backendErrorFailedToOpenTicket {
+    return Intl.message(
+      'Failed to create withdrawal ticket',
+      name: 'backendErrorFailedToOpenTicket',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Insufficient commission balance`
+  String get backendErrorInsufficientCommissionBalance {
+    return Intl.message(
+      'Insufficient commission balance',
+      name: 'backendErrorInsufficientCommissionBalance',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Transfer failed`
+  String get backendErrorTransferFailed {
+    return Intl.message(
+      'Transfer failed',
+      name: 'backendErrorTransferFailed',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Transfer amount cannot be empty`
+  String get backendErrorTransferAmountEmpty {
+    return Intl.message(
+      'Transfer amount cannot be empty',
+      name: 'backendErrorTransferAmountEmpty',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Transfer amount parameter is invalid`
+  String get backendErrorTransferAmountInvalid {
+    return Intl.message(
+      'Transfer amount parameter is invalid',
+      name: 'backendErrorTransferAmountInvalid',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Coupon cannot be empty`
+  String get backendErrorCouponEmpty {
+    return Intl.message(
+      'Coupon cannot be empty',
+      name: 'backendErrorCouponEmpty',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Coupon is invalid`
+  String get backendErrorCouponInvalid {
+    return Intl.message(
+      'Coupon is invalid',
+      name: 'backendErrorCouponInvalid',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Coupon does not exist`
+  String get backendErrorCouponNotFound {
+    return Intl.message(
+      'Coupon does not exist',
+      name: 'backendErrorCouponNotFound',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Coupon has expired`
+  String get backendErrorCouponExpired {
+    return Intl.message(
+      'Coupon has expired',
+      name: 'backendErrorCouponExpired',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Coupon usage limit has been reached`
+  String get backendErrorCouponLimitExceeded {
+    return Intl.message(
+      'Coupon usage limit has been reached',
+      name: 'backendErrorCouponLimitExceeded',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Order does not exist`
+  String get backendErrorOrderNotFound {
+    return Intl.message(
+      'Order does not exist',
+      name: 'backendErrorOrderNotFound',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Plan does not exist`
+  String get backendErrorPlanNotFound {
+    return Intl.message(
+      'Plan does not exist',
+      name: 'backendErrorPlanNotFound',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Ticket does not exist`
+  String get backendErrorTicketNotFound {
+    return Intl.message(
+      'Ticket does not exist',
+      name: 'backendErrorTicketNotFound',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Ticket is closed`
+  String get backendErrorTicketClosed {
+    return Intl.message(
+      'Ticket is closed',
+      name: 'backendErrorTicketClosed',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Old password is incorrect`
+  String get backendErrorOldPasswordWrong {
+    return Intl.message(
+      'Old password is incorrect',
+      name: 'backendErrorOldPasswordWrong',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `New password cannot be empty`
+  String get backendErrorNewPasswordEmpty {
+    return Intl.message(
+      'New password cannot be empty',
+      name: 'backendErrorNewPasswordEmpty',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Reset failed, please try again later`
+  String get backendErrorResetFailed {
+    return Intl.message(
+      'Reset failed, please try again later',
+      name: 'backendErrorResetFailed',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Too many password errors, please try again later`
+  String get backendErrorTooManyPasswordErrorsGeneric {
+    return Intl.message(
+      'Too many password errors, please try again later',
+      name: 'backendErrorTooManyPasswordErrorsGeneric',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Too many password errors, please try again after {minute} minutes`
+  String backendErrorTooManyPasswordErrors(String minute) {
+    return Intl.message(
+      'Too many password errors, please try again after $minute minutes',
+      name: 'backendErrorTooManyPasswordErrors',
+      desc: '',
+      args: [minute],
+    );
+  }
+
+  /// `Too many requests, please try again later`
+  String get backendErrorTooManyRequests {
+    return Intl.message(
+      'Too many requests, please try again later',
+      name: 'backendErrorTooManyRequests',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `The minimum withdrawal commission has not been reached`
+  String get backendErrorMinimumWithdrawalCommissionGeneric {
+    return Intl.message(
+      'The minimum withdrawal commission has not been reached',
+      name: 'backendErrorMinimumWithdrawalCommissionGeneric',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `The minimum withdrawal commission is {limit}`
+  String backendErrorMinimumWithdrawalCommission(String limit) {
+    return Intl.message(
+      'The minimum withdrawal commission is $limit',
+      name: 'backendErrorMinimumWithdrawalCommission',
+      desc: '',
+      args: [limit],
+    );
+  }
+
+  /// `Login failed`
+  String get backendFallbackLoginFailed {
+    return Intl.message(
+      'Login failed',
+      name: 'backendFallbackLoginFailed',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Register failed`
+  String get backendFallbackRegisterFailed {
+    return Intl.message(
+      'Register failed',
+      name: 'backendFallbackRegisterFailed',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Failed to send verification code`
+  String get backendFallbackEmailVerifyFailed {
+    return Intl.message(
+      'Failed to send verification code',
+      name: 'backendFallbackEmailVerifyFailed',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Transfer failed`
+  String get backendFallbackTransferFailed {
+    return Intl.message(
+      'Transfer failed',
+      name: 'backendFallbackTransferFailed',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Password operation failed`
+  String get backendFallbackPasswordFailed {
+    return Intl.message(
+      'Password operation failed',
+      name: 'backendFallbackPasswordFailed',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Coupon check failed`
+  String get backendFallbackCouponFailed {
+    return Intl.message(
+      'Coupon check failed',
+      name: 'backendFallbackCouponFailed',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Order operation failed`
+  String get backendFallbackOrderFailed {
+    return Intl.message(
+      'Order operation failed',
+      name: 'backendFallbackOrderFailed',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Ticket operation failed`
+  String get backendFallbackTicketFailed {
+    return Intl.message(
+      'Ticket operation failed',
+      name: 'backendFallbackTicketFailed',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Operation failed`
+  String get backendFallbackOperationFailed {
+    return Intl.message(
+      'Operation failed',
+      name: 'backendFallbackOperationFailed',
+      desc: '',
+      args: [],
     );
   }
 

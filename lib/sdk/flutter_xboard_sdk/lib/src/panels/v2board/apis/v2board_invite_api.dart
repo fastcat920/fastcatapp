@@ -104,4 +104,52 @@ class V2BoardInviteApi {
       throw ApiException('V2Board 生成邀请链接失败: $e');
     }
   }
+
+  Future<ApiResponse<bool>> withdrawCommission({
+    required String method,
+    required String account,
+  }) async {
+    try {
+      final response = await _httpService.postRequest('/user/ticket/withdraw', {
+        'withdraw_method': method,
+        'withdraw_account': account,
+      });
+
+      final success = response['data'] == true || response['success'] == true;
+      if (!success) {
+        throw ApiException(response['message']?.toString() ?? 'V2Board 提现失败');
+      }
+      return ApiResponse(
+        success: success,
+        data: success,
+        message: response['message'] as String?,
+      );
+    } catch (e) {
+      if (e is XBoardException) rethrow;
+      throw ApiException('V2Board 提现失败: $e');
+    }
+  }
+
+  Future<ApiResponse<bool>> transferCommissionToBalance({
+    required int amount,
+  }) async {
+    try {
+      final response = await _httpService.postRequest('/user/transfer', {
+        'transfer_amount': amount,
+      });
+
+      final success = response['data'] == true || response['success'] == true;
+      if (!success) {
+        throw ApiException(response['message']?.toString() ?? 'V2Board 划转佣金失败');
+      }
+      return ApiResponse(
+        success: success,
+        data: success,
+        message: response['message'] as String?,
+      );
+    } catch (e) {
+      if (e is XBoardException) rethrow;
+      throw ApiException('V2Board 划转佣金失败: $e');
+    }
+  }
 }

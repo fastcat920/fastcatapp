@@ -762,7 +762,6 @@
   "inviteCode": "초대 코드",
   "pleaseEnterInviteCode": "please enter 초대 코드",
   "inviteCodeOptional": "초대 코드 optional",
-  "inviteCodeIncorrect": "초대 코드 incorrect",
   "loading": "불러오는 중",
   "registerAccount": "가입 계정",
   "alreadyHaveAccount": "already have 계정",
@@ -1175,6 +1174,75 @@
       }
     }
   },
+  "backendErrorIncorrectEmailOrPassword": "이메일 또는 비밀번호가 올바르지 않습니다",
+  "backendErrorAccountSuspended": "이 계정은 사용이 중지되었습니다",
+  "backendErrorEmailEmpty": "이메일을 입력해 주세요",
+  "backendErrorEmailFormatInvalid": "이메일 형식이 올바르지 않습니다",
+  "backendErrorPasswordEmpty": "비밀번호를 입력해 주세요",
+  "backendErrorPasswordTooShort": "비밀번호는 8자보다 길어야 합니다",
+  "backendErrorVerificationCodeInvalid": "인증 코드가 올바르지 않습니다",
+  "backendErrorInviteCodeInvalid": "초대 코드가 유효하지 않습니다",
+  "backendErrorInviteCodeNotFound": "초대 코드가 존재하지 않습니다",
+  "backendErrorEmailExists": "이미 등록된 이메일입니다",
+  "backendErrorGiftCardEmpty": "기프트 카드를 입력해 주세요",
+  "backendErrorUserNotFound": "사용자가 존재하지 않습니다",
+  "backendErrorGiftCardNotFound": "이 기프트 카드가 존재하지 않습니다",
+  "backendErrorGiftCardNotYetValid": "이 기프트 카드는 아직 유효하지 않습니다",
+  "backendErrorGiftCardExpired": "이 기프트 카드는 만료되었습니다",
+  "backendErrorGiftCardLimitReached": "이 기프트 카드는 사용 한도에 도달했습니다",
+  "backendErrorGiftCardAlreadyUsedByUser": "이 기프트 카드는 이미 이 사용자가 사용했습니다",
+  "backendErrorGiftCardTypeNotSuitable": "이 기프트 카드 유형은 적용할 수 없습니다",
+  "backendErrorGiftCardTypeUnknown": "알 수 없는 기프트 카드 유형입니다",
+  "backendErrorSaveFailed": "저장에 실패했습니다. 잠시 후 다시 시도해 주세요",
+  "backendErrorWithdrawalMethodEmpty": "출금 방식을 입력해 주세요",
+  "backendErrorWithdrawalAccountEmpty": "출금 계정을 입력해 주세요",
+  "backendErrorWithdrawNotSupported": "현재 출금을 지원하지 않습니다",
+  "backendErrorWithdrawalMethodUnsupported": "지원하지 않는 출금 방식입니다",
+  "backendErrorFailedToOpenTicket": "출금 티켓 생성에 실패했습니다",
+  "backendErrorInsufficientCommissionBalance": "커미션 잔액이 부족합니다",
+  "backendErrorTransferFailed": "이체에 실패했습니다",
+  "backendErrorTransferAmountEmpty": "이체 금액을 입력해 주세요",
+  "backendErrorTransferAmountInvalid": "이체 금액 파라미터가 올바르지 않습니다",
+  "backendErrorCouponEmpty": "쿠폰을 입력해 주세요",
+  "backendErrorCouponInvalid": "쿠폰이 유효하지 않습니다",
+  "backendErrorCouponNotFound": "쿠폰이 존재하지 않습니다",
+  "backendErrorCouponExpired": "쿠폰이 만료되었습니다",
+  "backendErrorCouponLimitExceeded": "쿠폰 사용 한도에 도달했습니다",
+  "backendErrorOrderNotFound": "주문이 존재하지 않습니다",
+  "backendErrorPlanNotFound": "플랜이 존재하지 않습니다",
+  "backendErrorTicketNotFound": "티켓이 존재하지 않습니다",
+  "backendErrorTicketClosed": "티켓이 닫혀 있습니다",
+  "backendErrorOldPasswordWrong": "기존 비밀번호가 올바르지 않습니다",
+  "backendErrorNewPasswordEmpty": "새 비밀번호를 입력해 주세요",
+  "backendErrorResetFailed": "초기화에 실패했습니다. 잠시 후 다시 시도해 주세요",
+  "backendErrorTooManyPasswordErrorsGeneric": "비밀번호 오류 횟수가 너무 많습니다. 잠시 후 다시 시도해 주세요",
+  "backendErrorTooManyPasswordErrors": "비밀번호 오류 횟수가 너무 많습니다. {minute}분 후 다시 시도해 주세요",
+  "@backendErrorTooManyPasswordErrors": {
+    "placeholders": {
+      "minute": {
+        "type": "String"
+      }
+    }
+  },
+  "backendErrorTooManyRequests": "요청이 너무 많습니다. 잠시 후 다시 시도해 주세요",
+  "backendErrorMinimumWithdrawalCommissionGeneric": "최소 출금 커미션 조건을 충족하지 못했습니다",
+  "backendErrorMinimumWithdrawalCommission": "현재 최소 출금 커미션은 {limit}입니다",
+  "@backendErrorMinimumWithdrawalCommission": {
+    "placeholders": {
+      "limit": {
+        "type": "String"
+      }
+    }
+  },
+  "backendFallbackLoginFailed": "로그인에 실패했습니다",
+  "backendFallbackRegisterFailed": "가입에 실패했습니다",
+  "backendFallbackEmailVerifyFailed": "인증 코드 전송에 실패했습니다",
+  "backendFallbackTransferFailed": "이체에 실패했습니다",
+  "backendFallbackPasswordFailed": "비밀번호 작업에 실패했습니다",
+  "backendFallbackCouponFailed": "쿠폰 확인에 실패했습니다",
+  "backendFallbackOrderFailed": "주문 작업에 실패했습니다",
+  "backendFallbackTicketFailed": "티켓 작업에 실패했습니다",
+  "backendFallbackOperationFailed": "작업에 실패했습니다",
   "xboardDeviceManagement": "기기 관리",
   "xboardJoinGroup": "그룹 참여",
   "xboardToolsSettings": "도구 설정",

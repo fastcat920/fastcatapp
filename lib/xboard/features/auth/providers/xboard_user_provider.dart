@@ -24,6 +24,7 @@ import 'package:fl_clash/common/constant.dart';
 import 'package:fl_clash/state.dart';
 import 'package:fl_clash/providers/providers.dart';
 import 'package:fl_clash/xboard/features/subscription/services/subscription_guard_service.dart';
+import 'package:fl_clash/xboard/utils/backend_message_mapper.dart';
 
 // 初始化文件级日志器
 const _logger = FileLogger('xboard_user_provider.dart');
@@ -953,7 +954,11 @@ class XBoardUserAuthNotifier extends Notifier<UserAuthState> {
         lower.contains('device limit exceeded')) {
       return '设备数量已达上限，请移除旧设备或升级套餐';
     }
-    return message;
+    return BackendMessageMapper.map(
+      message,
+      context: BackendMessageContext.login,
+      fallback: message,
+    );
   }
 
   bool _isAccountDisabledMessage(String message) {
@@ -997,10 +1002,10 @@ class XBoardUserAuthNotifier extends Notifier<UserAuthState> {
       }
     } catch (e) {
       _logger.info('注册出错: $e');
-      String errorMessage = '注册失败';
-      if (e is XBoardException) {
-        errorMessage = e.message;
-      }
+      final errorMessage = BackendMessageMapper.mapError(
+        e,
+        context: BackendMessageContext.register,
+      );
       state = state.copyWith(
         isLoading: false,
         errorMessage: errorMessage,
@@ -1020,7 +1025,10 @@ class XBoardUserAuthNotifier extends Notifier<UserAuthState> {
       _logger.info('发送验证码出错: $e');
       state = state.copyWith(
         isLoading: false,
-        errorMessage: e.toString(),
+        errorMessage: BackendMessageMapper.mapError(
+          e,
+          context: BackendMessageContext.emailVerify,
+        ),
       );
       return false;
     }
@@ -1053,7 +1061,10 @@ class XBoardUserAuthNotifier extends Notifier<UserAuthState> {
       _logger.info('重置密码出错: $e');
       state = state.copyWith(
         isLoading: false,
-        errorMessage: e.toString(),
+        errorMessage: BackendMessageMapper.mapError(
+          e,
+          context: BackendMessageContext.password,
+        ),
       );
       return false;
     }

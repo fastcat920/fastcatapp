@@ -9,6 +9,7 @@ import 'package:fl_clash/xboard/adapter/state/user_state.dart';
 import 'package:fl_clash/xboard/features/auth/providers/xboard_user_provider.dart';
 import 'package:fl_clash/xboard/adapter/initialization/sdk_provider.dart';
 import 'package:fl_clash/xboard/services/services.dart';
+import 'package:fl_clash/xboard/utils/backend_message_mapper.dart';
 
 // 初始化文件级日志器
 const _logger = FileLogger('invite_provider.dart');
@@ -326,7 +327,10 @@ class InviteNotifier extends Notifier<InviteState> {
       );
 
       if (!success) {
-        throw Exception('提现申请失败');
+        throw Exception(BackendMessageMapper.map(
+          null,
+          context: BackendMessageContext.withdraw,
+        ));
       }
 
       await loadInviteData();
@@ -339,7 +343,10 @@ class InviteNotifier extends Notifier<InviteState> {
       _logger.info('提现申请失败: $e');
       state = state.copyWith(
         isLoading: false,
-        errorMessage: e.toString(),
+        errorMessage: BackendMessageMapper.mapError(
+          e,
+          context: BackendMessageContext.withdraw,
+        ),
       );
       return false;
     }
@@ -356,7 +363,10 @@ class InviteNotifier extends Notifier<InviteState> {
           await XBoardSDK.instance.invite.transferCommissionToBalance(amount);
 
       if (!success) {
-        throw Exception('划转失败');
+        throw Exception(BackendMessageMapper.map(
+          null,
+          context: BackendMessageContext.transfer,
+        ));
       }
 
       await Future.wait([
@@ -371,7 +381,10 @@ class InviteNotifier extends Notifier<InviteState> {
       _logger.info('划转失败: $e');
       state = state.copyWith(
         isLoading: false,
-        errorMessage: e.toString(),
+        errorMessage: BackendMessageMapper.mapError(
+          e,
+          context: BackendMessageContext.transfer,
+        ),
       );
       return false;
     }

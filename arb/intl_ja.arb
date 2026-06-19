@@ -956,6 +956,75 @@
       }
     }
   },
+  "backendErrorIncorrectEmailOrPassword": "メールアドレスまたはパスワードが正しくありません",
+  "backendErrorAccountSuspended": "このアカウントは停止されています",
+  "backendErrorEmailEmpty": "メールアドレスを入力してください",
+  "backendErrorEmailFormatInvalid": "メールアドレスの形式が正しくありません",
+  "backendErrorPasswordEmpty": "パスワードを入力してください",
+  "backendErrorPasswordTooShort": "パスワードは8文字より長くしてください",
+  "backendErrorVerificationCodeInvalid": "認証コードが正しくありません",
+  "backendErrorInviteCodeInvalid": "招待コードが無効です",
+  "backendErrorInviteCodeNotFound": "招待コードが存在しません",
+  "backendErrorEmailExists": "このメールアドレスは既に登録されています",
+  "backendErrorGiftCardEmpty": "ギフトカードを入力してください",
+  "backendErrorUserNotFound": "ユーザーが存在しません",
+  "backendErrorGiftCardNotFound": "このギフトカードは存在しません",
+  "backendErrorGiftCardNotYetValid": "このギフトカードはまだ有効ではありません",
+  "backendErrorGiftCardExpired": "このギフトカードは期限切れです",
+  "backendErrorGiftCardLimitReached": "このギフトカードは使用上限に達しています",
+  "backendErrorGiftCardAlreadyUsedByUser": "このギフトカードはこのユーザーによって既に使用されています",
+  "backendErrorGiftCardTypeNotSuitable": "このギフトカードタイプは適用できません",
+  "backendErrorGiftCardTypeUnknown": "不明なギフトカードタイプです",
+  "backendErrorSaveFailed": "保存に失敗しました。しばらくしてから再試行してください",
+  "backendErrorWithdrawalMethodEmpty": "出金方法を入力してください",
+  "backendErrorWithdrawalAccountEmpty": "出金口座を入力してください",
+  "backendErrorWithdrawNotSupported": "現在、出金はサポートされていません",
+  "backendErrorWithdrawalMethodUnsupported": "この出金方法はサポートされていません",
+  "backendErrorFailedToOpenTicket": "出金チケットの作成に失敗しました",
+  "backendErrorInsufficientCommissionBalance": "コミッション残高が不足しています",
+  "backendErrorTransferFailed": "振替に失敗しました",
+  "backendErrorTransferAmountEmpty": "振替金額を入力してください",
+  "backendErrorTransferAmountInvalid": "振替金額のパラメータが正しくありません",
+  "backendErrorCouponEmpty": "クーポンを入力してください",
+  "backendErrorCouponInvalid": "クーポンが無効です",
+  "backendErrorCouponNotFound": "クーポンが存在しません",
+  "backendErrorCouponExpired": "クーポンは期限切れです",
+  "backendErrorCouponLimitExceeded": "クーポンの使用上限に達しています",
+  "backendErrorOrderNotFound": "注文が存在しません",
+  "backendErrorPlanNotFound": "プランが存在しません",
+  "backendErrorTicketNotFound": "チケットが存在しません",
+  "backendErrorTicketClosed": "チケットは閉じられています",
+  "backendErrorOldPasswordWrong": "現在のパスワードが正しくありません",
+  "backendErrorNewPasswordEmpty": "新しいパスワードを入力してください",
+  "backendErrorResetFailed": "リセットに失敗しました。しばらくしてから再試行してください",
+  "backendErrorTooManyPasswordErrorsGeneric": "パスワードの入力ミスが多すぎます。しばらくしてから再試行してください",
+  "backendErrorTooManyPasswordErrors": "パスワードの入力ミスが多すぎます。{minute}分後に再試行してください",
+  "@backendErrorTooManyPasswordErrors": {
+    "placeholders": {
+      "minute": {
+        "type": "String"
+      }
+    }
+  },
+  "backendErrorTooManyRequests": "操作が多すぎます。しばらくしてから再試行してください",
+  "backendErrorMinimumWithdrawalCommissionGeneric": "最低出金コミッションに達していません",
+  "backendErrorMinimumWithdrawalCommission": "現在の最低出金コミッションは {limit} です",
+  "@backendErrorMinimumWithdrawalCommission": {
+    "placeholders": {
+      "limit": {
+        "type": "String"
+      }
+    }
+  },
+  "backendFallbackLoginFailed": "ログインに失敗しました",
+  "backendFallbackRegisterFailed": "登録に失敗しました",
+  "backendFallbackEmailVerifyFailed": "認証コードの送信に失敗しました",
+  "backendFallbackTransferFailed": "振替に失敗しました",
+  "backendFallbackPasswordFailed": "パスワード操作に失敗しました",
+  "backendFallbackCouponFailed": "クーポン確認に失敗しました",
+  "backendFallbackOrderFailed": "注文操作に失敗しました",
+  "backendFallbackTicketFailed": "チケット操作に失敗しました",
+  "backendFallbackOperationFailed": "操作に失敗しました",
   "xboardDeviceManagement": "デバイス管理",
   "xboardJoinGroup": "グループ参加",
   "xboardToolsSettings": "ツール設定",
@@ -1112,7 +1181,6 @@
   "inviteCode": "招待コード",
   "pleaseEnterInviteCode": "招待コードを入力してください",
   "inviteCodeOptional": "招待コード（任意）",
-  "inviteCodeIncorrect": "招待コードが間違っている可能性があります。確認して再入力してください",
   "loading": "読み込み中...",
   "registerAccount": "アカウント登録",
   "alreadyHaveAccount": "すでにアカウントをお持ちですか？",

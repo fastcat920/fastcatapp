@@ -12,6 +12,7 @@ import 'package:fl_clash/common/common.dart';
 import 'package:fl_clash/xboard/features/shared/widgets/tv_deferred_input.dart';
 import 'package:fl_clash/xboard/features/mine/services/imgbb_service.dart';
 import 'package:fl_clash/l10n/l10n.dart';
+import 'package:fl_clash/xboard/utils/backend_message_mapper.dart';
 import 'package:fl_clash/xboard/utils/xboard_notification.dart';
 import 'package:image_picker/image_picker.dart';
 import 'ticket_detail_page.dart';
@@ -385,7 +386,12 @@ class _CreateTicketSheetState extends ConsumerState<_CreateTicketSheet> {
       }
     } catch (e) {
       if (mounted) {
-        XBoardNotification.showError('提交失败: $e');
+        XBoardNotification.showError(
+          '提交失败: ${BackendMessageMapper.mapError(
+            e,
+            context: BackendMessageContext.ticket,
+          )}',
+        );
       }
     } finally {
       if (mounted) setState(() => _isSubmitting = false);

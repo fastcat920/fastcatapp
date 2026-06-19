@@ -762,7 +762,6 @@
   "inviteCode": "Invite Code",
   "pleaseEnterInviteCode": "Please enter invite code",
   "inviteCodeOptional": "Invite Code (optional)",
-  "inviteCodeIncorrect": "Invite code may be incorrect, please check and re-enter",
   "loading": "Loading...",
   "registerAccount": "Register Account",
   "alreadyHaveAccount": "Already have an account?",
@@ -1175,6 +1174,75 @@
       }
     }
   },
+  "backendErrorIncorrectEmailOrPassword": "Incorrect email or password",
+  "backendErrorAccountSuspended": "This account has been suspended",
+  "backendErrorEmailEmpty": "Email cannot be empty",
+  "backendErrorEmailFormatInvalid": "Email format is incorrect",
+  "backendErrorPasswordEmpty": "Password cannot be empty",
+  "backendErrorPasswordTooShort": "Password must be longer than 8 characters",
+  "backendErrorVerificationCodeInvalid": "Verification code is incorrect",
+  "backendErrorInviteCodeInvalid": "Invite code is invalid",
+  "backendErrorInviteCodeNotFound": "Invite code does not exist",
+  "backendErrorEmailExists": "This email is already registered",
+  "backendErrorGiftCardEmpty": "Gift card cannot be empty",
+  "backendErrorUserNotFound": "User does not exist",
+  "backendErrorGiftCardNotFound": "This gift card does not exist",
+  "backendErrorGiftCardNotYetValid": "This gift card is not yet valid",
+  "backendErrorGiftCardExpired": "This gift card has expired",
+  "backendErrorGiftCardLimitReached": "This gift card has reached its usage limit",
+  "backendErrorGiftCardAlreadyUsedByUser": "This gift card has already been used by this user",
+  "backendErrorGiftCardTypeNotSuitable": "This gift card type is not applicable",
+  "backendErrorGiftCardTypeUnknown": "Unknown gift card type",
+  "backendErrorSaveFailed": "Save failed, please try again later",
+  "backendErrorWithdrawalMethodEmpty": "Withdrawal method cannot be empty",
+  "backendErrorWithdrawalAccountEmpty": "Withdrawal account cannot be empty",
+  "backendErrorWithdrawNotSupported": "Withdrawal is currently not supported",
+  "backendErrorWithdrawalMethodUnsupported": "Unsupported withdrawal method",
+  "backendErrorFailedToOpenTicket": "Failed to create withdrawal ticket",
+  "backendErrorInsufficientCommissionBalance": "Insufficient commission balance",
+  "backendErrorTransferFailed": "Transfer failed",
+  "backendErrorTransferAmountEmpty": "Transfer amount cannot be empty",
+  "backendErrorTransferAmountInvalid": "Transfer amount parameter is invalid",
+  "backendErrorCouponEmpty": "Coupon cannot be empty",
+  "backendErrorCouponInvalid": "Coupon is invalid",
+  "backendErrorCouponNotFound": "Coupon does not exist",
+  "backendErrorCouponExpired": "Coupon has expired",
+  "backendErrorCouponLimitExceeded": "Coupon usage limit has been reached",
+  "backendErrorOrderNotFound": "Order does not exist",
+  "backendErrorPlanNotFound": "Plan does not exist",
+  "backendErrorTicketNotFound": "Ticket does not exist",
+  "backendErrorTicketClosed": "Ticket is closed",
+  "backendErrorOldPasswordWrong": "Old password is incorrect",
+  "backendErrorNewPasswordEmpty": "New password cannot be empty",
+  "backendErrorResetFailed": "Reset failed, please try again later",
+  "backendErrorTooManyPasswordErrorsGeneric": "Too many password errors, please try again later",
+  "backendErrorTooManyPasswordErrors": "Too many password errors, please try again after {minute} minutes",
+  "@backendErrorTooManyPasswordErrors": {
+    "placeholders": {
+      "minute": {
+        "type": "String"
+      }
+    }
+  },
+  "backendErrorTooManyRequests": "Too many requests, please try again later",
+  "backendErrorMinimumWithdrawalCommissionGeneric": "The minimum withdrawal commission has not been reached",
+  "backendErrorMinimumWithdrawalCommission": "The minimum withdrawal commission is {limit}",
+  "@backendErrorMinimumWithdrawalCommission": {
+    "placeholders": {
+      "limit": {
+        "type": "String"
+      }
+    }
+  },
+  "backendFallbackLoginFailed": "Login failed",
+  "backendFallbackRegisterFailed": "Register failed",
+  "backendFallbackEmailVerifyFailed": "Failed to send verification code",
+  "backendFallbackTransferFailed": "Transfer failed",
+  "backendFallbackPasswordFailed": "Password operation failed",
+  "backendFallbackCouponFailed": "Coupon check failed",
+  "backendFallbackOrderFailed": "Order operation failed",
+  "backendFallbackTicketFailed": "Ticket operation failed",
+  "backendFallbackOperationFailed": "Operation failed",
   "xboardDeviceManagement": "Device Management",
   "xboardJoinGroup": "Join Group",
   "xboardToolsSettings": "Tools Settings",

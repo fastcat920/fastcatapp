@@ -11,6 +11,7 @@ import 'package:fl_clash/xboard/core/core.dart';
 import 'package:fl_clash/xboard/features/auth/providers/xboard_user_provider.dart';
 import 'package:fl_clash/xboard/features/payment/providers/xboard_payment_provider.dart';
 import 'package:fl_clash/xboard/features/shared/styles/styles.dart';
+import 'package:fl_clash/xboard/utils/backend_message_mapper.dart';
 import 'order_detail_page.dart';
 import '../widgets/plan_header_card.dart';
 import '../widgets/period_selector.dart';
@@ -214,7 +215,10 @@ class _PlanPurchasePageState extends ConsumerState<PlanPurchasePage> {
         setState(() {
           _isCouponValid = false;
           _couponErrorMessage =
-              '${AppLocalizations.of(context).xboardValidationFailed}: ${e.toString()}';
+              '${AppLocalizations.of(context).xboardValidationFailed}: ${BackendMessageMapper.mapError(
+            e,
+            context: BackendMessageContext.coupon,
+          )}';
           _clearCouponData();
         });
       }
@@ -318,8 +322,8 @@ class _PlanPurchasePageState extends ConsumerState<PlanPurchasePage> {
       if (tradeNo == null) {
         final errorMessage = ref.read(userUIStateProvider).errorMessage;
         if (!mounted) return;
-        throw Exception(
-            '${AppLocalizations.of(context).xboardOrderCreationFailed}: $errorMessage');
+        throw Exception(errorMessage ??
+            AppLocalizations.of(context).xboardOrderCreationFailed);
       }
 
       _logger.debug('[购买] 订单创建成功: $tradeNo');
@@ -346,7 +350,11 @@ class _PlanPurchasePageState extends ConsumerState<PlanPurchasePage> {
       _logger.error('购买流程出错: $e');
       if (mounted) {
         XBoardNotification.showError(
-            '${AppLocalizations.of(context).xboardOperationFailed}: ${e.toString()}');
+          '${AppLocalizations.of(context).xboardOperationFailed}: ${BackendMessageMapper.mapError(
+            e,
+            context: BackendMessageContext.order,
+          )}',
+        );
       }
     }
   }

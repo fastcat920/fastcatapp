@@ -6,6 +6,7 @@ import 'package:fl_clash/xboard/utils/xboard_notification.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:fl_clash/xboard/features/shared/shared.dart';
 import 'package:fl_clash/xboard/services/services.dart';
+import 'package:fl_clash/xboard/utils/backend_message_mapper.dart';
 import 'package:go_router/go_router.dart';
 
 class RegisterPage extends ConsumerStatefulWidget {
@@ -104,38 +105,10 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
         }
       } catch (e) {
         if (mounted) {
-          // 提取详细的错误信息
-          String errorMessage = '注册失败';
-
-          final errorStr = e.toString();
-
-          // 尝试提取具体的错误信息
-          if (errorStr.contains('XBoardException')) {
-            // 格式1: XBoardException(400): 具体错误信息
-            if (errorStr.contains('): ')) {
-              final parts = errorStr.split('): ');
-              if (parts.length > 1) {
-                errorMessage = parts.sublist(1).join('): ').trim();
-              }
-            }
-            // 格式2: XBoardException: 具体错误信息
-            else if (errorStr.contains('XBoardException: ')) {
-              errorMessage = errorStr.split('XBoardException: ').last.trim();
-            }
-          } else {
-            // 其他类型的错误，直接使用错误文本
-            errorMessage = errorStr;
-          }
-
-          // 移除可能的 "Error: " 前缀
-          if (errorMessage.startsWith('Error: ')) {
-            errorMessage = errorMessage.substring(7);
-          }
-
-          // 500错误或通用错误提示：可能是邀请码问题
-          if (errorMessage.contains('遇到了些问题') || errorMessage.contains('500')) {
-            errorMessage = appLocalizations.inviteCodeIncorrect;
-          }
+          final errorMessage = BackendMessageMapper.mapError(
+            e,
+            context: BackendMessageContext.register,
+          );
 
           XBoardNotification.showError(errorMessage);
         }
@@ -177,7 +150,13 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
     } catch (e) {
       if (mounted) {
         XBoardNotification.showError(
-            appLocalizations.sendVerificationCodeFailed(e.toString()));
+          appLocalizations.sendVerificationCodeFailed(
+            BackendMessageMapper.mapError(
+              e,
+              context: BackendMessageContext.emailVerify,
+            ),
+          ),
+        );
       }
     } finally {
       if (mounted) {
@@ -216,7 +195,9 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
     // 处理异步加载状态
     return configAsync.when(
       loading: () => Scaffold(
-        backgroundColor: colorScheme.brightness == Brightness.dark ? colorScheme.surface : const Color(0xFFFAFBFD),
+        backgroundColor: colorScheme.brightness == Brightness.dark
+            ? colorScheme.surface
+            : const Color(0xFFFAFBFD),
         body: const Center(child: CircularProgressIndicator()),
       ),
       error: (error, stack) => _buildPage(context, colorScheme, null),
@@ -227,7 +208,9 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
   Widget _buildPage(
       BuildContext context, ColorScheme colorScheme, ConfigModel? config) {
     return Scaffold(
-      backgroundColor: colorScheme.brightness == Brightness.dark ? colorScheme.surface : const Color(0xFFFAFBFD),
+      backgroundColor: colorScheme.brightness == Brightness.dark
+          ? colorScheme.surface
+          : const Color(0xFFFAFBFD),
       body: XBContainer(
         child: Column(
           children: [

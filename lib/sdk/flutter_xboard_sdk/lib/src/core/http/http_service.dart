@@ -616,6 +616,7 @@ class HttpService {
       dynamic responseData = _parseResponseData(error.response!);
 
       String errorMessage = '请求失败 (状态码: $statusCode)';
+      var hasBackendBusinessMessage = false;
 
       // 打印响应数据以便调试
       SdkLogger.w(
@@ -635,6 +636,7 @@ class HttpService {
             responseData['message'] != null &&
             responseData['message'].toString().isNotEmpty) {
           errorMessage = responseData['message'].toString();
+          hasBackendBusinessMessage = true;
         } else if (responseData.containsKey('error') &&
             responseData['error'] != null &&
             responseData['error'].toString().isNotEmpty) {
@@ -642,16 +644,31 @@ class HttpService {
           final errorField = responseData['error'];
           if (errorField is String) {
             errorMessage = errorField;
+            hasBackendBusinessMessage = true;
           } else if (errorField is Map) {
             errorMessage = errorField.toString();
           }
         } else if (responseData.containsKey('data') &&
             responseData['data'] is String) {
           errorMessage = responseData['data'].toString();
+          hasBackendBusinessMessage = true;
         }
       } else if (responseData is String && responseData.isNotEmpty) {
         // 如果响应是纯文本，尝试提取有用信息
         errorMessage = responseData;
+      }
+
+      final path = error.requestOptions.path;
+      final isBusinessPath =
+          path.contains('/passport/') || path.contains('/user/');
+      final lowerErrorMessage = errorMessage.toLowerCase().trim();
+      final looksLikePlainServerError = lowerErrorMessage == 'server error' ||
+          lowerErrorMessage.contains('internal server error');
+      if (hasBackendBusinessMessage &&
+          isBusinessPath &&
+          !looksLikePlainServerError &&
+          (errorCode.isEmpty || errorCode == 'BUSINESS_LOGIN_FAILED')) {
+        error.requestOptions.extra['x_backend_business_message'] = true;
       }
 
       // 组合 code + message，让上层能按 code 精确分流
@@ -680,10 +697,13 @@ class HttpService {
         final statusCode = error.response!.statusCode!;
         // 直接使用已经提取的错误消息（在 _handleDioError 中处理）
         final errorMessage = error.message ?? error.error?.toString() ?? '请求失败';
+        final isBackendBusinessError =
+            error.requestOptions.extra['x_backend_business_message'] == true;
 
         if (statusCode == 401) {
           return AuthException(errorMessage);
-        } else if (statusCode >= 200 && statusCode < 500) {
+        } else if ((statusCode >= 200 && statusCode < 500) ||
+            isBackendBusinessError) {
           return ApiException(errorMessage, statusCode);
         } else {
           return NetworkException(errorMessage);
@@ -795,6 +815,9 @@ class HttpService {
 
     final statusCode = error.response?.statusCode;
     if (statusCode == null) return false;
+    if (error.requestOptions.extra['x_backend_business_message'] == true) {
+      return false;
+    }
     if (statusCode >= 500) return true;
 
     switch (kind) {

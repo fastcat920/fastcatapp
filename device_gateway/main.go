@@ -1690,9 +1690,10 @@ func (s *Server) businessURL(path, rawQuery string) (string, error) {
 	return base.String(), nil
 }
 
-// tryBusinessURLs executes a request against every business URL in order
-// until one succeeds. makeReq is called with each base URL to construct the
-// request; if makeReq returns an error for a given URL, that URL is skipped.
+// tryBusinessURLs executes a request against every business URL in order until
+// a backend sends any HTTP response. Non-2xx statuses are still real backend
+// responses and must be preserved so clients can display the business error
+// payload instead of a gateway-level proxy failure.
 func (s *Server) tryBusinessURLs(ctx context.Context, makeReq func(baseURL string) (*http.Request, error)) (*http.Response, error) {
 	var lastErr error
 	urls := s.businessURLs()
@@ -1706,17 +1707,6 @@ func (s *Server) tryBusinessURLs(ctx context.Context, makeReq func(baseURL strin
 		if err != nil {
 			s.log.Printf("business request to %s failed (%d/%d): %v", baseURL, i+1, len(urls), err)
 			lastErr = err
-			continue
-		}
-		if resp.StatusCode < 200 || resp.StatusCode >= 300 {
-			body, _ := io.ReadAll(resp.Body)
-			resp.Body.Close()
-			s.log.Printf("business request to %s returned %d (%d/%d), trying next", baseURL, resp.StatusCode, i+1, len(urls))
-			lastErr = &businessHTTPError{
-				status:      resp.StatusCode,
-				body:        body,
-				contentType: resp.Header.Get("Content-Type"),
-			}
 			continue
 		}
 		return resp, nil
