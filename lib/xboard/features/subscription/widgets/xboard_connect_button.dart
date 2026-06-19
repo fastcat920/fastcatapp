@@ -35,7 +35,10 @@ class _XBoardConnectButtonState extends ConsumerState<XBoardConnectButton>
   bool _isCheckingSubscription = false;
   bool _isSwitching = false;
 
-  bool get _isBusy => _isCheckingSubscription || _isSwitching;
+  bool get _isBusy =>
+      _isCheckingSubscription ||
+      _isSwitching ||
+      globalState.isCoreSwitchingNotifier.value;
 
   @override
   void initState() {
@@ -65,12 +68,18 @@ class _XBoardConnectButtonState extends ConsumerState<XBoardConnectButton>
       },
       fireImmediately: true,
     );
+    globalState.isCoreSwitchingNotifier.addListener(_handleCoreSwitching);
   }
 
   @override
   void dispose() {
+    globalState.isCoreSwitchingNotifier.removeListener(_handleCoreSwitching);
     _controller.dispose();
     super.dispose();
+  }
+
+  void _handleCoreSwitching() {
+    if (mounted) setState(() {});
   }
 
   Future<void> handleSwitchStart() async {

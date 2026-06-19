@@ -90,22 +90,26 @@ class _TunSheetContent extends ConsumerStatefulWidget {
 }
 
 class _TunSheetContentState extends ConsumerState<_TunSheetContent> {
+  ProviderSubscription<bool>? _tunEnableSub;
+
   @override
   void initState() {
     super.initState();
     // Auto-close sheet when TUN is toggled from switch or elsewhere
-    ref.listen(
+    _tunEnableSub = ref.listenManual<bool>(
       patchClashConfigProvider.select((s) => s.tun.enable),
       (prev, next) {
         if (prev != next && mounted) {
-          try {
-            Navigator.of(context).pop();
-          } catch (_) {
-            // Sheet may already be closed — ignore
-          }
+          Navigator.maybeOf(context)?.maybePop();
         }
       },
     );
+  }
+
+  @override
+  void dispose() {
+    _tunEnableSub?.close();
+    super.dispose();
   }
 
   @override
@@ -115,7 +119,7 @@ class _TunSheetContentState extends ConsumerState<_TunSheetContent> {
       body: generateListView(
         generateSection(
           items: [
-            if (system.isDesktop) const TUNItem(closeOnChanged: true),
+            if (system.isDesktop) const TUNItem(),
             if (Platform.isMacOS) const AutoSetSystemDnsItem(),
             const TunStackItem(),
           ],

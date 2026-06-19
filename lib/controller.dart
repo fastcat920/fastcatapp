@@ -62,10 +62,17 @@ class AppController {
     });
   }
 
-  updateClashConfigDebounce() {
+  updateClashConfigDebounce({
+    Duration duration = const Duration(milliseconds: 600),
+  }) {
+    if (duration <= Duration.zero) {
+      debouncer.cancel(FunctionTag.updateClashConfig);
+      unawaited(updateClashConfig());
+      return;
+    }
     debouncer.call(FunctionTag.updateClashConfig, () async {
       await updateClashConfig();
-    });
+    }, duration: duration);
   }
 
   updateGroupsDebounce() {

@@ -147,7 +147,8 @@ class Windows {
     }
     // Ping 失败时才查询 SCM，区分"未安装"和"已安装但未运行"
     final result = await _runHidden('sc', ['query', appHelperService]);
-    if (result.exitCode != 0) {
+    final output = '${result.stdout}\n${result.stderr}';
+    if ((_parseScQuery(output)['state'] ?? 0) == 0) {
       return WindowsHelperServiceStatus.none;
     }
     return WindowsHelperServiceStatus.presence;
@@ -164,13 +165,43 @@ class Windows {
     };
   }
 
+  String _normalizeServiceBinaryPath(String value) {
+    var path = value.trim();
+    if (path.startsWith('"')) {
+      final end = path.indexOf('"', 1);
+      if (end != -1) {
+        path = path.substring(1, end);
+      }
+    } else {
+      final exeIndex = path.toLowerCase().indexOf('.exe');
+      if (exeIndex != -1) {
+        path = path.substring(0, exeIndex + 4);
+      }
+    }
+    return normalize(path.replaceAll('"', '')).toLowerCase();
+  }
+
+  Future<bool> _serviceBinaryMatches(String helperExe) async {
+    final result = await _runHidden('sc', ['qc', appHelperService]);
+    if (result.exitCode != 0) return false;
+    final match = RegExp(
+      r'BINARY_PATH_NAME\s*:\s*(.+)',
+      caseSensitive: false,
+    ).firstMatch(result.stdout.toString());
+    if (match == null) return false;
+    return _normalizeServiceBinaryPath(match.group(1)!) ==
+        _normalizeServiceBinaryPath(helperExe);
+  }
+
   /// 轮询 sc query，精确等待服务进入 RUNNING(4) 状态。
   /// 一旦检测到 STOPPED + win32ExitCode!=0（启动失败），立即返回 false，
   /// 不等超时——这是 service 方式失败的核心诊断手段。
   Future<bool> _waitForServiceRunning({int maxMs = 8000}) async {
-    final steps = maxMs ~/ 300;
-    for (int i = 0; i < steps; i++) {
-      await Future.delayed(const Duration(milliseconds: 300));
+    final steps = (maxMs / 300).ceil();
+    for (int i = 0; i <= steps; i++) {
+      if (i > 0) {
+        await Future.delayed(const Duration(milliseconds: 300));
+      }
       final result = await _runHidden('sc', ['query', appHelperService]);
       if (result.exitCode != 0) continue; // 服务条目尚未写入注册表，继续等
       final info = _parseScQuery(result.stdout.toString());
@@ -190,16 +221,18 @@ class Windows {
 
   /// 轮询 pingHelper HTTP 端口，最多等 [maxMs] 毫秒
   Future<bool> _waitForHelper({int maxMs = 3000}) async {
-    final steps = maxMs ~/ 300;
-    for (int i = 0; i < steps; i++) {
-      await Future.delayed(const Duration(milliseconds: 300));
+    final steps = (maxMs / 300).ceil();
+    for (int i = 0; i <= steps; i++) {
+      if (i > 0) {
+        await Future.delayed(const Duration(milliseconds: 300));
+      }
       if (await request.pingHelper()) return true;
     }
     return false;
   }
 
   Future<bool> registerService() async {
-    commonPrint.log("FASTCAT_V2 registerService: new timeouts 8s/3s/4s");
+    commonPrint.log("FASTCAT_V3 registerService: reuse service first");
     if (await request.pingHelper()) return true;
 
     // 预检：helper 二进制必须存在才能继续
@@ -209,19 +242,54 @@ class Windows {
       return false;
     }
 
-    await _killProcess(helperPort);
-    final status = await checkService();
+    final serviceQuery = await _runHidden('sc', ['query', appHelperService]);
+    final serviceInfo =
+        _parseScQuery('${serviceQuery.stdout}\n${serviceQuery.stderr}');
+    final hasService = (serviceInfo['state'] ?? 0) != 0;
+    if (hasService && await _serviceBinaryMatches(helperExe)) {
+      final state = serviceInfo['state'] ?? 0;
+      if (state == 4) {
+        if (await _waitForHelper(maxMs: 1500)) return true;
+        commonPrint.log('registerService: service running but HTTP not ready');
+      } else {
+        commonPrint.log('registerService: starting existing service');
+        if (runas('cmd.exe', '/c sc start $appHelperService')) {
+          if (await _waitForServiceRunning(maxMs: 5000)) {
+            if (await _waitForHelper(maxMs: 2000)) return true;
+            commonPrint.log(
+                'registerService: existing service running but HTTP not ready');
+          }
+        }
+      }
+      commonPrint
+          .log('registerService: existing service unavailable, repairing');
+    } else if (hasService) {
+      commonPrint.log('registerService: service path changed, recreating');
+    }
 
     // ── Phase 1: Windows Service（单次 UAC）────────────────────────────
     // cmd.exe /c 串联：(可选 delete &&) create && start
     // 用 _waitForServiceRunning 轮询 sc query STATE，快速感知成功/失败
+    await _killProcess(helperPort);
     final svcCmd = [
       '/c',
-      if (status == WindowsHelperServiceStatus.presence) ...[
+      if (hasService) ...[
+        'sc',
+        'stop',
+        appHelperService,
+        '>',
+        'nul',
+        '2>',
+        'nul',
+        '&',
         'sc',
         'delete',
         appHelperService,
-        '&&',
+        '>',
+        'nul',
+        '2>',
+        'nul',
+        '&',
       ],
       'sc',
       'create',

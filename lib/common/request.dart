@@ -73,7 +73,6 @@ class Request {
     return MemoryImage(data);
   }
 
-
   final Map<String, IpInfo Function(Map<String, dynamic>)> _ipInfoSources = {
     "https://ipwho.is/": IpInfo.fromIpwhoIsJson,
     "https://api.ip.sb/geoip/": IpInfo.fromIpSbJson,
@@ -125,7 +124,7 @@ class Request {
           )
           .timeout(
             const Duration(
-              milliseconds: 2000,
+              milliseconds: 800,
             ),
           );
       if (response.statusCode != HttpStatus.ok) {
@@ -152,7 +151,7 @@ class Request {
           )
           .timeout(
             const Duration(
-              milliseconds: 2000,
+              milliseconds: 4000,
             ),
           );
       if (response.statusCode != HttpStatus.ok) {
@@ -176,7 +175,7 @@ class Request {
           )
           .timeout(
             const Duration(
-              milliseconds: 2000,
+              milliseconds: 1500,
             ),
           );
       if (response.statusCode != HttpStatus.ok) {

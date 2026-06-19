@@ -38,9 +38,11 @@ class TUNItem extends ConsumerWidget {
   const TUNItem({
     super.key,
     this.closeOnChanged = false,
+    this.onClose,
   });
 
   final bool closeOnChanged;
+  final VoidCallback? onClose;
 
   @override
   Widget build(BuildContext context, ref) {
@@ -60,10 +62,14 @@ class TUNItem extends ConsumerWidget {
                   enable: value,
                 ),
               );
-          if (closeOnChanged) {
-            try {
-              Navigator.of(context).pop();
-            } catch (_) {}
+          if (closeOnChanged || onClose != null) {
+            WidgetsBinding.instance.addPostFrameCallback((_) {
+              if (onClose != null) {
+                onClose!();
+                return;
+              }
+              Navigator.maybeOf(context)?.maybePop();
+            });
           }
         },
       ),

@@ -404,6 +404,7 @@ class _XBoardHomePageState extends ConsumerState<XBoardHomePage>
 
   void _showVpnSheet(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
+    final rootNavigator = Navigator.of(context, rootNavigator: true);
     showDialog(
       context: context,
       barrierColor: Colors.transparent,
@@ -418,12 +419,18 @@ class _XBoardHomePageState extends ConsumerState<XBoardHomePage>
                 ? Theme.of(context).colorScheme.surfaceContainer
                 : Colors.white,
             clipBehavior: Clip.antiAlias,
-            child: const SizedBox(
+            child: SizedBox(
               width: 260,
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  TUNItem(),
+                  TUNItem(
+                    onClose: () {
+                      if (rootNavigator.mounted) {
+                        rootNavigator.maybePop();
+                      }
+                    },
+                  ),
                 ],
               ),
             ),
