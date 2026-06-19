@@ -1,8 +1,11 @@
+import 'dart:io';
+
 import 'package:fl_clash/common/common.dart';
 import 'package:fl_clash/enum/enum.dart';
 import 'package:fl_clash/l10n/l10n.dart';
 import 'package:fl_clash/models/models.dart';
 import 'package:fl_clash/providers/providers.dart';
+import 'package:fl_clash/state.dart';
 import 'package:fl_clash/xboard/adapter/initialization/sdk_provider.dart';
 import 'package:fl_clash/xboard/config/gateway_config.dart';
 import 'package:fl_clash/xboard/features/auth/providers/xboard_user_provider.dart';
@@ -44,15 +47,29 @@ final _deviceHealthSummaryProvider =
   );
 });
 
-class ConnectionHealthDialog extends ConsumerWidget {
+final _windowsHelperStatusProvider =
+    FutureProvider.autoDispose<WindowsHelperRuntimeStatus?>((ref) async {
+  if (!Platform.isWindows) return null;
+  return request.getHelperRuntimeStatus();
+});
+
+class ConnectionHealthDialog extends ConnectionHealthView {
   const ConnectionHealthDialog({super.key});
 
   static Future<void> show(BuildContext context) {
-    return showDialog<void>(
-      context: context,
-      builder: (_) => const ConnectionHealthDialog(),
+    return Navigator.of(context).push<void>(
+      MaterialPageRoute(
+        builder: (_) => Scaffold(
+          appBar: AppBar(title: Text(appLocalizations.xboardConnectionHealth)),
+          body: const ConnectionHealthView(),
+        ),
+      ),
     );
   }
+}
+
+class ConnectionHealthView extends ConsumerWidget {
+  const ConnectionHealthView({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -70,6 +87,12 @@ class ConnectionHealthDialog extends ConsumerWidget {
     final activeGateway = gatewayRuntime.activeConfig;
     final currentProxy = _resolveCurrentProxy(ref);
     final businessApiLabel = _resolveBusinessApiLabel(activeGateway);
+    final helperStatus = ref.watch(_windowsHelperStatusProvider);
+    final networkProps = ref.watch(networkSettingProvider);
+    final patchConfig = ref.watch(patchClashConfigProvider);
+    final realTunEnable = ref.watch(realTunEnableProvider);
+    final proxyState = ref.watch(proxyStateProvider);
+    final overrideDns = ref.watch(overrideDnsProvider);
 
     final subscriptionStatus = userState.isAuthenticated
         ? subscriptionStatusService.checkSubscriptionStatus(
@@ -86,101 +109,131 @@ class ConnectionHealthDialog extends ConsumerWidget {
         ? gatewayRuntime.recentEvents.last.message
         : null;
 
-    return AlertDialog(
-      shape: XbUiDialog.shape(),
-      backgroundColor: XbUiDialog.background(context),
-      titlePadding: const EdgeInsets.fromLTRB(22, 20, 14, 0),
-      contentPadding: const EdgeInsets.fromLTRB(22, 14, 22, 8),
-      actionsPadding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
-      title: Row(
-        children: [
-          Icon(
-            allHealthy ? Icons.verified_outlined : Icons.health_and_safety,
-            color: allHealthy
-                ? XbUiStatusColor.success(context)
-                : theme.colorScheme.primary,
-          ),
-          const SizedBox(width: 10),
-          Expanded(child: Text(l10n.xboardConnectionHealth)),
-          IconButton(
-            tooltip: l10n.cancel,
-            icon: const Icon(Icons.close),
-            onPressed: () => Navigator.of(context).pop(),
-          ),
-        ],
-      ),
-      content: ConstrainedBox(
-        constraints: const BoxConstraints(maxWidth: 440),
-        child: SingleChildScrollView(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              Text(
-                l10n.xboardConnectionHealthSubtitle,
-                style: theme.textTheme.bodySmall?.copyWith(
-                  color: theme.colorScheme.onSurfaceVariant,
+    return ListView(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
+      children: [
+        Row(
+          children: [
+            Icon(
+              allHealthy ? Icons.verified_outlined : Icons.health_and_safety,
+              color: allHealthy
+                  ? XbUiStatusColor.success(context)
+                  : theme.colorScheme.primary,
+            ),
+            const SizedBox(width: 10),
+            Expanded(
+              child: Text(
+                l10n.xboardConnectionHealth,
+                style: theme.textTheme.titleMedium?.copyWith(
+                  fontWeight: FontWeight.w700,
                 ),
               ),
-              const SizedBox(height: 14),
-              _HealthRow(
-                icon: Icons.cloud_done_outlined,
-                title: l10n.xboardServerStatus,
-                value: initState.isReady
-                    ? l10n.xboardHealthy
-                    : initState.currentStepDescription ??
-                        initState.errorMessage ??
-                        l10n.xboardNeedsAttention,
-                detail: businessApiLabel.isEmpty
-                    ? null
-                    : '${l10n.xboardCurrentBusinessApi}: $businessApiLabel',
-                healthy: initState.isReady,
-              ),
-              _HealthRow(
-                icon: Icons.hub_outlined,
-                title: l10n.xboardGatewayStatus,
-                value: activeGateway == null
-                    ? l10n.xboardNoGatewayActive
-                    : '${l10n.xboardCurrentGateway}: '
-                        '${gatewayDisplayLabel(activeGateway.baseUrl)}',
-                detail: [
-                  l10n.xboardGatewayCandidateCount(
-                    gatewayRuntime.candidates.length,
-                  ),
-                  if (latestEvent != null)
-                    '${l10n.xboardHealthLastEvent}: $latestEvent',
-                ].join('\n'),
-                healthy: gatewayOk,
-              ),
-              _HealthRow(
-                icon: Icons.card_membership_outlined,
-                title: l10n.xboardSubscriptionHealth,
-                value: subscriptionStatus?.getMessage(context) ??
-                    (subscriptionInfo == null
-                        ? l10n.xboardNoAvailableSubscription
-                        : l10n.xboardHealthy),
-                detail: subscriptionStatus?.getDetailMessage(context),
-                healthy: subscriptionOk,
-              ),
-              _HealthRow(
-                icon: Icons.language_outlined,
-                title: l10n.xboardNodeHealth,
-                value: importState.isImporting
-                    ? l10n.xboardImportingSubscription
-                    : nodeOk
-                        ? '${l10n.xboardCurrentNode}: ${currentProxy.name}'
-                        : l10n.xboardNoAvailableNodes,
-                detail: l10n.xboardNodeCount(_countNodes(groups)),
-                healthy: nodeOk && !importState.isImporting,
-              ),
-              _DeviceHealthRow(
-                  fallbackDeviceLimit: subscriptionInfo?.deviceLimit),
-            ],
+            ),
+          ],
+        ),
+        const SizedBox(height: 8),
+        Text(
+          l10n.xboardConnectionHealthSubtitle,
+          style: theme.textTheme.bodySmall?.copyWith(
+            color: theme.colorScheme.onSurfaceVariant,
           ),
         ),
-      ),
-      actions: [
-        TextButton.icon(
+        const SizedBox(height: 16),
+        _HealthRow(
+          icon: Icons.cloud_done_outlined,
+          title: l10n.xboardServerStatus,
+          value: initState.isReady
+              ? l10n.xboardHealthy
+              : initState.currentStepDescription ??
+                  initState.errorMessage ??
+                  l10n.xboardNeedsAttention,
+          detail: businessApiLabel.isEmpty
+              ? null
+              : '${l10n.xboardCurrentBusinessApi}: $businessApiLabel',
+          healthy: initState.isReady,
+        ),
+        _HealthRow(
+          icon: Icons.hub_outlined,
+          title: l10n.xboardGatewayStatus,
+          value: activeGateway == null
+              ? l10n.xboardNoGatewayActive
+              : '${l10n.xboardCurrentGateway}: '
+                  '${gatewayDisplayLabel(activeGateway.baseUrl)}',
+          detail: [
+            l10n.xboardGatewayCandidateCount(
+              gatewayRuntime.candidates.length,
+            ),
+            if (latestEvent != null)
+              '${l10n.xboardHealthLastEvent}: $latestEvent',
+          ].join('\n'),
+          healthy: gatewayOk,
+        ),
+        _HealthRow(
+          icon: Icons.card_membership_outlined,
+          title: l10n.xboardSubscriptionHealth,
+          value: subscriptionStatus?.getMessage(context) ??
+              (subscriptionInfo == null
+                  ? l10n.xboardNoAvailableSubscription
+                  : l10n.xboardHealthy),
+          detail: [
+            if (subscriptionStatus?.getDetailMessage(context) != null)
+              subscriptionStatus!.getDetailMessage(context)!,
+            if (importState.message?.trim().isNotEmpty == true)
+              '订阅导入: ${importState.message}',
+          ].join('\n'),
+          healthy: subscriptionOk && !importState.isImporting,
+        ),
+        _HealthRow(
+          icon: Icons.language_outlined,
+          title: l10n.xboardNodeHealth,
+          value: importState.isImporting
+              ? l10n.xboardImportingSubscription
+              : nodeOk
+                  ? '${l10n.xboardCurrentNode}: ${currentProxy.name}'
+                  : l10n.xboardNoAvailableNodes,
+          detail: l10n.xboardNodeCount(_countNodes(groups)),
+          healthy: nodeOk && !importState.isImporting,
+        ),
+        _DeviceHealthRow(fallbackDeviceLimit: subscriptionInfo?.deviceLimit),
+        _HelperHealthRow(summary: helperStatus),
+        _HealthRow(
+          icon: Icons.power_settings_new,
+          title: 'Core',
+          value: globalState.appState.runTime != null ? '运行中' : '未连接',
+          detail: globalState.coreSwitchStatusNotifier.value.label,
+          healthy: globalState.appState.runTime != null,
+        ),
+        _HealthRow(
+          icon: Icons.stacked_line_chart,
+          title: 'TUN',
+          value:
+              patchConfig.tun.enable ? (realTunEnable ? '已应用' : '等待应用') : '未开启',
+          detail:
+              'stack=${patchConfig.tun.stack.name}, route=${networkProps.routeMode.name}',
+          healthy: !patchConfig.tun.enable || realTunEnable,
+        ),
+        _HealthRow(
+          icon: Icons.dns_outlined,
+          title: 'DNS',
+          value: overrideDns ? '使用自定义 DNS' : '使用默认 DNS',
+          detail: 'autoSetSystemDns=${networkProps.autoSetSystemDns}',
+          healthy: true,
+        ),
+        _HealthRow(
+          icon: Icons.settings_ethernet,
+          title: l10n.systemProxy,
+          value: networkProps.systemProxy ? '已开启' : '未开启',
+          detail: 'running=${proxyState.isStart}, port=${proxyState.port}',
+          healthy: !networkProps.systemProxy || proxyState.isStart,
+        ),
+        const SizedBox(height: 8),
+        FilledButton.icon(
+          onPressed: () => _repairConnection(context, ref),
+          icon: const Icon(Icons.build_circle_outlined),
+          label: const Text('一键修复'),
+        ),
+        const SizedBox(height: 8),
+        OutlinedButton.icon(
           onPressed: () async {
             await DiagnosticBundleService.copy(ref);
             if (context.mounted) {
@@ -198,12 +251,55 @@ class ConnectionHealthDialog extends ConsumerWidget {
             await ref
                 .read(xboardUserProvider.notifier)
                 .refreshSubscriptionInfo();
+            ref.invalidate(_windowsHelperStatusProvider);
           },
           icon: const Icon(Icons.refresh),
           label: Text(l10n.xboardRefreshStatus),
         ),
       ],
     );
+  }
+
+  static Future<void> _repairConnection(
+    BuildContext context,
+    WidgetRef ref,
+  ) async {
+    Future<void> runRepair() async {
+      if (Platform.isWindows) {
+        await windows?.registerService(forceRepair: true);
+        ref.invalidate(_windowsHelperStatusProvider);
+      }
+      if (Platform.isWindows) {
+        await Process.run('ipconfig', ['/flushdns']);
+      } else if (Platform.isMacOS) {
+        await system.setMacOSDns(true);
+      }
+      final proxyState = ref.read(proxyStateProvider);
+      await proxy?.stopProxy();
+      if (proxyState.isStart && proxyState.systemProxy) {
+        await proxy?.startProxy(proxyState.port, proxyState.bassDomain);
+      }
+      if (ref.read(currentProfileProvider) != null) {
+        await globalState.appController.applyProfile(silence: true);
+      }
+      await ref.read(initializationProvider.notifier).refresh();
+      await ref.read(xboardUserProvider.notifier).refreshSubscriptionInfo(
+            importProfile: false,
+          );
+    }
+
+    final commonScaffoldState = context.commonScaffoldState;
+    if (commonScaffoldState?.mounted == true) {
+      await commonScaffoldState!.loadingRun<void>(
+        runRepair,
+        title: '一键修复',
+      );
+    } else {
+      await runRepair();
+    }
+    if (context.mounted) {
+      XBoardNotification.showSuccess('修复完成');
+    }
   }
 
   static int _countNodes(List<Group> groups) {
@@ -226,12 +322,6 @@ class ConnectionHealthDialog extends ConsumerWidget {
     }
     if (fallback == null) return '';
     return gatewayDisplayLabel(fallback.baseUrl);
-  }
-
-  static String _normalizeApiPrefix(String value) {
-    final trimmed = value.trim();
-    if (trimmed.isEmpty) return '';
-    return trimmed.startsWith('/') ? trimmed : '/$trimmed';
   }
 
   static Proxy? _resolveCurrentProxy(WidgetRef ref) {
@@ -289,6 +379,58 @@ class _DeviceHealthRow extends ConsumerWidget {
         error: (_, __) => l10n.xboardDeviceSummary('-', fallbackLimitText),
       ),
       healthy: !summary.hasError,
+    );
+  }
+}
+
+class _HelperHealthRow extends StatelessWidget {
+  const _HelperHealthRow({required this.summary});
+
+  final AsyncValue<WindowsHelperRuntimeStatus?> summary;
+
+  @override
+  Widget build(BuildContext context) {
+    if (!Platform.isWindows) {
+      return const _HealthRow(
+        icon: Icons.admin_panel_settings_outlined,
+        title: 'Helper',
+        value: '当前平台不需要 Windows helper',
+        healthy: true,
+      );
+    }
+    return summary.when(
+      data: (status) {
+        final healthy = status?.tokenMatches == true;
+        return _HealthRow(
+          icon: Icons.admin_panel_settings_outlined,
+          title: 'Helper',
+          value: healthy ? '可用' : '不可用',
+          detail: status == null
+              ? 'helper HTTP 未响应'
+              : [
+                  'version=${status.version.isEmpty ? '-' : status.version}',
+                  'core=${status.coreRunning ? 'running' : 'stopped'}',
+                  'pid=${status.corePid ?? '-'}',
+                  'servicePathMatches=${status.servicePathMatches ?? '-'}',
+                  if (status.recentLogs.isNotEmpty)
+                    'stderr=${status.recentLogs.last.trim()}',
+                ].join('\n'),
+          healthy: healthy,
+        );
+      },
+      loading: () => const _HealthRow(
+        icon: Icons.admin_panel_settings_outlined,
+        title: 'Helper',
+        value: '检查中',
+        healthy: true,
+      ),
+      error: (error, _) => _HealthRow(
+        icon: Icons.admin_panel_settings_outlined,
+        title: 'Helper',
+        value: '检查失败',
+        detail: SensitiveMasker.maskText(error.toString()),
+        healthy: false,
+      ),
     );
   }
 }

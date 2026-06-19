@@ -328,7 +328,6 @@ class _PlanPurchasePageState extends ConsumerState<PlanPurchasePage> {
       final currentPrice = _getCurrentPrice();
       final displayFinalPrice = _finalPrice ?? _getCurrentPrice();
 
-
       if (!mounted) return;
       Navigator.of(context).push(
         MaterialPageRoute(
@@ -354,7 +353,6 @@ class _PlanPurchasePageState extends ConsumerState<PlanPurchasePage> {
 
   // ========== UI 构建 ==========
 
-  @override
   Future<void> _refreshPage() async {
     // 刷新用户余额
     try {
@@ -365,6 +363,7 @@ class _PlanPurchasePageState extends ConsumerState<PlanPurchasePage> {
     await Future<void>.delayed(const Duration(milliseconds: 250));
   }
 
+  @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final periods = _getAvailablePeriods(context);
@@ -495,8 +494,7 @@ class _PlanPurchasePageState extends ConsumerState<PlanPurchasePage> {
       backgroundColor: isDark ? null : const Color(0xFFFAFBFD),
       appBar: AppBar(
         leading: const BackButton(),
-        title:
-            Text(AppLocalizations.of(context).xboardPurchaseSubscription),
+        title: Text(AppLocalizations.of(context).xboardPurchaseSubscription),
         actions: [
           if (isPlatformDesktop)
             IconButton(

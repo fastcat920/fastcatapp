@@ -5,6 +5,7 @@ import 'dart:io';
 import 'package:fl_clash/clash/interface.dart';
 import 'package:fl_clash/common/common.dart';
 import 'package:fl_clash/models/core.dart';
+import 'package:fl_clash/services/core_switch_status.dart';
 import 'package:fl_clash/state.dart';
 
 class ClashService extends ClashHandlerInterface {
@@ -99,6 +100,10 @@ class ClashService extends ClashHandlerInterface {
           : serverSocket.address.address;
       final isAdmin = Platform.isWindows && await system.checkIsAdmin();
       if (isAdmin) {
+        globalState.updateCoreSwitchStatus(
+          CoreSwitchStage.coreConnecting,
+          message: '核心回连',
+        );
         final isSuccess = await request.startCoreByHelper(arg);
         if (isSuccess) {
           return;
@@ -114,6 +119,10 @@ class ClashService extends ClashHandlerInterface {
         return;
       }
       commonPrint.log("Starting core: ${appPath.corePath}, arg: $arg");
+      globalState.updateCoreSwitchStatus(
+        CoreSwitchStage.coreConnecting,
+        message: '核心回连',
+      );
       // macOS: 移除 Gatekeeper quarantine 属性，防止下载的 DMG 安装后核心被阻止执行
       if (Platform.isMacOS) {
         try {

@@ -26,9 +26,16 @@ class DiagnosticBundleService {
         ref.read(subscriptionInfoProvider) ?? userState.subscriptionInfo;
     final importState = ref.read(profileImportProvider);
     final groups = ref.read(groupsProvider);
+    final patchConfig = ref.read(patchClashConfigProvider);
+    final networkProps = ref.read(networkSettingProvider);
+    final overrideDns = ref.read(overrideDnsProvider);
+    final realTunEnable = ref.read(realTunEnableProvider);
+    final proxyState = ref.read(proxyStateProvider);
     final mode = ref.read(
       patchClashConfigProvider.select((state) => state.mode),
     );
+    final helperStatus =
+        Platform.isWindows ? await request.getHelperRuntimeStatus() : null;
     final gatewayRuntime = GatewayRuntimeService.instance;
     gatewayRuntime.syncFromCurrentConfig();
     final activeGateway = gatewayRuntime.activeConfig;
@@ -52,12 +59,41 @@ class DiagnosticBundleService {
       ..writeln('Groups: ${groups.length}')
       ..writeln('Nodes: ${_countNodes(groups)}')
       ..writeln('Importing subscription: ${importState.isImporting}')
+      ..writeln(
+          'Switch stage: ${globalState.coreSwitchStatusNotifier.value.label}')
+      ..writeln('')
+      ..writeln('[Core/TUN]')
+      ..writeln('Core connected: ${globalState.appState.runTime != null}')
+      ..writeln('Configured TUN: ${patchConfig.tun.enable}')
+      ..writeln('Real TUN: $realTunEnable')
+      ..writeln('TUN stack: ${patchConfig.tun.stack.name}')
+      ..writeln('Route mode: ${networkProps.routeMode.name}')
+      ..writeln('')
+      ..writeln('[DNS/System Proxy]')
+      ..writeln('Override DNS: $overrideDns')
+      ..writeln('Auto set system DNS: ${networkProps.autoSetSystemDns}')
+      ..writeln('System proxy enabled: ${networkProps.systemProxy}')
+      ..writeln('System proxy running: ${proxyState.isStart}')
+      ..writeln('System proxy port: ${proxyState.port}')
+      ..writeln('')
+      ..writeln('[Windows Helper]')
+      ..writeln('Available: ${helperStatus?.tokenMatches == true}')
+      ..writeln('Version: ${helperStatus?.version ?? '-'}')
+      ..writeln(
+          'Helper path: ${SensitiveMasker.maskText(helperStatus?.helperPath ?? '-')}')
+      ..writeln(
+          'Service path matches: ${helperStatus?.servicePathMatches ?? '-'}')
+      ..writeln('Core running: ${helperStatus?.coreRunning ?? '-'}')
+      ..writeln('Core pid: ${helperStatus?.corePid ?? '-'}')
+      ..writeln(
+          'Recent stderr: ${helperStatus?.recentLogs.take(3).join(' | ') ?? '-'}')
       ..writeln('')
       ..writeln('[Initialization]')
       ..writeln('Status: ${initState.status.name}')
       ..writeln('Domain: ${_maskEndpoint(initState.currentDomain)}')
       ..writeln('Step: ${initState.currentStepDescription ?? '-'}')
-      ..writeln('Error: ${initState.errorMessage ?? '-'}')
+      ..writeln(
+          'Error: ${SensitiveMasker.maskText(initState.errorMessage ?? '-')}')
       ..writeln('')
       ..writeln('[Gateway]')
       ..writeln(
@@ -110,8 +146,8 @@ class DiagnosticBundleService {
       ..writeln('')
       ..writeln('[Recent Logs]');
     for (final log in logs) {
-      buffer
-          .writeln('- ${log.dateTime} | ${log.logLevel.name} | ${log.payload}');
+      buffer.writeln(
+          '- ${log.dateTime} | ${log.logLevel.name} | ${SensitiveMasker.maskText(log.payload)}');
     }
 
     return buffer.toString();

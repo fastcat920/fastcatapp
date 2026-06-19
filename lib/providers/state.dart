@@ -57,7 +57,6 @@ GroupsState currentGroupsState(Ref ref) {
           .where((item) => item.hidden != true)
           .where((element) => element.name != GroupName.GLOBAL.name)
           .toList(),
-      _ => throw UnimplementedError(),
     },
   );
 }
@@ -79,11 +78,9 @@ NavigationItemsState navigationsState(Ref ref) {
 NavigationItemsState currentNavigationsState(Ref ref) {
   final viewWidth = ref.watch(viewWidthProvider);
   final navigationItemsState = ref.watch(navigationsStateProvider);
-  final navigationItemMode = switch (viewWidth <= maxMobileWidth) {
-    true => NavigationItemMode.mobile,
-    false => NavigationItemMode.desktop,
-    _ => throw UnimplementedError(),
-  };
+  final navigationItemMode = viewWidth <= maxMobileWidth
+      ? NavigationItemMode.mobile
+      : NavigationItemMode.desktop;
   return NavigationItemsState(
     value: navigationItemsState.value
         .where(

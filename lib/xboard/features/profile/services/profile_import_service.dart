@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:io';
 import 'dart:math';
+import 'package:fl_clash/common/common.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:fl_clash/enum/enum.dart';
 import 'package:fl_clash/models/models.dart';
@@ -16,12 +17,15 @@ import 'package:fl_clash/xboard/config/utils/config_file_loader.dart';
 // 初始化文件级日志器
 final _logger = FileLogger('profile_import_service.dart');
 
-final xboardProfileImportServiceProvider = Provider<XBoardProfileImportService>((ref) {
+final xboardProfileImportServiceProvider =
+    Provider<XBoardProfileImportService>((ref) {
   return XBoardProfileImportService(ref);
 });
+
 class XBoardProfileImportService {
   final Ref _ref;
   bool _isImporting = false;
+  SubscriptionDownloadCancelToken? _downloadCancelToken;
   static const int maxRetries = 3;
   static const Duration retryDelay = Duration(seconds: 2);
   static const Duration downloadTimeout = Duration(seconds: 90);
@@ -37,6 +41,8 @@ class XBoardProfileImportService {
       );
     }
     _isImporting = true;
+    final cancelToken = SubscriptionDownloadCancelToken();
+    _downloadCancelToken = cancelToken;
     final stopwatch = Stopwatch()..start();
     try {
       _logger.info('开始导入订阅配置: $url');
@@ -45,10 +51,15 @@ class XBoardProfileImportService {
       onProgress?.call(ImportStatus.downloading, 0.3, '下载配置文件');
 
       // 保存当前 profile 的节点选择，导入后继承，防止节点刷新后重置为 DIRECT
-      final oldSelectedMap = _ref.read(currentProfileProvider)?.selectedMap ?? {};
+      final oldSelectedMap =
+          _ref.read(currentProfileProvider)?.selectedMap ?? {};
 
-      final profile = await _downloadAndValidateProfile(url);
+      final profile = await _downloadAndValidateProfile(
+        url,
+        cancelToken: cancelToken,
+      );
       onProgress?.call(ImportStatus.validating, 0.6, '验证配置格式');
+      _throwIfCancelled(cancelToken);
 
       // 继承旧的节点选择，避免刷新后丢失用户选择
       final profileWithSelection = oldSelectedMap.isNotEmpty
@@ -57,12 +68,27 @@ class XBoardProfileImportService {
 
       // 2. 先添加新配置（保持 groups 非空，VPN 不断线）
       onProgress?.call(ImportStatus.adding, 0.8, '应用新配置');
-      await _addProfile(profileWithSelection);
+      _throwIfCancelled(cancelToken);
+      final rollbackSnapshot = _ProfileImportSnapshot.capture(_ref);
+      try {
+        await _addProfile(profileWithSelection);
+      } catch (e) {
+        await _rollbackProfileImport(
+          rollbackSnapshot,
+          candidateProfileId: profileWithSelection.id,
+        );
+        rethrow;
+      }
 
       // 3. 再清理旧配置（新配置已就绪，安全删除旧的）
       onProgress?.call(ImportStatus.cleaning, 0.95, '清理旧配置');
+      _throwIfCancelled(cancelToken);
       await _cleanOldUrlProfilesExcept(profile.id);
-      
+      _logProfileDiff(
+        rollbackSnapshot.profiles,
+        _ref.read(profilesProvider),
+      );
+
       stopwatch.stop();
       onProgress?.call(ImportStatus.success, 1.0, '导入成功');
       _logger.info('订阅配置导入成功，耗时: ${stopwatch.elapsedMilliseconds}ms');
@@ -82,9 +108,23 @@ class XBoardProfileImportService {
         duration: stopwatch.elapsed,
       );
     } finally {
+      if (identical(_downloadCancelToken, cancelToken)) {
+        _downloadCancelToken = null;
+      }
       _isImporting = false;
     }
   }
+
+  void cancelCurrentImport() {
+    _downloadCancelToken?.cancel();
+  }
+
+  void _throwIfCancelled(SubscriptionDownloadCancelToken cancelToken) {
+    if (cancelToken.isCancelled) {
+      throw Exception('任务已取消');
+    }
+  }
+
   Future<ImportResult> importSubscriptionWithRetry(
     String url, {
     Function(ImportStatus, double, String?)? onProgress,
@@ -96,7 +136,7 @@ class XBoardProfileImportService {
       if (result.isSuccess) {
         return result;
       }
-      if (result.errorType != ImportErrorType.networkError && 
+      if (result.errorType != ImportErrorType.networkError &&
           result.errorType != ImportErrorType.downloadError) {
         return result;
       }
@@ -104,7 +144,8 @@ class XBoardProfileImportService {
         return result;
       }
       _logger.debug('等待 ${retryDelay.inSeconds} 秒后重试');
-      onProgress?.call(ImportStatus.downloading, 0.0, '第 $attempt 次尝试失败，等待重试...');
+      onProgress?.call(
+          ImportStatus.downloading, 0.0, '第 $attempt 次尝试失败，等待重试...');
       await Future.delayed(retryDelay);
     }
     return ImportResult.failure(
@@ -112,6 +153,7 @@ class XBoardProfileImportService {
       errorType: ImportErrorType.networkError,
     );
   }
+
   /// 清理旧的 URL 配置，保留指定 ID 的新配置。
   /// 必须在 _addProfile() 之后调用，这样新配置已成为当前配置，
   /// 删除旧配置不会导致 groups 短暂为空或 VPN 断线。
@@ -134,7 +176,51 @@ class XBoardProfileImportService {
       throw Exception('清理旧配置失败: $e');
     }
   }
-  Future<Profile> _downloadAndValidateProfile(String url) async {
+
+  Future<void> _rollbackProfileImport(
+    _ProfileImportSnapshot snapshot, {
+    required String candidateProfileId,
+  }) async {
+    _logger.warning('新订阅 apply 失败，回滚到上一份可用配置');
+    _ref.read(profilesProvider.notifier).value = snapshot.profiles;
+    _ref.read(currentProfileIdProvider.notifier).value =
+        snapshot.currentProfileId;
+    _ref.read(groupsProvider.notifier).value = snapshot.groups;
+    await _clearProfileFiles(candidateProfileId);
+  }
+
+  Future<void> _clearProfileFiles(String profileId) async {
+    try {
+      final profilePath = await appPath.getProfilePath(profileId);
+      final providersDirPath = await appPath.getProvidersDirPath(profileId);
+      final profileFile = File(profilePath);
+      if (await profileFile.exists()) {
+        await profileFile.delete(recursive: true);
+      }
+      final providersDir = Directory(providersDirPath);
+      if (await providersDir.exists()) {
+        await providersDir.delete(recursive: true);
+      }
+    } catch (e) {
+      _logger.warning('清理候选配置文件失败', e);
+    }
+  }
+
+  void _logProfileDiff(List<Profile> before, List<Profile> after) {
+    final beforeIds = before.map((item) => item.id).toSet();
+    final afterIds = after.map((item) => item.id).toSet();
+    final added = afterIds.difference(beforeIds);
+    final removed = beforeIds.difference(afterIds);
+    final kept = afterIds.intersection(beforeIds);
+    _logger.info(
+      '订阅配置 diff: added=${added.length}, removed=${removed.length}, kept=${kept.length}',
+    );
+  }
+
+  Future<Profile> _downloadAndValidateProfile(
+    String url, {
+    required SubscriptionDownloadCancelToken cancelToken,
+  }) async {
     final sw = Stopwatch()..start();
     try {
       _logger.info('🚀 [0ms] 开始下载配置: $url');
@@ -143,24 +229,28 @@ class XBoardProfileImportService {
       final preferEncrypt = await ConfigFileLoaderHelper.getPreferEncrypt();
 
       // 用户启用加密，检查URL是否需要使用加密订阅服务
-      if (preferEncrypt && SubscriptionUrlHelper.shouldUseEncryptedService(url)) {
+      if (preferEncrypt &&
+          SubscriptionUrlHelper.shouldUseEncryptedService(url)) {
         _logger.info('🔐 [${sw.elapsedMilliseconds}ms] 检测到加密订阅URL，使用加密解密服务');
+        _throwIfCancelled(cancelToken);
         return await _downloadEncryptedProfile(url);
       }
 
       // 使用 XBoard 订阅下载服务（直连，跳过 validateConfig IPC）
       _logger.info('📄 [${sw.elapsedMilliseconds}ms] 开始 HTTP 下载（直连，90s超时）...');
-      final profile = await SubscriptionDownloader.downloadSubscription(url)
-          .timeout(
+      final profile = await SubscriptionDownloader.downloadSubscription(
+        url,
+        cancelToken: cancelToken,
+      ).timeout(
         downloadTimeout,
         onTimeout: () {
           throw TimeoutException('下载超时', downloadTimeout);
         },
       );
 
-      _logger.info('✅ [${sw.elapsedMilliseconds}ms] 配置下载完成: ${profile.label ?? profile.id}');
+      _logger.info(
+          '✅ [${sw.elapsedMilliseconds}ms] 配置下载完成: ${profile.label ?? profile.id}');
       return profile;
-      
     } on TimeoutException catch (e) {
       throw Exception('下载超时: ${e.message}');
     } on SocketException catch (e) {
@@ -183,13 +273,14 @@ class XBoardProfileImportService {
 
       // 从本地配置读取订阅偏好设置（竞速自动跟随加密选项）
       final preferEncrypt = await ConfigFileLoaderHelper.getPreferEncrypt();
-      
-      _logger.info('📝 本地配置: preferEncrypt=$preferEncrypt (竞速: ${preferEncrypt ? "启用" : "禁用"})');
+
+      _logger.info(
+          '📝 本地配置: preferEncrypt=$preferEncrypt (竞速: ${preferEncrypt ? "启用" : "禁用"})');
 
       // 优先从登录数据获取token，如果失败再从URL解析
       String? token;
       SubscriptionResult result;
-      
+
       try {
         _logger.debug('🔑 尝试从登录数据获取token');
         result = await EncryptedSubscriptionService.getSubscriptionSmart(
@@ -206,7 +297,8 @@ class XBoardProfileImportService {
             throw Exception('无法从URL中提取token且登录数据获取失败: $url');
           }
 
-          _logger.debug('🔑 从URL提取到token: ${token.substring(0, min(8, token.length))}...');
+          _logger.debug(
+              '🔑 从URL提取到token: ${token.substring(0, min(8, token.length))}...');
           result = await EncryptedSubscriptionService.getSubscriptionSmart(
             token,
             preferEncrypt: preferEncrypt,
@@ -223,7 +315,8 @@ class XBoardProfileImportService {
           throw Exception('所有token获取方式都失败: $url');
         }
 
-        _logger.debug('🔄 Fallback - 从URL提取到token: ${token.substring(0, min(8, token.length))}...');
+        _logger.debug(
+            '🔄 Fallback - 从URL提取到token: ${token.substring(0, min(8, token.length))}...');
         result = await EncryptedSubscriptionService.getSubscriptionSmart(
           token,
           preferEncrypt: preferEncrypt,
@@ -237,9 +330,10 @@ class XBoardProfileImportService {
 
       _logger.info('🎉 加密订阅获取成功！加密模式: ${result.encryptionUsed}');
       if (result.keyUsed != null) {
-        _logger.debug('🔑 使用解密密钥: ${result.keyUsed!.substring(0, min(8, result.keyUsed!.length))}...');
+        _logger.debug(
+            '🔑 使用解密密钥: ${result.keyUsed!.substring(0, min(8, result.keyUsed!.length))}...');
       }
-      
+
       // 验证解密后的配置内容
       _logger.debug('📄 验证解密后的配置内容，长度: ${result.content!.length}');
       if (result.content!.trim().isEmpty) {
@@ -248,7 +342,8 @@ class XBoardProfileImportService {
 
       // 记录配置内容的基本统计信息
       final lines = result.content!.split('\n');
-      final nonEmptyLines = lines.where((line) => line.trim().isNotEmpty).length;
+      final nonEmptyLines =
+          lines.where((line) => line.trim().isNotEmpty).length;
       _logger.debug('📄 配置内容统计: 总行数 ${lines.length}, 非空行数 $nonEmptyLines');
 
       // 移除冗余的格式检查，让ClashMeta核心进行权威验证
@@ -259,25 +354,28 @@ class XBoardProfileImportService {
       final profile = Profile.normal(url: url);
       final profileFile = await profile.getFile();
       await profileFile.writeAsString(result.content!);
-      final profileWithContent = profile.copyWith(lastUpdateDate: DateTime.now());
+      final profileWithContent =
+          profile.copyWith(lastUpdateDate: DateTime.now());
       _logger.info('✅ 加密配置内容已写入，格式验证由 applyProfile 阶段完成');
-      
+
       // 获取订阅信息并更新Profile
       _logger.info('📊 开始获取加密订阅的订阅信息...');
-      final subscriptionInfo = await ProfileSubscriptionInfoService.instance.getSubscriptionInfo(
+      final subscriptionInfo =
+          await ProfileSubscriptionInfoService.instance.getSubscriptionInfo(
         subscriptionUserInfo: result.subscriptionUserInfo,
       );
-      _logger.info('📊 Profile订阅信息获取完成: upload=${subscriptionInfo.upload}, download=${subscriptionInfo.download}, total=${subscriptionInfo.total}');
+      _logger.info(
+          '📊 Profile订阅信息获取完成: upload=${subscriptionInfo.upload}, download=${subscriptionInfo.download}, total=${subscriptionInfo.total}');
 
       // 返回带有订阅信息的Profile
       final updatedProfile = profileWithContent.copyWith(
         subscriptionInfo: subscriptionInfo,
       );
 
-      _logger.info('🎉 加密配置验证和保存成功！最终Profile订阅信息: ${updatedProfile.subscriptionInfo}');
+      _logger.info(
+          '🎉 加密配置验证和保存成功！最终Profile订阅信息: ${updatedProfile.subscriptionInfo}');
       _logger.debug('✅ 完整的加密订阅处理流程已成功完成');
       return updatedProfile;
-      
     } catch (e) {
       _logger.error('💥 加密配置下载失败', e);
       _logger.debug('❌ 加密订阅处理流程异常终止');
@@ -290,7 +388,8 @@ class XBoardProfileImportService {
     try {
       // 1. 添加配置到列表
       _ref.read(profilesProvider.notifier).setProfile(profile);
-      _logger.info('✅ [${sw.elapsedMilliseconds}ms] Profile 已加入列表: ${profile.label ?? profile.id}');
+      _logger.info(
+          '✅ [${sw.elapsedMilliseconds}ms] Profile 已加入列表: ${profile.label ?? profile.id}');
 
       // 2. 设置标志位，防止 ClashManager 的 needSetupProvider 监听器
       //    在 currentProfileId 变更时触发 handleChangeProfile → applyProfile，
@@ -298,16 +397,20 @@ class XBoardProfileImportService {
       globalState.appController.isImportApplying = true;
 
       // 3. 强制设置为当前配置（订阅导入是用户主动操作，应该立即生效）
-      final currentProfileIdNotifier = _ref.read(currentProfileIdProvider.notifier);
+      final currentProfileIdNotifier =
+          _ref.read(currentProfileIdProvider.notifier);
       currentProfileIdNotifier.value = profile.id;
-      _logger.info('✅ [${sw.elapsedMilliseconds}ms] currentProfileId 已设置: ${profile.id}');
+      _logger.info(
+          '✅ [${sw.elapsedMilliseconds}ms] currentProfileId 已设置: ${profile.id}');
 
       // 4. 同步等待 applyProfile 完成（与 Orange 一致）
       // 必须 await，否则后续的 _cleanOldUrlProfilesExcept 可能在 applyProfile 完成前执行，
       // 导致竞态条件：旧配置被删除但新配置尚未加载，用户看到空白节点列表。
-      _logger.info('📋 [${sw.elapsedMilliseconds}ms] 开始 await applyProfile(silence: true)...');
+      _logger.info(
+          '📋 [${sw.elapsedMilliseconds}ms] 开始 await applyProfile(silence: true)...');
       try {
-        await globalState.appController.applyProfile(silence: true)
+        await globalState.appController
+            .applyProfile(silence: true)
             .timeout(const Duration(seconds: 30), onTimeout: () {
           _logger.warning('⚠️ applyProfile 超时(30s)，继续执行');
         });
@@ -320,7 +423,8 @@ class XBoardProfileImportService {
           _logger.warning('⚠️ applyProfile 完成但 groups 为空，尝试延迟重试...');
           // 等待一段时间后重试一次（适配 Windows 便携版 ClashCore 慢启动）
           await Future.delayed(const Duration(seconds: 5));
-          await globalState.appController.applyProfile(silence: true)
+          await globalState.appController
+              .applyProfile(silence: true)
               .timeout(const Duration(seconds: 30), onTimeout: () {
             _logger.warning('⚠️ applyProfile 重试超时(30s)');
           });
@@ -337,7 +441,8 @@ class XBoardProfileImportService {
         globalState.appController.isImportApplying = false;
       }
 
-      _logger.info('✅ [${sw.elapsedMilliseconds}ms] _addProfile 完成: ${profile.label ?? profile.id}');
+      _logger.info(
+          '✅ [${sw.elapsedMilliseconds}ms] _addProfile 完成: ${profile.label ?? profile.id}');
     } catch (e) {
       globalState.appController.isImportApplying = false;
       throw Exception('添加配置失败: $e');
@@ -346,12 +451,12 @@ class XBoardProfileImportService {
 
   ImportErrorType _classifyError(dynamic error) {
     final errorString = error.toString().toLowerCase();
-    if (errorString.contains('timeout') || 
+    if (errorString.contains('timeout') ||
         errorString.contains('连接失败') ||
         errorString.contains('network')) {
       return ImportErrorType.networkError;
     }
-    if (errorString.contains('下载') || 
+    if (errorString.contains('下载') ||
         errorString.contains('http') ||
         errorString.contains('响应')) {
       return ImportErrorType.downloadError;
@@ -364,16 +469,18 @@ class XBoardProfileImportService {
         errorString.contains('invalid config')) {
       return ImportErrorType.validationError;
     }
-    if (errorString.contains('存储') || 
+    if (errorString.contains('存储') ||
         errorString.contains('文件') ||
         errorString.contains('保存')) {
       return ImportErrorType.storageError;
     }
     return ImportErrorType.unknownError;
   }
-  String _getUserFriendlyErrorMessage(dynamic error, ImportErrorType errorType) {
+
+  String _getUserFriendlyErrorMessage(
+      dynamic error, ImportErrorType errorType) {
     final errorString = error.toString();
-    
+
     switch (errorType) {
       case ImportErrorType.networkError:
         return '网络连接失败，请检查网络设置后重试';
@@ -392,12 +499,33 @@ class XBoardProfileImportService {
         return '保存配置失败，请检查存储空间';
       case ImportErrorType.unknownError:
         // 简化未知错误的显示，避免显示技术细节
-        if (errorString.contains('Invalid HTTP header field value') || 
+        if (errorString.contains('Invalid HTTP header field value') ||
             errorString.contains('FormatException')) {
           return '导入失败：应用配置错误，请稍后重试或重启应用';
         }
         return '导入失败，请稍后重试或联系技术支持';
     }
   }
+
   bool get isImporting => _isImporting;
-} 
+}
+
+class _ProfileImportSnapshot {
+  const _ProfileImportSnapshot({
+    required this.profiles,
+    required this.currentProfileId,
+    required this.groups,
+  });
+
+  final List<Profile> profiles;
+  final String? currentProfileId;
+  final List<Group> groups;
+
+  factory _ProfileImportSnapshot.capture(Ref ref) {
+    return _ProfileImportSnapshot(
+      profiles: List<Profile>.from(ref.read(profilesProvider)),
+      currentProfileId: ref.read(currentProfileIdProvider),
+      groups: List<Group>.from(ref.read(groupsProvider)),
+    );
+  }
+}

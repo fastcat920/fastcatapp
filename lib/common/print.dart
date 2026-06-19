@@ -1,5 +1,6 @@
 import 'package:fl_clash/common/constant.dart';
 import 'package:fl_clash/models/models.dart';
+import 'package:fl_clash/common/sensitive_masker.dart';
 import 'package:fl_clash/state.dart';
 import 'package:flutter/cupertino.dart';
 
@@ -14,7 +15,7 @@ class CommonPrint {
   }
 
   log(String? text) {
-    final payload = "[$appName] $text";
+    final payload = "[$appName] ${SensitiveMasker.maskText(text)}";
     debugPrint(payload);
     if (!globalState.isInit) {
       return;

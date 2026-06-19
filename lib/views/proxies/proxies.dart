@@ -232,7 +232,6 @@ class _ProxiesViewState extends ConsumerState<ProxiesView> with PageMixin {
           key: _proxiesTabKey,
         ),
       ProxiesType.list => const ProxiesListView(),
-      _ => throw UnimplementedError(),
     };
   }
 }

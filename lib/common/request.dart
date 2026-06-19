@@ -136,6 +136,27 @@ class Request {
     }
   }
 
+  Future<WindowsHelperRuntimeStatus?> getHelperRuntimeStatus() async {
+    try {
+      final response = await _dio
+          .get<Map<String, dynamic>>(
+            "http://$localhost:$helperPort/status",
+          )
+          .timeout(
+            const Duration(
+              milliseconds: 800,
+            ),
+          );
+      final data = response.data;
+      if (response.statusCode != HttpStatus.ok || data == null) {
+        return null;
+      }
+      return WindowsHelperRuntimeStatus.fromJson(data);
+    } catch (_) {
+      return null;
+    }
+  }
+
   Future<bool> startCoreByHelper(String arg) async {
     try {
       final response = await _dio
@@ -186,6 +207,44 @@ class Request {
     } catch (_) {
       return false;
     }
+  }
+}
+
+class WindowsHelperRuntimeStatus {
+  const WindowsHelperRuntimeStatus({
+    required this.version,
+    required this.token,
+    required this.helperPath,
+    required this.servicePathMatches,
+    required this.coreRunning,
+    required this.corePid,
+    required this.recentLogs,
+  });
+
+  final String version;
+  final String token;
+  final String? helperPath;
+  final bool? servicePathMatches;
+  final bool coreRunning;
+  final int? corePid;
+  final List<String> recentLogs;
+
+  bool get tokenMatches => token == globalState.coreSHA256;
+
+  factory WindowsHelperRuntimeStatus.fromJson(Map<String, dynamic> json) {
+    return WindowsHelperRuntimeStatus(
+      version: json['version']?.toString() ?? '',
+      token: json['token']?.toString() ?? '',
+      helperPath: json['helper_path']?.toString(),
+      servicePathMatches: json['service_path_matches'] is bool
+          ? json['service_path_matches'] as bool
+          : null,
+      coreRunning: json['core_running'] == true,
+      corePid: json['core_pid'] is int ? json['core_pid'] as int : null,
+      recentLogs: (json['recent_logs'] as List? ?? [])
+          .map((item) => SensitiveMasker.maskText(item.toString()))
+          .toList(),
+    );
   }
 }
 

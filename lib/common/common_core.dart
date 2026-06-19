@@ -19,6 +19,7 @@ export 'picker.dart';
 export 'preferences.dart';
 export 'print.dart';
 export 'protocol.dart';
+export 'sensitive_masker.dart';
 export 'state.dart';
 export 'store.dart';
 export 'string.dart';

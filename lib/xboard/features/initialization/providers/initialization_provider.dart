@@ -4,6 +4,7 @@ import 'dart:io';
 import 'dart:typed_data';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:fl_clash/state.dart';
+import 'package:fl_clash/common/sensitive_masker.dart';
 import 'package:fl_clash/xboard/core/core.dart';
 import 'package:fl_clash/xboard/features/domain_status/providers/domain_status_provider.dart';
 import 'package:fl_clash/xboard/adapter/initialization/sdk_provider.dart';
@@ -153,9 +154,8 @@ class XBoardInitializationNotifier extends StateNotifier<InitializationState> {
 
       // ========== 步骤 2: 选择可用域名（逐个尝试，不竞速） ==========
       final gatewayUrls = allGatewayUrls;
-      final panelUrls = gatewayUrls.isNotEmpty
-          ? gatewayUrls
-          : XBoardConfig.allPanelUrls;
+      final panelUrls =
+          gatewayUrls.isNotEmpty ? gatewayUrls : XBoardConfig.allPanelUrls;
       if (panelUrls.isEmpty) {
         const msg = '无法连接服务器，请检查网络后重试';
         await _writeDiagnosticFile(msg);
@@ -294,12 +294,10 @@ class XBoardInitializationNotifier extends StateNotifier<InitializationState> {
       await response.drain<void>();
       final statusCode = response.statusCode;
       if (statusCode >= 200 && statusCode < 300) {
-        _logger.info(
-            '[Initialization] ✅ 域名可用: $domain (HTTP $statusCode)');
+        _logger.info('[Initialization] ✅ 域名可用: $domain (HTTP $statusCode)');
         return true;
       }
-      _logger.warning(
-          '[Initialization] ❌ 域名不可用: $domain (HTTP $statusCode)');
+      _logger.warning('[Initialization] ❌ 域名不可用: $domain (HTTP $statusCode)');
       return false;
     } catch (e) {
       _logger.warning('[Initialization] ❌ 域名不可用: $domain ($e)');
@@ -548,8 +546,10 @@ class XBoardInitializationNotifier extends StateNotifier<InitializationState> {
           defaultValue: 'CHANGE_ME_TO_YOUR_SECRET_KEY_32C');
       const panelType = String.fromEnvironment('PANEL_TYPE');
       buf.writeln('[dart-define]');
-      buf.writeln('  OSS_URL_1: ${ossUrl1.isEmpty ? "(空)" : ossUrl1}');
-      buf.writeln('  OSS_URL_2: ${ossUrl2.isEmpty ? "(空)" : ossUrl2}');
+      buf.writeln(
+          '  OSS_URL_1: ${ossUrl1.isEmpty ? "(空)" : SensitiveMasker.maskUrl(ossUrl1)}');
+      buf.writeln(
+          '  OSS_URL_2: ${ossUrl2.isEmpty ? "(空)" : SensitiveMasker.maskUrl(ossUrl2)}');
       buf.writeln(
           '  XOR_KEY: ${xorKey == "CHANGE_ME_TO_YOUR_SECRET_KEY_32C" ? "⚠️ 默认占位符(未注入)" : "已注入(${xorKey.length}字符)"}');
       buf.writeln('  PANEL_TYPE: ${panelType.isEmpty ? "(空)" : panelType}');
@@ -565,7 +565,7 @@ class XBoardInitializationNotifier extends StateNotifier<InitializationState> {
       final panelUrls = XBoardConfig.allPanelUrls;
       buf.writeln('[面板URL] 数量: ${panelUrls.length}');
       for (final url in panelUrls) {
-        buf.writeln('  - $url');
+        buf.writeln('  - ${SensitiveMasker.maskUrl(url)}');
       }
       buf.writeln('');
 
@@ -584,7 +584,7 @@ class XBoardInitializationNotifier extends StateNotifier<InitializationState> {
           buf.writeln('  HTTP 状态码: ${response.statusCode}');
           buf.writeln('  响应长度: ${body.length} 字符');
           buf.writeln(
-              '  前50字符: ${body.length > 50 ? body.substring(0, 50) : body}');
+              '  前50字符: ${SensitiveMasker.maskText(body.length > 50 ? body.substring(0, 50) : body)}');
 
           // 尝试解密
           if (response.statusCode == 200 && body.isNotEmpty) {
@@ -602,7 +602,8 @@ class XBoardInitializationNotifier extends StateNotifier<InitializationState> {
                 final parsed = json.decode(result);
                 buf.writeln('  内容类型: XOR+Base64 加密');
                 buf.writeln('  解密: 成功');
-                buf.writeln('  domains: ${parsed['domains']}');
+                buf.writeln(
+                    '  domains: ${SensitiveMasker.maskText(parsed['domains'])}');
               } catch (decErr) {
                 buf.writeln('  内容类型: XOR+Base64 加密');
                 buf.writeln('  解密: 失败 — $decErr');

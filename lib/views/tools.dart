@@ -237,10 +237,14 @@ class _ConnectionHealthItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return ListItem(
+    return ListItem.open(
       leading: const Icon(Icons.health_and_safety_outlined),
       title: Text(appLocalizations.xboardConnectionHealth),
-      onTap: () => ConnectionHealthDialog.show(context),
+      subtitle: Text(appLocalizations.xboardConnectionHealthSubtitle),
+      delegate: OpenDelegate(
+        title: appLocalizations.xboardConnectionHealth,
+        widget: const ConnectionHealthView(),
+      ),
     );
   }
 }

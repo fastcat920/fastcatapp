@@ -5,6 +5,7 @@
 library;
 
 import 'package:fl_clash/common/constant.dart';
+import 'package:fl_clash/common/sensitive_masker.dart';
 import 'package:fl_clash/enum/enum.dart' as fl_enum;
 import 'package:fl_clash/models/common.dart' show Log;
 import 'package:fl_clash/state.dart';
@@ -77,7 +78,7 @@ class CaptureLogger implements LoggerInterface {
       globalState.appController.addLog(
         Log(
           logLevel: level,
-          payload: '[$appName] $message',
+          payload: '[$appName] ${SensitiveMasker.maskText(message)}',
           dateTime: DateTime.now().toString(),
         ),
       );

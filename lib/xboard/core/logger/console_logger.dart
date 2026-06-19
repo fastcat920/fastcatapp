@@ -4,6 +4,7 @@
 library;
 
 import 'package:fl_clash/common/constant.dart';
+import 'package:fl_clash/common/sensitive_masker.dart';
 import 'logger_interface.dart';
 
 /// 控制台日志实现
@@ -56,21 +57,26 @@ class ConsoleLogger implements LoggerInterface {
     }
   }
 
-  void _log(String level, String message, Object? error, StackTrace? stackTrace, String colorCode) {
+  void _log(String level, String message, Object? error, StackTrace? stackTrace,
+      String colorCode) {
     final timestamp = enableTimestamp ? _getTimestamp() : '';
     final prefix = enableColor ? '$colorCode$_prefix' : _prefix;
     final levelStr = '[$level]';
     final resetColor = enableColor ? _resetColor : '';
 
     final buffer = StringBuffer();
-    buffer.write('$prefix$timestamp$levelStr $message$resetColor');
+    buffer.write(
+      '$prefix$timestamp$levelStr ${SensitiveMasker.maskText(message)}$resetColor',
+    );
 
     // ignore: avoid_print
     print(buffer.toString());
 
     if (error != null) {
       // ignore: avoid_print
-      print('$prefix$timestamp$levelStr Error: $error$resetColor');
+      print(
+        '$prefix$timestamp$levelStr Error: ${SensitiveMasker.maskText(error)}$resetColor',
+      );
     }
     if (stackTrace != null) {
       // ignore: avoid_print

@@ -1,6 +1,7 @@
 import 'package:fl_clash/common/common.dart';
 import 'package:fl_clash/enum/enum.dart';
 import 'package:fl_clash/providers/providers.dart';
+import 'package:fl_clash/services/core_switch_status.dart';
 import 'package:fl_clash/state.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -78,29 +79,43 @@ class _StartButtonState extends ConsumerState<StartButton>
       valueListenable: globalState.isCoreSwitchingNotifier,
       builder: (context, isCoreSwitching, child) {
         if (isCoreSwitching) {
-          return Theme(
-            data: Theme.of(context).copyWith(
-              floatingActionButtonTheme: const FloatingActionButtonThemeData(
-                sizeConstraints: BoxConstraints(
-                  minWidth: 56,
-                  maxWidth: 200,
+          return ValueListenableBuilder<CoreSwitchStatus>(
+            valueListenable: globalState.coreSwitchStatusNotifier,
+            builder: (context, status, _) {
+              final label = status.label.isEmpty
+                  ? appLocalizations.loading
+                  : status.label;
+              return Theme(
+                data: Theme.of(context).copyWith(
+                  floatingActionButtonTheme:
+                      const FloatingActionButtonThemeData(
+                    sizeConstraints: BoxConstraints(
+                      minWidth: 88,
+                      maxWidth: 200,
+                    ),
+                  ),
                 ),
-              ),
-            ),
-            child: FloatingActionButton(
-              clipBehavior: Clip.antiAlias,
-              materialTapTargetSize: MaterialTapTargetSize.padded,
-              heroTag: null,
-              onPressed: null,
-              child: SizedBox(
-                height: 24,
-                width: 24,
-                child: CircularProgressIndicator(
-                  strokeWidth: 2.5,
-                  color: Theme.of(context).colorScheme.onPrimaryContainer,
+                child: FloatingActionButton.extended(
+                  clipBehavior: Clip.antiAlias,
+                  materialTapTargetSize: MaterialTapTargetSize.padded,
+                  heroTag: null,
+                  onPressed: null,
+                  icon: SizedBox(
+                    height: 20,
+                    width: 20,
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2.5,
+                      color: Theme.of(context).colorScheme.onPrimaryContainer,
+                    ),
+                  ),
+                  label: Text(
+                    label,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
                 ),
-              ),
-            ),
+              );
+            },
           );
         }
 

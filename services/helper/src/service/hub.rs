@@ -4,6 +4,7 @@ use sha2::{Digest, Sha256};
 use std::collections::VecDeque;
 use std::fs::File;
 use std::io::{BufRead, Error, Read};
+use std::path::Path;
 use std::process::{Command, Stdio};
 use std::sync::{Arc, Mutex};
 use std::time::SystemTime;
@@ -11,11 +12,23 @@ use std::{io, thread};
 use warp::{Filter, Reply};
 
 const LISTEN_PORT: u16 = 47890;
+const SERVICE_NAME: &str = "fastcatHelperService";
 
 #[derive(Debug, Deserialize, Serialize, Clone)]
 pub struct StartParams {
     pub path: String,
     pub arg: String,
+}
+
+#[derive(Debug, Serialize)]
+struct HelperStatus {
+    version: &'static str,
+    token: &'static str,
+    helper_path: Option<String>,
+    service_path_matches: Option<bool>,
+    core_running: bool,
+    core_pid: Option<u32>,
+    recent_logs: Vec<String>,
 }
 
 struct HashCache {
@@ -137,6 +150,83 @@ fn get_logs() -> impl Reply {
     warp::reply::with_header(value, "Content-Type", "text/plain")
 }
 
+fn get_status() -> impl Reply {
+    let helper_path = std::env::current_exe()
+        .ok()
+        .map(|path| path.to_string_lossy().to_string());
+    let (core_running, core_pid) = {
+        let mut process = PROCESS.lock().unwrap();
+        if let Some(child) = process.as_mut() {
+            match child.try_wait() {
+                Ok(Some(_)) => {
+                    *process = None;
+                    (false, None)
+                }
+                Ok(None) => (true, Some(child.id())),
+                Err(_) => (false, None),
+            }
+        } else {
+            (false, None)
+        }
+    };
+
+    let recent_logs = {
+        let log_buffer = LOGS.lock().unwrap();
+        log_buffer.iter().cloned().collect::<Vec<String>>()
+    };
+
+    warp::reply::json(&HelperStatus {
+        version: env!("CARGO_PKG_VERSION"),
+        token: env!("TOKEN"),
+        helper_path: helper_path.clone(),
+        service_path_matches: service_path_matches(helper_path.as_deref()),
+        core_running,
+        core_pid,
+        recent_logs,
+    })
+}
+
+fn service_path_matches(current_path: Option<&str>) -> Option<bool> {
+    if !cfg!(target_os = "windows") {
+        return None;
+    }
+    let current_path = current_path?;
+    let output = Command::new("sc")
+        .args(["qc", SERVICE_NAME])
+        .output()
+        .ok()?;
+    if !output.status.success() {
+        return Some(false);
+    }
+    let stdout = String::from_utf8_lossy(&output.stdout);
+    let service_path = stdout.lines().find_map(|line| {
+        let (_, value) = line.split_once("BINARY_PATH_NAME")?;
+        let (_, path) = value.split_once(':')?;
+        Some(normalize_windows_service_path(path.trim()))
+    })?;
+    Some(normalize_windows_path(current_path) == service_path)
+}
+
+fn normalize_windows_service_path(value: &str) -> String {
+    let trimmed = value.trim();
+    let path = if let Some(rest) = trimmed.strip_prefix('"') {
+        rest.split('"').next().unwrap_or(rest)
+    } else if let Some(index) = trimmed.to_ascii_lowercase().find(".exe") {
+        &trimmed[..index + 4]
+    } else {
+        trimmed
+    };
+    normalize_windows_path(path)
+}
+
+fn normalize_windows_path(value: &str) -> String {
+    Path::new(value)
+        .to_string_lossy()
+        .replace('/', "\\")
+        .trim_matches('"')
+        .to_ascii_lowercase()
+}
+
 pub async fn run_service() -> anyhow::Result<()> {
     let api_ping = warp::get().and(warp::path("ping")).map(|| env!("TOKEN"));
 
@@ -148,10 +238,17 @@ pub async fn run_service() -> anyhow::Result<()> {
     let api_stop = warp::post().and(warp::path("stop")).map(|| stop());
 
     let api_logs = warp::get().and(warp::path("logs")).map(|| get_logs());
+    let api_status = warp::get().and(warp::path("status")).map(|| get_status());
 
-    warp::serve(api_ping.or(api_start).or(api_stop).or(api_logs))
-        .run(([127, 0, 0, 1], LISTEN_PORT))
-        .await;
+    warp::serve(
+        api_ping
+            .or(api_status)
+            .or(api_start)
+            .or(api_stop)
+            .or(api_logs),
+    )
+    .run(([127, 0, 0, 1], LISTEN_PORT))
+    .await;
 
     Ok(())
 }

@@ -111,7 +111,6 @@ class OutboundModeV2 extends StatelessWidget {
               Mode.rule => context.colorScheme.secondaryContainer,
               Mode.global => globalState.theme.darken3PrimaryContainer,
               Mode.direct => context.colorScheme.tertiaryContainer,
-              _ => throw UnimplementedError(),
             };
             return Container(
               constraints: BoxConstraints.expand(),

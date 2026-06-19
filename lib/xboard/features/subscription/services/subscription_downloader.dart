@@ -17,8 +17,12 @@ class SubscriptionDownloader {
   static const Duration _retryDelay = Duration(seconds: 2);
 
   /// 下载订阅并返回 Profile
-  static Future<Profile> downloadSubscription(String url) async {
+  static Future<Profile> downloadSubscription(
+    String url, {
+    SubscriptionDownloadCancelToken? cancelToken,
+  }) async {
     final sw = Stopwatch()..start();
+    final token = cancelToken ?? SubscriptionDownloadCancelToken();
     try {
       _logger.info('📥 开始下载订阅: $url');
 
@@ -29,66 +33,72 @@ class SubscriptionDownloader {
       result = await _downloadWithMethod(
         url,
         useProxy: false,
-        cancelToken: _CancelToken(),
+        cancelToken: token,
         taskIndex: 0,
       );
-      _logger.info('✅ HTTP 下载完成，耗时 ${sw.elapsedMilliseconds}ms，大小 ${result.bytes.length} bytes');
-      
+      _logger.info(
+          '✅ HTTP 下载完成，耗时 ${sw.elapsedMilliseconds}ms，大小 ${result.bytes.length} bytes');
+
       // 直接写文件，跳过 saveFileWithString 内部的 validateConfig IPC 调用。
       // 桌面端 ClashCore.exe 进程未就绪时 validateConfig 默认等 30s，是导入卡死的根因。
       // 配置格式合法性由 applyProfile → setupConfig 阶段的 ClashCore 权威验证。
       _logger.info('💾 写入配置文件（跳过 validateConfig IPC）...');
-      
+
       // 🔍 诊断：检查下载的配置内容是否为有效的 Clash YAML 格式
       final contentLines = result.content.split('\n');
       final hasProxies = result.content.contains('proxies:');
       final hasProxyGroups = result.content.contains('proxy-groups:');
-      _logger.info('🔍 配置内容诊断: 总行数=${contentLines.length}, hasProxies=$hasProxies, hasProxyGroups=$hasProxyGroups');
-      
+      _logger.info(
+          '🔍 配置内容诊断: 总行数=${contentLines.length}, hasProxies=$hasProxies, hasProxyGroups=$hasProxyGroups');
+
       // 检测服务端是否返回了非 YAML 格式（如 Base64 编码的通用订阅）
       // 这通常是因为服务端未识别到客户端的 User-Agent 中的 Clash Meta 标识，
       // 从而使用了通用协议（返回 ss://、trojan:// 等 URI 的 Base64 编码）。
       if (!hasProxies && !hasProxyGroups) {
         final trimmedContent = result.content.trim();
-        final isLikelyBase64 = !trimmedContent.contains(':') || 
+        final isLikelyBase64 = !trimmedContent.contains(':') ||
             RegExp(r'^[A-Za-z0-9+/=\r\n]+$').hasMatch(trimmedContent);
-        final isLikelyUriList = trimmedContent.contains('ss://') || 
+        final isLikelyUriList = trimmedContent.contains('ss://') ||
             trimmedContent.contains('trojan://') ||
             trimmedContent.contains('vmess://') ||
             trimmedContent.contains('vless://');
-        
+
         if (isLikelyBase64 || isLikelyUriList) {
           _logger.error('❌ 服务端返回了通用订阅格式（Base64/URI列表），而非 Clash YAML 配置！');
           _logger.error('   这通常是因为服务端未识别客户端 UA 中的 meta/flclash 标识。');
-          _logger.error('   当前 UA: ${await UserAgentConfig.get(UserAgentScenario.subscription)}');
-          _logger.error('   前200字符: ${trimmedContent.substring(0, trimmedContent.length > 200 ? 200 : trimmedContent.length)}');
-          throw Exception(
-            '订阅格式错误：服务端返回了通用订阅格式，而非 Clash Meta 配置。\n'
-            '请检查：\n'
-            '1. 服务端是否支持 Clash Meta 订阅格式\n'
-            '2. 订阅链接是否正确（可尝试在 URL 后加 &flag=meta）'
-          );
+          _logger.error(
+              '   当前 UA: ${await UserAgentConfig.get(UserAgentScenario.subscription)}');
+          _logger.error(
+              '   前200字符: ${trimmedContent.substring(0, trimmedContent.length > 200 ? 200 : trimmedContent.length)}');
+          throw Exception('订阅格式错误：服务端返回了通用订阅格式，而非 Clash Meta 配置。\n'
+              '请检查：\n'
+              '1. 服务端是否支持 Clash Meta 订阅格式\n'
+              '2. 订阅链接是否正确（可尝试在 URL 后加 &flag=meta）');
         }
-        
-        _logger.error('⚠️ 警告: 下载的配置文件中没有找到 proxies 字段！前100字符: ${result.content.substring(0, result.content.length > 100 ? 100 : result.content.length)}');
+
+        _logger.error(
+            '⚠️ 警告: 下载的配置文件中没有找到 proxies 字段！前100字符: ${result.content.substring(0, result.content.length > 100 ? 100 : result.content.length)}');
       }
-      
+
+      if (token.isCancelled) {
+        throw Exception('任务已取消');
+      }
+
       final profile = Profile.normal(url: url);
       final profileFile = await profile.getFile();
       await profileFile.writeAsString(result.content);
       final savedProfile = profile.copyWith(lastUpdateDate: DateTime.now());
       _logger.info('✅ 配置文件写入完成，总耗时 ${sw.elapsedMilliseconds}ms');
-      
+
       // 更新订阅信息
       final finalProfile = savedProfile.copyWith(
         label: result.label ?? savedProfile.id,
         subscriptionInfo: result.subscriptionInfo,
         lastUpdateDate: DateTime.now(),
       );
-      
+
       _logger.info('✅ 订阅下载成功: ${finalProfile.label}');
       return finalProfile;
-      
     } on TimeoutException catch (e) {
       _logger.error('订阅下载超时', e);
       throw Exception('下载超时: ${e.message}');
@@ -103,7 +113,7 @@ class SubscriptionDownloader {
       rethrow;
     }
   }
-  
+
   /// 使用指定方式下载完整订阅内容（含自动重试）
   ///
   /// 登录后立即下载订阅时，后端可能因会话同步延迟或速率限制返回 HTTP 4xx/5xx，
@@ -112,7 +122,7 @@ class SubscriptionDownloader {
     String url, {
     required bool useProxy,
     String? proxyUrl,
-    required _CancelToken cancelToken,
+    required SubscriptionDownloadCancelToken cancelToken,
     required int taskIndex,
   }) async {
     final connectionType = useProxy ? '代理($proxyUrl)' : '直连';
@@ -128,7 +138,8 @@ class SubscriptionDownloader {
           cancelToken: cancelToken,
         );
 
-        _logger.info('[任务$taskIndex] 下载成功: $connectionType，大小: ${result.bytes.length} bytes');
+        _logger.info(
+            '[任务$taskIndex] 下载成功: $connectionType，大小: ${result.bytes.length} bytes');
 
         return _DownloadResult(
           content: result.content,
@@ -137,7 +148,6 @@ class SubscriptionDownloader {
           subscriptionInfo: result.subscriptionInfo,
           bytes: result.bytes,
         );
-
       } catch (e) {
         lastError = e;
         if (cancelToken.isCancelled) {
@@ -146,41 +156,44 @@ class SubscriptionDownloader {
         }
 
         // 仅对 HTTP 错误和网络错误重试，格式/解析错误不重试
-        final isRetryable = e is HttpException || e is SocketException || e is TimeoutException;
+        final isRetryable =
+            e is HttpException || e is SocketException || e is TimeoutException;
         if (!isRetryable || attempt == _maxRetries) {
-          _logger.warning('[任务$taskIndex] 下载失败(第$attempt次，不再重试): $connectionType - $e');
+          _logger.warning(
+              '[任务$taskIndex] 下载失败(第$attempt次，不再重试): $connectionType - $e');
           rethrow;
         }
 
-        _logger.warning('[任务$taskIndex] 下载失败(第$attempt/$_maxRetries次，${_retryDelay.inSeconds}s后重试): $connectionType - $e');
+        _logger.warning(
+            '[任务$taskIndex] 下载失败(第$attempt/$_maxRetries次，${_retryDelay.inSeconds}s后重试): $connectionType - $e');
         await Future.delayed(_retryDelay);
       }
     }
     // 理论上不会到这里，但为了类型安全
     throw lastError ?? Exception('下载失败');
   }
-  
+
   /// 使用代理下载订阅内容
   static Future<_DownloadRawResult> _downloadWithProxy(
     String url, {
     required bool useProxy,
     String? proxyUrl,
-    required _CancelToken cancelToken,
+    required SubscriptionDownloadCancelToken cancelToken,
   }) async {
     HttpClient? client;
-    
+
     try {
       // 检查是否已取消
       if (cancelToken.isCancelled) {
         throw Exception('任务已取消');
       }
-      
+
       // 创建 HttpClient（绕过 FastcatHttpOverrides，订阅下载不走本地 Clash 代理）
       client = HttpClient();
       client.connectionTimeout = _downloadTimeout;
       client.badCertificateCallback = (cert, host, port) => true;
       client.findProxy = (_) => 'DIRECT';
-      
+
       // 如果使用代理，配置 SOCKS5 代理
       if (useProxy && proxyUrl != null) {
         final proxyConfig = _parseProxyConfig(proxyUrl);
@@ -190,30 +203,31 @@ class SubscriptionDownloader {
           username: proxyConfig['username'],
           password: proxyConfig['password'],
         );
-        
+
         SocksTCPClient.assignToHttpClient(client, [proxySettings]);
       }
-      
+
       // 发起请求（追加 flag=meta 确保后端返回 ClashMeta 格式）
       final uri = Uri.parse(SubscriptionUrlHelper.ensureMetaFlag(url));
       final request = await client.getUrl(uri);
-      
+
       // 检查是否已取消
       if (cancelToken.isCancelled) {
         client.close(force: true);
         throw Exception('任务已取消');
       }
-      
+
       // 设置请求头
-      final userAgent = await UserAgentConfig.get(UserAgentScenario.subscription);
+      final userAgent =
+          await UserAgentConfig.get(UserAgentScenario.subscription);
       request.headers.set(HttpHeaders.userAgentHeader, userAgent);
-      
+
       // 检查是否已取消
       if (cancelToken.isCancelled) {
         client.close(force: true);
         throw Exception('任务已取消');
       }
-      
+
       // 获取响应
       final response = await request.close().timeout(
         _downloadTimeout,
@@ -221,17 +235,17 @@ class SubscriptionDownloader {
           throw TimeoutException('下载超时', _downloadTimeout);
         },
       );
-      
+
       if (response.statusCode < 200 || response.statusCode >= 400) {
         throw HttpException('HTTP ${response.statusCode}');
       }
-      
+
       // 检查是否已取消
       if (cancelToken.isCancelled) {
         client.close(force: true);
         throw Exception('任务已取消');
       }
-      
+
       // 读取响应内容（加超时，防止服务端发完 header 后卡住 body 读取永久挂死）
       final bytes = await response.fold<List<int>>(
         <int>[],
@@ -246,31 +260,30 @@ class SubscriptionDownloader {
         onTimeout: () => throw TimeoutException('读取订阅内容超时', _downloadTimeout),
       );
       final content = utf8.decode(bytes);
-      
+
       // 解析响应头
       final disposition = response.headers.value('content-disposition');
       final userinfo = response.headers.value('subscription-userinfo');
-      
+
       String? label;
       if (disposition != null) {
         // 从 content-disposition 提取文件名
-        final match = RegExp(r'filename="?([^";\n]+)"?').firstMatch(disposition);
+        final match =
+            RegExp(r'filename="?([^";\n]+)"?').firstMatch(disposition);
         if (match != null) {
           label = match.group(1)?.trim();
         }
       }
-      
-      final subscriptionInfo = userinfo != null 
-          ? SubscriptionInfo.formHString(userinfo) 
-          : null;
-      
+
+      final subscriptionInfo =
+          userinfo != null ? SubscriptionInfo.formHString(userinfo) : null;
+
       return _DownloadRawResult(
         content: content,
         label: label,
         subscriptionInfo: subscriptionInfo,
         bytes: bytes,
       );
-      
     } finally {
       if (cancelToken.isCancelled) {
         client?.close(force: true);
@@ -279,7 +292,7 @@ class SubscriptionDownloader {
       }
     }
   }
-  
+
   /// 解析代理配置
   ///
   /// 输入格式:
@@ -340,11 +353,11 @@ class SubscriptionDownloader {
 }
 
 /// 取消令牌
-class _CancelToken {
+class SubscriptionDownloadCancelToken {
   bool _isCancelled = false;
-  
+
   bool get isCancelled => _isCancelled;
-  
+
   void cancel() {
     _isCancelled = true;
   }
@@ -357,7 +370,7 @@ class _DownloadResult {
   final String? label;
   final SubscriptionInfo? subscriptionInfo;
   final List<int> bytes;
-  
+
   _DownloadResult({
     required this.content,
     required this.connectionType,
@@ -373,7 +386,7 @@ class _DownloadRawResult {
   final String? label;
   final SubscriptionInfo? subscriptionInfo;
   final List<int> bytes;
-  
+
   _DownloadRawResult({
     required this.content,
     this.label,

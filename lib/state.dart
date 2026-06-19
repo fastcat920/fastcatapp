@@ -11,6 +11,7 @@ import 'package:fl_clash/common/theme.dart';
 import 'package:fl_clash/enum/enum.dart';
 import 'package:fl_clash/l10n/l10n.dart';
 import 'package:fl_clash/plugins/service.dart';
+import 'package:fl_clash/services/core_switch_status.dart';
 import 'package:fl_clash/widgets/dialog.dart';
 import 'package:fl_clash/widgets/scaffold.dart';
 import 'package:flutter/material.dart';
@@ -44,6 +45,8 @@ class GlobalState {
   CorePalette? corePalette;
   DateTime? startTime;
   final isCoreSwitchingNotifier = ValueNotifier<bool>(false);
+  final coreSwitchStatusNotifier =
+      ValueNotifier<CoreSwitchStatus>(CoreSwitchStatus.idle);
 
   UpdateTasks tasks = [];
   final navigatorKey = GlobalKey<NavigatorState>();
@@ -61,6 +64,20 @@ class GlobalState {
   }
 
   GlobalState._internal();
+
+  void updateCoreSwitchStatus(
+    CoreSwitchStage stage, {
+    String? message,
+  }) {
+    coreSwitchStatusNotifier.value = CoreSwitchStatus(
+      stage: stage,
+      message: message,
+    );
+  }
+
+  void resetCoreSwitchStatus() {
+    coreSwitchStatusNotifier.value = CoreSwitchStatus.idle;
+  }
 
   factory GlobalState() {
     _instance ??= GlobalState._internal();

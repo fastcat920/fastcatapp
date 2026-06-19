@@ -455,7 +455,6 @@ class _ListHeaderState extends State<ListHeader> {
               ),
             ),
           ProxiesIconStyle.none => Container(),
-          _ => throw UnimplementedError(),
         };
       },
     );

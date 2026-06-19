@@ -1,6 +1,7 @@
 import 'package:fl_clash/common/common.dart';
 import 'package:fl_clash/l10n/l10n.dart';
 import 'package:fl_clash/providers/providers.dart';
+import 'package:fl_clash/services/core_switch_status.dart';
 import 'package:fl_clash/state.dart';
 import 'package:fl_clash/widgets/widgets.dart';
 import 'package:flutter/material.dart';
@@ -69,11 +70,13 @@ class _XBoardConnectButtonState extends ConsumerState<XBoardConnectButton>
       fireImmediately: true,
     );
     globalState.isCoreSwitchingNotifier.addListener(_handleCoreSwitching);
+    globalState.coreSwitchStatusNotifier.addListener(_handleCoreSwitching);
   }
 
   @override
   void dispose() {
     globalState.isCoreSwitchingNotifier.removeListener(_handleCoreSwitching);
+    globalState.coreSwitchStatusNotifier.removeListener(_handleCoreSwitching);
     _controller.dispose();
     super.dispose();
   }
@@ -154,6 +157,17 @@ class _XBoardConnectButtonState extends ConsumerState<XBoardConnectButton>
     } finally {
       if (mounted) setState(() => _isSwitching = false);
     }
+  }
+
+  String _busyLabel(BuildContext context) {
+    if (_isCheckingSubscription) {
+      return '检查订阅';
+    }
+    final status = globalState.coreSwitchStatusNotifier.value;
+    if (status.stage != CoreSwitchStage.idle && status.label.isNotEmpty) {
+      return status.label;
+    }
+    return isStart ? '正在断开' : '正在连接';
   }
 
   void _openPlans() {
@@ -241,9 +255,11 @@ class _XBoardConnectButtonState extends ConsumerState<XBoardConnectButton>
           final textWidth = globalState.measure
                   .computeTextSize(
                     Text(
-                      utils.getTimeDifference(
-                        DateTime.now(),
-                      ),
+                      _isBusy
+                          ? _busyLabel(context)
+                          : utils.getTimeDifference(
+                              DateTime.now(),
+                            ),
                       style: context.textTheme.titleMedium?.toSoftBold,
                     ),
                   )
@@ -276,7 +292,8 @@ class _XBoardConnectButtonState extends ConsumerState<XBoardConnectButton>
         child: Consumer(
           builder: (_, ref, __) {
             final runTime = ref.watch(runTimeProvider);
-            final text = utils.getTimeText(runTime);
+            final text =
+                _isBusy ? _busyLabel(context) : utils.getTimeText(runTime);
             return Text(
               text,
               maxLines: 1,
@@ -380,14 +397,46 @@ class _XBoardConnectButtonState extends ConsumerState<XBoardConnectButton>
                                 child: AnimatedSwitcher(
                                   duration: const Duration(milliseconds: 250),
                                   child: _isBusy
-                                      ? SizedBox(
+                                      ? Column(
                                           key: const ValueKey('switching'),
-                                          width: iconSize,
-                                          height: iconSize,
-                                          child: CircularProgressIndicator(
-                                            strokeWidth: 2.5,
-                                            color: iconColor,
-                                          ),
+                                          mainAxisAlignment:
+                                              MainAxisAlignment.center,
+                                          children: [
+                                            SizedBox(
+                                              width: iconSize * 0.58,
+                                              height: iconSize * 0.58,
+                                              child: CircularProgressIndicator(
+                                                strokeWidth: 2.5,
+                                                color: iconColor,
+                                              ),
+                                            ),
+                                            SizedBox(
+                                                height:
+                                                    (outerSize * 0.035).clamp(
+                                              2.0,
+                                              5.0,
+                                            )),
+                                            Padding(
+                                              padding:
+                                                  const EdgeInsets.symmetric(
+                                                      horizontal: 8),
+                                              child: Text(
+                                                _busyLabel(context),
+                                                maxLines: 1,
+                                                overflow: TextOverflow.ellipsis,
+                                                textAlign: TextAlign.center,
+                                                style: Theme.of(context)
+                                                    .textTheme
+                                                    .labelSmall
+                                                    ?.copyWith(
+                                                      color: iconColor,
+                                                      fontSize:
+                                                          (outerSize * 0.07)
+                                                              .clamp(9.0, 12.0),
+                                                    ),
+                                              ),
+                                            ),
+                                          ],
                                         )
                                       : Icon(
                                           btnIcon,

@@ -4,12 +4,15 @@ import 'dart:io';
 import 'dart:isolate';
 import 'dart:typed_data';
 
-import 'package:archive/archive.dart';
 import 'package:fl_clash/clash/clash.dart';
 import 'package:fl_clash/enum/enum.dart';
 import 'package:fl_clash/plugins/app.dart';
 import 'package:fl_clash/plugins/service.dart';
 import 'package:fl_clash/providers/providers.dart';
+import 'package:fl_clash/services/app_backup_service.dart';
+import 'package:fl_clash/services/app_exit_service.dart';
+import 'package:fl_clash/services/app_profile_controller.dart';
+import 'package:fl_clash/services/core_switch_status.dart';
 import 'package:fl_clash/state.dart';
 import 'package:fl_clash/widgets/dialog.dart';
 import 'package:fl_clash/xboard/features/auth/services/device_heartbeat_service.dart';
@@ -53,8 +56,19 @@ class AppController {
 
   final BuildContext context;
   final WidgetRef _ref;
+  late final AppExitService _exitService;
+  late final AppBackupService _backupService;
+  late final AppProfileController _profileController;
 
-  AppController(this.context, WidgetRef ref) : _ref = ref;
+  AppController(this.context, WidgetRef ref) : _ref = ref {
+    _exitService = const AppExitService();
+    _backupService = AppBackupService(_ref);
+    _profileController = AppProfileController(
+      _ref,
+      applyProfileDebounce: applyProfileDebounce,
+      updateStatus: updateStatus,
+    );
+  }
 
   setupClashConfigDebounce() {
     debouncer.call(FunctionTag.setupClashConfig, () async {
@@ -146,33 +160,69 @@ class AppController {
     ));
     try {
       if (isStart) {
+        globalState.updateCoreSwitchStatus(
+          CoreSwitchStage.coreConnecting,
+          message: '核心回连',
+        );
         await globalState.handleStart([
           updateRunTime,
           updateTraffic,
         ]);
         // handleStart resets startTime to null on VPN failure — bail out
-        if (globalState.startTime == null) return false;
+        if (globalState.startTime == null) {
+          globalState.updateCoreSwitchStatus(
+            CoreSwitchStage.failed,
+            message: '连接失败',
+          );
+          return false;
+        }
+        if (_ref.read(realTunEnableProvider)) {
+          globalState.updateCoreSwitchStatus(
+            CoreSwitchStage.tunApplying,
+            message: 'TUN 已应用',
+          );
+        }
         if (Platform.isIOS) {
           // Traffic routing just enabled — mihomo was already running in idle mode.
           // Refresh groups from the core and re-apply the user's selected proxy.
           await _refreshGroupsAfterConnect();
           addCheckIpNumDebounce();
+          globalState.updateCoreSwitchStatus(
+            CoreSwitchStage.connected,
+            message: '已连接',
+          );
           return true;
         }
         final currentLastModified =
             await _ref.read(currentProfileProvider)?.profileLastModified;
         if (currentLastModified == null || lastProfileModified == null) {
           addCheckIpNumDebounce();
+          globalState.updateCoreSwitchStatus(
+            CoreSwitchStage.connected,
+            message: '已连接',
+          );
           return true;
         }
         if (currentLastModified <= (lastProfileModified ?? 0)) {
           addCheckIpNumDebounce();
+          globalState.updateCoreSwitchStatus(
+            CoreSwitchStage.connected,
+            message: '已连接',
+          );
           return true;
         }
         applyProfileDebounce();
         addCheckIpNumDebounce();
+        globalState.updateCoreSwitchStatus(
+          CoreSwitchStage.connected,
+          message: '已连接',
+        );
         return true;
       } else {
+        globalState.updateCoreSwitchStatus(
+          CoreSwitchStage.stopping,
+          message: '正在断开',
+        );
         await globalState.handleStop();
         await clashCore.resetTraffic();
         _ref.read(trafficsProvider.notifier).clear();
@@ -182,9 +232,19 @@ class AppController {
         addCheckIpNumDebounce();
         return true;
       }
+    } catch (_) {
+      globalState.updateCoreSwitchStatus(
+        CoreSwitchStage.failed,
+        message: isStart ? '连接失败' : '断开失败',
+      );
+      rethrow;
     } finally {
       _isCoreSwitching = false;
       globalState.isCoreSwitchingNotifier.value = false;
+      if (globalState.coreSwitchStatusNotifier.value.stage !=
+          CoreSwitchStage.failed) {
+        globalState.resetCoreSwitchStatus();
+      }
     }
   }
 
@@ -207,27 +267,9 @@ class AppController {
         await clashCore.getTotalTraffic();
   }
 
-  addProfile(Profile profile) async {
-    _ref.read(profilesProvider.notifier).setProfile(profile);
-    if (_ref.read(currentProfileIdProvider) != null) return;
-    _ref.read(currentProfileIdProvider.notifier).value = profile.id;
-  }
+  addProfile(Profile profile) => _profileController.addProfile(profile);
 
-  deleteProfile(String id) async {
-    _ref.read(profilesProvider.notifier).deleteProfileById(id);
-    clearEffect(id);
-    if (globalState.config.currentProfileId == id) {
-      final profiles = globalState.config.profiles;
-      final currentProfileId = _ref.read(currentProfileIdProvider.notifier);
-      if (profiles.isNotEmpty) {
-        final updateId = profiles.first.id;
-        currentProfileId.value = updateId;
-      } else {
-        currentProfileId.value = null;
-        updateStatus(false);
-      }
-    }
-  }
+  deleteProfile(String id) => _profileController.deleteProfile(id);
 
   updateProviders() async {
     _ref.read(providersProvider.notifier).value =
@@ -240,30 +282,16 @@ class AppController {
     _ref.read(localIpProvider.notifier).value = await utils.getLocalIpAddress();
   }
 
-  Future<void> updateProfile(Profile profile) async {
-    final newProfile = await profile.update();
-    _ref
-        .read(profilesProvider.notifier)
-        .setProfile(newProfile.copyWith(isUpdating: false));
-    if (profile.id == _ref.read(currentProfileIdProvider)) {
-      applyProfileDebounce(silence: true);
-    }
-  }
+  Future<void> updateProfile(Profile profile) =>
+      _profileController.updateProfile(profile);
 
-  setProfile(Profile profile) {
-    _ref.read(profilesProvider.notifier).setProfile(profile);
-  }
+  setProfile(Profile profile) => _profileController.setProfile(profile);
 
-  setProfileAndAutoApply(Profile profile) {
-    _ref.read(profilesProvider.notifier).setProfile(profile);
-    if (profile.id == _ref.read(currentProfileIdProvider)) {
-      applyProfileDebounce(silence: true);
-    }
-  }
+  setProfileAndAutoApply(Profile profile) =>
+      _profileController.setProfileAndAutoApply(profile);
 
-  setProfiles(List<Profile> profiles) {
-    _ref.read(profilesProvider.notifier).value = profiles;
-  }
+  setProfiles(List<Profile> profiles) =>
+      _profileController.setProfiles(profiles);
 
   addLog(Log log) {
     _ref.read(logsProvider.notifier).addLog(log);
@@ -273,14 +301,6 @@ class AppController {
     final hotKeyActions = _ref.read(hotKeyActionsProvider);
     final index =
         hotKeyActions.indexWhere((item) => item.action == hotKeyAction.action);
-    if (index == -1) {
-      _ref.read(hotKeyActionsProvider.notifier).value = List.from(hotKeyActions)
-        ..add(hotKeyAction);
-    } else {
-      _ref.read(hotKeyActionsProvider.notifier).value = List.from(hotKeyActions)
-        ..[index] = hotKeyAction;
-    }
-
     _ref.read(hotKeyActionsProvider.notifier).value = index == -1
         ? (List.from(hotKeyActions)..add(hotKeyAction))
         : (List.from(hotKeyActions)..[index] = hotKeyAction);
@@ -388,16 +408,28 @@ class AppController {
       if (_tunAdminDenied) {
         enableTun = false;
       } else {
+        globalState.updateCoreSwitchStatus(
+          CoreSwitchStage.checkingHelper,
+          message: '检查 helper',
+        );
         final code = await system.authorizeCore();
         switch (code) {
           case AuthorizeCode.success:
             // 验证服务是否真的起来了（Win11 可能批准 UAC 但服务启动失败）
+            globalState.updateCoreSwitchStatus(
+              CoreSwitchStage.helperReady,
+              message: 'helper 已复用',
+            );
             final isAdminNow = await system.checkIsAdmin();
             if (!isAdminNow) {
               _tunAdminDenied = true;
               enableTun = false;
               break;
             }
+            globalState.updateCoreSwitchStatus(
+              CoreSwitchStage.coreConnecting,
+              message: '核心回连',
+            );
             await restartCore(setupProfile: false, restoreStart: false);
             didRestartCore = true;
             break;
@@ -749,10 +781,7 @@ class AppController {
     }
   }
 
-  savePreferences() async {
-    commonPrint.log('save preferences');
-    await preferences.saveConfig(globalState.config);
-  }
+  savePreferences() => _exitService.savePreferences();
 
   changeProxy({
     required String groupName,
@@ -793,28 +822,9 @@ class AppController {
     _ref.read(backBlockProvider.notifier).value = false;
   }
 
-  handleExit() async {
-    Future.delayed(commonDuration, () {
-      system.exit();
-    });
-    try {
-      await savePreferences();
-      await system.setMacOSDns(true);
-      await proxy?.stopProxy();
-      await clashCore.shutdown();
-      await clashService?.destroy();
-    } finally {
-      system.exit();
-    }
-  }
+  handleExit() => _exitService.handleExit();
 
-  Future handleClear() async {
-    await preferences.clearPreferences();
-    commonPrint.log('clear preferences');
-    globalState.config = Config(
-      themeProps: defaultThemeProps,
-    );
-  }
+  Future handleClear() => _exitService.handleClear();
 
   _handlePreference() async {
     if (await preferences.isInit) {
@@ -983,30 +993,8 @@ class AppController {
     return;
   }
 
-  Future<void> importProfileInBackground(String url) async {
-    try {
-      // 先删除所有现有的URL订阅（非文件类型的订阅）
-      final profiles = globalState.config.profiles;
-      final urlProfiles =
-          profiles.where((profile) => profile.type == ProfileType.url).toList();
-
-      for (final profile in urlProfiles) {
-        commonPrint.log(
-            'Removing existing URL profile: ${profile.label ?? profile.id}');
-        deleteProfile(profile.id);
-      }
-
-      // 然后添加新的订阅
-      final profile = await Profile.normal(
-        url: url,
-      ).update();
-      await addProfile(profile);
-      app?.tip('${appLocalizations.add} ${appLocalizations.profile}');
-    } catch (e) {
-      commonPrint.log('Failed to import profile in background: $e');
-      app?.tip(appLocalizations.checkError);
-    }
-  }
+  Future<void> importProfileInBackground(String url) =>
+      _profileController.importProfileInBackground(url);
 
   addProfileFormURL(String url) async {
     if (globalState.navigatorKey.currentState?.canPop() ?? false) {
@@ -1117,22 +1105,7 @@ class AppController {
     };
   }
 
-  clearEffect(String profileId) async {
-    final profilePath = await appPath.getProfilePath(profileId);
-    final providersDirPath = await appPath.getProvidersDirPath(profileId);
-    return await Isolate.run(() async {
-      final profileFile = File(profilePath);
-      final isExists = await profileFile.exists();
-      if (isExists) {
-        profileFile.delete(recursive: true);
-      }
-      final providersFileDir = File(providersDirPath);
-      final providersFileIsExists = await providersFileDir.exists();
-      if (providersFileIsExists) {
-        providersFileDir.delete(recursive: true);
-      }
-    });
-  }
+  clearEffect(String profileId) => _profileController.clearEffect(profileId);
 
   updateTun() {
     unawaited(XBoardDeviceHeartbeatService.markActive(reason: 'toggle_tun'));
@@ -1271,7 +1244,7 @@ class AppController {
 
   Future<bool> exportLogs() async {
     final logsRaw = _ref.read(logsProvider).list.map(
-          (item) => item.toString(),
+          (item) => SensitiveMasker.maskText(item),
         );
     final data = await Isolate.run<List<int>>(() async {
       final logsRawString = logsRaw.join('\n');
@@ -1284,18 +1257,7 @@ class AppController {
         null;
   }
 
-  Future<List<int>> backupData() async {
-    final homeDirPath = await appPath.homeDirPath;
-    final profilesPath = await appPath.profilesPath;
-    final configJson = globalState.config.toJson();
-    return Isolate.run<List<int>>(() async {
-      final archive = Archive();
-      archive.add('config.json', configJson);
-      await archive.addDirectoryToArchive(profilesPath, homeDirPath);
-      final zipEncoder = ZipEncoder();
-      return zipEncoder.encode(archive) ?? [];
-    });
-  }
+  Future<List<int>> backupData() => _backupService.backupData();
 
   updateTray([bool focus = false]) async {
     tray.update(
@@ -1306,86 +1268,6 @@ class AppController {
   recoveryData(
     List<int> data,
     RecoveryOption recoveryOption,
-  ) async {
-    final archive = await Isolate.run<Archive>(() {
-      final zipDecoder = ZipDecoder();
-      return zipDecoder.decodeBytes(data);
-    });
-    final homeDirPath = await appPath.homeDirPath;
-    final configs =
-        archive.files.where((item) => item.name.endsWith('.json')).toList();
-    final profiles =
-        archive.files.where((item) => !item.name.endsWith('.json'));
-    final configIndex =
-        configs.indexWhere((config) => config.name == 'config.json');
-    if (configIndex == -1) throw 'invalid backup file';
-    final configFile = configs[configIndex];
-    var tempConfig = Config.compatibleFromJson(
-      json.decode(
-        utf8.decode(configFile.content),
-      ),
-    );
-    for (final profile in profiles) {
-      final filePath = join(homeDirPath, profile.name);
-      final file = File(filePath);
-      await file.create(recursive: true);
-      await file.writeAsBytes(profile.content);
-    }
-    final clashConfigIndex =
-        configs.indexWhere((config) => config.name == 'clashConfig.json');
-    if (clashConfigIndex != -1) {
-      final clashConfigFile = configs[clashConfigIndex];
-      tempConfig = tempConfig.copyWith(
-        patchClashConfig: ClashConfig.fromJson(
-          json.decode(
-            utf8.decode(
-              clashConfigFile.content,
-            ),
-          ),
-        ),
-      );
-    }
-    _recovery(
-      tempConfig,
-      recoveryOption,
-    );
-  }
-
-  _recovery(Config config, RecoveryOption recoveryOption) {
-    final recoveryStrategy = _ref.read(appSettingProvider.select(
-      (state) => state.recoveryStrategy,
-    ));
-    final profiles = config.profiles;
-    if (recoveryStrategy == RecoveryStrategy.override) {
-      _ref.read(profilesProvider.notifier).value = profiles;
-    } else {
-      for (final profile in profiles) {
-        _ref.read(profilesProvider.notifier).setProfile(
-              profile,
-            );
-      }
-    }
-    final onlyProfiles = recoveryOption == RecoveryOption.onlyProfiles;
-    if (!onlyProfiles) {
-      _ref.read(patchClashConfigProvider.notifier).value =
-          config.patchClashConfig;
-      _ref.read(appSettingProvider.notifier).value = config.appSetting;
-      _ref.read(currentProfileIdProvider.notifier).value =
-          config.currentProfileId;
-      _ref.read(appDAVSettingProvider.notifier).value = config.dav;
-      _ref.read(themeSettingProvider.notifier).value = config.themeProps;
-      _ref.read(windowSettingProvider.notifier).value = config.windowProps;
-      _ref.read(vpnSettingProvider.notifier).value = config.vpnProps;
-      _ref.read(proxiesStyleSettingProvider.notifier).value =
-          config.proxiesStyle;
-      _ref.read(overrideDnsProvider.notifier).value = config.overrideDns;
-      _ref.read(networkSettingProvider.notifier).value = config.networkProps;
-      _ref.read(hotKeyActionsProvider.notifier).value = config.hotKeyActions;
-      _ref.read(scriptStateProvider.notifier).value = config.scriptProps;
-    }
-    final currentProfile = _ref.read(currentProfileProvider);
-    if (currentProfile == null) {
-      _ref.read(currentProfileIdProvider.notifier).value = profiles.first.id;
-    }
-  }
+  ) =>
+      _backupService.recoveryData(data, recoveryOption);
 }

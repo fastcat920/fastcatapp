@@ -4,6 +4,8 @@ import 'dart:io';
 import 'package:ffi/ffi.dart';
 import 'package:fl_clash/common/common.dart';
 import 'package:fl_clash/enum/enum.dart';
+import 'package:fl_clash/services/core_switch_status.dart';
+import 'package:fl_clash/state.dart';
 import 'package:path/path.dart';
 
 class Windows {
@@ -141,6 +143,13 @@ class Windows {
   }
 
   Future<WindowsHelperServiceStatus> checkService() async {
+    final helperStatus = await request.getHelperRuntimeStatus();
+    if (helperStatus != null && _canReuseHelper(helperStatus)) {
+      return WindowsHelperServiceStatus.running;
+    }
+    if (helperStatus != null) {
+      return WindowsHelperServiceStatus.presence;
+    }
     // 优先 ping 探测：服务运行时立即成功，避免启动 sc.exe 导致黑框闪烁
     if (await request.pingHelper()) {
       return WindowsHelperServiceStatus.running;
@@ -152,6 +161,22 @@ class Windows {
       return WindowsHelperServiceStatus.none;
     }
     return WindowsHelperServiceStatus.presence;
+  }
+
+  bool _canReuseHelper(WindowsHelperRuntimeStatus status) {
+    if (!status.tokenMatches) return false;
+    return _helperExecutableMatches(status.helperPath);
+  }
+
+  bool _helperExecutableMatches(String? helperPath) {
+    final path = helperPath?.trim();
+    if (path == null || path.isEmpty) {
+      // Older helper builds did not expose helper_path; keep the ping fallback
+      // compatible instead of forcing a repair loop.
+      return true;
+    }
+    return _normalizeServiceBinaryPath(path) ==
+        _normalizeServiceBinaryPath(appPath.helperPath);
   }
 
   /// 解析 `sc query` 输出，返回 {state, win32ExitCode}
@@ -226,14 +251,37 @@ class Windows {
       if (i > 0) {
         await Future.delayed(const Duration(milliseconds: 300));
       }
+      final helperStatus = await request.getHelperRuntimeStatus();
+      if (helperStatus != null) {
+        if (_canReuseHelper(helperStatus)) return true;
+        continue;
+      }
       if (await request.pingHelper()) return true;
     }
     return false;
   }
 
-  Future<bool> registerService() async {
+  Future<bool> registerService({bool forceRepair = false}) async {
     commonPrint.log("FASTCAT_V3 registerService: reuse service first");
-    if (await request.pingHelper()) return true;
+    globalState.updateCoreSwitchStatus(
+      CoreSwitchStage.checkingHelper,
+      message: '检查 helper',
+    );
+    final helperStatus = await request.getHelperRuntimeStatus();
+    if (!forceRepair && helperStatus != null && _canReuseHelper(helperStatus)) {
+      globalState.updateCoreSwitchStatus(
+        CoreSwitchStage.helperReady,
+        message: 'helper 已复用',
+      );
+      return true;
+    }
+    if (!forceRepair && helperStatus == null && await request.pingHelper()) {
+      globalState.updateCoreSwitchStatus(
+        CoreSwitchStage.helperReady,
+        message: 'helper 已复用',
+      );
+      return true;
+    }
 
     // 预检：helper 二进制必须存在才能继续
     final helperExe = appPath.helperPath;
@@ -242,20 +290,38 @@ class Windows {
       return false;
     }
 
+    globalState.updateCoreSwitchStatus(
+      CoreSwitchStage.startingService,
+      message: forceRepair ? '重建服务' : '启动服务',
+    );
     final serviceQuery = await _runHidden('sc', ['query', appHelperService]);
     final serviceInfo =
         _parseScQuery('${serviceQuery.stdout}\n${serviceQuery.stderr}');
     final hasService = (serviceInfo['state'] ?? 0) != 0;
-    if (hasService && await _serviceBinaryMatches(helperExe)) {
+    final servicePathMatches = helperStatus?.servicePathMatches == true ||
+        (helperStatus == null && await _serviceBinaryMatches(helperExe));
+    if (!forceRepair && hasService && servicePathMatches) {
       final state = serviceInfo['state'] ?? 0;
       if (state == 4) {
-        if (await _waitForHelper(maxMs: 1500)) return true;
+        if (await _waitForHelper(maxMs: 1500)) {
+          globalState.updateCoreSwitchStatus(
+            CoreSwitchStage.helperReady,
+            message: 'helper 已复用',
+          );
+          return true;
+        }
         commonPrint.log('registerService: service running but HTTP not ready');
       } else {
         commonPrint.log('registerService: starting existing service');
         if (runas('cmd.exe', '/c sc start $appHelperService')) {
           if (await _waitForServiceRunning(maxMs: 5000)) {
-            if (await _waitForHelper(maxMs: 2000)) return true;
+            if (await _waitForHelper(maxMs: 2000)) {
+              globalState.updateCoreSwitchStatus(
+                CoreSwitchStage.helperReady,
+                message: 'helper 已复用',
+              );
+              return true;
+            }
             commonPrint.log(
                 'registerService: existing service running but HTTP not ready');
           }
@@ -305,7 +371,13 @@ class Windows {
     if (runas('cmd.exe', svcCmd)) {
       if (await _waitForServiceRunning(maxMs: 8000)) {
         // 服务进程已进入 RUNNING，等 HTTP 服务器就绪（通常 <1s）
-        if (await _waitForHelper(maxMs: 3000)) return true;
+        if (await _waitForHelper(maxMs: 3000)) {
+          globalState.updateCoreSwitchStatus(
+            CoreSwitchStage.helperReady,
+            message: 'helper 已复用',
+          );
+          return true;
+        }
         commonPrint.log('registerService: service running but HTTP not ready');
       }
       commonPrint.log('registerService: service phase failed, trying fallback');
@@ -315,7 +387,13 @@ class Windows {
     // 适用于 Win11 Smart App Control / 安全策略阻止服务安装的场景
     commonPrint.log('registerService: launching helper as elevated process');
     if (runas(helperExe, '')) {
-      if (await _waitForHelper(maxMs: 4000)) return true;
+      if (await _waitForHelper(maxMs: 4000)) {
+        globalState.updateCoreSwitchStatus(
+          CoreSwitchStage.helperReady,
+          message: 'helper 已复用',
+        );
+        return true;
+      }
       commonPrint.log('registerService: direct elevated process timed out');
     }
 
