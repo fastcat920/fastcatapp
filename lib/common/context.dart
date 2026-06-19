@@ -8,15 +8,21 @@ extension BuildContextExtension on BuildContext {
   }
 
   showNotifier(String text, {VoidCallback? onTap}) {
-    return findAncestorStateOfType<MessageManagerState>()?.message(text, onTap: onTap);
+    return findAncestorStateOfType<MessageManagerState>()
+        ?.message(text, onTap: onTap);
   }
 
   showSnackBar(
     String message, {
     SnackBarAction? action,
   }) {
+    final notifier = findAncestorStateOfType<MessageManagerState>();
+    if (notifier != null) {
+      final text = action == null ? message : '$message  ${action.label}';
+      return notifier.message(text, onTap: action?.onPressed);
+    }
     final width = viewWidth;
-    EdgeInsets margin;
+    final EdgeInsets margin;
     if (width < 600) {
       margin = const EdgeInsets.only(
         bottom: 16,

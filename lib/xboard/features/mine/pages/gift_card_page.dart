@@ -28,11 +28,7 @@ class _GiftCardPageState extends ConsumerState<GiftCardPage> {
     final l10n = AppLocalizations.of(context);
     final code = _codeCtrl.text.trim();
     if (code.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(l10n.xboardPleaseEnterGiftCardCode),
-        ),
-      );
+      XBoardNotification.showError(l10n.xboardPleaseEnterGiftCardCode);
       return;
     }
     setState(() => _isSubmitting = true);

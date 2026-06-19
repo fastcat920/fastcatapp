@@ -15,6 +15,7 @@ import 'package:fl_clash/xboard/features/auth/pages/salesmartly_chat_page.dart';
 import 'package:fl_clash/xboard/features/auth/pages/windows_chat_page.dart';
 import 'package:fl_clash/xboard/features/auth/pages/linux_chat_page.dart';
 import 'package:fl_clash/xboard/core/core.dart';
+import 'package:fl_clash/xboard/utils/xboard_notification.dart';
 
 final _logger = FileLogger('customer_service_helper.dart');
 
@@ -46,7 +47,6 @@ class CustomerServiceHelper {
 
   /// 打开客服页面
   static Future<void> open(BuildContext context) async {
-    final messenger = ScaffoldMessenger.of(context);
     // 1) 远程 Crisp
     var crispId = XBoardConfig.crispWebsiteId.trim();
     // 2) 本地 fallback Crisp
@@ -59,7 +59,7 @@ class CustomerServiceHelper {
       _openCrisp(context, crispId);
       return;
     }
-    messenger.showSnackBar(const SnackBar(content: Text('未配置在线客服')));
+    XBoardNotification.showError('未配置在线客服');
   }
 
   /// 桌面端：右侧半屏面板展示客服

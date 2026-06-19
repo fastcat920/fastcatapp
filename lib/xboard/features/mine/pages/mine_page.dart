@@ -480,16 +480,15 @@ class _MinePageState extends ConsumerState<MinePage>
             mode: LaunchMode.externalApplication);
       } else {
         if (context.mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-                content: Text(appLocalizations.xboardGroupLinkNotConfigured)),
+          XBoardNotification.showError(
+            appLocalizations.xboardGroupLinkNotConfigured,
           );
         }
       }
     } catch (e) {
       if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(appLocalizations.xboardGetGroupLinkFailed)),
+        XBoardNotification.showError(
+          appLocalizations.xboardGetGroupLinkFailed,
         );
       }
     }
@@ -609,8 +608,7 @@ class _GiftCardSheetState extends ConsumerState<_GiftCardSheet> {
     final l10n = AppLocalizations.of(context);
     final code = _codeCtrl.text.trim();
     if (code.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(l10n.xboardPleaseEnterGiftCardCode)));
+      XBoardNotification.showError(l10n.xboardPleaseEnterGiftCardCode);
       return;
     }
     setState(() => _isSubmitting = true);

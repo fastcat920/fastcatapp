@@ -12,6 +12,7 @@ import 'package:fl_clash/common/common.dart';
 import 'package:fl_clash/xboard/features/shared/widgets/tv_deferred_input.dart';
 import 'package:fl_clash/xboard/features/mine/services/imgbb_service.dart';
 import 'package:fl_clash/l10n/l10n.dart';
+import 'package:fl_clash/xboard/utils/xboard_notification.dart';
 import 'package:image_picker/image_picker.dart';
 import 'ticket_detail_page.dart';
 
@@ -81,12 +82,15 @@ class _TicketPageState extends ConsumerState<TicketPage>
       appBar: AppBar(
         title: Text(l10n.xboardMyTickets),
         actions: [
-if (Platform.isLinux || Platform.isWindows || Platform.isMacOS || system.isTV)
+          if (Platform.isLinux ||
+              Platform.isWindows ||
+              Platform.isMacOS ||
+              system.isTV)
             Padding(
               padding: const EdgeInsets.only(right: 12),
               child: IconButton(
                 icon: const Icon(Icons.refresh),
-            onPressed: _doRefresh,
+                onPressed: _doRefresh,
               ),
             ),
         ],
@@ -326,9 +330,7 @@ class _CreateTicketSheetState extends ConsumerState<_CreateTicketSheet> {
   Future<void> _pickAndUploadImage() async {
     final apiKey = XBoardConfig.imgbbApiKey;
     if (apiKey.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('图片上传未配置，请联系管理员')),
-      );
+      XBoardNotification.showError('图片上传未配置，请联系管理员');
       return;
     }
 
@@ -346,9 +348,7 @@ class _CreateTicketSheetState extends ConsumerState<_CreateTicketSheet> {
       setState(() => _uploadedImageUrls.add(url));
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('图片上传失败: $e')),
-        );
+        XBoardNotification.showError('图片上传失败: $e');
       }
     } finally {
       if (mounted) setState(() => _isUploadingImage = false);
@@ -359,9 +359,7 @@ class _CreateTicketSheetState extends ConsumerState<_CreateTicketSheet> {
     final subject = _subjectCtrl.text.trim();
     var message = _messageCtrl.text.trim();
     if (subject.isEmpty || message.isEmpty && _uploadedImageUrls.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('标题和内容不能为空')),
-      );
+      XBoardNotification.showError('标题和内容不能为空');
       return;
     }
 
@@ -380,20 +378,14 @@ class _CreateTicketSheetState extends ConsumerState<_CreateTicketSheet> {
         if (ok) {
           widget.onCreated();
           Navigator.of(context).pop();
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('工单已提交')),
-          );
+          XBoardNotification.showSuccess('工单已提交');
         } else {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('提交失败，请稍后重试')),
-          );
+          XBoardNotification.showError('提交失败，请稍后重试');
         }
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('提交失败: $e')),
-        );
+        XBoardNotification.showError('提交失败: $e');
       }
     } finally {
       if (mounted) setState(() => _isSubmitting = false);

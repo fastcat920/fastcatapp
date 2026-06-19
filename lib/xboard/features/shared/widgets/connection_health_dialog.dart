@@ -259,7 +259,7 @@ class ConnectionHealthView extends ConsumerWidget {
           icon: const Icon(Icons.content_copy_outlined),
           label: Text(l10n.xboardCopyDiagnosticBundle),
         ),
-        TextButton.icon(
+        OutlinedButton.icon(
           onPressed: () async {
             await ref.read(initializationProvider.notifier).refresh();
             await ref

@@ -21,6 +21,7 @@ import 'package:fl_clash/xboard/features/initialization/providers/initialization
 import 'package:fl_clash/xboard/config/xboard_config.dart';
 import 'package:fl_clash/xboard/config/utils/website_url_resolver.dart';
 import 'package:fl_clash/xboard/adapter/initialization/sdk_provider.dart';
+import 'package:fl_clash/xboard/utils/xboard_notification.dart';
 import '../widgets/subscription_usage_card.dart';
 import '../widgets/xboard_connect_button.dart';
 
@@ -441,7 +442,6 @@ class _XBoardHomePageState extends ConsumerState<XBoardHomePage>
   }
 
   Future<void> _openOfficialWebsite(BuildContext context) async {
-    final messenger = ScaffoldMessenger.of(context);
     final l10n = AppLocalizations.of(context);
 
     setState(() => _isCheckingWebsite = true);
@@ -464,11 +464,7 @@ class _XBoardHomePageState extends ConsumerState<XBoardHomePage>
     setState(() => _isCheckingWebsite = false);
 
     if (!success && mounted) {
-      messenger.showSnackBar(
-        SnackBar(
-          content: Text(l10n.cannotGetWebUrl),
-        ),
-      );
+      XBoardNotification.showError(l10n.cannotGetWebUrl);
     }
   }
 

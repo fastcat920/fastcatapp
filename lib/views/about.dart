@@ -89,13 +89,7 @@ class AboutView extends ConsumerWidget {
       } else {
         // 已是最新版本
         if (context.mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('已是最新版本'),
-              backgroundColor: Colors.green,
-              duration: Duration(seconds: 2),
-            ),
-          );
+          context.showSnackBar('已是最新版本');
         }
       }
     } catch (e) {

@@ -208,8 +208,6 @@ class _LoginPageState extends ConsumerState<LoginPage> {
   }
 
   Future<void> _openOfficialWebsite(BuildContext context) async {
-    final messenger = ScaffoldMessenger.of(context);
-
     setState(() => _isCheckingWebsite = true);
 
     final success = await WebsiteUrlResolver.openWithFallback(
@@ -230,7 +228,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
     setState(() => _isCheckingWebsite = false);
 
     if (!success && mounted) {
-      messenger.showSnackBar(const SnackBar(content: Text('未配置官方网站')));
+      XBoardNotification.showError('未配置官方网站');
     }
   }
 

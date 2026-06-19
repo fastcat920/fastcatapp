@@ -1,4 +1,5 @@
 import 'package:fl_clash/common/color.dart';
+import 'package:fl_clash/common/context.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
@@ -111,11 +112,6 @@ class InitErrorScreen extends StatelessWidget {
     final text = '=== ERROR ===\n$error\n\n=== STACK TRACE ===\n$stack';
     Clipboard.setData(ClipboardData(text: text));
 
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('Error details copied to clipboard'),
-        duration: Duration(seconds: 2),
-      ),
-    );
+    context.showSnackBar('Error details copied to clipboard');
   }
 }

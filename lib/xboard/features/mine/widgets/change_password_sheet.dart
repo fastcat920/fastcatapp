@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:fl_clash/xboard/adapter/initialization/sdk_provider.dart';
+import 'package:fl_clash/xboard/utils/xboard_notification.dart';
 
 Future<void> showChangePasswordSheet(
   BuildContext context,
@@ -50,18 +51,15 @@ class _ChangePasswordSheetState extends ConsumerState<_ChangePasswordSheet> {
     final confirmPwd = _confirmPwdCtrl.text;
 
     if (oldPwd.isEmpty || newPwd.isEmpty || confirmPwd.isEmpty) {
-      ScaffoldMessenger.of(context)
-          .showSnackBar(const SnackBar(content: Text('请填写所有密码字段')));
+      XBoardNotification.showError('请填写所有密码字段');
       return;
     }
     if (newPwd != confirmPwd) {
-      ScaffoldMessenger.of(context)
-          .showSnackBar(const SnackBar(content: Text('两次密码输入不一致')));
+      XBoardNotification.showError('两次密码输入不一致');
       return;
     }
     if (newPwd.length < 8) {
-      ScaffoldMessenger.of(context)
-          .showSnackBar(const SnackBar(content: Text('新密码至少需要8位')));
+      XBoardNotification.showError('新密码至少需要8位');
       return;
     }
 
@@ -76,18 +74,15 @@ class _ChangePasswordSheetState extends ConsumerState<_ChangePasswordSheet> {
         final success = resp['data'] == true;
         if (success) {
           Navigator.of(context).pop();
-          ScaffoldMessenger.of(context)
-              .showSnackBar(const SnackBar(content: Text('密码修改成功')));
+          XBoardNotification.showSuccess('密码修改成功');
         } else {
           final msg = resp['message'] as String? ?? '修改失败';
-          ScaffoldMessenger.of(context)
-              .showSnackBar(SnackBar(content: Text(msg)));
+          XBoardNotification.showError(msg);
         }
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context)
-            .showSnackBar(SnackBar(content: Text('修改失败: $e')));
+        XBoardNotification.showError('修改失败: $e');
       }
     } finally {
       if (mounted) setState(() => _isSubmitting = false);

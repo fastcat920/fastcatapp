@@ -10,6 +10,7 @@ import 'package:fl_clash/xboard/config/xboard_config.dart';
 import 'package:fl_clash/xboard/features/shared/widgets/tv_deferred_input.dart';
 import 'package:fl_clash/xboard/features/shared/styles/styles.dart';
 import 'package:fl_clash/xboard/features/mine/services/imgbb_service.dart';
+import 'package:fl_clash/xboard/utils/xboard_notification.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:url_launcher/url_launcher.dart';
 
@@ -65,16 +66,12 @@ class _TicketDetailPageState extends ConsumerState<TicketDetailPage> {
           ref.invalidate(getTicketProvider(widget.ticketId));
           _scrollToBottom();
         } else {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('回复失败，请稍后重试')),
-          );
+          XBoardNotification.showError('回复失败，请稍后重试');
         }
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('回复失败: $e')),
-        );
+        XBoardNotification.showError('回复失败: $e');
       }
     } finally {
       if (mounted) setState(() => _isReplying = false);
@@ -109,15 +106,11 @@ class _TicketDetailPageState extends ConsumerState<TicketDetailPage> {
       if (mounted && ok) {
         setState(() => _isClosed = true);
         ref.invalidate(getTicketProvider(widget.ticketId));
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('工单已关闭')),
-        );
+        XBoardNotification.showSuccess('工单已关闭');
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('操作失败: $e')),
-        );
+        XBoardNotification.showError('操作失败: $e');
       }
     }
   }
@@ -450,9 +443,7 @@ class _ReplyBarState extends State<_ReplyBar> {
   Future<void> _pickAndUploadImage() async {
     final apiKey = XBoardConfig.imgbbApiKey;
     if (apiKey.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('图片上传未配置，请联系管理员')),
-      );
+      XBoardNotification.showError('图片上传未配置，请联系管理员');
       return;
     }
 
@@ -476,9 +467,7 @@ class _ReplyBarState extends State<_ReplyBar> {
       );
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('图片上传失败: $e')),
-        );
+        XBoardNotification.showError('图片上传失败: $e');
       }
     } finally {
       if (mounted) setState(() => _isUploadingImage = false);
