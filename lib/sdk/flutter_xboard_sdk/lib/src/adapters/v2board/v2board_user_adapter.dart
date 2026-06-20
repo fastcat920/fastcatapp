@@ -52,6 +52,9 @@ class V2BoardUserAdapter implements UserApi {
       telegramId: info.telegramId,
       uuid: info.uuid,
       avatarUrl: info.avatarUrl,
+      ip: info.ip,
+      ipRegion: info.ipRegion,
+      ipIsp: info.ipIsp,
     );
   }
 }

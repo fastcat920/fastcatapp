@@ -1015,6 +1015,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "themeDesc": MessageLookupByLibrary.simpleMessage("테마 설명"),
     "themeMode": MessageLookupByLibrary.simpleMessage("테마 모드"),
     "threeColumns": MessageLookupByLibrary.simpleMessage("three columns"),
+    "ticketRecords": MessageLookupByLibrary.simpleMessage("티켓"),
     "tight": MessageLookupByLibrary.simpleMessage("tight"),
     "time": MessageLookupByLibrary.simpleMessage("time"),
     "tip": MessageLookupByLibrary.simpleMessage("안내"),
@@ -1037,6 +1038,8 @@ class MessageLookup extends MessageLookupByLibrary {
     "transferSuccessMsg": m28,
     "transferToWallet": MessageLookupByLibrary.simpleMessage("이체 TO 지갑"),
     "transferring": MessageLookupByLibrary.simpleMessage("transferring"),
+    "trayDisconnect": MessageLookupByLibrary.simpleMessage("연결 해제"),
+    "trayStartConnection": MessageLookupByLibrary.simpleMessage("연결 시작"),
     "tun": MessageLookupByLibrary.simpleMessage("TUN"),
     "tunDesc": MessageLookupByLibrary.simpleMessage("TUN 설명"),
     "twoColumns": MessageLookupByLibrary.simpleMessage("TWO columns"),
@@ -1334,6 +1337,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "xboardDeviceLabelOsVersion": MessageLookupByLibrary.simpleMessage(
       "기기 label OS 버전",
     ),
+    "xboardDeviceLabelRegion": MessageLookupByLibrary.simpleMessage("지역"),
     "xboardDeviceLabelRevokedAt": MessageLookupByLibrary.simpleMessage(
       "기기 label revoked AT",
     ),

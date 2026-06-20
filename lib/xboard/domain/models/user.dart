@@ -64,6 +64,15 @@ class DomainUser with _$DomainUser {
     /// Telegram ID
     String? telegramId,
 
+    /// 最近登录 IP
+    @Default('') String ip,
+
+    /// IP 归属地
+    @Default('') String ipRegion,
+
+    /// IP 运营商
+    @Default('') String ipIsp,
+
     /// 元数据（存储 SDK 特有字段）
     @Default({}) Map<String, dynamic> metadata,
   }) = _DomainUser;

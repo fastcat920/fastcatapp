@@ -70,16 +70,16 @@ class DeveloperView extends ConsumerWidget {
           },
         ),
         const ListItem.open(
-          title: const Text('网关诊断'),
-          subtitle: const Text('查看当前网关、生效前缀、熔断状态和最近切换事件'),
+          title: Text('网关诊断'),
+          subtitle: Text('查看当前网关、生效前缀、熔断状态和最近切换事件'),
           delegate: OpenDelegate(
             title: '网关诊断',
             widget: _GatewayDiagnosticsPage(),
           ),
         ),
         const ListItem.open(
-          title: const Text('API诊断'),
-          subtitle: const Text('查看主业务 API 列表、探测状态和最近验证结果'),
+          title: Text('API诊断'),
+          subtitle: Text('查看主业务 API 列表、探测状态和最近验证结果'),
           delegate: OpenDelegate(
             title: 'API诊断',
             widget: _ApiDiagnosticsPage(),

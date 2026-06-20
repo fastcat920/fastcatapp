@@ -30,16 +30,6 @@ class PaymentWaitingOverlay extends ConsumerStatefulWidget {
 
 class _PaymentWaitingOverlayState extends ConsumerState<PaymentWaitingOverlay>
     with TickerProviderStateMixin, WidgetsBindingObserver {
-  @override
-  void activate() {
-    super.activate();
-  }
-
-  @override
-  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
-    super.debugFillProperties(properties);
-  }
-
   PaymentStep _currentStep = PaymentStep.cancelingOrders;
   late AnimationController _animationController;
   late Animation<double> _fadeAnimation;

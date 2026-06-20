@@ -145,7 +145,7 @@ async function openUserDevices(userId, email, effLimit, override) {
   const tbody = document.querySelector('#devices-table tbody');
   const devices = res.data.devices || [];
   if (!devices.length) {
-    tbody.innerHTML = '<tr><td colspan="7" class="empty">暂无设备</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="9" class="empty">暂无设备</td></tr>';
   } else {
     tbody.innerHTML = devices.map(d => `
       <tr>
@@ -155,6 +155,8 @@ async function openUserDevices(userId, email, effLimit, override) {
         <td><span class="status-badge status-${d.status}">${d.status === 'active' ? '在线' : d.status === 'revoked' ? '已撤销' : '过期'}</span></td>
         <td>${timeAgo(d.last_seen_at)}</td>
         <td>${esc(d.last_ip || '—')}</td>
+        <td>${esc(d.last_ip_region || '—')}</td>
+        <td>${esc(d.last_ip_isp || '—')}</td>
         <td>${d.status === 'active' ? '<button class="action danger" onclick="revokeDevice(\'' + d.id + '\')">撤销</button>' : '<span style="color:#86868b">—</span>'}</td>
       </tr>
     `).join('');

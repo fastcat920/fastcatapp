@@ -47,6 +47,65 @@ Name: "{autodesktop}\{#MyAppName}"; Filename: "{app}\{#MyBinaryName}.exe"; IconF
 Filename: "{tmp}\vc_redist.x64.exe"; Parameters: "/install /quiet /norestart"; StatusMsg: "正在安装 Visual C++ 运行库..."; Flags: waituntilterminated
 
 [Code]
+procedure KillProcesses;
+var
+  Processes: TArrayOfString;
+  i: Integer;
+  ResultCode: Integer;
+begin
+  Processes := ['{#MyBinaryName}.exe', 'fastcatCore.exe', 'fastcatHelperService.exe'];
+
+  for i := 0 to GetArrayLength(Processes)-1 do
+  begin
+    Exec('taskkill', '/f /im ' + Processes[i], '', SW_HIDE, ewWaitUntilTerminated, ResultCode);
+  end;
+end;
+
+function IsProcessRunning(ProcessName: String): Boolean;
+var
+  ResultCode: Integer;
+begin
+  Exec(
+    'cmd.exe',
+    '/C tasklist /FI "IMAGENAME eq ' + ProcessName + '" | find /I "' + ProcessName + '"',
+    '',
+    SW_HIDE,
+    ewWaitUntilTerminated,
+    ResultCode
+  );
+  Result := ResultCode = 0;
+end;
+
+function HasRunningProcesses(): Boolean;
+var
+  Processes: TArrayOfString;
+  i: Integer;
+begin
+  Processes := ['{#MyBinaryName}.exe', 'fastcatCore.exe', 'fastcatHelperService.exe'];
+  Result := False;
+
+  for i := 0 to GetArrayLength(Processes)-1 do
+  begin
+    if IsProcessRunning(Processes[i]) then
+    begin
+      Result := True;
+      Exit;
+    end;
+  end;
+end;
+
+function InitializeUninstall(): Boolean;
+begin
+  Result := True;
+  if HasRunningProcesses() then
+  begin
+    if MsgBox('应用仍在运行，请先关闭应用。点击“是”将自动关闭应用并继续卸载，点击“否”取消卸载。', mbConfirmation, MB_YESNO) = IDYES then
+      KillProcesses
+    else
+      Result := False;
+  end;
+end;
+
 // 卸载时清除 AppData（登录状态、配置缓存等）
 procedure CurUninstallStepChanged(CurUninstallStep: TUninstallStep);
 begin

@@ -7,6 +7,7 @@ import 'package:fl_clash/common/common.dart';
 import 'package:fl_clash/xboard/features/invite/providers/invite_provider.dart';
 import 'package:fl_clash/xboard/features/invite/dialogs/transfer_dialog.dart';
 import 'package:fl_clash/xboard/features/invite/dialogs/withdraw_dialog.dart';
+import 'package:fl_clash/xboard/features/mine/pages/ticket_page.dart';
 import 'package:fl_clash/xboard/features/shared/styles/styles.dart';
 import 'package:fl_clash/xboard/features/shared/widgets/widgets.dart';
 import 'package:fl_clash/xboard/utils/xboard_notification.dart';
@@ -21,16 +22,6 @@ class InvitePage extends ConsumerStatefulWidget {
 
 class _InvitePageState extends ConsumerState<InvitePage>
     with AutomaticKeepAliveClientMixin, SingleTickerProviderStateMixin {
-  @override
-  void activate() {
-    super.activate();
-  }
-
-  @override
-  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
-    super.debugFillProperties(properties);
-  }
-
   bool _hasInitialized = false;
   late final TabController _tabController;
 
@@ -341,22 +332,53 @@ class _ActionButtons extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final inviteState = ref.watch(inviteProvider);
+    if (!inviteState.isWithdrawEnabled) {
+      return SizedBox(
+        width: double.infinity,
+        child: FilledButton.icon(
+          onPressed: () => showDialog(
+            context: context,
+            builder: (_) => const TransferDialog(),
+          ),
+          icon: const Icon(Icons.swap_horiz, size: 18),
+          label: Text(appLocalizations.transfer),
+          style: XbUiButton.filledPrimary(context),
+        ),
+      );
+    }
+
     return Row(
       children: [
-        if (inviteState.isWithdrawEnabled) ...[
-          Expanded(
-            child: FilledButton.icon(
-              onPressed: () => showDialog(
-                context: context,
-                builder: (_) => const WithdrawDialog(),
+        Expanded(
+          child: Row(
+            children: [
+              Expanded(
+                child: FilledButton.icon(
+                  onPressed: () => showDialog(
+                    context: context,
+                    builder: (_) => const WithdrawDialog(),
+                  ),
+                  icon: const Icon(Icons.account_balance, size: 18),
+                  label: Text(appLocalizations.withdraw),
+                  style: XbUiButton.filledPrimary(context),
+                ),
               ),
-              icon: const Icon(Icons.account_balance, size: 18),
-              label: Text(appLocalizations.withdraw),
-              style: XbUiButton.filledPrimary(context),
-            ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: FilledButton.icon(
+                  onPressed: () => Navigator.of(context).push(
+                    MaterialPageRoute(builder: (_) => const TicketPage()),
+                  ),
+                  icon:
+                      const Icon(Icons.confirmation_number_outlined, size: 18),
+                  label: Text(appLocalizations.ticketRecords),
+                  style: XbUiButton.filledPrimary(context),
+                ),
+              ),
+            ],
           ),
-          const SizedBox(width: 12),
-        ],
+        ),
+        const SizedBox(width: 12),
         Expanded(
           child: FilledButton.icon(
             onPressed: () => showDialog(

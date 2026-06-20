@@ -1,6 +1,5 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:fl_clash/xboard/features/profile/profile.dart';
-import 'package:fl_clash/xboard/features/profile/services/profile_import_service.dart';
 import 'package:fl_clash/xboard/core/core.dart';
 
 // 初始化文件级日志器

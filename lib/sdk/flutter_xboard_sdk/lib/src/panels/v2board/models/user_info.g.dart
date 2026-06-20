@@ -28,6 +28,9 @@ _$UserInfoImpl _$$UserInfoImplFromJson(Map<String, dynamic> json) =>
       avatarUrl: json['avatar_url'] as String?,
       u: (json['u'] as num?)?.toInt(),
       d: (json['d'] as num?)?.toInt(),
+      ip: _readUserIP(json, 'ip') as String? ?? '',
+      ipRegion: _readUserIPRegion(json, 'ip_region') as String? ?? '',
+      ipIsp: _readUserIPISP(json, 'ip_isp') as String? ?? '',
     );
 
 Map<String, dynamic> _$$UserInfoImplToJson(_$UserInfoImpl instance) =>
@@ -52,4 +55,7 @@ Map<String, dynamic> _$$UserInfoImplToJson(_$UserInfoImpl instance) =>
       'avatar_url': instance.avatarUrl,
       'u': instance.u,
       'd': instance.d,
+      'ip': instance.ip,
+      'ip_region': instance.ipRegion,
+      'ip_isp': instance.ipIsp,
     };

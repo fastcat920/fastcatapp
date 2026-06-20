@@ -50,6 +50,18 @@ future subscription refreshes.
 Set `DG_PUBLIC_BASE_URL` to the public URL of this gateway. If it is empty, the
 gateway infers the URL from the incoming request.
 
+## IP location database
+
+Device IP location and ISP are resolved locally with an offline ip2region
+database. Put the database file on the server and point the gateway to it:
+
+```bash
+DG_IP_REGION_DB=./data/ip2region.db
+```
+
+If the file is missing or unreadable, the gateway still records the raw IP but
+leaves location and ISP empty.
+
 ## User device APIs
 
 ```text

@@ -60,6 +60,12 @@ mixin _$UserModel {
   String get uuid => throw _privateConstructorUsedError;
   @JsonKey(name: 'avatar_url')
   String get avatarUrl => throw _privateConstructorUsedError;
+  @JsonKey(name: 'ip', readValue: _readUserIP)
+  String get ip => throw _privateConstructorUsedError;
+  @JsonKey(name: 'ip_region', readValue: _readUserIPRegion)
+  String get ipRegion => throw _privateConstructorUsedError;
+  @JsonKey(name: 'ip_isp', readValue: _readUserIPISP)
+  String get ipIsp => throw _privateConstructorUsedError;
 
   /// Serializes this UserModel to a JSON map.
   Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
@@ -110,7 +116,10 @@ abstract class $UserModelCopyWith<$Res> {
           toJson: _telegramIdToJson)
       String? telegramId,
       String uuid,
-      @JsonKey(name: 'avatar_url') String avatarUrl});
+      @JsonKey(name: 'avatar_url') String avatarUrl,
+      @JsonKey(name: 'ip', readValue: _readUserIP) String ip,
+      @JsonKey(name: 'ip_region', readValue: _readUserIPRegion) String ipRegion,
+      @JsonKey(name: 'ip_isp', readValue: _readUserIPISP) String ipIsp});
 }
 
 /// @nodoc
@@ -144,6 +153,9 @@ class _$UserModelCopyWithImpl<$Res, $Val extends UserModel>
     Object? telegramId = freezed,
     Object? uuid = null,
     Object? avatarUrl = null,
+    Object? ip = null,
+    Object? ipRegion = null,
+    Object? ipIsp = null,
   }) {
     return _then(_value.copyWith(
       email: null == email
@@ -210,6 +222,18 @@ class _$UserModelCopyWithImpl<$Res, $Val extends UserModel>
           ? _value.avatarUrl
           : avatarUrl // ignore: cast_nullable_to_non_nullable
               as String,
+      ip: null == ip
+          ? _value.ip
+          : ip // ignore: cast_nullable_to_non_nullable
+              as String,
+      ipRegion: null == ipRegion
+          ? _value.ipRegion
+          : ipRegion // ignore: cast_nullable_to_non_nullable
+              as String,
+      ipIsp: null == ipIsp
+          ? _value.ipIsp
+          : ipIsp // ignore: cast_nullable_to_non_nullable
+              as String,
     ) as $Val);
   }
 }
@@ -256,7 +280,10 @@ abstract class _$$UserModelImplCopyWith<$Res>
           toJson: _telegramIdToJson)
       String? telegramId,
       String uuid,
-      @JsonKey(name: 'avatar_url') String avatarUrl});
+      @JsonKey(name: 'avatar_url') String avatarUrl,
+      @JsonKey(name: 'ip', readValue: _readUserIP) String ip,
+      @JsonKey(name: 'ip_region', readValue: _readUserIPRegion) String ipRegion,
+      @JsonKey(name: 'ip_isp', readValue: _readUserIPISP) String ipIsp});
 }
 
 /// @nodoc
@@ -288,6 +315,9 @@ class __$$UserModelImplCopyWithImpl<$Res>
     Object? telegramId = freezed,
     Object? uuid = null,
     Object? avatarUrl = null,
+    Object? ip = null,
+    Object? ipRegion = null,
+    Object? ipIsp = null,
   }) {
     return _then(_$UserModelImpl(
       email: null == email
@@ -354,6 +384,18 @@ class __$$UserModelImplCopyWithImpl<$Res>
           ? _value.avatarUrl
           : avatarUrl // ignore: cast_nullable_to_non_nullable
               as String,
+      ip: null == ip
+          ? _value.ip
+          : ip // ignore: cast_nullable_to_non_nullable
+              as String,
+      ipRegion: null == ipRegion
+          ? _value.ipRegion
+          : ipRegion // ignore: cast_nullable_to_non_nullable
+              as String,
+      ipIsp: null == ipIsp
+          ? _value.ipIsp
+          : ipIsp // ignore: cast_nullable_to_non_nullable
+              as String,
     ));
   }
 }
@@ -395,7 +437,11 @@ class _$UserModelImpl extends _UserModel {
           toJson: _telegramIdToJson)
       this.telegramId,
       this.uuid = '',
-      @JsonKey(name: 'avatar_url') this.avatarUrl = ''})
+      @JsonKey(name: 'avatar_url') this.avatarUrl = '',
+      @JsonKey(name: 'ip', readValue: _readUserIP) this.ip = '',
+      @JsonKey(name: 'ip_region', readValue: _readUserIPRegion)
+      this.ipRegion = '',
+      @JsonKey(name: 'ip_isp', readValue: _readUserIPISP) this.ipIsp = ''})
       : super._();
 
   factory _$UserModelImpl.fromJson(Map<String, dynamic> json) =>
@@ -459,10 +505,19 @@ class _$UserModelImpl extends _UserModel {
   @override
   @JsonKey(name: 'avatar_url')
   final String avatarUrl;
+  @override
+  @JsonKey(name: 'ip', readValue: _readUserIP)
+  final String ip;
+  @override
+  @JsonKey(name: 'ip_region', readValue: _readUserIPRegion)
+  final String ipRegion;
+  @override
+  @JsonKey(name: 'ip_isp', readValue: _readUserIPISP)
+  final String ipIsp;
 
   @override
   String toString() {
-    return 'UserModel(email: $email, transferEnable: $transferEnable, lastLoginAt: $lastLoginAt, createdAt: $createdAt, banned: $banned, remindExpire: $remindExpire, remindTraffic: $remindTraffic, expiredAt: $expiredAt, balance: $balance, commissionBalance: $commissionBalance, planId: $planId, discount: $discount, commissionRate: $commissionRate, telegramId: $telegramId, uuid: $uuid, avatarUrl: $avatarUrl)';
+    return 'UserModel(email: $email, transferEnable: $transferEnable, lastLoginAt: $lastLoginAt, createdAt: $createdAt, banned: $banned, remindExpire: $remindExpire, remindTraffic: $remindTraffic, expiredAt: $expiredAt, balance: $balance, commissionBalance: $commissionBalance, planId: $planId, discount: $discount, commissionRate: $commissionRate, telegramId: $telegramId, uuid: $uuid, avatarUrl: $avatarUrl, ip: $ip, ipRegion: $ipRegion, ipIsp: $ipIsp)';
   }
 
   @override
@@ -496,29 +551,37 @@ class _$UserModelImpl extends _UserModel {
                 other.telegramId == telegramId) &&
             (identical(other.uuid, uuid) || other.uuid == uuid) &&
             (identical(other.avatarUrl, avatarUrl) ||
-                other.avatarUrl == avatarUrl));
+                other.avatarUrl == avatarUrl) &&
+            (identical(other.ip, ip) || other.ip == ip) &&
+            (identical(other.ipRegion, ipRegion) ||
+                other.ipRegion == ipRegion) &&
+            (identical(other.ipIsp, ipIsp) || other.ipIsp == ipIsp));
   }
 
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
-  int get hashCode => Object.hash(
-      runtimeType,
-      email,
-      transferEnable,
-      lastLoginAt,
-      createdAt,
-      banned,
-      remindExpire,
-      remindTraffic,
-      expiredAt,
-      balance,
-      commissionBalance,
-      planId,
-      discount,
-      commissionRate,
-      telegramId,
-      uuid,
-      avatarUrl);
+  int get hashCode => Object.hashAll([
+        runtimeType,
+        email,
+        transferEnable,
+        lastLoginAt,
+        createdAt,
+        banned,
+        remindExpire,
+        remindTraffic,
+        expiredAt,
+        balance,
+        commissionBalance,
+        planId,
+        discount,
+        commissionRate,
+        telegramId,
+        uuid,
+        avatarUrl,
+        ip,
+        ipRegion,
+        ipIsp
+      ]);
 
   /// Create a copy of UserModel
   /// with the given fields replaced by the non-null parameter values.
@@ -571,7 +634,12 @@ abstract class _UserModel extends UserModel {
           toJson: _telegramIdToJson)
       final String? telegramId,
       final String uuid,
-      @JsonKey(name: 'avatar_url') final String avatarUrl}) = _$UserModelImpl;
+      @JsonKey(name: 'avatar_url') final String avatarUrl,
+      @JsonKey(name: 'ip', readValue: _readUserIP) final String ip,
+      @JsonKey(name: 'ip_region', readValue: _readUserIPRegion)
+      final String ipRegion,
+      @JsonKey(name: 'ip_isp', readValue: _readUserIPISP)
+      final String ipIsp}) = _$UserModelImpl;
   const _UserModel._() : super._();
 
   factory _UserModel.fromJson(Map<String, dynamic> json) =
@@ -633,6 +701,15 @@ abstract class _UserModel extends UserModel {
   @override
   @JsonKey(name: 'avatar_url')
   String get avatarUrl;
+  @override
+  @JsonKey(name: 'ip', readValue: _readUserIP)
+  String get ip;
+  @override
+  @JsonKey(name: 'ip_region', readValue: _readUserIPRegion)
+  String get ipRegion;
+  @override
+  @JsonKey(name: 'ip_isp', readValue: _readUserIPISP)
+  String get ipIsp;
 
   /// Create a copy of UserModel
   /// with the given fields replaced by the non-null parameter values.

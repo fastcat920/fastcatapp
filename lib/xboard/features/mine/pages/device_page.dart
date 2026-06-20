@@ -671,10 +671,10 @@ class _DeviceManagementPageState extends ConsumerState<DeviceManagementPage>
                 ),
               ),
             ],
-            if (device.lastIp.isNotEmpty) ...[
+            if (device.lastIpRegion.isNotEmpty) ...[
               const SizedBox(height: 4),
               Text(
-                '${AppLocalizations.of(context).xboardDeviceLabelLastIp}: ${device.lastIp}',
+                '${AppLocalizations.of(context).xboardDeviceLabelRegion}: ${device.lastIpRegion}',
                 style: XbUiText.bodySmall(
                   context,
                   color: theme.colorScheme.onSurfaceVariant,
@@ -836,6 +836,8 @@ class _DeviceRecordView {
   final DateTime? revokedAt;
   final String revokedBy;
   final String lastIp;
+  final String lastIpRegion;
+  final String lastIpIsp;
   final bool isCurrent;
   final bool isOnline;
 
@@ -851,6 +853,8 @@ class _DeviceRecordView {
     required this.revokedAt,
     required this.revokedBy,
     required this.lastIp,
+    required this.lastIpRegion,
+    required this.lastIpIsp,
     required this.isCurrent,
     required this.isOnline,
   });
@@ -881,6 +885,8 @@ class _DeviceRecordView {
       revokedAt: DateTime.tryParse(json['revoked_at']?.toString() ?? ''),
       revokedBy: json['revoked_by']?.toString() ?? '',
       lastIp: json['last_ip']?.toString() ?? '',
+      lastIpRegion: json['last_ip_region']?.toString() ?? '',
+      lastIpIsp: json['last_ip_isp']?.toString() ?? '',
       isCurrent: json['is_current'] == true,
       isOnline: json['is_online'] == true,
     );

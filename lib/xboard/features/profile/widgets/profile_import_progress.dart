@@ -1,7 +1,7 @@
-import 'package:fl_clash/xboard/features/profile/providers/profile_import_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:fl_clash/xboard/features/profile/profile.dart';
+
 class ProfileImportProgressCard extends ConsumerWidget {
   final VoidCallback? onRetry;
   final VoidCallback? onDismiss;
@@ -32,7 +32,9 @@ class ProfileImportProgressCard extends ConsumerWidget {
       ),
     );
   }
-  Widget _buildHeader(BuildContext context, ImportState state, ProfileImportNotifier notifier) {
+
+  Widget _buildHeader(
+      BuildContext context, ImportState state, ProfileImportNotifier notifier) {
     return Row(
       children: [
         _buildStatusIcon(state),
@@ -41,8 +43,8 @@ class ProfileImportProgressCard extends ConsumerWidget {
           child: Text(
             _getHeaderText(state),
             style: Theme.of(context).textTheme.titleMedium?.copyWith(
-              fontWeight: FontWeight.w600,
-            ),
+                  fontWeight: FontWeight.w600,
+                ),
           ),
         ),
         if (state.isImporting)
@@ -60,6 +62,7 @@ class ProfileImportProgressCard extends ConsumerWidget {
       ],
     );
   }
+
   Widget _buildStatusIcon(ImportState state) {
     switch (state.status) {
       case ImportStatus.idle:
@@ -78,6 +81,7 @@ class ProfileImportProgressCard extends ConsumerWidget {
         return const Icon(Icons.error, color: Colors.red, size: 20);
     }
   }
+
   String _getHeaderText(ImportState state) {
     switch (state.status) {
       case ImportStatus.idle:
@@ -93,7 +97,9 @@ class ProfileImportProgressCard extends ConsumerWidget {
         return '配置导入失败';
     }
   }
-  Widget _buildContent(BuildContext context, ImportState state, ProfileImportNotifier notifier) {
+
+  Widget _buildContent(
+      BuildContext context, ImportState state, ProfileImportNotifier notifier) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -108,8 +114,8 @@ class ProfileImportProgressCard extends ConsumerWidget {
           Text(
             state.message!,
             style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-              color: _getMessageColor(context, state),
-            ),
+                  color: _getMessageColor(context, state),
+                ),
           ),
           const SizedBox(height: 8),
         ],
@@ -146,11 +152,11 @@ class ProfileImportProgressCard extends ConsumerWidget {
               ),
               const SizedBox(width: 8),
               if (notifier.canRetry)
-                                 ElevatedButton.icon(
-                   onPressed: () async {
-                     await notifier.retryLastImport();
-                     onRetry?.call();
-                   },
+                ElevatedButton.icon(
+                  onPressed: () async {
+                    await notifier.retryLastImport();
+                    onRetry?.call();
+                  },
                   icon: const Icon(Icons.refresh),
                   label: const Text('重试'),
                 ),
@@ -192,6 +198,7 @@ class ProfileImportProgressCard extends ConsumerWidget {
       ],
     );
   }
+
   Color? _getMessageColor(BuildContext context, ImportState state) {
     switch (state.status) {
       case ImportStatus.failed:
@@ -203,13 +210,17 @@ class ProfileImportProgressCard extends ConsumerWidget {
     }
   }
 }
+
 class ImportStatusIndicator extends ConsumerWidget {
   const ImportStatusIndicator({super.key});
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final isImporting = ref.watch(profileImportProvider.select((state) => state.isImporting));
-    final progress = ref.watch(profileImportProvider.select((state) => state.progress));
-    final statusText = ref.watch(profileImportProvider.select((state) => state.statusText));
+    final isImporting =
+        ref.watch(profileImportProvider.select((state) => state.isImporting));
+    final progress =
+        ref.watch(profileImportProvider.select((state) => state.progress));
+    final statusText =
+        ref.watch(profileImportProvider.select((state) => state.statusText));
     if (!isImporting) {
       return const SizedBox.shrink();
     }
@@ -240,11 +251,11 @@ class ImportStatusIndicator extends ConsumerWidget {
           Text(
             '${(progress * 100).toInt()}%',
             style: Theme.of(context).textTheme.bodySmall?.copyWith(
-              fontWeight: FontWeight.w600,
-            ),
+                  fontWeight: FontWeight.w600,
+                ),
           ),
         ],
       ),
     );
   }
-} 
+}

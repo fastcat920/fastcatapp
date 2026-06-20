@@ -7,6 +7,8 @@ import 'package:path_provider/path_provider.dart';
 import 'package:desktop_webview_window/desktop_webview_window.dart';
 import 'package:fl_clash/providers/providers.dart';
 import 'package:fl_clash/state.dart';
+import 'package:fl_clash/xboard/adapter/initialization/sdk_provider.dart';
+import 'package:fl_clash/xboard/config/gateway_config.dart';
 import 'package:fl_clash/xboard/config/xboard_config.dart';
 import 'package:fl_clash/xboard/features/auth/auth.dart';
 import 'package:fl_clash/xboard/domain/domain.dart';
@@ -16,8 +18,10 @@ import 'package:fl_clash/xboard/features/auth/pages/windows_chat_page.dart';
 import 'package:fl_clash/xboard/features/auth/pages/linux_chat_page.dart';
 import 'package:fl_clash/xboard/core/core.dart';
 import 'package:fl_clash/xboard/utils/xboard_notification.dart';
+import 'package:flutter_xboard_sdk/flutter_xboard_sdk.dart';
 
-final _logger = FileLogger('customer_service_helper.dart');
+const _logger = FileLogger('customer_service_helper.dart');
+const _deviceGatewayApiPrefix = gatewayApiPrefix;
 
 /// 统一客服入口：按业务约定仅使用 Crisp（远程优先，本地兜底）
 ///
@@ -56,7 +60,9 @@ class CustomerServiceHelper {
     }
     if (crispId.isNotEmpty) {
       if (!context.mounted) return;
-      _openCrisp(context, crispId);
+      final ipData = await _resolveCrispIPData(context);
+      if (!context.mounted) return;
+      _openCrisp(context, crispId, ipData: ipData);
       return;
     }
     XBoardNotification.showError('未配置在线客服');
@@ -237,8 +243,191 @@ if(window===window.top){
     }
   }
 
-  static void _openCrisp(BuildContext context, String websiteId) {
-    final userScript = _buildCrispUserScript(context);
+  static Future<_CrispIPData?> _resolveCrispIPData(
+    BuildContext context,
+  ) async {
+    try {
+      final container = ProviderScope.containerOf(context, listen: false);
+      final sdk = await container.read(xboardSdkProvider.future);
+      final token = await sdk.getToken();
+      if (token == null || token.isEmpty || !token.contains('dg_')) {
+        return null;
+      }
+      final headers = <String, String>{'Authorization': token};
+
+      Future<_CrispIPData?> request(HttpService http) async {
+        try {
+          await http.postRequest(
+            '/user/devices/heartbeat',
+            <String, dynamic>{},
+            headers: headers,
+          );
+        } catch (_) {}
+
+        final response = await http.getRequest(
+          '/user/devices',
+          headers: headers,
+        );
+        return _extractCrispIPData(response);
+      }
+
+      try {
+        final data = await request(sdk.httpService);
+        if (data != null) return data;
+      } catch (_) {}
+
+      for (final endpoint in _resolveDeviceGatewayEndpoints()) {
+        try {
+          final http = await HttpService.create(
+            endpoint.baseUrl,
+            httpConfig: HttpConfig.development(),
+            apiPrefix: endpoint.apiPrefix,
+          );
+          final data = await request(http);
+          if (data != null) return data;
+        } catch (_) {}
+      }
+    } catch (_) {}
+    return null;
+  }
+
+  static _CrispIPData? _extractCrispIPData(Map<String, dynamic> response) {
+    final data = _mapOf(response['data']);
+    final rawDevices = data?['devices'];
+    if (rawDevices is! List) return null;
+
+    final devices = rawDevices
+        .map(_mapOf)
+        .whereType<Map<String, dynamic>>()
+        .toList(growable: false);
+    for (final device in devices) {
+      if (device['is_current'] == true) {
+        final data = _ipDataFromDevice(device);
+        if (data != null) return data;
+      }
+    }
+    for (final device in devices) {
+      if (device['status']?.toString() == 'active') {
+        final data = _ipDataFromDevice(device);
+        if (data != null) return data;
+      }
+    }
+    for (final device in devices) {
+      final data = _ipDataFromDevice(device);
+      if (data != null) return data;
+    }
+    return null;
+  }
+
+  static _CrispIPData? _ipDataFromDevice(Map<String, dynamic> device) {
+    final ip = _firstString(device, const [
+      'last_ip',
+      'ip',
+      'last_login_ip',
+      'login_ip',
+    ]);
+    final region = _firstString(device, const [
+      'last_ip_region',
+      'ip_region',
+      'ip_location',
+      'location',
+      'region',
+    ]);
+    final isp = _firstString(device, const [
+      'last_ip_isp',
+      'ip_isp',
+      'isp',
+      'operator',
+    ]);
+    if (ip.isEmpty && region.isEmpty && isp.isEmpty) return null;
+    return _CrispIPData(ip: ip, region: region, isp: isp);
+  }
+
+  static List<_DeviceGatewayEndpoint> _resolveDeviceGatewayEndpoints() {
+    final endpoints = <_DeviceGatewayEndpoint>[];
+    final seen = <String>{};
+
+    void addEndpoint(String baseUrl, String apiPrefix) {
+      final base = baseUrl.trim().replaceAll(RegExp(r'/$'), '');
+      final prefix = _normalizeApiPrefix(apiPrefix);
+      if (base.isEmpty || prefix.isEmpty) return;
+      final key = '$base|$prefix';
+      if (seen.add(key)) {
+        endpoints.add(_DeviceGatewayEndpoint(base, prefix));
+      }
+    }
+
+    void addFromBaseUrl(String url, {String? apiPrefix}) {
+      final uri = Uri.tryParse(url.trim());
+      if (uri == null || !uri.hasScheme || uri.host.isEmpty) return;
+      final origin = _originFromUri(uri);
+      final pathPrefix =
+          uri.path.isNotEmpty && uri.path != '/' ? uri.path : null;
+      addEndpoint(origin, apiPrefix ?? pathPrefix ?? _configuredApiPrefix());
+    }
+
+    final runtime = GatewayRuntimeService.instance;
+    runtime.syncFromCurrentConfig();
+
+    final active = runtime.activeConfig;
+    if (active != null) {
+      addEndpoint(active.baseUrl, active.apiPrefix);
+    }
+    for (final candidate in runtime.candidates) {
+      addEndpoint(candidate.baseUrl, candidate.apiPrefix);
+    }
+
+    addFromBaseUrl(
+      XBoardSDK.instance.httpService.baseUrl,
+      apiPrefix: XBoardSDK.instance.httpService.apiPrefix,
+    );
+    addFromBaseUrl(productionGatewayUrl, apiPrefix: _deviceGatewayApiPrefix);
+
+    return endpoints;
+  }
+
+  static String _configuredApiPrefix() {
+    try {
+      if (XBoardConfig.isInitialized) {
+        return XBoardConfig.provider.getApiPrefix();
+      }
+    } catch (_) {}
+    return _deviceGatewayApiPrefix;
+  }
+
+  static String _normalizeApiPrefix(String value) {
+    var prefix = value.trim();
+    if (prefix.isEmpty || prefix == '/') return _deviceGatewayApiPrefix;
+    if (!prefix.startsWith('/')) prefix = '/$prefix';
+    return prefix.replaceAll(RegExp(r'/$'), '');
+  }
+
+  static String _originFromUri(Uri uri) {
+    return uri.replace(path: '', query: '', fragment: '').toString();
+  }
+
+  static Map<String, dynamic>? _mapOf(Object? value) {
+    if (value is Map<String, dynamic>) return value;
+    if (value is Map) {
+      return value.map((key, value) => MapEntry(key.toString(), value));
+    }
+    return null;
+  }
+
+  static String _firstString(Map<String, dynamic> map, List<String> keys) {
+    for (final key in keys) {
+      final value = map[key]?.toString().trim();
+      if (value != null && value.isNotEmpty) return value;
+    }
+    return '';
+  }
+
+  static void _openCrisp(
+    BuildContext context,
+    String websiteId, {
+    _CrispIPData? ipData,
+  }) {
+    final userScript = _buildCrispUserScript(context, ipData: ipData);
     if (Platform.isMacOS || Platform.isLinux) {
       // macOS/Linux：用 desktop_webview_window 独立窗口
       _openCrispInDesktopWebview(websiteId, userScript: userScript);
@@ -361,8 +550,11 @@ if(window===window.top){
     }
   }
 
-  static String _buildCrispUserScript(BuildContext context) {
-    final data = _buildCrispUserData(context);
+  static String _buildCrispUserScript(
+    BuildContext context, {
+    _CrispIPData? ipData,
+  }) {
+    final data = _buildCrispUserData(context, ipData: ipData);
     final email = (data['email'] as String?)?.trim();
     final nickname = (data['nickname'] as String?)?.trim();
     final sessionData =
@@ -411,7 +603,10 @@ if(window===window.top){
 })();''';
   }
 
-  static Map<String, Object?> _buildCrispUserData(BuildContext context) {
+  static Map<String, Object?> _buildCrispUserData(
+    BuildContext context, {
+    _CrispIPData? ipData,
+  }) {
     final container = ProviderScope.containerOf(context, listen: false);
     final userState = container.read(xboardUserProvider);
     final userInfo = container.read(userInfoProvider);
@@ -431,6 +626,9 @@ if(window===window.top){
     final expiredAt = subscriptionInfo?.expiredAt;
     final planName = subscriptionInfo?.planName ?? '';
     final resetDaysLeft = _resolveResetDaysLeft(subscriptionInfo);
+    final userIP = _firstNonEmpty(userInfo?.ip, ipData?.ip);
+    final userIPRegion = _firstNonEmpty(userInfo?.ipRegion, ipData?.region);
+    final userIPISP = _firstNonEmpty(userInfo?.ipIsp, ipData?.isp);
 
     return {
       'email': email,
@@ -441,10 +639,19 @@ if(window===window.top){
         ['traffic_used', _formatTraffic(usedTraffic)],
         ['traffic_total', _formatTraffic(totalTraffic)],
         ['traffic_reset_days_left', resetDaysLeft?.toString() ?? 'unknown'],
+        ['user_ip', userIP],
+        ['user_ip_region', userIPRegion],
+        ['user_ip_isp', userIPISP],
         ['os', osText],
         ['client_version', appVersion],
       ],
     };
+  }
+
+  static String _firstNonEmpty(String? primary, String? fallback) {
+    final first = primary?.trim() ?? '';
+    if (first.isNotEmpty) return first;
+    return fallback?.trim() ?? '';
   }
 
   static int? _resolveResetDaysLeft(DomainSubscription? subscriptionInfo) {
@@ -496,4 +703,23 @@ if(window===window.top){
             : 2;
     return '${size.toStringAsFixed(precision)} ${units[unitIndex]}';
   }
+}
+
+class _CrispIPData {
+  const _CrispIPData({
+    required this.ip,
+    required this.region,
+    required this.isp,
+  });
+
+  final String ip;
+  final String region;
+  final String isp;
+}
+
+class _DeviceGatewayEndpoint {
+  const _DeviceGatewayEndpoint(this.baseUrl, this.apiPrefix);
+
+  final String baseUrl;
+  final String apiPrefix;
 }

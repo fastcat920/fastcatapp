@@ -39,16 +39,6 @@ class NoticeBanner extends ConsumerStatefulWidget {
 
 class _NoticeBannerState extends ConsumerState<NoticeBanner>
     with TickerProviderStateMixin {
-  @override
-  void activate() {
-    super.activate();
-  }
-
-  @override
-  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
-    super.debugFillProperties(properties);
-  }
-
   late AnimationController _slideController;
   late Animation<Offset> _slideAnimation;
   Timer? _autoScrollTimer;
@@ -285,10 +275,8 @@ class _NoticeDetailDialogState extends State<NoticeDetailDialog>
             : Colors.white,
         border: Border(
           top: BorderSide(
-            color: Theme.of(context)
-                .colorScheme
-                .outline
-                .withValues(alpha: 0.12),
+            color:
+                Theme.of(context).colorScheme.outline.withValues(alpha: 0.12),
             width: 1,
           ),
         ),

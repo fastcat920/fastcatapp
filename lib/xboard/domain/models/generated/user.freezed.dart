@@ -74,6 +74,15 @@ mixin _$DomainUser {
   /// Telegram ID
   String? get telegramId => throw _privateConstructorUsedError;
 
+  /// 最近登录 IP
+  String get ip => throw _privateConstructorUsedError;
+
+  /// IP 归属地
+  String get ipRegion => throw _privateConstructorUsedError;
+
+  /// IP 运营商
+  String get ipIsp => throw _privateConstructorUsedError;
+
   /// 元数据（存储 SDK 特有字段）
   Map<String, dynamic> get metadata => throw _privateConstructorUsedError;
 
@@ -112,6 +121,9 @@ abstract class $DomainUserCopyWith<$Res> {
       double? discount,
       double? commissionRate,
       String? telegramId,
+      String ip,
+      String ipRegion,
+      String ipIsp,
       Map<String, dynamic> metadata});
 }
 
@@ -148,6 +160,9 @@ class _$DomainUserCopyWithImpl<$Res, $Val extends DomainUser>
     Object? discount = freezed,
     Object? commissionRate = freezed,
     Object? telegramId = freezed,
+    Object? ip = null,
+    Object? ipRegion = null,
+    Object? ipIsp = null,
     Object? metadata = null,
   }) {
     return _then(_value.copyWith(
@@ -223,6 +238,18 @@ class _$DomainUserCopyWithImpl<$Res, $Val extends DomainUser>
           ? _value.telegramId
           : telegramId // ignore: cast_nullable_to_non_nullable
               as String?,
+      ip: null == ip
+          ? _value.ip
+          : ip // ignore: cast_nullable_to_non_nullable
+              as String,
+      ipRegion: null == ipRegion
+          ? _value.ipRegion
+          : ipRegion // ignore: cast_nullable_to_non_nullable
+              as String,
+      ipIsp: null == ipIsp
+          ? _value.ipIsp
+          : ipIsp // ignore: cast_nullable_to_non_nullable
+              as String,
       metadata: null == metadata
           ? _value.metadata
           : metadata // ignore: cast_nullable_to_non_nullable
@@ -258,6 +285,9 @@ abstract class _$$DomainUserImplCopyWith<$Res>
       double? discount,
       double? commissionRate,
       String? telegramId,
+      String ip,
+      String ipRegion,
+      String ipIsp,
       Map<String, dynamic> metadata});
 }
 
@@ -292,6 +322,9 @@ class __$$DomainUserImplCopyWithImpl<$Res>
     Object? discount = freezed,
     Object? commissionRate = freezed,
     Object? telegramId = freezed,
+    Object? ip = null,
+    Object? ipRegion = null,
+    Object? ipIsp = null,
     Object? metadata = null,
   }) {
     return _then(_$DomainUserImpl(
@@ -367,6 +400,18 @@ class __$$DomainUserImplCopyWithImpl<$Res>
           ? _value.telegramId
           : telegramId // ignore: cast_nullable_to_non_nullable
               as String?,
+      ip: null == ip
+          ? _value.ip
+          : ip // ignore: cast_nullable_to_non_nullable
+              as String,
+      ipRegion: null == ipRegion
+          ? _value.ipRegion
+          : ipRegion // ignore: cast_nullable_to_non_nullable
+              as String,
+      ipIsp: null == ipIsp
+          ? _value.ipIsp
+          : ipIsp // ignore: cast_nullable_to_non_nullable
+              as String,
       metadata: null == metadata
           ? _value._metadata
           : metadata // ignore: cast_nullable_to_non_nullable
@@ -397,6 +442,9 @@ class _$DomainUserImpl extends _DomainUser {
       this.discount,
       this.commissionRate,
       this.telegramId,
+      this.ip = '',
+      this.ipRegion = '',
+      this.ipIsp = '',
       final Map<String, dynamic> metadata = const {}})
       : _metadata = metadata,
         super._();
@@ -479,6 +527,21 @@ class _$DomainUserImpl extends _DomainUser {
   @override
   final String? telegramId;
 
+  /// 最近登录 IP
+  @override
+  @JsonKey()
+  final String ip;
+
+  /// IP 归属地
+  @override
+  @JsonKey()
+  final String ipRegion;
+
+  /// IP 运营商
+  @override
+  @JsonKey()
+  final String ipIsp;
+
   /// 元数据（存储 SDK 特有字段）
   final Map<String, dynamic> _metadata;
 
@@ -493,7 +556,7 @@ class _$DomainUserImpl extends _DomainUser {
 
   @override
   String toString() {
-    return 'DomainUser(email: $email, uuid: $uuid, avatarUrl: $avatarUrl, planId: $planId, transferLimit: $transferLimit, uploadedBytes: $uploadedBytes, downloadedBytes: $downloadedBytes, balanceInCents: $balanceInCents, commissionBalanceInCents: $commissionBalanceInCents, expiredAt: $expiredAt, lastLoginAt: $lastLoginAt, createdAt: $createdAt, banned: $banned, remindExpire: $remindExpire, remindTraffic: $remindTraffic, discount: $discount, commissionRate: $commissionRate, telegramId: $telegramId, metadata: $metadata)';
+    return 'DomainUser(email: $email, uuid: $uuid, avatarUrl: $avatarUrl, planId: $planId, transferLimit: $transferLimit, uploadedBytes: $uploadedBytes, downloadedBytes: $downloadedBytes, balanceInCents: $balanceInCents, commissionBalanceInCents: $commissionBalanceInCents, expiredAt: $expiredAt, lastLoginAt: $lastLoginAt, createdAt: $createdAt, banned: $banned, remindExpire: $remindExpire, remindTraffic: $remindTraffic, discount: $discount, commissionRate: $commissionRate, telegramId: $telegramId, ip: $ip, ipRegion: $ipRegion, ipIsp: $ipIsp, metadata: $metadata)';
   }
 
   @override
@@ -534,6 +597,10 @@ class _$DomainUserImpl extends _DomainUser {
                 other.commissionRate == commissionRate) &&
             (identical(other.telegramId, telegramId) ||
                 other.telegramId == telegramId) &&
+            (identical(other.ip, ip) || other.ip == ip) &&
+            (identical(other.ipRegion, ipRegion) ||
+                other.ipRegion == ipRegion) &&
+            (identical(other.ipIsp, ipIsp) || other.ipIsp == ipIsp) &&
             const DeepCollectionEquality().equals(other._metadata, _metadata));
   }
 
@@ -559,6 +626,9 @@ class _$DomainUserImpl extends _DomainUser {
         discount,
         commissionRate,
         telegramId,
+        ip,
+        ipRegion,
+        ipIsp,
         const DeepCollectionEquality().hash(_metadata)
       ]);
 
@@ -598,6 +668,9 @@ abstract class _DomainUser extends DomainUser {
       final double? discount,
       final double? commissionRate,
       final String? telegramId,
+      final String ip,
+      final String ipRegion,
+      final String ipIsp,
       final Map<String, dynamic> metadata}) = _$DomainUserImpl;
   const _DomainUser._() : super._();
 
@@ -675,6 +748,18 @@ abstract class _DomainUser extends DomainUser {
   /// Telegram ID
   @override
   String? get telegramId;
+
+  /// 最近登录 IP
+  @override
+  String get ip;
+
+  /// IP 归属地
+  @override
+  String get ipRegion;
+
+  /// IP 运营商
+  @override
+  String get ipIsp;
 
   /// 元数据（存储 SDK 特有字段）
   @override

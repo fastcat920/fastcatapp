@@ -1019,8 +1019,8 @@ end tell
     final String archSuffix =
         (archName != null && archName != 'universal') ? '-$archName' : '';
     final dmgFileName = version.isNotEmpty
-        ? '${productName}-${version}$archSuffix.dmg'
-        : '${productName}$archSuffix.dmg';
+        ? '$productName-$version$archSuffix.dmg'
+        : '$productName$archSuffix.dmg';
     final dmgFile = File(join(Build.distPath, dmgFileName));
     if (dmgFile.existsSync()) {
       dmgFile.deleteSync();

@@ -8,6 +8,7 @@ import 'package:web_socket_channel/io.dart';
 
 // 初始化文件级日志器
 final _logger = FileLogger('status_reporting_service.dart');
+
 class StatusReportingService {
   final String _wsUrl;
   final String? authToken;
@@ -19,25 +20,27 @@ class StatusReportingService {
   bool _isDisposed = false;
   Function(bool isConnected)? onStatusChange;
   Function(String message)? onMessageReceivedCallback;
-  StatusReportingService(this._wsUrl, {this.onStatusChange, this.onMessageReceivedCallback, this.authToken});
+  StatusReportingService(this._wsUrl,
+      {this.onStatusChange, this.onMessageReceivedCallback, this.authToken});
   void connect() async {
     if (_isConnected || _isDisposed) return;
     _reconnectTimer?.cancel();
-    
+
     // 获取node_id并构建完整的WebSocket URL
     final nodeId = await NodeIdManager.getNodeId();
     _logger.debug('原始WebSocket URL: $_wsUrl');
     _logger.debug('Node ID: $nodeId');
-    final fullWsUrl = _wsUrl.endsWith('/') ? '${_wsUrl}$nodeId' : '$_wsUrl/$nodeId';
+    final fullWsUrl =
+        _wsUrl.endsWith('/') ? '$_wsUrl$nodeId' : '$_wsUrl/$nodeId';
     _logger.debug('完整WebSocket URL: $fullWsUrl');
-    
+
     _logger.info('尝试连接 WebSocket: $fullWsUrl (Node ID: $nodeId)');
     try {
       Map<String, String> headers = {};
       if (authToken != null) {
         headers['Authorization'] = 'Bearer $authToken';
       }
-      
+
       // Use IOWebSocketChannel.connect with headers and custom HTTP client for SSL bypass
       _channel = IOWebSocketChannel.connect(
         fullWsUrl,
@@ -46,7 +49,8 @@ class StatusReportingService {
           final client = HttpClient();
           client.findProxy = (_) => 'DIRECT';
           // 忽略SSL证书验证错误（仅用于WebSocket连接）
-          client.badCertificateCallback = (X509Certificate cert, String host, int port) => true;
+          client.badCertificateCallback =
+              (X509Certificate cert, String host, int port) => true;
           return client;
         }(),
       );
@@ -64,6 +68,7 @@ class StatusReportingService {
       _scheduleReconnect();
     }
   }
+
   void _sendIdentification() async {
     final nodeId = await NodeIdManager.getNodeId();
     final identityPayload = {
@@ -82,6 +87,7 @@ class StatusReportingService {
       }
     }
   }
+
   void _onMessageReceived(dynamic message) {
     if (!_isConnected) {
       _isConnected = true;
@@ -93,14 +99,17 @@ class StatusReportingService {
       onMessageReceivedCallback?.call(message);
     }
   }
+
   void _onError(dynamic error) {
     _logger.error('WebSocket 连接错误', error);
     _handleDisconnect(isError: true);
   }
+
   void _onDisconnected() {
     _logger.info('WebSocket 连接已由对端关闭');
     _handleDisconnect(isError: false);
   }
+
   void _handleDisconnect({required bool isError}) {
     if (_subscription == null && !_isConnected) {
       return;
@@ -119,12 +128,14 @@ class StatusReportingService {
       _scheduleReconnect();
     }
   }
+
   void _scheduleReconnect() {
     if (_isDisposed) return;
     _reconnectTimer?.cancel();
     _logger.info('计划在 5 秒后重新连接');
     _reconnectTimer = Timer(const Duration(seconds: 5), connect);
   }
+
   void dispose() {
     _isDisposed = true;
     _reconnectTimer?.cancel();
@@ -137,6 +148,7 @@ class StatusReportingService {
     }
     _logger.info('StatusReportingService 已释放');
   }
+
   void sendMessage(String message) {
     if (_isConnected && _channel != null) {
       try {
@@ -149,6 +161,7 @@ class StatusReportingService {
       _logger.warning('WebSocket 未连接，无法发送消息: $message');
     }
   }
+
   void _sendPing() {
     if (_channel != null) {
       try {
@@ -161,6 +174,7 @@ class StatusReportingService {
       }
     }
   }
+
   void _startHeartbeat() {
     _stopHeartbeat();
     _heartbeatTimer = Timer.periodic(const Duration(seconds: 30), (timer) {
@@ -171,6 +185,7 @@ class StatusReportingService {
       _sendPing();
     });
   }
+
   void _stopHeartbeat() {
     _heartbeatTimer?.cancel();
   }

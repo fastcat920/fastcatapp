@@ -62,7 +62,9 @@ class Tray {
     );
     menuItems.add(showMenuItem);
     final startMenuItem = MenuItem.checkbox(
-      label: trayState.isStart ? appLocalizations.stop : appLocalizations.start,
+      label: trayState.isStart
+          ? appLocalizations.trayDisconnect
+          : appLocalizations.trayStartConnection,
       onClick: (_) async {
         globalState.appController.updateStart();
       },

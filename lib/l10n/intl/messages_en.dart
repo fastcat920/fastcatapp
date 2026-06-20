@@ -1238,6 +1238,7 @@ class MessageLookup extends MessageLookupByLibrary {
     ),
     "themeMode": MessageLookupByLibrary.simpleMessage("Theme mode"),
     "threeColumns": MessageLookupByLibrary.simpleMessage("Three columns"),
+    "ticketRecords": MessageLookupByLibrary.simpleMessage("Ticket"),
     "tight": MessageLookupByLibrary.simpleMessage("Tight"),
     "time": MessageLookupByLibrary.simpleMessage("Time"),
     "tip": MessageLookupByLibrary.simpleMessage("tip"),
@@ -1264,6 +1265,12 @@ class MessageLookup extends MessageLookupByLibrary {
       "Transfer to Wallet",
     ),
     "transferring": MessageLookupByLibrary.simpleMessage("Transferring..."),
+    "trayDisconnect": MessageLookupByLibrary.simpleMessage(
+      "Disconnect connection",
+    ),
+    "trayStartConnection": MessageLookupByLibrary.simpleMessage(
+      "Start connection",
+    ),
     "tun": MessageLookupByLibrary.simpleMessage(
       "Virtual network adapter (TUN)",
     ),
@@ -1635,6 +1642,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "xboardDeviceLabelOsVersion": MessageLookupByLibrary.simpleMessage(
       "OS Version",
     ),
+    "xboardDeviceLabelRegion": MessageLookupByLibrary.simpleMessage("Location"),
     "xboardDeviceLabelRevokedAt": MessageLookupByLibrary.simpleMessage(
       "Revoked at",
     ),

@@ -23,16 +23,6 @@ class ProxiesTabView extends ConsumerStatefulWidget {
 
 class ProxiesTabViewState extends ConsumerState<ProxiesTabView>
     with TickerProviderStateMixin {
-  @override
-  void activate() {
-    super.activate();
-  }
-
-  @override
-  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
-    super.debugFillProperties(properties);
-  }
-
   TabController? _tabController;
   final _hasMoreButtonNotifier = ValueNotifier<bool>(false);
   GroupNameKeyMap _keyMap = {};

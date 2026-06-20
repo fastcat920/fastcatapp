@@ -28,6 +28,8 @@ import (
 	"strings"
 	"sync"
 	"time"
+
+	ip2region "github.com/lionsoul2014/ip2region/v1.0/binding/golang/ip2region"
 )
 
 const (
@@ -53,6 +55,7 @@ type Config struct {
 	DefaultDeviceLimit int
 	HTTPTimeout        time.Duration
 	TrustForwardedFor  bool
+	IPRegionDB         string
 }
 
 type Server struct {
@@ -62,6 +65,7 @@ type Server struct {
 	key    []byte
 	log    *log.Logger
 	ossMu  sync.RWMutex
+	ipGeo  *IPRegionResolver
 }
 
 type Store struct {
@@ -100,7 +104,19 @@ type DeviceRecord struct {
 	RevokedAt    *time.Time `json:"revoked_at,omitempty"`
 	RevokedBy    string     `json:"revoked_by,omitempty"`
 	LastIP       string     `json:"last_ip,omitempty"`
+	LastIPRegion string     `json:"last_ip_region,omitempty"`
+	LastIPISP    string     `json:"last_ip_isp,omitempty"`
 	UserAgent    string     `json:"user_agent,omitempty"`
+}
+
+type IPRegionInfo struct {
+	Location string
+	ISP      string
+}
+
+type IPRegionResolver struct {
+	mu sync.Mutex
+	db *ip2region.Ip2Region
 }
 
 type SessionRecord struct {
@@ -198,6 +214,15 @@ func main() {
 		},
 		key: deriveKey(cfg.TokenSecret),
 		log: logger,
+	}
+	if cfg.IPRegionDB != "" {
+		if resolver, err := NewIPRegionResolver(cfg.IPRegionDB); err != nil {
+			logger.Printf("IP region database unavailable (%s): %v", cfg.IPRegionDB, err)
+		} else {
+			server.ipGeo = resolver
+			defer resolver.Close()
+			logger.Printf("IP region database loaded: %s", cfg.IPRegionDB)
+		}
 	}
 
 	logger.Printf("listening on %s, business=%s, api_prefix=%s, data=%s",
@@ -414,6 +439,7 @@ func loadConfig(logger *log.Logger) (Config, error) {
 		DefaultDeviceLimit: envInt("DG_DEFAULT_DEVICE_LIMIT", 1),
 		HTTPTimeout:        time.Duration(timeoutSeconds) * time.Second,
 		TrustForwardedFor:  envBool("DG_TRUST_FORWARDED_FOR", false),
+		IPRegionDB:         env("DG_IP_REGION_DB", "./data/ip2region.db"),
 	}, nil
 }
 
@@ -731,7 +757,7 @@ func (s *Server) admitDevice(r *http.Request, req LoginRequest, snapshot Subscri
 	device.OSVersion = req.OSVersion
 	device.Status = statusActive
 	device.LastSeenAt = now
-	device.LastIP = clientIP
+	s.updateDeviceIPInfoLocked(device, clientIP)
 	device.UserAgent = userAgent
 	device.RevokedAt = nil
 	device.RevokedBy = ""
@@ -838,22 +864,30 @@ func (s *Server) handleHeartbeat(w http.ResponseWriter, r *http.Request) {
 	}
 
 	now := time.Now().UTC()
+	clientIP := s.clientIP(r)
 	s.store.mu.Lock()
 	// ctx.Device / ctx.Session are copies from authorize(); look up
 	// the real store entries by ID so the update actually persists.
+	var responseDevice *DeviceRecord
 	if dev, ok := s.store.Devices[ctx.Device.ID]; ok {
 		dev.LastSeenAt = now
+		s.updateDeviceIPInfoLocked(dev, clientIP)
+		responseDevice = cloneDevice(dev)
 	}
 	if ses, ok := s.store.Sessions[ctx.Session.ID]; ok {
 		ses.LastSeenAt = now
+		ses.LastIP = clientIP
 	}
 	_ = s.store.saveLocked()
 	s.store.mu.Unlock()
+	if responseDevice == nil {
+		responseDevice = ctx.Device
+	}
 
 	writeJSON(w, http.StatusOK, map[string]any{
 		"success": true,
 		"data": map[string]any{
-			"device": publicDevice(ctx.Device, ctx.Device.ID),
+			"device": publicDevice(responseDevice, ctx.Device.ID),
 		},
 	})
 }
@@ -1200,7 +1234,7 @@ func (s *Server) authorize(r *http.Request) (*SessionContext, error) {
 			session.LastIP = clientIP
 			session.UserAgent = userAgent
 			device.LastSeenAt = now
-			device.LastIP = clientIP
+			s.updateDeviceIPInfoLocked(device, clientIP)
 			device.UserAgent = userAgent
 			shouldSave = true
 		}
@@ -1277,7 +1311,7 @@ func (s *Server) authorizeSubscribeToken(r *http.Request, token string) (*Sessio
 			session.LastIP = clientIP
 			session.UserAgent = userAgent
 			device.LastSeenAt = now
-			device.LastIP = clientIP
+			s.updateDeviceIPInfoLocked(device, clientIP)
 			device.UserAgent = userAgent
 			shouldSave = true
 		}
@@ -1855,6 +1889,92 @@ func isPublicIP(ip net.IP) bool {
 		!ip.IsLinkLocalMulticast()
 }
 
+func NewIPRegionResolver(dbPath string) (*IPRegionResolver, error) {
+	dbPath = strings.TrimSpace(dbPath)
+	if dbPath == "" {
+		return nil, errors.New("empty IP region database path")
+	}
+	db, err := ip2region.New(dbPath)
+	if err != nil {
+		return nil, err
+	}
+	return &IPRegionResolver{db: db}, nil
+}
+
+func (r *IPRegionResolver) Close() {
+	if r == nil || r.db == nil {
+		return
+	}
+	r.db.Close()
+}
+
+func (r *IPRegionResolver) Lookup(ip string) (IPRegionInfo, bool) {
+	if r == nil || r.db == nil || net.ParseIP(ip).To4() == nil {
+		return IPRegionInfo{}, false
+	}
+	r.mu.Lock()
+	info, err := r.db.MemorySearch(ip)
+	r.mu.Unlock()
+	if err != nil {
+		return IPRegionInfo{}, false
+	}
+	region := regionInfoFromIP2Region(info)
+	return region, region.Location != "" || region.ISP != ""
+}
+
+func regionInfoFromIP2Region(info ip2region.IpInfo) IPRegionInfo {
+	locationParts := cleanRegionParts(info.Country, info.Province, info.City)
+	if len(locationParts) == 0 {
+		locationParts = cleanRegionParts(info.Country, info.Region)
+	}
+	return IPRegionInfo{
+		Location: strings.Join(locationParts, " "),
+		ISP:      cleanRegionPart(info.ISP),
+	}
+}
+
+func cleanRegionParts(parts ...string) []string {
+	out := make([]string, 0, len(parts))
+	for _, part := range parts {
+		if clean := cleanRegionPart(part); clean != "" {
+			out = append(out, clean)
+		}
+	}
+	return out
+}
+
+func cleanRegionPart(value string) string {
+	value = strings.TrimSpace(value)
+	if value == "" || value == "0" {
+		return ""
+	}
+	return value
+}
+
+func (s *Server) updateDeviceIPInfoLocked(device *DeviceRecord, ip string) {
+	if device == nil {
+		return
+	}
+	ip = strings.TrimSpace(ip)
+	if ip == "" {
+		device.LastIP = ""
+		device.LastIPRegion = ""
+		device.LastIPISP = ""
+		return
+	}
+	if device.LastIP == ip && (device.LastIPRegion != "" || device.LastIPISP != "") {
+		return
+	}
+	device.LastIP = ip
+	if region, ok := s.ipGeo.Lookup(ip); ok {
+		device.LastIPRegion = region.Location
+		device.LastIPISP = region.ISP
+		return
+	}
+	device.LastIPRegion = ""
+	device.LastIPISP = ""
+}
+
 func LoadStore(path string) (*Store, error) {
 	store := &Store{
 		path:     path,
@@ -1977,19 +2097,21 @@ func publicUser(user *UserCache, effectiveLimit, activeCount int) map[string]any
 
 func publicDevice(device *DeviceRecord, currentDeviceID string) map[string]any {
 	return map[string]any{
-		"id":           device.ID,
-		"device_name":  device.DeviceName,
-		"platform":     device.Platform,
-		"app_version":  device.AppVersion,
-		"os_version":   device.OSVersion,
-		"status":       device.Status,
-		"last_seen_at": device.LastSeenAt.Format(time.RFC3339),
-		"created_at":   device.CreatedAt.Format(time.RFC3339),
-		"revoked_at":   timePtrString(device.RevokedAt),
-		"revoked_by":   device.RevokedBy,
-		"last_ip":      device.LastIP,
-		"is_online":    device.Status == statusActive && time.Since(device.LastSeenAt) < 5*time.Minute,
-		"is_current":   currentDeviceID != "" && device.ID == currentDeviceID,
+		"id":             device.ID,
+		"device_name":    device.DeviceName,
+		"platform":       device.Platform,
+		"app_version":    device.AppVersion,
+		"os_version":     device.OSVersion,
+		"status":         device.Status,
+		"last_seen_at":   device.LastSeenAt.Format(time.RFC3339),
+		"created_at":     device.CreatedAt.Format(time.RFC3339),
+		"revoked_at":     timePtrString(device.RevokedAt),
+		"revoked_by":     device.RevokedBy,
+		"last_ip":        device.LastIP,
+		"last_ip_region": device.LastIPRegion,
+		"last_ip_isp":    device.LastIPISP,
+		"is_online":      device.Status == statusActive && time.Since(device.LastSeenAt) < 5*time.Minute,
+		"is_current":     currentDeviceID != "" && device.ID == currentDeviceID,
 	}
 }
 

@@ -74,16 +74,6 @@ class DocsPage extends ConsumerStatefulWidget {
 
 class _DocsPageState extends ConsumerState<DocsPage>
     with SingleTickerProviderStateMixin {
-  @override
-  void activate() {
-    super.activate();
-  }
-
-  @override
-  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
-    super.debugFillProperties(properties);
-  }
-
   late final AnimationController _refreshAnim;
 
   @override

@@ -1468,6 +1468,9 @@ DomainUser _mapUser(UserModel user) {
     discount: user.discount,
     commissionRate: user.commissionRate,
     telegramId: user.telegramId,
+    ip: user.ip,
+    ipRegion: user.ipRegion,
+    ipIsp: user.ipIsp,
   );
 }
 

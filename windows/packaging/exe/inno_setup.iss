@@ -36,10 +36,55 @@ begin
   end;
 end;
 
+function IsProcessRunning(ProcessName: String): Boolean;
+var
+  ResultCode: Integer;
+begin
+  Exec(
+    'cmd.exe',
+    '/C tasklist /FI "IMAGENAME eq ' + ProcessName + '" | find /I "' + ProcessName + '"',
+    '',
+    SW_HIDE,
+    ewWaitUntilTerminated,
+    ResultCode
+  );
+  Result := ResultCode = 0;
+end;
+
+function HasRunningProcesses(): Boolean;
+var
+  Processes: TArrayOfString;
+  i: Integer;
+begin
+  Processes := ['{{EXECUTABLE_NAME}}', 'fastcatCore.exe', 'fastcatHelperService.exe'];
+  Result := False;
+
+  for i := 0 to GetArrayLength(Processes)-1 do
+  begin
+    if IsProcessRunning(Processes[i]) then
+    begin
+      Result := True;
+      Exit;
+    end;
+  end;
+end;
+
 function InitializeSetup(): Boolean;
 begin
   KillProcesses;
   Result := True;
+end;
+
+function InitializeUninstall(): Boolean;
+begin
+  Result := True;
+  if HasRunningProcesses() then
+  begin
+    if MsgBox(ExpandConstant('{cm:CloseRunningAppsPrompt}'), mbConfirmation, MB_YESNO) = IDYES then
+      KillProcesses
+    else
+      Result := False;
+  end;
 end;
 
 [Languages]
@@ -72,6 +117,10 @@ Name: "chineseSimplified"; MessagesFile: {% if locale.file %}{{ locale.file }}{%
 {% if locale.lang == 'tr' %}Name: "turkish"; MessagesFile: "compiler:Languages\\Turkish.isl"{% endif %}
 {% if locale.lang == 'uk' %}Name: "ukrainian"; MessagesFile: "compiler:Languages\\Ukrainian.isl"{% endif %}
 {% endfor %}
+
+[CustomMessages]
+english.CloseRunningAppsPrompt=The application is still running. Please close it first. Click Yes to close it automatically and continue uninstalling, or No to cancel.
+chineseSimplified.CloseRunningAppsPrompt=应用仍在运行，请先关闭应用。点击“是”将自动关闭应用并继续卸载，点击“否”取消卸载。
 
 [Tasks]
 Name: "desktopicon"; Description: "{cm:CreateDesktopIcon}"; GroupDescription: "{cm:AdditionalIcons}"; Flags: {% if CREATE_DESKTOP_ICON != true %}unchecked{% else %}checkedonce{% endif %}

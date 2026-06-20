@@ -4,11 +4,33 @@ import 'package:freezed_annotation/freezed_annotation.dart';
 part 'user_info.freezed.dart';
 part 'user_info.g.dart';
 
+Object? _readUserIP(Map source, String key) =>
+    source[key] ??
+    source['ip'] ??
+    source['last_ip'] ??
+    source['last_login_ip'] ??
+    source['login_ip'];
+
+Object? _readUserIPRegion(Map source, String key) =>
+    source[key] ??
+    source['ip_region'] ??
+    source['last_ip_region'] ??
+    source['ip_location'] ??
+    source['location'] ??
+    source['region'];
+
+Object? _readUserIPISP(Map source, String key) =>
+    source[key] ??
+    source['ip_isp'] ??
+    source['last_ip_isp'] ??
+    source['isp'] ??
+    source['operator'];
+
 /// 用户信息数据模型
 @freezed
 class UserInfo with _$UserInfo {
   const UserInfo._();
-  
+
   const factory UserInfo({
     required String email,
     @JsonKey(name: 'transfer_enable') int? transferEnable,
@@ -28,35 +50,43 @@ class UserInfo with _$UserInfo {
     @JsonKey(name: 'telegram_id') int? telegramId,
     String? uuid,
     @JsonKey(name: 'avatar_url') String? avatarUrl,
-    
+
     /// 已上传流量 (bytes)
     int? u,
-    
+
     /// 已下载流量 (bytes)
     int? d,
+    @JsonKey(name: 'ip', readValue: _readUserIP) @Default('') String ip,
+    @JsonKey(name: 'ip_region', readValue: _readUserIPRegion)
+    @Default('')
+    String ipRegion,
+    @JsonKey(name: 'ip_isp', readValue: _readUserIPISP)
+    @Default('')
+    String ipIsp,
   }) = _UserInfo;
-  
-  factory UserInfo.fromJson(Map<String, dynamic> json) => _$UserInfoFromJson(json);
-  
+
+  factory UserInfo.fromJson(Map<String, dynamic> json) =>
+      _$UserInfoFromJson(json);
+
   /// 是否已过期
   bool get isExpired {
     if (expiredAt == null) return false;
     return expiredAt! * 1000 < DateTime.now().millisecondsSinceEpoch;
   }
-  
+
   /// 是否被封禁
   bool get isBanned => banned == 1;
-  
+
   /// 已使用流量 (bytes)
   int get usedTraffic => (u ?? 0) + (d ?? 0);
-  
+
   /// 剩余流量 (bytes)
   int get remainingTraffic {
     final total = transferEnable ?? 0;
     final used = usedTraffic;
     return (total - used).clamp(0, total);
   }
-  
+
   /// 流量使用百分比 (0-100)
   double get trafficUsagePercent {
     final total = transferEnable ?? 0;

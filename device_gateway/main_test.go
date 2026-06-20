@@ -6,6 +6,7 @@ import (
 	"io"
 	"net/http"
 	"net/http/httptest"
+	"os"
 	"path/filepath"
 	"strings"
 	"testing"
@@ -44,6 +45,31 @@ func TestClientIPFallsBackToRemoteAddrWhenUntrusted(t *testing.T) {
 
 	if got := server.clientIP(req); got != "127.0.0.1" {
 		t.Fatalf("clientIP() = %q, want remote addr", got)
+	}
+}
+
+func TestIPRegionResolverWithLocalDatabase(t *testing.T) {
+	dbPath := filepath.Join("data", "ip2region.db")
+	if _, err := os.Stat(dbPath); err != nil {
+		t.Skip("ip2region database not available")
+	}
+	resolver, err := NewIPRegionResolver(dbPath)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer resolver.Close()
+
+	region, ok := resolver.Lookup("119.51.60.204")
+	if !ok {
+		t.Fatal("expected IP region lookup to succeed")
+	}
+	if !strings.Contains(region.Location, "中国") ||
+		!strings.Contains(region.Location, "吉林") ||
+		!strings.Contains(region.Location, "长春") {
+		t.Fatalf("unexpected location: %#v", region)
+	}
+	if !strings.Contains(region.ISP, "联通") {
+		t.Fatalf("unexpected ISP: %#v", region)
 	}
 }
 

@@ -57,6 +57,12 @@ mixin _$UserInfo {
 
   /// 已下载流量 (bytes)
   int? get d => throw _privateConstructorUsedError;
+  @JsonKey(name: 'ip', readValue: _readUserIP)
+  String get ip => throw _privateConstructorUsedError;
+  @JsonKey(name: 'ip_region', readValue: _readUserIPRegion)
+  String get ipRegion => throw _privateConstructorUsedError;
+  @JsonKey(name: 'ip_isp', readValue: _readUserIPISP)
+  String get ipIsp => throw _privateConstructorUsedError;
 
   /// Serializes this UserInfo to a JSON map.
   Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
@@ -93,7 +99,10 @@ abstract class $UserInfoCopyWith<$Res> {
       String? uuid,
       @JsonKey(name: 'avatar_url') String? avatarUrl,
       int? u,
-      int? d});
+      int? d,
+      @JsonKey(name: 'ip', readValue: _readUserIP) String ip,
+      @JsonKey(name: 'ip_region', readValue: _readUserIPRegion) String ipRegion,
+      @JsonKey(name: 'ip_isp', readValue: _readUserIPISP) String ipIsp});
 }
 
 /// @nodoc
@@ -131,6 +140,9 @@ class _$UserInfoCopyWithImpl<$Res, $Val extends UserInfo>
     Object? avatarUrl = freezed,
     Object? u = freezed,
     Object? d = freezed,
+    Object? ip = null,
+    Object? ipRegion = null,
+    Object? ipIsp = null,
   }) {
     return _then(_value.copyWith(
       email: null == email
@@ -213,6 +225,18 @@ class _$UserInfoCopyWithImpl<$Res, $Val extends UserInfo>
           ? _value.d
           : d // ignore: cast_nullable_to_non_nullable
               as int?,
+      ip: null == ip
+          ? _value.ip
+          : ip // ignore: cast_nullable_to_non_nullable
+              as String,
+      ipRegion: null == ipRegion
+          ? _value.ipRegion
+          : ipRegion // ignore: cast_nullable_to_non_nullable
+              as String,
+      ipIsp: null == ipIsp
+          ? _value.ipIsp
+          : ipIsp // ignore: cast_nullable_to_non_nullable
+              as String,
     ) as $Val);
   }
 }
@@ -245,7 +269,10 @@ abstract class _$$UserInfoImplCopyWith<$Res>
       String? uuid,
       @JsonKey(name: 'avatar_url') String? avatarUrl,
       int? u,
-      int? d});
+      int? d,
+      @JsonKey(name: 'ip', readValue: _readUserIP) String ip,
+      @JsonKey(name: 'ip_region', readValue: _readUserIPRegion) String ipRegion,
+      @JsonKey(name: 'ip_isp', readValue: _readUserIPISP) String ipIsp});
 }
 
 /// @nodoc
@@ -281,6 +308,9 @@ class __$$UserInfoImplCopyWithImpl<$Res>
     Object? avatarUrl = freezed,
     Object? u = freezed,
     Object? d = freezed,
+    Object? ip = null,
+    Object? ipRegion = null,
+    Object? ipIsp = null,
   }) {
     return _then(_$UserInfoImpl(
       email: null == email
@@ -363,6 +393,18 @@ class __$$UserInfoImplCopyWithImpl<$Res>
           ? _value.d
           : d // ignore: cast_nullable_to_non_nullable
               as int?,
+      ip: null == ip
+          ? _value.ip
+          : ip // ignore: cast_nullable_to_non_nullable
+              as String,
+      ipRegion: null == ipRegion
+          ? _value.ipRegion
+          : ipRegion // ignore: cast_nullable_to_non_nullable
+              as String,
+      ipIsp: null == ipIsp
+          ? _value.ipIsp
+          : ipIsp // ignore: cast_nullable_to_non_nullable
+              as String,
     ));
   }
 }
@@ -390,7 +432,11 @@ class _$UserInfoImpl extends _UserInfo {
       this.uuid,
       @JsonKey(name: 'avatar_url') this.avatarUrl,
       this.u,
-      this.d})
+      this.d,
+      @JsonKey(name: 'ip', readValue: _readUserIP) this.ip = '',
+      @JsonKey(name: 'ip_region', readValue: _readUserIPRegion)
+      this.ipRegion = '',
+      @JsonKey(name: 'ip_isp', readValue: _readUserIPISP) this.ipIsp = ''})
       : super._();
 
   factory _$UserInfoImpl.fromJson(Map<String, dynamic> json) =>
@@ -453,10 +499,19 @@ class _$UserInfoImpl extends _UserInfo {
   /// 已下载流量 (bytes)
   @override
   final int? d;
+  @override
+  @JsonKey(name: 'ip', readValue: _readUserIP)
+  final String ip;
+  @override
+  @JsonKey(name: 'ip_region', readValue: _readUserIPRegion)
+  final String ipRegion;
+  @override
+  @JsonKey(name: 'ip_isp', readValue: _readUserIPISP)
+  final String ipIsp;
 
   @override
   String toString() {
-    return 'UserInfo(email: $email, transferEnable: $transferEnable, deviceLimit: $deviceLimit, lastLoginAt: $lastLoginAt, createdAt: $createdAt, banned: $banned, autoRenewal: $autoRenewal, remindExpire: $remindExpire, remindTraffic: $remindTraffic, expiredAt: $expiredAt, balance: $balance, commissionBalance: $commissionBalance, planId: $planId, discount: $discount, commissionRate: $commissionRate, telegramId: $telegramId, uuid: $uuid, avatarUrl: $avatarUrl, u: $u, d: $d)';
+    return 'UserInfo(email: $email, transferEnable: $transferEnable, deviceLimit: $deviceLimit, lastLoginAt: $lastLoginAt, createdAt: $createdAt, banned: $banned, autoRenewal: $autoRenewal, remindExpire: $remindExpire, remindTraffic: $remindTraffic, expiredAt: $expiredAt, balance: $balance, commissionBalance: $commissionBalance, planId: $planId, discount: $discount, commissionRate: $commissionRate, telegramId: $telegramId, uuid: $uuid, avatarUrl: $avatarUrl, u: $u, d: $d, ip: $ip, ipRegion: $ipRegion, ipIsp: $ipIsp)';
   }
 
   @override
@@ -496,7 +551,11 @@ class _$UserInfoImpl extends _UserInfo {
             (identical(other.avatarUrl, avatarUrl) ||
                 other.avatarUrl == avatarUrl) &&
             (identical(other.u, u) || other.u == u) &&
-            (identical(other.d, d) || other.d == d));
+            (identical(other.d, d) || other.d == d) &&
+            (identical(other.ip, ip) || other.ip == ip) &&
+            (identical(other.ipRegion, ipRegion) ||
+                other.ipRegion == ipRegion) &&
+            (identical(other.ipIsp, ipIsp) || other.ipIsp == ipIsp));
   }
 
   @JsonKey(includeFromJson: false, includeToJson: false)
@@ -522,7 +581,10 @@ class _$UserInfoImpl extends _UserInfo {
         uuid,
         avatarUrl,
         u,
-        d
+        d,
+        ip,
+        ipRegion,
+        ipIsp
       ]);
 
   /// Create a copy of UserInfo
@@ -562,7 +624,12 @@ abstract class _UserInfo extends UserInfo {
       final String? uuid,
       @JsonKey(name: 'avatar_url') final String? avatarUrl,
       final int? u,
-      final int? d}) = _$UserInfoImpl;
+      final int? d,
+      @JsonKey(name: 'ip', readValue: _readUserIP) final String ip,
+      @JsonKey(name: 'ip_region', readValue: _readUserIPRegion)
+      final String ipRegion,
+      @JsonKey(name: 'ip_isp', readValue: _readUserIPISP)
+      final String ipIsp}) = _$UserInfoImpl;
   const _UserInfo._() : super._();
 
   factory _UserInfo.fromJson(Map<String, dynamic> json) =
@@ -625,6 +692,15 @@ abstract class _UserInfo extends UserInfo {
   /// 已下载流量 (bytes)
   @override
   int? get d;
+  @override
+  @JsonKey(name: 'ip', readValue: _readUserIP)
+  String get ip;
+  @override
+  @JsonKey(name: 'ip_region', readValue: _readUserIPRegion)
+  String get ipRegion;
+  @override
+  @JsonKey(name: 'ip_isp', readValue: _readUserIPISP)
+  String get ipIsp;
 
   /// Create a copy of UserInfo
   /// with the given fields replaced by the non-null parameter values.

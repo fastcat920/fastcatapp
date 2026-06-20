@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:typed_data';
 import 'package:dio/dio.dart';
+
 /// Supabase REST API 服务
 ///
 /// 用于双 OSS 切换：查全局开关、查用户 is_builtin、注册后写入
@@ -52,7 +53,7 @@ class SupabaseService {
   static Future<bool> isDualOssEnabled() async {
     try {
       final resp = await _dio.get(
-        '${_url}/rest/v1/app_config',
+        '$_url/rest/v1/app_config',
         queryParameters: {
           'key': 'eq.dual_oss_enabled',
           'select': 'value',
@@ -73,7 +74,7 @@ class SupabaseService {
   static Future<int?> queryUserBuiltin(String email) async {
     try {
       final resp = await _dio.get(
-        '${_url}/rest/v1/app_users',
+        '$_url/rest/v1/app_users',
         queryParameters: {
           'email': 'eq.$email',
           'select': 'is_builtin',
@@ -94,7 +95,7 @@ class SupabaseService {
   static Future<void> syncUser(String email, int isBuiltin) async {
     try {
       await _dio.post(
-        '${_url}/rest/v1/app_users?on_conflict=email',
+        '$_url/rest/v1/app_users?on_conflict=email',
         data: {'email': email, 'is_builtin': isBuiltin},
         options: Options(headers: {
           ..._headers(),
@@ -106,7 +107,7 @@ class SupabaseService {
 
   static Map<String, String> _headers() => {
         'apikey': _apiKey,
-        'Authorization': 'Bearer ${_apiKey}',
+        'Authorization': 'Bearer $_apiKey',
         'Content-Type': 'application/json',
       };
 }

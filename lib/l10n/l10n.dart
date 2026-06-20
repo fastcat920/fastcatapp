@@ -1875,6 +1875,26 @@ class AppLocalizations {
     return Intl.message('Disconnect', name: 'stop', desc: '', args: []);
   }
 
+  /// `Start connection`
+  String get trayStartConnection {
+    return Intl.message(
+      'Start connection',
+      name: 'trayStartConnection',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Disconnect connection`
+  String get trayDisconnect {
+    return Intl.message(
+      'Disconnect connection',
+      name: 'trayDisconnect',
+      desc: '',
+      args: [],
+    );
+  }
+
   /// `Processing app related settings`
   String get appDesc {
     return Intl.message(
@@ -6245,6 +6265,11 @@ class AppLocalizations {
     return Intl.message('Withdraw', name: 'withdraw', desc: '', args: []);
   }
 
+  /// `Ticket`
+  String get ticketRecords {
+    return Intl.message('Ticket', name: 'ticketRecords', desc: '', args: []);
+  }
+
   /// `No commission records`
   String get noCommissionRecord {
     return Intl.message(
@@ -9130,6 +9155,16 @@ class AppLocalizations {
     return Intl.message(
       'Last IP',
       name: 'xboardDeviceLabelLastIp',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Location`
+  String get xboardDeviceLabelRegion {
+    return Intl.message(
+      'Location',
+      name: 'xboardDeviceLabelRegion',
       desc: '',
       args: [],
     );

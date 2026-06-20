@@ -28,6 +28,9 @@ _$UserModelImpl _$$UserModelImplFromJson(Map<String, dynamic> json) =>
       telegramId: _telegramIdFromJson(json['telegram_id']),
       uuid: json['uuid'] as String? ?? '',
       avatarUrl: json['avatar_url'] as String? ?? '',
+      ip: _readUserIP(json, 'ip') as String? ?? '',
+      ipRegion: _readUserIPRegion(json, 'ip_region') as String? ?? '',
+      ipIsp: _readUserIPISP(json, 'ip_isp') as String? ?? '',
     );
 
 Map<String, dynamic> _$$UserModelImplToJson(_$UserModelImpl instance) =>
@@ -48,4 +51,7 @@ Map<String, dynamic> _$$UserModelImplToJson(_$UserModelImpl instance) =>
       'telegram_id': _telegramIdToJson(instance.telegramId),
       'uuid': instance.uuid,
       'avatar_url': instance.avatarUrl,
+      'ip': instance.ip,
+      'ip_region': instance.ipRegion,
+      'ip_isp': instance.ipIsp,
     };

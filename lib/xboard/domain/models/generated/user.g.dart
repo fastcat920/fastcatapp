@@ -33,6 +33,9 @@ _$DomainUserImpl _$$DomainUserImplFromJson(Map<String, dynamic> json) =>
       discount: (json['discount'] as num?)?.toDouble(),
       commissionRate: (json['commissionRate'] as num?)?.toDouble(),
       telegramId: json['telegramId'] as String?,
+      ip: json['ip'] as String? ?? '',
+      ipRegion: json['ipRegion'] as String? ?? '',
+      ipIsp: json['ipIsp'] as String? ?? '',
       metadata: json['metadata'] as Map<String, dynamic>? ?? const {},
     );
 
@@ -56,5 +59,8 @@ Map<String, dynamic> _$$DomainUserImplToJson(_$DomainUserImpl instance) =>
       'discount': instance.discount,
       'commissionRate': instance.commissionRate,
       'telegramId': instance.telegramId,
+      'ip': instance.ip,
+      'ipRegion': instance.ipRegion,
+      'ipIsp': instance.ipIsp,
       'metadata': instance.metadata,
     };
