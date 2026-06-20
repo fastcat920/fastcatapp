@@ -491,6 +491,8 @@ mixin _$InviteStat {
   int? get commissionBalance => throw _privateConstructorUsedError;
   @JsonKey(name: 'commission_pending_balance')
   int? get commissionPendingBalance => throw _privateConstructorUsedError;
+  @JsonKey(name: 'available_commission')
+  int? get availableCommission => throw _privateConstructorUsedError;
 
   /// Serializes this InviteStat to a JSON map.
   Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
@@ -513,7 +515,8 @@ abstract class $InviteStatCopyWith<$Res> {
       @JsonKey(name: 'commission_rate') int? commissionRate,
       @JsonKey(name: 'commission_balance') int? commissionBalance,
       @JsonKey(name: 'commission_pending_balance')
-      int? commissionPendingBalance});
+      int? commissionPendingBalance,
+      @JsonKey(name: 'available_commission') int? availableCommission});
 }
 
 /// @nodoc
@@ -535,6 +538,7 @@ class _$InviteStatCopyWithImpl<$Res, $Val extends InviteStat>
     Object? commissionRate = freezed,
     Object? commissionBalance = freezed,
     Object? commissionPendingBalance = freezed,
+    Object? availableCommission = freezed,
   }) {
     return _then(_value.copyWith(
       registerCount: freezed == registerCount
@@ -553,6 +557,10 @@ class _$InviteStatCopyWithImpl<$Res, $Val extends InviteStat>
           ? _value.commissionPendingBalance
           : commissionPendingBalance // ignore: cast_nullable_to_non_nullable
               as int?,
+      availableCommission: freezed == availableCommission
+          ? _value.availableCommission
+          : availableCommission // ignore: cast_nullable_to_non_nullable
+              as int?,
     ) as $Val);
   }
 }
@@ -570,7 +578,8 @@ abstract class _$$InviteStatImplCopyWith<$Res>
       @JsonKey(name: 'commission_rate') int? commissionRate,
       @JsonKey(name: 'commission_balance') int? commissionBalance,
       @JsonKey(name: 'commission_pending_balance')
-      int? commissionPendingBalance});
+      int? commissionPendingBalance,
+      @JsonKey(name: 'available_commission') int? availableCommission});
 }
 
 /// @nodoc
@@ -590,6 +599,7 @@ class __$$InviteStatImplCopyWithImpl<$Res>
     Object? commissionRate = freezed,
     Object? commissionBalance = freezed,
     Object? commissionPendingBalance = freezed,
+    Object? availableCommission = freezed,
   }) {
     return _then(_$InviteStatImpl(
       registerCount: freezed == registerCount
@@ -608,6 +618,10 @@ class __$$InviteStatImplCopyWithImpl<$Res>
           ? _value.commissionPendingBalance
           : commissionPendingBalance // ignore: cast_nullable_to_non_nullable
               as int?,
+      availableCommission: freezed == availableCommission
+          ? _value.availableCommission
+          : availableCommission // ignore: cast_nullable_to_non_nullable
+              as int?,
     ));
   }
 }
@@ -620,7 +634,8 @@ class _$InviteStatImpl implements _InviteStat {
       @JsonKey(name: 'commission_rate') this.commissionRate,
       @JsonKey(name: 'commission_balance') this.commissionBalance,
       @JsonKey(name: 'commission_pending_balance')
-      this.commissionPendingBalance});
+      this.commissionPendingBalance,
+      @JsonKey(name: 'available_commission') this.availableCommission});
 
   factory _$InviteStatImpl.fromJson(Map<String, dynamic> json) =>
       _$$InviteStatImplFromJson(json);
@@ -637,10 +652,13 @@ class _$InviteStatImpl implements _InviteStat {
   @override
   @JsonKey(name: 'commission_pending_balance')
   final int? commissionPendingBalance;
+  @override
+  @JsonKey(name: 'available_commission')
+  final int? availableCommission;
 
   @override
   String toString() {
-    return 'InviteStat(registerCount: $registerCount, commissionRate: $commissionRate, commissionBalance: $commissionBalance, commissionPendingBalance: $commissionPendingBalance)';
+    return 'InviteStat(registerCount: $registerCount, commissionRate: $commissionRate, commissionBalance: $commissionBalance, commissionPendingBalance: $commissionPendingBalance, availableCommission: $availableCommission)';
   }
 
   @override
@@ -656,13 +674,15 @@ class _$InviteStatImpl implements _InviteStat {
                 other.commissionBalance == commissionBalance) &&
             (identical(
                     other.commissionPendingBalance, commissionPendingBalance) ||
-                other.commissionPendingBalance == commissionPendingBalance));
+                other.commissionPendingBalance == commissionPendingBalance) &&
+            (identical(other.availableCommission, availableCommission) ||
+                other.availableCommission == availableCommission));
   }
 
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
   int get hashCode => Object.hash(runtimeType, registerCount, commissionRate,
-      commissionBalance, commissionPendingBalance);
+      commissionBalance, commissionPendingBalance, availableCommission);
 
   /// Create a copy of InviteStat
   /// with the given fields replaced by the non-null parameter values.
@@ -686,7 +706,9 @@ abstract class _InviteStat implements InviteStat {
       @JsonKey(name: 'commission_rate') final int? commissionRate,
       @JsonKey(name: 'commission_balance') final int? commissionBalance,
       @JsonKey(name: 'commission_pending_balance')
-      final int? commissionPendingBalance}) = _$InviteStatImpl;
+      final int? commissionPendingBalance,
+      @JsonKey(name: 'available_commission')
+      final int? availableCommission}) = _$InviteStatImpl;
 
   factory _InviteStat.fromJson(Map<String, dynamic> json) =
       _$InviteStatImpl.fromJson;
@@ -703,6 +725,9 @@ abstract class _InviteStat implements InviteStat {
   @override
   @JsonKey(name: 'commission_pending_balance')
   int? get commissionPendingBalance;
+  @override
+  @JsonKey(name: 'available_commission')
+  int? get availableCommission;
 
   /// Create a copy of InviteStat
   /// with the given fields replaced by the non-null parameter values.

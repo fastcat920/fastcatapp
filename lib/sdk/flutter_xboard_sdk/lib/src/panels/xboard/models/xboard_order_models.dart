@@ -19,6 +19,11 @@ class Order with _$Order {
     @JsonKey(name: 'trade_no') String? tradeNo,
     @JsonKey(name: 'total_amount') double? totalAmount,
     @JsonKey(name: 'balance_amount') double? balanceAmount,
+    @JsonKey(name: 'surplus_amount') double? surplusAmount,
+    @JsonKey(name: 'refund_amount') double? refundAmount,
+    @JsonKey(name: 'deposit_amount') double? depositAmount,
+    @JsonKey(name: 'commission_balance') double? commissionBalance,
+    @JsonKey(name: 'actual_commission_balance') double? actualCommissionBalance,
     String? period,
     int? status,
     @JsonKey(

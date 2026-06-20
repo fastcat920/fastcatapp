@@ -22,14 +22,24 @@ class V2BoardInviteApi {
         final statData = data['stat'];
         final Map<String, dynamic> adaptedData;
         if (statData is List) {
-          // 旧版 V2Board stat 是数组 [register_count, commission_balance, pending_balance, commission_rate]
+          // 旧版 V2Board stat 是数组
+          // [register_count, commission_balance, pending_balance, commission_rate, available_commission]
           adaptedData = Map<String, dynamic>.from(data);
           adaptedData['stat'] = {
             'register_count': statData.isNotEmpty ? statData[0] : 0,
             'commission_balance': statData.length > 1 ? statData[1] : 0,
             'commission_pending_balance': statData.length > 2 ? statData[2] : 0,
             'commission_rate': statData.length > 3 ? statData[3] : 0,
+            'available_commission': statData.length > 4 ? statData[4] : null,
           };
+        } else if (statData is Map<String, dynamic>) {
+          adaptedData = Map<String, dynamic>.from(data);
+          final adaptedStat = Map<String, dynamic>.from(statData);
+          adaptedStat['available_commission'] ??=
+              adaptedStat['availableCommission'] ??
+                  adaptedStat['available_balance'] ??
+                  adaptedStat['availableBalance'];
+          adaptedData['stat'] = adaptedStat;
         } else {
           adaptedData = data;
         }

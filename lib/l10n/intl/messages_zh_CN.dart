@@ -1037,6 +1037,9 @@ class MessageLookup extends MessageLookupByLibrary {
     "xboardClickToSetupNodes": MessageLookupByLibrary.simpleMessage("点击设置节点"),
     "xboardCommissionConfirmed": MessageLookupByLibrary.simpleMessage("已确认"),
     "xboardCommissionIssuing": MessageLookupByLibrary.simpleMessage("发放中"),
+    "xboardCommissionOffsetAmount": MessageLookupByLibrary.simpleMessage(
+      "佣金折抵金额",
+    ),
     "xboardCompletePaymentInBrowser": MessageLookupByLibrary.simpleMessage(
       "2. 请在浏览器中完成支付操作",
     ),
@@ -1476,6 +1479,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "xboardPurchaseTraffic": MessageLookupByLibrary.simpleMessage("购买流量"),
     "xboardQuarterlyPayment": MessageLookupByLibrary.simpleMessage("季付"),
     "xboardRecharge": MessageLookupByLibrary.simpleMessage("充值"),
+    "xboardRechargeAmount": MessageLookupByLibrary.simpleMessage("充值金额"),
     "xboardRechargeBalance": MessageLookupByLibrary.simpleMessage("余额充值"),
     "xboardRechargeBalanceTip": MessageLookupByLibrary.simpleMessage(
       "充值金额将进入账户余额，可用于购买套餐或支付订单。",

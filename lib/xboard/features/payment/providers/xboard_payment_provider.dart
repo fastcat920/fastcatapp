@@ -1,4 +1,7 @@
+import 'dart:async';
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:fl_clash/xboard/adapter/state/order_state.dart';
 import 'package:fl_clash/xboard/features/auth/auth.dart';
 import 'package:fl_clash/xboard/features/payment/payment.dart';
 import 'package:fl_clash/xboard/core/core.dart';
@@ -9,6 +12,8 @@ import 'package:fl_clash/xboard/utils/backend_message_mapper.dart';
 
 // 初始化文件级日志器
 const _logger = FileLogger('xboard_payment_provider.dart');
+const _pendingOrdersFastPageSize = 50;
+const _pendingOrdersCacheTtl = Duration(seconds: 20);
 
 final pendingOrdersProvider = StateProvider<List<DomainOrder>>((ref) => []);
 final paymentMethodsProvider =
@@ -17,6 +22,8 @@ final paymentProcessStateProvider =
     StateProvider<PaymentProcessState>((ref) => const PaymentProcessState());
 
 class XBoardPaymentNotifier extends Notifier<void> {
+  DateTime? _pendingOrdersLoadedAt;
+
   void _scheduleLoadInitialData() {
     Future<void>(() => _loadInitialData());
   }
@@ -75,37 +82,33 @@ class XBoardPaymentNotifier extends Notifier<void> {
     }
   }
 
-  Future<void> loadPendingOrders() async {
+  Future<void> loadPendingOrders({bool updateUiState = true}) async {
     final userAuthState = ref.read(xboardUserAuthProvider);
     if (!userAuthState.isAuthenticated) {
       ref.read(pendingOrdersProvider.notifier).state = [];
       return;
     }
-    ref.read(userUIStateProvider.notifier).state =
-        const UIState(isLoading: true);
+    if (updateUiState) {
+      ref.read(userUIStateProvider.notifier).state =
+          const UIState(isLoading: true);
+    }
     try {
       _logger.info('加载待支付订单...');
-      _logger.info('加载待支付订单...');
-      final orderModels = await XBoardSDK.instance.order.getOrders();
-      final orders = orderModels.map(_mapOrder).toList();
-
-      // status: 0=待付款, 1=开通中, 2=已取消, 3=已完成, 4=已折抵
-      // 显示"待付款"和"开通中"的订单
-      final pendingOrders = orders
-          .where((order) =>
-              order.status == OrderStatus.pending ||
-              order.status == OrderStatus.processing)
-          .toList();
-      ref.read(pendingOrdersProvider.notifier).state = pendingOrders;
-      ref.read(userUIStateProvider.notifier).state =
-          const UIState(isLoading: false);
+      final pendingOrders = await _fetchPendingOrdersFast();
+      _setPendingOrders(pendingOrders);
+      if (updateUiState) {
+        ref.read(userUIStateProvider.notifier).state =
+            const UIState(isLoading: false);
+      }
       _logger.info('待支付订单加载成功，共 ${pendingOrders.length} 个');
     } catch (e) {
       _logger.info('加载待支付订单失败: $e');
-      ref.read(userUIStateProvider.notifier).state = UIState(
-        isLoading: false,
-        errorMessage: e.toString(),
-      );
+      if (updateUiState) {
+        ref.read(userUIStateProvider.notifier).state = UIState(
+          isLoading: false,
+          errorMessage: e.toString(),
+        );
+      }
       ref.read(pendingOrdersProvider.notifier).state = [];
     }
   }
@@ -186,13 +189,17 @@ class XBoardPaymentNotifier extends Notifier<void> {
       _logger
           .info('创建订单: planId=$planId, period=$period, couponCode=$couponCode');
 
-      // 先取消待支付订单
-      await cancelPendingOrders();
+      // 快速清理待支付订单：优先使用新鲜缓存或首屏订单，避免每次创建订单都全量翻页。
+      await cancelPendingOrders(
+        fastMode: true,
+        refreshAfterCancel: false,
+        updateUiState: false,
+      );
 
-      // 调用 Repository 创建订单
-      final tradeNo = await XBoardSDK.instance.order.createOrder(
-        planId,
-        period,
+      // 调用 Repository 创建订单。若后端仍提示存在待支付订单，再全量兜底清理并重试一次。
+      final tradeNo = await _createOrderWithPendingCleanupRetry(
+        planId: planId,
+        period: period,
         couponCode: couponCode,
         depositAmount: depositAmount,
       );
@@ -203,7 +210,13 @@ class XBoardPaymentNotifier extends Notifier<void> {
         );
         ref.read(userUIStateProvider.notifier).state =
             const UIState(isLoading: false);
-        await loadPendingOrders();
+        _addLocalPendingOrder(
+          tradeNo: tradeNo,
+          planId: planId,
+          period: period,
+          depositAmount: depositAmount,
+        );
+        unawaited(_refreshPendingOrdersInBackground());
         _logger.info('订单创建成功: tradeNo=$tradeNo');
         return tradeNo;
       } else {
@@ -279,7 +292,11 @@ class XBoardPaymentNotifier extends Notifier<void> {
     }
   }
 
-  Future<int> cancelPendingOrders() async {
+  Future<int> cancelPendingOrders({
+    bool fastMode = false,
+    bool refreshAfterCancel = true,
+    bool updateUiState = true,
+  }) async {
     final userAuthState = ref.read(xboardUserAuthProvider);
     if (!userAuthState.isAuthenticated) {
       ref.read(userUIStateProvider.notifier).state = const UIState(
@@ -287,43 +304,33 @@ class XBoardPaymentNotifier extends Notifier<void> {
       );
       return 0;
     }
-    ref.read(userUIStateProvider.notifier).state =
-        const UIState(isLoading: true);
-    try {
-      // 获取所有订单并筛选待支付的
-      final orderModels = await XBoardSDK.instance.order.getOrders();
-      final orders = orderModels.map(_mapOrder).toList();
-      // 筛选需要在创建新订单前自动取消的订单（待付款和开通中）
-      final ordersToCancel = orders
-          .where((order) => order.shouldAutoCancelBeforeNewOrder)
-          .toList();
-
-      int canceledCount = 0;
-      for (final order in ordersToCancel) {
-        if (order.tradeNo.isNotEmpty) {
-          try {
-            final success =
-                await XBoardSDK.instance.order.cancelOrder(order.tradeNo);
-            if (success) {
-              canceledCount++;
-            }
-          } catch (e) {
-            _logger.info('取消订单失败: ${order.tradeNo}, 错误: $e');
-          }
-        }
-      }
-
+    if (updateUiState) {
       ref.read(userUIStateProvider.notifier).state =
-          const UIState(isLoading: false);
-      await loadPendingOrders();
+          const UIState(isLoading: true);
+    }
+    try {
+      final ordersToCancel = fastMode
+          ? await _getPendingOrdersForFastCleanup()
+          : await _fetchPendingOrdersFull();
+      final canceledCount = await _cancelPendingOrderList(ordersToCancel);
+
+      if (updateUiState) {
+        ref.read(userUIStateProvider.notifier).state =
+            const UIState(isLoading: false);
+      }
+      if (refreshAfterCancel) {
+        await loadPendingOrders(updateUiState: false);
+      }
       _logger.info('取消订单成功，共取消 $canceledCount 个订单');
       return canceledCount;
     } catch (e) {
       _logger.info('取消订单失败: $e');
-      ref.read(userUIStateProvider.notifier).state = UIState(
-        isLoading: false,
-        errorMessage: e.toString(),
-      );
+      if (updateUiState) {
+        ref.read(userUIStateProvider.notifier).state = UIState(
+          isLoading: false,
+          errorMessage: e.toString(),
+        );
+      }
       return 0;
     }
   }
@@ -339,6 +346,151 @@ class XBoardPaymentNotifier extends Notifier<void> {
     ref.read(paymentProcessStateProvider.notifier).state = ref
         .read(paymentProcessStateProvider)
         .copyWith(currentOrderTradeNo: tradeNo);
+  }
+
+  Future<String> _createOrderWithPendingCleanupRetry({
+    required int planId,
+    required String period,
+    String? couponCode,
+    int? depositAmount,
+  }) async {
+    try {
+      return await XBoardSDK.instance.order.createOrder(
+        planId,
+        period,
+        couponCode: couponCode,
+        depositAmount: depositAmount,
+      );
+    } catch (e) {
+      if (!BackendMessageMapper.matchesPendingOrderConflict(e)) {
+        rethrow;
+      }
+
+      _logger.info('快速清理后仍存在待支付订单，执行全量清理并重试创建订单: $e');
+      await cancelPendingOrders(
+        fastMode: false,
+        refreshAfterCancel: false,
+        updateUiState: false,
+      );
+      return XBoardSDK.instance.order.createOrder(
+        planId,
+        period,
+        couponCode: couponCode,
+        depositAmount: depositAmount,
+      );
+    }
+  }
+
+  bool get _hasFreshPendingOrders {
+    final loadedAt = _pendingOrdersLoadedAt;
+    if (loadedAt == null) return false;
+    return DateTime.now().difference(loadedAt) <= _pendingOrdersCacheTtl;
+  }
+
+  Future<List<DomainOrder>> _getPendingOrdersForFastCleanup() async {
+    if (_hasFreshPendingOrders) {
+      return ref
+          .read(pendingOrdersProvider)
+          .where((order) => order.shouldAutoCancelBeforeNewOrder)
+          .toList();
+    }
+    final pendingOrders = await _fetchPendingOrdersFast();
+    _setPendingOrders(pendingOrders);
+    return pendingOrders;
+  }
+
+  Future<List<DomainOrder>> _fetchPendingOrdersFast() async {
+    final result = await XBoardSDK.instance.order.getOrdersPage(
+      page: 1,
+      pageSize: _pendingOrdersFastPageSize,
+    );
+    return _mapPendingOrders(result.orders);
+  }
+
+  Future<List<DomainOrder>> _fetchPendingOrdersFull() async {
+    final orderModels = await XBoardSDK.instance.order.getOrders(
+      pageSize: _pendingOrdersFastPageSize,
+    );
+    return _mapPendingOrders(orderModels);
+  }
+
+  List<DomainOrder> _mapPendingOrders(List<OrderModel> orderModels) {
+    return orderModels
+        .map(_mapOrder)
+        .where((order) => order.shouldAutoCancelBeforeNewOrder)
+        .toList();
+  }
+
+  Future<int> _cancelPendingOrderList(List<DomainOrder> ordersToCancel) async {
+    final tradeNos = ordersToCancel
+        .map((order) => order.tradeNo)
+        .where((tradeNo) => tradeNo.isNotEmpty)
+        .toSet()
+        .toList();
+    if (tradeNos.isEmpty) {
+      return 0;
+    }
+
+    final canceledTradeNos = <String>[];
+    await Future.wait(tradeNos.map((tradeNo) async {
+      try {
+        final success = await XBoardSDK.instance.order.cancelOrder(tradeNo);
+        if (success) {
+          canceledTradeNos.add(tradeNo);
+        }
+      } catch (e) {
+        _logger.info('取消订单失败: $tradeNo, 错误: $e');
+      }
+    }));
+
+    if (canceledTradeNos.isNotEmpty) {
+      final canceledSet = canceledTradeNos.toSet();
+      ref.read(pendingOrdersProvider.notifier).state = ref
+          .read(pendingOrdersProvider)
+          .where((order) => !canceledSet.contains(order.tradeNo))
+          .toList();
+      clearGetOrdersCache();
+    }
+    return canceledTradeNos.length;
+  }
+
+  void _setPendingOrders(List<DomainOrder> pendingOrders) {
+    ref.read(pendingOrdersProvider.notifier).state = pendingOrders;
+    _pendingOrdersLoadedAt = DateTime.now();
+  }
+
+  void _addLocalPendingOrder({
+    required String tradeNo,
+    required int planId,
+    required String period,
+    int? depositAmount,
+  }) {
+    final totalAmount = depositAmount == null ? 0.0 : depositAmount / 100.0;
+    final current = ref
+        .read(pendingOrdersProvider)
+        .where((order) => order.tradeNo != tradeNo)
+        .toList();
+    ref.read(pendingOrdersProvider.notifier).state = [
+      DomainOrder(
+        tradeNo: tradeNo,
+        planId: planId,
+        period: period,
+        totalAmount: totalAmount,
+        status: OrderStatus.pending,
+        createdAt: DateTime.now(),
+      ),
+      ...current,
+    ];
+    _pendingOrdersLoadedAt = DateTime.now();
+    clearGetOrdersCache();
+  }
+
+  Future<void> _refreshPendingOrdersInBackground() async {
+    try {
+      await loadPendingOrders(updateUiState: false);
+    } catch (e) {
+      _logger.info('后台刷新待支付订单失败: $e');
+    }
   }
 }
 

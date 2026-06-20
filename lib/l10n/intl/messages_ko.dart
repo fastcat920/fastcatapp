@@ -1207,6 +1207,9 @@ class MessageLookup extends MessageLookupByLibrary {
     "xboardCommissionIssuing": MessageLookupByLibrary.simpleMessage(
       "커미션 issuing",
     ),
+    "xboardCommissionOffsetAmount": MessageLookupByLibrary.simpleMessage(
+      "커미션 차감 금액",
+    ),
     "xboardCompletePaymentInBrowser": MessageLookupByLibrary.simpleMessage(
       "complete 결제 IN 브라우저",
     ),
@@ -1730,6 +1733,7 @@ class MessageLookup extends MessageLookupByLibrary {
       "quarterly 결제",
     ),
     "xboardRecharge": MessageLookupByLibrary.simpleMessage("충전"),
+    "xboardRechargeAmount": MessageLookupByLibrary.simpleMessage("충전 금액"),
     "xboardRechargeBalance": MessageLookupByLibrary.simpleMessage("충전 잔액"),
     "xboardRechargeBalanceTip": MessageLookupByLibrary.simpleMessage(
       "충전 잔액 안내",

@@ -72,7 +72,9 @@ class V2BoardInviteAdapter implements InviteApi {
             stat.commissionBalance ?? 0, // stat[1] totalCommission
             stat.commissionPendingBalance ?? 0, // stat[2] pendingCommission
             stat.commissionRate ?? 0, // stat[3] commissionRate
-            stat.commissionBalance ?? 0, // stat[4] availableCommission
+            stat.availableCommission ??
+                stat.commissionBalance ??
+                0, // stat[4] availableCommission
           ];
     return InviteInfoModel(
       codes: (info.codes ?? []).map(_mapInviteCode).toList(),

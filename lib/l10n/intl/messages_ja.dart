@@ -1211,6 +1211,9 @@ class MessageLookup extends MessageLookupByLibrary {
     ),
     "xboardCommissionConfirmed": MessageLookupByLibrary.simpleMessage("確認済み"),
     "xboardCommissionIssuing": MessageLookupByLibrary.simpleMessage("発行中"),
+    "xboardCommissionOffsetAmount": MessageLookupByLibrary.simpleMessage(
+      "コミッション充当額",
+    ),
     "xboardCompletePaymentInBrowser": MessageLookupByLibrary.simpleMessage(
       "2. ブラウザで支払いを完了してください",
     ),
@@ -1714,6 +1717,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "xboardPurchaseTraffic": MessageLookupByLibrary.simpleMessage("トラフィックを購入"),
     "xboardQuarterlyPayment": MessageLookupByLibrary.simpleMessage("四半期払い"),
     "xboardRecharge": MessageLookupByLibrary.simpleMessage("チャージ"),
+    "xboardRechargeAmount": MessageLookupByLibrary.simpleMessage("チャージ金額"),
     "xboardRechargeBalance": MessageLookupByLibrary.simpleMessage("残高をチャージ"),
     "xboardRechargeBalanceTip": MessageLookupByLibrary.simpleMessage(
       "チャージ金額はアカウント残高に追加されます。",

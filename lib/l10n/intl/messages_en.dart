@@ -1468,6 +1468,9 @@ class MessageLookup extends MessageLookupByLibrary {
       "Confirmed",
     ),
     "xboardCommissionIssuing": MessageLookupByLibrary.simpleMessage("Issuing"),
+    "xboardCommissionOffsetAmount": MessageLookupByLibrary.simpleMessage(
+      "Commission deduction",
+    ),
     "xboardCompletePaymentInBrowser": MessageLookupByLibrary.simpleMessage(
       "2. Please complete payment in your browser",
     ),
@@ -2122,6 +2125,9 @@ class MessageLookup extends MessageLookupByLibrary {
     ),
     "xboardQuarterlyPayment": MessageLookupByLibrary.simpleMessage("Quarterly"),
     "xboardRecharge": MessageLookupByLibrary.simpleMessage("Recharge"),
+    "xboardRechargeAmount": MessageLookupByLibrary.simpleMessage(
+      "Recharge amount",
+    ),
     "xboardRechargeBalance": MessageLookupByLibrary.simpleMessage(
       "Recharge balance",
     ),

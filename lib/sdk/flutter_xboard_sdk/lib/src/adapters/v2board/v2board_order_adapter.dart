@@ -18,7 +18,8 @@ class V2BoardOrderAdapter implements OrderApi {
     final allOrders = <Order>[];
     var currentPage = page;
     while (true) {
-      final response = await _api.fetchUserOrders(page: currentPage, pageSize: pageSize);
+      final response =
+          await _api.fetchUserOrders(page: currentPage, pageSize: pageSize);
       final data = response.data;
       if (data.isEmpty) break;
       allOrders.addAll(data);
@@ -29,10 +30,12 @@ class V2BoardOrderAdapter implements OrderApi {
   }
 
   @override
-  Future<OrdersPageResult> getOrdersPage({required int page, int pageSize = 30}) async {
+  Future<OrdersPageResult> getOrdersPage(
+      {required int page, int pageSize = 30}) async {
     final response = await _api.fetchUserOrders(page: page, pageSize: pageSize);
     final orders = response.data.map(_mapOrder).toList();
-    return OrdersPageResult(orders: orders, total: response.total ?? orders.length);
+    return OrdersPageResult(
+        orders: orders, total: response.total ?? orders.length);
   }
 
   @override
@@ -106,6 +109,11 @@ class V2BoardOrderAdapter implements OrderApi {
       tradeNo: order.tradeNo,
       totalAmount: order.totalAmount,
       balanceAmount: order.balanceAmount,
+      surplusAmount: order.surplusAmount,
+      refundAmount: order.refundAmount,
+      depositAmount: order.depositAmount,
+      commissionBalance: order.commissionBalance,
+      actualCommissionBalance: order.actualCommissionBalance,
       period: order.period,
       status: order.status,
       createdAt: order.createdAt,

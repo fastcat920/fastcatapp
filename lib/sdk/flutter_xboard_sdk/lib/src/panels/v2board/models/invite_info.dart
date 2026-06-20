@@ -9,7 +9,7 @@ part 'invite_info.g.dart';
 class InviteInfo with _$InviteInfo {
   const factory InviteInfo({
     List<InviteCode>? codes,
-    InviteStat? stat,  // 单个对象，不是数组
+    InviteStat? stat, // 单个对象，不是数组
   }) = _InviteInfo;
 
   factory InviteInfo.fromJson(Map<String, dynamic> json) =>
@@ -20,7 +20,7 @@ class InviteInfo with _$InviteInfo {
 @freezed
 class InviteCode with _$InviteCode {
   const InviteCode._();
-  
+
   const factory InviteCode({
     int? id,
     @JsonKey(name: 'user_id') int? userId,
@@ -29,10 +29,10 @@ class InviteCode with _$InviteCode {
     @JsonKey(name: 'created_at') int? createdAt,
     @JsonKey(name: 'updated_at') int? updatedAt,
   }) = _InviteCode;
-  
-  factory InviteCode.fromJson(Map<String, dynamic> json) => 
+
+  factory InviteCode.fromJson(Map<String, dynamic> json) =>
       _$InviteCodeFromJson(json);
-  
+
   /// 是否可用
   bool get isAvailable => status == 0;
 }
@@ -45,8 +45,9 @@ class InviteStat with _$InviteStat {
     @JsonKey(name: 'commission_rate') int? commissionRate,
     @JsonKey(name: 'commission_balance') int? commissionBalance,
     @JsonKey(name: 'commission_pending_balance') int? commissionPendingBalance,
+    @JsonKey(name: 'available_commission') int? availableCommission,
   }) = _InviteStat;
-  
-  factory InviteStat.fromJson(Map<String, dynamic> json) => 
+
+  factory InviteStat.fromJson(Map<String, dynamic> json) =>
       _$InviteStatFromJson(json);
 }

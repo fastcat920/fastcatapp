@@ -53,6 +53,9 @@ class _OrderDetailPageState extends ConsumerState<OrderDetailPage>
   double? _couponPrice;
   double? _refundAmount;
   double? _surplusAmount;
+  double? _depositAmount;
+  double? _commissionBalance;
+  double? _actualCommissionBalance;
   DomainPlan? _resolvedOrderPlan;
   int? _resolvedOrderPlanId;
   int? _resolvingPlanId;
@@ -85,6 +88,10 @@ class _OrderDetailPageState extends ConsumerState<OrderDetailPage>
           _couponPrice = (data['coupon_price'] as num?)?.toDouble();
           _refundAmount = (data['refund_amount'] as num?)?.toDouble();
           _surplusAmount = (data['surplus_amount'] as num?)?.toDouble();
+          _depositAmount = (data['deposit_amount'] as num?)?.toDouble();
+          _commissionBalance = (data['commission_balance'] as num?)?.toDouble();
+          _actualCommissionBalance =
+              (data['actual_commission_balance'] as num?)?.toDouble();
           _extrasLoaded = true;
         });
       } else if (mounted) {
@@ -142,6 +149,9 @@ class _OrderDetailPageState extends ConsumerState<OrderDetailPage>
                 couponPrice: _couponPrice,
                 refundAmount: _refundAmount,
                 surplusAmount: _surplusAmount,
+                depositAmount: _depositAmount,
+                commissionBalance: _commissionBalance,
+                actualCommissionBalance: _actualCommissionBalance,
                 methodsAsync: methodsAsync,
                 globalPaymentMethods: globalPaymentMethods,
                 plans: plans,
@@ -203,6 +213,9 @@ class _OrderDetailPageState extends ConsumerState<OrderDetailPage>
             couponPrice: _couponPrice,
             refundAmount: _refundAmount,
             surplusAmount: _surplusAmount,
+            depositAmount: _depositAmount,
+            commissionBalance: _commissionBalance,
+            actualCommissionBalance: _actualCommissionBalance,
             methodsAsync: methodsAsync,
             globalPaymentMethods: globalPaymentMethods,
             plans: plans,
@@ -225,6 +238,9 @@ class _OrderDetailPageState extends ConsumerState<OrderDetailPage>
   }
 
   Future<void> _refreshPage() async {
+    if (mounted) {
+      setState(() => _extrasLoaded = false);
+    }
     clearGetOrderCache(widget.tradeNo);
     clearGetOrderPaymentMethodsCache(widget.tradeNo);
     ref.invalidate(getOrderProvider(widget.tradeNo));
@@ -234,7 +250,10 @@ class _OrderDetailPageState extends ConsumerState<OrderDetailPage>
         .loadPaymentMethods(forceRefresh: true);
     await ref.read(xboardSubscriptionProvider.notifier).refreshPlans();
     await ref.read(xboardSubscriptionProvider.notifier).autoRefreshIfNeeded();
-    await ref.read(getOrderProvider(widget.tradeNo).future);
+    await Future.wait([
+      ref.read(getOrderProvider(widget.tradeNo).future),
+      _fetchOrderExtras(),
+    ]);
   }
 
   void _retryOrder() {
@@ -523,6 +542,9 @@ class _OrderDetailContent extends StatelessWidget {
   final double? couponPrice;
   final double? refundAmount;
   final double? surplusAmount;
+  final double? depositAmount;
+  final double? commissionBalance;
+  final double? actualCommissionBalance;
   final AsyncValue<List<PaymentMethodModel>> methodsAsync;
   final List<DomainPaymentMethod> globalPaymentMethods;
   final List<DomainPlan> plans;
@@ -550,6 +572,9 @@ class _OrderDetailContent extends StatelessWidget {
     required this.couponPrice,
     required this.refundAmount,
     required this.surplusAmount,
+    required this.depositAmount,
+    required this.commissionBalance,
+    required this.actualCommissionBalance,
     required this.methodsAsync,
     required this.globalPaymentMethods,
     required this.plans,
@@ -587,8 +612,12 @@ class _OrderDetailContent extends StatelessWidget {
       orderBalanceAmount: order?.balanceAmount,
       accountBalance: userInfo?.balanceInYuan,
       couponPrice: couponPrice,
-      refundAmount: refundAmount,
-      surplusAmount: surplusAmount,
+      refundAmount: refundAmount ?? order?.refundAmount,
+      surplusAmount: surplusAmount ?? order?.surplusAmount,
+      depositAmount: depositAmount ?? order?.depositAmount,
+      commissionBalance: commissionBalance ?? order?.commissionBalance,
+      actualCommissionBalance:
+          actualCommissionBalance ?? order?.actualCommissionBalance,
     );
 
     return LayoutBuilder(
@@ -611,6 +640,7 @@ class _OrderDetailContent extends StatelessWidget {
             _OrderInfoCard(
               tradeNo: tradeNo,
               order: order,
+              period: period,
               pricing: pricing,
             ),
           ],
@@ -781,17 +811,33 @@ class _OrderPricing {
     double? couponPrice,
     double? refundAmount,
     double? surplusAmount,
+    double? depositAmount,
+    double? commissionBalance,
+    double? actualCommissionBalance,
   }) {
+    final isDeposit = period == 'deposit' || order?.period == 'deposit';
     final planPrice = _priceForPeriod(plan, period);
     final backendTotalAmount = _amountFromCents(order?.totalAmount);
     final backendBalanceAmount = _amountFromCents(orderBalanceAmount);
+    final surplus = _amountFromCents(surplusAmount);
+    final backendDepositAmount = _amountFromCents(depositAmount);
+    final backendCommissionAmount =
+        _amountFromCents(actualCommissionBalance ?? commissionBalance);
 
     // “套餐金额”优先取套餐价格口径（plan/resetPrice），
     // totalAmount 用于“订单实付/待支付”口径，不再重复扣减余额。
     final orderPackageFallback = backendTotalAmount + backendBalanceAmount;
-    final packageAmount = planPrice ??
-        originalPrice ??
-        (orderPackageFallback > 0 ? orderPackageFallback : 0.0);
+    final depositPackageFallback = backendDepositAmount > 0
+        ? backendDepositAmount
+        : (orderPackageFallback + surplus > 0
+            ? orderPackageFallback + surplus
+            : backendCommissionAmount);
+    final packageAmount = isDeposit
+        ? (originalPrice ??
+            (depositPackageFallback > 0 ? depositPackageFallback : 0.0))
+        : (planPrice ??
+            originalPrice ??
+            (orderPackageFallback > 0 ? orderPackageFallback : 0.0));
 
     final computedBalance = order != null
         ? backendBalanceAmount
@@ -812,7 +858,6 @@ class _OrderPricing {
         : null;
     final discount = couponAmount ?? discountAmount ?? 0;
     final refund = _amountFromCents(refundAmount);
-    final surplus = _amountFromCents(surplusAmount);
     return _OrderPricing(
       packageAmount: packageAmount,
       discountAmount: discount,
@@ -886,25 +931,29 @@ class _ProductInfoCard extends StatelessWidget {
 class _OrderInfoCard extends StatelessWidget {
   final String tradeNo;
   final OrderModel? order;
+  final String? period;
   final _OrderPricing pricing;
 
   const _OrderInfoCard({
     required this.tradeNo,
     required this.order,
+    required this.period,
     required this.pricing,
   });
 
   @override
   Widget build(BuildContext context) {
     final shouldShowBalance = pricing.balanceUsed > 0;
+    final isDeposit = period == 'deposit' || order?.period == 'deposit';
+    final l10n = AppLocalizations.of(context);
 
     return _InfoCard(
-      title: AppLocalizations.of(context).xboardOrderInfo,
+      title: l10n.xboardOrderInfo,
       icon: Icons.receipt_long_outlined,
       child: Column(
         children: [
           _InfoRow(
-            label: AppLocalizations.of(context).xboardOrderNumber,
+            label: l10n.xboardOrderNumber,
             value: order?.tradeNo ?? tradeNo,
             valueFontSize: 11,
             valueWeight: FontWeight.w500,
@@ -913,38 +962,40 @@ class _OrderInfoCard extends StatelessWidget {
               borderRadius: BorderRadius.circular(8),
               clipBehavior: Clip.antiAlias,
               child: InkWell(
-              borderRadius: BorderRadius.circular(8),
-              onTap: () async {
-                await Clipboard.setData(
-                  ClipboardData(text: order?.tradeNo ?? tradeNo),
-                );
-                if (context.mounted) {
-                  XBoardNotification.showSuccess(
-                    AppLocalizations.of(context).copiedToClipboard,
+                borderRadius: BorderRadius.circular(8),
+                onTap: () async {
+                  await Clipboard.setData(
+                    ClipboardData(text: order?.tradeNo ?? tradeNo),
                   );
-                }
-              },
-              child: Padding(
-                padding: const EdgeInsets.only(left: 8),
-                child: Icon(
-                  Icons.copy,
-                  size: 15,
-                  color: Theme.of(context).colorScheme.primary,
+                  if (context.mounted) {
+                    XBoardNotification.showSuccess(
+                      l10n.copiedToClipboard,
+                    );
+                  }
+                },
+                child: Padding(
+                  padding: const EdgeInsets.only(left: 8),
+                  child: Icon(
+                    Icons.copy,
+                    size: 15,
+                    color: Theme.of(context).colorScheme.primary,
+                  ),
                 ),
               ),
-            ),
             ),
           ),
           const SizedBox(height: 12),
           _InfoRow(
-            label: AppLocalizations.of(context).xboardCreatedAt,
+            label: l10n.xboardCreatedAt,
             value: order?.createdAt != null
                 ? _formatDateTime(order!.createdAt!)
                 : '-',
           ),
           const SizedBox(height: 12),
           _InfoRow(
-            label: AppLocalizations.of(context).xboardPackageAmount,
+            label: isDeposit
+                ? l10n.xboardRechargeAmount
+                : l10n.xboardPackageAmount,
             value: '¥${pricing.packageAmount.toStringAsFixed(2)}',
             valueFontSize: 14,
             valueWeight: FontWeight.w700,
@@ -953,7 +1004,7 @@ class _OrderInfoCard extends StatelessWidget {
           if (pricing.discountAmount > 0) ...[
             const SizedBox(height: 12),
             _InfoRow(
-              label: AppLocalizations.of(context).xboardDiscountAmount,
+              label: l10n.xboardDiscountAmount,
               value: '-¥${pricing.discountAmount.toStringAsFixed(2)}',
               valueColor: XbUiStatusColor.success(context),
             ),
@@ -971,7 +1022,9 @@ class _OrderInfoCard extends StatelessWidget {
           if (pricing.surplusAmount > 0) ...[
             const SizedBox(height: 12),
             _InfoRow(
-              label: AppLocalizations.of(context).xboardSurplusAmount,
+              label: isDeposit
+                  ? l10n.xboardCommissionOffsetAmount
+                  : l10n.xboardSurplusAmount,
               value: '-¥${pricing.surplusAmount.toStringAsFixed(2)}',
               valueColor: XbUiStatusColor.muted(context),
             ),
@@ -979,7 +1032,7 @@ class _OrderInfoCard extends StatelessWidget {
           if (shouldShowBalance) ...[
             const SizedBox(height: 12),
             _InfoRow(
-              label: AppLocalizations.of(context).xboardUseBalance,
+              label: l10n.xboardUseBalance,
               value: '-¥${pricing.balanceUsed.toStringAsFixed(2)}',
               valueFontSize: 14,
               valueWeight: FontWeight.w700,
@@ -989,7 +1042,7 @@ class _OrderInfoCard extends StatelessWidget {
           if (pricing.refundAmount > 0) ...[
             const SizedBox(height: 12),
             _InfoRow(
-              label: AppLocalizations.of(context).xboardRefundAmount,
+              label: l10n.xboardRefundAmount,
               value: '¥${pricing.refundAmount.toStringAsFixed(2)}',
               valueColor: XbUiStatusColor.info(context),
             ),
@@ -1132,53 +1185,53 @@ class _PaymentMethodTile extends StatelessWidget {
       borderRadius: BorderRadius.circular(12),
       clipBehavior: Clip.antiAlias,
       child: InkWell(
-      borderRadius: BorderRadius.circular(12),
-      onTap: onTap,
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
-        decoration: BoxDecoration(
-          color: selected
-              ? theme.colorScheme.primary.withValues(alpha: 0.08)
-              : theme.colorScheme.surface,
-          borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: borderColor, width: selected ? 1.5 : 1),
-        ),
-        child: Row(
-          children: [
-            _PaymentIcon(iconUrl: method.iconUrl),
-            const SizedBox(width: 12),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    method.name,
-                    style: theme.textTheme.titleSmall?.copyWith(
-                      fontWeight: FontWeight.w700,
-                    ),
-                  ),
-                  if (method.feePercentage > 0) ...[
-                    const SizedBox(height: 3),
+        borderRadius: BorderRadius.circular(12),
+        onTap: onTap,
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
+          decoration: BoxDecoration(
+            color: selected
+                ? theme.colorScheme.primary.withValues(alpha: 0.08)
+                : theme.colorScheme.surface,
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(color: borderColor, width: selected ? 1.5 : 1),
+          ),
+          child: Row(
+            children: [
+              _PaymentIcon(iconUrl: method.iconUrl),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
                     Text(
-                      '手续费 ${method.feePercentage.toStringAsFixed(1)}%',
-                      style: theme.textTheme.bodySmall?.copyWith(
-                        color: theme.colorScheme.onSurfaceVariant,
+                      method.name,
+                      style: theme.textTheme.titleSmall?.copyWith(
+                        fontWeight: FontWeight.w700,
                       ),
                     ),
+                    if (method.feePercentage > 0) ...[
+                      const SizedBox(height: 3),
+                      Text(
+                        '手续费 ${method.feePercentage.toStringAsFixed(1)}%',
+                        style: theme.textTheme.bodySmall?.copyWith(
+                          color: theme.colorScheme.onSurfaceVariant,
+                        ),
+                      ),
+                    ],
                   ],
-                ],
+                ),
               ),
-            ),
-            Icon(
-              selected ? Icons.check_circle : Icons.radio_button_unchecked,
-              color: selected
-                  ? theme.colorScheme.primary
-                  : theme.colorScheme.outline,
-            ),
-          ],
+              Icon(
+                selected ? Icons.check_circle : Icons.radio_button_unchecked,
+                color: selected
+                    ? theme.colorScheme.primary
+                    : theme.colorScheme.outline,
+              ),
+            ],
+          ),
         ),
       ),
-    ),
     );
   }
 }

@@ -49,6 +49,7 @@ _$InviteStatImpl _$$InviteStatImplFromJson(Map<String, dynamic> json) =>
       commissionBalance: (json['commission_balance'] as num?)?.toInt(),
       commissionPendingBalance:
           (json['commission_pending_balance'] as num?)?.toInt(),
+      availableCommission: (json['available_commission'] as num?)?.toInt(),
     );
 
 Map<String, dynamic> _$$InviteStatImplToJson(_$InviteStatImpl instance) =>
@@ -57,4 +58,5 @@ Map<String, dynamic> _$$InviteStatImplToJson(_$InviteStatImpl instance) =>
       'commission_rate': instance.commissionRate,
       'commission_balance': instance.commissionBalance,
       'commission_pending_balance': instance.commissionPendingBalance,
+      'available_commission': instance.availableCommission,
     };

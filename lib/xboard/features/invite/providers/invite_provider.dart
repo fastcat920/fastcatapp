@@ -85,19 +85,20 @@ class InviteState {
   double get totalCommission => inviteData?.stats.totalCommission ?? 0.0;
   double get pendingCommission => inviteData?.stats.pendingCommission ?? 0.0;
   double get commissionRate => inviteData?.stats.commissionRate ?? 0.0;
-  double get availableCommission =>
-      inviteData?.stats.availableCommission ?? 0.0;
+  double get availableCommission {
+    final commissionBalance = userInfo?.commissionBalanceInCents;
+    if (commissionBalance != null) return commissionBalance / 100.0;
+    return inviteData?.stats.availableCommission ?? 0.0;
+  }
+
   double get walletBalance => (userInfo?.balanceInCents ?? 0) / 100.0;
   bool get isWithdrawEnabled => withdrawEnabled && withdrawMethods.isNotEmpty;
   String get formattedCommission => _formatCommissionAmount(totalCommission);
   String get formattedPendingCommission =>
       _formatCommissionAmount(pendingCommission);
   String get formattedAvailableCommission {
-    if (inviteData != null) return _formatCommissionAmount(availableCommission);
-    // 邀请数据未加载前，用 userInfo.commissionBalance 兜底；若 userInfo 也未就绪则显示占位符
-    if (userInfo == null) return '···';
-    return _formatCommissionAmount(
-        (userInfo!.commissionBalanceInCents) / 100.0);
+    if (userInfo == null && inviteData == null) return '···';
+    return _formatCommissionAmount(availableCommission);
   }
 
   String get formattedWalletBalance {
@@ -123,7 +124,7 @@ class InviteNotifier extends Notifier<InviteState> {
 
     // 若 userInfoProvider 在之后才加载完成（首次启动极快进入），同步更新
     ref.listen<DomainUser?>(userInfoProvider, (_, next) {
-      if (next != null && state.userInfo == null) {
+      if (next != null && next != state.userInfo) {
         Future<void>(() {
           state = state.copyWith(userInfo: next);
         });
@@ -255,13 +256,18 @@ class InviteNotifier extends Notifier<InviteState> {
     await loadCommissionHistory(page: 1, append: false);
   }
 
-  Future<void> loadUserInfo() async {
+  Future<void> loadUserInfo({bool forceRefresh = false}) async {
     try {
       _logger.info('加载用户信息...');
       _logger.info('加载用户信息...');
+      if (forceRefresh) {
+        clearGetUserInfoCache();
+        ref.invalidate(getUserInfoProvider);
+      }
       final userModel = await ref.read(getUserInfoProvider.future);
       final userInfo = _mapUser(userModel);
       state = state.copyWith(userInfo: userInfo);
+      ref.read(userInfoProvider.notifier).state = userInfo;
       unawaited(ref.read(storageServiceProvider).saveDomainUser(userInfo));
       _logger.info('用户信息加载成功: 钱包余额 ¥${userInfo.balanceInCents / 100.0}');
     } catch (e) {
@@ -314,8 +320,7 @@ class InviteNotifier extends Notifier<InviteState> {
 
     try {
       _logger.info('提现佣金: 方式=$withdrawMethod, 账号=$withdrawAccount');
-      final availableAmount =
-          state.inviteData?.stats.availableCommission ?? 0.0;
+      final availableAmount = state.availableCommission;
       if (availableAmount <= 0) {
         throw Exception('可提现金额不足');
       }
@@ -333,10 +338,7 @@ class InviteNotifier extends Notifier<InviteState> {
         ));
       }
 
-      await loadInviteData();
-      await refreshCommissionHistory();
-
-      state = state.copyWith(isLoading: false);
+      await _refreshAfterCommissionMutation();
       _logger.info('提现申请提交成功');
       return true;
     } catch (e) {
@@ -369,12 +371,7 @@ class InviteNotifier extends Notifier<InviteState> {
         ));
       }
 
-      await Future.wait([
-        loadInviteData(),
-        loadUserInfo(),
-      ]);
-
-      state = state.copyWith(isLoading: false);
+      await _refreshAfterCommissionMutation();
       _logger.info('划转成功');
       return true;
     } catch (e) {
@@ -418,6 +415,7 @@ class InviteNotifier extends Notifier<InviteState> {
       final userInfo = _mapUser(results[2] as UserModel);
       final withdrawConfig = results[3] as _WithdrawConfig;
       // 并行拿到所有数据后做一次 state 更新，消除多次重建引起的闪烁
+      ref.read(userInfoProvider.notifier).state = userInfo;
       state = InviteState(
         inviteData: inviteData,
         commissionHistory: newHistory,
@@ -444,6 +442,41 @@ class InviteNotifier extends Notifier<InviteState> {
         errorMessage: e.toString(),
       );
     }
+  }
+
+  Future<void> _refreshAfterCommissionMutation() async {
+    ref.invalidate(getInviteInfoProvider);
+    ref.invalidate(getCommissionDetailsProvider(page: 1));
+    clearGetUserInfoCache();
+    ref.invalidate(getUserInfoProvider);
+
+    final results = await Future.wait([
+      ref.read(getInviteInfoProvider.future),
+      ref.read(getCommissionDetailsProvider(page: 1).future),
+      ref.read(getUserInfoProvider.future),
+    ]);
+    final inviteData = _mapInviteInfo(results[0] as InviteInfoModel);
+    final newHistory = (results[1] as List<CommissionDetailModel>)
+        .map(_mapCommission)
+        .toList();
+    final userInfo = _mapUser(results[2] as UserModel);
+
+    ref.read(userInfoProvider.notifier).state = userInfo;
+    state = state.copyWith(
+      inviteData: inviteData,
+      commissionHistory: newHistory,
+      userInfo: userInfo,
+      isLoading: false,
+      isLoadingHistory: false,
+      currentHistoryPage: 1,
+      hasMoreHistory: newHistory.length >= state.historyPageSize,
+      errorMessage: null,
+    );
+
+    final storage = ref.read(storageServiceProvider);
+    unawaited(storage.saveDomainInvite(inviteData));
+    unawaited(storage.saveDomainCommissionHistory(newHistory));
+    unawaited(storage.saveDomainUser(userInfo));
   }
 
   Future<_WithdrawConfig> _fetchWithdrawConfig() async {

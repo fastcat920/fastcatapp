@@ -104,6 +104,27 @@ class BackendMessageMapper {
         ]);
   }
 
+  static bool matchesPendingOrderConflict(Object? error) {
+    final raw = normalizeRaw(rawMessage(error));
+    final lower = raw.toLowerCase();
+    return raw.contains('待支付') ||
+        raw.contains('待付款') ||
+        raw.contains('未支付') ||
+        raw.contains('未付款') ||
+        raw.contains('未完成订单') ||
+        raw.contains('存在订单') ||
+        _containsAny(lower, const [
+          'pending order',
+          'unpaid order',
+          'unpaid invoice',
+          'outstanding order',
+          'incomplete order',
+          'order pending',
+          'wait payment',
+          'waiting for payment',
+        ]);
+  }
+
   static String? _mapExact(String raw) {
     final l10n = AppLocalizations.current;
     final normalized = raw.toLowerCase().replaceAll(RegExp(r'\s+'), ' ').trim();

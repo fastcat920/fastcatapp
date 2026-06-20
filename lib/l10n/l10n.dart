@@ -7325,6 +7325,16 @@ class AppLocalizations {
     );
   }
 
+  /// `Commission deduction`
+  String get xboardCommissionOffsetAmount {
+    return Intl.message(
+      'Commission deduction',
+      name: 'xboardCommissionOffsetAmount',
+      desc: '',
+      args: [],
+    );
+  }
+
   /// `Docs center`
   String get xboardDocsCenter {
     return Intl.message(
@@ -7580,6 +7590,16 @@ class AppLocalizations {
     return Intl.message(
       'Package amount',
       name: 'xboardPackageAmount',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Recharge amount`
+  String get xboardRechargeAmount {
+    return Intl.message(
+      'Recharge amount',
+      name: 'xboardRechargeAmount',
       desc: '',
       args: [],
     );
