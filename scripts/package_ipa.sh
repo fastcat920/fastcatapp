@@ -8,7 +8,8 @@ if [ -z "${XOR_KEY:-}" ]; then
 fi
 
 VER=$(grep '^version:' pubspec.yaml | awk '{print $2}')
-echo "→ Building IPA for fastcat ${VER}..."
+VERSION="${VER%+*}"
+echo "→ Building IPA for fastcat ${VERSION}..."
 mkdir -p dist
 
 flutter build ipa --release --no-codesign --dart-define=XOR_KEY="${XOR_KEY}"
@@ -18,8 +19,8 @@ cd build/ios
 rm -rf Payload
 mkdir -p Payload
 cp -a archive/Runner.xcarchive/Products/Applications/Runner.app Payload/
-zip -r -q "fastcat-${VER}-mobile-release.ipa" Payload
+zip -r -q "fastcat-iOS-${VERSION}.ipa" Payload
 rm -rf Payload
 
-cp "fastcat-${VER}-mobile-release.ipa" ../../dist/
-echo "✓ dist/fastcat-${VER}-mobile-release.ipa"
+cp "fastcat-iOS-${VERSION}.ipa" ../../dist/
+echo "✓ dist/fastcat-iOS-${VERSION}.ipa"

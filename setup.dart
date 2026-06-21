@@ -915,13 +915,20 @@ end tell
     final appEn = Build.appNameEn;
     final version = Build.appVersion;
     final dir = Directory(Build.distPath);
-    if (!dir.existsSync()) return;
+    print(
+        '[setup.dart] 🔍 normalizeArtifactNames: os=$osName version=$version appEn=$appEn dir=${dir.path}');
+    if (!dir.existsSync()) {
+      print('[setup.dart] ⚠️ dist/ does not exist, skip rename');
+      return;
+    }
 
     // flutter_distributor 使用 pubspec.yaml 的 name+version 生成文件名，
     // 而非 distribute_options.yaml 的 app_name。通过版本号识别产物。
+    var renamed = 0;
     for (final entity in dir.listSync()) {
       if (entity is! File) continue;
       final oldName = entity.uri.pathSegments.last;
+      print('[setup.dart]   → scanning: $oldName');
       // 跳过已符合新命名的文件
       if (oldName.startsWith('$appEn-')) continue;
 
@@ -936,8 +943,13 @@ end tell
         if (newFile.existsSync()) newFile.deleteSync();
         entity.renameSync(newPath);
         print('[setup.dart]   ✅ renamed artifact: $oldName → $newName');
+        renamed++;
         break;
       }
+    }
+    if (renamed == 0) {
+      print(
+          '[setup.dart] ⚠️ no artifacts matched for $osName (exts: $extensions)');
     }
   }
 

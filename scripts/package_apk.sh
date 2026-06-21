@@ -8,7 +8,8 @@ if [ -z "${XOR_KEY:-}" ]; then
 fi
 
 VER=$(grep '^version:' pubspec.yaml | awk '{print $2}')
-echo "→ Building split APKs for fastcat ${VER}..."
+VERSION="${VER%+*}"
+echo "→ Building split APKs for fastcat ${VERSION}..."
 
 flutter clean
 set +e
@@ -31,13 +32,13 @@ V7A_SRC=$(find build -name "*armeabi*v7a*.apk" -o -name "*armeabi-v7a*.apk" 2>/d
 
 copied=0
 if [ -n "${V8A_SRC:-}" ] && [ -f "$V8A_SRC" ]; then
-  cp "$V8A_SRC" "dist/fastcat-${VER}-arm64-v8a-release.apk"
-  echo "✓ dist/fastcat-${VER}-arm64-v8a-release.apk (from $V8A_SRC)"
+  cp "$V8A_SRC" "dist/fastcat-Android-${VERSION}-arm64-v8a.apk"
+  echo "✓ dist/fastcat-Android-${VERSION}-arm64-v8a.apk (from $V8A_SRC)"
   copied=$((copied + 1))
 fi
 if [ -n "${V7A_SRC:-}" ] && [ -f "$V7A_SRC" ]; then
-  cp "$V7A_SRC" "dist/fastcat-${VER}-armeabi-v7a-release.apk"
-  echo "✓ dist/fastcat-${VER}-armeabi-v7a-release.apk (from $V7A_SRC)"
+  cp "$V7A_SRC" "dist/fastcat-Android-${VERSION}-armeabi-v7a.apk"
+  echo "✓ dist/fastcat-Android-${VERSION}-armeabi-v7a.apk (from $V7A_SRC)"
   copied=$((copied + 1))
 fi
 
