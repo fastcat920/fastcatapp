@@ -906,6 +906,38 @@ end tell
     );
   }
 
+  /// 将 flutter_distributor 生成的产物重命名为统一格式：
+  ///   {英文品牌名}-{系统名}-{版本号}-{架构}.{扩展名}
+  void _normalizeArtifactNames({
+    required String osName,
+    required String archName,
+    required List<String> extensions,
+  }) {
+    final appEn = Build.appNameEn;
+    final version = Build.appVersion;
+    final dir = Directory(Build.distPath);
+    if (!dir.existsSync()) return;
+
+    for (final entity in dir.listSync()) {
+      if (entity is! File) continue;
+      final oldName = entity.uri.pathSegments.last;
+      if (!oldName.startsWith(appEn)) continue;
+
+      for (final ext in extensions) {
+        if (!oldName.endsWith('.$ext')) continue;
+        final newName = '$appEn-$osName-$version-$archName.$ext';
+        if (oldName == newName) continue;
+
+        final newPath = join(Build.distPath, newName);
+        final newFile = File(newPath);
+        if (newFile.existsSync()) newFile.deleteSync();
+        entity.renameSync(newPath);
+        print('[setup.dart]   ✅ renamed artifact: $oldName → $newName');
+        break;
+      }
+    }
+  }
+
   Future<void> _buildMacosDmg({
     required String? archName,
     required String env,
@@ -1016,11 +1048,10 @@ end tell
     final dmgConfigSourcePath =
         join(current, "macos", "packaging", "dmg", "make_config.json");
     final version = Build.appVersion;
-    final String archSuffix =
-        (archName != null && archName != 'universal') ? '-$archName' : '';
+    final String archLabel = archName ?? 'universal';
     final dmgFileName = version.isNotEmpty
-        ? '$productName-$version$archSuffix.dmg'
-        : '$productName$archSuffix.dmg';
+        ? '${Build.appNameEn}-macOS-$version-$archLabel.dmg'
+        : '${Build.appNameEn}-macOS-$archLabel.dmg';
     final dmgFile = File(join(Build.distPath, dmgFileName));
     if (dmgFile.existsSync()) {
       dmgFile.deleteSync();
@@ -1364,6 +1395,12 @@ end tell
           args: " --build-dart-define=CORE_SHA256=$token$ddArgs",
           env: env,
         );
+
+        _normalizeArtifactNames(
+          osName: 'Windows',
+          archName: 'amd64',
+          extensions: ['zip'],
+        );
         return;
       case Target.linux:
         _applyDartConstant();
@@ -1384,6 +1421,12 @@ end tell
           targets: targets,
           args: " --build-target-platform $defaultTarget$ddArgs",
           env: env,
+        );
+
+        _normalizeArtifactNames(
+          osName: 'Linux',
+          archName: arch == Arch.amd64 ? 'amd64' : arch.name,
+          extensions: ['deb', 'AppImage', 'rpm'],
         );
         return;
       case Target.android:
@@ -1457,8 +1500,8 @@ end tell
           if (!srcFile.existsSync()) {
             throw Exception('APK not found: $srcApk');
           }
-          final dstApk =
-              join(Build.distPath, '${Build.appName}-$flavor-$suffix.apk');
+          final dstApk = join(Build.distPath,
+              '${Build.appNameEn}-Android-${Build.appVersion}-$suffix.apk');
           Build.copyFile(srcApk, dstApk);
           print('  ✅ $dstApk');
         }

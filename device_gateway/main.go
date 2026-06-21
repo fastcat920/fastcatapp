@@ -938,6 +938,10 @@ func (s *Server) handleAdmin(w http.ResponseWriter, r *http.Request) {
 		s.handleAdminListUsers(w, r)
 		return
 	}
+	if path == "dashboard" && r.Method == http.MethodGet {
+		s.handleAdminDashboard(w, r)
+		return
+	}
 	if path == "audit-logs" && r.Method == http.MethodGet {
 		s.handleAdminAuditLogs(w, r)
 		return
@@ -982,6 +986,83 @@ func (s *Server) handleAdminListUsers(w http.ResponseWriter, r *http.Request) {
 		"success": true,
 		"data": map[string]any{
 			"users": users,
+		},
+	})
+}
+
+func (s *Server) handleAdminDashboard(w http.ResponseWriter, r *http.Request) {
+	s.store.mu.Lock()
+	now := time.Now().UTC()
+	totalUsers := len(s.store.Users)
+	totalDevices := len(s.store.Devices)
+	activeDevices := 0
+	revokedDevices := 0
+	onlineUsers := map[string]bool{}
+	recentUsers := map[string]bool{}
+	provinces := map[string]map[string]bool{}
+	isps := map[string]map[string]bool{}
+	versions := map[string]map[string]bool{}
+
+	for _, device := range s.store.Devices {
+		if device.Status == statusActive {
+			activeDevices++
+		}
+		if device.Status == statusRevoked {
+			revokedDevices++
+		}
+		if device.Status == statusActive && now.Sub(device.LastSeenAt) < 5*time.Minute {
+			onlineUsers[device.UserID] = true
+		}
+		if device.Status == statusActive && now.Sub(device.LastSeenAt) < 24*time.Hour {
+			recentUsers[device.UserID] = true
+		}
+		if province := provinceFromRegion(device.LastIPRegion); province != "" {
+			addUserBucket(provinces, province, device.UserID)
+		}
+		if isp := normalizeBucket(device.LastIPISP, "未知运营商"); isp != "" {
+			addUserBucket(isps, isp, device.UserID)
+		}
+		if version := normalizeBucket(device.AppVersion, "未知版本"); version != "" {
+			addUserBucket(versions, version, device.UserID)
+		}
+	}
+	s.store.mu.Unlock()
+
+	business := s.probeBusinessBackends(r.Context())
+	gatewayURLs := s.ossGatewayURLs()
+	gatewayStatus := "running"
+	if s.cfg.PublicBaseURL == "" && len(gatewayURLs) == 0 {
+		gatewayStatus = "local"
+	}
+
+	writeJSON(w, http.StatusOK, map[string]any{
+		"success": true,
+		"data": map[string]any{
+			"summary": map[string]any{
+				"total_users":     totalUsers,
+				"total_devices":   totalDevices,
+				"active_devices":  activeDevices,
+				"revoked_devices": revokedDevices,
+				"online_users":    len(onlineUsers),
+				"recent_users":    len(recentUsers),
+				"device_policy":   s.cfg.DevicePolicy,
+			},
+			"activity": map[string]any{
+				"online_users":   len(onlineUsers),
+				"recent_users":   len(recentUsers),
+				"inactive_users": maxInt(totalUsers-len(recentUsers), 0),
+			},
+			"regions":  distributionBuckets(bucketUserCounts(provinces)),
+			"isps":     distributionBuckets(bucketUserCounts(isps)),
+			"versions": distributionBuckets(bucketUserCounts(versions)),
+			"gateway": map[string]any{
+				"status":          gatewayStatus,
+				"listen_addr":     s.cfg.ListenAddr,
+				"public_base_url": s.cfg.PublicBaseURL,
+				"gateway_urls":    gatewayURLs,
+				"api_prefix":      s.cfg.APIPrefix,
+			},
+			"business": business,
 		},
 	})
 }
@@ -1751,6 +1832,64 @@ func (s *Server) tryBusinessURLs(ctx context.Context, makeReq func(baseURL strin
 	return nil, errors.New("no business URLs configured")
 }
 
+func (s *Server) probeBusinessBackends(ctx context.Context) map[string]any {
+	urls := s.businessURLs()
+	results := make([]map[string]any, 0, len(urls))
+	overall := "offline"
+	loginPath := s.cfg.APIPrefix + "/passport/auth/login"
+
+	for _, baseURL := range urls {
+		item := map[string]any{
+			"url":    baseURL,
+			"status": "offline",
+		}
+		targetURL, err := s.businessURLFor(baseURL, loginPath, "")
+		if err != nil {
+			item["error"] = err.Error()
+			results = append(results, item)
+			continue
+		}
+		reqCtx, cancel := context.WithTimeout(ctx, 5*time.Second)
+		req, err := http.NewRequestWithContext(reqCtx, http.MethodPost, targetURL, strings.NewReader("{}"))
+		if err != nil {
+			cancel()
+			item["error"] = err.Error()
+			results = append(results, item)
+			continue
+		}
+		req.Header.Set("Content-Type", "application/json")
+		req.Header.Set("Accept", "application/json")
+		resp, err := s.client.Do(req)
+		cancel()
+		if err != nil {
+			item["error"] = err.Error()
+			results = append(results, item)
+			continue
+		}
+		_, _ = io.Copy(io.Discard, io.LimitReader(resp.Body, 4096))
+		_ = resp.Body.Close()
+		item["status_code"] = resp.StatusCode
+		if resp.StatusCode >= 500 {
+			item["status"] = "error"
+			if overall != "online" {
+				overall = "error"
+			}
+		} else {
+			item["status"] = "online"
+			overall = "online"
+		}
+		results = append(results, item)
+	}
+
+	if len(urls) == 0 {
+		overall = "unknown"
+	}
+	return map[string]any{
+		"status":   overall,
+		"backends": results,
+	}
+}
+
 func (s *Server) businessSubscribeURL(ctx context.Context, sessionCtx *SessionContext) (string, error) {
 	if sessionCtx.Session.BusinessSubURLCipher != "" {
 		rawURL, err := decryptString(s.key, sessionCtx.Session.BusinessSubURLCipher)
@@ -2113,6 +2252,82 @@ func publicDevice(device *DeviceRecord, currentDeviceID string) map[string]any {
 		"is_online":      device.Status == statusActive && time.Since(device.LastSeenAt) < 5*time.Minute,
 		"is_current":     currentDeviceID != "" && device.ID == currentDeviceID,
 	}
+}
+
+func distributionBuckets(counts map[string]int) []map[string]any {
+	total := 0
+	for _, count := range counts {
+		total += count
+	}
+	items := make([]map[string]any, 0, len(counts))
+	for name, count := range counts {
+		percent := 0.0
+		if total > 0 {
+			percent = float64(count) * 100 / float64(total)
+		}
+		items = append(items, map[string]any{
+			"name":    name,
+			"count":   count,
+			"percent": percent,
+		})
+	}
+	sort.Slice(items, func(i, j int) bool {
+		ci, _ := items[i]["count"].(int)
+		cj, _ := items[j]["count"].(int)
+		if ci == cj {
+			return fmt.Sprint(items[i]["name"]) < fmt.Sprint(items[j]["name"])
+		}
+		return ci > cj
+	})
+	return items
+}
+
+func addUserBucket(buckets map[string]map[string]bool, name, userID string) {
+	if name == "" || userID == "" {
+		return
+	}
+	if buckets[name] == nil {
+		buckets[name] = map[string]bool{}
+	}
+	buckets[name][userID] = true
+}
+
+func bucketUserCounts(buckets map[string]map[string]bool) map[string]int {
+	counts := make(map[string]int, len(buckets))
+	for name, users := range buckets {
+		counts[name] = len(users)
+	}
+	return counts
+}
+
+func provinceFromRegion(region string) string {
+	region = strings.TrimSpace(region)
+	if region == "" {
+		return ""
+	}
+	parts := strings.Fields(region)
+	if len(parts) >= 2 && parts[0] == "中国" {
+		return parts[1]
+	}
+	if len(parts) > 0 {
+		return parts[0]
+	}
+	return ""
+}
+
+func normalizeBucket(value, fallback string) string {
+	value = strings.TrimSpace(value)
+	if value == "" || value == "0" {
+		return fallback
+	}
+	return value
+}
+
+func maxInt(a, b int) int {
+	if a > b {
+		return a
+	}
+	return b
 }
 
 func cloneDevice(device *DeviceRecord) *DeviceRecord {

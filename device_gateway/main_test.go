@@ -389,6 +389,52 @@ func TestProxyPassesThroughBusinessErrorBody(t *testing.T) {
 	}
 }
 
+func TestAdminDashboardTreatsReachableBusiness4xxAsOnline(t *testing.T) {
+	business := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "application/json")
+		if r.URL.Path != "/api/v1/passport/auth/login" {
+			w.WriteHeader(http.StatusNotFound)
+			return
+		}
+		w.WriteHeader(http.StatusBadRequest)
+		_ = json.NewEncoder(w).Encode(map[string]any{
+			"message": "credentials required",
+		})
+	}))
+	defer business.Close()
+
+	store, err := LoadStore(filepath.Join(t.TempDir(), "store.json"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	server := &Server{
+		cfg: Config{
+			BusinessBaseURLs:   []string{business.URL},
+			APIPrefix:          "/api/v1",
+			DataFile:           store.path,
+			AdminToken:         "admin-token",
+			TokenSecret:        "test-secret",
+			SessionTTL:         time.Hour,
+			DevicePolicy:       policyStrict,
+			DefaultDeviceLimit: 1,
+			HTTPTimeout:        3 * time.Second,
+		},
+		store:  store,
+		client: business.Client(),
+		key:    deriveKey("test-secret"),
+	}
+	gateway := httptest.NewServer(server.routes())
+	defer gateway.Close()
+
+	resp, body := getAdminJSON(t, gateway.URL+"/api/v1/admin/dashboard", "admin-token")
+	if resp.StatusCode != http.StatusOK {
+		t.Fatalf("dashboard status = %d body=%s", resp.StatusCode, body)
+	}
+	if got := stringFromNested(body, "data", "business", "status"); got != "online" {
+		t.Fatalf("business status = %q body=%s", got, body)
+	}
+}
+
 func postJSON(t *testing.T, url string, body []byte, auth string) (*http.Response, []byte) {
 	t.Helper()
 	req, err := http.NewRequest(http.MethodPost, url, bytes.NewReader(body))
@@ -419,6 +465,16 @@ func getRaw(t *testing.T, url string, auth string) (*http.Response, []byte) {
 	return doRead(t, req)
 }
 
+func getAdminJSON(t *testing.T, url string, token string) (*http.Response, []byte) {
+	t.Helper()
+	req, err := http.NewRequest(http.MethodGet, url, nil)
+	if err != nil {
+		t.Fatal(err)
+	}
+	req.Header.Set("X-Admin-Token", token)
+	return doRead(t, req)
+}
+
 func doRead(t *testing.T, req *http.Request) (*http.Response, []byte) {
 	t.Helper()
 	resp, err := http.DefaultClient.Do(req)
@@ -433,13 +489,20 @@ func doRead(t *testing.T, req *http.Request) (*http.Response, []byte) {
 	return resp, body
 }
 
-func stringFromNested(body []byte, first, second string) string {
+func stringFromNested(body []byte, keys ...string) string {
 	var payload map[string]any
 	if err := json.Unmarshal(body, &payload); err != nil {
 		return ""
 	}
-	nested, _ := payload[first].(map[string]any)
-	value, _ := nested[second].(string)
+	var current any = payload
+	for _, key := range keys {
+		nested, _ := current.(map[string]any)
+		if nested == nil {
+			return ""
+		}
+		current = nested[key]
+	}
+	value, _ := current.(string)
 	return value
 }
 

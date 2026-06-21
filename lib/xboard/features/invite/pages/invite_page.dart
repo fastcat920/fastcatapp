@@ -1,6 +1,5 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:fl_clash/common/common.dart';
@@ -128,7 +127,7 @@ class _InvitePageState extends ConsumerState<InvitePage>
                     const SizedBox(height: 12),
 
                     // ── 操作按钮
-                    _ActionButtons(),
+                    const _ActionButtons(),
                     const SizedBox(height: 20),
 
                     // ── 邀请统计
@@ -335,14 +334,13 @@ class _ActionButtons extends ConsumerWidget {
     if (!inviteState.isWithdrawEnabled) {
       return SizedBox(
         width: double.infinity,
-        child: FilledButton.icon(
+        child: _ResponsiveActionButton(
           onPressed: () => showDialog(
             context: context,
             builder: (_) => const TransferDialog(),
           ),
           icon: const Icon(Icons.swap_horiz, size: 18),
-          label: Text(appLocalizations.transfer),
-          style: XbUiButton.filledPrimary(context),
+          label: appLocalizations.transfer,
         ),
       );
     }
@@ -353,26 +351,24 @@ class _ActionButtons extends ConsumerWidget {
           child: Row(
             children: [
               Expanded(
-                child: FilledButton.icon(
+                child: _ResponsiveActionButton(
                   onPressed: () => showDialog(
                     context: context,
                     builder: (_) => const WithdrawDialog(),
                   ),
                   icon: const Icon(Icons.account_balance, size: 18),
-                  label: Text(appLocalizations.withdraw),
-                  style: XbUiButton.filledPrimary(context),
+                  label: appLocalizations.withdraw,
                 ),
               ),
               const SizedBox(width: 12),
               Expanded(
-                child: FilledButton.icon(
+                child: _ResponsiveActionButton(
                   onPressed: () => Navigator.of(context).push(
                     MaterialPageRoute(builder: (_) => const TicketPage()),
                   ),
                   icon:
                       const Icon(Icons.confirmation_number_outlined, size: 18),
-                  label: Text(appLocalizations.ticketRecords),
-                  style: XbUiButton.filledPrimary(context),
+                  label: appLocalizations.ticketRecords,
                 ),
               ),
             ],
@@ -380,17 +376,65 @@ class _ActionButtons extends ConsumerWidget {
         ),
         const SizedBox(width: 12),
         Expanded(
-          child: FilledButton.icon(
+          child: _ResponsiveActionButton(
             onPressed: () => showDialog(
               context: context,
               builder: (_) => const TransferDialog(),
             ),
             icon: const Icon(Icons.swap_horiz, size: 18),
-            label: Text(appLocalizations.transfer),
-            style: XbUiButton.filledPrimary(context),
+            label: appLocalizations.transfer,
           ),
         ),
       ],
+    );
+  }
+}
+
+class _ResponsiveActionButton extends StatelessWidget {
+  final VoidCallback onPressed;
+  final Widget icon;
+  final String label;
+
+  const _ResponsiveActionButton({
+    required this.onPressed,
+    required this.icon,
+    required this.label,
+  });
+
+  static const double _iconBreakpoint = 96;
+
+  @override
+  Widget build(BuildContext context) {
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final showIcon = constraints.maxWidth >= _iconBreakpoint;
+        return FilledButton(
+          onPressed: onPressed,
+          style: XbUiButton.filledPrimary(context).copyWith(
+            padding: const WidgetStatePropertyAll(
+              EdgeInsets.symmetric(horizontal: 10, vertical: 10),
+            ),
+          ),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              if (showIcon) ...[
+                icon,
+                const SizedBox(width: 6),
+              ],
+              Flexible(
+                child: Text(
+                  label,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  softWrap: false,
+                ),
+              ),
+            ],
+          ),
+        );
+      },
     );
   }
 }
@@ -788,7 +832,7 @@ class _InviteCodeItem extends StatelessWidget {
                 ),
                 child: Text(
                   appLocalizations.xboardCopyInviteCode,
-                  style: TextStyle(fontSize: 11),
+                  style: const TextStyle(fontSize: 11),
                 ),
               ),
               const SizedBox(width: 6),
@@ -806,7 +850,7 @@ class _InviteCodeItem extends StatelessWidget {
                 ),
                 child: Text(
                   appLocalizations.xboardCopyInviteLink,
-                  style: TextStyle(fontSize: 11),
+                  style: const TextStyle(fontSize: 11),
                 ),
               ),
             ],
