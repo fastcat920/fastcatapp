@@ -1740,12 +1740,12 @@ void _applyWindowsAppName() {
     var content = makeConfigFile.readAsStringSync();
     content = _replaceYamlValue(content, 'app_name', appName);
     content = _replaceYamlValue(content, 'display_name', appName);
-    final artifactBase = '\$appNameEn-Windows-\${Build.appVersion}.exe';
+    final artifactBase = '$appNameEn-Windows-${Build.appVersion}.exe';
     content = _replaceYamlValue(content, 'executable_name', exeName);
     content = _replaceYamlValue(content, 'output_base_file_name', artifactBase);
     makeConfigFile.writeAsStringSync(content);
     print(
-        '[setup.dart]   ✅ exe make_config.yaml → display=\$appName, exe=\$exeName, installer=\$artifactBase.exe');
+        '[setup.dart]   ✅ exe make_config.yaml → display=$appName, exe=$exeName, installer=$artifactBase.exe');
   }
 }
 
