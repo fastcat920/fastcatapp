@@ -910,7 +910,6 @@ end tell
   ///   {英文品牌名}-{系统名}-{版本号}-{架构}.{扩展名}
   void _normalizeArtifactNames({
     required String osName,
-    required String archName,
     required List<String> extensions,
   }) {
     final appEn = Build.appNameEn;
@@ -931,7 +930,7 @@ end tell
         // 文件名必须包含版本号（3.3.9 可匹配 3.3.9+1）
         if (!oldName.contains(version)) continue;
 
-        final newName = '$appEn-$osName-$version-$archName.$ext';
+        final newName = '$appEn-$osName-$version.$ext';
         final newPath = join(Build.distPath, newName);
         final newFile = File(newPath);
         if (newFile.existsSync()) newFile.deleteSync();
@@ -1052,10 +1051,9 @@ end tell
     final dmgConfigSourcePath =
         join(current, "macos", "packaging", "dmg", "make_config.json");
     final version = Build.appVersion;
-    final String archLabel = archName ?? 'universal';
     final dmgFileName = version.isNotEmpty
-        ? '${Build.appNameEn}-macOS-$version-$archLabel.dmg'
-        : '${Build.appNameEn}-macOS-$archLabel.dmg';
+        ? '${Build.appNameEn}-macOS-$version.dmg'
+        : '${Build.appNameEn}-macOS-$version.dmg';
     final dmgFile = File(join(Build.distPath, dmgFileName));
     if (dmgFile.existsSync()) {
       dmgFile.deleteSync();
@@ -1402,7 +1400,6 @@ end tell
 
         _normalizeArtifactNames(
           osName: 'Windows',
-          archName: 'amd64',
           extensions: ['zip'],
         );
         return;
@@ -1429,7 +1426,6 @@ end tell
 
         _normalizeArtifactNames(
           osName: 'Linux',
-          archName: arch == Arch.amd64 ? 'amd64' : arch.name,
           extensions: ['deb', 'AppImage', 'rpm'],
         );
         return;
@@ -1459,7 +1455,7 @@ end tell
           'flutter-apk',
         );
 
-        // Define the three APK variants to build
+        // Define the two APK variants to build
         final variants = [
           {
             'suffix': 'armeabi-v7a',
@@ -1470,11 +1466,6 @@ end tell
             'suffix': 'arm64-v8a',
             'targetPlatform': 'android-arm64',
             'srcApk': join(apkOutputDir, 'app-$flavor-arm64-v8a-release.apk'),
-          },
-          {
-            'suffix': 'universal',
-            'targetPlatform': 'android-arm,android-arm64',
-            'srcApk': join(apkOutputDir, 'app-$flavor-release.apk'),
           },
         ];
 
