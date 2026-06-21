@@ -922,20 +922,20 @@ end tell
       return;
     }
 
-    // flutter_distributor 使用 pubspec.yaml 的 name+version 生成文件名，
-    // 而非 distribute_options.yaml 的 app_name。通过版本号识别产物。
+    // flutter_distributor 输出到 dist/{version}/ 子目录，需递归扫描
     var renamed = 0;
-    for (final entity in dir.listSync()) {
+    for (final entity in dir.listSync(recursive: true)) {
       if (entity is! File) continue;
       final oldName = entity.uri.pathSegments.last;
       print('[setup.dart]   → scanning: $oldName');
       // 跳过已符合新命名的文件
       if (oldName.startsWith('$appEn-')) continue;
 
+      final lowerName = oldName.toLowerCase();
       for (final ext in extensions) {
-        if (!oldName.endsWith('.$ext')) continue;
+        if (!lowerName.endsWith('.${ext.toLowerCase()}')) continue;
         // 文件名必须包含版本号（3.3.9 可匹配 3.3.9+1）
-        if (!oldName.contains(version)) continue;
+        if (!lowerName.contains(version)) continue;
 
         final newName = '$appEn-$osName-$version.$ext';
         final newPath = join(Build.distPath, newName);
