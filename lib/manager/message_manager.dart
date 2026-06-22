@@ -132,13 +132,19 @@ class MessageManagerState extends State<MessageManager> {
         _MessageLayer(
           messagesNotifier: _bottomMessagesNotifier,
           alignment: Alignment.bottomCenter,
-          marginBuilder: (mediaQuery) => EdgeInsets.only(
-            bottom: max(mediaQuery.viewPadding.bottom,
-                    mediaQuery.viewInsets.bottom) +
-                80,
-            left: 12,
-            right: 12,
-          ),
+          marginBuilder: (mediaQuery) {
+            final viewBottom = max(
+              mediaQuery.viewPadding.bottom,
+              mediaQuery.viewInsets.bottom,
+            );
+            // 移动端底部导航栏高度 68dp，桌面端无底部栏，需额外留出空间以免遮挡
+            final navBarOffset = mediaQuery.size.width < 600 ? 68.0 : 0.0;
+            return EdgeInsets.only(
+              bottom: viewBottom + 80 + navBarOffset,
+              left: 12,
+              right: 12,
+            );
+          },
           onRemove: (message) =>
               _handleRemove(message, _bottomMessagesNotifier),
         ),
