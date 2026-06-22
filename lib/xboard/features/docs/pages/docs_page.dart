@@ -703,6 +703,8 @@ p{margin:8px 0}
           if (mounted) setState(() => _webLoading = false);
         },
         onNavigationRequest: (request) {
+          // 只拦截主 frame 导航（用户点击链接），放行 iframe 子资源
+          if (!request.isMainFrame) return NavigationDecision.navigate;
           final uri = Uri.tryParse(request.url);
           if (uri != null && (uri.scheme == 'http' || uri.scheme == 'https')) {
             launchUrl(uri, mode: LaunchMode.externalApplication);
