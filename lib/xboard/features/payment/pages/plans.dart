@@ -273,7 +273,7 @@ class _PlansViewState extends ConsumerState<PlansView> {
                   width: double.infinity,
                   child: ElevatedButton.icon(
                     onPressed: () => _navigateToPurchase(plan),
-                    icon: const Icon(Icons.shopping_cart_outlined, size: 18),
+                    icon: const Icon(Icons.shopping_cart, size: 18),
                     label: Text(appLocalizations.xboardBuyNow),
                     style: XbUiButton.filledPrimary(context).copyWith(
                       minimumSize: const WidgetStatePropertyAll(Size(0, 48)),

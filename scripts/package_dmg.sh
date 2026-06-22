@@ -47,6 +47,9 @@ TMP_DMG="/tmp/fastcat-tmp.dmg"
 mount | grep -i fastcat | awk '{print $1}' | while read dev; do
   hdiutil detach "$dev" -force 2>/dev/null
 done
+
+echo "🔏 签名 DMG..."
+codesign --force --sign - "$DMG_PATH" 2>/dev/null || echo "⚠️ DMG 签名跳过"
 rm -f "$TMP_DMG"
 
 APP_SIZE=$(du -sk "$APP" | cut -f1)
@@ -83,10 +86,17 @@ tell application \"Finder\"
 end tell
 "
 
+
+echo "🔏 自签名 App..."
+codesign --force --deep --sign - "/Volumes/${VOL_NAME}/${APP_NAME}.app" 2>&1 || echo "⚠️ 签名跳过（无 codesign 工具）"
+
 echo "💿 压缩转换..."
 hdiutil detach "/Volumes/${VOL_NAME}"
 rm -f "$DMG_PATH"
 hdiutil convert "$TMP_DMG" -format UDZO -o "$DMG_PATH"
+
+echo "🔏 签名 DMG..."
+codesign --force --sign - "$DMG_PATH" 2>/dev/null || echo "⚠️ DMG 签名跳过"
 rm -f "$TMP_DMG"
 
 echo "✅ $DMG_PATH ($(du -h "$DMG_PATH" | cut -f1))"
