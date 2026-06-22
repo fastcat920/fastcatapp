@@ -56,17 +56,17 @@ class ProfileImportNotifier extends StateNotifier<ImportState> {
       );
 
       if (isSuccess) {
-        XBoardNotification.showSuccess(
-          forceRefresh
-              ? appLocalizations.subscriptionUpdateSuccess
-              : appLocalizations.subscriptionImportSuccess,
-        );
+        if (forceRefresh) {
+          XBoardNotification.showSuccess(
+            appLocalizations.subscriptionUpdateSuccess,
+          );
+        }
       } else {
-        XBoardNotification.showError(
-          forceRefresh
-              ? appLocalizations.subscriptionUpdateFailed
-              : appLocalizations.subscriptionImportFailed,
-        );
+        if (forceRefresh) {
+          XBoardNotification.showError(
+            appLocalizations.subscriptionUpdateFailed,
+          );
+        }
       }
 
       return result.isSuccess;
@@ -84,11 +84,11 @@ class ProfileImportNotifier extends StateNotifier<ImportState> {
           errorType: ImportErrorType.unknownError,
         ),
       );
-      XBoardNotification.showError(
-        forceRefresh
-            ? appLocalizations.subscriptionUpdateFailed
-            : appLocalizations.subscriptionImportFailed,
-      );
+      if (forceRefresh) {
+        XBoardNotification.showError(
+          appLocalizations.subscriptionUpdateFailed,
+        );
+      }
       return false;
     }
   }
