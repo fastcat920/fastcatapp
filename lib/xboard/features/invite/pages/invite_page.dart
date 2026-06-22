@@ -701,9 +701,29 @@ class _InviteCodesTab extends StatelessWidget {
               return FilledButton.icon(
                 onPressed: state.isGenerating
                     ? null
-                    : () =>
-                        ref.read(inviteProvider.notifier).generateInviteCode(),
-                icon: const Icon(Icons.add, size: 16),
+                    : () async {
+                        final result = await ref
+                            .read(inviteProvider.notifier)
+                            .generateInviteCode();
+                        if (!context.mounted) return;
+                        if (result != null) {
+                          XBoardNotification.showSuccess(
+                              '${appLocalizations.inviteCode}：${result.code}');
+                        } else {
+                          final errorMsg =
+                              ref.read(inviteProvider).errorMessage ??
+                                  appLocalizations.inviteCodeGenFailed;
+                          XBoardNotification.showError(errorMsg);
+                        }
+                      },
+                icon: state.isGenerating
+                    ? const SizedBox(
+                        width: 16,
+                        height: 16,
+                        child: CircularProgressIndicator(
+                            strokeWidth: 2, color: Colors.white),
+                      )
+                    : const Icon(Icons.add, size: 16),
                 label: Text(appLocalizations.generateInviteCode),
                 style: XbUiButton.filledPrimary(context).copyWith(
                   backgroundColor: btnIsDark
@@ -744,6 +764,7 @@ class _InviteCodesTab extends StatelessWidget {
       ],
     );
   }
+
 }
 
 class _InviteCodeItem extends StatelessWidget {

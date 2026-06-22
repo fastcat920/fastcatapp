@@ -16,8 +16,10 @@ class XBoardInviteApi {
       final response = await _httpService.getRequest('/user/invite/save');
 
       // 检查是否成功
-      if (response['data'] != true) {
-        throw ApiException('Generate invite code failed');
+      final data = response['data'];
+      final isSuccess = data == true || data == 1 || data == '1' || data == 'true';
+      if (!isSuccess) {
+        throw ApiException('Generate invite code failed: data=$data');
       }
 
       // 重新获取邀请信息以获取新生成的邀请码
