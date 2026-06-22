@@ -138,8 +138,8 @@ class MessageManagerState extends State<MessageManager> {
               mediaQuery.viewInsets.bottom,
             );
             final isNarrow = mediaQuery.size.width < 600;
-            // 窄屏需越过底部导航栏(68dp) + 卡片高度(~52dp) + 间距(8dp) = 128
-            final bottomOffset = isNarrow ? 128.0 : 80.0;
+            // 窄屏越过底部导航栏(68dp)，再往下 60dp = 128 → 68
+            final bottomOffset = isNarrow ? 68.0 : 80.0;
             return EdgeInsets.only(
               bottom: viewBottom + bottomOffset,
               left: 12,
