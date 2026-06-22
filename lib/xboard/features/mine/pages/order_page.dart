@@ -8,6 +8,7 @@ import 'package:fl_clash/xboard/adapter/state/order_state.dart';
 import 'package:fl_clash/xboard/features/payment/pages/order_detail_page.dart';
 import 'package:fl_clash/xboard/features/shared/styles/styles.dart';
 import 'package:fl_clash/common/common.dart';
+import 'package:fl_clash/xboard/utils/backend_message_mapper.dart';
 
 class OrderPage extends ConsumerStatefulWidget {
   const OrderPage({super.key});
@@ -70,7 +71,7 @@ class _OrderPageState extends ConsumerState<OrderPage> {
     } catch (e) {
       if (!mounted) return;
       setState(() {
-        _error = e;
+        _error = BackendMessageMapper.mapError(e, context: BackendMessageContext.order);
         _isLoading = false;
       });
     }

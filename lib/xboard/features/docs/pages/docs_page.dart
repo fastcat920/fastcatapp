@@ -5,6 +5,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:fl_clash/l10n/l10n.dart';
 import 'package:fl_clash/xboard/adapter/state/knowledge_state.dart';
+import 'package:fl_clash/xboard/features/shared/widgets/xb_error_state.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 import 'package:flutter_inappwebview/flutter_inappwebview.dart' as iaw;
@@ -175,23 +176,10 @@ class _DocsPageState extends ConsumerState<DocsPage>
           children: [
             const SizedBox(height: 4),
             Expanded(
-              child: Center(
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Icon(Icons.error_outline,
-                        size: 48, color: theme.colorScheme.error),
-                    const SizedBox(height: 16),
-                    Text('加载失败', style: theme.textTheme.titleMedium),
-                    const SizedBox(height: 8),
-                    TextButton.icon(
-                      icon: const Icon(Icons.refresh),
-                      label: const Text('重试'),
-                      onPressed: () =>
-                          ref.invalidate(knowledgeArticlesProvider(language)),
-                    ),
-                  ],
-                ),
+              child: XbErrorState(
+                message: error.toString(),
+                onRetry: () =>
+                    ref.invalidate(knowledgeArticlesProvider(language)),
               ),
             ),
           ],
@@ -311,22 +299,10 @@ class _DocsPageState extends ConsumerState<DocsPage>
   ) {
     return asyncArticles.when(
       loading: () => const Center(child: CircularProgressIndicator()),
-      error: (error, _) => Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(Icons.error_outline, size: 48, color: theme.colorScheme.error),
-            const SizedBox(height: 16),
-            Text('加载失败', style: theme.textTheme.titleMedium),
-            const SizedBox(height: 8),
-            TextButton.icon(
-              icon: const Icon(Icons.refresh),
-              label: const Text('重试'),
-              onPressed: () =>
-                  ref.invalidate(knowledgeArticlesProvider(language)),
-            ),
-          ],
-        ),
+      error: (error, _) => XbErrorState(
+        message: error.toString(),
+        onRetry: () =>
+            ref.invalidate(knowledgeArticlesProvider(language)),
       ),
       data: (result) {
         final articles = _parseArticles(result);
@@ -727,22 +703,9 @@ p{margin:8px 0}
           ref.watch(knowledgeArticleDetailProvider(_detailRequest));
       contentArea = asyncDetail.when(
         loading: () => const Center(child: CircularProgressIndicator()),
-        error: (e, _) => Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Icon(Icons.error_outline,
-                  size: 48, color: theme.colorScheme.error),
-              const SizedBox(height: 16),
-              Text('加载失败', style: theme.textTheme.titleMedium),
-              const SizedBox(height: 8),
-              TextButton.icon(
-                icon: const Icon(Icons.refresh),
-                label: const Text('重试'),
-                onPressed: _retryDetail,
-              ),
-            ],
-          ),
+        error: (e, _) => XbErrorState(
+          message: e.toString(),
+          onRetry: _retryDetail,
         ),
         data: (result) {
           if (_resolvedBody == null) {

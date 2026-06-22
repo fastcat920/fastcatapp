@@ -15,6 +15,7 @@ import 'package:fl_clash/xboard/features/shared/styles/styles.dart';
 import 'package:fl_clash/xboard/features/subscription/providers/xboard_subscription_provider.dart';
 import 'package:fl_clash/xboard/utils/xboard_notification.dart';
 import 'package:fl_clash/l10n/l10n.dart';
+import 'package:fl_clash/xboard/utils/backend_message_mapper.dart';
 
 const _logger = FileLogger('order_detail_page.dart');
 
@@ -170,7 +171,7 @@ class _OrderDetailPageState extends ConsumerState<OrderDetailPage>
               )
             : const Center(child: CircularProgressIndicator()),
         error: (error, _) => _OrderErrorView(
-          message: error.toString(),
+          message: BackendMessageMapper.mapError(error, context: BackendMessageContext.order),
           onRetry: _retryOrder,
         ),
         data: (order) {
@@ -421,7 +422,8 @@ class _OrderDetailPageState extends ConsumerState<OrderDetailPage>
       _logger.error('提交支付失败: $e');
       _logger.error('提交支付失败堆栈: $stackTrace');
       if (mounted) {
-        XBoardNotification.showError(e.toString());
+        XBoardNotification.showError(
+            BackendMessageMapper.mapError(e, context: BackendMessageContext.order));
       }
     } finally {
       if (mounted) {
@@ -480,7 +482,8 @@ class _OrderDetailPageState extends ConsumerState<OrderDetailPage>
       ref.invalidate(getOrdersProvider);
       XBoardNotification.showSuccess(l10n.xboardOrderStatusCancelled);
     } catch (e) {
-      XBoardNotification.showError('${l10n.xboardOperationFailed}: $e');
+      XBoardNotification.showError(
+          '${l10n.xboardOperationFailed}: ${BackendMessageMapper.mapError(e, context: BackendMessageContext.order)}');
     } finally {
       if (mounted) {
         setState(() => _isCanceling = false);
@@ -757,7 +760,7 @@ class _PaymentMethodsSection extends StatelessWidget {
           title: AppLocalizations.of(context).xboardPaymentMethods,
           icon: Icons.payments_outlined,
           child: _InlineError(
-            message: error.toString(),
+            message: BackendMessageMapper.mapError(error, context: BackendMessageContext.order),
             onRetry: () {},
           ),
         );

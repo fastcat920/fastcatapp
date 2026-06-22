@@ -1364,5 +1364,11 @@
   "xboardLoginErrorConfigLoad": "구성 로드 실패, 나중에 다시 시도하세요",
   "xboardLoginErrorCredentials": "계정 또는 비밀번호 오류, 계정과 비밀번호를 확인하세요",
   "xboardLoginErrorLimited": "로그인 시도가 너무 많습니다. 잠시 후 다시 시도하세요.",
-  "xboardLoginErrorDeviceLimit": "기기 한도에 도달했습니다. 먼저 오프라인 기기를 해제하세요."
+  "xboardLoginErrorDeviceLimit": "기기 한도에 도달했습니다. 먼저 오프라인 기기를 해제하세요.",
+  "subscriptionUpdateSuccess": "구독이 업데이트되었습니다",
+  "subscriptionImportSuccess": "구독을 가져왔습니다",
+  "inviteCodeGenerated": "초대 코드가 생성되었습니다",
+  "backendErrorInviteLimitReached": "초대 생성 한도에 도달했습니다",
+  "subscriptionUpdateFailed": "구독 업데이트 실패",
+  "subscriptionImportFailed": "구독 가져오기 실패"
 }

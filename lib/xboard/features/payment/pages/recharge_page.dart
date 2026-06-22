@@ -14,6 +14,7 @@ import 'package:url_launcher/url_launcher.dart';
 import '../widgets/payment_method_selector_dialog.dart';
 import '../widgets/payment_waiting_overlay.dart';
 import '../models/payment_step.dart';
+import 'package:fl_clash/xboard/utils/backend_message_mapper.dart';
 
 /// 余额充值页面（仅 v2board 面板支持）
 class RechargePage extends ConsumerStatefulWidget {
@@ -179,7 +180,8 @@ class _RechargePageState extends ConsumerState<RechargePage> {
       }
     } catch (e) {
       PaymentWaitingManager.hide();
-      XBoardNotification.showError('${l10n.xboardPaymentFailed}: $e');
+      XBoardNotification.showError(
+          '${l10n.xboardPaymentFailed}: ${BackendMessageMapper.mapError(e, context: BackendMessageContext.order)}');
     } finally {
       if (mounted) setState(() => _isProcessing = false);
     }

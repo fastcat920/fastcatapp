@@ -1365,5 +1365,11 @@
   "xboardLoginErrorConfigLoad": "配置加载失败，请稍后再试",
   "xboardLoginErrorCredentials": "账号或密码错误，请先检查账号密码",
   "xboardLoginErrorLimited": "登录尝试过于频繁，请稍后再试",
-  "xboardLoginErrorDeviceLimit": "登录设备已达到上限，请先释放离线设备"
+  "xboardLoginErrorDeviceLimit": "登录设备已达到上限，请先释放离线设备",
+  "subscriptionUpdateSuccess": "订阅更新成功",
+  "subscriptionImportSuccess": "订阅导入成功",
+  "inviteCodeGenerated": "邀请码生成成功",
+  "backendErrorInviteLimitReached": "已达到创建数量上限",
+  "subscriptionUpdateFailed": "订阅更新失败",
+  "subscriptionImportFailed": "订阅导入失败"
 }

@@ -242,6 +242,9 @@ class MessageLookup extends MessageLookupByLibrary {
     "backendErrorInviteCodeNotFound": MessageLookupByLibrary.simpleMessage(
       "招待コードが存在しません",
     ),
+    "backendErrorInviteLimitReached": MessageLookupByLibrary.simpleMessage("作成数の上限に達しました"),
+    "subscriptionUpdateFailed": MessageLookupByLibrary.simpleMessage("サブスクリプションの更新に失敗しました"),
+    "subscriptionImportFailed": MessageLookupByLibrary.simpleMessage("サブスクリプションのインポートに失敗しました"),
     "backendErrorMinimumWithdrawalCommission": m0,
     "backendErrorMinimumWithdrawalCommissionGeneric":
         MessageLookupByLibrary.simpleMessage("最低出金コミッションに達していません"),
@@ -564,6 +567,9 @@ class MessageLookup extends MessageLookupByLibrary {
     "inviteCodeGenFailed": MessageLookupByLibrary.simpleMessage(
       "招待コードの生成に失敗しました",
     ),
+    "subscriptionUpdateSuccess": MessageLookupByLibrary.simpleMessage("サブスクリプションを更新しました"),
+    "subscriptionImportSuccess": MessageLookupByLibrary.simpleMessage("サブスクリプションをインポートしました"),
+    "inviteCodeGenerated": MessageLookupByLibrary.simpleMessage("招待コードを生成しました"),
     "inviteCodeOptional": MessageLookupByLibrary.simpleMessage("招待コード（任意）"),
     "inviteCodeRequired": MessageLookupByLibrary.simpleMessage("招待コードが必要です"),
     "inviteCodeRequiredMessage": MessageLookupByLibrary.simpleMessage(

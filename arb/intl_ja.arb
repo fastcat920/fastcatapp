@@ -1358,5 +1358,11 @@
   "xboardHealthHelperUnavailable": "利用不可",
   "xboardHealthHelperNoResponse": "helper HTTP が応答していません",
   "xboardHealthHelperChecking": "確認中",
-  "xboardHealthHelperCheckFailed": "確認に失敗しました"
+  "xboardHealthHelperCheckFailed": "確認に失敗しました",
+  "subscriptionUpdateSuccess": "サブスクリプションを更新しました",
+  "subscriptionImportSuccess": "サブスクリプションをインポートしました",
+  "inviteCodeGenerated": "招待コードを生成しました",
+  "backendErrorInviteLimitReached": "作成数の上限に達しました",
+  "subscriptionUpdateFailed": "サブスクリプションの更新に失敗しました",
+  "subscriptionImportFailed": "サブスクリプションのインポートに失敗しました"
 }

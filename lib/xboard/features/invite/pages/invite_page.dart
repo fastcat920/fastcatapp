@@ -708,7 +708,7 @@ class _InviteCodesTab extends StatelessWidget {
                         if (!context.mounted) return;
                         if (result != null) {
                           XBoardNotification.showSuccess(
-                              '${appLocalizations.inviteCode}：${result.code}');
+                              '${appLocalizations.inviteCodeGenerated}：${result.code}');
                         } else {
                           final errorMsg =
                               ref.read(inviteProvider).errorMessage ??

@@ -7,6 +7,7 @@ import 'package:url_launcher/url_launcher.dart';
 import 'package:flutter_xboard_sdk/flutter_xboard_sdk.dart';
 import 'package:fl_clash/l10n/l10n.dart';
 import 'package:fl_clash/xboard/features/shared/styles/styles.dart';
+import 'package:fl_clash/xboard/utils/backend_message_mapper.dart';
 
 class PaymentGatewayPage extends ConsumerStatefulWidget {
   final String paymentUrl;
@@ -75,7 +76,8 @@ class _PaymentGatewayPageState extends ConsumerState<PaymentGatewayPage> {
       }
     } catch (e) {
       if (mounted) {
-        XBoardNotification.showError('${l10n.xboardOpenPaymentLinkFailed}: $e');
+        XBoardNotification.showError(
+            '${l10n.xboardOpenPaymentLinkFailed}: ${BackendMessageMapper.mapError(e)}');
       }
     }
   }
@@ -89,7 +91,8 @@ class _PaymentGatewayPageState extends ConsumerState<PaymentGatewayPage> {
       }
     } catch (e) {
       if (mounted) {
-        XBoardNotification.showError('${l10n.xboardCopyFailed}: $e');
+        XBoardNotification.showError(
+            '${l10n.xboardCopyFailed}: ${BackendMessageMapper.mapError(e)}');
       }
     }
   }

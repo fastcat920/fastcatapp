@@ -1,6 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:fl_clash/xboard/features/profile/profile.dart';
 import 'package:fl_clash/xboard/core/core.dart';
+import 'package:fl_clash/common/common.dart';
 import 'package:fl_clash/xboard/utils/xboard_notification.dart';
 
 // 初始化文件级日志器
@@ -44,18 +45,27 @@ class ProfileImportNotifier extends StateNotifier<ImportState> {
         return false;
       }
 
+      final isSuccess = result.isSuccess;
       state = state.copyWith(
-        status: result.isSuccess ? ImportStatus.success : ImportStatus.failed,
+        status: isSuccess ? ImportStatus.success : ImportStatus.failed,
         isImporting: false,
-        progress: result.isSuccess ? 1.0 : 0.0,
-        message: result.isSuccess ? '导入成功' : result.errorMessage ?? '导入失败',
-        lastSuccessTime: result.isSuccess ? DateTime.now() : null,
+        progress: isSuccess ? 1.0 : 0.0,
+        message: isSuccess ? '导入成功' : result.errorMessage ?? '导入失败',
+        lastSuccessTime: isSuccess ? DateTime.now() : null,
         lastResult: result,
       );
 
-      if (result.isSuccess) {
+      if (isSuccess) {
         XBoardNotification.showSuccess(
-          forceRefresh ? '订阅更新成功' : '订阅导入成功',
+          forceRefresh
+              ? appLocalizations.subscriptionUpdateSuccess
+              : appLocalizations.subscriptionImportSuccess,
+        );
+      } else {
+        XBoardNotification.showError(
+          forceRefresh
+              ? appLocalizations.subscriptionUpdateFailed
+              : appLocalizations.subscriptionImportFailed,
         );
       }
 
@@ -73,6 +83,11 @@ class ProfileImportNotifier extends StateNotifier<ImportState> {
           errorMessage: '导入失败: $e',
           errorType: ImportErrorType.unknownError,
         ),
+      );
+      XBoardNotification.showError(
+        forceRefresh
+            ? appLocalizations.subscriptionUpdateFailed
+            : appLocalizations.subscriptionImportFailed,
       );
       return false;
     }

@@ -248,6 +248,9 @@ class MessageLookup extends MessageLookupByLibrary {
     "backendErrorInviteCodeNotFound": MessageLookupByLibrary.simpleMessage(
       "초대 코드가 존재하지 않습니다",
     ),
+    "backendErrorInviteLimitReached": MessageLookupByLibrary.simpleMessage("초대 생성 한도에 도달했습니다"),
+    "subscriptionUpdateFailed": MessageLookupByLibrary.simpleMessage("구독 업데이트 실패"),
+    "subscriptionImportFailed": MessageLookupByLibrary.simpleMessage("구독 가져오기 실패"),
     "backendErrorMinimumWithdrawalCommission": m0,
     "backendErrorMinimumWithdrawalCommissionGeneric":
         MessageLookupByLibrary.simpleMessage("최소 출금 커미션 조건을 충족하지 못했습니다"),
@@ -562,6 +565,9 @@ class MessageLookup extends MessageLookupByLibrary {
     "invite": MessageLookupByLibrary.simpleMessage("초대"),
     "inviteCode": MessageLookupByLibrary.simpleMessage("초대 코드"),
     "inviteCodeGenFailed": MessageLookupByLibrary.simpleMessage("초대 코드 GEN 실패"),
+    "subscriptionUpdateSuccess": MessageLookupByLibrary.simpleMessage("구독이 업데이트되었습니다"),
+    "subscriptionImportSuccess": MessageLookupByLibrary.simpleMessage("구독을 가져왔습니다"),
+    "inviteCodeGenerated": MessageLookupByLibrary.simpleMessage("초대 코드가 생성되었습니다"),
     "inviteCodeOptional": MessageLookupByLibrary.simpleMessage(
       "초대 코드 optional",
     ),

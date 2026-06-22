@@ -302,9 +302,23 @@ class InviteNotifier extends Notifier<InviteState> {
       return newInviteCode;
     } catch (e) {
       _logger.info('生成邀请码失败: $e');
+      final mapped = BackendMessageMapper.mapError(e);
+      // 仅「创建数量上限」显示具体错误，其余原因统一用泛型提示
+      final isLimitError = BackendMessageMapper.normalizeRaw(
+            BackendMessageMapper.rawMessage(e),
+          ).contains('创建数量上限') ||
+          BackendMessageMapper.normalizeRaw(
+            BackendMessageMapper.rawMessage(e),
+          ).toLowerCase().contains('creation limit') ||
+          BackendMessageMapper.normalizeRaw(
+            BackendMessageMapper.rawMessage(e),
+          ).toLowerCase().contains('maximum') &&
+              BackendMessageMapper.normalizeRaw(
+                BackendMessageMapper.rawMessage(e),
+              ).toLowerCase().contains('invit');
       state = state.copyWith(
         isGenerating: false,
-        errorMessage: e.toString(),
+        errorMessage: isLimitError ? mapped : null,
       );
       return null;
     }

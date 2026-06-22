@@ -224,6 +224,9 @@ class MessageLookup extends MessageLookupByLibrary {
     "backendErrorInviteCodeNotFound": MessageLookupByLibrary.simpleMessage(
       "邀请码不存在",
     ),
+    "backendErrorInviteLimitReached": MessageLookupByLibrary.simpleMessage("已达到创建数量上限"),
+    "subscriptionUpdateFailed": MessageLookupByLibrary.simpleMessage("订阅更新失败"),
+    "subscriptionImportFailed": MessageLookupByLibrary.simpleMessage("订阅导入失败"),
     "backendErrorMinimumWithdrawalCommission": m0,
     "backendErrorMinimumWithdrawalCommissionGeneric":
         MessageLookupByLibrary.simpleMessage("未达到最低提现佣金要求"),
@@ -490,6 +493,9 @@ class MessageLookup extends MessageLookupByLibrary {
     "invite": MessageLookupByLibrary.simpleMessage("邀请"),
     "inviteCode": MessageLookupByLibrary.simpleMessage("邀请码"),
     "inviteCodeGenFailed": MessageLookupByLibrary.simpleMessage("邀请码生成失败"),
+    "subscriptionUpdateSuccess": MessageLookupByLibrary.simpleMessage("订阅更新成功"),
+    "subscriptionImportSuccess": MessageLookupByLibrary.simpleMessage("订阅导入成功"),
+    "inviteCodeGenerated": MessageLookupByLibrary.simpleMessage("邀请码生成成功"),
     "inviteCodeOptional": MessageLookupByLibrary.simpleMessage("邀请码（可选）"),
     "inviteCodeRequired": MessageLookupByLibrary.simpleMessage("需要邀请码"),
     "inviteCodeRequiredMessage": MessageLookupByLibrary.simpleMessage(

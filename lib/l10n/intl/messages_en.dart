@@ -284,6 +284,9 @@ class MessageLookup extends MessageLookupByLibrary {
     "backendErrorInviteCodeNotFound": MessageLookupByLibrary.simpleMessage(
       "Invite code does not exist",
     ),
+    "backendErrorInviteLimitReached": MessageLookupByLibrary.simpleMessage("Maximum number of invites reached"),
+    "subscriptionUpdateFailed": MessageLookupByLibrary.simpleMessage("Subscription update failed"),
+    "subscriptionImportFailed": MessageLookupByLibrary.simpleMessage("Subscription import failed"),
     "backendErrorMinimumWithdrawalCommission": m0,
     "backendErrorMinimumWithdrawalCommissionGeneric":
         MessageLookupByLibrary.simpleMessage(
@@ -674,6 +677,9 @@ class MessageLookup extends MessageLookupByLibrary {
     "inviteCodeGenFailed": MessageLookupByLibrary.simpleMessage(
       "Invite code generation failed",
     ),
+    "subscriptionUpdateSuccess": MessageLookupByLibrary.simpleMessage("Subscription updated"),
+    "subscriptionImportSuccess": MessageLookupByLibrary.simpleMessage("Subscription imported"),
+    "inviteCodeGenerated": MessageLookupByLibrary.simpleMessage("Invite code generated"),
     "inviteCodeOptional": MessageLookupByLibrary.simpleMessage(
       "Invite Code (optional)",
     ),

@@ -478,7 +478,8 @@ class _ReplyBarState extends State<_ReplyBar> {
       );
     } catch (e) {
       if (mounted) {
-        XBoardNotification.showError('图片上传失败: $e');
+        XBoardNotification.showError(
+            '图片上传失败: ${BackendMessageMapper.mapError(e)}');
       }
     } finally {
       if (mounted) setState(() => _isUploadingImage = false);

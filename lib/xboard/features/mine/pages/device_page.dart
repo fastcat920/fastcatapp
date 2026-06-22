@@ -12,6 +12,7 @@ import 'package:fl_clash/xboard/features/shared/widgets/xb_error_state.dart';
 import 'package:fl_clash/xboard/utils/xboard_notification.dart';
 import 'package:flutter_xboard_sdk/flutter_xboard_sdk.dart';
 import 'package:fl_clash/xboard/config/gateway_config.dart';
+import 'package:fl_clash/xboard/utils/backend_message_mapper.dart';
 
 /// 网关 API 前缀（与 gateway_config.dart 的 gatewayApiPrefix 一致）
 /// 设备管理接口是网关私有端点，前缀必须与网关 DG_API_PREFIX 匹配
@@ -357,7 +358,7 @@ class _DeviceManagementPageState extends ConsumerState<DeviceManagementPage>
 
           if (snapshot.hasError) {
             return XbErrorState(
-              message: snapshot.error.toString(),
+              message: BackendMessageMapper.mapError(snapshot.error, context: BackendMessageContext.generic),
               onRetry: _refreshPage,
             );
           }

@@ -1364,5 +1364,11 @@
   "xboardLoginErrorConfigLoad": "Configuration load failed, please try again later",
   "xboardLoginErrorCredentials": "Invalid credentials, please check your account and password",
   "xboardLoginErrorLimited": "Too many login attempts. Please try again later.",
-  "xboardLoginErrorDeviceLimit": "Device limit reached. Release an offline device first."
+  "xboardLoginErrorDeviceLimit": "Device limit reached. Release an offline device first.",
+  "subscriptionUpdateSuccess": "Subscription updated",
+  "subscriptionImportSuccess": "Subscription imported",
+  "inviteCodeGenerated": "Invite code generated",
+  "backendErrorInviteLimitReached": "Maximum number of invites reached",
+  "subscriptionUpdateFailed": "Subscription update failed",
+  "subscriptionImportFailed": "Subscription import failed"
 }

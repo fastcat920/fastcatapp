@@ -74,6 +74,11 @@ class BackendMessageMapper {
     message = message.replaceFirst(RegExp(r'^V2Board\s+[^:：]+[:：]\s*'), '');
     message = message.replaceFirst(RegExp(r'^XBoard\s+[^:：]+[:：]\s*'), '');
     message = message.replaceFirst(RegExp(r'（错误码:\s*\d+）$'), '');
+    // 去除 SocketException / HttpException 里的 IP、端口、OS Error 详情
+    message = message.replaceAll(RegExp(r',\s*address\s*=\s*\S+'), '');
+    message = message.replaceAll(RegExp(r',\s*port\s*=\s*\d+'), '');
+    message = message.replaceAll(RegExp(r'\s*\(OS Error:\s*[^)]+\)'), '');
+    message = message.replaceAll(RegExp(r',\s*uri\s*=\s*\S+'), '');
     return message.trim();
   }
 
@@ -195,6 +200,12 @@ class BackendMessageMapper {
       'new password can not be empty': (l10n) =>
           l10n.backendErrorNewPasswordEmpty,
       'reset failed': (l10n) => l10n.backendErrorResetFailed,
+      'the maximum number of invitations has been reached': (l10n) =>
+          l10n.backendErrorInviteLimitReached,
+      'creation limit reached': (l10n) =>
+          l10n.backendErrorInviteLimitReached,
+      'maximum invites reached': (l10n) =>
+          l10n.backendErrorInviteLimitReached,
     };
 
     return exact[normalized]?.call(l10n);
@@ -203,6 +214,16 @@ class BackendMessageMapper {
   static String? _mapPattern(String raw, BackendMessageContext context) {
     final l10n = AppLocalizations.current;
     final lower = raw.toLowerCase();
+
+    // 网络相关异常统一映射为「无网络连接，请检查网络设置」
+    if (lower.contains('socketexception') || lower.contains('httpexception') ||
+        lower.contains('network') && lower.contains('unreachable') ||
+        lower.contains('no internet') || lower.contains('no route to host') ||
+        lower.contains('connection failed') || lower.contains('connection refused') ||
+        lower.contains('connection timed out') || lower.contains('timed out') ||
+        lower.contains('network is unreachable')) {
+      return l10n.xboardNoInternetConnection;
+    }
 
     if (lower.contains('too many password errors')) {
       final minuteMatch = RegExp(r'after\s+(\d+)\s+minutes?').firstMatch(lower);
@@ -333,6 +354,9 @@ class BackendMessageMapper {
       if (raw.contains('邀请码') && raw.contains('无效')) {
         return l10n.backendErrorInviteCodeInvalid;
       }
+    }
+    if (raw.contains('创建数量上限') || raw.contains('已达到创建上限')) {
+      return l10n.backendErrorInviteLimitReached;
     }
     return null;
   }

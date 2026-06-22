@@ -6179,6 +6179,32 @@ class AppLocalizations {
       args: [],
     );
   }
+  String get subscriptionUpdateSuccess {
+    return Intl.message(
+      'Subscription updated',
+      name: 'subscriptionUpdateSuccess',
+      desc: '',
+      args: [],
+    );
+  }
+
+  String get subscriptionImportSuccess {
+    return Intl.message(
+      'Subscription imported',
+      name: 'subscriptionImportSuccess',
+      desc: '',
+      args: [],
+    );
+  }
+
+  String get inviteCodeGenerated {
+    return Intl.message(
+      'Invite code generated',
+      name: 'inviteCodeGenerated',
+      desc: '',
+      args: [],
+    );
+  }
 
   /// `Please check network and retry`
   String get checkNetwork {
@@ -8355,6 +8381,32 @@ class AppLocalizations {
     return Intl.message(
       'Invite code does not exist',
       name: 'backendErrorInviteCodeNotFound',
+      desc: '',
+      args: [],
+    );
+  }
+  String get backendErrorInviteLimitReached {
+    return Intl.message(
+      'Maximum number of invites reached',
+      name: 'backendErrorInviteLimitReached',
+      desc: '',
+      args: [],
+    );
+  }
+
+  String get subscriptionUpdateFailed {
+    return Intl.message(
+      'Subscription update failed',
+      name: 'subscriptionUpdateFailed',
+      desc: '',
+      args: [],
+    );
+  }
+
+  String get subscriptionImportFailed {
+    return Intl.message(
+      'Subscription import failed',
+      name: 'subscriptionImportFailed',
       desc: '',
       args: [],
     );
