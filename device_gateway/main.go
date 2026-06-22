@@ -56,6 +56,7 @@ type Config struct {
 	HTTPTimeout        time.Duration
 	TrustForwardedFor  bool
 	IPRegionDB         string
+	PostgresDSN        string
 }
 
 type Server struct {
@@ -71,6 +72,7 @@ type Server struct {
 type Store struct {
 	mu       sync.Mutex                `json:"-"`
 	path     string                    `json:"-"`
+	pg       *PostgresStore            `json:"-"`
 	Users    map[string]*UserCache     `json:"users"`
 	Devices  map[string]*DeviceRecord  `json:"devices"`
 	Sessions map[string]*SessionRecord `json:"sessions"`
@@ -198,7 +200,7 @@ func main() {
 		logger.Fatal(err)
 	}
 
-	store, err := LoadStore(cfg.DataFile)
+	store, pgClose, err := LoadStore(cfg.DataFile, cfg.PostgresDSN)
 	if err != nil {
 		logger.Fatal(err)
 	}
@@ -228,6 +230,14 @@ func main() {
 	logger.Printf("listening on %s, business=%s, api_prefix=%s, data=%s",
 		cfg.ListenAddr, cfg.BusinessBaseURLs, cfg.APIPrefix, cfg.DataFile)
 
+	if store.pg != nil {
+		defer pgClose()
+		syncInterval := envInt("DG_DB_SYNC_SECONDS", 30)
+		if syncInterval < 1 {
+			syncInterval = 30
+		}
+		go syncPostgresLoop(store, time.Duration(syncInterval)*time.Second, logger)
+	}
 	go server.periodicCleanup()
 
 	server.startOSSRefresher(envInt("DG_OSS_REFRESH_MINUTES", 30))
@@ -440,6 +450,7 @@ func loadConfig(logger *log.Logger) (Config, error) {
 		HTTPTimeout:        time.Duration(timeoutSeconds) * time.Second,
 		TrustForwardedFor:  envBool("DG_TRUST_FORWARDED_FOR", false),
 		IPRegionDB:         env("DG_IP_REGION_DB", "./data/ip2region.db"),
+		PostgresDSN:        env("DG_POSTGRES_DSN", ""),
 	}, nil
 }
 
@@ -573,7 +584,7 @@ func (s *Server) handleLogin(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 		s.log.Printf("business login failed: %v", err)
-		writeError(w, http.StatusBadGateway, "BACKEND_UNREACHABLE", "Business backend unreachable", nil)
+		writeError(w, http.StatusBadGateway, "BACKEND_UNREACHABLE", "服务暂时不可用，请稍后重试", nil)
 		return
 	}
 
@@ -997,11 +1008,11 @@ func (s *Server) handleAdminDashboard(w http.ResponseWriter, r *http.Request) {
 	totalDevices := len(s.store.Devices)
 	activeDevices := 0
 	revokedDevices := 0
-	onlineUsers := map[string]bool{}
-	recentUsers := map[string]bool{}
-	provinces := map[string]map[string]bool{}
-	isps := map[string]map[string]bool{}
-	versions := map[string]map[string]bool{}
+	onlineDevices := 0
+	recentDevices := 0
+	provinces := map[string]int{}
+	isps := map[string]int{}
+	versions := map[string]int{}
 
 	for _, device := range s.store.Devices {
 		if device.Status == statusActive {
@@ -1011,19 +1022,19 @@ func (s *Server) handleAdminDashboard(w http.ResponseWriter, r *http.Request) {
 			revokedDevices++
 		}
 		if device.Status == statusActive && now.Sub(device.LastSeenAt) < 5*time.Minute {
-			onlineUsers[device.UserID] = true
+			onlineDevices++
 		}
 		if device.Status == statusActive && now.Sub(device.LastSeenAt) < 24*time.Hour {
-			recentUsers[device.UserID] = true
+			recentDevices++
 		}
 		if province := provinceFromRegion(device.LastIPRegion); province != "" {
-			addUserBucket(provinces, province, device.UserID)
+			provinces[province]++
 		}
 		if isp := normalizeBucket(device.LastIPISP, "未知运营商"); isp != "" {
-			addUserBucket(isps, isp, device.UserID)
+			isps[isp]++
 		}
 		if version := normalizeBucket(device.AppVersion, "未知版本"); version != "" {
-			addUserBucket(versions, version, device.UserID)
+			versions[version]++
 		}
 	}
 	s.store.mu.Unlock()
@@ -1043,18 +1054,18 @@ func (s *Server) handleAdminDashboard(w http.ResponseWriter, r *http.Request) {
 				"total_devices":   totalDevices,
 				"active_devices":  activeDevices,
 				"revoked_devices": revokedDevices,
-				"online_users":    len(onlineUsers),
-				"recent_users":    len(recentUsers),
+				"online_devices":  onlineDevices,
+				"recent_devices":  recentDevices,
 				"device_policy":   s.cfg.DevicePolicy,
 			},
 			"activity": map[string]any{
-				"online_users":   len(onlineUsers),
-				"recent_users":   len(recentUsers),
-				"inactive_users": maxInt(totalUsers-len(recentUsers), 0),
+				"online_devices":   onlineDevices,
+				"recent_devices":   recentDevices,
+				"inactive_devices": maxInt(totalDevices-recentDevices, 0),
 			},
-			"regions":  distributionBuckets(bucketUserCounts(provinces)),
-			"isps":     distributionBuckets(bucketUserCounts(isps)),
-			"versions": distributionBuckets(bucketUserCounts(versions)),
+			"regions":  distributionBuckets(provinces),
+			"isps":     distributionBuckets(isps),
+			"versions": distributionBuckets(versions),
 			"gateway": map[string]any{
 				"status":          gatewayStatus,
 				"listen_addr":     s.cfg.ListenAddr,
@@ -1244,7 +1255,7 @@ func (s *Server) proxyToBusiness(w http.ResponseWriter, r *http.Request, session
 	})
 	if err != nil {
 		s.log.Printf("proxy request failed: %v", err)
-		writeError(w, http.StatusBadGateway, "BUSINESS_PROXY_FAILED", "Business proxy failed", nil)
+		writeError(w, http.StatusBadGateway, "BUSINESS_PROXY_FAILED", "服务暂时不可用，请稍后重试", nil)
 		return
 	}
 	defer resp.Body.Close()
@@ -1257,6 +1268,14 @@ func (s *Server) proxyToBusiness(w http.ResponseWriter, r *http.Request, session
 
 	if sessionCtx != nil && resp.StatusCode >= 200 && resp.StatusCode < 300 && strings.HasSuffix(r.URL.Path, "/user/getSubscribe") {
 		respBody = s.rewriteSubscriptionResponse(r, sessionCtx, respBody)
+	}
+
+	if resp.StatusCode >= 500 && !strings.Contains(resp.Header.Get("Content-Type"), "json") {
+		if s.log != nil {
+			s.log.Printf("business backend error (HTTP %d) for %s", resp.StatusCode, r.URL.Path)
+		}
+		writeError(w, http.StatusBadGateway, "BACKEND_UNAVAILABLE", "服务暂时不可用，请稍后重试", nil)
+		return
 	}
 
 	copyResponseHeaders(w.Header(), resp.Header)
@@ -1475,6 +1494,10 @@ func (s *Server) businessLogin(ctx context.Context, email, password string) (str
 		return "", nil, err
 	}
 
+	if resp.StatusCode >= 500 && !strings.Contains(resp.Header.Get("Content-Type"), "json") {
+		return "", nil, fmt.Errorf("business backend unavailable (HTTP %d)", resp.StatusCode)
+	}
+
 	if resp.StatusCode < 200 || resp.StatusCode >= 300 {
 		return "", nil, &businessHTTPError{
 			status:      resp.StatusCode,
@@ -1528,6 +1551,10 @@ func (s *Server) fetchSubscriptionSnapshot(ctx context.Context, businessToken st
 	if err != nil {
 		return SubscriptionSnapshot{}, err
 	}
+	if resp.StatusCode >= 500 {
+		return SubscriptionSnapshot{}, fmt.Errorf("business backend unavailable (HTTP %d)", resp.StatusCode)
+	}
+
 	if resp.StatusCode < 200 || resp.StatusCode >= 300 {
 		return SubscriptionSnapshot{}, fmt.Errorf("business subscription status %d", resp.StatusCode)
 	}
@@ -2114,7 +2141,40 @@ func (s *Server) updateDeviceIPInfoLocked(device *DeviceRecord, ip string) {
 	device.LastIPISP = ""
 }
 
-func LoadStore(path string) (*Store, error) {
+// loadFromFile reads the local JSON data file into the store.
+// Returns nil if the file does not exist (fresh start).
+func loadFromFile(s *Store) error {
+	if err := os.MkdirAll(filepath.Dir(s.path), 0o755); err != nil {
+		return err
+	}
+	data, err := os.ReadFile(s.path)
+	if errors.Is(err, os.ErrNotExist) {
+		return nil
+	}
+	if err != nil {
+		return err
+	}
+	if len(bytes.TrimSpace(data)) == 0 {
+		return nil
+	}
+	if err := json.Unmarshal(data, s); err != nil {
+		return err
+	}
+	if s.Users == nil {
+		s.Users = map[string]*UserCache{}
+	}
+	if s.Devices == nil {
+		s.Devices = map[string]*DeviceRecord{}
+	}
+	if s.Sessions == nil {
+		s.Sessions = map[string]*SessionRecord{}
+	}
+	if s.Audits == nil {
+		s.Audits = []AuditLog{}
+	}
+	return nil
+}
+func LoadStore(path, pgDSN string) (*Store, func(), error) {
 	store := &Store{
 		path:     path,
 		Users:    map[string]*UserCache{},
@@ -2123,40 +2183,31 @@ func LoadStore(path string) (*Store, error) {
 		Audits:   []AuditLog{},
 	}
 
-	if err := os.MkdirAll(filepath.Dir(path), 0o755); err != nil {
-		return nil, err
+	if pgDSN != "" {
+		ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+		defer cancel()
+		pg, err := NewPostgresStore(ctx, pgDSN)
+		if err != nil {
+			return nil, nil, fmt.Errorf("postgres init: %w", err)
+		}
+		store.pg = pg
+		if err := pg.LoadAll(ctx, store); err != nil {
+			return nil, nil, fmt.Errorf("postgres load: %w", err)
+		}
+		if len(store.Users) == 0 {
+			if err := loadFromFile(store); err == nil && len(store.Users) > 0 {
+				if err := pg.SaveAll(context.Background(), store); err != nil {
+					return nil, nil, fmt.Errorf("postgres migration save: %w", err)
+				}
+			}
+		}
+		return store, func() { pg.Close() }, nil
 	}
 
-	data, err := os.ReadFile(path)
-	if errors.Is(err, os.ErrNotExist) {
-		if err := store.Save(); err != nil {
-			return nil, err
-		}
-		return store, nil
+	if err := loadFromFile(store); err != nil {
+		return nil, nil, err
 	}
-	if err != nil {
-		return nil, err
-	}
-	if len(bytes.TrimSpace(data)) == 0 {
-		return store, nil
-	}
-	if err := json.Unmarshal(data, store); err != nil {
-		return nil, err
-	}
-	store.path = path
-	if store.Users == nil {
-		store.Users = map[string]*UserCache{}
-	}
-	if store.Devices == nil {
-		store.Devices = map[string]*DeviceRecord{}
-	}
-	if store.Sessions == nil {
-		store.Sessions = map[string]*SessionRecord{}
-	}
-	if store.Audits == nil {
-		store.Audits = []AuditLog{}
-	}
-	return store, nil
+	return store, nil, nil
 }
 
 func (s *Store) Save() error {
@@ -2166,6 +2217,9 @@ func (s *Store) Save() error {
 }
 
 func (s *Store) saveLocked() error {
+	if s.pg != nil {
+		return s.pg.SaveAll(context.Background(), s)
+	}
 	if err := os.MkdirAll(filepath.Dir(s.path), 0o755); err != nil {
 		return err
 	}
@@ -2280,24 +2334,6 @@ func distributionBuckets(counts map[string]int) []map[string]any {
 		return ci > cj
 	})
 	return items
-}
-
-func addUserBucket(buckets map[string]map[string]bool, name, userID string) {
-	if name == "" || userID == "" {
-		return
-	}
-	if buckets[name] == nil {
-		buckets[name] = map[string]bool{}
-	}
-	buckets[name][userID] = true
-}
-
-func bucketUserCounts(buckets map[string]map[string]bool) map[string]int {
-	counts := make(map[string]int, len(buckets))
-	for name, users := range buckets {
-		counts[name] = len(users)
-	}
-	return counts
 }
 
 func provinceFromRegion(region string) string {
@@ -2714,5 +2750,23 @@ func (s *Server) cleanupRevokedDevices() {
 	if autoRevoked > 0 || removed > 0 {
 		s.log.Printf("cleanup: auto-revoked %d offline devices (>30d), removed %d expired revoked devices (>90d)", autoRevoked, removed)
 		_ = s.store.saveLocked()
+	}
+}
+
+// syncPostgresLoop periodically reloads the in-memory store from PostgreSQL
+// so other instances' writes become visible to this process.
+func syncPostgresLoop(s *Store, interval time.Duration, logger *log.Logger) {
+	ticker := time.NewTicker(interval)
+	defer ticker.Stop()
+	for range ticker.C {
+		s.mu.Lock()
+		if s.pg != nil {
+			if err := s.pg.LoadAll(context.Background(), s); err != nil {
+				if logger != nil {
+					logger.Printf("postgres sync failed: %v", err)
+				}
+			}
+		}
+		s.mu.Unlock()
 	}
 }

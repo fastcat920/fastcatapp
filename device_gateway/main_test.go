@@ -116,7 +116,7 @@ func TestDeviceLimitAndSubscriptionRewrite(t *testing.T) {
 	}))
 	defer business.Close()
 
-	store, err := LoadStore(filepath.Join(t.TempDir(), "store.json"))
+	store, _, err := LoadStore(filepath.Join(t.TempDir(), "store.json"), "")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -214,7 +214,7 @@ func TestKickOldestRevokesUntilWithinLimit(t *testing.T) {
 	}))
 	defer business.Close()
 
-	store, err := LoadStore(filepath.Join(t.TempDir(), "store.json"))
+	store, _, err := LoadStore(filepath.Join(t.TempDir(), "store.json"), "")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -335,7 +335,7 @@ func TestProxyPassesThroughBusinessErrorBody(t *testing.T) {
 	}))
 	defer business.Close()
 
-	store, err := LoadStore(filepath.Join(t.TempDir(), "store.json"))
+	store, _, err := LoadStore(filepath.Join(t.TempDir(), "store.json"), "")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -403,7 +403,7 @@ func TestAdminDashboardTreatsReachableBusiness4xxAsOnline(t *testing.T) {
 	}))
 	defer business.Close()
 
-	store, err := LoadStore(filepath.Join(t.TempDir(), "store.json"))
+	store, _, err := LoadStore(filepath.Join(t.TempDir(), "store.json"), "")
 	if err != nil {
 		t.Fatal(err)
 	}

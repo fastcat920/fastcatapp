@@ -9,7 +9,16 @@ import 'package:url_launcher/url_launcher.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 import 'package:flutter_inappwebview/flutter_inappwebview.dart' as iaw;
 
-const _docsLanguage = 'zh-CN';
+/// Build the language tag for knowledge API calls from the current locale.
+///
+/// Maps [Locale] to the API format (e.g. zh_CN → zh-CN, en → en).
+String _localeToDocsLanguage(Locale locale) {
+  final lang = locale.languageCode;
+  final country = locale.countryCode;
+  if (country != null && country.isNotEmpty) return '$lang-$country';
+  return lang;
+}
+
 
 /// 知识库文章模型
 class KnowledgeArticle {
@@ -96,7 +105,7 @@ class _DocsPageState extends ConsumerState<DocsPage>
     final isDesktop =
         Platform.isLinux || Platform.isWindows || Platform.isMacOS;
     final theme = Theme.of(context);
-    const language = _docsLanguage;
+    final language = _localeToDocsLanguage(Localizations.localeOf(context));
 
     ref.listen<AsyncValue<dynamic>>(
       knowledgeArticlesProvider(language),

@@ -118,17 +118,17 @@ class _PlansViewState extends ConsumerState<PlansView> {
   }
 
   /// 获取最低价格对应的周期文字
-  String _getLowestPricePeriod(DomainPlan plan) {
+  String _getLowestPricePeriod(DomainPlan plan, AppLocalizations l10n) {
     double? lowest;
     String period = '';
     final entries = <double, String>{};
-    if (plan.monthlyPrice != null) entries[plan.monthlyPrice!] = '月付';
-    if (plan.quarterlyPrice != null) entries[plan.quarterlyPrice!] = '季付';
-    if (plan.halfYearlyPrice != null) entries[plan.halfYearlyPrice!] = '半年付';
-    if (plan.yearlyPrice != null) entries[plan.yearlyPrice!] = '年付';
-    if (plan.twoYearPrice != null) entries[plan.twoYearPrice!] = '两年付';
-    if (plan.threeYearPrice != null) entries[plan.threeYearPrice!] = '三年付';
-    if (plan.onetimePrice != null) entries[plan.onetimePrice!] = '一次性';
+    if (plan.monthlyPrice != null) entries[plan.monthlyPrice!] = l10n.xboardMonthlyPayment;
+    if (plan.quarterlyPrice != null) entries[plan.quarterlyPrice!] = l10n.xboardQuarterlyPayment;
+    if (plan.halfYearlyPrice != null) entries[plan.halfYearlyPrice!] = l10n.xboardHalfYearlyPayment;
+    if (plan.yearlyPrice != null) entries[plan.yearlyPrice!] = l10n.xboardYearlyPayment;
+    if (plan.twoYearPrice != null) entries[plan.twoYearPrice!] = l10n.xboardTwoYearPayment;
+    if (plan.threeYearPrice != null) entries[plan.threeYearPrice!] = l10n.xboardThreeYearPayment;
+    if (plan.onetimePrice != null) entries[plan.onetimePrice!] = l10n.xboardOneTimePayment;
     for (final e in entries.entries) {
       if (lowest == null || e.key < lowest) {
         lowest = e.key;
@@ -138,11 +138,11 @@ class _PlansViewState extends ConsumerState<PlansView> {
     return period;
   }
 
-  String _getDeviceLimitText(DomainPlan plan) {
+  String _getDeviceLimitText(DomainPlan plan, AppLocalizations l10n) {
     if (plan.deviceLimit == null || plan.deviceLimit == 0) {
-      return AppLocalizations.of(context).xboardUnlimited;
+      return l10n.xboardUnlimited;
     }
-    return '${plan.deviceLimit}台';
+    return '${plan.deviceLimit}${l10n.xboardDeviceUnit}';
   }
 
   String _getSpeedLimitText(DomainPlan plan) {
@@ -161,10 +161,10 @@ class _PlansViewState extends ConsumerState<PlansView> {
     final theme = Theme.of(context);
 
     final priceText = _getLowestPrice(plan);
-    final periodText = _getLowestPricePeriod(plan);
+    final periodText = _getLowestPricePeriod(plan, appLocalizations);
     final trafficText = _formatTraffic(plan.transferQuota.toDouble());
     final speedText = _getSpeedLimitText(plan);
-    final deviceText = _getDeviceLimitText(plan);
+    final deviceText = _getDeviceLimitText(plan, appLocalizations);
 
     final cardRadius = BorderRadius.circular(20);
     return Container(
@@ -366,7 +366,7 @@ class _PlansViewState extends ConsumerState<PlansView> {
               leading: IconButton(
                 icon: const Icon(Icons.arrow_back),
                 onPressed: _backToPlans,
-                tooltip: '返回',
+                tooltip: appLocalizations.xboardBack,
               ),
               title: Text(appLocalizations.xboardPurchaseSubscription),
               elevation: 0,
@@ -410,15 +410,15 @@ class _PlansViewState extends ConsumerState<PlansView> {
                           );
                         }
                         if (allPlans.isEmpty) {
-                          return const Center(
+                          return Center(
                             child: Column(
                               mainAxisAlignment: MainAxisAlignment.center,
                               children: [
-                                Icon(Icons.inbox_outlined,
+                                const Icon(Icons.inbox_outlined,
                                     size: 64, color: Colors.grey),
-                                SizedBox(height: 16),
-                                Text('暂无套餐信息',
-                                    style: TextStyle(
+                                const SizedBox(height: 16),
+                                Text(appLocalizations.xboardNoPlansAvailable,
+                                    style: const TextStyle(
                                         fontSize: 18, color: Colors.grey)),
                               ],
                             ),

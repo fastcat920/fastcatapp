@@ -3730,6 +3730,16 @@ class AppLocalizations {
     );
   }
 
+  /// `No plans available`
+  String get xboardNoPlansAvailable {
+    return Intl.message(
+      'No plans available',
+      name: 'xboardNoPlansAvailable',
+      desc: '',
+      args: [],
+    );
+  }
+
   /// `Back`
   String get xboardBack {
     return Intl.message('Back', name: 'xboardBack', desc: '', args: []);
@@ -8815,6 +8825,16 @@ class AppLocalizations {
     return Intl.message(
       'Device Management',
       name: 'xboardDeviceManagement',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `devices`
+  String get xboardDeviceUnit {
+    return Intl.message(
+      'devices',
+      name: 'xboardDeviceUnit',
       desc: '',
       args: [],
     );

@@ -176,9 +176,8 @@ class _LoginPageState extends ConsumerState<LoginPage> {
       return al.xboardLoginErrorNetwork;
     }
     final trimmed = message.trim();
-    if (trimmed == '登录失败' ||
-        trimmed == '登陆失败' ||
-        lower.contains('invalid credentials') ||
+    if (
+        lower.contains("invalid credentials") ||
         lower.contains('unauthorized') ||
         lower.contains('email or password') ||
         lower.contains('password error') ||

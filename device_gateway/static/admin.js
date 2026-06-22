@@ -83,7 +83,7 @@ function renderDashboard(data) {
 
   document.querySelector('.stats').innerHTML = `
     ${statCard('users', '总用户', s.total_users ?? 0, '进入用户管理')}
-    ${statCard('active-devices', '活跃设备', s.active_devices ?? 0, `${s.online_users ?? 0} 位用户在线`)}
+    ${statCard('active-devices', '活跃设备', s.active_devices ?? 0, `${s.online_devices ?? 0} 台设备在线`)}
     ${statCard('revoked-devices', '已撤销设备', s.revoked_devices ?? 0, '')}
     ${statCard('policy', '设备策略', s.device_policy || '—', '')}
     ${statCard('gateway', '网关状态', gatewayLabel[gateway.status] || '运行中', '查看网关信息', 'ok')}
@@ -168,9 +168,9 @@ function showDashboardDetails(title, body) {
 
 function renderActivity(activity) {
   const rows = [
-    { name: '当前在线', count: activity.online_users ?? 0 },
-    { name: '24 小时活跃', count: activity.recent_users ?? 0 },
-    { name: '暂未活跃', count: activity.inactive_users ?? 0 },
+    { name: '当前在线', count: activity.online_devices ?? 0 },
+    { name: '24 小时活跃', count: activity.recent_devices ?? 0 },
+    { name: '暂未活跃', count: activity.inactive_devices ?? 0 },
   ];
   document.getElementById('activity-panel').innerHTML = rows.map(item => `
     <div class="metric-row">

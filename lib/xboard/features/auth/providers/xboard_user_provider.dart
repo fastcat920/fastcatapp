@@ -772,7 +772,7 @@ class XBoardUserAuthNotifier extends Notifier<UserAuthState> {
         _hasRetriedWithNewDomain = false;
       }
 
-      String errorMessage = '登录失败';
+      String errorMessage = '[CONFIG_LOAD_FAILED]';
       if (e is XBoardException) {
         errorMessage = _normalizeLoginError(e.message);
       }

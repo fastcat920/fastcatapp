@@ -1301,7 +1301,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "xboardLoggedIn": MessageLookupByLibrary.simpleMessage("已登录"),
     "xboardLogin": MessageLookupByLibrary.simpleMessage("登录"),
     "xboardLoginErrorConfigLoad": MessageLookupByLibrary.simpleMessage(
-      "配置加载失败，请稍后再试",
+      "服务暂时不可用，请稍后重试",
     ),
     "xboardLoginErrorCredentials": MessageLookupByLibrary.simpleMessage(
       "账号或密码错误，请先检查账号密码",
