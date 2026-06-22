@@ -135,7 +135,7 @@ class MessageManagerState extends State<MessageManager> {
           marginBuilder: (mediaQuery) => EdgeInsets.only(
             bottom: max(mediaQuery.viewPadding.bottom,
                     mediaQuery.viewInsets.bottom) +
-                16,
+                80,
             left: 12,
             right: 12,
           ),
