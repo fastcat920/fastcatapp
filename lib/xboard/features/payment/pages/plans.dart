@@ -271,7 +271,7 @@ class _PlansViewState extends ConsumerState<PlansView> {
               if (plan.hasPrice)
                 SizedBox(
                   width: double.infinity,
-                  child: ElevatedButton.icon(
+                  child: FilledButton.icon(
                     onPressed: () => _navigateToPurchase(plan),
                     icon: const Icon(Icons.shopping_cart, size: 18),
                     label: Text(appLocalizations.xboardBuyNow),
