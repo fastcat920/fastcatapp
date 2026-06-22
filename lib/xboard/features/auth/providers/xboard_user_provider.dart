@@ -930,7 +930,7 @@ class XBoardUserAuthNotifier extends Notifier<UserAuthState> {
       if (code == 'NETWORK_ERROR') {
         return '[NETWORK_ERROR]';
       }
-      if (code == 'BACKEND_UNREACHABLE' || code == 'BUSINESS_LOGIN_FAILED') {
+      if (code == 'BACKEND_UNREACHABLE' || code == 'BACKEND_UNAVAILABLE' || code == 'BUSINESS_LOGIN_FAILED') {
         return '[CONFIG_LOAD_FAILED]';
       }
       if (code == 'CREDENTIALS_REQUIRED' || code == 'DEVICE_ID_REQUIRED') {
@@ -948,7 +948,11 @@ class XBoardUserAuthNotifier extends Notifier<UserAuthState> {
         lower.contains('invalid credentials') ||
         lower.contains('unauthorized') ||
         lower.contains('email or password')) {
-      return '[CREDENTIALS_ERROR]';
+      return BackendMessageMapper.map(
+        message,
+        context: BackendMessageContext.login,
+        fallback: message,
+      );
     }
     if (message.contains('DEVICE_LIMIT_EXCEEDED') ||
         lower.contains('device limit exceeded')) {

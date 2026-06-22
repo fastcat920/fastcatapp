@@ -141,6 +141,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
     }
     if (message.startsWith('[CONFIG_LOAD_FAILED]') ||
         message.startsWith('[BACKEND_UNREACHABLE]') ||
+        message.startsWith('[BACKEND_UNAVAILABLE]') ||
         message.startsWith('[BUSINESS_LOGIN_FAILED]')) {
       return al.xboardLoginErrorConfigLoad;
     }
@@ -175,7 +176,6 @@ class _LoginPageState extends ConsumerState<LoginPage> {
         lower.contains('network is unreachable')) {
       return al.xboardLoginErrorNetwork;
     }
-    final trimmed = message.trim();
     if (
         lower.contains("invalid credentials") ||
         lower.contains('unauthorized') ||
@@ -188,7 +188,11 @@ class _LoginPageState extends ConsumerState<LoginPage> {
         message.contains('账号或密码') ||
         message.contains('用户不存在') ||
         message.contains('邮箱不存在')) {
-      return al.xboardLoginErrorCredentials;
+      return BackendMessageMapper.map(
+        message,
+        context: BackendMessageContext.login,
+        fallback: message,
+      );
     }
     if (lower.contains('too many') ||
         lower.contains('rate limit') ||

@@ -9843,7 +9843,7 @@ class AppLocalizations {
   /// `Network error, please check your local network`
   String get xboardLoginErrorNetwork {
     return Intl.message(
-      'Network error, please check your local network',
+      'Service is temporarily unavailable, please try again later.',
       name: 'xboardLoginErrorNetwork',
       desc: '',
       args: [],

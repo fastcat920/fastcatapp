@@ -584,7 +584,7 @@ func (s *Server) handleLogin(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 		s.log.Printf("business login failed: %v", err)
-		writeError(w, http.StatusBadGateway, "BACKEND_UNREACHABLE", "服务暂时不可用，请稍后重试", nil)
+		writeError(w, http.StatusBadGateway, "BACKEND_UNAVAILABLE", "配置加载失败，请稍后重试", nil)
 		return
 	}
 
@@ -1274,7 +1274,7 @@ func (s *Server) proxyToBusiness(w http.ResponseWriter, r *http.Request, session
 		if s.log != nil {
 			s.log.Printf("business backend error (HTTP %d) for %s", resp.StatusCode, r.URL.Path)
 		}
-		writeError(w, http.StatusBadGateway, "BACKEND_UNAVAILABLE", "服务暂时不可用，请稍后重试", nil)
+		writeError(w, http.StatusBadGateway, "BACKEND_UNAVAILABLE", "配置加载失败，请稍后重试", nil)
 		return
 	}
 
