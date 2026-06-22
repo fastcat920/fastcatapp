@@ -53,6 +53,7 @@ class MessageManagerState extends State<MessageManager> {
       buffer: _bottomBufferMessages,
       onTap: onTap,
       showMessage: _showBottomMessage,
+      duration: const Duration(seconds: 2),
     );
   }
 
@@ -61,11 +62,13 @@ class MessageManagerState extends State<MessageManager> {
     required List<CommonMessage> buffer,
     required Future<void> Function() showMessage,
     VoidCallback? onTap,
+    Duration duration = const Duration(seconds: 3),
   }) async {
     final commonMessage = CommonMessage(
       id: utils.uuidV4,
       text: text,
       onTap: onTap,
+      duration: duration,
     );
     commonPrint.log(text);
     buffer.add(commonMessage);
@@ -139,7 +142,7 @@ class MessageManagerState extends State<MessageManager> {
             );
             final isNarrow = mediaQuery.size.width < 600;
             // 窄屏越过底部导航栏(68dp)
-            final bottomOffset = isNarrow ? 68.0 : 80.0;
+            final bottomOffset = isNarrow ? 68.0 : 40.0;
             // 桌面端侧边导航栏 96dp，左边距补 96dp 使卡片在内容区居中
             final leftOffset = isNarrow ? 12.0 : 108.0;
             return EdgeInsets.only(

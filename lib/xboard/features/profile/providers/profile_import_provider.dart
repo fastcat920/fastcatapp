@@ -1,6 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:fl_clash/xboard/features/profile/profile.dart';
 import 'package:fl_clash/xboard/core/core.dart';
+import 'package:fl_clash/xboard/utils/xboard_notification.dart';
 
 // 初始化文件级日志器
 final _logger = FileLogger('profile_import_provider.dart');
@@ -51,6 +52,12 @@ class ProfileImportNotifier extends StateNotifier<ImportState> {
         lastSuccessTime: result.isSuccess ? DateTime.now() : null,
         lastResult: result,
       );
+
+      if (result.isSuccess) {
+        XBoardNotification.showSuccess(
+          forceRefresh ? '订阅更新成功' : '订阅导入成功',
+        );
+      }
 
       return result.isSuccess;
     } catch (e) {
