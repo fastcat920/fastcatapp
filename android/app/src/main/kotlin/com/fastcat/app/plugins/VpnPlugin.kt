@@ -256,9 +256,11 @@ data object VpnPlugin : FlutterPlugin, MethodChannel.MethodCallHandler {
         GlobalState.runLock.withLock {
             if (GlobalState.runState.value == RunState.STOP) return
             GlobalState.runState.value = RunState.STOP
-            apexService?.stop()
-            stopForegroundJob()
+            // 先停 TUN 释放 fd，让系统有机会清理 VPN 网络接口及其代理/DNS 设置
+            // 再停 VPN Service，避免部分 ROM 上 HTTP 代理残留
             Core.stopTun()
+            stopForegroundJob()
+            apexService?.stop()
             GlobalState.handleTryDestroy()
         }
     }
