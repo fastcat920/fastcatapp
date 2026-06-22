@@ -323,7 +323,7 @@ class _XBoardConnectButtonState extends ConsumerState<XBoardConnectButton>
 
     const IconData btnIcon = Icons.power_settings_new;
     final Color iconColor = isStart
-        ? Colors.white
+        ? colorScheme.onPrimary
         : (isDark ? colorScheme.primary : const Color(0xFF455A64));
 
     // 按钮只渲染圆圈部分，状态文字由首页单独放置

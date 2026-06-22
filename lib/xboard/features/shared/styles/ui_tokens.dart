@@ -113,7 +113,7 @@ class XbUiButton {
       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       backgroundColor: Theme.of(context).colorScheme.primary,
-      foregroundColor: Colors.white,
+      foregroundColor: Theme.of(context).colorScheme.onPrimary,
     );
   }
 

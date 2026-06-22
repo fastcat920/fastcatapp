@@ -278,7 +278,6 @@ class _PlansViewState extends ConsumerState<PlansView> {
                     style: XbUiButton.filledPrimary(context).copyWith(
                       minimumSize: const WidgetStatePropertyAll(Size(0, 48)),
                       elevation: const WidgetStatePropertyAll(0),
-                      iconColor: const WidgetStatePropertyAll(Colors.white),
                     ),
                   ),
                 ),

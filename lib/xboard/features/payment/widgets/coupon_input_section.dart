@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:fl_clash/l10n/l10n.dart';
+import 'package:fl_clash/xboard/features/shared/styles/styles.dart';
 import 'package:fl_clash/xboard/features/shared/widgets/tv_deferred_input.dart';
 
 /// 优惠券输入区域
@@ -213,7 +214,7 @@ class _ValidateButton extends StatelessWidget {
   Widget build(BuildContext context) {
     return SizedBox(
       height: 48,
-      child: ElevatedButton(
+      child: FilledButton(
         onPressed: isValidating
             ? null
             : () {
@@ -222,14 +223,10 @@ class _ValidateButton extends StatelessWidget {
                 // 执行验证
                 onPressed();
               },
-        style: ElevatedButton.styleFrom(
-          backgroundColor: Theme.of(context).colorScheme.primary,
-          foregroundColor: Colors.white,
-          elevation: 0,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(12),
+        style: XbUiButton.filledPrimary(context).copyWith(
+          padding: const WidgetStatePropertyAll(
+            EdgeInsets.symmetric(horizontal: 20),
           ),
-          padding: const EdgeInsets.symmetric(horizontal: 20),
         ),
         child: isValidating
             ? const SizedBox(

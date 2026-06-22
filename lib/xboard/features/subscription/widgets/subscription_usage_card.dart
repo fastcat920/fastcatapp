@@ -318,7 +318,7 @@ class SubscriptionUsageCard extends ConsumerWidget {
                     },
                     style: FilledButton.styleFrom(
                       backgroundColor: statusColor,
-                      foregroundColor: Colors.white,
+                      foregroundColor: Theme.of(context).colorScheme.onPrimary,
                       padding: const EdgeInsets.symmetric(vertical: 12),
                     ),
                     icon: const Icon(Icons.shopping_bag, size: 18),
@@ -616,8 +616,6 @@ class SubscriptionUsageCard extends ConsumerWidget {
                       style: FilledButton.styleFrom(
                         backgroundColor:
                             _getRenewButtonColor(expiryState, theme),
-                        foregroundColor: Colors.white,
-                        iconColor: Colors.white,
                         padding: const EdgeInsets.symmetric(vertical: 12),
                       ),
                     ),
@@ -634,8 +632,6 @@ class SubscriptionUsageCard extends ConsumerWidget {
                         style: FilledButton.styleFrom(
                           backgroundColor:
                               _getResetButtonColor(progress, theme),
-                          foregroundColor: Colors.white,
-                          iconColor: Colors.white,
                           padding: const EdgeInsets.symmetric(vertical: 12),
                         ),
                       ),

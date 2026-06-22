@@ -442,15 +442,15 @@ class _PlanPurchasePageState extends ConsumerState<PlanPurchasePage> {
                 child: Consumer(
                   builder: (context, ref, child) {
                     final paymentState = ref.watch(userUIStateProvider);
-                    return ElevatedButton(
+                    return FilledButton(
                       onPressed:
                           paymentState.isLoading ? null : _proceedToPurchase,
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Theme.of(context).colorScheme.primary,
-                        foregroundColor: Colors.white,
-                        elevation: 0,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(isDark ? 14 : 16),
+                      style: XbUiButton.filledPrimary(context).copyWith(
+                        minimumSize: const WidgetStatePropertyAll(Size(0, 54)),
+                        shape: WidgetStatePropertyAll(
+                          RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(isDark ? 14 : 16),
+                          ),
                         ),
                       ),
                       child: paymentState.isLoading
