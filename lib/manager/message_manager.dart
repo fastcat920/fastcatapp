@@ -137,10 +137,11 @@ class MessageManagerState extends State<MessageManager> {
               mediaQuery.viewPadding.bottom,
               mediaQuery.viewInsets.bottom,
             );
-            // 移动端底部导航栏高度 68dp，桌面端无底部栏，需额外留出空间以免遮挡
-            final navBarOffset = mediaQuery.size.width < 600 ? 68.0 : 0.0;
+            final isNarrow = mediaQuery.size.width < 600;
+            // 窄屏需越过底部导航栏(68dp) + 卡片高度(~52dp) + 间距(8dp) = 128
+            final bottomOffset = isNarrow ? 128.0 : 80.0;
             return EdgeInsets.only(
-              bottom: viewBottom + 80 + navBarOffset,
+              bottom: viewBottom + bottomOffset,
               left: 12,
               right: 12,
             );
