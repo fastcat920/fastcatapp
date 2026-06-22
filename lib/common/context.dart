@@ -30,7 +30,7 @@ extension BuildContextExtension on BuildContext {
     final EdgeInsets margin;
     if (width < 600) {
       margin = const EdgeInsets.only(
-        bottom: 16,
+        bottom: 84,
         right: 16,
         left: 16,
       );
