@@ -4,6 +4,7 @@ import 'package:fl_clash/xboard/features/invite/dialogs/logout_dialog.dart';
 import 'package:fl_clash/xboard/features/mine/widgets/change_password_sheet.dart';
 import 'package:fl_clash/xboard/utils/xboard_notification.dart';
 import 'package:flutter/material.dart';
+import 'package:fl_clash/xboard/features/shared/shared.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 class AccountInfoPage extends ConsumerStatefulWidget {
@@ -170,13 +171,15 @@ class _AccountInfoPageState extends ConsumerState<AccountInfoPage> {
                   ),
                   icon: const Icon(Icons.logout),
                   label: Text(l10n.xboardLogout),
-                  style: FilledButton.styleFrom(
-                    backgroundColor: Colors.red.shade500,
-                    foregroundColor: Colors.white,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(14),
+                  style: XbUiButton.filledDanger(context).copyWith(
+                    shape: WidgetStatePropertyAll(
+                      RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(14),
+                      ),
                     ),
-                    padding: const EdgeInsets.symmetric(vertical: 14),
+                    padding: const WidgetStatePropertyAll(
+                      EdgeInsets.symmetric(vertical: 14),
+                    ),
                   ),
                 ),
               ),
