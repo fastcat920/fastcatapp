@@ -102,7 +102,6 @@ class ClashService extends ClashHandlerInterface {
       if (isAdmin) {
         globalState.updateCoreSwitchStatus(
           CoreSwitchStage.coreConnecting,
-          message: '核心回连',
         );
         final isSuccess = await request.startCoreByHelper(arg);
         if (isSuccess) {
@@ -121,7 +120,6 @@ class ClashService extends ClashHandlerInterface {
       commonPrint.log("Starting core: ${appPath.corePath}, arg: $arg");
       globalState.updateCoreSwitchStatus(
         CoreSwitchStage.coreConnecting,
-        message: '核心回连',
       );
       // macOS: 移除 Gatekeeper quarantine 属性，防止下载的 DMG 安装后核心被阻止执行
       if (Platform.isMacOS) {

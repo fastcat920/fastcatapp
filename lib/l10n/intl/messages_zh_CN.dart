@@ -1185,6 +1185,9 @@ class MessageLookup extends MessageLookupByLibrary {
     "xboardDiscounted": MessageLookupByLibrary.simpleMessage("已优惠"),
     "xboardDiscountedPrice": MessageLookupByLibrary.simpleMessage("优惠后价格"),
     "xboardDocsCenter": MessageLookupByLibrary.simpleMessage("文档中心"),
+    "xboardNoDocuments": MessageLookupByLibrary.simpleMessage(
+      "暂无文档"
+    ),
     "xboardDownloadingConfig": MessageLookupByLibrary.simpleMessage("下载配置文件"),
     "xboardEmail": MessageLookupByLibrary.simpleMessage("邮箱"),
     "xboardEmailUnavailable": MessageLookupByLibrary.simpleMessage("邮箱不可用"),

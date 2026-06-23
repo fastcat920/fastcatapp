@@ -197,7 +197,7 @@ class _DocsPageState extends ConsumerState<DocsPage>
                       children: [
                         Icon(Icons.article_outlined, size: 56),
                         SizedBox(height: 16),
-                        Text('暂无文档'),
+                        Text(AppLocalizations.of(context).xboardNoDocuments),
                       ],
                     ),
                   ),
@@ -314,7 +314,7 @@ class _DocsPageState extends ConsumerState<DocsPage>
                 Icon(Icons.article_outlined,
                     size: 56, color: theme.colorScheme.onSurfaceVariant),
                 const SizedBox(height: 16),
-                Text('暂无文档',
+                Text(AppLocalizations.of(context).xboardNoDocuments,
                     style: theme.textTheme.titleMedium
                         ?.copyWith(color: theme.colorScheme.onSurfaceVariant)),
               ],

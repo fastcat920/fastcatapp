@@ -1696,6 +1696,9 @@ class MessageLookup extends MessageLookupByLibrary {
       "Discounted price",
     ),
     "xboardDocsCenter": MessageLookupByLibrary.simpleMessage("Docs center"),
+    "xboardNoDocuments": MessageLookupByLibrary.simpleMessage(
+      "No documents available"
+    ),
     "xboardDownloadingConfig": MessageLookupByLibrary.simpleMessage(
       "Downloading configuration file",
     ),

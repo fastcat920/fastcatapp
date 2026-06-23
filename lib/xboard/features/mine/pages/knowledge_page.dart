@@ -53,7 +53,7 @@ class KnowledgePage extends ConsumerWidget {
                   Icon(Icons.menu_book_outlined,
                       size: 64, color: Theme.of(context).colorScheme.outline),
                   const SizedBox(height: 16),
-                  Text('暂无文档',
+                  Text(AppLocalizations.of(context).xboardNoDocuments,
                       style: Theme.of(context).textTheme.titleMedium?.copyWith(
                           color:
                               Theme.of(context).colorScheme.onSurfaceVariant)),

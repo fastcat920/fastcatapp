@@ -1375,6 +1375,9 @@ class MessageLookup extends MessageLookupByLibrary {
     "xboardDiscounted": MessageLookupByLibrary.simpleMessage("割引済み"),
     "xboardDiscountedPrice": MessageLookupByLibrary.simpleMessage("割引後価格"),
     "xboardDocsCenter": MessageLookupByLibrary.simpleMessage("ドキュメントセンター"),
+    "xboardNoDocuments": MessageLookupByLibrary.simpleMessage(
+      "ドキュメントはありません"
+    ),
     "xboardDownloadingConfig": MessageLookupByLibrary.simpleMessage(
       "設定ファイルをダウンロード中",
     ),

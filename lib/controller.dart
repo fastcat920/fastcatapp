@@ -162,7 +162,6 @@ class AppController {
       if (isStart) {
         globalState.updateCoreSwitchStatus(
           CoreSwitchStage.coreConnecting,
-          message: '核心回连',
         );
         await globalState.handleStart([
           updateRunTime,
@@ -172,14 +171,12 @@ class AppController {
         if (globalState.startTime == null) {
           globalState.updateCoreSwitchStatus(
             CoreSwitchStage.failed,
-            message: '连接失败',
           );
           return false;
         }
         if (_ref.read(realTunEnableProvider)) {
           globalState.updateCoreSwitchStatus(
             CoreSwitchStage.tunApplying,
-            message: 'TUN 已应用',
           );
         }
         if (Platform.isIOS) {
@@ -189,7 +186,6 @@ class AppController {
           addCheckIpNumDebounce();
           globalState.updateCoreSwitchStatus(
             CoreSwitchStage.connected,
-            message: '已连接',
           );
           return true;
         }
@@ -199,7 +195,6 @@ class AppController {
           addCheckIpNumDebounce();
           globalState.updateCoreSwitchStatus(
             CoreSwitchStage.connected,
-            message: '已连接',
           );
           return true;
         }
@@ -207,7 +202,6 @@ class AppController {
           addCheckIpNumDebounce();
           globalState.updateCoreSwitchStatus(
             CoreSwitchStage.connected,
-            message: '已连接',
           );
           return true;
         }
@@ -215,13 +209,11 @@ class AppController {
         addCheckIpNumDebounce();
         globalState.updateCoreSwitchStatus(
           CoreSwitchStage.connected,
-          message: '已连接',
         );
         return true;
       } else {
         globalState.updateCoreSwitchStatus(
           CoreSwitchStage.stopping,
-          message: '正在断开',
         );
         await globalState.handleStop();
         await clashCore.resetTraffic();
@@ -410,7 +402,6 @@ class AppController {
       } else {
         globalState.updateCoreSwitchStatus(
           CoreSwitchStage.checkingHelper,
-          message: '检查 helper',
         );
         final code = await system.authorizeCore();
         switch (code) {
@@ -418,7 +409,6 @@ class AppController {
             // 验证服务是否真的起来了（Win11 可能批准 UAC 但服务启动失败）
             globalState.updateCoreSwitchStatus(
               CoreSwitchStage.helperReady,
-              message: 'helper 已复用',
             );
             final isAdminNow = await system.checkIsAdmin();
             if (!isAdminNow) {
@@ -428,7 +418,6 @@ class AppController {
             }
             globalState.updateCoreSwitchStatus(
               CoreSwitchStage.coreConnecting,
-              message: '核心回连',
             );
             await restartCore(setupProfile: false, restoreStart: false);
             didRestartCore = true;

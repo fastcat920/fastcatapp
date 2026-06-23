@@ -7406,6 +7406,16 @@ class AppLocalizations {
     );
   }
 
+  /// `No documents available`
+  String get xboardNoDocuments {
+    return Intl.message(
+      'No documents available',
+      name: 'xboardNoDocuments',
+      desc: '',
+      args: [],
+    );
+  }
+
   /// `Email unavailable`
   String get xboardEmailUnavailable {
     return Intl.message(
