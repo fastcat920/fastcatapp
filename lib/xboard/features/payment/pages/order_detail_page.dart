@@ -372,6 +372,7 @@ class _OrderDetailPageState extends ConsumerState<OrderDetailPage>
   Future<void> _submitPayment() async {
     final l10n = AppLocalizations.of(context);
     final order = await ref.read(getOrderProvider(widget.tradeNo).future);
+    if (!mounted) return;
     final userInfo = ref.read(userInfoProvider);
     final balanceCoversOrder = order != null &&
         _getBalanceDeductionForOrder(order, userInfo) >=
@@ -402,12 +403,13 @@ class _OrderDetailPageState extends ConsumerState<OrderDetailPage>
       }
 
       if (data is String && data.isNotEmpty) {
+        if (!mounted) return;
         final success = await PaymentWebViewPage.open(
           context,
           paymentUrl: data,
           tradeNo: widget.tradeNo,
         );
-        if (success == true) {
+        if (success == true && mounted) {
           await _handlePaymentSuccess();
         }
       }
