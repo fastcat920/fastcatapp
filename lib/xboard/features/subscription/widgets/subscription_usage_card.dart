@@ -823,33 +823,30 @@ class SubscriptionUsageCard extends ConsumerWidget {
                   Expanded(
                     child: FilledButton(
                       onPressed: () => _handleRenewAction(context, ref),
-                      style: FilledButton.styleFrom(
-                        backgroundColor: usePlainBackground
-                            ? _getRenewButtonColor(expiryState, theme)
-                            : (expiryState == _ExpiryState.normal
-                                ? Colors.white.withValues(alpha: 0.24)
-                                : _getRenewButtonColor(expiryState, theme)),
-                        foregroundColor: usePlainBackground
-                            ? Colors.white
-                            : theme.colorScheme.onPrimary,
-                        padding: const EdgeInsets.symmetric(vertical: 10),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(10),
-                          side: usePlainBackground
-                              ? BorderSide.none
-                              : BorderSide(
-                                  color: theme.colorScheme.onPrimary
-                                      .withValues(alpha: 0.38),
+                      style: usePlainBackground
+                          ? FilledButton.styleFrom(
+                              backgroundColor:
+                                  _getRenewButtonColor(expiryState, theme),
+                              foregroundColor: Colors.white,
+                              padding:
+                                  const EdgeInsets.symmetric(vertical: 10),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(10),
+                              ),
+                            )
+                          : XbUiButton.filledPrimary(context).copyWith(
+                              padding: const WidgetStatePropertyAll(
+                                  EdgeInsets.symmetric(vertical: 10)),
+                              shape: WidgetStatePropertyAll(
+                                RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(10),
                                 ),
-                        ),
-                      ),
+                              ),
+                            ),
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          Icon(Icons.refresh, size: 16,
-                              color: usePlainBackground
-                                  ? Colors.white
-                                  : theme.colorScheme.onPrimary),
+                          const Icon(Icons.refresh, size: 16),
                           const SizedBox(width: 6),
                           Text(AppLocalizations.of(context).xboardRenewPlan),
                         ],
@@ -862,24 +859,30 @@ class SubscriptionUsageCard extends ConsumerWidget {
                       child: FilledButton(
                         onPressed: () => _handleRenewAction(context, ref,
                             isResetTraffic: true),
-                        style: FilledButton.styleFrom(
-                          backgroundColor:
-                              _getResetButtonColor(progress, theme),
-                          foregroundColor: usePlainBackground
-                              ? Colors.white
-                              : theme.colorScheme.onPrimary,
-                          padding: const EdgeInsets.symmetric(vertical: 10),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(10),
-                          ),
-                        ),
+                        style: usePlainBackground
+                            ? FilledButton.styleFrom(
+                                backgroundColor:
+                                    _getResetButtonColor(progress, theme),
+                                foregroundColor: Colors.white,
+                                padding: const EdgeInsets.symmetric(
+                                    vertical: 10),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(10),
+                                ),
+                              )
+                            : XbUiButton.filledPrimary(context).copyWith(
+                                padding: const WidgetStatePropertyAll(
+                                    EdgeInsets.symmetric(vertical: 10)),
+                                shape: WidgetStatePropertyAll(
+                                  RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(10),
+                                  ),
+                                ),
+                              ),
                         child: Row(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
-                            Icon(Icons.restart_alt, size: 16,
-                                color: usePlainBackground
-                                    ? Colors.white
-                                    : theme.colorScheme.onPrimary),
+                            const Icon(Icons.restart_alt, size: 16),
                             const SizedBox(width: 6),
                             Text(AppLocalizations.of(context)
                                 .xboardResetTraffic),
