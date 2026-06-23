@@ -3,8 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:fl_clash/xboard/utils/xboard_notification.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:url_launcher/url_launcher.dart';
 import 'package:flutter_xboard_sdk/flutter_xboard_sdk.dart';
+import 'payment_webview_page.dart';
 import 'package:fl_clash/l10n/l10n.dart';
 import 'package:fl_clash/xboard/features/shared/styles/styles.dart';
 import 'package:fl_clash/xboard/utils/backend_message_mapper.dart';
@@ -29,8 +29,11 @@ class _PaymentGatewayPageState extends ConsumerState<PaymentGatewayPage> {
   @override
   void initState() {
     super.initState();
-    _openPaymentUrl();
+    setState(() => _isLoading = false);
     _startPaymentStatusCheck();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _openPaymentWebView();
+    });
   }
 
   @override
@@ -39,46 +42,28 @@ class _PaymentGatewayPageState extends ConsumerState<PaymentGatewayPage> {
     super.dispose();
   }
 
-  Future<void> _openPaymentUrl() async {
-    try {
-      setState(() {
-        _isLoading = false;
-      });
-      await _launchPaymentUrl(isAutomatic: true);
-    } catch (e) {
-      setState(() {
-        _errorMessage = e.toString();
-        _isLoading = false;
-      });
+  Future<void> _openPaymentWebView() async {
+    if (!mounted) return;
+    final success = await PaymentWebViewPage.open(
+      context,
+      paymentUrl: widget.paymentUrl,
+      tradeNo: widget.tradeNo,
+    );
+    if (success == true && mounted) {
+      Navigator.of(context).popUntil((route) => route.isFirst);
     }
   }
 
-  Future<void> _launchPaymentUrl({bool isAutomatic = false}) async {
-    final l10n = AppLocalizations.of(context);
-    try {
-      final uri = Uri.parse(widget.paymentUrl);
-      if (!await canLaunchUrl(uri)) {
-        throw Exception(
-            '${l10n.xboardOpenPaymentLinkFailed}: ${widget.paymentUrl}');
-      }
-      final launched = await launchUrl(
-        uri,
-        mode: LaunchMode.externalApplication, // 强制在外部浏览器打开
-      );
-      if (!launched) {
-        throw Exception(l10n.xboardOpenPaymentLinkFailed);
-      }
-      if (mounted) {
-        XBoardNotification.showInfo(isAutomatic
-            ? l10n.xboardAutoOpeningPaymentPage
-            : l10n.xboardPaymentPageOpenedInBrowser);
-        _startAutoPolling();
-      }
-    } catch (e) {
-      if (mounted) {
-        XBoardNotification.showError(
-            '${l10n.xboardOpenPaymentLinkFailed}: ${BackendMessageMapper.mapError(e)}');
-      }
+  Future<void> _launchPaymentWebView() async {
+    if (!mounted) return;
+    _startAutoPolling();
+    final success = await PaymentWebViewPage.open(
+      context,
+      paymentUrl: widget.paymentUrl,
+      tradeNo: widget.tradeNo,
+    );
+    if (success == true && mounted) {
+      Navigator.of(context).popUntil((route) => route.isFirst);
     }
   }
 
@@ -485,8 +470,7 @@ class _PaymentGatewayPageState extends ConsumerState<PaymentGatewayPage> {
                         children: [
                           Expanded(
                             child: FilledButton.icon(
-                              onPressed: () =>
-                                  _launchPaymentUrl(isAutomatic: false),
+                              onPressed: _launchPaymentWebView,
                               icon: const Icon(Icons.open_in_browser),
                               label: Text(l10n.xboardReopen),
                               style: XbUiButton.filledPrimary(context).copyWith(

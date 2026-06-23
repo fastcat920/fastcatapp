@@ -1,15 +1,15 @@
 import 'dart:async';
 
 import 'package:cached_network_image/cached_network_image.dart';
-import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_xboard_sdk/flutter_xboard_sdk.dart';
-import 'package:url_launcher/url_launcher.dart';
 import 'package:fl_clash/xboard/adapter/state/order_state.dart';
 import 'package:fl_clash/xboard/core/core.dart';
 import 'package:fl_clash/xboard/domain/domain.dart';
 import 'package:fl_clash/xboard/features/auth/providers/xboard_user_provider.dart';
+import 'payment_webview_page.dart';
 import 'package:fl_clash/xboard/features/payment/providers/xboard_payment_provider.dart';
 import 'package:fl_clash/xboard/features/shared/styles/styles.dart';
 import 'package:fl_clash/xboard/features/subscription/providers/xboard_subscription_provider.dart';
@@ -402,21 +402,14 @@ class _OrderDetailPageState extends ConsumerState<OrderDetailPage>
       }
 
       if (data is String && data.isNotEmpty) {
-        await Clipboard.setData(ClipboardData(text: data));
-        final uri = Uri.parse(data);
-        if (!await canLaunchUrl(uri)) {
-          throw Exception(l10n.xboardOpenPaymentLinkFailed);
-        }
-        final launched = await launchUrl(
-          uri,
-          mode: LaunchMode.externalApplication,
+        final success = await PaymentWebViewPage.open(
+          context,
+          paymentUrl: data,
+          tradeNo: widget.tradeNo,
         );
-        if (!launched) {
-          throw Exception(l10n.xboardOpenPaymentLinkFailed);
+        if (success == true) {
+          await _handlePaymentSuccess();
         }
-        XBoardNotification.showInfo(l10n.xboardPaymentPageOpenedInBrowser);
-      } else {
-        throw Exception(l10n.xboardFailedToOpenPaymentLink);
       }
     } catch (e, stackTrace) {
       _logger.error('提交支付失败: $e');

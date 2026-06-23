@@ -1,6 +1,5 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:fl_clash/xboard/features/payment/providers/xboard_payment_provider.dart';
 import 'package:fl_clash/l10n/l10n.dart';
@@ -10,9 +9,9 @@ import 'package:fl_clash/xboard/domain/domain.dart';
 import 'package:fl_clash/xboard/features/shared/styles/styles.dart';
 import 'package:fl_clash/common/common.dart';
 import 'package:fl_clash/xboard/features/shared/widgets/tv_deferred_input.dart';
-import 'package:url_launcher/url_launcher.dart';
-import '../widgets/payment_method_selector_dialog.dart';
+import 'payment_webview_page.dart';
 import '../widgets/payment_waiting_overlay.dart';
+import '../widgets/payment_method_selector_dialog.dart';
 import '../models/payment_step.dart';
 import 'package:fl_clash/xboard/utils/backend_message_mapper.dart';
 
@@ -167,12 +166,17 @@ class _RechargePageState extends ConsumerState<RechargePage> {
       } else if (paymentData != null &&
           paymentData is String &&
           paymentData.isNotEmpty) {
-        // 跳转外部支付
-        PaymentWaitingManager.updateStep(PaymentStep.waitingPayment);
-        await Clipboard.setData(ClipboardData(text: paymentData));
-        final uri = Uri.tryParse(paymentData);
-        if (uri != null) {
-          await launchUrl(uri, mode: LaunchMode.externalApplication);
+        // 应用内 WebView 支付
+        PaymentWaitingManager.hide();
+        final success = await PaymentWebViewPage.open(
+          context,
+          paymentUrl: paymentData,
+          tradeNo: tradeNo,
+        );
+        if (success == true && mounted) {
+          XBoardNotification.showSuccess(l10n.xboardPaymentSuccess);
+          _refreshUserInfo();
+          Navigator.of(context).pop(true);
         }
       } else {
         PaymentWaitingManager.hide();
