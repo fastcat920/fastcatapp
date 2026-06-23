@@ -821,72 +821,71 @@ class SubscriptionUsageCard extends ConsumerWidget {
               builder: (context, ref, _) => Row(
                 children: [
                   Expanded(
-                    child: () {
-                      final renewFgColor = usePlainBackground
-                          ? Colors.white
-                          : (expiryState == _ExpiryState.normal
-                              ? theme.colorScheme.primary
-                              : Colors.white);
-                      return FilledButton(
-                        onPressed: () => _handleRenewAction(context, ref),
+                    child: FilledButton(
+                      onPressed: () => _handleRenewAction(context, ref),
+                      style: FilledButton.styleFrom(
+                        backgroundColor: usePlainBackground
+                            ? _getRenewButtonColor(expiryState, theme)
+                            : (expiryState == _ExpiryState.normal
+                                ? Colors.white.withValues(alpha: 0.24)
+                                : _getRenewButtonColor(expiryState, theme)),
+                        foregroundColor: usePlainBackground
+                            ? Colors.white
+                            : theme.colorScheme.primary,
+                        padding: const EdgeInsets.symmetric(vertical: 10),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(10),
+                          side: usePlainBackground
+                              ? BorderSide.none
+                              : BorderSide(
+                                  color: theme.colorScheme.primary
+                                      .withValues(alpha: 0.38),
+                                ),
+                        ),
+                      ),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(Icons.refresh, size: 16,
+                              color: usePlainBackground
+                                  ? Colors.white
+                                  : theme.colorScheme.primary),
+                          const SizedBox(width: 6),
+                          Text(AppLocalizations.of(context).xboardRenewPlan),
+                        ],
+                      ),
+                    ),
+                  ),
+                  if (shouldShowResetAction) ...[
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: FilledButton(
+                        onPressed: () => _handleRenewAction(context, ref,
+                            isResetTraffic: true),
                         style: FilledButton.styleFrom(
-                          backgroundColor: usePlainBackground
-                              ? _getRenewButtonColor(expiryState, theme)
-                              : (expiryState == _ExpiryState.normal
-                                  ? Colors.white.withValues(alpha: 0.24)
-                                  : _getRenewButtonColor(expiryState, theme)),
-                          foregroundColor: renewFgColor,
+                          backgroundColor:
+                              _getResetButtonColor(progress, theme),
+                          foregroundColor: usePlainBackground
+                              ? Colors.white
+                              : theme.colorScheme.primary,
                           padding: const EdgeInsets.symmetric(vertical: 10),
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(10),
-                            side: usePlainBackground
-                                ? BorderSide.none
-                                : BorderSide(
-                                    color: Colors.white.withValues(alpha: 0.38),
-                                  ),
                           ),
                         ),
                         child: Row(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
-                            Icon(Icons.refresh, size: 16, color: renewFgColor),
+                            Icon(Icons.restart_alt, size: 16,
+                                color: usePlainBackground
+                                    ? Colors.white
+                                    : theme.colorScheme.primary),
                             const SizedBox(width: 6),
-                            Text(AppLocalizations.of(context).xboardRenewPlan),
+                            Text(AppLocalizations.of(context)
+                                .xboardResetTraffic),
                           ],
                         ),
-                      );
-                    }(),
-                  ),
-                  if (shouldShowResetAction) ...[
-                    const SizedBox(width: 10),
-                    Expanded(
-                      child: () {
-                        final resetFgColor = usePlainBackground
-                            ? Colors.white
-                            : theme.colorScheme.primary;
-                        return FilledButton(
-                          onPressed: () => _handleRenewAction(context, ref,
-                              isResetTraffic: true),
-                          style: FilledButton.styleFrom(
-                            backgroundColor:
-                                _getResetButtonColor(progress, theme),
-                            foregroundColor: resetFgColor,
-                            padding: const EdgeInsets.symmetric(vertical: 10),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(10),
-                            ),
-                          ),
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Icon(Icons.restart_alt, size: 16, color: resetFgColor),
-                              const SizedBox(width: 6),
-                              Text(AppLocalizations.of(context)
-                                  .xboardResetTraffic),
-                            ],
-                          ),
-                        );
-                      }(),
+                      ),
                     ),
                   ],
                 ],
