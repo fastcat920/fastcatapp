@@ -8,8 +8,6 @@ class LanguageSelector extends ConsumerWidget {
   static const List<Map<String, String>> supportedLanguages = [
     {'code': 'zh_CN', 'name': '中文', 'flag': '🇨🇳'},
     {'code': 'en', 'name': 'English', 'flag': '🌐'},
-    {'code': 'ja', 'name': '日本語', 'flag': '🇯🇵'},
-    {'code': 'ko', 'name': '한국어', 'flag': '🇰🇷'},
   ];
 
   @override
