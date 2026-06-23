@@ -831,14 +831,14 @@ class SubscriptionUsageCard extends ConsumerWidget {
                                 : _getRenewButtonColor(expiryState, theme)),
                         foregroundColor: usePlainBackground
                             ? Colors.white
-                            : theme.colorScheme.primary,
+                            : theme.colorScheme.onPrimary,
                         padding: const EdgeInsets.symmetric(vertical: 10),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(10),
                           side: usePlainBackground
                               ? BorderSide.none
                               : BorderSide(
-                                  color: theme.colorScheme.primary
+                                  color: theme.colorScheme.onPrimary
                                       .withValues(alpha: 0.38),
                                 ),
                         ),
@@ -849,7 +849,7 @@ class SubscriptionUsageCard extends ConsumerWidget {
                           Icon(Icons.refresh, size: 16,
                               color: usePlainBackground
                                   ? Colors.white
-                                  : theme.colorScheme.primary),
+                                  : theme.colorScheme.onPrimary),
                           const SizedBox(width: 6),
                           Text(AppLocalizations.of(context).xboardRenewPlan),
                         ],
@@ -867,7 +867,7 @@ class SubscriptionUsageCard extends ConsumerWidget {
                               _getResetButtonColor(progress, theme),
                           foregroundColor: usePlainBackground
                               ? Colors.white
-                              : theme.colorScheme.primary,
+                              : theme.colorScheme.onPrimary,
                           padding: const EdgeInsets.symmetric(vertical: 10),
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(10),
@@ -879,7 +879,7 @@ class SubscriptionUsageCard extends ConsumerWidget {
                             Icon(Icons.restart_alt, size: 16,
                                 color: usePlainBackground
                                     ? Colors.white
-                                    : theme.colorScheme.primary),
+                                    : theme.colorScheme.onPrimary),
                             const SizedBox(width: 6),
                             Text(AppLocalizations.of(context)
                                 .xboardResetTraffic),
