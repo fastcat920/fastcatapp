@@ -187,16 +187,16 @@ class _DocsPageState extends ConsumerState<DocsPage>
         data: (result) {
           final articles = _parseArticles(result);
           if (articles.isEmpty) {
-            return const Column(
+            return Column(
               children: [
-                SizedBox(height: 4),
+                const SizedBox(height: 4),
                 Expanded(
                   child: Center(
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        Icon(Icons.article_outlined, size: 56),
-                        SizedBox(height: 16),
+                        const Icon(Icons.article_outlined, size: 56),
+                        const SizedBox(height: 16),
                         Text(AppLocalizations.of(context).xboardNoDocuments),
                       ],
                     ),
