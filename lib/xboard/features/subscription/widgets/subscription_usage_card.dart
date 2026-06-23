@@ -821,8 +821,11 @@ class SubscriptionUsageCard extends ConsumerWidget {
               builder: (context, ref, _) => Row(
                 children: [
                   Expanded(
-                    child: FilledButton(
+                    child: FilledButton.icon(
                       onPressed: () => _handleRenewAction(context, ref),
+                      icon: const Icon(Icons.refresh, size: 16),
+                      label:
+                          Text(AppLocalizations.of(context).xboardRenewPlan),
                       style: usePlainBackground
                           ? FilledButton.styleFrom(
                               backgroundColor:
@@ -843,22 +846,17 @@ class SubscriptionUsageCard extends ConsumerWidget {
                                 ),
                               ),
                             ),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          const Icon(Icons.refresh, size: 16),
-                          const SizedBox(width: 6),
-                          Text(AppLocalizations.of(context).xboardRenewPlan),
-                        ],
-                      ),
                     ),
                   ),
                   if (shouldShowResetAction) ...[
                     const SizedBox(width: 10),
                     Expanded(
-                      child: FilledButton(
+                      child: FilledButton.icon(
                         onPressed: () => _handleRenewAction(context, ref,
                             isResetTraffic: true),
+                        icon: const Icon(Icons.restart_alt, size: 16),
+                        label: Text(AppLocalizations.of(context)
+                            .xboardResetTraffic),
                         style: usePlainBackground
                             ? FilledButton.styleFrom(
                                 backgroundColor:
@@ -879,15 +877,6 @@ class SubscriptionUsageCard extends ConsumerWidget {
                                   ),
                                 ),
                               ),
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            const Icon(Icons.restart_alt, size: 16),
-                            const SizedBox(width: 6),
-                            Text(AppLocalizations.of(context)
-                                .xboardResetTraffic),
-                          ],
-                        ),
                       ),
                     ),
                   ],
