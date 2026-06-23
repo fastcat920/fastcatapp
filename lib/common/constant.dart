@@ -15,6 +15,12 @@ const appName = "快猫";
 
 /// 用于 HTTP User-Agent 的英文名称（UA 不允许非 ASCII 字符）
 const appNameEn = "fastcat";
+
+/// 根据设备语言返回本地化应用名称：中文设备显示"快猫"，其他语言显示 "FastCat"
+String get localizedAppName {
+  final locale = Platform.localeName;
+  return locale.startsWith('zh') ? appName : appNameEn;
+}
 const appHelperService = "fastcatHelperService";
 const coreName = "clash.meta";
 const packageName = "com.fastcat.app";

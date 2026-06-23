@@ -700,7 +700,7 @@ class _HomeBrandHeader extends ConsumerWidget {
         ),
         const SizedBox(width: 9),
         Text(
-          appName,
+          localizedAppName,
           style: theme.textTheme.titleMedium?.copyWith(
             fontWeight: FontWeight.w800,
             color: theme.colorScheme.onSurface,

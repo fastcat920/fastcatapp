@@ -404,7 +404,7 @@ class ApplicationState extends ConsumerState<Application>
               },
               routerConfig: _router,
               scrollBehavior: BaseScrollBehavior(),
-              title: appName,
+              title: localizedAppName,
               locale: utils.getLocaleForString(locale),
               supportedLocales: AppLocalizations.delegate.supportedLocales,
               themeMode: themeProps.themeMode,

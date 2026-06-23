@@ -361,7 +361,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                           _buildLogo(colorScheme),
                           const SizedBox(height: 12),
                           Text(
-                            appName,
+                            localizedAppName,
                             style: textTheme.headlineMedium?.copyWith(
                               color: colorScheme.onSurface,
                               fontWeight: FontWeight.bold,

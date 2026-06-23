@@ -296,7 +296,7 @@ Future<void> _service(List<String> flags) async {
 
   vpn?.handleGetStartForegroundParams = () {
     final traffic = clashLibHandler.getTraffic();
-    return json.encode({"title": appName, "content": "$traffic"});
+    return json.encode({"title": localizedAppName, "content": "$traffic"});
   };
 
   vpn?.addListener(
