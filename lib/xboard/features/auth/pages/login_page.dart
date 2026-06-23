@@ -536,11 +536,11 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                       child: FilledButton(
                         onPressed:
                             (isIniting || userState.isLoading) ? null : _login,
-                        style: FilledButton.styleFrom(
-                          backgroundColor: colorScheme.primary,
-                          foregroundColor: const Color(0xFFFAFBFD),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(14),
+                        style: XbUiButton.filledPrimary(context).copyWith(
+                          shape: WidgetStatePropertyAll(
+                            RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(14),
+                            ),
                           ),
                         ),
                         child: isIniting
