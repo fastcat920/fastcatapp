@@ -152,8 +152,6 @@ class _LocaleItem extends ConsumerWidget {
     return switch (locale?.toString()) {
       null => l10n.defaultText,
       'en' => l10n.en,
-      'ja' => l10n.ja,
-      'ko' => l10n.ko,
       'zh_CN' => l10n.zh_CN,
       _ => locale!.toLanguageTag(),
     };
