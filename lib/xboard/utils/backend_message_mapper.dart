@@ -166,6 +166,8 @@ class BackendMessageMapper {
           l10n.backendErrorGiftCardLimitReached,
       'the gift card has already been used by this user': (l10n) =>
           l10n.backendErrorGiftCardAlreadyUsedByUser,
+      'the given data was invalid': (l10n) =>
+          l10n.backendErrorEmailFormatInvalid,
       'not suitable gift card type': (l10n) =>
           l10n.backendErrorGiftCardTypeNotSuitable,
       'unknown gift card type': (l10n) => l10n.backendErrorGiftCardTypeUnknown,
@@ -284,6 +286,9 @@ class BackendMessageMapper {
     }
 
     if (context == BackendMessageContext.login) {
+      if (lower.contains('the given data was invalid')) {
+        return l10n.backendErrorEmailFormatInvalid;
+      }
       if (_containsAny(lower, const [
         'incorrect email or password',
         'email or password',

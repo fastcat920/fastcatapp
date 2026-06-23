@@ -830,7 +830,7 @@ class SubscriptionUsageCard extends ConsumerWidget {
                           ? FilledButton.styleFrom(
                               backgroundColor:
                                   _getRenewButtonColor(expiryState, theme),
-                              foregroundColor: Colors.white,
+                              foregroundColor: theme.colorScheme.onPrimary,
                               padding:
                                   const EdgeInsets.symmetric(vertical: 10),
                               shape: RoundedRectangleBorder(
@@ -861,7 +861,7 @@ class SubscriptionUsageCard extends ConsumerWidget {
                             ? FilledButton.styleFrom(
                                 backgroundColor:
                                     _getResetButtonColor(progress, theme),
-                                foregroundColor: Colors.white,
+                                foregroundColor: theme.colorScheme.onPrimary,
                                 padding: const EdgeInsets.symmetric(
                                     vertical: 10),
                                 shape: RoundedRectangleBorder(
