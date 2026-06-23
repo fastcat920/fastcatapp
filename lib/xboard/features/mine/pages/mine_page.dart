@@ -61,7 +61,7 @@ class _MinePageState extends ConsumerState<MinePage>
   Future<void> _doRefresh() async {
     _refreshAnim.repeat();
     try {
-      await ref.read(xboardUserProvider.notifier).refreshSubscriptionInfo();
+      await ref.read(xboardUserAuthProvider.notifier).refreshUserInfo();
     } finally {
       // 补完当前整圈后停止，避免猛然定格
       if (_refreshAnim.isAnimating) {

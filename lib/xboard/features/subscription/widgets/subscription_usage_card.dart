@@ -616,6 +616,8 @@ class SubscriptionUsageCard extends ConsumerWidget {
                       style: FilledButton.styleFrom(
                         backgroundColor:
                             _getRenewButtonColor(expiryState, theme),
+                        foregroundColor: theme.colorScheme.onPrimary,
+                        iconColor: theme.colorScheme.onPrimary,
                         padding: const EdgeInsets.symmetric(vertical: 12),
                       ),
                     ),
@@ -632,6 +634,8 @@ class SubscriptionUsageCard extends ConsumerWidget {
                         style: FilledButton.styleFrom(
                           backgroundColor:
                               _getResetButtonColor(progress, theme),
+                          foregroundColor: theme.colorScheme.onPrimary,
+                          iconColor: theme.colorScheme.onPrimary,
                           padding: const EdgeInsets.symmetric(vertical: 12),
                         ),
                       ),
@@ -825,7 +829,11 @@ class SubscriptionUsageCard extends ConsumerWidget {
                             : (expiryState == _ExpiryState.normal
                                 ? Colors.white.withValues(alpha: 0.24)
                                 : _getRenewButtonColor(expiryState, theme)),
-                        foregroundColor: Colors.white,
+                        foregroundColor: usePlainBackground
+                            ? Colors.white
+                            : (expiryState == _ExpiryState.normal
+                                ? theme.colorScheme.primary
+                                : Colors.white),
                         padding: const EdgeInsets.symmetric(vertical: 10),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(10),
@@ -855,7 +863,9 @@ class SubscriptionUsageCard extends ConsumerWidget {
                         style: FilledButton.styleFrom(
                           backgroundColor:
                               _getResetButtonColor(progress, theme),
-                          foregroundColor: Colors.white,
+                          foregroundColor: usePlainBackground
+                              ? Colors.white
+                              : theme.colorScheme.primary,
                           padding: const EdgeInsets.symmetric(vertical: 10),
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(10),

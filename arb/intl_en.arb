@@ -1359,7 +1359,7 @@
   "xboardOfflineButActive": "Offline, using slot",
   "xboardReloadNodes": "Reload nodes",
   "xboardGotIt": "Got it",
-  "xboardDeviceUnit": "devices",
+  "xboardDeviceUnit": "{count} devices",
   "xboardLoginErrorNetwork": "Service is temporarily unavailable, please try again later.",
   "xboardLoginErrorConfigLoad": "Configuration load failed, please try again later",
   "xboardLoginErrorCredentials": "Invalid credentials, please check your account and password",

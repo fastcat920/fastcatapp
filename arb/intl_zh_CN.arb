@@ -1360,7 +1360,7 @@
   "xboardOfflineButActive": "离线占用",
   "xboardReloadNodes": "重新加载节点",
   "xboardGotIt": "知道了",
-  "xboardDeviceUnit": "台",
+  "xboardDeviceUnit": "{count}台",
   "xboardLoginErrorNetwork": "服务暂时不可用，请稍后重试",
   "xboardLoginErrorConfigLoad": "配置加载失败，请稍后再试",
   "xboardLoginErrorCredentials": "账号或密码错误，请先检查账号密码",

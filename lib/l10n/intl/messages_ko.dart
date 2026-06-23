@@ -1961,5 +1961,8 @@ class MessageLookup extends MessageLookupByLibrary {
     "xboardYearlyPayment": MessageLookupByLibrary.simpleMessage("연간 결제"),
     "years": MessageLookupByLibrary.simpleMessage("years"),
     "zh_CN": MessageLookupByLibrary.simpleMessage("중국어 간체"),
-  };
+      "xboardDeviceUnit": xboardDeviceUnit,
+};
+
+  static String xboardDeviceUnit(num count) => "${count}대";
 }

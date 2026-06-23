@@ -8882,13 +8882,13 @@ class AppLocalizations {
     );
   }
 
-  /// `devices`
-  String get xboardDeviceUnit {
+  /// `{count} devices`
+  String xboardDeviceUnit(num count) {
     return Intl.message(
-      'devices',
+      '\${count} devices',
       name: 'xboardDeviceUnit',
       desc: '',
-      args: [],
+      args: [count],
     );
   }
 

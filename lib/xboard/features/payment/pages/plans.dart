@@ -142,7 +142,7 @@ class _PlansViewState extends ConsumerState<PlansView> {
     if (plan.deviceLimit == null || plan.deviceLimit == 0) {
       return l10n.xboardUnlimited;
     }
-    return '${plan.deviceLimit}${l10n.xboardDeviceUnit}';
+    return l10n.xboardDeviceUnit(plan.deviceLimit ?? 0);
   }
 
   String _getSpeedLimitText(DomainPlan plan) {

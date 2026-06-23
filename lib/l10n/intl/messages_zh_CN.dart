@@ -1673,5 +1673,8 @@ class MessageLookup extends MessageLookupByLibrary {
     "xboardYearlyPayment": MessageLookupByLibrary.simpleMessage("年付"),
     "years": MessageLookupByLibrary.simpleMessage("年"),
     "zh_CN": MessageLookupByLibrary.simpleMessage("中文简体"),
-  };
+      "xboardDeviceUnit": xboardDeviceUnit,
+};
+
+  static String xboardDeviceUnit(num count) => "${count}台";
 }

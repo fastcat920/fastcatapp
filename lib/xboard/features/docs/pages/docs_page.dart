@@ -588,15 +588,51 @@ p{margin:8px 0}
     super.initState();
     final body = widget.article.body;
     if (body.isNotEmpty) {
-      _resolvedBody = body;
-      _initWebView(body);
+      _resolvedBody = _stripLeadingTitle(body);
+      _initWebView(_resolvedBody!);
     }
+  }
+
+
+  /// Strip leading Markdown H1 title from body if it matches the article title.
+  /// This avoids duplicating the title (already shown in AppBar).
+  String _stripLeadingTitle(String body) {
+    final title = widget.article.title.trim();
+    if (title.isEmpty) return body;
+    // Match: # Title followed by newline
+    final h1Pattern = RegExp(r'^#\s+' + RegExp.escape(title) + r'\s*\n');
+    final stripped = body.replaceFirst(h1Pattern, '');
+    return stripped;
+  }
+
+  /// Returns true if the URL points to a downloadable file (matches common
+  /// binary/archive extensions that WKWebView cannot render natively).
+  static bool _isDownloadLink(String url) {
+    final lower = url.split('?')[0].toLowerCase();
+    return lower.endsWith('.dmg') ||
+        lower.endsWith('.exe') ||
+        lower.endsWith('.apk') ||
+        lower.endsWith('.zip') ||
+        lower.endsWith('.7z') ||
+        lower.endsWith('.rar') ||
+        lower.endsWith('.tar.gz') ||
+        lower.endsWith('.tar') ||
+        lower.endsWith('.gz') ||
+        lower.endsWith('.bz2') ||
+        lower.endsWith('.deb') ||
+        lower.endsWith('.rpm') ||
+        lower.endsWith('.msi') ||
+        lower.endsWith('.ipa') ||
+        lower.endsWith('.pkg') ||
+        lower.endsWith('.iso') ||
+        lower.endsWith('.bin');
   }
 
   @override
   void dispose() {
     super.dispose();
   }
+
 
   static String _parseDetailBody(dynamic result) {
     String findBody(dynamic value) {
@@ -679,7 +715,6 @@ p{margin:8px 0}
           if (mounted) setState(() => _webLoading = false);
         },
         onNavigationRequest: (request) {
-          // 只拦截主 frame 导航（用户点击链接），放行 iframe 子资源
           if (!request.isMainFrame) return NavigationDecision.navigate;
           final uri = Uri.tryParse(request.url);
           if (uri != null && (uri.scheme == 'http' || uri.scheme == 'https')) {
@@ -713,9 +748,9 @@ p{margin:8px 0}
             WidgetsBinding.instance.addPostFrameCallback((_) {
               if (!mounted) return;
               setState(() {
-                _resolvedBody = fetchedBody;
-                if (fetchedBody.isNotEmpty) {
-                  _initWebView(fetchedBody);
+                _resolvedBody = _stripLeadingTitle(fetchedBody);
+                if (_resolvedBody!.isNotEmpty) {
+                  _initWebView(_resolvedBody!);
                 } else {
                   _webLoading = false;
                 }
@@ -747,12 +782,6 @@ p{margin:8px 0}
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
-                  article.title,
-                  style: theme.textTheme.titleLarge
-                      ?.copyWith(fontWeight: FontWeight.bold),
-                ),
-                const SizedBox(height: 8),
                 Row(
                   children: [
                     Container(
@@ -821,6 +850,16 @@ p{margin:8px 0}
         initialSettings: iaw.InAppWebViewSettings(
           javaScriptEnabled: true,
         ),
+        shouldOverrideUrlLoading: (controller, navigationAction) async {
+          final url = navigationAction.request.url?.toString() ?? '';
+          if (!Platform.isWindows && _isDownloadLink(url)) {
+            await launchUrl(Uri.parse(url),
+                mode: LaunchMode.externalApplication);
+            return iaw.NavigationActionPolicy.CANCEL;
+          }
+          return iaw.NavigationActionPolicy.ALLOW;
+        },
+
       );
     }
 

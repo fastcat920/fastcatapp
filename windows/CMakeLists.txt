@@ -82,6 +82,19 @@ install(FILES "${FLUTTER_ICU_DATA_FILE}" DESTINATION "${INSTALL_BUNDLE_DATA_DIR}
 install(FILES "${FLUTTER_LIBRARY}" DESTINATION "${INSTALL_BUNDLE_LIB_DIR}"
   COMPONENT Runtime)
 
+# Bundle VC++ runtime DLLs alongside the executable so the app can start even
+# when the Visual C++ Redistributable is not installed on the target machine.
+# Copy the following files from your VS installation into windows/vc_redist/:
+#   msvcp140.dll  vcruntime140.dll  vcruntime140_1.dll
+# (found under VC/Redist/MSVC/<version>/x64/Microsoft.VC143.CRT/)
+if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/vc_redist")
+  file(GLOB VC_REDIST_DLLS "${CMAKE_CURRENT_SOURCE_DIR}/vc_redist/*.dll")
+  if(VC_REDIST_DLLS)
+    install(FILES ${VC_REDIST_DLLS} DESTINATION "${INSTALL_BUNDLE_LIB_DIR}"
+      COMPONENT Runtime)
+  endif()
+endif()
+
 # libclash.so
 set(CLASH_DIR "../libclash/windows")
 

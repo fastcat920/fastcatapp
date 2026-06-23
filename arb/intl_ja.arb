@@ -1104,7 +1104,7 @@
   "xboardOfflineButActive": "オフライン・枠使用中",
   "xboardReloadNodes": "ノードを再読み込み",
   "xboardGotIt": "了解",
-  "xboardDeviceUnit": "台",
+  "xboardDeviceUnit": "{count}台",
   "xboardLoginErrorNetwork": "サービスは一時的に利用できません。しばらくしてからもう一度お試しください。",
   "xboardLoginErrorConfigLoad": "設定の読み込みに失敗しました。しばらくしてから再試行してください",
   "xboardLoginErrorCredentials": "アカウントまたはパスワードが間違っています。確認してください",
