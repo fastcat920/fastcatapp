@@ -35,7 +35,7 @@ class Tray {
     );
     if (!Platform.isLinux) {
       await trayManager.setToolTip(
-        appName,
+        localizedAppName,
       );
     }
   }

@@ -296,9 +296,9 @@ class AppIcon extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       margin: const EdgeInsets.only(left: 8),
-      child: const Row(
+      child: Row(
         children: [
-          SizedBox(
+          const SizedBox(
             width: 24,
             height: 24,
             child: CircleAvatar(
@@ -306,11 +306,11 @@ class AppIcon extends StatelessWidget {
               backgroundColor: Colors.transparent,
             ),
           ),
-          SizedBox(
+          const SizedBox(
             width: 8,
           ),
           Text(
-            appName,
+            localizedAppName,
           ),
         ],
       ),
