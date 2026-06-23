@@ -106,24 +106,40 @@ Future<void> main(List<String> args) async {
   );
 
   // Phase 1: Run independent init tasks in parallel.
-  // _initializeXBoardServicesWithPrefs, RemoteTaskManager.create,
-  // system.version, and clashCore.preload are all independent.
-  final parallelResults = await Future.wait([
-    _initializeXBoardServicesWithPrefs(prefs),
-    _initRemoteTaskManager(),
-    system.version,
-    clashCore.preload(),
-  ]);
+  // clashCore.preload() is isolated with a timeout — it's the most likely
+  // culprit for cold-start hangs when the OS killed the previous process.
+  int? version;
+  try {
+    final fastInitResult = await Future.wait([
+      _initializeXBoardServicesWithPrefs(prefs),
+      _initRemoteTaskManager(),
+      system.version,
+    ]);
 
-  remoteTaskManager = parallelResults[1] as RemoteTaskManager?;
-  final version = parallelResults[2] as int;
+    remoteTaskManager = fastInitResult[1] as RemoteTaskManager?;
+    version = fastInitResult[2] as int;
 
-  await system.detectTV();
-  await globalState.initApp(version);
-  await android?.init();
-  await window?.init(version);
+    await clashCore.preload().timeout(
+      const Duration(seconds: 5),
+      onTimeout: () {
+        debugPrint('[Main] clashCore.preload() 超时（5s），将在 init() 中重试');
+        return false;
+      },
+    );
+
+    await system.detectTV();
+    await globalState.initApp(version);
+    await android?.init();
+    await window?.init(version);
+  } catch (e, stack) {
+    debugPrint('[Main] 启动初始化异常: $e');
+    debugPrintStack(stackTrace: stack);
+    // 出错了也继续跑 runApp()，避免原生 splash 永久卡死
+    version ??= await system.version;
+    await globalState.initApp(version);
+  }
+
   HttpOverrides.global = FastcatHttpOverrides();
-
   WidgetsBinding.instance.addObserver(AppLifecycleObserver());
 
   runApp(ProviderScope(
@@ -210,7 +226,7 @@ Future<void> _initializeXBoardServicesWithPrefs(SharedPreferences prefs) async {
     print('[Main] SDK 将在应用启动后由 xboardSdkProvider 初始化');
   } catch (e) {
     print('[Main] XBoard服务初始化失败: $e');
-    rethrow;
+    // 不 rethrow：runApp() 必须执行，初始化失败由 initializationProvider 兜底
   }
 }
 
