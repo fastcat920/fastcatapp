@@ -140,13 +140,27 @@ class _AdaptiveShellLayoutState extends ConsumerState<AdaptiveShellLayout> {
       );
     } else {
       // 纵向窗口：Scaffold + 底部导航栏
-      return Scaffold(
-        body: widget.child,
-        bottomNavigationBar: MobileNavigationBar(
-          selectedIndex: currentIndex,
-          logCapture: logCapture,
-          onDestinationSelected: (index) =>
-              _onDestinationSelected(context, index, false, logCapture),
+      // Android 返回键：有子页面可返回时正常返回，已在根路由时退到后台（moveTaskToBack），
+      // 不关闭 Activity，避免冷重启时 clashCore.preload/destroy 竞态导致卡启动屏。
+      return PopScope(
+        canPop: false,
+        onPopInvokedWithResult: (didPop, result) async {
+          if (didPop) return;
+          final router = GoRouter.of(context);
+          if (router.canPop()) {
+            router.pop();
+          } else {
+            system.back();
+          }
+        },
+        child: Scaffold(
+          body: widget.child,
+          bottomNavigationBar: MobileNavigationBar(
+            selectedIndex: currentIndex,
+            logCapture: logCapture,
+            onDestinationSelected: (index) =>
+                _onDestinationSelected(context, index, false, logCapture),
+          ),
         ),
       );
     }
