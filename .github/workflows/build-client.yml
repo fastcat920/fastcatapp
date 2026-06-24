@@ -292,6 +292,7 @@ jobs:
           New-Item -Force -ItemType Directory (Split-Path $issFile) | Out-Null
           [IO.File]::WriteAllText((Resolve-Path ".").Path + "\" + $issFile, $iss)
           Write-Host "ISS written to $issFile"
+          Copy-Item vc_redist.x64.exe build\ -Force
 
           & $iscc $issFile
           if ($LASTEXITCODE -ne 0) { throw "iscc failed: $LASTEXITCODE" }
