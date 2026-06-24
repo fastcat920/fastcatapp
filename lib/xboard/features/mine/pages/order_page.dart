@@ -104,6 +104,24 @@ class _OrderPageState extends ConsumerState<OrderPage> {
     await _loadFirstPage();
   }
 
+  Future<void> _navigateToOrderDetail(OrderModel order) async {
+    await Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (_) => OrderDetailPage(
+          tradeNo: order.tradeNo!,
+          discountAmount: order.couponPrice != null
+              ? order.couponPrice! / 100
+              : order.discountAmount != null
+                  ? order.discountAmount! / 100
+                  : null,
+        ),
+      ),
+    );
+    // 从订单详情返回后自动刷新列表
+    clearGetOrdersCache();
+    await _loadFirstPage();
+  }
+
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
@@ -157,18 +175,7 @@ class _OrderPageState extends ConsumerState<OrderPage> {
             order: order,
             onTap: order.tradeNo == null || order.tradeNo!.isEmpty
                 ? null
-                : () => Navigator.of(context).push(
-                      MaterialPageRoute(
-                        builder: (_) => OrderDetailPage(
-                          tradeNo: order.tradeNo!,
-                          discountAmount: order.couponPrice != null
-                              ? order.couponPrice! / 100
-                              : order.discountAmount != null
-                                  ? order.discountAmount! / 100
-                                  : null,
-                        ),
-                      ),
-                    ),
+                : () => _navigateToOrderDetail(order),
           );
         },
       ),

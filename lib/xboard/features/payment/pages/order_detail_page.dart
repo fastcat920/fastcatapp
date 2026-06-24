@@ -363,9 +363,6 @@ class _OrderDetailPageState extends ConsumerState<OrderDetailPage>
 
   Future<void> _submitPayment() async {
     final l10n = AppLocalizations.of(context);
-    final order = await ref.read(getOrderProvider(widget.tradeNo).future);
-    if (!mounted) return;
-    final userInfo = ref.read(userInfoProvider);
     final methodId = _selectedMethodId ?? await _getDefaultPaymentMethodId();
     if (methodId == null) {
       XBoardNotification.showError(l10n.xboardSelectPaymentMethod);

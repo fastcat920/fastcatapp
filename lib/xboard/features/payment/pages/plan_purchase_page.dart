@@ -62,8 +62,11 @@ class _PlanPurchasePageState extends ConsumerState<PlanPurchasePage> {
   @override
   void initState() {
     super.initState();
-    // 确保 PaymentProvider 被初始化，以便开始加载支付方式
-    ref.read(xboardPaymentProvider);
+    // 确保 PaymentProvider 被初始化，并后台预加载支付方式和待支付订单
+    // 这样用户点击"提交订单"时 cancelPendingOrders 命中缓存，省去一次网络请求
+    final paymentNotifier = ref.read(xboardPaymentProvider.notifier);
+    paymentNotifier.loadPaymentMethods();
+    paymentNotifier.loadPendingOrders(updateUiState: false);
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
       final periods = _getAvailablePeriods(context);
