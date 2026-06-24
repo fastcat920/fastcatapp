@@ -214,6 +214,7 @@ class _SubscriptionPageState extends State<SubscriptionPage>
           child: RefreshIndicator(
             onRefresh: _doRefresh,
             child: ListView.builder(
+              controller: _scrollController,
               padding: XbUiTokens.pagePadding,
               itemCount: _displayCount.clamp(0, _logs.length),
               itemBuilder: (context, index) =>
