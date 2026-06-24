@@ -51,6 +51,7 @@ class _OrderDetailPageState extends ConsumerState<OrderDetailPage>
   bool _isSubmitting = false;
   bool _isChecking = false;
   bool _isCanceling = false;
+  bool _isHandlingPaymentSuccess = false;
   double? _couponPrice;
   double? _refundAmount;
   double? _surplusAmount;
@@ -509,19 +510,25 @@ class _OrderDetailPageState extends ConsumerState<OrderDetailPage>
 
   Future<void> _handlePaymentSuccess() async {
     _stopAutoCheckPaymentStatus();
-    final l10n = AppLocalizations.of(context);
+    if (_isHandlingPaymentSuccess) return;
+    _isHandlingPaymentSuccess = true;
     try {
-      await ref
-          .read(xboardUserProvider.notifier)
-          .refreshSubscriptionInfoAfterPayment();
-    } catch (e) {
-      _logger.info('刷新订阅信息失败: $e');
+      final l10n = AppLocalizations.of(context);
+      try {
+        await ref
+            .read(xboardUserProvider.notifier)
+            .refreshSubscriptionInfoAfterPayment();
+      } catch (e) {
+        _logger.info('刷新订阅信息失败: $e');
+      }
+      clearGetOrderCache(widget.tradeNo);
+      clearGetOrdersCache();
+      ref.invalidate(getOrderProvider(widget.tradeNo));
+      ref.invalidate(getOrdersProvider);
+      XBoardNotification.showSuccess(l10n.xboardPaymentSuccess);
+    } finally {
+      _isHandlingPaymentSuccess = false;
     }
-    clearGetOrderCache(widget.tradeNo);
-    clearGetOrdersCache();
-    ref.invalidate(getOrderProvider(widget.tradeNo));
-    ref.invalidate(getOrdersProvider);
-    XBoardNotification.showSuccess(l10n.xboardPaymentSuccess);
   }
 }
 

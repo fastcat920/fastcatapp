@@ -46,6 +46,13 @@ class ProfileImportNotifier extends StateNotifier<ImportState> {
       }
 
       final isSuccess = result.isSuccess;
+      final isConcurrent = result.errorType == ImportErrorType.concurrentImport;
+
+      // 并发导入时静默忽略，不更新状态（不影响正在进行的导入）
+      if (isConcurrent) {
+        return false;
+      }
+
       state = state.copyWith(
         status: isSuccess ? ImportStatus.success : ImportStatus.failed,
         isImporting: false,

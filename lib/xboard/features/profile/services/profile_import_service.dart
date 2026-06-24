@@ -37,7 +37,7 @@ class XBoardProfileImportService {
     if (_isImporting) {
       return ImportResult.failure(
         errorMessage: '正在导入中，请稍候',
-        errorType: ImportErrorType.unknownError,
+        errorType: ImportErrorType.concurrentImport,
       );
     }
     _isImporting = true;
@@ -497,6 +497,8 @@ class XBoardProfileImportService {
         return '配置文件格式验证失败，请联系服务提供商检查配置格式';
       case ImportErrorType.storageError:
         return '保存配置失败，请检查存储空间';
+      case ImportErrorType.concurrentImport:
+        return ''; // 并发导入由上层静默处理，不应到达此处
       case ImportErrorType.unknownError:
         // 简化未知错误的显示，避免显示技术细节
         if (errorString.contains('Invalid HTTP header field value') ||

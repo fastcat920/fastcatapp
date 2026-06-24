@@ -13,6 +13,7 @@ enum ImportErrorType {
   downloadError,    // 下载失败
   validationError,  // 配置验证失败
   storageError,     // 存储错误
+  concurrentImport, // 并发导入（已有导入操作在进行中）
   unknownError,     // 未知错误
 }
 class ImportResult {
@@ -116,6 +117,8 @@ class ImportState {
         return '配置文件格式错误，请联系服务提供商';
       case ImportErrorType.storageError:
         return '保存配置失败，请检查存储空间';
+      case ImportErrorType.concurrentImport:
+        return null;
       case ImportErrorType.unknownError:
         return '未知错误，请重试';
     }
