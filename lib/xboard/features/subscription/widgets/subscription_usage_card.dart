@@ -10,7 +10,7 @@ import 'package:go_router/go_router.dart';
 import '../services/subscription_status_service.dart';
 import 'package:fl_clash/l10n/l10n.dart';
 import 'package:fl_clash/xboard/features/payment/pages/plan_purchase_page.dart';
-import 'package:fl_clash/xboard/features/payment/pages/plans.dart';
+import 'package:fl_clash/xboard/features/payment/pages/plans.dart' show pendingPurchasePlanProvider;
 import 'package:fl_clash/xboard/features/subscription/services/reset_traffic_order_flow.dart';
 import 'package:fl_clash/xboard/features/shared/styles/styles.dart';
 import 'package:fl_clash/xboard/utils/xboard_notification.dart';
@@ -420,8 +420,8 @@ class SubscriptionUsageCard extends ConsumerWidget {
         if (!await confirmTrafficExhaustedRenewIfNeeded()) return;
         if (!context.mounted) return;
         if (isDesktop) {
-          PlansView.pendingPlan = planForPurchase;
-          router.go('/plans?_t=${DateTime.now().millisecondsSinceEpoch}');
+          ref.read(pendingPurchasePlanProvider.notifier).state = planForPurchase;
+          router.go('/plans');
         } else {
           navigator.push(MaterialPageRoute(
             builder: (_) => PlanPurchasePage(
