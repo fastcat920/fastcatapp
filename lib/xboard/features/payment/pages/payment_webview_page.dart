@@ -148,6 +148,9 @@ class _PaymentWebViewPageState extends ConsumerState<PaymentWebViewPage> {
 
     final uri = Uri.tryParse(url);
     if (uri == null) return;
+    // 只处理 http/https 的 host 变化，自定义 scheme 由 _onNavigationRequest 处理
+    final scheme = uri.scheme.toLowerCase();
+    if (scheme != 'http' && scheme != 'https') return;
     final currentHost = uri.host;
     if (currentHost.isEmpty) return;
 
