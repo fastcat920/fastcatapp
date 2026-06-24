@@ -77,7 +77,8 @@ dependencies:
   webview_flutter: ^4.13.0
   flutter_xboard_sdk:
     path: lib/sdk/flutter_xboard_sdk
-  desktop_webview_window: ^0.2.3
+  desktop_webview_window:
+    path: plugins/desktop_webview_window
   flutter_inappwebview: ^6.1.5
 dev_dependencies:
   flutter_test:

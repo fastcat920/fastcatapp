@@ -4,6 +4,7 @@ import 'package:url_launcher/url_launcher.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 import 'package:desktop_webview_window/desktop_webview_window.dart';
 import 'package:path_provider/path_provider.dart';
+import 'package:window_manager/window_manager.dart';
 
 /// 软件内 WebView 页面（通用）
 ///
@@ -43,9 +44,20 @@ class InAppBrowserPage extends StatefulWidget {
       try {
         final appDir = await getApplicationSupportDirectory();
         final dataFolder = '${appDir.path}/webview2_data';
+
+        // 获取主客户端窗口大小和位置，让网关独立窗口大小与客户端一致
+        final mainSize = await windowManager.getSize();
+        final mainPos = await windowManager.getPosition();
+
         final webview = await WebviewWindow.create(
           configuration: CreateConfiguration(
             title: title,
+            windowWidth: mainSize.width.toInt(),
+            windowHeight: mainSize.height.toInt(),
+            windowPosX: mainPos.dx.toInt(),
+            windowPosY: mainPos.dy.toInt(),
+            useWindowPositionAndSize: true,
+            resizable: false,
             userDataFolderWindows: dataFolder,
           ),
         );
