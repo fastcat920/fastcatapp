@@ -16,6 +16,14 @@ import 'package:fl_clash/xboard/utils/xboard_notification.dart';
 
 const _logger = FileLogger('payment_webview_page.dart');
 
+/// Desktop Chrome UA used on mobile so payment gateways serve the QR-code
+/// page instead of the H5 cashier that tries (and fails) to invoke Alipay /
+/// WeChat via JSBridge.
+const _desktopUserAgent =
+    'Mozilla/5.0 (Windows NT 10.0; Win64; x64) '
+    'AppleWebKit/537.36 (KHTML, like Gecko) '
+    'Chrome/125.0.0.0 Safari/537.36';
+
 /// In-app payment WebView page that replaces the external-browser flow.
 ///
 /// On Android / iOS / macOS an embedded WebView is shown.
@@ -85,6 +93,7 @@ class _PaymentWebViewPageState extends ConsumerState<PaymentWebViewPage> {
     if (_supportsEmbeddedWebView) {
       _webViewController = WebViewController()
         ..setJavaScriptMode(JavaScriptMode.unrestricted)
+        ..setUserAgent(_desktopUserAgent)
         ..setNavigationDelegate(
           NavigationDelegate(
             onPageFinished: (_) {},
