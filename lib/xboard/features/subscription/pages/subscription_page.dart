@@ -60,10 +60,15 @@ class _SubscriptionPageState extends State<SubscriptionPage>
   bool _isLoading = true;
   String? _error;
   late final AnimationController _refreshAnim;
+  late final ScrollController _scrollController;
+  int _displayCount = 10;
+  static const _pageIncrement = 10;
 
   @override
   void initState() {
     super.initState();
+    _scrollController = ScrollController();
+    _scrollController.addListener(_onScroll);
     _refreshAnim = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 700),
@@ -73,8 +78,21 @@ class _SubscriptionPageState extends State<SubscriptionPage>
 
   @override
   void dispose() {
+    _scrollController.dispose();
     _refreshAnim.dispose();
     super.dispose();
+  }
+
+  void _onScroll() {
+    if (_scrollController.position.pixels >=
+        _scrollController.position.maxScrollExtent - 200) {
+      if (_displayCount < _logs.length) {
+        setState(() {
+          _displayCount = (_displayCount + _pageIncrement)
+              .clamp(0, _logs.length);
+        });
+      }
+    }
   }
 
   Future<void> _doRefresh() async {
@@ -123,6 +141,7 @@ class _SubscriptionPageState extends State<SubscriptionPage>
       if (mounted) {
         setState(() {
           _logs = logs;
+          _displayCount = _pageIncrement.clamp(0, logs.length);
           _isLoading = false;
         });
       }
@@ -196,7 +215,7 @@ class _SubscriptionPageState extends State<SubscriptionPage>
             onRefresh: _doRefresh,
             child: ListView.builder(
               padding: XbUiTokens.pagePadding,
-              itemCount: _logs.length,
+              itemCount: _displayCount.clamp(0, _logs.length),
               itemBuilder: (context, index) =>
                   _TrafficLogCard(entry: _logs[index]),
             ),

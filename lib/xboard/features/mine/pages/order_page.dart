@@ -26,7 +26,7 @@ class _OrderPageState extends ConsumerState<OrderPage> {
   int _currentPage = 1;
   Object? _error;
   int _total = 0;
-  static const _pageSize = 30;
+  static const _pageSize = 10;
 
   @override
   void initState() {
