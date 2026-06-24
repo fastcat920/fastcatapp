@@ -365,13 +365,12 @@ class _PlansViewState extends ConsumerState<PlansView> {
 
   @override
   Widget build(BuildContext context) {
-    ref.listen(pendingPurchasePlanProvider, (prev, next) {
-      if (next != null) {
-        _selectedPlan = next;
-        ref.read(pendingPurchasePlanProvider.notifier).state = null;
-        _hasCheckedUrlParams = true;
-      }
-    });
+    final pendingPlan = ref.watch(pendingPurchasePlanProvider);
+    if (pendingPlan != null) {
+      _selectedPlan = pendingPlan;
+      _hasCheckedUrlParams = true;
+      ref.read(pendingPurchasePlanProvider.notifier).state = null;
+    }
     final isDesktop = Platform.isLinux ||
         Platform.isWindows ||
         Platform.isMacOS ||
