@@ -1217,14 +1217,28 @@ class XBoardUserAuthNotifier extends Notifier<UserAuthState> {
       _logger.info('刷新用户详细信息...');
 
       clearGetUserInfoCache();
+      clearGetSubscriptionCache();
       ref.invalidate(getUserInfoProvider);
+      ref.invalidate(getSubscriptionProvider);
       final userModel = await ref.read(getUserInfoProvider.future);
       final userInfoData = _mapUser(userModel);
 
       await _storageService.saveDomainUser(userInfoData);
       ref.read(userInfoProvider.notifier).state = userInfoData;
-      state = state.copyWith(userInfo: userInfoData);
-      _logger.info('用户详细信息已刷新');
+
+      // 同时刷新订阅信息，确保套餐卡片上的 planName、expiredAt、流量等数据也更新
+      DomainSubscription? subscriptionData;
+      try {
+        final subscriptionModel = await ref.read(getSubscriptionProvider.future);
+        subscriptionData = _mapSubscription(subscriptionModel);
+        await _storageService.saveDomainSubscription(subscriptionData);
+        ref.read(subscriptionInfoProvider.notifier).state = subscriptionData;
+      } catch (e) {
+        _logger.info('刷新订阅信息失败: $e');
+      }
+
+      state = state.copyWith(userInfo: userInfoData, subscriptionInfo: subscriptionData);
+      _logger.info('用户详细信息已刷新${subscriptionData != null ? "（含订阅信息）" : ""}');
     } catch (e) {
       _logger.info('刷新用户详细信息出错: $e');
     }
