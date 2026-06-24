@@ -429,9 +429,7 @@ class _OrderDetailPageState extends ConsumerState<OrderDetailPage>
     }
   }
 
-  Future<String?> _getDefaultPaymentMethodId({
-    bool allowSyntheticBalance = false,
-  }) async {
+  Future<String?> _getDefaultPaymentMethodId() async {
     final orderMethods =
         await ref.read(getOrderPaymentMethodsProvider(widget.tradeNo).future);
     var availableMethods = orderMethods
@@ -450,9 +448,6 @@ class _OrderDetailPageState extends ConsumerState<OrderDetailPage>
           .read(xboardAvailablePaymentMethodsProvider)
           .map(_PaymentOption.fromDomain)
           .toList();
-    }
-    if (allowSyntheticBalance) {
-      return '0';
     }
     if (availableMethods.isEmpty) return null;
     final methodId = availableMethods.first.id;
