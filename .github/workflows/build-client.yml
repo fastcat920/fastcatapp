@@ -175,6 +175,40 @@ jobs:
           Start-Process -FilePath $installer -ArgumentList "--quiet --wait --norestart --add Microsoft.VisualStudio.Workload.VCTools --includeRecommended" -NoNewWindow -Wait
           Write-Host "VS 2019 Build Tools installed"
 
+      - name: Bundle VC++ Redist
+        shell: pwsh
+        run: |
+          # --- 1. 下载 vc_redist.x64.exe (供 Inno Setup 安装时运行) ---
+          Write-Host "Downloading VC++ Redist x64..."
+          Invoke-WebRequest -Uri "https://aka.ms/vs/17/release/vc_redist.x64.exe" -OutFile "vc_redist.x64.exe"
+          Write-Host "vc_redist.x64.exe downloaded ($((Get-Item vc_redist.x64.exe).Length) bytes)"
+
+          # --- 2. 从已安装的 VS Build Tools 提取 DLL 到 windows/vc_redist/ (CMake 兜底打包) ---
+          Write-Host "Copying VC++ runtime DLLs from VS installation..."
+          $vsPath = & "${env:ProgramFiles(x86)}\Microsoft Visual Studio\Installer\vswhere.exe" -latest -requires Microsoft.VisualStudio.Component.VC.Tools.x86.x64 -property installationPath 2>$null
+          if (-not $vsPath) {
+            Write-Host "WARNING: vswhere returned no VS path, trying fallback dirs..."
+            $fallback = Get-ChildItem "C:\Program Files*\Microsoft Visual Studio\*\BuildTools\VC\Redist\MSVC\*\x64\Microsoft.VC143.CRT\*.dll" -Recurse -ErrorAction SilentlyContinue | Select -First 3
+            if ($fallback) {
+              New-Item -Force -ItemType Directory windows\vc_redist | Out-Null
+              Copy-Item $fallback windows\vc_redist\ -Force
+              Write-Host "DLLs copied via fallback"
+            }
+          } else {
+            $dllDir = Get-ChildItem "$vsPath\VC\Redist\MSVC\*\x64\Microsoft.VC143.CRT" -Directory | Sort-Object -Descending | Select -First 1
+            if ($dllDir) {
+              New-Item -Force -ItemType Directory windows\vc_redist | Out-Null
+              Copy-Item "$($dllDir.FullName)\msvcp140.dll" windows\vc_redist\ -Force -ErrorAction SilentlyContinue
+              Copy-Item "$($dllDir.FullName)\vcruntime140.dll" windows\vc_redist\ -Force -ErrorAction SilentlyContinue
+              Copy-Item "$($dllDir.FullName)\vcruntime140_1.dll" windows\vc_redist\ -Force -ErrorAction SilentlyContinue
+              Write-Host "DLLs copied from $($dllDir.FullName)"
+            } else {
+              Write-Host "WARNING: CRT DLL directory not found under $vsPath"
+            }
+          }
+          Write-Host "=== windows/vc_redist/ contents ==="
+          if (Test-Path windows\vc_redist) { Get-ChildItem windows\vc_redist } else { Write-Host "(empty)" }
+
       - name: Enable Windows desktop
         run: flutter config --enable-windows-desktop
 
