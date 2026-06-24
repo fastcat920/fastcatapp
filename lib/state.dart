@@ -455,8 +455,35 @@ class GlobalState {
       }
     }
     rawConfig["rule"] = rules;
+
+    _migrateDeprecatedDnsFallbackFilter(rawConfig);
     return rawConfig;
   }
+
+void _migrateDeprecatedDnsFallbackFilter(Map<String, dynamic> rawConfig) {
+  final dns = rawConfig["dns"];
+  if (dns == null || dns is! Map) return;
+  final fallbackFilter = dns["fallback-filter"];
+  if (fallbackFilter == null || fallbackFilter is! Map) return;
+  final geosite = fallbackFilter["geosite"];
+  if (geosite == null || geosite is! List || geosite.isEmpty) return;
+
+  final fallbackServers = (dns["fallback"] as List?)?.cast<String>() ?? [];
+  final firstFallback = fallbackServers.isNotEmpty
+      ? fallbackServers.first
+      : "tls://8.8.4.4";
+
+  final nameserverPolicy =
+      (dns["nameserver-policy"] as Map<String, dynamic>?) ?? {};
+  for (final entry in geosite) {
+    final key = "geosite:$entry";
+    if (!nameserverPolicy.containsKey(key)) {
+      nameserverPolicy[key] = firstFallback;
+    }
+  }
+  dns["nameserver-policy"] = nameserverPolicy;
+  fallbackFilter["geosite"] = <String>[];
+}
 
   Future<Map<String, dynamic>> getProfileConfig(String profileId) async {
     final configMap = await switch (clashLibHandler != null) {
