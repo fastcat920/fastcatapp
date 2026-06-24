@@ -369,7 +369,7 @@ class _PlansViewState extends ConsumerState<PlansView> {
     if (pendingPlan != null) {
       _selectedPlan = pendingPlan;
       _hasCheckedUrlParams = true;
-      ref.read(pendingPurchasePlanProvider.notifier).state = null;
+      Future(() => ref.read(pendingPurchasePlanProvider.notifier).state = null);
     }
     final isDesktop = Platform.isLinux ||
         Platform.isWindows ||
