@@ -78,7 +78,14 @@ class _PaymentWebViewPageState extends ConsumerState<PaymentWebViewPage> {
   @override
   void initState() {
     super.initState();
-    _initWebView();
+    if (_supportsEmbeddedWebView) {
+      _initWebView();
+    } else if (_supportsDesktopWebView) {
+      // 推迟到首帧渲染后，此时 MediaQuery 才能拿到正确的窗口尺寸
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        _openDesktopWebView();
+      });
+    }
     _startPolling();
   }
 
@@ -111,16 +118,25 @@ class _PaymentWebViewPageState extends ConsumerState<PaymentWebViewPage> {
 
   Future<void> _openDesktopWebView() async {
     try {
+      if (!mounted) return;
       final title = AppLocalizations.of(context).xboardPaymentGateway;
-      final appDir = await getApplicationSupportDirectory();
-      final dataFolder = '${appDir.path}/webview2_data';
-      final view = WidgetsBinding.instance.platformDispatcher.views.first;
-      final width = (view.physicalSize.width / view.devicePixelRatio).round();
-      final height = (view.physicalSize.height / view.devicePixelRatio).round();
+      // 首帧后使用 MediaQuery 获取精确的窗口逻辑尺寸
+      final size = MediaQuery.of(context).size;
+      final width = size.width.round();
+      final height = size.height.round();
+
+      // Windows 需要 WebView2 用户数据目录，Linux (WebKitGTK) 不需要
+      String? dataFolder;
+      if (Platform.isWindows) {
+        final appDir = await getApplicationSupportDirectory();
+        dataFolder = '${appDir.path}/webview2_data';
+      }
+
       final webview = await WebviewWindow.create(
         configuration: CreateConfiguration(
           title: title,
-          userDataFolderWindows: dataFolder,
+          userDataFolderWindows:
+              dataFolder ?? 'webview_window_WebView2',
           windowWidth: width,
           windowHeight: height,
           useWindowPositionAndSize: true,
