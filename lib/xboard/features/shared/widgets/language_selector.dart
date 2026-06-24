@@ -6,6 +6,7 @@ class LanguageSelector extends ConsumerWidget {
   const LanguageSelector({super.key});
 
   static const List<Map<String, String>> supportedLanguages = [
+    {'code': '', 'name': '📱  Auto', 'flag': ''},
     {'code': 'zh_CN', 'name': '中文', 'flag': '🇨🇳'},
     {'code': 'en', 'name': 'English', 'flag': '🌐'},
   ];
@@ -27,7 +28,7 @@ class LanguageSelector extends ConsumerWidget {
       itemBuilder: (BuildContext context) {
         return supportedLanguages.map<PopupMenuEntry<String>>(
           (Map<String, String> language) {
-            final isSelected = language['code'] == currentLocale;
+                        final isSelected = language['code'] == (currentLocale ?? '');
             return PopupMenuItem<String>(
               value: language['code'],
               child: Row(
