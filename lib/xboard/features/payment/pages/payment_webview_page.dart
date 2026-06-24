@@ -16,26 +16,9 @@ import 'package:fl_clash/xboard/utils/xboard_notification.dart';
 
 const _logger = FileLogger('payment_webview_page.dart');
 
-/// Known payment gateway domain fragments.
-/// When the WebView navigates away from all of these, we consider the
-/// external payment flow finished and trigger an accelerated status check.
-const _paymentGatewayDomainFragments = [
-  'alipay.com',
-  'alipaydev.com',
-  'tenpay.com',
-  'wx.tenpay.com',
-  'payapp.weixin.qq.com',
-  'stripe.com',
-  'paypal.com',
-  'coinpayments.net',
-];
-
 /// In-app payment WebView page that replaces the external-browser flow.
 ///
-/// On Android / iOS / macOS an embedded WebView is shown and URL changes are
-/// monitored so that a redirect back to the merchant domain triggers an
-/// immediate order-status check.
-///
+/// On Android / iOS / macOS an embedded WebView is shown.
 /// On Windows / Linux a separate desktop WebView window is opened while this
 /// page displays a waiting indicator.  Auto-polling runs on every platform
 /// as a reliable fallback.
@@ -78,9 +61,6 @@ class _PaymentWebViewPageState extends ConsumerState<PaymentWebViewPage> {
   Timer? _pollTimer;
   bool _isPolling = false;
   bool _isChecking = false;
-  bool _urlInterceptionReady = false;
-  bool _acceleratedCheckTriggered = false;
-  String? _initialHost;
 
   bool get _supportsEmbeddedWebView =>
       Platform.isAndroid || Platform.isIOS || Platform.isMacOS;
@@ -90,8 +70,6 @@ class _PaymentWebViewPageState extends ConsumerState<PaymentWebViewPage> {
   @override
   void initState() {
     super.initState();
-    final uri = Uri.tryParse(widget.paymentUrl);
-    _initialHost = uri?.host;
     _initWebView();
     _startPolling();
   }
@@ -109,11 +87,7 @@ class _PaymentWebViewPageState extends ConsumerState<PaymentWebViewPage> {
         ..setJavaScriptMode(JavaScriptMode.unrestricted)
         ..setNavigationDelegate(
           NavigationDelegate(
-            onPageFinished: (_) {
-              if (mounted) {
-                setState(() => _urlInterceptionReady = true);
-              }
-            },
+            onPageFinished: (_) {},
             onUrlChange: _onUrlChange,
             onNavigationRequest: _onNavigationRequest,
             onWebResourceError: (_) {},
@@ -142,28 +116,8 @@ class _PaymentWebViewPageState extends ConsumerState<PaymentWebViewPage> {
   }
 
   void _onUrlChange(UrlChange change) {
-    if (_acceleratedCheckTriggered || !_urlInterceptionReady) return;
-    final url = change.url;
-    if (url == null || url.isEmpty) return;
-
-    final uri = Uri.tryParse(url);
-    if (uri == null) return;
-    // 只处理 http/https 的 host 变化，自定义 scheme 由 _onNavigationRequest 处理
-    final scheme = uri.scheme.toLowerCase();
-    if (scheme != 'http' && scheme != 'https') return;
-    final currentHost = uri.host;
-    if (currentHost.isEmpty) return;
-
-    if (_initialHost != null && currentHost != _initialHost) {
-      final stillOnGateway = _paymentGatewayDomainFragments.any(
-        (fragment) =>
-            currentHost == fragment || currentHost.endsWith('.$fragment'),
-      );
-      if (!stillOnGateway) {
-        _logger.info('Left payment gateway, new host: $currentHost');
-        _triggerAcceleratedCheck();
-      }
-    }
+    // 不再根据 host 变化推断支付完成——支付流程中经过中间域名是常态，
+    // 误触发会导致顶部状态栏提前显示"支付完成"。支付状态完全由轮询负责。
   }
 
   Future<NavigationDecision> _onNavigationRequest(
@@ -192,13 +146,6 @@ class _PaymentWebViewPageState extends ConsumerState<PaymentWebViewPage> {
     return NavigationDecision.prevent;
   }
 
-  void _triggerAcceleratedCheck() {
-    if (_acceleratedCheckTriggered) return;
-    _acceleratedCheckTriggered = true;
-    if (mounted) setState(() {});
-    _checkPaymentStatus();
-  }
-
   void _startPolling() {
     if (_isPolling) return;
     _isPolling = true;
@@ -214,7 +161,7 @@ class _PaymentWebViewPageState extends ConsumerState<PaymentWebViewPage> {
   }
 
   void _scheduleNextPoll() {
-    if (!_isPolling || _acceleratedCheckTriggered || !mounted) return;
+    if (!_isPolling || !mounted) return;
     _pollTimer?.cancel();
     _pollTimer = Timer(const Duration(seconds: 5), () {
       _checkPaymentStatus();
@@ -286,7 +233,6 @@ class _PaymentWebViewPageState extends ConsumerState<PaymentWebViewPage> {
           children: [
             _StatusBanner(
               isPolling: _isPolling,
-              acceleratedCheck: _acceleratedCheckTriggered,
             ),
             Expanded(
               child: _webViewController != null
@@ -313,11 +259,9 @@ class _PaymentWebViewPageState extends ConsumerState<PaymentWebViewPage> {
 
 class _StatusBanner extends StatelessWidget {
   final bool isPolling;
-  final bool acceleratedCheck;
 
   const _StatusBanner({
     required this.isPolling,
-    required this.acceleratedCheck,
   });
 
   @override
@@ -328,12 +272,7 @@ class _StatusBanner extends StatelessWidget {
     final String text;
     final IconData icon;
 
-    if (acceleratedCheck) {
-      bg = XbUiStatusColor.success(context).withValues(alpha: 0.12);
-      fg = XbUiStatusColor.success(context);
-      text = l10n.xboardPaymentCompleted;
-      icon = Icons.check_circle;
-    } else if (isPolling) {
+    if (isPolling) {
       bg = XbUiStatusColor.processing(context).withValues(alpha: 0.12);
       fg = XbUiStatusColor.processing(context);
       text = l10n.xboardWaitingForPayment;
