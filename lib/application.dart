@@ -407,6 +407,17 @@ class ApplicationState extends ConsumerState<Application>
               title: localizedAppName,
               locale: locale != null && locale.isNotEmpty ? utils.getLocaleForString(locale) : null,
               supportedLocales: AppLocalizations.delegate.supportedLocales,
+              localeResolutionCallback: (locale, supportedLocales) {
+                if (locale != null) {
+                  if (locale.languageCode == 'zh') {
+                    return const Locale.fromSubtags(languageCode: 'zh', countryCode: 'CN');
+                  }
+                  if (locale.languageCode == 'en') {
+                    return const Locale.fromSubtags(languageCode: 'en');
+                  }
+                }
+                return const Locale.fromSubtags(languageCode: 'en');
+              },
               themeMode: themeProps.themeMode,
               theme: ThemeData(
                 useMaterial3: true,
