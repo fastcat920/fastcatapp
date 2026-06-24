@@ -397,6 +397,13 @@ class _OrderDetailPageState extends ConsumerState<OrderDetailPage>
 
       final type = paymentResult['type'] as int? ?? 0;
       final data = paymentResult['data'];
+      if (type == -2) {
+        if (mounted) {
+          XBoardNotification.showError(data?.toString() ?? l10n.xboardPaymentFailed);
+        }
+        return;
+      }
+
       if (type == -1 && data == true) {
         await _handlePaymentSuccess();
         return;

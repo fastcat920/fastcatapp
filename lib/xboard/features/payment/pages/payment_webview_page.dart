@@ -4,6 +4,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:webview_flutter/webview_flutter.dart';
+import 'package:url_launcher/url_launcher.dart';
 import 'package:desktop_webview_window/desktop_webview_window.dart';
 import 'package:path_provider/path_provider.dart';
 
@@ -114,6 +115,7 @@ class _PaymentWebViewPageState extends ConsumerState<PaymentWebViewPage> {
               }
             },
             onUrlChange: _onUrlChange,
+            onNavigationRequest: _onNavigationRequest,
             onWebResourceError: (_) {},
           ),
         )
@@ -159,6 +161,32 @@ class _PaymentWebViewPageState extends ConsumerState<PaymentWebViewPage> {
         _triggerAcceleratedCheck();
       }
     }
+  }
+
+  Future<NavigationDecision> _onNavigationRequest(
+      NavigationRequest request) async {
+    final uri = Uri.tryParse(request.url);
+    if (uri == null) return NavigationDecision.navigate;
+
+    final scheme = uri.scheme.toLowerCase();
+    // Allow standard web schemes to navigate normally
+    if (scheme == 'http' || scheme == 'https' ||
+        scheme == 'about' || scheme == 'data' || scheme == 'javascript') {
+      return NavigationDecision.navigate;
+    }
+
+    // For custom schemes (alipays://, weixin://, etc.), forward to system
+    _logger.info('Intercepted custom scheme: $scheme, forwarding to system');
+    try {
+      if (await canLaunchUrl(uri)) {
+        await launchUrl(uri, mode: LaunchMode.externalApplication);
+      }
+    } catch (e) {
+      _logger.warning('Failed to launch external app for $scheme: $e');
+    }
+
+    // Prevent WebView from showing error page for unknown schemes
+    return NavigationDecision.prevent;
   }
 
   void _triggerAcceleratedCheck() {

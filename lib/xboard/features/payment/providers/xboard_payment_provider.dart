@@ -575,7 +575,7 @@ Map<String, dynamic>? _mapPaymentResult(PaymentResultModel result) {
       'type': 0, // Redirect
       'data': url,
     },
-    failed: (message, errorCode, extra) => null, // Or throw?
+    failed: (message, errorCode, extra) => { 'type': -2, 'data': message.isNotEmpty ? message : '支付失败', },
     canceled: (message) => null,
   );
 }

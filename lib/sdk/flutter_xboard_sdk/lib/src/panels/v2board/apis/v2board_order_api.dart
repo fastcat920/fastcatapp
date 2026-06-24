@@ -175,7 +175,19 @@ class V2BoardOrderApi {
         },
       );
 
-      return CheckoutResult.fromJson(result);
+      // 兼容嵌套 data 和扁平两种返回格式
+      final dynamic resultData = result['data'];
+      if (resultData is Map<String, dynamic>) {
+        return CheckoutResult(
+          type: resultData['type'] as int? ?? 0,
+          data: resultData['data'],
+        );
+      }
+      final typeValue = result['type'] as int? ?? 0;
+      return CheckoutResult(
+        type: typeValue,
+        data: resultData,
+      );
     } catch (e) {
       if (e is XBoardException) rethrow;
       throw ApiException('V2Board 提交支付失败: $e');

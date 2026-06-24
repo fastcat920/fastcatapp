@@ -61,12 +61,14 @@ class XBoardOrderAdapter implements OrderApi {
     if (response.type == -1) {
       // 免费/余额支付成功
       return PaymentResultModel.success(message: 'Payment successful');
-    } else if (response.type == 0) {
-      // 二维码支付（AlipayF2F 等），data 是二维码 URL
-      return PaymentResultModel.redirect(url: response.data as String);
-    } else if (response.type == 1) {
-      // URL 跳转支付
-      return PaymentResultModel.redirect(url: response.data as String);
+    } else if (response.type == 0 || response.type == 1) {
+      // 二维码 / URL 跳转支付
+      final url = response.data;
+      if (url is String && url.isNotEmpty) {
+        return PaymentResultModel.redirect(url: url);
+      }
+      return PaymentResultModel.failed(
+          message: 'Payment redirect URL is empty or invalid');
     } else if (response.type == 2) {
       // 即时完成（Stripe 扣款）
       return PaymentResultModel.success(message: 'Payment successful');
