@@ -374,12 +374,7 @@ class _OrderDetailPageState extends ConsumerState<OrderDetailPage>
     final order = await ref.read(getOrderProvider(widget.tradeNo).future);
     if (!mounted) return;
     final userInfo = ref.read(userInfoProvider);
-    final balanceCoversOrder = order != null &&
-        _getBalanceDeductionForOrder(order, userInfo) >=
-            _amountFromCents(order.totalAmount);
-    final methodId = balanceCoversOrder
-        ? await _getDefaultPaymentMethodId(allowSyntheticBalance: true)
-        : _selectedMethodId ?? await _getDefaultPaymentMethodId();
+    final methodId = _selectedMethodId ?? await _getDefaultPaymentMethodId();
     if (methodId == null) {
       XBoardNotification.showError(l10n.xboardSelectPaymentMethod);
       return;
@@ -1637,14 +1632,6 @@ double? _priceForPeriod(DomainPlan? plan, String? period) {
       return plan.resetPrice;
   }
   return null;
-}
-
-double _getBalanceDeductionForOrder(OrderModel order, DomainUser? userInfo) {
-  if (order.status != 0 || userInfo == null) return 0;
-  final orderAmount = _amountFromCents(order.totalAmount);
-  final balance = userInfo.balanceInYuan;
-  if (balance <= 0 || orderAmount <= 0) return 0;
-  return balance > orderAmount ? orderAmount : balance;
 }
 
 double _amountFromCents(double? amount) => (amount ?? 0) / 100;
