@@ -156,8 +156,10 @@ class _PaymentGatewayPageState extends ConsumerState<PaymentGatewayPage> {
           // status: 0=pending, 1=processing, 2=canceled, 3=completed
           if (order.status == 3) {
             _stopAutoPolling();
-            XBoardNotification.showSuccess(
-                AppLocalizations.of(context).xboardPaymentSuccessful);
+            if (!silent) {
+              XBoardNotification.showSuccess(
+                  AppLocalizations.of(context).xboardPaymentSuccessful);
+            }
             Future.delayed(const Duration(seconds: 1), () {
               if (mounted) {
                 Navigator.of(context).popUntil((route) => route.isFirst);

@@ -12,7 +12,6 @@ import 'package:fl_clash/l10n/l10n.dart';
 import 'package:fl_clash/xboard/adapter/state/order_state.dart';
 import 'package:fl_clash/xboard/core/core.dart';
 import 'package:fl_clash/xboard/features/shared/styles/styles.dart';
-import 'package:fl_clash/xboard/utils/xboard_notification.dart';
 
 const _logger = FileLogger('payment_webview_page.dart');
 
@@ -69,6 +68,7 @@ class _PaymentWebViewPageState extends ConsumerState<PaymentWebViewPage> {
   Timer? _pollTimer;
   bool _isPolling = false;
   bool _isChecking = false;
+  Webview? _desktopWebview;
 
   bool get _supportsEmbeddedWebView =>
       Platform.isAndroid || Platform.isIOS || Platform.isMacOS;
@@ -85,6 +85,7 @@ class _PaymentWebViewPageState extends ConsumerState<PaymentWebViewPage> {
   @override
   void dispose() {
     _stopPolling();
+    _desktopWebview?.close();
     _webViewController = null;
     super.dispose();
   }
@@ -110,14 +111,22 @@ class _PaymentWebViewPageState extends ConsumerState<PaymentWebViewPage> {
 
   Future<void> _openDesktopWebView() async {
     try {
+      final title = AppLocalizations.of(context).xboardPaymentGateway;
       final appDir = await getApplicationSupportDirectory();
       final dataFolder = '${appDir.path}/webview2_data';
+      final view = WidgetsBinding.instance.platformDispatcher.views.first;
+      final width = (view.physicalSize.width / view.devicePixelRatio).round();
+      final height = (view.physicalSize.height / view.devicePixelRatio).round();
       final webview = await WebviewWindow.create(
         configuration: CreateConfiguration(
-          title: AppLocalizations.of(context).xboardPaymentGateway,
+          title: title,
           userDataFolderWindows: dataFolder,
+          windowWidth: width,
+          windowHeight: height,
+          useWindowPositionAndSize: true,
         ),
       );
+      _desktopWebview = webview;
       webview.launch(widget.paymentUrl);
     } catch (e) {
       _logger.warning('Desktop WebView creation failed: $e');
@@ -208,18 +217,17 @@ class _PaymentWebViewPageState extends ConsumerState<PaymentWebViewPage> {
 
   void _handlePaymentSuccess() {
     _stopPolling();
+    _desktopWebview?.close();
+    _desktopWebview = null;
     if (mounted) {
-      XBoardNotification.showSuccess(
-        AppLocalizations.of(context).xboardPaymentSuccessful,
-      );
-      Future<void>.delayed(const Duration(milliseconds: 600), () {
-        if (mounted) Navigator.of(context).pop(true);
-      });
+      Navigator.of(context).pop(true);
     }
   }
 
   void _handleCancel() {
     _stopPolling();
+    _desktopWebview?.close();
+    _desktopWebview = null;
     Navigator.of(context).pop(null);
   }
 
