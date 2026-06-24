@@ -120,10 +120,11 @@ class _PaymentWebViewPageState extends ConsumerState<PaymentWebViewPage> {
     try {
       if (!mounted) return;
       final title = AppLocalizations.of(context).xboardPaymentGateway;
-      // 首帧后使用 MediaQuery 获取精确的窗口逻辑尺寸
+      // 获取主窗口逻辑尺寸，乘以 DPI 缩放比得到物理像素
       final size = MediaQuery.of(context).size;
-      final width = size.width.round();
-      final height = size.height.round();
+      final ratio = MediaQuery.of(context).devicePixelRatio;
+      final width = (size.width * ratio).round();
+      final height = (size.height * ratio).round();
 
       // Windows 需要 WebView2 用户数据目录，Linux (WebKitGTK) 不需要
       String? dataFolder;
@@ -140,6 +141,7 @@ class _PaymentWebViewPageState extends ConsumerState<PaymentWebViewPage> {
           windowWidth: width,
           windowHeight: height,
           useWindowPositionAndSize: true,
+          resizable: false,
         ),
       );
       _desktopWebview = webview;

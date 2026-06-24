@@ -45,17 +45,19 @@ class InAppBrowserPage extends StatefulWidget {
         final appDir = await getApplicationSupportDirectory();
         final dataFolder = '${appDir.path}/webview2_data';
 
-        // 获取主客户端窗口大小和位置，让网关独立窗口大小与客户端一致
+        // 获取主客户端窗口逻辑大小和位置，乘以 DPI 缩放比转为物理像素
         final mainSize = await windowManager.getSize();
         final mainPos = await windowManager.getPosition();
+        final views = WidgetsBinding.instance.platformDispatcher.views;
+        final ratio = views.isNotEmpty ? views.first.devicePixelRatio : 1.0;
 
         final webview = await WebviewWindow.create(
           configuration: CreateConfiguration(
             title: title,
-            windowWidth: mainSize.width.toInt(),
-            windowHeight: mainSize.height.toInt(),
-            windowPosX: mainPos.dx.toInt(),
-            windowPosY: mainPos.dy.toInt(),
+            windowWidth: (mainSize.width * ratio).toInt(),
+            windowHeight: (mainSize.height * ratio).toInt(),
+            windowPosX: (mainPos.dx * ratio).toInt(),
+            windowPosY: (mainPos.dy * ratio).toInt(),
             useWindowPositionAndSize: true,
             resizable: false,
             userDataFolderWindows: dataFolder,
