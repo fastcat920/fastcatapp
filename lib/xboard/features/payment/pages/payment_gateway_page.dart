@@ -236,6 +236,7 @@ class _PaymentGatewayPageState extends ConsumerState<PaymentGatewayPage> {
                   ),
                 )
               : SingleChildScrollView(
+                  physics: const AlwaysScrollableScrollPhysics(),
                   padding: XbUiTokens.pagePadding,
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,

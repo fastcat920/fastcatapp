@@ -14,6 +14,11 @@ import 'package:go_router/go_router.dart';
 
 class PlansView extends ConsumerStatefulWidget {
   const PlansView({super.key});
+
+  /// 供 subscription_usage_card 在导航前设置；
+  /// PlansView 在 initState / didUpdateWidget 中消费后自动清空。
+  static DomainPlan? pendingPlan;
+
   @override
   ConsumerState<PlansView> createState() => _PlansViewState();
 }
@@ -24,9 +29,21 @@ class _PlansViewState extends ConsumerState<PlansView> {
   String? _initialPeriod; // URL参数传入的初始周期（如 reset_price）
   AppLocalizations get appLocalizations => AppLocalizations.of(context);
 
+  void _consumePendingPlan() {
+    if (PlansView.pendingPlan != null && mounted) {
+      setState(() {
+        _selectedPlan = PlansView.pendingPlan;
+      });
+      PlansView.pendingPlan = null;
+      _hasCheckedUrlParams = true;
+    }
+  }
+
+
   @override
   void initState() {
     super.initState();
+    _consumePendingPlan();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       final subscriptionNotifier =
           ref.read(xboardSubscriptionProvider.notifier);
@@ -41,6 +58,7 @@ class _PlansViewState extends ConsumerState<PlansView> {
   @override
   void didUpdateWidget(PlansView oldWidget) {
     super.didUpdateWidget(oldWidget);
+    _consumePendingPlan();
     _hasCheckedUrlParams = false;
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (mounted) _checkUrlParams();

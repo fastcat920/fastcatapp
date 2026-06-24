@@ -146,18 +146,6 @@ final List<RouteBase> routes = [
     ],
   ),
 
-  // 套餐购买页面（全屏，不在 Shell 内）
-  GoRoute(
-    path: '/plans/purchase',
-    name: 'plan_purchase',
-    pageBuilder: (context, state) {
-      final plan = state.extra as DomainPlan;
-      return MaterialPage(
-        child: PlanPurchasePage(plan: plan),
-      );
-    },
-  ),
-
   // 支付网关页面
   GoRoute(
     path: '/payment/gateway',
