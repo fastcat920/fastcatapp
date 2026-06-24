@@ -32,15 +32,6 @@ class _PlansViewState extends ConsumerState<PlansView> {
   @override
   void initState() {
     super.initState();
-    ref.listen(pendingPurchasePlanProvider, (prev, next) {
-      if (next != null && mounted) {
-        setState(() {
-          _selectedPlan = next;
-        });
-        ref.read(pendingPurchasePlanProvider.notifier).state = null;
-        _hasCheckedUrlParams = true;
-      }
-    });
     WidgetsBinding.instance.addPostFrameCallback((_) {
       final subscriptionNotifier =
           ref.read(xboardSubscriptionProvider.notifier);
@@ -374,6 +365,13 @@ class _PlansViewState extends ConsumerState<PlansView> {
 
   @override
   Widget build(BuildContext context) {
+    ref.listen(pendingPurchasePlanProvider, (prev, next) {
+      if (next != null) {
+        _selectedPlan = next;
+        ref.read(pendingPurchasePlanProvider.notifier).state = null;
+        _hasCheckedUrlParams = true;
+      }
+    });
     final isDesktop = Platform.isLinux ||
         Platform.isWindows ||
         Platform.isMacOS ||
