@@ -419,11 +419,7 @@ class SubscriptionUsageCard extends ConsumerWidget {
         if (!await confirmTrafficExhaustedRenewIfNeeded()) return;
         if (!context.mounted) return;
         if (isDesktop) {
-          if (planForPurchase.isVisible) {
-            router.go('/plans?planId=${planForPurchase.id}');
-          } else {
-            router.push('/plans/purchase', extra: planForPurchase);
-          }
+          router.go('/plans?planId=${planForPurchase.id}');
         } else {
           navigator.push(MaterialPageRoute(
             builder: (_) => PlanPurchasePage(

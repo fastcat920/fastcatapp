@@ -37,7 +37,17 @@ class _PlansViewState extends ConsumerState<PlansView> {
     });
   }
 
+
+  @override
+  void didUpdateWidget(PlansView oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    _hasCheckedUrlParams = false;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) _checkUrlParams();
+    });
+  }
   Future<void> _checkUrlParams() async {
+
     if (_hasCheckedUrlParams) return;
     _hasCheckedUrlParams = true;
 
