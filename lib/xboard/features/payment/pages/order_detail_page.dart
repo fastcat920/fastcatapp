@@ -63,7 +63,6 @@ class _OrderDetailPageState extends ConsumerState<OrderDetailPage>
   int? _resolvingPlanId;
   Timer? _paymentStatusTimer;
   bool _isAutoChecking = false;
-  bool _extrasLoaded = false;
 
   @override
   void initState() {
@@ -71,10 +70,12 @@ class _OrderDetailPageState extends ConsumerState<OrderDetailPage>
     WidgetsBinding.instance.addObserver(this);
     Future.microtask(() async {
       ref.read(xboardPaymentProvider);
-      await ref.read(xboardPaymentProvider.notifier).loadPaymentMethods();
-      await ref.read(xboardSubscriptionProvider.notifier).refreshPlans();
-      await ref.read(xboardSubscriptionProvider.notifier).autoRefreshIfNeeded();
-      _fetchOrderExtras();
+      // 支付方式与套餐列表互不依赖，并行加载
+      await Future.wait([
+        ref.read(xboardPaymentProvider.notifier).loadPaymentMethods(),
+        ref.read(xboardSubscriptionProvider.notifier).refreshPlans(),
+        _fetchOrderExtras(),
+      ]);
     });
   }
 
@@ -94,13 +95,10 @@ class _OrderDetailPageState extends ConsumerState<OrderDetailPage>
           _commissionBalance = (data['commission_balance'] as num?)?.toDouble();
           _actualCommissionBalance =
               (data['actual_commission_balance'] as num?)?.toDouble();
-          _extrasLoaded = true;
         });
-      } else if (mounted) {
-        setState(() => _extrasLoaded = true);
       }
     } catch (_) {
-      if (mounted) setState(() => _extrasLoaded = true);
+      // 无额外数据，无需更新
     }
   }
 
@@ -199,10 +197,6 @@ class _OrderDetailPageState extends ConsumerState<OrderDetailPage>
           )) {
             return const Center(child: CircularProgressIndicator());
           }
-          if (!_extrasLoaded) {
-            return const Center(child: CircularProgressIndicator());
-          }
-
           return _OrderDetailContent(
             tradeNo: widget.tradeNo,
             order: order,
@@ -240,19 +234,16 @@ class _OrderDetailPageState extends ConsumerState<OrderDetailPage>
   }
 
   Future<void> _refreshPage() async {
-    if (mounted) {
-      setState(() => _extrasLoaded = false);
-    }
     clearGetOrderCache(widget.tradeNo);
     clearGetOrderPaymentMethodsCache(widget.tradeNo);
     ref.invalidate(getOrderProvider(widget.tradeNo));
     ref.invalidate(getOrderPaymentMethodsProvider(widget.tradeNo));
-    await ref
-        .read(xboardPaymentProvider.notifier)
-        .loadPaymentMethods(forceRefresh: true);
-    await ref.read(xboardSubscriptionProvider.notifier).refreshPlans();
-    await ref.read(xboardSubscriptionProvider.notifier).autoRefreshIfNeeded();
+    // 支付方式、套餐列表、订单、额外字段 互不依赖，全部并行
     await Future.wait([
+      ref
+          .read(xboardPaymentProvider.notifier)
+          .loadPaymentMethods(forceRefresh: true),
+      ref.read(xboardSubscriptionProvider.notifier).refreshPlans(),
       ref.read(getOrderProvider(widget.tradeNo).future),
       _fetchOrderExtras(),
     ]);
