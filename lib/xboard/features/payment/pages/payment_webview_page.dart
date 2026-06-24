@@ -5,8 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 import 'package:url_launcher/url_launcher.dart';
-import 'package:desktop_webview_window/desktop_webview_window.dart';
-import 'package:path_provider/path_provider.dart';
+import 'package:flutter_inappwebview/flutter_inappwebview.dart' as iaw;
 
 import 'package:fl_clash/l10n/l10n.dart';
 import 'package:fl_clash/xboard/adapter/state/order_state.dart';
@@ -25,10 +24,11 @@ const _desktopUserAgent =
 
 /// In-app payment WebView page that replaces the external-browser flow.
 ///
-/// On Android / iOS / macOS an embedded WebView is shown.
-/// On Windows / Linux a separate desktop WebView window is opened while this
-/// page displays a waiting indicator.  Auto-polling runs on every platform
-/// as a reliable fallback.
+/// All platforms use an embedded WebView:
+/// - Android / iOS / macOS → webview_flutter (system WebView / WKWebView)
+/// - Windows / Linux → flutter_inappwebview (Edge WebView2 / WebKitGTK)
+///
+/// Auto-polling runs on every platform as a reliable fallback.
 ///
 /// Returns `true` when the payment succeeds, `null` when the user cancels.
 class PaymentWebViewPage extends ConsumerStatefulWidget {
@@ -68,23 +68,16 @@ class _PaymentWebViewPageState extends ConsumerState<PaymentWebViewPage> {
   Timer? _pollTimer;
   bool _isPolling = false;
   bool _isChecking = false;
-  Webview? _desktopWebview;
 
-  bool get _supportsEmbeddedWebView =>
+  /// Platforms that use webview_flutter (system WebView)
+  bool get _useSystemWebView =>
       Platform.isAndroid || Platform.isIOS || Platform.isMacOS;
-
-  bool get _supportsDesktopWebView => Platform.isWindows || Platform.isLinux;
 
   @override
   void initState() {
     super.initState();
-    if (_supportsEmbeddedWebView) {
+    if (_useSystemWebView) {
       _initWebView();
-    } else if (_supportsDesktopWebView) {
-      // 推迟到首帧渲染后，此时 MediaQuery 才能拿到正确的窗口尺寸
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        _openDesktopWebView();
-      });
     }
     _startPolling();
   }
@@ -92,63 +85,23 @@ class _PaymentWebViewPageState extends ConsumerState<PaymentWebViewPage> {
   @override
   void dispose() {
     _stopPolling();
-    _desktopWebview?.close();
     _webViewController = null;
     super.dispose();
   }
 
   Future<void> _initWebView() async {
-    if (_supportsEmbeddedWebView) {
-      _webViewController = WebViewController()
-        ..setJavaScriptMode(JavaScriptMode.unrestricted)
-        ..setUserAgent(_desktopUserAgent)
-        ..setNavigationDelegate(
-          NavigationDelegate(
-            onPageFinished: (_) {},
-            onUrlChange: _onUrlChange,
-            onNavigationRequest: _onNavigationRequest,
-            onWebResourceError: (_) {},
-          ),
-        )
-        ..loadRequest(Uri.parse(widget.paymentUrl));
-    } else if (_supportsDesktopWebView) {
-      unawaited(_openDesktopWebView());
-    }
-  }
-
-  Future<void> _openDesktopWebView() async {
-    try {
-      if (!mounted) return;
-      final title = AppLocalizations.of(context).xboardPaymentGateway;
-      // 获取主窗口逻辑尺寸，乘以 DPI 缩放比得到物理像素
-      final size = MediaQuery.of(context).size;
-      final ratio = MediaQuery.of(context).devicePixelRatio;
-      final width = (size.width * ratio).round();
-      final height = (size.height * ratio).round();
-
-      // Windows 需要 WebView2 用户数据目录，Linux (WebKitGTK) 不需要
-      String? dataFolder;
-      if (Platform.isWindows) {
-        final appDir = await getApplicationSupportDirectory();
-        dataFolder = '${appDir.path}/webview2_data';
-      }
-
-      final webview = await WebviewWindow.create(
-        configuration: CreateConfiguration(
-          title: title,
-          userDataFolderWindows:
-              dataFolder ?? 'webview_window_WebView2',
-          windowWidth: width,
-          windowHeight: height,
-          useWindowPositionAndSize: true,
-          resizable: false,
+    _webViewController = WebViewController()
+      ..setJavaScriptMode(JavaScriptMode.unrestricted)
+      ..setUserAgent(_desktopUserAgent)
+      ..setNavigationDelegate(
+        NavigationDelegate(
+          onPageFinished: (_) {},
+          onUrlChange: _onUrlChange,
+          onNavigationRequest: _onNavigationRequest,
+          onWebResourceError: (_) {},
         ),
-      );
-      _desktopWebview = webview;
-      webview.launch(widget.paymentUrl);
-    } catch (e) {
-      _logger.warning('Desktop WebView creation failed: $e');
-    }
+      )
+      ..loadRequest(iaw.WebUri(widget.paymentUrl));
   }
 
   void _onUrlChange(UrlChange change) {
@@ -178,9 +131,36 @@ class _PaymentWebViewPageState extends ConsumerState<PaymentWebViewPage> {
       _logger.warning('Failed to launch external app for $scheme: $e');
     }
 
-    // Prevent WebView from showing error page for unknown schemes
     return NavigationDecision.prevent;
   }
+
+  /// Handle custom scheme redirects for desktop (InAppWebView).
+  Future<iaw.NavigationActionPolicy> _onDesktopNavigation(
+      iaw.InAppWebViewController controller,
+      iaw.NavigationAction navigationAction) async {
+    final url = navigationAction.request.url?.toString() ?? '';
+    final uri = Uri.tryParse(url);
+    if (uri == null) return iaw.NavigationActionPolicy.ALLOW;
+
+    final scheme = uri.scheme.toLowerCase();
+    if (scheme == 'http' || scheme == 'https' ||
+        scheme == 'about' || scheme == 'data' || scheme == 'javascript') {
+      return iaw.NavigationActionPolicy.ALLOW;
+    }
+
+    _logger.info('Intercepted custom scheme: $scheme, forwarding to system');
+    try {
+      if (await canLaunchUrl(uri)) {
+        await launchUrl(uri, mode: LaunchMode.externalApplication);
+      }
+    } catch (e) {
+      _logger.warning('Failed to launch external app for $scheme: $e');
+    }
+
+    return iaw.NavigationActionPolicy.CANCEL;
+  }
+
+  // ── Polling ─────────────────────────────────────────────────────────
 
   void _startPolling() {
     if (_isPolling) return;
@@ -235,8 +215,6 @@ class _PaymentWebViewPageState extends ConsumerState<PaymentWebViewPage> {
 
   void _handlePaymentSuccess() {
     _stopPolling();
-    _desktopWebview?.close();
-    _desktopWebview = null;
     if (mounted) {
       Navigator.of(context).pop(true);
     }
@@ -244,50 +222,53 @@ class _PaymentWebViewPageState extends ConsumerState<PaymentWebViewPage> {
 
   void _handleCancel() {
     _stopPolling();
-    _desktopWebview?.close();
-    _desktopWebview = null;
     Navigator.of(context).pop(null);
   }
+
+  // ── Build ───────────────────────────────────────────────────────────
 
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
-
-    if (_supportsEmbeddedWebView) {
-      return Scaffold(
-        appBar: AppBar(
-          title: Text(l10n.xboardPaymentGateway),
-          leading: IconButton(
-            icon: const Icon(Icons.close),
-            tooltip: l10n.xboardCancelPayment,
-            onPressed: _handleCancel,
-          ),
-          actions: const [],
-        ),
-        body: Column(
-          children: [
-            _StatusBanner(
-              isPolling: _isPolling,
-            ),
-            Expanded(
-              child: _webViewController != null
-                  ? WebViewWidget(controller: _webViewController!)
-                  : const Center(child: CircularProgressIndicator()),
-            ),
-          ],
-        ),
-      );
-    }
 
     return Scaffold(
       appBar: AppBar(
         title: Text(l10n.xboardPaymentGateway),
         leading: IconButton(
           icon: const Icon(Icons.close),
+          tooltip: l10n.xboardCancelPayment,
           onPressed: _handleCancel,
         ),
+        actions: const [],
       ),
-      body: _DesktopWaitingBody(isPolling: _isPolling),
+      body: Column(
+        children: [
+          _StatusBanner(
+            isPolling: _isPolling,
+          ),
+          Expanded(
+            child: _buildWebView(),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildWebView() {
+    if (_useSystemWebView) {
+      return _webViewController != null
+          ? WebViewWidget(controller: _webViewController!)
+          : const Center(child: CircularProgressIndicator());
+    }
+
+    // Windows / Linux: embedded InAppWebView (Edge WebView2 / WebKitGTK)
+    return iaw.InAppWebView(
+      initialUrlRequest: iaw.URLRequest(url: iaw.WebUri(widget.paymentUrl)),
+      initialSettings: iaw.InAppWebViewSettings(
+        userAgent: _desktopUserAgent,
+        javaScriptEnabled: true,
+      ),
+      shouldOverrideUrlLoading: _onDesktopNavigation,
     );
   }
 }
@@ -338,66 +319,6 @@ class _StatusBanner extends StatelessWidget {
             ),
           ),
         ],
-      ),
-    );
-  }
-}
-
-class _DesktopWaitingBody extends StatelessWidget {
-  final bool isPolling;
-  const _DesktopWaitingBody({required this.isPolling});
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final l10n = AppLocalizations.of(context);
-    return Center(
-      child: Padding(
-        padding: const EdgeInsets.all(32),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Container(
-              width: 72,
-              height: 72,
-              decoration: BoxDecoration(
-                color: theme.colorScheme.primary.withValues(alpha: 0.1),
-                shape: BoxShape.circle,
-              ),
-              child: Icon(Icons.payment,
-                  size: 36, color: theme.colorScheme.primary),
-            ),
-            const SizedBox(height: 20),
-            Text(l10n.xboardWaitingForPayment,
-                style: theme.textTheme.titleLarge),
-            const SizedBox(height: 8),
-            Text(
-              l10n.xboardPaymentPageOpenedCompleteAndReturn,
-              style: theme.textTheme.bodyMedium
-                  ?.copyWith(color: theme.colorScheme.onSurfaceVariant),
-              textAlign: TextAlign.center,
-            ),
-            const SizedBox(height: 12),
-            if (isPolling)
-              Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  SizedBox(
-                    width: 16,
-                    height: 16,
-                    child: CircularProgressIndicator(
-                      strokeWidth: 2,
-                      valueColor: AlwaysStoppedAnimation<Color>(
-                          theme.colorScheme.primary),
-                    ),
-                  ),
-                  const SizedBox(width: 8),
-                  Text(l10n.xboardAutoDetectPaymentStatus,
-                      style: theme.textTheme.bodySmall),
-                ],
-              ),
-          ],
-        ),
       ),
     );
   }
