@@ -254,13 +254,7 @@ class _OrderDetailPageState extends ConsumerState<OrderDetailPage>
 
   Future<void> _refreshPaymentMethodsInBackground() async {
     try {
-      final results = await Future.wait([
-        ref
-            .read(xboardPaymentProvider.notifier)
-            .loadPaymentMethods(forceRefresh: true),
-        _loadFreshOrderPaymentOptions(),
-      ]);
-      final freshMethods = results[1] as List<_PaymentOption>;
+      final freshMethods = await _loadFreshPaymentOptions();
       _clearUnavailableSelection(freshMethods);
     } catch (e) {
       _logger.warning('后台刷新支付方式失败: $e');
@@ -383,7 +377,7 @@ class _OrderDetailPageState extends ConsumerState<OrderDetailPage>
     final l10n = AppLocalizations.of(context);
     setState(() => _isSubmitting = true);
     try {
-      final freshMethods = await _loadFreshOrderPaymentOptions();
+      final freshMethods = await _loadFreshPaymentOptions();
       if (freshMethods.isEmpty) {
         _clearUnavailableSelection(freshMethods);
         XBoardNotification.showError(l10n.xboardNoPaymentMethods);
@@ -452,6 +446,21 @@ class _OrderDetailPageState extends ConsumerState<OrderDetailPage>
         setState(() => _isSubmitting = false);
       }
     }
+  }
+
+  Future<List<_PaymentOption>> _loadFreshPaymentOptions() async {
+    try {
+      final orderMethods = await _loadFreshOrderPaymentOptions();
+      if (orderMethods.isNotEmpty) return orderMethods;
+    } catch (e) {
+      _logger.warning('刷新订单支付方式失败，改用全局支付方式兜底: $e');
+    }
+
+    await ref
+        .read(xboardPaymentProvider.notifier)
+        .loadPaymentMethods(forceRefresh: true);
+    return _globalPaymentOptions(
+        ref.read(xboardAvailablePaymentMethodsProvider));
   }
 
   Future<List<_PaymentOption>> _loadFreshOrderPaymentOptions() async {
@@ -744,8 +753,7 @@ class _PaymentMethodsSection extends StatelessWidget {
   Widget build(BuildContext context) {
     return methodsAsync.when(
       loading: () {
-        final fallbackMethods =
-            globalPaymentMethods.map(_PaymentOption.fromDomain).toList();
+        final fallbackMethods = _globalPaymentOptions(globalPaymentMethods);
         if (fallbackMethods.isNotEmpty) {
           return _PaymentMethodsCard(
             methods: fallbackMethods,
@@ -763,6 +771,14 @@ class _PaymentMethodsSection extends StatelessWidget {
         );
       },
       error: (error, _) {
+        final fallbackMethods = _globalPaymentOptions(globalPaymentMethods);
+        if (fallbackMethods.isNotEmpty) {
+          return _PaymentMethodsCard(
+            methods: fallbackMethods,
+            selectedMethodId: selectedMethodId,
+            onSelected: onSelected,
+          );
+        }
         return _InfoCard(
           title: AppLocalizations.of(context).xboardPaymentMethods,
           icon: Icons.payments_outlined,
@@ -778,14 +794,21 @@ class _PaymentMethodsSection extends StatelessWidget {
             .where((m) => m.isAvailable)
             .map(_PaymentOption.fromSdk)
             .toList();
+        final fallbackMethods = _globalPaymentOptions(globalPaymentMethods);
         return _PaymentMethodsCard(
-          methods: paymentOptions,
+          methods: paymentOptions.isNotEmpty ? paymentOptions : fallbackMethods,
           selectedMethodId: selectedMethodId,
           onSelected: onSelected,
         );
       },
     );
   }
+}
+
+List<_PaymentOption> _globalPaymentOptions(
+  List<DomainPaymentMethod> paymentMethods,
+) {
+  return paymentMethods.map(_PaymentOption.fromDomain).toList();
 }
 
 class _OrderPricing {
