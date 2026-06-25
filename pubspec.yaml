@@ -23,6 +23,7 @@ dependencies:
   launch_at_startup: ^0.3.1
   json_annotation: ^4.9.0
   file_picker: ^8.0.7
+  webview_flutter_android: ^4.10.0
   mobile_scanner: ^6.0.11
   app_links: ^6.4.0
   win32_registry: ^1.1.3

@@ -5,6 +5,7 @@
 #include "webview_window.h"
 
 #include <utility>
+#include <vector>
 
 #include "message_channel_plugin.h"
 
@@ -44,6 +45,13 @@ gboolean decide_policy_cb(WebKitWebView *web_view,
                           gpointer user_data) {
   auto *window = static_cast<WebviewWindow *>(user_data);
   return window->DecidePolicy(decision, type);
+}
+
+gboolean run_file_chooser_cb(WebKitWebView *web_view,
+                             WebKitFileChooserRequest *request,
+                             gpointer user_data) {
+  auto *window = static_cast<WebviewWindow *>(user_data);
+  return window->RunFileChooser(request);
 }
 
 }
@@ -108,6 +116,8 @@ WebviewWindow::WebviewWindow(
                    G_CALLBACK(on_load_changed), this);
   g_signal_connect(G_OBJECT(webview_), "decide-policy",
                    G_CALLBACK(decide_policy_cb), this);
+  g_signal_connect(G_OBJECT(webview_), "run-file-chooser",
+                   G_CALLBACK(run_file_chooser_cb), this);
 
   auto settings = webkit_web_view_get_settings(WEBKIT_WEB_VIEW(webview_));
   webkit_settings_set_javascript_can_open_windows_automatically(settings, true);
@@ -222,6 +232,50 @@ gboolean WebviewWindow::DecidePolicy(WebKitPolicyDecision *decision, WebKitPolic
         nullptr, nullptr, nullptr);
   }
   return false;
+}
+
+gboolean WebviewWindow::RunFileChooser(WebKitFileChooserRequest *request) {
+  GtkWidget *dialog = gtk_file_chooser_dialog_new(
+      "Select File",
+      GTK_WINDOW(window_),
+      GTK_FILE_CHOOSER_ACTION_OPEN,
+      "_Cancel",
+      GTK_RESPONSE_CANCEL,
+      "_Open",
+      GTK_RESPONSE_ACCEPT,
+      nullptr);
+
+  auto *chooser = GTK_FILE_CHOOSER(dialog);
+  gtk_file_chooser_set_select_multiple(
+      chooser, webkit_file_chooser_request_get_select_multiple(request));
+
+  const gchar * const *mime_types =
+      webkit_file_chooser_request_get_mime_types(request);
+  if (mime_types != nullptr && mime_types[0] != nullptr) {
+    GtkFileFilter *filter = gtk_file_filter_new();
+    gtk_file_filter_set_name(filter, "Supported files");
+    for (auto i = 0; mime_types[i] != nullptr; i++) {
+      gtk_file_filter_add_mime_type(filter, mime_types[i]);
+    }
+    gtk_file_chooser_add_filter(chooser, filter);
+  }
+
+  if (gtk_dialog_run(GTK_DIALOG(dialog)) == GTK_RESPONSE_ACCEPT) {
+    GSList *filenames = gtk_file_chooser_get_filenames(chooser);
+    std::vector<const gchar *> selected_files;
+    for (GSList *item = filenames; item != nullptr; item = item->next) {
+      selected_files.push_back(static_cast<const gchar *>(item->data));
+    }
+    selected_files.push_back(nullptr);
+    webkit_file_chooser_request_select_files(request, selected_files.data());
+
+    g_slist_free_full(filenames, g_free);
+  } else {
+    webkit_file_chooser_request_cancel(request);
+  }
+
+  gtk_widget_destroy(dialog);
+  return TRUE;
 }
 
 void WebviewWindow::EvaluateJavaScript(const char *java_script, FlMethodCall *call) {

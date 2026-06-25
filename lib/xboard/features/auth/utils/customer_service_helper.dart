@@ -14,20 +14,19 @@ import 'package:fl_clash/xboard/features/auth/auth.dart';
 import 'package:fl_clash/xboard/domain/domain.dart';
 import 'package:fl_clash/xboard/features/auth/pages/crisp_chat_page.dart';
 import 'package:fl_clash/xboard/features/auth/pages/salesmartly_chat_page.dart';
-import 'package:fl_clash/xboard/features/auth/pages/windows_chat_page.dart';
-import 'package:fl_clash/xboard/features/auth/pages/linux_chat_page.dart';
 import 'package:fl_clash/xboard/core/core.dart';
 import 'package:fl_clash/xboard/utils/xboard_notification.dart';
 import 'package:flutter_xboard_sdk/flutter_xboard_sdk.dart';
 
 const _logger = FileLogger('customer_service_helper.dart');
 const _deviceGatewayApiPrefix = gatewayApiPrefix;
+const _desktopCustomerServiceWindowWidth = 420;
+const _desktopCustomerServiceWindowHeight = 680;
 
 /// 统一客服入口：按业务约定仅使用 Crisp（远程优先，本地兜底）
 ///
-/// 移动端/macOS → 内嵌 WebView（webview_flutter）
-/// Windows → 内嵌 WebView（flutter_inappwebview / WebView2）
-/// Linux → 独立 WebView 窗口（desktop_webview_window）
+/// Android/iOS → 内嵌 WebView（webview_flutter）
+/// Windows/macOS/Linux → 独立 WebView 窗口（desktop_webview_window）
 class CustomerServiceHelper {
   CustomerServiceHelper._();
 
@@ -68,34 +67,10 @@ class CustomerServiceHelper {
     XBoardNotification.showError('未配置在线客服');
   }
 
-  /// 桌面端：右侧半屏面板展示客服
-  static void _showChatPanel(BuildContext context, Widget chatPage) {
-    showDialog(
-      context: context,
-      barrierColor: Colors.black26,
-      builder: (context) => Align(
-        alignment: Alignment.centerRight,
-        child: Material(
-          elevation: 16,
-          borderRadius: const BorderRadius.only(
-            topLeft: Radius.circular(16),
-            bottomLeft: Radius.circular(16),
-          ),
-          clipBehavior: Clip.antiAlias,
-          child: SizedBox(
-            width: 420,
-            height: MediaQuery.of(context).size.height,
-            child: chatPage,
-          ),
-        ),
-      ),
-    );
-  }
-
   // ignore: unused_element
   static void _openSalesmartly(BuildContext context, String scriptUrl) {
-    if (Platform.isMacOS || Platform.isLinux) {
-      // macOS/Linux：用 desktop_webview_window 独立窗口
+    if (Platform.isWindows || Platform.isMacOS || Platform.isLinux) {
+      // 桌面端：用 desktop_webview_window 独立窗口
       _openSalesmartlyInDesktopWebview(scriptUrl);
       return;
     } else if (SalesmarylyChatPage.isSupported) {
@@ -105,12 +80,6 @@ class CustomerServiceHelper {
           builder: (_) => SalesmarylyChatPage(scriptUrl: scriptUrl),
         ),
       );
-    } else if (WindowsChatPage.isSupported) {
-      // Windows：flutter_inappwebview 内嵌 WebView2
-      _showChatPanel(context, WindowsChatPage(salesmartlyScriptUrl: scriptUrl));
-    } else if (LinuxChatPage.isSupported) {
-      // Linux：flutter_inappwebview 内嵌 WebKit2GTK
-      _showChatPanel(context, LinuxChatPage(salesmartlyScriptUrl: scriptUrl));
     } else {
       // 其他平台：外部浏览器
       _openSalesmartlyInBrowser(scriptUrl);
@@ -135,8 +104,8 @@ class CustomerServiceHelper {
       final webview = await WebviewWindow.create(
         configuration: CreateConfiguration(
           title: '在线客服',
-          windowWidth: 420,
-          windowHeight: 680,
+          windowWidth: _desktopCustomerServiceWindowWidth,
+          windowHeight: _desktopCustomerServiceWindowHeight,
           userDataFolderWindows: dataFolder,
         ),
       );
@@ -428,8 +397,8 @@ if(window===window.top){
     _CrispIPData? ipData,
   }) {
     final userScript = _buildCrispUserScript(context, ipData: ipData);
-    if (Platform.isMacOS || Platform.isLinux) {
-      // macOS/Linux：用 desktop_webview_window 独立窗口
+    if (Platform.isWindows || Platform.isMacOS || Platform.isLinux) {
+      // 桌面端：用 desktop_webview_window 独立窗口
       _openCrispInDesktopWebview(websiteId, userScript: userScript);
       return;
     } else if (CrispChatPage.isSupported) {
@@ -442,24 +411,6 @@ if(window===window.top){
           ),
         ),
       );
-    } else if (WindowsChatPage.isSupported) {
-      // Windows：flutter_inappwebview 内嵌 WebView2
-      _showChatPanel(
-        context,
-        WindowsChatPage(
-          crispWebsiteId: websiteId,
-          crispUserScript: userScript,
-        ),
-      );
-    } else if (LinuxChatPage.isSupported) {
-      // Linux：flutter_inappwebview 内嵌 WebKit2GTK
-      _showChatPanel(
-        context,
-        LinuxChatPage(
-          crispWebsiteId: websiteId,
-          crispUserScript: userScript,
-        ),
-      );
     } else {
       launchUrl(
         Uri.parse('https://go.crisp.chat/chat/embed/?website_id=$websiteId'),
@@ -468,7 +419,7 @@ if(window===window.top){
     }
   }
 
-  /// Windows/Linux：用 desktop_webview_window 打开 Crisp 聊天
+  /// 桌面端：用 desktop_webview_window 打开 Crisp 聊天
   /// 用 SDK 注入方式代替直接加载 embed URL（解决 WebView2 空白问题）
   static Future<void> _openCrispInDesktopWebview(
     String websiteId, {
@@ -489,8 +440,8 @@ if(window===window.top){
       final webview = await WebviewWindow.create(
         configuration: CreateConfiguration(
           title: '在线客服',
-          windowWidth: 420,
-          windowHeight: 680,
+          windowWidth: _desktopCustomerServiceWindowWidth,
+          windowHeight: _desktopCustomerServiceWindowHeight,
           userDataFolderWindows: dataFolder,
         ),
       );

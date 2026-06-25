@@ -215,6 +215,16 @@ extension WebViewLayoutController: WKNavigationDelegate {
 }
 
 extension WebViewLayoutController: WKUIDelegate {
+  func webView(_ webView: WKWebView, runOpenPanelWith parameters: WKOpenPanelParameters, initiatedByFrame frame: WKFrameInfo, completionHandler: @escaping ([URL]?) -> Void) {
+    let panel = NSOpenPanel()
+    panel.canChooseFiles = true
+    panel.canChooseDirectories = false
+    panel.allowsMultipleSelection = parameters.allowsMultipleSelection
+    panel.begin { result in
+      completionHandler(result == .OK ? panel.urls : nil)
+    }
+  }
+
   func webView(_ webView: WKWebView, runJavaScriptTextInputPanelWithPrompt prompt: String, defaultText: String?, initiatedByFrame frame: WKFrameInfo, completionHandler: @escaping (String?) -> Void) {
     methodChannel.invokeMethod(
       "runJavaScriptTextInputPanelWithPrompt",
