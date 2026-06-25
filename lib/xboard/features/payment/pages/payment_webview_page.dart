@@ -6,7 +6,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 import 'package:webview_win_floating/webview_win_floating.dart' as winwv;
 import 'package:url_launcher/url_launcher.dart';
-import 'package:flutter_inappwebview/flutter_inappwebview.dart' as iaw;
 
 import 'package:fl_clash/l10n/l10n.dart';
 import 'package:fl_clash/xboard/adapter/state/order_state.dart';
@@ -26,8 +25,7 @@ const _desktopUserAgent = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) '
 ///
 /// All platforms use an embedded WebView:
 /// - Android / iOS / macOS → webview_flutter (system WebView / WKWebView)
-/// - Windows → webview_win_floating (native floating WebView2)
-/// - Linux → flutter_inappwebview (WebKitGTK)
+/// - Windows / Linux → webview_win_floating (native floating WebView)
 ///
 /// Auto-polling runs on every platform as a reliable fallback.
 ///
@@ -65,7 +63,7 @@ class PaymentWebViewPage extends ConsumerStatefulWidget {
 
 class _PaymentWebViewPageState extends ConsumerState<PaymentWebViewPage> {
   WebViewController? _webViewController;
-  winwv.WinWebViewController? _windowsWebViewController;
+  winwv.WinWebViewController? _desktopFloatingWebViewController;
   Timer? _pollTimer;
   bool _isPolling = false;
   bool _isChecking = false;
@@ -73,14 +71,15 @@ class _PaymentWebViewPageState extends ConsumerState<PaymentWebViewPage> {
   /// Platforms that use webview_flutter (system WebView)
   bool get _useSystemWebView =>
       Platform.isAndroid || Platform.isIOS || Platform.isMacOS;
+  bool get _useDesktopFloatingWebView => Platform.isWindows || Platform.isLinux;
 
   @override
   void initState() {
     super.initState();
     if (_useSystemWebView) {
       _initWebView();
-    } else if (Platform.isWindows) {
-      _initWindowsWebView2();
+    } else if (_useDesktopFloatingWebView) {
+      _initDesktopFloatingWebView();
     }
     _startPolling();
   }
@@ -89,15 +88,15 @@ class _PaymentWebViewPageState extends ConsumerState<PaymentWebViewPage> {
   void dispose() {
     _stopPolling();
     _webViewController = null;
-    final windowsController = _windowsWebViewController;
-    _windowsWebViewController = null;
-    if (windowsController != null) {
+    final desktopController = _desktopFloatingWebViewController;
+    _desktopFloatingWebViewController = null;
+    if (desktopController != null) {
       unawaited(Future<void>(() async {
         try {
-          await windowsController.setVisibility(false);
-          await windowsController.dispose();
+          await desktopController.setVisibility(false);
+          await desktopController.dispose();
         } catch (e) {
-          _logger.debug('Windows WebView2 dispose failed: $e');
+          _logger.debug('Desktop floating WebView dispose failed: $e');
         }
       }));
     }
@@ -116,17 +115,17 @@ class _PaymentWebViewPageState extends ConsumerState<PaymentWebViewPage> {
           onWebResourceError: (_) {},
         ),
       )
-      ..loadRequest(iaw.WebUri(widget.paymentUrl));
+      ..loadRequest(Uri.parse(widget.paymentUrl));
   }
 
-  Future<void> _initWindowsWebView2() async {
+  Future<void> _initDesktopFloatingWebView() async {
     final controller = winwv.WinWebViewController(
       params: const winwv.WindowsWebViewControllerCreationParams(
         profileName: 'fastcat-payment',
         suspendDuringDeactive: false,
       ),
     );
-    _windowsWebViewController = controller;
+    _desktopFloatingWebViewController = controller;
     await controller.setJavaScriptMode(JavaScriptMode.unrestricted);
     await controller.setUserAgent(_desktopUserAgent);
     await controller.setNavigationDelegate(
@@ -135,7 +134,7 @@ class _PaymentWebViewPageState extends ConsumerState<PaymentWebViewPage> {
         onUrlChange: _onUrlChange,
         onWebResourceError: (error) {
           _logger.warning(
-            'Windows WebView2 resource error: ${error.url} ${error.description}',
+            'Desktop floating WebView resource error: ${error.url} ${error.description}',
           );
         },
       ),
@@ -175,35 +174,6 @@ class _PaymentWebViewPageState extends ConsumerState<PaymentWebViewPage> {
     }
 
     return NavigationDecision.prevent;
-  }
-
-  /// Handle custom scheme redirects for desktop (InAppWebView).
-  Future<iaw.NavigationActionPolicy> _onDesktopNavigation(
-      iaw.InAppWebViewController controller,
-      iaw.NavigationAction navigationAction) async {
-    final url = navigationAction.request.url?.toString() ?? '';
-    final uri = Uri.tryParse(url);
-    if (uri == null) return iaw.NavigationActionPolicy.ALLOW;
-
-    final scheme = uri.scheme.toLowerCase();
-    if (scheme == 'http' ||
-        scheme == 'https' ||
-        scheme == 'about' ||
-        scheme == 'data' ||
-        scheme == 'javascript') {
-      return iaw.NavigationActionPolicy.ALLOW;
-    }
-
-    _logger.info('Intercepted custom scheme: $scheme, forwarding to system');
-    try {
-      if (await canLaunchUrl(uri)) {
-        await launchUrl(uri, mode: LaunchMode.externalApplication);
-      }
-    } catch (e) {
-      _logger.warning('Failed to launch external app for $scheme: $e');
-    }
-
-    return iaw.NavigationActionPolicy.CANCEL;
   }
 
   // ── Polling ─────────────────────────────────────────────────────────
@@ -304,21 +274,14 @@ class _PaymentWebViewPageState extends ConsumerState<PaymentWebViewPage> {
           ? WebViewWidget(controller: _webViewController!)
           : const Center(child: CircularProgressIndicator());
     }
-    if (Platform.isWindows) {
-      return _windowsWebViewController != null
-          ? winwv.WinWebViewWidget(controller: _windowsWebViewController!)
+    if (_useDesktopFloatingWebView) {
+      return _desktopFloatingWebViewController != null
+          ? winwv.WinWebViewWidget(
+              controller: _desktopFloatingWebViewController!,
+            )
           : const Center(child: CircularProgressIndicator());
     }
-
-    // Linux: embedded InAppWebView (WebKitGTK)
-    return iaw.InAppWebView(
-      initialUrlRequest: iaw.URLRequest(url: iaw.WebUri(widget.paymentUrl)),
-      initialSettings: iaw.InAppWebViewSettings(
-        userAgent: _desktopUserAgent,
-        javaScriptEnabled: true,
-      ),
-      shouldOverrideUrlLoading: _onDesktopNavigation,
-    );
+    return const Center(child: CircularProgressIndicator());
   }
 }
 
