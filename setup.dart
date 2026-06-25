@@ -403,6 +403,7 @@ class Build {
         name: "activate local distributor",
         Build.getExecutable("dart pub global activate -s path $distributorDir"),
       );
+      await _patchFlutterAppPackagerAppImageCopy();
       return;
     }
 
@@ -412,6 +413,157 @@ class Build {
       name: "activate flutter_distributor",
       Build.getExecutable("dart pub global activate flutter_distributor"),
     );
+    await _patchFlutterAppPackagerAppImageCopy();
+  }
+
+  static Future<void> _patchFlutterAppPackagerAppImageCopy() async {
+    if (!Platform.isLinux) return;
+
+    final pubCache = Platform.environment["PUB_CACHE"] ??
+        join(Platform.environment["HOME"] ?? "", ".pub-cache");
+    if (pubCache.trim().isEmpty) return;
+
+    final hostedDir = Directory(join(pubCache, "hosted"));
+    if (!hostedDir.existsSync()) {
+      print(
+          "[setup.dart] flutter_app_packager patch skipped: hosted pub-cache not found");
+      return;
+    }
+
+    final patchFiles = <File>[];
+    for (final hostEntity in hostedDir.listSync(followLinks: false)) {
+      if (hostEntity is! Directory) continue;
+      for (final packageEntity in hostEntity.listSync(followLinks: false)) {
+        if (packageEntity is! Directory) continue;
+        if (!basename(packageEntity.path).startsWith("flutter_app_packager-")) {
+          continue;
+        }
+        final patchFile = File(join(
+          packageEntity.path,
+          "lib",
+          "src",
+          "makers",
+          "appimage",
+          "app_package_maker_appimage.dart",
+        ));
+        if (patchFile.existsSync()) patchFiles.add(patchFile);
+      }
+    }
+
+    if (patchFiles.isEmpty) {
+      print(
+          "[setup.dart] flutter_app_packager patch skipped: AppImage maker not found");
+      return;
+    }
+
+    const patchedMarker =
+        "final referencedSharedLibsByName = <String, String>{};";
+    const oldBlock = r'''
+      await Future.wait(
+        appSOLibs.map((so) async {
+          final referencedSharedLibs =
+              await _getSharedDependencies(so.path).then(
+            (d) => d.difference(libFlutterGtkDeps)
+              ..removeWhere(
+                (lib) => lib.contains('libflutter_linux_gtk.so'),
+              ),
+          );
+
+          if (referencedSharedLibs.isEmpty) return;
+
+          await $(
+            'cp',
+            [
+              ...referencedSharedLibs,
+              path.join(
+                makeConfig.packagingDirectory.path,
+                '${makeConfig.appName}.AppDir/usr/lib',
+              ),
+            ],
+          ).then((value) {
+            if (value.exitCode != 0) {
+              throw MakeError(value.stderr as String);
+            }
+          });
+        }),
+      );
+''';
+    const newBlock = r'''
+      final referencedSharedLibsByName = <String, String>{};
+      for (final so in appSOLibs) {
+        final referencedSharedLibs =
+            await _getSharedDependencies(so.path).then(
+          (d) => d.difference(libFlutterGtkDeps)
+            ..removeWhere(
+              (lib) => lib.contains('libflutter_linux_gtk.so'),
+            ),
+        );
+
+        for (final lib in referencedSharedLibs) {
+          referencedSharedLibsByName.putIfAbsent(path.basename(lib), () => lib);
+        }
+      }
+
+      if (referencedSharedLibsByName.isNotEmpty) {
+        await $(
+          'cp',
+          [
+            '-f',
+            ...referencedSharedLibsByName.values,
+            path.join(
+              makeConfig.packagingDirectory.path,
+              '${makeConfig.appName}.AppDir/usr/lib',
+            ),
+          ],
+        ).then((value) {
+          if (value.exitCode != 0) {
+            throw MakeError(value.stderr as String);
+          }
+        });
+      }
+''';
+
+    var hasPatchedAppImageMaker = false;
+    for (final patchFile in patchFiles) {
+      final content = patchFile.readAsStringSync();
+      if (content.contains(patchedMarker)) {
+        hasPatchedAppImageMaker = true;
+        print(
+            "[setup.dart] flutter_app_packager AppImage copy patch already applied: ${patchFile.path}");
+        continue;
+      }
+      if (!content.contains(oldBlock)) {
+        print(
+            "[setup.dart] flutter_app_packager patch skipped: unsupported AppImage maker at ${patchFile.path}");
+        continue;
+      }
+      patchFile.writeAsStringSync(content.replaceFirst(oldBlock, newBlock));
+      hasPatchedAppImageMaker = true;
+      print(
+          "[setup.dart] flutter_app_packager AppImage copy patch applied: ${patchFile.path}");
+    }
+
+    if (hasPatchedAppImageMaker) {
+      _deleteFlutterDistributorSnapshots(pubCache);
+    }
+  }
+
+  static void _deleteFlutterDistributorSnapshots(String pubCache) {
+    final binDir = Directory(
+        join(pubCache, "global_packages", "flutter_distributor", "bin"));
+    if (!binDir.existsSync()) return;
+
+    for (final entity in binDir.listSync(followLinks: false)) {
+      if (entity is! File) continue;
+      if (!entity.path.endsWith(".snapshot") &&
+          !entity.path.endsWith(".dill") &&
+          !entity.path.endsWith(".jit")) {
+        continue;
+      }
+      entity.deleteSync();
+      print(
+          "[setup.dart] removed stale flutter_distributor snapshot: ${entity.path}");
+    }
   }
 
   static copyFile(String sourceFilePath, String destinationFilePath) {
