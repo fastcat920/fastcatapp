@@ -10,11 +10,13 @@ list(APPEND FLUTTER_PLUGIN_LIST
   file_selector_windows
   flutter_inappwebview_windows
   flutter_js
+  fullscreen_window
   hotkey_manager_windows
   proxy
   screen_retriever_windows
   tray_manager
   url_launcher_windows
+  webview_win_floating
   window_ext
   window_manager
 )

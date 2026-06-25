@@ -13,11 +13,13 @@
 #include <file_selector_windows/file_selector_windows.h>
 #include <flutter_inappwebview_windows/flutter_inappwebview_windows_plugin_c_api.h>
 #include <flutter_js/flutter_js_plugin.h>
+#include <fullscreen_window/fullscreen_window_plugin_c_api.h>
 #include <hotkey_manager_windows/hotkey_manager_windows_plugin_c_api.h>
 #include <proxy/proxy_plugin_c_api.h>
 #include <screen_retriever_windows/screen_retriever_windows_plugin_c_api.h>
 #include <tray_manager/tray_manager_plugin.h>
 #include <url_launcher_windows/url_launcher_windows.h>
+#include <webview_win_floating/webview_win_floating_plugin_c_api.h>
 #include <window_ext/window_ext_plugin_c_api.h>
 #include <window_manager/window_manager_plugin.h>
 
@@ -36,6 +38,8 @@ void RegisterPlugins(flutter::PluginRegistry* registry) {
       registry->GetRegistrarForPlugin("FlutterInappwebviewWindowsPluginCApi"));
   FlutterJsPluginRegisterWithRegistrar(
       registry->GetRegistrarForPlugin("FlutterJsPlugin"));
+  FullscreenWindowPluginCApiRegisterWithRegistrar(
+      registry->GetRegistrarForPlugin("FullscreenWindowPluginCApi"));
   HotkeyManagerWindowsPluginCApiRegisterWithRegistrar(
       registry->GetRegistrarForPlugin("HotkeyManagerWindowsPluginCApi"));
   ProxyPluginCApiRegisterWithRegistrar(
@@ -46,6 +50,8 @@ void RegisterPlugins(flutter::PluginRegistry* registry) {
       registry->GetRegistrarForPlugin("TrayManagerPlugin"));
   UrlLauncherWindowsRegisterWithRegistrar(
       registry->GetRegistrarForPlugin("UrlLauncherWindows"));
+  WebviewWinFloatingPluginCApiRegisterWithRegistrar(
+      registry->GetRegistrarForPlugin("WebviewWinFloatingPluginCApi"));
   WindowExtPluginCApiRegisterWithRegistrar(
       registry->GetRegistrarForPlugin("WindowExtPluginCApi"));
   WindowManagerPluginRegisterWithRegistrar(

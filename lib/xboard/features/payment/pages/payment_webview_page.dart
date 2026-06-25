@@ -1,12 +1,10 @@
 import 'dart:async';
-import 'dart:collection';
 import 'dart:io';
 
-import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:flutter/scheduler.dart';
 import 'package:webview_flutter/webview_flutter.dart';
+import 'package:webview_win_floating/webview_win_floating.dart' as winwv;
 import 'package:url_launcher/url_launcher.dart';
 import 'package:flutter_inappwebview/flutter_inappwebview.dart' as iaw;
 
@@ -24,137 +22,12 @@ const _desktopUserAgent = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) '
     'AppleWebKit/537.36 (KHTML, like Gecko) '
     'Chrome/125.0.0.0 Safari/537.36';
 
-const _windowsPrecisionTouchpadScrollScript = r'''
-(function () {
-  if (window.__fastcatPrecisionTouchpadScrollInstalled) return;
-  window.__fastcatPrecisionTouchpadScrollInstalled = true;
-
-  var pendingY = 0;
-  var pendingX = 0;
-  var frame = 0;
-  var lastTarget = null;
-  var lastWheelAt = 0;
-  var recentWheelCount = 0;
-  var gestureActiveUntil = 0;
-  var gain = 1.25;
-  var maxEventDelta = 620;
-  var maxFrameDelta = 180;
-  var gestureKeepAliveMs = 220;
-
-  function clamp(value, min, max) {
-    return Math.max(min, Math.min(max, value));
-  }
-
-  function isScrollable(element) {
-    if (!element || element === document || element === document.body) {
-      return false;
-    }
-    var style = window.getComputedStyle(element);
-    var overflowY = style.overflowY;
-    var overflowX = style.overflowX;
-    return ((overflowY === 'auto' || overflowY === 'scroll') &&
-            element.scrollHeight > element.clientHeight) ||
-           ((overflowX === 'auto' || overflowX === 'scroll') &&
-            element.scrollWidth > element.clientWidth);
-  }
-
-  function findScrollTarget(start) {
-    var element = start;
-    while (element && element !== document.body) {
-      if (isScrollable(element)) return element;
-      element = element.parentElement;
-    }
-    return document.scrollingElement || document.documentElement;
-  }
-
-  function canScroll(target, deltaY, deltaX) {
-    if (!target) return false;
-    var canY = deltaY > 0
-        ? target.scrollTop + target.clientHeight < target.scrollHeight
-        : target.scrollTop > 0;
-    var canX = deltaX > 0
-        ? target.scrollLeft + target.clientWidth < target.scrollWidth
-        : target.scrollLeft > 0;
-    return (Math.abs(deltaY) > Math.abs(deltaX) && canY) ||
-           (Math.abs(deltaX) >= Math.abs(deltaY) && canX);
-  }
-
-  function looksLikePrecisionTouchpad(event, now, absY, absX) {
-    if (absY <= 0 && absX <= 0) return false;
-    if (absY > maxEventDelta || absX > maxEventDelta) return false;
-
-    var dt = lastWheelAt > 0 ? now - lastWheelAt : 999;
-    if (dt > 140) recentWheelCount = 0;
-    recentWheelCount += 1;
-
-    var fractional = event.deltaY % 1 !== 0 || event.deltaX % 1 !== 0;
-    var smallContinuous = absY < 96 && absX < 96;
-    var rapidBurst = dt < 70 && recentWheelCount >= 2;
-    var activeGesture = now < gestureActiveUntil;
-    var diagonalMovement = absX > 0 && absX < 240 && dt < 120;
-
-    return fractional ||
-           smallContinuous ||
-           rapidBurst ||
-           activeGesture ||
-           diagonalMovement;
-  }
-
-  function flush() {
-    if (!lastTarget) {
-      pendingY = 0;
-      pendingX = 0;
-      frame = 0;
-      return;
-    }
-    var y = clamp(pendingY, -maxFrameDelta, maxFrameDelta);
-    var x = clamp(pendingX, -maxFrameDelta, maxFrameDelta);
-    pendingY -= y;
-    pendingX -= x;
-    if (Math.abs(pendingY) < 0.5) pendingY = 0;
-    if (Math.abs(pendingX) < 0.5) pendingX = 0;
-    lastTarget.scrollBy({ top: y, left: x, behavior: 'auto' });
-    if (pendingY !== 0 || pendingX !== 0) {
-      frame = window.requestAnimationFrame(flush);
-    } else {
-      frame = 0;
-    }
-  }
-
-  window.addEventListener('wheel', function (event) {
-    if (event.ctrlKey || event.defaultPrevented || event.deltaMode !== 0) {
-      return;
-    }
-
-    var now = window.performance && performance.now
-        ? performance.now()
-        : Date.now();
-    var absY = Math.abs(event.deltaY);
-    var absX = Math.abs(event.deltaX);
-    var shouldHandle = looksLikePrecisionTouchpad(event, now, absY, absX);
-    lastWheelAt = now;
-    if (!shouldHandle) return;
-
-    var target = findScrollTarget(event.target);
-    if (!canScroll(target, event.deltaY, event.deltaX)) return;
-
-    gestureActiveUntil = now + gestureKeepAliveMs;
-    lastTarget = target;
-    event.preventDefault();
-    pendingY += clamp(event.deltaY * gain, -maxEventDelta, maxEventDelta);
-    pendingX += clamp(event.deltaX * gain, -maxEventDelta, maxEventDelta);
-    if (!frame) {
-      frame = window.requestAnimationFrame(flush);
-    }
-  }, { passive: false, capture: true });
-})();
-''';
-
 /// In-app payment WebView page that replaces the external-browser flow.
 ///
 /// All platforms use an embedded WebView:
 /// - Android / iOS / macOS → webview_flutter (system WebView / WKWebView)
-/// - Windows / Linux → flutter_inappwebview (Edge WebView2 / WebKitGTK)
+/// - Windows → webview_win_floating (native floating WebView2)
+/// - Linux → flutter_inappwebview (WebKitGTK)
 ///
 /// Auto-polling runs on every platform as a reliable fallback.
 ///
@@ -192,16 +65,10 @@ class PaymentWebViewPage extends ConsumerStatefulWidget {
 
 class _PaymentWebViewPageState extends ConsumerState<PaymentWebViewPage> {
   WebViewController? _webViewController;
-  iaw.InAppWebViewController? _desktopWebViewController;
+  winwv.WinWebViewController? _windowsWebViewController;
   Timer? _pollTimer;
   bool _isPolling = false;
   bool _isChecking = false;
-  int _lastPointerScrollAtMicros = 0;
-  int _pointerScrollBurstCount = 0;
-  int _desktopTouchpadGestureUntilMicros = 0;
-  double _pendingDesktopScrollX = 0;
-  double _pendingDesktopScrollY = 0;
-  bool _desktopScrollFlushScheduled = false;
 
   /// Platforms that use webview_flutter (system WebView)
   bool get _useSystemWebView =>
@@ -212,6 +79,8 @@ class _PaymentWebViewPageState extends ConsumerState<PaymentWebViewPage> {
     super.initState();
     if (_useSystemWebView) {
       _initWebView();
+    } else if (Platform.isWindows) {
+      _initWindowsWebView2();
     }
     _startPolling();
   }
@@ -220,7 +89,18 @@ class _PaymentWebViewPageState extends ConsumerState<PaymentWebViewPage> {
   void dispose() {
     _stopPolling();
     _webViewController = null;
-    _desktopWebViewController = null;
+    final windowsController = _windowsWebViewController;
+    _windowsWebViewController = null;
+    if (windowsController != null) {
+      unawaited(Future<void>(() async {
+        try {
+          await windowsController.setVisibility(false);
+          await windowsController.dispose();
+        } catch (e) {
+          _logger.debug('Windows WebView2 dispose failed: $e');
+        }
+      }));
+    }
     super.dispose();
   }
 
@@ -237,6 +117,31 @@ class _PaymentWebViewPageState extends ConsumerState<PaymentWebViewPage> {
         ),
       )
       ..loadRequest(iaw.WebUri(widget.paymentUrl));
+  }
+
+  Future<void> _initWindowsWebView2() async {
+    final controller = winwv.WinWebViewController(
+      params: const winwv.WindowsWebViewControllerCreationParams(
+        profileName: 'fastcat-payment',
+        suspendDuringDeactive: false,
+      ),
+    );
+    _windowsWebViewController = controller;
+    await controller.setJavaScriptMode(JavaScriptMode.unrestricted);
+    await controller.setUserAgent(_desktopUserAgent);
+    await controller.setNavigationDelegate(
+      winwv.WinNavigationDelegate(
+        onNavigationRequest: _onNavigationRequest,
+        onUrlChange: _onUrlChange,
+        onWebResourceError: (error) {
+          _logger.warning(
+            'Windows WebView2 resource error: ${error.url} ${error.description}',
+          );
+        },
+      ),
+    );
+    await controller.loadRequest(Uri.parse(widget.paymentUrl));
+    if (mounted) setState(() {});
   }
 
   void _onUrlChange(UrlChange change) {
@@ -366,99 +271,6 @@ class _PaymentWebViewPageState extends ConsumerState<PaymentWebViewPage> {
     Navigator.of(context).pop(null);
   }
 
-  // ── Windows touchpad scroll fallback ───────────────────────────────
-
-  void _handleDesktopPointerSignal(PointerSignalEvent event) {
-    if (!Platform.isWindows || event is! PointerScrollEvent) return;
-    final controller = _desktopWebViewController;
-    if (controller == null) return;
-    final delta = event.scrollDelta;
-    if (!_shouldUseDesktopScrollFallback(delta)) return;
-
-    _pendingDesktopScrollX += _clampDouble(delta.dx * 1.15, -520, 520);
-    _pendingDesktopScrollY += _clampDouble(delta.dy * 1.15, -520, 520);
-    _scheduleDesktopScrollFlush();
-  }
-
-  bool _shouldUseDesktopScrollFallback(Offset delta) {
-    final absY = delta.dy.abs();
-    final absX = delta.dx.abs();
-    if (absY == 0 && absX == 0) return false;
-    if (absY > 1200 || absX > 1200) return false;
-
-    final now = DateTime.now().microsecondsSinceEpoch;
-    final dtMicros = _lastPointerScrollAtMicros == 0
-        ? 999000
-        : now - _lastPointerScrollAtMicros;
-    if (dtMicros > 140000) {
-      _pointerScrollBurstCount = 0;
-    }
-    _pointerScrollBurstCount += 1;
-    _lastPointerScrollAtMicros = now;
-
-    final fractional = delta.dy % 1 != 0 || delta.dx % 1 != 0;
-    final activeGesture = now < _desktopTouchpadGestureUntilMicros;
-    final rapidBurst = dtMicros < 70000 && _pointerScrollBurstCount >= 2;
-    final smallContinuous = absY < 96 && absX < 96 && rapidBurst;
-    final fastContinuous = absY >= 80 && absY < 760 && rapidBurst;
-    final diagonalMovement = absX > 0 && absX < 260 && dtMicros < 120000;
-
-    final shouldHandle = fractional ||
-        activeGesture ||
-        smallContinuous ||
-        fastContinuous ||
-        diagonalMovement;
-    if (shouldHandle) {
-      _desktopTouchpadGestureUntilMicros = now + 240000;
-    }
-    return shouldHandle;
-  }
-
-  void _scheduleDesktopScrollFlush() {
-    if (_desktopScrollFlushScheduled) return;
-    _desktopScrollFlushScheduled = true;
-    SchedulerBinding.instance.scheduleFrameCallback((_) {
-      _desktopScrollFlushScheduled = false;
-      unawaited(_flushDesktopScroll());
-    });
-  }
-
-  Future<void> _flushDesktopScroll() async {
-    final controller = _desktopWebViewController;
-    if (controller == null) {
-      _pendingDesktopScrollX = 0;
-      _pendingDesktopScrollY = 0;
-      return;
-    }
-
-    final x = _clampDouble(_pendingDesktopScrollX, -180, 180);
-    final y = _clampDouble(_pendingDesktopScrollY, -180, 180);
-    _pendingDesktopScrollX -= x;
-    _pendingDesktopScrollY -= y;
-    if (_pendingDesktopScrollX.abs() < 0.5) _pendingDesktopScrollX = 0;
-    if (_pendingDesktopScrollY.abs() < 0.5) _pendingDesktopScrollY = 0;
-
-    if (x.abs() >= 0.5 || y.abs() >= 0.5) {
-      try {
-        await controller.scrollBy(
-          x: x.round(),
-          y: y.round(),
-          animated: false,
-        );
-      } catch (e) {
-        _logger.debug('Windows touchpad scroll fallback failed: $e');
-      }
-    }
-
-    if (_pendingDesktopScrollX != 0 || _pendingDesktopScrollY != 0) {
-      _scheduleDesktopScrollFlush();
-    }
-  }
-
-  double _clampDouble(double value, double min, double max) {
-    return value.clamp(min, max).toDouble();
-  }
-
   // ── Build ───────────────────────────────────────────────────────────
 
   @override
@@ -492,34 +304,20 @@ class _PaymentWebViewPageState extends ConsumerState<PaymentWebViewPage> {
           ? WebViewWidget(controller: _webViewController!)
           : const Center(child: CircularProgressIndicator());
     }
+    if (Platform.isWindows) {
+      return _windowsWebViewController != null
+          ? winwv.WinWebViewWidget(controller: _windowsWebViewController!)
+          : const Center(child: CircularProgressIndicator());
+    }
 
-    // Windows / Linux: embedded InAppWebView (Edge WebView2 / WebKitGTK)
-    final webView = iaw.InAppWebView(
+    // Linux: embedded InAppWebView (WebKitGTK)
+    return iaw.InAppWebView(
       initialUrlRequest: iaw.URLRequest(url: iaw.WebUri(widget.paymentUrl)),
-      initialUserScripts: Platform.isWindows
-          ? UnmodifiableListView<iaw.UserScript>([
-              iaw.UserScript(
-                groupName: 'fastcat-windows-touchpad-scroll',
-                source: _windowsPrecisionTouchpadScrollScript,
-                injectionTime: iaw.UserScriptInjectionTime.AT_DOCUMENT_START,
-                forMainFrameOnly: false,
-              ),
-            ])
-          : null,
       initialSettings: iaw.InAppWebViewSettings(
         userAgent: _desktopUserAgent,
         javaScriptEnabled: true,
       ),
-      onWebViewCreated: (controller) {
-        _desktopWebViewController = controller;
-      },
       shouldOverrideUrlLoading: _onDesktopNavigation,
-    );
-    if (!Platform.isWindows) return webView;
-    return Listener(
-      behavior: HitTestBehavior.translucent,
-      onPointerSignal: _handleDesktopPointerSignal,
-      child: webView,
     );
   }
 }

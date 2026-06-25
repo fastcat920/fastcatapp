@@ -80,6 +80,7 @@ dependencies:
   desktop_webview_window:
     path: plugins/desktop_webview_window
   flutter_inappwebview: ^6.1.5
+  webview_win_floating: ^3.0.3
 dev_dependencies:
   flutter_test:
     sdk: flutter
