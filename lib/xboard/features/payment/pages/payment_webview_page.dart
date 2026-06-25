@@ -2,8 +2,10 @@ import 'dart:async';
 import 'dart:collection';
 import 'dart:io';
 
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter/scheduler.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:flutter_inappwebview/flutter_inappwebview.dart' as iaw;
@@ -190,9 +192,16 @@ class PaymentWebViewPage extends ConsumerStatefulWidget {
 
 class _PaymentWebViewPageState extends ConsumerState<PaymentWebViewPage> {
   WebViewController? _webViewController;
+  iaw.InAppWebViewController? _desktopWebViewController;
   Timer? _pollTimer;
   bool _isPolling = false;
   bool _isChecking = false;
+  int _lastPointerScrollAtMicros = 0;
+  int _pointerScrollBurstCount = 0;
+  int _desktopTouchpadGestureUntilMicros = 0;
+  double _pendingDesktopScrollX = 0;
+  double _pendingDesktopScrollY = 0;
+  bool _desktopScrollFlushScheduled = false;
 
   /// Platforms that use webview_flutter (system WebView)
   bool get _useSystemWebView =>
@@ -211,6 +220,7 @@ class _PaymentWebViewPageState extends ConsumerState<PaymentWebViewPage> {
   void dispose() {
     _stopPolling();
     _webViewController = null;
+    _desktopWebViewController = null;
     super.dispose();
   }
 
@@ -356,6 +366,99 @@ class _PaymentWebViewPageState extends ConsumerState<PaymentWebViewPage> {
     Navigator.of(context).pop(null);
   }
 
+  // ── Windows touchpad scroll fallback ───────────────────────────────
+
+  void _handleDesktopPointerSignal(PointerSignalEvent event) {
+    if (!Platform.isWindows || event is! PointerScrollEvent) return;
+    final controller = _desktopWebViewController;
+    if (controller == null) return;
+    final delta = event.scrollDelta;
+    if (!_shouldUseDesktopScrollFallback(delta)) return;
+
+    _pendingDesktopScrollX += _clampDouble(delta.dx * 1.15, -520, 520);
+    _pendingDesktopScrollY += _clampDouble(delta.dy * 1.15, -520, 520);
+    _scheduleDesktopScrollFlush();
+  }
+
+  bool _shouldUseDesktopScrollFallback(Offset delta) {
+    final absY = delta.dy.abs();
+    final absX = delta.dx.abs();
+    if (absY == 0 && absX == 0) return false;
+    if (absY > 1200 || absX > 1200) return false;
+
+    final now = DateTime.now().microsecondsSinceEpoch;
+    final dtMicros = _lastPointerScrollAtMicros == 0
+        ? 999000
+        : now - _lastPointerScrollAtMicros;
+    if (dtMicros > 140000) {
+      _pointerScrollBurstCount = 0;
+    }
+    _pointerScrollBurstCount += 1;
+    _lastPointerScrollAtMicros = now;
+
+    final fractional = delta.dy % 1 != 0 || delta.dx % 1 != 0;
+    final activeGesture = now < _desktopTouchpadGestureUntilMicros;
+    final rapidBurst = dtMicros < 70000 && _pointerScrollBurstCount >= 2;
+    final smallContinuous = absY < 96 && absX < 96 && rapidBurst;
+    final fastContinuous = absY >= 80 && absY < 760 && rapidBurst;
+    final diagonalMovement = absX > 0 && absX < 260 && dtMicros < 120000;
+
+    final shouldHandle = fractional ||
+        activeGesture ||
+        smallContinuous ||
+        fastContinuous ||
+        diagonalMovement;
+    if (shouldHandle) {
+      _desktopTouchpadGestureUntilMicros = now + 240000;
+    }
+    return shouldHandle;
+  }
+
+  void _scheduleDesktopScrollFlush() {
+    if (_desktopScrollFlushScheduled) return;
+    _desktopScrollFlushScheduled = true;
+    SchedulerBinding.instance.scheduleFrameCallback((_) {
+      _desktopScrollFlushScheduled = false;
+      unawaited(_flushDesktopScroll());
+    });
+  }
+
+  Future<void> _flushDesktopScroll() async {
+    final controller = _desktopWebViewController;
+    if (controller == null) {
+      _pendingDesktopScrollX = 0;
+      _pendingDesktopScrollY = 0;
+      return;
+    }
+
+    final x = _clampDouble(_pendingDesktopScrollX, -180, 180);
+    final y = _clampDouble(_pendingDesktopScrollY, -180, 180);
+    _pendingDesktopScrollX -= x;
+    _pendingDesktopScrollY -= y;
+    if (_pendingDesktopScrollX.abs() < 0.5) _pendingDesktopScrollX = 0;
+    if (_pendingDesktopScrollY.abs() < 0.5) _pendingDesktopScrollY = 0;
+
+    if (x.abs() >= 0.5 || y.abs() >= 0.5) {
+      try {
+        await controller.scrollBy(
+          x: x.round(),
+          y: y.round(),
+          animated: false,
+        );
+      } catch (e) {
+        _logger.debug('Windows touchpad scroll fallback failed: $e');
+      }
+    }
+
+    if (_pendingDesktopScrollX != 0 || _pendingDesktopScrollY != 0) {
+      _scheduleDesktopScrollFlush();
+    }
+  }
+
+  double _clampDouble(double value, double min, double max) {
+    return value.clamp(min, max).toDouble();
+  }
+
   // ── Build ───────────────────────────────────────────────────────────
 
   @override
@@ -377,9 +480,7 @@ class _PaymentWebViewPageState extends ConsumerState<PaymentWebViewPage> {
           _StatusBanner(
             isPolling: _isPolling,
           ),
-          Expanded(
-            child: _buildWebView(),
-          ),
+          Expanded(child: _buildWebView()),
         ],
       ),
     );
@@ -393,7 +494,7 @@ class _PaymentWebViewPageState extends ConsumerState<PaymentWebViewPage> {
     }
 
     // Windows / Linux: embedded InAppWebView (Edge WebView2 / WebKitGTK)
-    return iaw.InAppWebView(
+    final webView = iaw.InAppWebView(
       initialUrlRequest: iaw.URLRequest(url: iaw.WebUri(widget.paymentUrl)),
       initialUserScripts: Platform.isWindows
           ? UnmodifiableListView<iaw.UserScript>([
@@ -409,7 +510,16 @@ class _PaymentWebViewPageState extends ConsumerState<PaymentWebViewPage> {
         userAgent: _desktopUserAgent,
         javaScriptEnabled: true,
       ),
+      onWebViewCreated: (controller) {
+        _desktopWebViewController = controller;
+      },
       shouldOverrideUrlLoading: _onDesktopNavigation,
+    );
+    if (!Platform.isWindows) return webView;
+    return Listener(
+      behavior: HitTestBehavior.translucent,
+      onPointerSignal: _handleDesktopPointerSignal,
+      child: webView,
     );
   }
 }
