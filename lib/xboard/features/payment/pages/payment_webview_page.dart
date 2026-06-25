@@ -30,7 +30,18 @@ const _windowsPrecisionTouchpadScrollScript = r'''
   var pendingY = 0;
   var pendingX = 0;
   var frame = 0;
-  var gain = 1.35;
+  var lastTarget = null;
+  var lastWheelAt = 0;
+  var recentWheelCount = 0;
+  var gestureActiveUntil = 0;
+  var gain = 1.25;
+  var maxEventDelta = 620;
+  var maxFrameDelta = 180;
+  var gestureKeepAliveMs = 220;
+
+  function clamp(value, min, max) {
+    return Math.max(min, Math.min(max, value));
+  }
 
   function isScrollable(element) {
     if (!element || element === document || element === document.body) {
@@ -66,13 +77,46 @@ const _windowsPrecisionTouchpadScrollScript = r'''
            (Math.abs(deltaX) >= Math.abs(deltaY) && canX);
   }
 
-  function flush(target) {
-    frame = 0;
-    var y = pendingY;
-    var x = pendingX;
-    pendingY = 0;
-    pendingX = 0;
-    target.scrollBy({ top: y, left: x, behavior: 'auto' });
+  function looksLikePrecisionTouchpad(event, now, absY, absX) {
+    if (absY <= 0 && absX <= 0) return false;
+    if (absY > maxEventDelta || absX > maxEventDelta) return false;
+
+    var dt = lastWheelAt > 0 ? now - lastWheelAt : 999;
+    if (dt > 140) recentWheelCount = 0;
+    recentWheelCount += 1;
+
+    var fractional = event.deltaY % 1 !== 0 || event.deltaX % 1 !== 0;
+    var smallContinuous = absY < 96 && absX < 96;
+    var rapidBurst = dt < 70 && recentWheelCount >= 2;
+    var activeGesture = now < gestureActiveUntil;
+    var diagonalMovement = absX > 0 && absX < 240 && dt < 120;
+
+    return fractional ||
+           smallContinuous ||
+           rapidBurst ||
+           activeGesture ||
+           diagonalMovement;
+  }
+
+  function flush() {
+    if (!lastTarget) {
+      pendingY = 0;
+      pendingX = 0;
+      frame = 0;
+      return;
+    }
+    var y = clamp(pendingY, -maxFrameDelta, maxFrameDelta);
+    var x = clamp(pendingX, -maxFrameDelta, maxFrameDelta);
+    pendingY -= y;
+    pendingX -= x;
+    if (Math.abs(pendingY) < 0.5) pendingY = 0;
+    if (Math.abs(pendingX) < 0.5) pendingX = 0;
+    lastTarget.scrollBy({ top: y, left: x, behavior: 'auto' });
+    if (pendingY !== 0 || pendingX !== 0) {
+      frame = window.requestAnimationFrame(flush);
+    } else {
+      frame = 0;
+    }
   }
 
   window.addEventListener('wheel', function (event) {
@@ -80,21 +124,25 @@ const _windowsPrecisionTouchpadScrollScript = r'''
       return;
     }
 
+    var now = window.performance && performance.now
+        ? performance.now()
+        : Date.now();
     var absY = Math.abs(event.deltaY);
     var absX = Math.abs(event.deltaX);
-    var looksLikeTouchpad = absY > 0 && absY < 80 && absX < 80;
-    if (!looksLikeTouchpad) return;
+    var shouldHandle = looksLikePrecisionTouchpad(event, now, absY, absX);
+    lastWheelAt = now;
+    if (!shouldHandle) return;
 
     var target = findScrollTarget(event.target);
     if (!canScroll(target, event.deltaY, event.deltaX)) return;
 
+    gestureActiveUntil = now + gestureKeepAliveMs;
+    lastTarget = target;
     event.preventDefault();
-    pendingY += event.deltaY * gain;
-    pendingX += event.deltaX * gain;
+    pendingY += clamp(event.deltaY * gain, -maxEventDelta, maxEventDelta);
+    pendingX += clamp(event.deltaX * gain, -maxEventDelta, maxEventDelta);
     if (!frame) {
-      frame = window.requestAnimationFrame(function () {
-        flush(target);
-      });
+      frame = window.requestAnimationFrame(flush);
     }
   }, { passive: false, capture: true });
 })();
