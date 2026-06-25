@@ -70,9 +70,11 @@ class _OrderDetailPageState extends ConsumerState<OrderDetailPage>
     WidgetsBinding.instance.addObserver(this);
     Future.microtask(() async {
       ref.read(xboardPaymentProvider);
-      // 支付方式与套餐列表互不依赖，并行加载
+      // 先用缓存快速首屏，随后后台强刷订单级支付方式，避免后台开关变化滞后。
+      unawaited(ref.read(xboardPaymentProvider.notifier).loadPaymentMethods());
+      unawaited(_refreshPaymentMethodsInBackground());
+      // 套餐列表与订单额外字段互不依赖，并行加载
       await Future.wait([
-        ref.read(xboardPaymentProvider.notifier).loadPaymentMethods(),
         ref.read(xboardSubscriptionProvider.notifier).refreshPlans(),
         _fetchOrderExtras(),
       ]);
@@ -170,7 +172,8 @@ class _OrderDetailPageState extends ConsumerState<OrderDetailPage>
               )
             : const Center(child: CircularProgressIndicator()),
         error: (error, _) => _OrderErrorView(
-          message: BackendMessageMapper.mapError(error, context: BackendMessageContext.order),
+          message: BackendMessageMapper.mapError(error,
+              context: BackendMessageContext.order),
           onRetry: _retryOrder,
         ),
         data: (order) {
@@ -247,6 +250,21 @@ class _OrderDetailPageState extends ConsumerState<OrderDetailPage>
       ref.read(getOrderProvider(widget.tradeNo).future),
       _fetchOrderExtras(),
     ]);
+  }
+
+  Future<void> _refreshPaymentMethodsInBackground() async {
+    try {
+      final results = await Future.wait([
+        ref
+            .read(xboardPaymentProvider.notifier)
+            .loadPaymentMethods(forceRefresh: true),
+        _loadFreshOrderPaymentOptions(),
+      ]);
+      final freshMethods = results[1] as List<_PaymentOption>;
+      _clearUnavailableSelection(freshMethods);
+    } catch (e) {
+      _logger.warning('后台刷新支付方式失败: $e');
+    }
   }
 
   void _retryOrder() {
@@ -363,13 +381,30 @@ class _OrderDetailPageState extends ConsumerState<OrderDetailPage>
 
   Future<void> _submitPayment() async {
     final l10n = AppLocalizations.of(context);
-    final methodId = _selectedMethodId ?? await _getDefaultPaymentMethodId();
-    if (methodId == null) {
-      XBoardNotification.showError(l10n.xboardSelectPaymentMethod);
-      return;
-    }
     setState(() => _isSubmitting = true);
     try {
+      final freshMethods = await _loadFreshOrderPaymentOptions();
+      if (freshMethods.isEmpty) {
+        _clearUnavailableSelection(freshMethods);
+        XBoardNotification.showError(l10n.xboardNoPaymentMethods);
+        return;
+      }
+
+      final selectedMethodId = _selectedMethodId;
+      String methodId;
+      if (selectedMethodId == null) {
+        methodId = freshMethods.first.id;
+        if (mounted) {
+          setState(() => _selectedMethodId = methodId);
+        }
+      } else if (freshMethods.any((method) => method.id == selectedMethodId)) {
+        methodId = selectedMethodId;
+      } else {
+        _clearUnavailableSelection(freshMethods);
+        XBoardNotification.showError(l10n.xboardSelectPaymentMethod);
+        return;
+      }
+
       final paymentResult =
           await ref.read(xboardPaymentProvider.notifier).submitPayment(
                 tradeNo: widget.tradeNo,
@@ -383,7 +418,8 @@ class _OrderDetailPageState extends ConsumerState<OrderDetailPage>
       final data = paymentResult['data'];
       if (type == -2) {
         if (mounted) {
-          XBoardNotification.showError(data?.toString() ?? l10n.xboardPaymentFailed);
+          XBoardNotification.showError(
+              data?.toString() ?? l10n.xboardPaymentFailed);
         }
         return;
       }
@@ -408,8 +444,8 @@ class _OrderDetailPageState extends ConsumerState<OrderDetailPage>
       _logger.error('提交支付失败: $e');
       _logger.error('提交支付失败堆栈: $stackTrace');
       if (mounted) {
-        XBoardNotification.showError(
-            BackendMessageMapper.mapError(e, context: BackendMessageContext.order));
+        XBoardNotification.showError(BackendMessageMapper.mapError(e,
+            context: BackendMessageContext.order));
       }
     } finally {
       if (mounted) {
@@ -418,32 +454,25 @@ class _OrderDetailPageState extends ConsumerState<OrderDetailPage>
     }
   }
 
-  Future<String?> _getDefaultPaymentMethodId() async {
+  Future<List<_PaymentOption>> _loadFreshOrderPaymentOptions() async {
+    clearGetOrderPaymentMethodsCache(widget.tradeNo);
+    ref.invalidate(getOrderPaymentMethodsProvider(widget.tradeNo));
     final orderMethods =
         await ref.read(getOrderPaymentMethodsProvider(widget.tradeNo).future);
-    var availableMethods = orderMethods
+    return orderMethods
         .where((m) => m.isAvailable)
         .map(_PaymentOption.fromSdk)
         .toList();
-    if (availableMethods.isEmpty) {
-      availableMethods = ref
-          .read(xboardAvailablePaymentMethodsProvider)
-          .map(_PaymentOption.fromDomain)
-          .toList();
+  }
+
+  void _clearUnavailableSelection(List<_PaymentOption> freshMethods) {
+    final selectedMethodId = _selectedMethodId;
+    if (!mounted || selectedMethodId == null) return;
+    final stillAvailable =
+        freshMethods.any((method) => method.id == selectedMethodId);
+    if (!stillAvailable) {
+      setState(() => _selectedMethodId = null);
     }
-    if (availableMethods.isEmpty) {
-      await ref.read(xboardPaymentProvider.notifier).loadPaymentMethods();
-      availableMethods = ref
-          .read(xboardAvailablePaymentMethodsProvider)
-          .map(_PaymentOption.fromDomain)
-          .toList();
-    }
-    if (availableMethods.isEmpty) return null;
-    final methodId = availableMethods.first.id;
-    if (mounted) {
-      setState(() => _selectedMethodId = methodId);
-    }
-    return methodId;
   }
 
   Future<void> _cancelOrder() async {
@@ -734,20 +763,12 @@ class _PaymentMethodsSection extends StatelessWidget {
         );
       },
       error: (error, _) {
-        final fallbackMethods =
-            globalPaymentMethods.map(_PaymentOption.fromDomain).toList();
-        if (fallbackMethods.isNotEmpty) {
-          return _PaymentMethodsCard(
-            methods: fallbackMethods,
-            selectedMethodId: selectedMethodId,
-            onSelected: onSelected,
-          );
-        }
         return _InfoCard(
           title: AppLocalizations.of(context).xboardPaymentMethods,
           icon: Icons.payments_outlined,
           child: _InlineError(
-            message: BackendMessageMapper.mapError(error, context: BackendMessageContext.order),
+            message: BackendMessageMapper.mapError(error,
+                context: BackendMessageContext.order),
             onRetry: () {},
           ),
         );
@@ -757,10 +778,8 @@ class _PaymentMethodsSection extends StatelessWidget {
             .where((m) => m.isAvailable)
             .map(_PaymentOption.fromSdk)
             .toList();
-        final fallbackMethods =
-            globalPaymentMethods.map(_PaymentOption.fromDomain).toList();
         return _PaymentMethodsCard(
-          methods: paymentOptions.isNotEmpty ? paymentOptions : fallbackMethods,
+          methods: paymentOptions,
           selectedMethodId: selectedMethodId,
           onSelected: onSelected,
         );

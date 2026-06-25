@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -32,8 +33,13 @@ class _RechargePageState extends ConsumerState<RechargePage> {
   @override
   void initState() {
     super.initState();
-    // 预加载支付方式
+    // 先初始化支付 provider，再后台强刷可用支付方式，避免后台开关变化滞后。
     ref.read(xboardPaymentProvider);
+    unawaited(
+      ref
+          .read(xboardPaymentProvider.notifier)
+          .loadPaymentMethods(forceRefresh: true),
+    );
   }
 
   @override
@@ -101,7 +107,7 @@ class _RechargePageState extends ConsumerState<RechargePage> {
       final paymentMethods = ref.read(xboardAvailablePaymentMethodsProvider);
       if (paymentMethods.isEmpty) {
         // 尝试重新加载
-        await paymentNotifier.loadPaymentMethods();
+        await paymentNotifier.loadPaymentMethods(forceRefresh: true);
         final retryMethods = ref.read(xboardAvailablePaymentMethodsProvider);
         if (retryMethods.isEmpty) {
           PaymentWaitingManager.hide();
@@ -143,10 +149,22 @@ class _RechargePageState extends ConsumerState<RechargePage> {
       }
 
       // 4. 提交支付
+      final selectedPaymentMethod = selectedMethod;
       PaymentWaitingManager.updateStep(PaymentStep.loadingPayment);
+      await paymentNotifier.loadPaymentMethods(forceRefresh: true);
+      final freshMethods = ref.read(xboardAvailablePaymentMethodsProvider);
+      final isMethodStillAvailable = freshMethods.any((method) =>
+          method.id.toString() == selectedPaymentMethod.id.toString());
+      if (!isMethodStillAvailable) {
+        PaymentWaitingManager.hide();
+        XBoardNotification.showError(freshMethods.isEmpty
+            ? l10n.xboardNoPaymentMethods
+            : l10n.xboardSelectPaymentMethod);
+        return;
+      }
       final result = await paymentNotifier.submitPayment(
         tradeNo: tradeNo,
-        method: selectedMethod.id.toString(),
+        method: selectedPaymentMethod.id.toString(),
       );
       if (result == null) {
         PaymentWaitingManager.hide();
@@ -168,6 +186,7 @@ class _RechargePageState extends ConsumerState<RechargePage> {
           paymentData.isNotEmpty) {
         // 应用内 WebView 支付
         PaymentWaitingManager.hide();
+        if (!mounted) return;
         final success = await PaymentWebViewPage.open(
           context,
           paymentUrl: paymentData,
@@ -199,7 +218,9 @@ class _RechargePageState extends ConsumerState<RechargePage> {
 
   Future<void> _refreshPage() async {
     _refreshUserInfo();
-    await ref.read(xboardPaymentProvider.notifier).loadPaymentMethods();
+    await ref
+        .read(xboardPaymentProvider.notifier)
+        .loadPaymentMethods(forceRefresh: true);
     await Future<void>.delayed(const Duration(milliseconds: 250));
   }
 
@@ -291,7 +312,7 @@ class _RechargePageState extends ConsumerState<RechargePage> {
         const SizedBox(height: 12),
         LayoutBuilder(
           builder: (context, constraints) {
-            final spacing = 12.0;
+            const spacing = 12.0;
             final itemWidth = (constraints.maxWidth - spacing) / 2;
             return Wrap(
               spacing: spacing,
@@ -436,7 +457,10 @@ class _RechargePageState extends ConsumerState<RechargePage> {
         title: Text(l10n.xboardRechargeBalance),
         leading: const BackButton(),
         actions: [
-          if (Platform.isLinux || Platform.isWindows || Platform.isMacOS || system.isTV)
+          if (Platform.isLinux ||
+              Platform.isWindows ||
+              Platform.isMacOS ||
+              system.isTV)
             Padding(
               padding: const EdgeInsets.only(right: 12),
               child: IconButton(

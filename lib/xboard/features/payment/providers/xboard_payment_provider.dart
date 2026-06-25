@@ -500,8 +500,7 @@ final xboardPaymentProvider = NotifierProvider<XBoardPaymentNotifier, void>(
 final xboardAvailablePaymentMethodsProvider =
     Provider<List<DomainPaymentMethod>>((ref) {
   final paymentMethods = ref.watch(paymentMethodsProvider);
-  // 返回所有支付方式
-  return paymentMethods;
+  return paymentMethods.where((method) => method.isAvailable).toList();
 });
 final xboardPaymentMethodProvider =
     Provider.family<DomainPaymentMethod?, String>((ref, methodId) {

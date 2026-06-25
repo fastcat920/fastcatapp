@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:collection';
 import 'dart:io';
 
 import 'package:flutter/material.dart';
@@ -17,10 +18,87 @@ const _logger = FileLogger('payment_webview_page.dart');
 /// Desktop Chrome UA used on mobile so payment gateways serve the QR-code
 /// page instead of the H5 cashier that tries (and fails) to invoke Alipay /
 /// WeChat via JSBridge.
-const _desktopUserAgent =
-    'Mozilla/5.0 (Windows NT 10.0; Win64; x64) '
+const _desktopUserAgent = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) '
     'AppleWebKit/537.36 (KHTML, like Gecko) '
     'Chrome/125.0.0.0 Safari/537.36';
+
+const _windowsPrecisionTouchpadScrollScript = r'''
+(function () {
+  if (window.__fastcatPrecisionTouchpadScrollInstalled) return;
+  window.__fastcatPrecisionTouchpadScrollInstalled = true;
+
+  var pendingY = 0;
+  var pendingX = 0;
+  var frame = 0;
+  var gain = 1.35;
+
+  function isScrollable(element) {
+    if (!element || element === document || element === document.body) {
+      return false;
+    }
+    var style = window.getComputedStyle(element);
+    var overflowY = style.overflowY;
+    var overflowX = style.overflowX;
+    return ((overflowY === 'auto' || overflowY === 'scroll') &&
+            element.scrollHeight > element.clientHeight) ||
+           ((overflowX === 'auto' || overflowX === 'scroll') &&
+            element.scrollWidth > element.clientWidth);
+  }
+
+  function findScrollTarget(start) {
+    var element = start;
+    while (element && element !== document.body) {
+      if (isScrollable(element)) return element;
+      element = element.parentElement;
+    }
+    return document.scrollingElement || document.documentElement;
+  }
+
+  function canScroll(target, deltaY, deltaX) {
+    if (!target) return false;
+    var canY = deltaY > 0
+        ? target.scrollTop + target.clientHeight < target.scrollHeight
+        : target.scrollTop > 0;
+    var canX = deltaX > 0
+        ? target.scrollLeft + target.clientWidth < target.scrollWidth
+        : target.scrollLeft > 0;
+    return (Math.abs(deltaY) > Math.abs(deltaX) && canY) ||
+           (Math.abs(deltaX) >= Math.abs(deltaY) && canX);
+  }
+
+  function flush(target) {
+    frame = 0;
+    var y = pendingY;
+    var x = pendingX;
+    pendingY = 0;
+    pendingX = 0;
+    target.scrollBy({ top: y, left: x, behavior: 'auto' });
+  }
+
+  window.addEventListener('wheel', function (event) {
+    if (event.ctrlKey || event.defaultPrevented || event.deltaMode !== 0) {
+      return;
+    }
+
+    var absY = Math.abs(event.deltaY);
+    var absX = Math.abs(event.deltaX);
+    var looksLikeTouchpad = absY > 0 && absY < 80 && absX < 80;
+    if (!looksLikeTouchpad) return;
+
+    var target = findScrollTarget(event.target);
+    if (!canScroll(target, event.deltaY, event.deltaX)) return;
+
+    event.preventDefault();
+    pendingY += event.deltaY * gain;
+    pendingX += event.deltaX * gain;
+    if (!frame) {
+      frame = window.requestAnimationFrame(function () {
+        flush(target);
+      });
+    }
+  }, { passive: false, capture: true });
+})();
+''';
 
 /// In-app payment WebView page that replaces the external-browser flow.
 ///
@@ -59,8 +137,7 @@ class PaymentWebViewPage extends ConsumerStatefulWidget {
   }
 
   @override
-  ConsumerState<PaymentWebViewPage> createState() =>
-      _PaymentWebViewPageState();
+  ConsumerState<PaymentWebViewPage> createState() => _PaymentWebViewPageState();
 }
 
 class _PaymentWebViewPageState extends ConsumerState<PaymentWebViewPage> {
@@ -116,8 +193,11 @@ class _PaymentWebViewPageState extends ConsumerState<PaymentWebViewPage> {
 
     final scheme = uri.scheme.toLowerCase();
     // Allow standard web schemes to navigate normally
-    if (scheme == 'http' || scheme == 'https' ||
-        scheme == 'about' || scheme == 'data' || scheme == 'javascript') {
+    if (scheme == 'http' ||
+        scheme == 'https' ||
+        scheme == 'about' ||
+        scheme == 'data' ||
+        scheme == 'javascript') {
       return NavigationDecision.navigate;
     }
 
@@ -143,8 +223,11 @@ class _PaymentWebViewPageState extends ConsumerState<PaymentWebViewPage> {
     if (uri == null) return iaw.NavigationActionPolicy.ALLOW;
 
     final scheme = uri.scheme.toLowerCase();
-    if (scheme == 'http' || scheme == 'https' ||
-        scheme == 'about' || scheme == 'data' || scheme == 'javascript') {
+    if (scheme == 'http' ||
+        scheme == 'https' ||
+        scheme == 'about' ||
+        scheme == 'data' ||
+        scheme == 'javascript') {
       return iaw.NavigationActionPolicy.ALLOW;
     }
 
@@ -264,6 +347,16 @@ class _PaymentWebViewPageState extends ConsumerState<PaymentWebViewPage> {
     // Windows / Linux: embedded InAppWebView (Edge WebView2 / WebKitGTK)
     return iaw.InAppWebView(
       initialUrlRequest: iaw.URLRequest(url: iaw.WebUri(widget.paymentUrl)),
+      initialUserScripts: Platform.isWindows
+          ? UnmodifiableListView<iaw.UserScript>([
+              iaw.UserScript(
+                groupName: 'fastcat-windows-touchpad-scroll',
+                source: _windowsPrecisionTouchpadScrollScript,
+                injectionTime: iaw.UserScriptInjectionTime.AT_DOCUMENT_START,
+                forMainFrameOnly: false,
+              ),
+            ])
+          : null,
       initialSettings: iaw.InAppWebViewSettings(
         userAgent: _desktopUserAgent,
         javaScriptEnabled: true,
