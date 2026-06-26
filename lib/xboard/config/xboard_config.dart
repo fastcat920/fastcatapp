@@ -1,5 +1,5 @@
 /// XBoard 配置模块 - 主入口
-/// 
+///
 /// 这是重构后的XBoard配置模块，提供清晰的分层架构和统一的API接口
 library;
 
@@ -10,11 +10,8 @@ library;
 export 'interface/config_provider_interface.dart';
 
 // 核心配置设置（外部可能需要自定义配置）
-export 'core/config_settings.dart' show 
-  ConfigSettings,
-  RemoteConfigSettings,
-  LogSettings,
-  RemoteSourceConfig;
+export 'core/config_settings.dart'
+    show ConfigSettings, RemoteConfigSettings, LogSettings, RemoteSourceConfig;
 
 // 数据模型（外部需要访问配置数据）
 export 'models/config_entry.dart';
@@ -52,13 +49,13 @@ import '../infrastructure/infrastructure.dart';
 import 'interface/config_provider_interface.dart';
 
 /// 内部配置提供者实现
-/// 
+///
 /// 实现ConfigProviderInterface接口，供SDK层使用
 class _XBoardConfigProvider implements ConfigProviderInterface {
   final XBoardConfigAccessor accessor;
-  
+
   _XBoardConfigProvider(this.accessor);
-  
+
   @override
   String getPanelType() => accessor.getPanelType();
 
@@ -67,24 +64,25 @@ class _XBoardConfigProvider implements ConfigProviderInterface {
 
   @override
   String? getPanelUrl() => accessor.getFirstPanelUrl();
-  
+
   @override
   String? getProxyUrl() => accessor.getFirstProxyUrl();
-  
+
   @override
   String? getWebSocketUrl() => accessor.getFirstWebSocketUrl();
-  
+
   @override
   SubscriptionInfo? getSubscriptionInfo() => accessor.getSubscriptionInfo();
-  
+
   @override
   String? getSubscriptionUrl() => getSubscriptionInfo()?.firstUrl;
-  
+
   @override
   String? buildSubscriptionUrl(String token, {bool preferEncrypt = true}) {
-    return getSubscriptionInfo()?.buildSubscriptionUrl(token, forceEncrypt: preferEncrypt);
+    return getSubscriptionInfo()
+        ?.buildSubscriptionUrl(token, forceEncrypt: preferEncrypt);
   }
-  
+
   @override
   Future<String?> getFastestPanelUrl() async {
     final panelUrls = getAllPanelUrls();
@@ -109,29 +107,32 @@ class _XBoardConfigProvider implements ConfigProviderInterface {
 
     return candidates.first.domain;
   }
-  
+
   @override
-  List<String> getAllPanelUrls() => accessor.getPanelConfigList().map((e) => e.url).toList();
+  List<String> getAllPanelUrls() =>
+      accessor.getPanelConfigList().map((e) => e.url).toList();
 
   @override
   List<String> getGatewayUrls() => accessor.getGatewayUrls();
-  
+
   @override
-  List<String> getAllProxyUrls() => accessor.getProxyConfigList().map((e) => e.url).toList();
-  
+  List<String> getAllProxyUrls() =>
+      accessor.getProxyConfigList().map((e) => e.url).toList();
+
   @override
-  List<String> getAllWebSocketUrls() => accessor.getWebSocketConfigList().map((e) => e.url).toList();
-  
+  List<String> getAllWebSocketUrls() =>
+      accessor.getWebSocketConfigList().map((e) => e.url).toList();
+
   @override
   Future<void> refresh() async {
     await accessor.refreshConfiguration();
   }
-  
+
   @override
   Future<void> refreshFromSource(String source) async {
     await accessor.refreshFromSource(source);
   }
-  
+
   @override
   Stream<void> get configChangeStream => accessor.configStream.map((_) {});
 }
@@ -176,29 +177,30 @@ class XBoardConfig {
 
     _instance = await ModuleInitializer.createConfigAccessor(
       settings: config,
-      autoWarmUp: false,  // 不在 main() 里做网络请求，避免阻塞 runApp()
+      autoWarmUp: false, // 不在 main() 里做网络请求，避免阻塞 runApp()
     );
-    
+
     // 创建配置提供者实例
     _provider = _XBoardConfigProvider(_instance!);
   }
-  
+
   /// 获取配置提供者接口（供SDK层使用）
-  /// 
+  ///
   /// 返回实现了ConfigProviderInterface的实例
   static ConfigProviderInterface get provider {
     if (_provider == null) {
-      throw StateError('XBoardConfig not initialized. Call initialize() first.');
+      throw StateError(
+          'XBoardConfig not initialized. Call initialize() first.');
     }
     return _provider!;
   }
-  
+
   /// 检查是否已初始化
   static bool get isInitialized => _instance != null;
-  
+
   /// 获取最后一次竞速结果
   static DomainRacingResult? get lastRacingResult => _lastRacingResult;
-  
+
   /// 重置模块
   static void reset() {
     _instance?.dispose();
@@ -223,21 +225,22 @@ class XBoardConfig {
       await prefs.remove(_kRacingCacheKey);
     } catch (_) {}
   }
-  
+
   // ========== 内部访问器（受保护） ==========
-  
+
   /// 获取内部配置访问器（仅供内部使用）
-  /// 
+  ///
   /// 注意：这个方法主要用于高级用户，一般情况下使用便捷方法即可
   static XBoardConfigAccessor get _accessor {
     if (_instance == null) {
-      throw StateError('XBoardConfig not initialized. Call initialize() first.');
+      throw StateError(
+          'XBoardConfig not initialized. Call initialize() first.');
     }
     return _instance!;
   }
-  
+
   // ========== 公共API方法 ==========
-  
+
   /// 获取第一个面板URL
   static String? get panelUrl => _accessor.getFirstPanelUrl();
 
@@ -245,15 +248,18 @@ class XBoardConfig {
   static Future<String?>? _racingFuture;
 
   /// 将有序候选列表持久化到磁盘（SharedPreferences）
-  static Future<void> _saveOrderedCandidatesToCache(List<DomainRacingResult> candidates) async {
+  static Future<void> _saveOrderedCandidatesToCache(
+      List<DomainRacingResult> candidates) async {
     try {
       final prefs = await SharedPreferences.getInstance();
-      final list = candidates.map((r) => {
-        'domain': r.domain,
-        'useProxy': r.useProxy,
-        'proxyUrl': r.proxyUrl,
-        'responseTime': r.responseTime,
-      }).toList();
+      final list = candidates
+          .map((r) => {
+                'domain': r.domain,
+                'useProxy': r.useProxy,
+                'proxyUrl': r.proxyUrl,
+                'responseTime': r.responseTime,
+              })
+          .toList();
       final data = jsonEncode({
         'candidates': list,
         'timestamp': DateTime.now().millisecondsSinceEpoch,
@@ -265,7 +271,8 @@ class XBoardConfig {
   }
 
   /// 从磁盘读取有序候选列表（兼容旧格式单结果；过期或不存在则返回 null）
-  static Future<List<DomainRacingResult>?> _loadCachedOrderedCandidates({bool ignoreExpiry = false}) async {
+  static Future<List<DomainRacingResult>?> _loadCachedOrderedCandidates(
+      {bool ignoreExpiry = false}) async {
     try {
       final prefs = await SharedPreferences.getInstance();
       final json = prefs.getString(_kRacingCacheKey);
@@ -280,23 +287,27 @@ class XBoardConfig {
 
       // 新格式：包含 candidates 数组
       if (data.containsKey('candidates')) {
-        final list = (data['candidates'] as List).map((e) => DomainRacingResult(
-          domain: e['domain'] as String,
-          useProxy: e['useProxy'] as bool,
-          proxyUrl: e['proxyUrl'] as String?,
-          responseTime: e['responseTime'] as int,
-        )).toList();
+        final list = (data['candidates'] as List)
+            .map((e) => DomainRacingResult(
+                  domain: e['domain'] as String,
+                  useProxy: e['useProxy'] as bool,
+                  proxyUrl: e['proxyUrl'] as String?,
+                  responseTime: e['responseTime'] as int,
+                ))
+            .toList();
         return list.isEmpty ? null : list;
       }
 
       // 旧格式：单个结果，兼容转换为单元素列表
       if (data.containsKey('domain')) {
-        return [DomainRacingResult(
-          domain: data['domain'] as String,
-          useProxy: data['useProxy'] as bool,
-          proxyUrl: data['proxyUrl'] as String?,
-          responseTime: data['responseTime'] as int,
-        )];
+        return [
+          DomainRacingResult(
+            domain: data['domain'] as String,
+            useProxy: data['useProxy'] as bool,
+            proxyUrl: data['proxyUrl'] as String?,
+            responseTime: data['responseTime'] as int,
+          )
+        ];
       }
 
       return null;
@@ -355,13 +366,15 @@ class XBoardConfig {
     final panelUrls = allPanelUrls;
     if (panelUrls.isEmpty) {
       // 远程配置未加载，用过期缓存兜底（总比无域名好）
-      final staleCandidates = await _loadCachedOrderedCandidates(ignoreExpiry: true);
+      final staleCandidates =
+          await _loadCachedOrderedCandidates(ignoreExpiry: true);
       if (staleCandidates != null && staleCandidates.isNotEmpty) {
         _orderedCandidates = staleCandidates;
         _currentCandidateIndex = 0;
         _lastRacingResult = staleCandidates.first;
         // ignore: avoid_print
-        print('[XBoardConfig] 远程配置为空，使用过期缓存域名: ${staleCandidates.first.domain}');
+        print(
+            '[XBoardConfig] 远程配置为空，使用过期缓存域名: ${staleCandidates.first.domain}');
         return staleCandidates.first.domain;
       }
       // 最后兜底：config.yaml 的 fallback_panel_url
@@ -423,7 +436,8 @@ class XBoardConfig {
       final next = _orderedCandidates[_currentCandidateIndex];
       _lastRacingResult = next;
       // ignore: avoid_print
-      print('[XBoardConfig] 🔄 故障转移 → 候选 #$_currentCandidateIndex: ${next.domain} (${next.responseTime}ms)');
+      print(
+          '[XBoardConfig] 🔄 故障转移 → 候选 #$_currentCandidateIndex: ${next.domain} (${next.responseTime}ms)');
       return next.domain;
     }
     // 候选列表已耗尽，触发后台重新竞速（供下次使用）
@@ -432,48 +446,54 @@ class XBoardConfig {
     _refreshRacingInBackground();
     return null;
   }
-  
+
   /// 获取第一个代理URL
   static String? get proxyUrl => _accessor.getFirstProxyUrl();
-  
+
   /// 获取第一个WebSocket URL
   static String? get wsUrl => _accessor.getFirstWebSocketUrl();
-  
+
   /// 获取更新富配置（含各平台版本/下载URL/是否强制更新）
   static UpdateRichConfig? get updateConfig => _instance?.getUpdateRichConfig();
 
   /// 获取面板配置列表
   static List<ConfigEntry> get panelList => _accessor.getPanelConfigList();
-  
+
   /// 获取代理配置列表
   static List<ProxyInfo> get proxyList => _accessor.getProxyConfigList();
-  
+
   /// 获取WebSocket配置列表
-  static List<WebSocketInfo> get webSocketList => _accessor.getWebSocketConfigList();
+  static List<WebSocketInfo> get webSocketList =>
+      _accessor.getWebSocketConfigList();
 
   /// 获取订阅配置信息
-  static SubscriptionInfo? get subscriptionInfo => _accessor.getSubscriptionInfo();
+  static SubscriptionInfo? get subscriptionInfo =>
+      _accessor.getSubscriptionInfo();
 
   /// 获取订阅URL列表
-  static List<SubscriptionUrlInfo> get subscriptionUrlList => subscriptionInfo?.urls ?? [];
+  static List<SubscriptionUrlInfo> get subscriptionUrlList =>
+      subscriptionInfo?.urls ?? [];
 
   /// 获取第一个订阅URL
   static String? get subscriptionUrl => subscriptionInfo?.firstUrl;
 
   /// 获取第一个支持加密的订阅URL
-  static String? get encryptSubscriptionUrl => subscriptionInfo?.firstEncryptUrl?.url;
+  static String? get encryptSubscriptionUrl =>
+      subscriptionInfo?.firstEncryptUrl?.url;
 
   /// 构建订阅URL（带token）
-  static String? buildSubscriptionUrl(String token, {bool preferEncrypt = true}) {
-    return subscriptionInfo?.buildSubscriptionUrl(token, forceEncrypt: preferEncrypt);
+  static String? buildSubscriptionUrl(String token,
+      {bool preferEncrypt = true}) {
+    return subscriptionInfo?.buildSubscriptionUrl(token,
+        forceEncrypt: preferEncrypt);
   }
 
   /// 并发竞速获取最快的订阅URL
-  /// 
+  ///
   /// 对所有订阅URL进行并发测试，返回第一个成功（200响应）的URL
   /// [token] 用户订阅token
   /// [preferEncrypt] 是否优先使用加密端点
-  /// 
+  ///
   /// 返回最快响应成功的订阅URL，如果都失败则返回第一个URL
   static Future<String?> getFastestSubscriptionUrl(
     String token, {
@@ -481,32 +501,33 @@ class XBoardConfig {
   }) async {
     final subInfo = subscriptionInfo;
     if (subInfo == null || subInfo.urls.isEmpty) return null;
-    
+
     // 构建所有可能的订阅URL
     final List<String> subscriptionUrls = [];
-    
+
     for (final urlInfo in subInfo.urls) {
-      final url = urlInfo.buildSubscriptionUrl(token, preferEncrypt: preferEncrypt);
+      final url =
+          urlInfo.buildSubscriptionUrl(token, preferEncrypt: preferEncrypt);
       if (url.isNotEmpty) {
         subscriptionUrls.add(url);
       }
     }
-    
+
     if (subscriptionUrls.isEmpty) return null;
-    
+
     // 获取所有代理
     final proxyUrls = allProxyUrls;
-    
+
     // 使用竞速服务选择最快的订阅URL
     final racingResult = await DomainRacingService.raceSelectFastestDomain(
       subscriptionUrls,
       forceHttpsResult: false, // 订阅URL保持原始格式
       proxyUrls: proxyUrls,
     );
-    
+
     return racingResult?.domain;
   }
-  
+
   /// 获取所有面板URL列表
   static List<String> get allPanelUrls => panelList.map((e) => e.url).toList();
 
@@ -548,20 +569,27 @@ class XBoardConfig {
 
   /// 获取所有代理URL列表
   static List<String> get allProxyUrls => proxyList.map((e) => e.url).toList();
-  
+
   /// 获取所有WebSocket URL列表
   static List<String> get allWsUrls => webSocketList.map((e) => e.url).toList();
 
   /// 获取所有订阅URL列表
-  static List<String> get allSubscriptionUrls => subscriptionUrlList.map((e) => e.url).toList();
+  static List<String> get allSubscriptionUrls =>
+      subscriptionUrlList.map((e) => e.url).toList();
 
   /// 获取所有支持加密的订阅URL列表
-  static List<String> get allEncryptSubscriptionUrls =>
-      subscriptionUrlList.where((e) => e.supportEncrypt).map((e) => e.url).toList();
+  static List<String> get allEncryptSubscriptionUrls => subscriptionUrlList
+      .where((e) => e.supportEncrypt)
+      .map((e) => e.url)
+      .toList();
 
   /// 获取 Crisp 客服 Website ID（来自远程配置 contact.crisp_website_id）
   /// 为空字符串表示未配置，UI 层应据此决定是否显示客服入口
   static String get crispWebsiteId => _instance?.crispWebsiteId ?? '';
+
+  /// 获取 Crisp 反向代理地址（来自远程配置 contact.crisp_proxy_url）
+  /// 为空字符串表示直接使用官方 Crisp 域名
+  static String get crispProxyUrl => _instance?.crispProxyUrl ?? '';
 
   /// 获取 Salesmartly 客服配置（来自远程配置 contact.salesmartly_token）
   /// 支持两种格式：
@@ -592,10 +620,12 @@ class XBoardConfig {
   static String get imgbbApiKey => _instance?.imgbbApiKey ?? '';
 
   /// 是否显示流量明细（来自远程配置 features.traffic_details_enabled，默认 true）
-  static bool get isTrafficDetailsEnabled => _instance?.trafficDetailsEnabled ?? true;
+  static bool get isTrafficDetailsEnabled =>
+      _instance?.trafficDetailsEnabled ?? true;
 
   /// 是否显示文档中心（来自远程配置 features.knowledge_base_enabled，默认 true）
-  static bool get isKnowledgeBaseEnabled => _instance?.knowledgeBaseEnabled ?? true;
+  static bool get isKnowledgeBaseEnabled =>
+      _instance?.knowledgeBaseEnabled ?? true;
 
   /// 是否显示礼品卡兑换（来自远程配置 features.gift_card_enabled，默认 true）
   static bool get isGiftCardEnabled => _instance?.giftCardEnabled ?? true;
@@ -619,54 +649,56 @@ class XBoardConfig {
   static Future<void> refresh() async {
     await _accessor.refreshConfiguration();
   }
-  
+
   /// 从指定源刷新配置
   static Future<void> refreshFromSource(String source) async {
     await _accessor.refreshFromSource(source);
   }
 
   /// 直接注入已解析的配置（fallback：配置模块刷新失败时，用外部直连结果填充）
-  static Future<void> loadParsedConfig(Map<String, dynamic> configData, {String source = 'direct_fallback'}) async {
+  static Future<void> loadParsedConfig(Map<String, dynamic> configData,
+      {String source = 'direct_fallback'}) async {
     await _accessor.loadParsedConfig(configData, source);
   }
-  
+
   /// 获取配置统计信息
   static Map<String, dynamic> get stats => _accessor.getConfigStats();
-  
+
   /// 获取当前配置状态
   static ConfigAccessorState get state => _accessor.state;
-  
+
   /// 获取最后的错误信息
   static String? get lastError => _accessor.lastError;
-  
+
   /// 监听配置变化
-  static Stream<Map<String, dynamic>> get configChangeStream => 
+  static Stream<Map<String, dynamic>> get configChangeStream =>
       _accessor.configStream.map((config) => _accessor.getConfigStats());
-  
+
   /// 监听状态变化
-  static Stream<ConfigAccessorState> get stateChangeStream => _accessor.stateStream;
+  static Stream<ConfigAccessorState> get stateChangeStream =>
+      _accessor.stateStream;
 }
 
 /// 使用示例：
-/// 
+///
 /// ```dart
 /// // 1. 初始化模块（唯一的初始化方式）
 /// await XBoardConfig.initialize(provider: 'Flclash');
-/// 
+///
 /// // 2. 使用公共API获取配置
 /// final panelUrl = XBoardConfig.panelUrl;
 /// final proxyUrl = XBoardConfig.proxyUrl;
 /// final panelList = XBoardConfig.panelList;
 /// final proxyList = XBoardConfig.proxyList;
-/// 
+///
 /// // 3. 监听配置变化
 /// XBoardConfig.configChangeStream.listen((stats) {
 ///   print('配置已更新: ${stats['panels']} 个面板');
 /// });
-/// 
+///
 /// // 4. 刷新配置
 /// await XBoardConfig.refresh();
 /// await XBoardConfig.refreshFromSource('redirect');
 /// ```
-/// 
+///
 /// 注意：外部代码不应该直接访问内部类，所有功能都通过XBoardConfig提供

@@ -52,6 +52,29 @@
   <section id="tab-users" class="tab-content">
     <div class="toolbar">
       <input type="search" id="user-search" placeholder="搜索邮箱或用户 ID...">
+      <select id="user-device-status">
+        <option value="all">全部设备状态</option>
+        <option value="active">有活跃设备</option>
+        <option value="inactive">无活跃设备</option>
+      </select>
+      <select id="user-limit-mode">
+        <option value="all">全部上限</option>
+        <option value="overridden">已覆盖上限</option>
+        <option value="default">默认上限</option>
+      </select>
+      <select id="user-sort">
+        <option value="updated_at">按更新时间</option>
+        <option value="last_synced_at">按最后同步</option>
+        <option value="created_at">按创建时间</option>
+        <option value="email">按邮箱</option>
+        <option value="plan_name">按套餐</option>
+        <option value="active_device_count">按活跃设备</option>
+        <option value="effective_device_limit">按有效上限</option>
+      </select>
+      <select id="user-order">
+        <option value="desc">降序</option>
+        <option value="asc">升序</option>
+      </select>
     </div>
     <table id="users-table">
       <thead>
@@ -66,6 +89,7 @@
       </thead>
       <tbody></tbody>
     </table>
+    <div id="users-pagination" class="pagination"></div>
   </section>
 
   <section id="tab-audit" class="tab-content">
@@ -81,7 +105,7 @@
       </thead>
       <tbody></tbody>
     </table>
-    <button id="load-more-audit" style="display:none">加载更多</button>
+    <div id="audit-pagination" class="pagination"></div>
   </section>
   <button id="back-to-top" title="回到顶部">↑</button>
 </div>

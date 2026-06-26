@@ -39,6 +39,9 @@ const (
 
 	policyStrict     = "strict"
 	policyKickOldest = "kick_oldest"
+
+	adminDefaultPageSize = 30
+	adminMaxPageSize     = 100
 )
 
 type Config struct {
@@ -981,22 +984,53 @@ func (s *Server) handleAdmin(w http.ResponseWriter, r *http.Request) {
 }
 
 func (s *Server) handleAdminListUsers(w http.ResponseWriter, r *http.Request) {
+	page, pageSize := adminPaginationParams(r)
+	query := strings.ToLower(strings.TrimSpace(r.URL.Query().Get("q")))
+	deviceStatus := strings.TrimSpace(r.URL.Query().Get("device_status"))
+	limitMode := strings.TrimSpace(r.URL.Query().Get("limit_mode"))
+	sortBy := normalizeAdminUserSort(r.URL.Query().Get("sort"))
+	order := normalizeSortOrder(r.URL.Query().Get("order"))
+
 	s.store.mu.Lock()
 	defer s.store.mu.Unlock()
 
-	users := make([]map[string]any, 0, len(s.store.Users))
+	rows := make([]adminUserRow, 0, len(s.store.Users))
 	for _, user := range s.store.Users {
 		activeCount := len(s.activeDevicesLocked(user.ID))
-		users = append(users, publicUser(user, s.effectiveLimitLocked(user), activeCount))
+		effectiveLimit := s.effectiveLimitLocked(user)
+		if !adminUserMatchesFilters(user, activeCount, query, deviceStatus, limitMode) {
+			continue
+		}
+		rows = append(rows, adminUserRow{
+			user:           user,
+			activeCount:    activeCount,
+			effectiveLimit: effectiveLimit,
+			public:         publicUser(user, effectiveLimit, activeCount),
+		})
 	}
-	sort.Slice(users, func(i, j int) bool {
-		return fmt.Sprint(users[i]["updated_at"]) > fmt.Sprint(users[j]["updated_at"])
+	sort.Slice(rows, func(i, j int) bool {
+		return compareAdminUsers(rows[i], rows[j], sortBy, order)
 	})
 
+	total := len(rows)
+	page = clampPage(page, pageSize, total)
+	start, end := pageBounds(page, pageSize, total)
+	users := make([]map[string]any, 0, end-start)
+	for _, row := range rows[start:end] {
+		users = append(users, row.public)
+	}
 	writeJSON(w, http.StatusOK, map[string]any{
 		"success": true,
 		"data": map[string]any{
-			"users": users,
+			"users":      users,
+			"pagination": paginationMeta(page, pageSize, total),
+			"filters": map[string]any{
+				"q":             query,
+				"device_status": deviceStatus,
+				"limit_mode":    limitMode,
+				"sort":          sortBy,
+				"order":         order,
+			},
 		},
 	})
 }
@@ -1183,26 +1217,25 @@ func (s *Server) handleAdminPatchDeviceLimit(w http.ResponseWriter, r *http.Requ
 }
 
 func (s *Server) handleAdminAuditLogs(w http.ResponseWriter, r *http.Request) {
+	page, pageSize := adminPaginationParams(r)
+
 	s.store.mu.Lock()
 	defer s.store.mu.Unlock()
 
-	limit := queryInt(r, "limit", 100)
-	if limit < 1 || limit > 500 {
-		limit = 100
-	}
-	start := len(s.store.Audits) - limit
-	if start < 0 {
-		start = 0
-	}
-	items := append([]AuditLog(nil), s.store.Audits[start:]...)
+	items := append([]AuditLog(nil), s.store.Audits...)
 	sort.Slice(items, func(i, j int) bool {
 		return items[i].CreatedAt.After(items[j].CreatedAt)
 	})
+	total := len(items)
+	page = clampPage(page, pageSize, total)
+	start, end := pageBounds(page, pageSize, total)
+	items = items[start:end]
 
 	writeJSON(w, http.StatusOK, map[string]any{
 		"success": true,
 		"data": map[string]any{
 			"audit_logs": items,
+			"pagination": paginationMeta(page, pageSize, total),
 		},
 	})
 }
@@ -2664,6 +2697,176 @@ func randomHex(size int) string {
 
 func constantTimeEqual(a, b string) bool {
 	return hmac.Equal([]byte(a), []byte(b))
+}
+
+type adminUserRow struct {
+	user           *UserCache
+	activeCount    int
+	effectiveLimit int
+	public         map[string]any
+}
+
+func adminPaginationParams(r *http.Request) (int, int) {
+	page := queryInt(r, "page", 1)
+	if page < 1 {
+		page = 1
+	}
+	pageSize := queryInt(r, "page_size", adminDefaultPageSize)
+	if pageSize < 1 {
+		pageSize = adminDefaultPageSize
+	}
+	if pageSize > adminMaxPageSize {
+		pageSize = adminMaxPageSize
+	}
+	return page, pageSize
+}
+
+func clampPage(page, pageSize, total int) int {
+	if total <= 0 {
+		return 1
+	}
+	totalPages := (total + pageSize - 1) / pageSize
+	if page > totalPages {
+		return totalPages
+	}
+	return page
+}
+
+func pageBounds(page, pageSize, total int) (int, int) {
+	if total <= 0 {
+		return 0, 0
+	}
+	start := (page - 1) * pageSize
+	if start >= total {
+		return total, total
+	}
+	end := start + pageSize
+	if end > total {
+		end = total
+	}
+	return start, end
+}
+
+func paginationMeta(page, pageSize, total int) map[string]any {
+	totalPages := 0
+	if total > 0 {
+		totalPages = (total + pageSize - 1) / pageSize
+	}
+	return map[string]any{
+		"page":        page,
+		"page_size":   pageSize,
+		"total":       total,
+		"total_pages": totalPages,
+		"has_prev":    page > 1 && totalPages > 0,
+		"has_next":    totalPages > 0 && page < totalPages,
+	}
+}
+
+func normalizeAdminUserSort(value string) string {
+	switch strings.TrimSpace(value) {
+	case "email", "plan_name", "active_device_count", "effective_device_limit", "created_at", "updated_at", "last_synced_at":
+		return strings.TrimSpace(value)
+	default:
+		return "updated_at"
+	}
+}
+
+func normalizeSortOrder(value string) string {
+	if strings.EqualFold(strings.TrimSpace(value), "asc") {
+		return "asc"
+	}
+	return "desc"
+}
+
+func adminUserMatchesFilters(user *UserCache, activeCount int, query, deviceStatus, limitMode string) bool {
+	if query != "" {
+		haystack := strings.ToLower(strings.Join([]string{
+			user.ID,
+			user.BusinessUserID,
+			user.Email,
+			strconv.Itoa(user.PlanID),
+			user.PlanName,
+		}, " "))
+		if !strings.Contains(haystack, query) {
+			return false
+		}
+	}
+	switch deviceStatus {
+	case "", "all":
+	case "active":
+		if activeCount <= 0 {
+			return false
+		}
+	case "inactive":
+		if activeCount > 0 {
+			return false
+		}
+	default:
+		return false
+	}
+	switch limitMode {
+	case "", "all":
+	case "overridden":
+		if user.DeviceLimitOverride == nil {
+			return false
+		}
+	case "default":
+		if user.DeviceLimitOverride != nil {
+			return false
+		}
+	default:
+		return false
+	}
+	return true
+}
+
+func compareAdminUsers(a, b adminUserRow, sortBy, order string) bool {
+	cmp := 0
+	switch sortBy {
+	case "email":
+		cmp = strings.Compare(strings.ToLower(a.user.Email), strings.ToLower(b.user.Email))
+	case "plan_name":
+		cmp = strings.Compare(strings.ToLower(a.user.PlanName), strings.ToLower(b.user.PlanName))
+	case "active_device_count":
+		cmp = compareInt(a.activeCount, b.activeCount)
+	case "effective_device_limit":
+		cmp = compareInt(a.effectiveLimit, b.effectiveLimit)
+	case "created_at":
+		cmp = compareTime(a.user.CreatedAt, b.user.CreatedAt)
+	case "last_synced_at":
+		cmp = compareTime(a.user.LastSyncedAt, b.user.LastSyncedAt)
+	default:
+		cmp = compareTime(a.user.UpdatedAt, b.user.UpdatedAt)
+	}
+	if cmp == 0 {
+		cmp = strings.Compare(a.user.ID, b.user.ID)
+	}
+	if order == "asc" {
+		return cmp < 0
+	}
+	return cmp > 0
+}
+
+func compareInt(a, b int) int {
+	switch {
+	case a < b:
+		return -1
+	case a > b:
+		return 1
+	default:
+		return 0
+	}
+}
+
+func compareTime(a, b time.Time) int {
+	switch {
+	case a.Before(b):
+		return -1
+	case a.After(b):
+		return 1
+	default:
+		return 0
+	}
 }
 
 func queryInt(r *http.Request, key string, fallback int) int {

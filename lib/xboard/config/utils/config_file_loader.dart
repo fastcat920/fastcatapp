@@ -281,7 +281,6 @@ class ConfigFileLoader {
       return {};
     }
   }
-
   /// 从 config.yaml 读取 features 配置作为本地兜底值
   static Future<Map<String, bool>> loadFeatures() async {
     try {
@@ -300,7 +299,6 @@ class ConfigFileLoader {
     }
     return {};
   }
-
 }
 
 /// 配置辅助函数
@@ -411,6 +409,11 @@ extension ConfigFileLoaderHelper on ConfigFileLoader {
     return contact['crisp_website_id'] as String? ?? '';
   }
 
+  /// 获取本地兜底 Crisp 反向代理地址
+  static Future<String> getFallbackCrispProxyUrl() async {
+    final contact = await getContactFallbackConfig();
+    return contact['crisp_proxy_url'] as String? ?? '';
+  }
   /// 启动缓存开关（startup_cache.enabled），默认 true
   static Future<bool> getStartupCacheEnabled() async {
     try {

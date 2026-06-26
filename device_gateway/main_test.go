@@ -3,6 +3,7 @@ package main
 import (
 	"bytes"
 	"encoding/json"
+	"fmt"
 	"io"
 	"net/http"
 	"net/http/httptest"
@@ -435,6 +436,132 @@ func TestAdminDashboardTreatsReachableBusiness4xxAsOnline(t *testing.T) {
 	}
 }
 
+func TestAdminUsersPaginationFilteringAndSorting(t *testing.T) {
+	store, _, err := LoadStore(filepath.Join(t.TempDir(), "store.json"), "")
+	if err != nil {
+		t.Fatal(err)
+	}
+	now := time.Date(2026, 6, 26, 10, 0, 0, 0, time.UTC)
+	for i := 0; i < 35; i++ {
+		id := fmt.Sprintf("usr_%02d", i)
+		user := &UserCache{
+			ID:             id,
+			BusinessUserID: fmt.Sprintf("business-%02d", i),
+			Email:          fmt.Sprintf("user%02d@example.com", i),
+			PlanID:         i % 3,
+			PlanName:       []string{"Basic", "Pro", "Team"}[i%3],
+			DeviceLimit:    intPtr(3),
+			LastSyncedAt:   now.Add(time.Duration(i) * time.Minute),
+			CreatedAt:      now.Add(time.Duration(i) * time.Minute),
+			UpdatedAt:      now.Add(time.Duration(i) * time.Minute),
+		}
+		if i == 10 {
+			user.DeviceLimitOverride = intPtr(5)
+		}
+		store.Users[id] = user
+		if i%2 == 0 {
+			store.Devices[fmt.Sprintf("dev_%02d", i)] = &DeviceRecord{
+				ID:         fmt.Sprintf("dev_%02d", i),
+				UserID:     id,
+				Status:     statusActive,
+				LastSeenAt: now,
+				CreatedAt:  now,
+			}
+		}
+	}
+	server := &Server{
+		cfg: Config{
+			APIPrefix:  "/api/v1",
+			AdminToken: "admin-token",
+		},
+		store: store,
+	}
+	gateway := httptest.NewServer(server.routes())
+	defer gateway.Close()
+
+	resp, body := getAdminJSON(t, gateway.URL+"/api/v1/admin/users?page=2&sort=email&order=asc", "admin-token")
+	if resp.StatusCode != http.StatusOK {
+		t.Fatalf("users status = %d body=%s", resp.StatusCode, body)
+	}
+	payload := mapFromJSON(t, body)
+	data := payload["data"].(map[string]any)
+	users := data["users"].([]any)
+	pagination := data["pagination"].(map[string]any)
+	if len(users) != 5 {
+		t.Fatalf("page 2 users length = %d, want 5", len(users))
+	}
+	if got := users[0].(map[string]any)["id"]; got != "usr_30" {
+		t.Fatalf("first page 2 user = %v, want usr_30", got)
+	}
+	if pagination["total"].(float64) != 35 ||
+		pagination["page"].(float64) != 2 ||
+		pagination["page_size"].(float64) != 30 ||
+		pagination["total_pages"].(float64) != 2 {
+		t.Fatalf("unexpected pagination: %#v", pagination)
+	}
+
+	resp, body = getAdminJSON(t, gateway.URL+"/api/v1/admin/users?page_size=100&device_status=active&limit_mode=overridden", "admin-token")
+	if resp.StatusCode != http.StatusOK {
+		t.Fatalf("filtered users status = %d body=%s", resp.StatusCode, body)
+	}
+	payload = mapFromJSON(t, body)
+	data = payload["data"].(map[string]any)
+	users = data["users"].([]any)
+	pagination = data["pagination"].(map[string]any)
+	if len(users) != 1 || users[0].(map[string]any)["id"] != "usr_10" {
+		t.Fatalf("filtered users = %#v, want only usr_10", users)
+	}
+	if pagination["total"].(float64) != 1 {
+		t.Fatalf("filtered total = %v, want 1", pagination["total"])
+	}
+}
+
+func TestAdminAuditLogsPagination(t *testing.T) {
+	store, _, err := LoadStore(filepath.Join(t.TempDir(), "store.json"), "")
+	if err != nil {
+		t.Fatal(err)
+	}
+	now := time.Date(2026, 6, 26, 10, 0, 0, 0, time.UTC)
+	for i := 0; i < 65; i++ {
+		store.Audits = append(store.Audits, AuditLog{
+			ID:        fmt.Sprintf("audit_%02d", i),
+			Action:    fmt.Sprintf("action_%02d", i),
+			UserID:    fmt.Sprintf("usr_%02d", i),
+			CreatedAt: now.Add(time.Duration(i) * time.Minute),
+		})
+	}
+	server := &Server{
+		cfg: Config{
+			APIPrefix:  "/api/v1",
+			AdminToken: "admin-token",
+		},
+		store: store,
+	}
+	gateway := httptest.NewServer(server.routes())
+	defer gateway.Close()
+
+	resp, body := getAdminJSON(t, gateway.URL+"/api/v1/admin/audit-logs?page=3", "admin-token")
+	if resp.StatusCode != http.StatusOK {
+		t.Fatalf("audit status = %d body=%s", resp.StatusCode, body)
+	}
+	payload := mapFromJSON(t, body)
+	data := payload["data"].(map[string]any)
+	logs := data["audit_logs"].([]any)
+	pagination := data["pagination"].(map[string]any)
+	if len(logs) != 5 {
+		t.Fatalf("page 3 audit length = %d, want 5", len(logs))
+	}
+	if got := logs[0].(map[string]any)["action"]; got != "action_04" {
+		t.Fatalf("first page 3 audit = %v, want action_04", got)
+	}
+	if pagination["total"].(float64) != 65 ||
+		pagination["page"].(float64) != 3 ||
+		pagination["page_size"].(float64) != 30 ||
+		pagination["total_pages"].(float64) != 3 {
+		t.Fatalf("unexpected audit pagination: %#v", pagination)
+	}
+}
+
 func postJSON(t *testing.T, url string, body []byte, auth string) (*http.Response, []byte) {
 	t.Helper()
 	req, err := http.NewRequest(http.MethodPost, url, bytes.NewReader(body))
@@ -487,6 +614,15 @@ func doRead(t *testing.T, req *http.Request) (*http.Response, []byte) {
 		t.Fatal(err)
 	}
 	return resp, body
+}
+
+func mapFromJSON(t *testing.T, body []byte) map[string]any {
+	t.Helper()
+	var payload map[string]any
+	if err := json.Unmarshal(body, &payload); err != nil {
+		t.Fatal(err)
+	}
+	return payload
 }
 
 func stringFromNested(body []byte, keys ...string) string {

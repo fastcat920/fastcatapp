@@ -45,6 +45,7 @@ class XBoardConfigAccessor {
 
   // 远程配置 contact 字段
   String _crispWebsiteId = '';
+  String _crispProxyUrl = '';
   String _salesmartlyToken = '';
   List<String> _websiteUrls = [];
   String _telegramGroupUrl = '';
@@ -96,10 +97,10 @@ class XBoardConfigAccessor {
     required ConfigurationParser parser,
     required String currentProvider,
     String apiPrefix = '/api/v1',
-  }) : _remoteManager = remoteManager,
-       _parser = parser,
-       _currentProvider = currentProvider,
-       _apiPrefix = apiPrefix {
+  })  : _remoteManager = remoteManager,
+        _parser = parser,
+        _currentProvider = currentProvider,
+        _apiPrefix = apiPrefix {
     _applyLocalFeatures(localFeatures);
   }
 
@@ -129,7 +130,8 @@ class XBoardConfigAccessor {
   // ========== 事件流 ==========
 
   /// 配置变化流
-  Stream<ParsedConfiguration> get configStream => _configStreamController.stream;
+  Stream<ParsedConfiguration> get configStream =>
+      _configStreamController.stream;
 
   /// 状态变化流
   Stream<ConfigAccessorState> get stateStream => _stateStreamController.stream;
@@ -155,16 +157,17 @@ class XBoardConfigAccessor {
       // 直接从远程获取最新配置
       final multiResult = await _remoteManager.fetchAllConfigs();
       if (multiResult.hasSuccess && multiResult.firstSuccessfulData != null) {
-        final configData = _parser.extractConfigFromRemoteResult(multiResult.firstSuccessfulData!);
+        final configData = _parser
+            .extractConfigFromRemoteResult(multiResult.firstSuccessfulData!);
         if (configData != null) {
-          await _processConfigData(configData, multiResult.firstSuccessfulSource ?? 'remote');
+          await _processConfigData(
+              configData, multiResult.firstSuccessfulSource ?? 'remote');
           return;
         }
       }
 
       // 远程获取失败
       throw Exception('Remote config fetch failed');
-
     } catch (e) {
       _lastError = 'Configuration refresh failed: $e';
       await _updateState(ConfigAccessorState.error);
@@ -174,7 +177,8 @@ class XBoardConfigAccessor {
   }
 
   /// 用外部已解析的配置数据直接注入（fallback 路径）
-  Future<void> loadParsedConfig(Map<String, dynamic> configData, String source) async {
+  Future<void> loadParsedConfig(
+      Map<String, dynamic> configData, String source) async {
     await _processConfigData(configData, source);
   }
 
@@ -189,7 +193,8 @@ class XBoardConfigAccessor {
       switch (sourceName.toLowerCase()) {
         case 'remote':
           final multiResult = await _remoteManager.fetchAllConfigs();
-          result = multiResult.firstSuccessful ?? ConfigResult.failure('No successful remote source', 'remote');
+          result = multiResult.firstSuccessful ??
+              ConfigResult.failure('No successful remote source', 'remote');
           break;
         case 'redirect':
           result = await _remoteManager.getRedirectConfig();
@@ -198,7 +203,9 @@ class XBoardConfigAccessor {
           result = await _remoteManager.getGiteeConfig();
           break;
         default:
-          result = ConfigResult.failure('Unknown source: $sourceName. Only remote sources (redirect, gitee) are supported.', sourceName);
+          result = ConfigResult.failure(
+              'Unknown source: $sourceName. Only remote sources (redirect, gitee) are supported.',
+              sourceName);
       }
 
       if (result.isSuccess && result.data != null) {
@@ -211,9 +218,9 @@ class XBoardConfigAccessor {
           throw Exception('Invalid config data from $sourceName');
         }
       } else {
-        throw Exception('Failed to get config from $sourceName: ${result.error}');
+        throw Exception(
+            'Failed to get config from $sourceName: ${result.error}');
       }
-
     } catch (e) {
       _lastError = 'Refresh from $sourceName failed: $e';
       await _updateState(ConfigAccessorState.error);
@@ -329,11 +336,15 @@ class XBoardConfigAccessor {
 
   /// 构建订阅URL
   String? buildSubscriptionUrl(String token, {bool preferEncrypt = true}) {
-    return _currentConfig?.buildSubscriptionUrl(token, preferEncrypt: preferEncrypt);
+    return _currentConfig?.buildSubscriptionUrl(token,
+        preferEncrypt: preferEncrypt);
   }
 
   /// 获取 Crisp 客服 Website ID（来自远程配置 contact.crisp_website_id）
   String get crispWebsiteId => _crispWebsiteId;
+
+  /// 获取 Crisp 反向代理地址（来自远程配置 contact.crisp_proxy_url）
+  String get crispProxyUrl => _crispProxyUrl;
 
   /// 获取 Salesmartly 客服配置（来自远程配置 contact.salesmartly_token）
   /// 支持两种格式：
@@ -398,7 +409,8 @@ class XBoardConfigAccessor {
       'webSockets': _currentConfig!.webSockets.length,
       'updates': _currentConfig!.updateConfig?.isNotEmpty == true ? 1 : 0,
       'subscriptionUrls': _currentConfig!.subscription?.urls.length ?? 0,
-      'subscriptionEncryptUrls': _currentConfig!.subscription?.encryptUrls.length ?? 0,
+      'subscriptionEncryptUrls':
+          _currentConfig!.subscription?.encryptUrls.length ?? 0,
       'currentProvider': _currentProvider,
       'lastUpdateTime': _lastUpdateTime?.toIso8601String(),
       'sourceHash': _currentConfig!.sourceHash,
@@ -417,7 +429,8 @@ class XBoardConfigAccessor {
   // ========== 内部方法 ==========
 
   /// 处理配置数据
-  Future<void> _processConfigData(Map<String, dynamic> configData, String source) async {
+  Future<void> _processConfigData(
+      Map<String, dynamic> configData, String source) async {
     try {
       // 解析配置
       _currentConfig = _parser.parseFromJson(configData, _currentProvider);
@@ -431,20 +444,25 @@ class XBoardConfigAccessor {
       // 提取 contact 字段
       final contact = configData['contact'] as Map<String, dynamic>? ?? {};
       _crispWebsiteId = contact['crisp_website_id'] as String? ?? '';
+      _crispProxyUrl = contact['crisp_proxy_url'] as String? ?? '';
       _salesmartlyToken = contact['salesmartly_token'] as String? ?? '';
       final rawWebsite = contact['website'];
       if (rawWebsite is String) {
         _websiteUrls = rawWebsite.isNotEmpty ? [rawWebsite] : [];
       } else if (rawWebsite is List) {
-        _websiteUrls = rawWebsite.map((e) => e.toString().trim()).where((u) => u.isNotEmpty).toList();
+        _websiteUrls = rawWebsite
+            .map((e) => e.toString().trim())
+            .where((u) => u.isNotEmpty)
+            .toList();
       } else {
         _websiteUrls = [];
       }
       _inviteDomain = contact['invite_domain'] as String? ?? '';
       // 兼容旧版 key 'telegram'（新版改为 'telegram_group'）
-      _telegramGroupUrl = (contact['telegram_group'] as String?)?.isNotEmpty == true
-          ? contact['telegram_group'] as String
-          : contact['telegram'] as String? ?? '';
+      _telegramGroupUrl =
+          (contact['telegram_group'] as String?)?.isNotEmpty == true
+              ? contact['telegram_group'] as String
+              : contact['telegram'] as String? ?? '';
 
       // 提取 ticket 字段
       final ticket = configData['ticket'] as Map<String, dynamic>? ?? {};
@@ -462,14 +480,18 @@ class XBoardConfigAccessor {
         _configVersion = rawConfigVersion.trim();
       } else {
         final metadataVersion = _currentConfig?.metadata.version.trim() ?? '';
-        _configVersion =
-            metadataVersion.isNotEmpty ? metadataVersion : _currentConfig!.sourceHash;
+        _configVersion = metadataVersion.isNotEmpty
+            ? metadataVersion
+            : _currentConfig!.sourceHash;
       }
 
       // 提取 gateway_urls / gateway_url（可选，OSS 远程控制网关地址）
       final rawGatewayUrls = configData['gateway_urls'];
       if (rawGatewayUrls is List && rawGatewayUrls.isNotEmpty) {
-        _gatewayUrls = rawGatewayUrls.map((e) => e.toString().trim()).where((u) => u.isNotEmpty).toList();
+        _gatewayUrls = rawGatewayUrls
+            .map((e) => e.toString().trim())
+            .where((u) => u.isNotEmpty)
+            .toList();
       } else {
         final rawGatewayUrl = configData['gateway_url'] as String?;
         if (rawGatewayUrl != null && rawGatewayUrl.trim().isNotEmpty) {
@@ -480,14 +502,24 @@ class XBoardConfigAccessor {
       // 提取 features 字段（远程有的覆盖，没有的保留本地配置值）
       final remoteFeatures = configData['features'] as Map<String, dynamic>?;
       if (remoteFeatures != null) {
-        _trafficDetailsEnabled = remoteFeatures['traffic_details_enabled'] as bool? ?? _trafficDetailsEnabled;
-        _knowledgeBaseEnabled = remoteFeatures['knowledge_base_enabled'] as bool? ?? _knowledgeBaseEnabled;
-        _giftCardEnabled = remoteFeatures['gift_card_enabled'] as bool? ?? _giftCardEnabled;
-        _joinGroupEnabled = remoteFeatures['join_group_enabled'] as bool? ?? _joinGroupEnabled;
-        _ordersEnabled = remoteFeatures['orders_enabled'] as bool? ?? _ordersEnabled;
-        _devicesEnabled = remoteFeatures['devices_enabled'] as bool? ?? _devicesEnabled;
-        _ticketsEnabled = remoteFeatures['tickets_enabled'] as bool? ?? _ticketsEnabled;
-        _balanceEnabled = remoteFeatures['balance_enabled'] as bool? ?? _balanceEnabled;
+        _trafficDetailsEnabled =
+            remoteFeatures['traffic_details_enabled'] as bool? ??
+                _trafficDetailsEnabled;
+        _knowledgeBaseEnabled =
+            remoteFeatures['knowledge_base_enabled'] as bool? ??
+                _knowledgeBaseEnabled;
+        _giftCardEnabled =
+            remoteFeatures['gift_card_enabled'] as bool? ?? _giftCardEnabled;
+        _joinGroupEnabled =
+            remoteFeatures['join_group_enabled'] as bool? ?? _joinGroupEnabled;
+        _ordersEnabled =
+            remoteFeatures['orders_enabled'] as bool? ?? _ordersEnabled;
+        _devicesEnabled =
+            remoteFeatures['devices_enabled'] as bool? ?? _devicesEnabled;
+        _ticketsEnabled =
+            remoteFeatures['tickets_enabled'] as bool? ?? _ticketsEnabled;
+        _balanceEnabled =
+            remoteFeatures['balance_enabled'] as bool? ?? _balanceEnabled;
       }
 
       await _updateState(ConfigAccessorState.ready);
@@ -518,6 +550,6 @@ class XBoardConfigAccessor {
   @override
   String toString() {
     return 'XBoardConfigAccessor(state: $_state, provider: $_currentProvider, '
-           'hasConfig: ${_currentConfig != null})';
+        'hasConfig: ${_currentConfig != null})';
   }
 }

@@ -15,6 +15,7 @@ import 'package:fl_clash/xboard/features/auth/auth.dart';
 import 'package:fl_clash/xboard/domain/domain.dart';
 import 'package:fl_clash/xboard/features/auth/pages/crisp_chat_page.dart';
 import 'package:fl_clash/xboard/features/auth/pages/salesmartly_chat_page.dart';
+import 'package:fl_clash/xboard/features/auth/utils/crisp_url_helper.dart';
 import 'package:fl_clash/xboard/core/core.dart';
 import 'package:fl_clash/xboard/utils/xboard_notification.dart';
 import 'package:flutter_xboard_sdk/flutter_xboard_sdk.dart';
@@ -23,6 +24,8 @@ const _logger = FileLogger('customer_service_helper.dart');
 const _deviceGatewayApiPrefix = gatewayApiPrefix;
 const _desktopCustomerServiceWindowWidth = 420;
 const _desktopCustomerServiceWindowHeight = 680;
+const _crispProxyProbeTimeout = Duration(seconds: 4);
+const _crispProxyProbePreviewBytes = 4096;
 
 /// 统一客服入口：按业务约定仅使用 Crisp（远程优先，本地兜底）
 ///
@@ -34,6 +37,7 @@ class CustomerServiceHelper {
   static Future<String>? _webview2DataFolderFuture;
   static Future<bool>? _desktopWebviewAvailableFuture;
   static Future<String>? _fallbackCrispWebsiteIdFuture;
+  static Future<String>? _fallbackCrispProxyUrlFuture;
 
   /// 是否有任何客服渠道可用（仅远程 Crisp）
   static bool get isAvailable => XBoardConfig.crispWebsiteId.isNotEmpty;
@@ -48,6 +52,9 @@ class CustomerServiceHelper {
   static void prewarm() {
     if (XBoardConfig.crispWebsiteId.trim().isEmpty) {
       unawaited(_fallbackCrispWebsiteId());
+    }
+    if (XBoardConfig.crispProxyUrl.trim().isEmpty) {
+      unawaited(_fallbackCrispProxyUrl());
     }
     if (_isDesktopPlatform) {
       unawaited(_isDesktopWebviewAvailable());
@@ -89,10 +96,98 @@ class CustomerServiceHelper {
     }();
   }
 
+  static Future<String> _fallbackCrispProxyUrl() {
+    return _fallbackCrispProxyUrlFuture ??= () async {
+      try {
+        return normalizeCrispProxyUrl(
+          await ConfigFileLoaderHelper.getFallbackCrispProxyUrl(),
+        );
+      } catch (e) {
+        _logger.debug('[Crisp] 读取本地客服代理配置失败: $e');
+        return '';
+      }
+    }();
+  }
+
   static Future<String> _resolveCrispWebsiteId() async {
     final remoteCrispId = XBoardConfig.crispWebsiteId.trim();
     if (remoteCrispId.isNotEmpty) return remoteCrispId;
     return _fallbackCrispWebsiteId();
+  }
+
+  static Future<String> _resolveCrispProxyUrl() async {
+    final remoteProxyUrl = normalizeCrispProxyUrl(XBoardConfig.crispProxyUrl);
+    if (remoteProxyUrl.isNotEmpty) return remoteProxyUrl;
+    return _fallbackCrispProxyUrl();
+  }
+
+  static Future<String> _resolveUsableCrispProxyUrl(String websiteId) async {
+    final proxyUrl = await _resolveCrispProxyUrl();
+    if (!isCrispProxyConfigured(proxyUrl)) return '';
+    final proxyEmbedUri = crispEmbedUri(
+      websiteId: websiteId,
+      proxyUrl: proxyUrl,
+    );
+    final usable = await _isCrispProxyEmbedUsable(proxyEmbedUri);
+    if (usable) return proxyUrl;
+    _logger.warning('[Crisp] 代理预检失败，使用官方域名: $proxyEmbedUri');
+    return '';
+  }
+
+  static Future<bool> _isCrispProxyEmbedUsable(Uri uri) async {
+    final client = HttpClient()..connectionTimeout = _crispProxyProbeTimeout;
+    try {
+      final request = await client.getUrl(uri).timeout(_crispProxyProbeTimeout);
+      request
+        ..followRedirects = true
+        ..maxRedirects = 3;
+      request.headers.set(HttpHeaders.acceptHeader, 'text/html,*/*');
+      request.headers.set(
+        HttpHeaders.userAgentHeader,
+        'Fastcat-Crisp-Proxy-Probe',
+      );
+      final response = await request.close().timeout(_crispProxyProbeTimeout);
+      final statusCode = response.statusCode;
+      final preview = await _readCrispProxyProbePreview(response);
+      if (statusCode < 200 || statusCode >= 400) {
+        _logger.warning('[Crisp] 代理预检 HTTP $statusCode: $uri');
+        return false;
+      }
+      if (_looksLikeCrispProxyErrorPage(preview)) {
+        _logger.warning('[Crisp] 代理预检命中错误页: $uri');
+        return false;
+      }
+      return true;
+    } catch (e) {
+      _logger.warning('[Crisp] 代理预检异常: $e');
+      return false;
+    } finally {
+      client.close(force: true);
+    }
+  }
+
+  static Future<String> _readCrispProxyProbePreview(
+    HttpClientResponse response,
+  ) async {
+    final bytes = <int>[];
+    try {
+      await for (final chunk in response.timeout(_crispProxyProbeTimeout)) {
+        final remaining = _crispProxyProbePreviewBytes - bytes.length;
+        if (remaining <= 0) break;
+        bytes.addAll(chunk.length > remaining ? chunk.take(remaining) : chunk);
+        if (bytes.length >= _crispProxyProbePreviewBytes) break;
+      }
+    } catch (_) {}
+    return utf8.decode(bytes, allowMalformed: true);
+  }
+
+  static bool _looksLikeCrispProxyErrorPage(String preview) {
+    final lower = preview.toLowerCase();
+    return lower.contains('404 not found') ||
+        lower.contains('502 bad gateway') ||
+        lower.contains('503 service temporarily unavailable') ||
+        lower.contains('504 gateway') ||
+        lower.contains('upstream') && lower.contains('nginx');
   }
 
   /// 打开客服页面
@@ -100,11 +195,14 @@ class CustomerServiceHelper {
     final crispId = await _resolveCrispWebsiteId();
     if (crispId.isNotEmpty) {
       if (!context.mounted) return;
+      final crispProxyUrl = await _resolveUsableCrispProxyUrl(crispId);
+      if (!context.mounted) return;
       final userScript = _buildCrispUserScript(context);
       if (_isDesktopPlatform) {
         final webview = await _openCrispInDesktopWebview(
           crispId,
           userScript: userScript,
+          crispProxyUrl: crispProxyUrl,
         );
         if (webview != null && context.mounted) {
           unawaited(_applyCrispIPDataWhenReady(context, webview));
@@ -115,6 +213,7 @@ class CustomerServiceHelper {
         context,
         crispId,
         userScript: userScript,
+        crispProxyUrl: crispProxyUrl,
         deferredUserScript: () async {
           final ipData = await _resolveCrispIPData(context);
           if (ipData == null || !context.mounted) return null;
@@ -456,6 +555,7 @@ if(window===window.top){
     BuildContext context,
     String websiteId, {
     String? userScript,
+    String? crispProxyUrl,
     _CrispIPData? ipData,
     Future<String?> Function()? deferredUserScript,
   }) {
@@ -466,6 +566,7 @@ if(window===window.top){
       unawaited(_openCrispInDesktopWebview(
         websiteId,
         userScript: effectiveUserScript,
+        crispProxyUrl: crispProxyUrl,
       ));
       return;
     } else if (CrispChatPage.isSupported) {
@@ -474,6 +575,7 @@ if(window===window.top){
         MaterialPageRoute(
           builder: (_) => CrispChatPage(
             websiteId: websiteId,
+            crispProxyUrl: crispProxyUrl,
             userScript: effectiveUserScript,
             deferredUserScript: deferredUserScript,
           ),
@@ -481,7 +583,7 @@ if(window===window.top){
       );
     } else {
       launchUrl(
-        Uri.parse('https://go.crisp.chat/chat/embed/?website_id=$websiteId'),
+        crispEmbedUri(websiteId: websiteId, proxyUrl: crispProxyUrl),
         mode: LaunchMode.externalApplication,
       );
     }
@@ -492,13 +594,17 @@ if(window===window.top){
   static Future<Webview?> _openCrispInDesktopWebview(
     String websiteId, {
     required String userScript,
+    String? crispProxyUrl,
   }) async {
+    final officialUrl = officialCrispEmbedUri(websiteId).toString();
+    final preferredUrl =
+        crispEmbedUri(websiteId: websiteId, proxyUrl: crispProxyUrl).toString();
     try {
       // 先检查 WebView2 Runtime 是否已安装
       final available = await _isDesktopWebviewAvailable();
       if (!available) {
         launchUrl(
-          Uri.parse('https://go.crisp.chat/chat/embed/?website_id=$websiteId'),
+          Uri.parse(officialUrl),
           mode: LaunchMode.externalApplication,
         );
         return null;
@@ -516,7 +622,6 @@ if(window===window.top){
         ),
       );
 
-      final websiteIdEscaped = websiteId.replaceAll("'", "\\'");
       // 直接加载 Crisp embed URL，不用 document.write 注入
       // desktop_webview_window 的 addScriptToExecuteOnDocumentCreated
       // 在 embed 页面上下文执行，可以直接操作 Crisp SDK
@@ -557,20 +662,38 @@ if(window===window.top){
 })();''';
 
       webview.addScriptToExecuteOnDocumentCreated(injectJs);
+      _startDesktopProxyFallbackTimer(
+        webview,
+        officialUrl: officialUrl,
+        proxyWasUsed: isCrispProxyConfigured(crispProxyUrl),
+      );
       // 直接加载 Crisp embed 页面，SDK 自动初始化
-      webview.launch(
-          'https://go.crisp.chat/chat/embed/?website_id=$websiteIdEscaped');
+      webview.launch(preferredUrl);
 
       _logger.info('[Crisp] 已启动 WebView2，注入客服 SDK');
       return webview;
     } catch (e) {
       _logger.error('[Crisp] WebView2 启动失败，回退浏览器', e);
       launchUrl(
-        Uri.parse('https://go.crisp.chat/chat/embed/?website_id=$websiteId'),
+        Uri.parse(officialUrl),
         mode: LaunchMode.externalApplication,
       );
       return null;
     }
+  }
+
+  static void _startDesktopProxyFallbackTimer(
+    Webview webview, {
+    required String officialUrl,
+    required bool proxyWasUsed,
+  }) {
+    if (!proxyWasUsed) return;
+    final timer = Timer(crispProxyFallbackDelay, () {
+      if (!webview.isNavigating.value) return;
+      _logger.warning('[Crisp] 代理加载超时，回退官方域名');
+      webview.launch(officialUrl);
+    });
+    unawaited(webview.onClose.whenComplete(timer.cancel));
   }
 
   static Future<void> _applyCrispIPDataWhenReady(

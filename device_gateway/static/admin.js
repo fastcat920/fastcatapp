@@ -11,9 +11,26 @@ const appEl = document.getElementById('app');
 const authError = document.getElementById('auth-error');
 const backToTopBtn = document.getElementById('back-to-top');
 
+const PAGE_SIZE = 30;
 let allUsers = [];
+let userState = {
+  page: 1,
+  pageSize: PAGE_SIZE,
+  q: '',
+  deviceStatus: 'all',
+  limitMode: 'all',
+  sort: 'updated_at',
+  order: 'desc',
+  pagination: null,
+};
+let auditState = {
+  page: 1,
+  pageSize: PAGE_SIZE,
+  pagination: null,
+};
 let dashboardData = null;
 let currentUserContext = null;
+let userSearchTimer = null;
 
 document.getElementById('auth-form').addEventListener('submit', async (e) => {
   e.preventDefault();
@@ -198,14 +215,46 @@ function renderDistribution(id, items) {
 }
 
 async function loadUsers() {
-  const res = await api('/users');
+  closeDeviceRow();
+  const params = new URLSearchParams({
+    page: String(userState.page),
+    page_size: String(userState.pageSize),
+    sort: userState.sort,
+    order: userState.order,
+  });
+  if (userState.q) params.set('q', userState.q);
+  if (userState.deviceStatus !== 'all') params.set('device_status', userState.deviceStatus);
+  if (userState.limitMode !== 'all') params.set('limit_mode', userState.limitMode);
+
+  const res = await api('/users?' + params.toString());
   if (!res.success) return;
-  allUsers = res.data.users;
-  renderUsers(filterUsers());
+  allUsers = res.data.users || [];
+  userState.pagination = res.data.pagination || null;
+  renderUsers(allUsers);
+  renderPagination('users-pagination', userState.pagination, async (page) => {
+    userState.page = page;
+    await loadUsers();
+  });
 }
 
 document.getElementById('user-search').addEventListener('input', () => {
-  renderUsers(filterUsers());
+  clearTimeout(userSearchTimer);
+  userSearchTimer = setTimeout(() => {
+    userState.q = document.getElementById('user-search').value.trim();
+    userState.page = 1;
+    loadUsers();
+  }, 250);
+});
+
+['user-device-status', 'user-limit-mode', 'user-sort', 'user-order'].forEach(id => {
+  document.getElementById(id).addEventListener('change', () => {
+    userState.deviceStatus = document.getElementById('user-device-status').value;
+    userState.limitMode = document.getElementById('user-limit-mode').value;
+    userState.sort = document.getElementById('user-sort').value;
+    userState.order = document.getElementById('user-order').value;
+    userState.page = 1;
+    loadUsers();
+  });
 });
 
 document.querySelector('#users-table tbody').addEventListener('click', async (e) => {
@@ -231,15 +280,6 @@ document.querySelector('#users-table tbody').addEventListener('click', async (e)
     closeDeviceRow();
   }
 });
-
-function filterUsers() {
-  const q = document.getElementById('user-search').value.trim().toLowerCase();
-  if (!q) return allUsers;
-  return allUsers.filter(u =>
-    (u.email || '').toLowerCase().includes(q) ||
-    (u.id || '').toLowerCase().includes(q)
-  );
-}
 
 function renderUsers(users) {
   const tbody = document.querySelector('#users-table tbody');
@@ -391,12 +431,21 @@ async function clearLimit() {
 }
 
 async function loadAuditLogs() {
-  const res = await api('/audit-logs?limit=100');
+  const params = new URLSearchParams({
+    page: String(auditState.page),
+    page_size: String(auditState.pageSize),
+  });
+  const res = await api('/audit-logs?' + params.toString());
   if (!res.success) return;
   const logs = res.data.audit_logs || [];
+  auditState.pagination = res.data.pagination || null;
   const tbody = document.querySelector('#audit-table tbody');
   if (!logs.length) {
     tbody.innerHTML = '<tr><td colspan="5" class="empty">暂无日志</td></tr>';
+    renderPagination('audit-pagination', auditState.pagination, async (page) => {
+      auditState.page = page;
+      await loadAuditLogs();
+    });
     return;
   }
   tbody.innerHTML = logs.map(l => `
@@ -408,6 +457,28 @@ async function loadAuditLogs() {
       <td>${esc(l.ip || '—')}</td>
     </tr>
   `).join('');
+  renderPagination('audit-pagination', auditState.pagination, async (page) => {
+    auditState.page = page;
+    await loadAuditLogs();
+  });
+}
+
+function renderPagination(id, pagination, onPageChange) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  const page = pagination?.page ?? 1;
+  const totalPages = pagination?.total_pages ?? 0;
+  const total = pagination?.total ?? 0;
+  const hasPrev = Boolean(pagination?.has_prev);
+  const hasNext = Boolean(pagination?.has_next);
+  el.innerHTML = `
+    <button data-page="${page - 1}" ${hasPrev ? '' : 'disabled'}>上一页</button>
+    <span class="page-info">第 ${totalPages ? page : 0} / ${totalPages} 页 · 共 ${total} 条</span>
+    <button data-page="${page + 1}" ${hasNext ? '' : 'disabled'}>下一页</button>
+  `;
+  el.querySelectorAll('button:not(:disabled)').forEach(btn => {
+    btn.addEventListener('click', () => onPageChange(Number(btn.dataset.page)));
+  });
 }
 
 function deviceStatus(status) {

@@ -4,6 +4,7 @@ import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:webview_flutter_android/webview_flutter_android.dart';
 import 'package:webview_flutter/webview_flutter.dart';
+import 'package:fl_clash/xboard/features/auth/utils/crisp_url_helper.dart';
 
 /// Crisp 客服嵌入页面
 ///
@@ -11,12 +12,14 @@ import 'package:webview_flutter/webview_flutter.dart';
 /// 支持 Android、iOS；桌面端使用 desktop_webview_window 独立窗口。
 class CrispChatPage extends StatefulWidget {
   final String websiteId;
+  final String? crispProxyUrl;
   final String? userScript;
   final Future<String?> Function()? deferredUserScript;
 
   const CrispChatPage({
     super.key,
     required this.websiteId,
+    this.crispProxyUrl,
     this.userScript,
     this.deferredUserScript,
   });
@@ -30,6 +33,9 @@ class CrispChatPage extends StatefulWidget {
 
 class _CrispChatPageState extends State<CrispChatPage> {
   late final WebViewController _controller;
+  Timer? _proxyFallbackTimer;
+  bool _usingProxy = false;
+  bool _didFallbackToOfficial = false;
   bool _isLoading = true;
   bool _deferredUserScriptStarted = false;
 
@@ -41,10 +47,12 @@ class _CrispChatPageState extends State<CrispChatPage> {
       ..setBackgroundColor(const Color(0xFFF5F5F5))
       ..setNavigationDelegate(
         NavigationDelegate(
-          onPageStarted: (_) {
+          onPageStarted: (url) {
+            _usingProxy = _isProxyUrl(url);
             if (mounted) setState(() => _isLoading = true);
           },
           onPageFinished: (_) {
+            _proxyFallbackTimer?.cancel();
             final userScript = widget.userScript;
             if (userScript != null && userScript.isNotEmpty) {
               _controller.runJavaScript(userScript);
@@ -52,15 +60,61 @@ class _CrispChatPageState extends State<CrispChatPage> {
             unawaited(_runDeferredUserScript());
             if (mounted) setState(() => _isLoading = false);
           },
+          onWebResourceError: (error) {
+            if (error.isForMainFrame == false) return;
+            _fallbackToOfficialIfNeeded();
+          },
+          onHttpError: (error) {
+            if (!_isProxyEmbedUri(error.request?.uri)) return;
+            _fallbackToOfficialIfNeeded();
+          },
         ),
       );
     unawaited(_configureAndroidFileSelection(_controller));
 
-    // 所有平台统一直接加载 embed URL（macOS 去掉沙箱后不再有限制）
-    _controller.loadRequest(
-      Uri.parse(
-          'https://go.crisp.chat/chat/embed/?website_id=${widget.websiteId}'),
+    _loadPreferredCrispUrl();
+  }
+
+  @override
+  void dispose() {
+    _proxyFallbackTimer?.cancel();
+    super.dispose();
+  }
+
+  void _loadPreferredCrispUrl() {
+    final proxyConfigured = isCrispProxyConfigured(widget.crispProxyUrl);
+    final url = crispEmbedUri(
+      websiteId: widget.websiteId,
+      proxyUrl: widget.crispProxyUrl,
     );
+    _usingProxy = proxyConfigured;
+    if (proxyConfigured) {
+      _proxyFallbackTimer = Timer(
+        crispProxyFallbackDelay,
+        _fallbackToOfficialIfNeeded,
+      );
+    }
+    _controller.loadRequest(url);
+  }
+
+  void _fallbackToOfficialIfNeeded() {
+    if (!_usingProxy || _didFallbackToOfficial) return;
+    _didFallbackToOfficial = true;
+    _usingProxy = false;
+    _proxyFallbackTimer?.cancel();
+    _controller.loadRequest(officialCrispEmbedUri(widget.websiteId));
+  }
+
+  bool _isProxyUrl(String url) {
+    final proxy = normalizeCrispProxyUrl(widget.crispProxyUrl);
+    return proxy.isNotEmpty && url.startsWith(proxy);
+  }
+
+  bool _isProxyEmbedUri(Uri? uri) {
+    if (uri == null) return false;
+    final proxy = normalizeCrispProxyUrl(widget.crispProxyUrl);
+    if (proxy.isEmpty) return false;
+    return uri.toString().startsWith(proxy) && uri.path.contains('/chat/embed');
   }
 
   Future<void> _runDeferredUserScript() async {
