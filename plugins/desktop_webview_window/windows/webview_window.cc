@@ -122,13 +122,15 @@ void WebviewWindow::CreateAndShow(const std::wstring &title, int height, int wid
              true);
   ShowWindow(web_view_handle, SW_SHOW);
 
-  // Create the title bar view.
-  std::vector<std::string> args = {"web_view_title_bar", std::to_string(window_id_)};
-  flutter_action_bar_ = std::make_unique<webview_window::FlutterView>(std::move(args));
-  auto title_bar_handle = flutter_action_bar_->GetWindow();
-  SetParent(title_bar_handle, hwnd_.get());
-  MoveWindow(title_bar_handle, 0, 0, rc.right - rc.left, title_bar_height, true);
-  ShowWindow(title_bar_handle, SW_SHOW);
+  // Create the title bar view only when the caller reserves space for it.
+  if (title_bar_height > 0) {
+    std::vector<std::string> args = {"web_view_title_bar", std::to_string(window_id_)};
+    flutter_action_bar_ = std::make_unique<webview_window::FlutterView>(std::move(args));
+    auto title_bar_handle = flutter_action_bar_->GetWindow();
+    SetParent(title_bar_handle, hwnd_.get());
+    MoveWindow(title_bar_handle, 0, 0, rc.right - rc.left, title_bar_height, true);
+    ShowWindow(title_bar_handle, SW_SHOW);
+  }
 
   assert(hwnd_ != nullptr);
 

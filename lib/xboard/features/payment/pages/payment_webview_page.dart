@@ -65,6 +65,9 @@ class _PaymentWebViewPageState extends ConsumerState<PaymentWebViewPage> {
   WebViewController? _webViewController;
   winwv.WinWebViewController? _desktopFloatingWebViewController;
   Timer? _pollTimer;
+  Timer? _loadStateTimer;
+  bool _isPageLoading = true;
+  bool _showPageLoadingMessage = false;
   bool _isPolling = false;
   bool _isChecking = false;
 
@@ -87,6 +90,7 @@ class _PaymentWebViewPageState extends ConsumerState<PaymentWebViewPage> {
   @override
   void dispose() {
     _stopPolling();
+    _loadStateTimer?.cancel();
     _webViewController = null;
     final desktopController = _desktopFloatingWebViewController;
     _desktopFloatingWebViewController = null;
@@ -104,21 +108,34 @@ class _PaymentWebViewPageState extends ConsumerState<PaymentWebViewPage> {
   }
 
   Future<void> _initWebView() async {
+    _beginPageLoading();
     _webViewController = WebViewController()
       ..setJavaScriptMode(JavaScriptMode.unrestricted)
       ..setUserAgent(_desktopUserAgent)
       ..setNavigationDelegate(
         NavigationDelegate(
-          onPageFinished: (_) {},
+          onPageStarted: (_) => _beginPageLoading(),
+          onProgress: (progress) {
+            if (progress >= 100) _finishPageLoading();
+          },
+          onPageFinished: (_) => _finishPageLoading(),
           onUrlChange: _onUrlChange,
           onNavigationRequest: _onNavigationRequest,
-          onWebResourceError: (_) {},
+          onWebResourceError: (error) {
+            if (error.isForMainFrame == true) {
+              _logger.warning(
+                'Payment WebView main frame error: ${error.description}',
+              );
+              _finishPageLoading();
+            }
+          },
         ),
       )
       ..loadRequest(Uri.parse(widget.paymentUrl));
   }
 
   Future<void> _initDesktopFloatingWebView() async {
+    _beginPageLoading();
     final controller = winwv.WinWebViewController(
       params: const winwv.WindowsWebViewControllerCreationParams(
         profileName: 'fastcat-payment',
@@ -126,21 +143,63 @@ class _PaymentWebViewPageState extends ConsumerState<PaymentWebViewPage> {
       ),
     );
     _desktopFloatingWebViewController = controller;
+    if (mounted) setState(() {});
     await controller.setJavaScriptMode(JavaScriptMode.unrestricted);
     await controller.setUserAgent(_desktopUserAgent);
     await controller.setNavigationDelegate(
       winwv.WinNavigationDelegate(
+        onPageStarted: (_) => _beginPageLoading(),
+        onProgress: (progress) {
+          if (progress >= 100) _finishPageLoading();
+        },
+        onPageFinished: (_) => _finishPageLoading(),
         onNavigationRequest: _onNavigationRequest,
         onUrlChange: _onUrlChange,
         onWebResourceError: (error) {
           _logger.warning(
             'Desktop floating WebView resource error: ${error.url} ${error.description}',
           );
+          if (error.isForMainFrame == true) {
+            _finishPageLoading();
+          }
         },
       ),
     );
     await controller.loadRequest(Uri.parse(widget.paymentUrl));
     if (mounted) setState(() {});
+  }
+
+  void _beginPageLoading() {
+    _loadStateTimer?.cancel();
+    _setPageLoadingState(isLoading: true, showMessage: false);
+    _loadStateTimer = Timer(const Duration(milliseconds: 650), () {
+      if (!mounted || !_isPageLoading) return;
+      _setPageLoadingState(isLoading: true, showMessage: true);
+    });
+  }
+
+  void _finishPageLoading() {
+    _loadStateTimer?.cancel();
+    _loadStateTimer = null;
+    _setPageLoadingState(isLoading: false, showMessage: false);
+  }
+
+  void _setPageLoadingState({
+    required bool isLoading,
+    required bool showMessage,
+  }) {
+    if (_isPageLoading == isLoading && _showPageLoadingMessage == showMessage) {
+      return;
+    }
+    if (!mounted) {
+      _isPageLoading = isLoading;
+      _showPageLoadingMessage = showMessage;
+      return;
+    }
+    setState(() {
+      _isPageLoading = isLoading;
+      _showPageLoadingMessage = showMessage;
+    });
   }
 
   void _onUrlChange(UrlChange change) {
@@ -269,19 +328,82 @@ class _PaymentWebViewPageState extends ConsumerState<PaymentWebViewPage> {
   }
 
   Widget _buildWebView() {
+    late final Widget webView;
     if (_useSystemWebView) {
-      return _webViewController != null
+      webView = _webViewController != null
           ? WebViewWidget(controller: _webViewController!)
-          : const Center(child: CircularProgressIndicator());
-    }
-    if (_useDesktopFloatingWebView) {
-      return _desktopFloatingWebViewController != null
+          : const SizedBox.expand();
+    } else if (_useDesktopFloatingWebView) {
+      webView = _desktopFloatingWebViewController != null
           ? winwv.WinWebViewWidget(
               controller: _desktopFloatingWebViewController!,
             )
-          : const Center(child: CircularProgressIndicator());
+          : const SizedBox.expand();
+    } else {
+      webView = const SizedBox.expand();
     }
-    return const Center(child: CircularProgressIndicator());
+
+    return Stack(
+      fit: StackFit.expand,
+      children: [
+        webView,
+        if (_isPageLoading)
+          _PaymentGatewayLoadingOverlay(
+            showMessage: _showPageLoadingMessage,
+          ),
+      ],
+    );
+  }
+}
+
+class _PaymentGatewayLoadingOverlay extends StatelessWidget {
+  final bool showMessage;
+
+  const _PaymentGatewayLoadingOverlay({
+    required this.showMessage,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+    final bg = Theme.of(context).colorScheme.surface.withValues(alpha: 0.92);
+    final fg = Theme.of(context).colorScheme.onSurface;
+
+    return ColoredBox(
+      color: bg,
+      child: Center(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const SizedBox(
+              width: 32,
+              height: 32,
+              child: CircularProgressIndicator(strokeWidth: 3),
+            ),
+            AnimatedSwitcher(
+              duration: const Duration(milliseconds: 180),
+              child: showMessage
+                  ? Padding(
+                      key: const ValueKey('loading-text'),
+                      padding: const EdgeInsets.only(top: 14),
+                      child: Text(
+                        l10n.xboardLoadingPaymentPage,
+                        style: TextStyle(
+                          color: fg.withValues(alpha: 0.72),
+                          fontSize: 13,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                    )
+                  : const SizedBox(
+                      key: ValueKey('loading-placeholder'),
+                      height: 0,
+                    ),
+            ),
+          ],
+        ),
+      ),
+    );
   }
 }
 

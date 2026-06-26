@@ -27,7 +27,8 @@ class WebviewWindowController: NSWindowController {
   init(viewId: Int64, methodChannel: FlutterMethodChannel,
        width: Int, height: Int,
        title: String, titleBarHeight: Int,
-       titleBarTopPadding: Int) {
+       titleBarTopPadding: Int,
+       resizable: Bool) {
     self.viewId = viewId
     self.methodChannel = methodChannel
     self.width = width
@@ -37,10 +38,17 @@ class WebviewWindowController: NSWindowController {
     self.title = title
     super.init(window: nil)
 
-    let newWindow = NSWindow(contentRect: NSRect(x: 0, y: 0, width: width, height: height), styleMask: [.titled, .closable, .miniaturizable, .resizable, .fullSizeContentView], backing: .buffered, defer: false)
+    var styleMask: NSWindow.StyleMask = [.titled, .closable, .miniaturizable, .fullSizeContentView]
+    if resizable {
+      styleMask.insert(.resizable)
+    }
+    let newWindow = NSWindow(contentRect: NSRect(x: 0, y: 0, width: width, height: height), styleMask: styleMask, backing: .buffered, defer: false)
     newWindow.delegate = self
     newWindow.title = title
     newWindow.titlebarAppearsTransparent = true
+    if !resizable {
+      newWindow.standardWindowButton(.zoomButton)?.isHidden = true
+    }
 
     let contentViewController = WebViewLayoutController(
       methodChannel: methodChannel,

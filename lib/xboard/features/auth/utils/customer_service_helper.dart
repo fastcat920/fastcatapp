@@ -1,5 +1,6 @@
-import 'dart:io';
+import 'dart:async';
 import 'dart:convert';
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -30,22 +31,36 @@ const _desktopCustomerServiceWindowHeight = 680;
 class CustomerServiceHelper {
   CustomerServiceHelper._();
 
+  static Future<String>? _webview2DataFolderFuture;
+  static Future<bool>? _desktopWebviewAvailableFuture;
+
   /// 是否有任何客服渠道可用（仅远程 Crisp）
   static bool get isAvailable => XBoardConfig.crispWebsiteId.isNotEmpty;
 
+  static bool get _isDesktopPlatform =>
+      Platform.isWindows || Platform.isMacOS || Platform.isLinux;
+
+  static int get _desktopCustomerServiceTitleBarHeight =>
+      Platform.isWindows ? 0 : 40;
+
   /// 获取 WebView2 用户数据目录（可写路径）
   static Future<String> _webview2DataFolder() async {
-    final dir = await getApplicationSupportDirectory();
-    return '${dir.path}/webview2_data';
+    return _webview2DataFolderFuture ??= () async {
+      final dir = await getApplicationSupportDirectory();
+      return '${dir.path}/webview2_data';
+    }();
   }
 
   /// 检查桌面端 WebView2 是否可用
   static Future<bool> _isDesktopWebviewAvailable() async {
-    try {
-      return await WebviewWindow.isWebviewAvailable();
-    } catch (_) {
-      return false;
-    }
+    if (!Platform.isWindows) return true;
+    return _desktopWebviewAvailableFuture ??= () async {
+      try {
+        return await WebviewWindow.isWebviewAvailable();
+      } catch (_) {
+        return false;
+      }
+    }();
   }
 
   /// 打开客服页面
@@ -59,6 +74,17 @@ class CustomerServiceHelper {
     }
     if (crispId.isNotEmpty) {
       if (!context.mounted) return;
+      if (_isDesktopPlatform) {
+        final userScript = _buildCrispUserScript(context);
+        final webview = await _openCrispInDesktopWebview(
+          crispId,
+          userScript: userScript,
+        );
+        if (webview != null && context.mounted) {
+          unawaited(_applyCrispIPDataWhenReady(context, webview));
+        }
+        return;
+      }
       final ipData = await _resolveCrispIPData(context);
       if (!context.mounted) return;
       _openCrisp(context, crispId, ipData: ipData);
@@ -100,13 +126,15 @@ class CustomerServiceHelper {
         return;
       }
 
-      final dataFolder = await _webview2DataFolder();
+      final dataFolder = Platform.isWindows ? await _webview2DataFolder() : '';
       final webview = await WebviewWindow.create(
         configuration: CreateConfiguration(
           title: '在线客服',
           windowWidth: _desktopCustomerServiceWindowWidth,
           windowHeight: _desktopCustomerServiceWindowHeight,
+          titleBarHeight: _desktopCustomerServiceTitleBarHeight,
           userDataFolderWindows: dataFolder,
+          resizable: false,
         ),
       );
 
@@ -397,9 +425,12 @@ if(window===window.top){
     _CrispIPData? ipData,
   }) {
     final userScript = _buildCrispUserScript(context, ipData: ipData);
-    if (Platform.isWindows || Platform.isMacOS || Platform.isLinux) {
+    if (_isDesktopPlatform) {
       // 桌面端：用 desktop_webview_window 独立窗口
-      _openCrispInDesktopWebview(websiteId, userScript: userScript);
+      unawaited(_openCrispInDesktopWebview(
+        websiteId,
+        userScript: userScript,
+      ));
       return;
     } else if (CrispChatPage.isSupported) {
       // Android/iOS：内嵌 WebView 全屏
@@ -421,7 +452,7 @@ if(window===window.top){
 
   /// 桌面端：用 desktop_webview_window 打开 Crisp 聊天
   /// 用 SDK 注入方式代替直接加载 embed URL（解决 WebView2 空白问题）
-  static Future<void> _openCrispInDesktopWebview(
+  static Future<Webview?> _openCrispInDesktopWebview(
     String websiteId, {
     required String userScript,
   }) async {
@@ -433,16 +464,18 @@ if(window===window.top){
           Uri.parse('https://go.crisp.chat/chat/embed/?website_id=$websiteId'),
           mode: LaunchMode.externalApplication,
         );
-        return;
+        return null;
       }
 
-      final dataFolder = await _webview2DataFolder();
+      final dataFolder = Platform.isWindows ? await _webview2DataFolder() : '';
       final webview = await WebviewWindow.create(
         configuration: CreateConfiguration(
           title: '在线客服',
           windowWidth: _desktopCustomerServiceWindowWidth,
           windowHeight: _desktopCustomerServiceWindowHeight,
+          titleBarHeight: _desktopCustomerServiceTitleBarHeight,
           userDataFolderWindows: dataFolder,
+          resizable: false,
         ),
       );
 
@@ -492,12 +525,29 @@ if(window===window.top){
           'https://go.crisp.chat/chat/embed/?website_id=$websiteIdEscaped');
 
       _logger.info('[Crisp] 已启动 WebView2，注入客服 SDK');
+      return webview;
     } catch (e) {
       _logger.error('[Crisp] WebView2 启动失败，回退浏览器', e);
       launchUrl(
         Uri.parse('https://go.crisp.chat/chat/embed/?website_id=$websiteId'),
         mode: LaunchMode.externalApplication,
       );
+      return null;
+    }
+  }
+
+  static Future<void> _applyCrispIPDataWhenReady(
+    BuildContext context,
+    Webview webview,
+  ) async {
+    try {
+      final ipData = await _resolveCrispIPData(context);
+      if (ipData == null || !context.mounted) return;
+      final script = _buildCrispUserScript(context, ipData: ipData);
+      await webview.evaluateJavaScript(script);
+      _logger.debug('[Crisp] 已后台补充客服 IP 数据');
+    } catch (e) {
+      _logger.debug('[Crisp] 后台补充客服 IP 数据失败: $e');
     }
   }
 

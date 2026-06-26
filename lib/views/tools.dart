@@ -1,11 +1,8 @@
-import 'dart:io';
-
 import 'package:fl_clash/common/common.dart';
 import 'package:fl_clash/enum/enum.dart';
 import 'package:fl_clash/l10n/l10n.dart';
 import 'package:fl_clash/models/models.dart';
 import 'package:fl_clash/providers/providers.dart';
-import 'package:fl_clash/state.dart';
 import 'package:fl_clash/views/about.dart';
 import 'package:fl_clash/views/application_setting.dart';
 import 'package:fl_clash/views/config/config.dart';
@@ -14,7 +11,6 @@ import 'package:fl_clash/xboard/features/shared/widgets/connection_health_dialog
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
-import 'package:path/path.dart' show dirname, join;
 
 import 'developer.dart';
 import 'logs.dart';
@@ -103,7 +99,6 @@ class _ToolboxViewState extends ConsumerState<ToolsView> {
       items: [
         const _LocaleItem(),
         const _ThemeItem(),
-        if (Platform.isWindows) const _LoopbackItem(),
         const _ConfigItem(),
         const _SettingItem(),
       ],
@@ -196,40 +191,6 @@ class _ThemeItem extends StatelessWidget {
         title: l10n.theme,
         widget: const ThemeView(),
       ),
-    );
-  }
-}
-
-class _LoopbackItem extends StatelessWidget {
-  const _LoopbackItem();
-
-  @override
-  Widget build(BuildContext context) {
-    final l10n = AppLocalizations.of(context);
-    return ListItem(
-      leading: const Icon(Icons.lock),
-      title: Text(l10n.loopback),
-      subtitle: Text(l10n.loopbackDesc),
-      onTap: () {
-        final exePath =
-            join(dirname(Platform.resolvedExecutable), 'EnableLoopback.exe');
-        if (!File(exePath).existsSync()) {
-          globalState.showMessage(
-            title: l10n.loopback,
-            message: const TextSpan(text: 'EnableLoopback.exe 未找到'),
-          );
-          return;
-        }
-        // EnableLoopback.exe 自带 highestAvailable UAC manifest，
-        // 用 "open" verb 让 exe 自己处理提权，避免 "runas" 与 manifest 冲突
-        final ok = windows?.launch(exePath) ?? false;
-        if (!ok) {
-          globalState.showMessage(
-            title: l10n.loopback,
-            message: const TextSpan(text: '启动失败，请检查系统权限设置'),
-          );
-        }
-      },
     );
   }
 }
