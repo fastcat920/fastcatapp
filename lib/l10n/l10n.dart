@@ -6230,6 +6230,26 @@ class AppLocalizations {
     );
   }
 
+  /// `Commissions are automatically confirmed three days after your friend places an order and added to the wallet balance.`
+  String get pendingCommissionTooltipWalletBalance {
+    return Intl.message(
+      'Commissions are automatically confirmed three days after your friend places an order and added to the wallet balance.',
+      name: 'pendingCommissionTooltipWalletBalance',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Commissions are automatically confirmed three days after your friend places an order and added to the commission balance.`
+  String get pendingCommissionTooltipCommissionBalance {
+    return Intl.message(
+      'Commissions are automatically confirmed three days after your friend places an order and added to the commission balance.',
+      name: 'pendingCommissionTooltipCommissionBalance',
+      desc: '',
+      args: [],
+    );
+  }
+
   /// `Balance`
   String get walletBalance {
     return Intl.message('Balance', name: 'walletBalance', desc: '', args: []);

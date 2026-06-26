@@ -797,6 +797,8 @@
   "transfer": "划转",
   "availableCommission": "可用佣金",
   "pendingCommission": "待确认佣金",
+  "pendingCommissionTooltipWalletBalance": "好友下单三天后会自动确认佣金并发放到钱包余额",
+  "pendingCommissionTooltipCommissionBalance": "好友下单三天后会自动确认佣金并发放到佣金余额",
   "walletBalance": "钱包余额",
   "commissionHistory": "佣金历史",
   "withdraw": "提现",

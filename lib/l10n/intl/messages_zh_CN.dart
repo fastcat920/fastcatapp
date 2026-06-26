@@ -664,6 +664,10 @@ class MessageLookup extends MessageLookupByLibrary {
     "passwordsDoNotMatch": MessageLookupByLibrary.simpleMessage("两次输入的密码不一致"),
     "paste": MessageLookupByLibrary.simpleMessage("粘贴"),
     "pendingCommission": MessageLookupByLibrary.simpleMessage("待确认佣金"),
+    "pendingCommissionTooltipCommissionBalance":
+        MessageLookupByLibrary.simpleMessage("好友下单三天后会自动确认佣金并发放到佣金余额"),
+    "pendingCommissionTooltipWalletBalance":
+        MessageLookupByLibrary.simpleMessage("好友下单三天后会自动确认佣金并发放到钱包余额"),
     "plans": MessageLookupByLibrary.simpleMessage("套餐"),
     "pleaseBindWebDAV": MessageLookupByLibrary.simpleMessage("请绑定WebDAV"),
     "pleaseConfirmNewPassword": MessageLookupByLibrary.simpleMessage(

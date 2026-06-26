@@ -797,6 +797,8 @@
   "transfer": "Transfer",
   "availableCommission": "Available",
   "pendingCommission": "Pending",
+  "pendingCommissionTooltipWalletBalance": "Commissions are automatically confirmed three days after your friend places an order and added to the wallet balance.",
+  "pendingCommissionTooltipCommissionBalance": "Commissions are automatically confirmed three days after your friend places an order and added to the commission balance.",
   "walletBalance": "Balance",
   "commissionHistory": "Commission History",
   "withdraw": "Withdraw",

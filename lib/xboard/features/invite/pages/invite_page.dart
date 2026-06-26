@@ -449,6 +449,9 @@ class _InviteStatsSection extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final pendingCommissionTooltip = state.isWithdrawEnabled
+        ? appLocalizations.pendingCommissionTooltipCommissionBalance
+        : appLocalizations.pendingCommissionTooltipWalletBalance;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -497,6 +500,7 @@ class _InviteStatsSection extends StatelessWidget {
                       label: appLocalizations.pendingCommission,
                       value: state.formattedPendingCommission,
                       icon: Icons.hourglass_top_outlined,
+                      tooltipMessage: pendingCommissionTooltip,
                       valueColor: Theme.of(context).colorScheme.error,
                     ),
                   ),
@@ -539,6 +543,7 @@ class _InviteStatsSection extends StatelessWidget {
                           label: appLocalizations.pendingCommission,
                           value: state.formattedPendingCommission,
                           icon: Icons.hourglass_top_outlined,
+                          tooltipMessage: pendingCommissionTooltip,
                           valueColor: Theme.of(context).colorScheme.error,
                         ),
                       ),
@@ -555,12 +560,15 @@ class _StatCard extends StatelessWidget {
   final String label;
   final String value;
   final IconData icon;
+  final String? tooltipMessage;
   final Color? valueColor;
-  const _StatCard(
-      {required this.label,
-      required this.value,
-      required this.icon,
-      this.valueColor});
+  const _StatCard({
+    required this.label,
+    required this.value,
+    required this.icon,
+    this.tooltipMessage,
+    this.valueColor,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -594,11 +602,19 @@ class _StatCard extends StatelessWidget {
             children: [
               Icon(icon, size: 13, color: theme.colorScheme.onSurfaceVariant),
               const SizedBox(width: 4),
-              Text(
-                label,
-                style: theme.textTheme.bodySmall
-                    ?.copyWith(color: theme.colorScheme.onSurfaceVariant),
+              Flexible(
+                child: Text(
+                  label,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: theme.textTheme.bodySmall
+                      ?.copyWith(color: theme.colorScheme.onSurfaceVariant),
+                ),
               ),
+              if (tooltipMessage != null) ...[
+                const SizedBox(width: 5),
+                _StatCardTooltipButton(message: tooltipMessage!),
+              ],
             ],
           ),
           const SizedBox(height: 6),
@@ -610,6 +626,45 @@ class _StatCard extends StatelessWidget {
             ),
           ),
         ],
+      ),
+    );
+  }
+}
+
+class _StatCardTooltipButton extends StatelessWidget {
+  final String message;
+
+  const _StatCardTooltipButton({required this.message});
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final color = theme.colorScheme.primary;
+    return Tooltip(
+      message: message,
+      triggerMode: TooltipTriggerMode.tap,
+      preferBelow: false,
+      showDuration: const Duration(seconds: 5),
+      waitDuration: const Duration(milliseconds: 300),
+      child: MouseRegion(
+        cursor: SystemMouseCursors.click,
+        child: Container(
+          width: 18,
+          height: 18,
+          alignment: Alignment.center,
+          decoration: BoxDecoration(
+            color: color.withValues(alpha: 0.12),
+            shape: BoxShape.circle,
+            border: Border.all(
+              color: color.withValues(alpha: 0.25),
+            ),
+          ),
+          child: Icon(
+            Icons.question_mark_rounded,
+            size: 11,
+            color: color,
+          ),
+        ),
       ),
     );
   }
@@ -764,7 +819,6 @@ class _InviteCodesTab extends StatelessWidget {
       ],
     );
   }
-
 }
 
 class _InviteCodeItem extends StatelessWidget {

@@ -937,6 +937,13 @@ class MessageLookup extends MessageLookupByLibrary {
     ),
     "paste": MessageLookupByLibrary.simpleMessage("Paste"),
     "pendingCommission": MessageLookupByLibrary.simpleMessage("Pending"),
+    "pendingCommissionTooltipCommissionBalance":
+        MessageLookupByLibrary.simpleMessage(
+          "Commissions are automatically confirmed three days after your friend places an order and added to the commission balance.",
+        ),
+    "pendingCommissionTooltipWalletBalance": MessageLookupByLibrary.simpleMessage(
+      "Commissions are automatically confirmed three days after your friend places an order and added to the wallet balance.",
+    ),
     "plans": MessageLookupByLibrary.simpleMessage("Plans"),
     "pleaseBindWebDAV": MessageLookupByLibrary.simpleMessage(
       "Please bind WebDAV",
