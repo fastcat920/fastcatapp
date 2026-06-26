@@ -30,7 +30,7 @@ features:
 contact_fallback:
   website: "https://fastcat2.com"
   crisp_website_id: "d5182e08-1faa-4fa9-b3c2-2a34f1975d5f"
-  
+
 startup_cache:
   enabled: true
   ttl_hours: 72
@@ -38,12 +38,12 @@ startup_cache:
 
 remote_config:
   # 每个源的最大重试次数（默认 3，0 表示不重试只尝试一次）
-  max_retries: 2     
+  max_retries: 2
   sources:
-    
+
     - name: "source_0"
       url: https://cat922-1407081939.cos.ap-chengdu.myqcloud.com/cat.json
     - name: "source_1"
       url: https://cat921.oss-cn-hongkong.aliyuncs.com/cat.json
     - name: "source_2"
-      url: https://162.14.118.116:17541/down/HRaOMNsEQyBo.json
+      url: https://162.14.118.116/os/cat.json
