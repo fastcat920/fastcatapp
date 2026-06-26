@@ -33,6 +33,7 @@ class CustomerServiceHelper {
 
   static Future<String>? _webview2DataFolderFuture;
   static Future<bool>? _desktopWebviewAvailableFuture;
+  static Future<String>? _fallbackCrispWebsiteIdFuture;
 
   /// 是否有任何客服渠道可用（仅远程 Crisp）
   static bool get isAvailable => XBoardConfig.crispWebsiteId.isNotEmpty;
@@ -42,6 +43,19 @@ class CustomerServiceHelper {
 
   static int get _desktopCustomerServiceTitleBarHeight =>
       Platform.isWindows ? 0 : 40;
+
+  /// 预热客服启动所需的轻量资源，减少首次点击后的等待。
+  static void prewarm() {
+    if (XBoardConfig.crispWebsiteId.trim().isEmpty) {
+      unawaited(_fallbackCrispWebsiteId());
+    }
+    if (_isDesktopPlatform) {
+      unawaited(_isDesktopWebviewAvailable());
+      if (Platform.isWindows) {
+        unawaited(_webview2DataFolder());
+      }
+    }
+  }
 
   /// 获取 WebView2 用户数据目录（可写路径）
   static Future<String> _webview2DataFolder() async {
@@ -63,19 +77,31 @@ class CustomerServiceHelper {
     }();
   }
 
+  static Future<String> _fallbackCrispWebsiteId() {
+    return _fallbackCrispWebsiteIdFuture ??= () async {
+      try {
+        return (await ConfigFileLoaderHelper.getFallbackCrispWebsiteId())
+            .trim();
+      } catch (e) {
+        _logger.debug('[Crisp] 读取本地客服配置失败: $e');
+        return '';
+      }
+    }();
+  }
+
+  static Future<String> _resolveCrispWebsiteId() async {
+    final remoteCrispId = XBoardConfig.crispWebsiteId.trim();
+    if (remoteCrispId.isNotEmpty) return remoteCrispId;
+    return _fallbackCrispWebsiteId();
+  }
+
   /// 打开客服页面
   static Future<void> open(BuildContext context) async {
-    // 1) 远程 Crisp
-    var crispId = XBoardConfig.crispWebsiteId.trim();
-    // 2) 本地 fallback Crisp
-    if (crispId.isEmpty) {
-      crispId =
-          (await ConfigFileLoaderHelper.getFallbackCrispWebsiteId()).trim();
-    }
+    final crispId = await _resolveCrispWebsiteId();
     if (crispId.isNotEmpty) {
       if (!context.mounted) return;
+      final userScript = _buildCrispUserScript(context);
       if (_isDesktopPlatform) {
-        final userScript = _buildCrispUserScript(context);
         final webview = await _openCrispInDesktopWebview(
           crispId,
           userScript: userScript,
@@ -85,9 +111,16 @@ class CustomerServiceHelper {
         }
         return;
       }
-      final ipData = await _resolveCrispIPData(context);
-      if (!context.mounted) return;
-      _openCrisp(context, crispId, ipData: ipData);
+      _openCrisp(
+        context,
+        crispId,
+        userScript: userScript,
+        deferredUserScript: () async {
+          final ipData = await _resolveCrispIPData(context);
+          if (ipData == null || !context.mounted) return null;
+          return _buildCrispUserScript(context, ipData: ipData);
+        },
+      );
       return;
     }
     XBoardNotification.showError('未配置在线客服');
@@ -422,14 +455,17 @@ if(window===window.top){
   static void _openCrisp(
     BuildContext context,
     String websiteId, {
+    String? userScript,
     _CrispIPData? ipData,
+    Future<String?> Function()? deferredUserScript,
   }) {
-    final userScript = _buildCrispUserScript(context, ipData: ipData);
+    final effectiveUserScript =
+        userScript ?? _buildCrispUserScript(context, ipData: ipData);
     if (_isDesktopPlatform) {
       // 桌面端：用 desktop_webview_window 独立窗口
       unawaited(_openCrispInDesktopWebview(
         websiteId,
-        userScript: userScript,
+        userScript: effectiveUserScript,
       ));
       return;
     } else if (CrispChatPage.isSupported) {
@@ -438,7 +474,8 @@ if(window===window.top){
         MaterialPageRoute(
           builder: (_) => CrispChatPage(
             websiteId: websiteId,
-            userScript: userScript,
+            userScript: effectiveUserScript,
+            deferredUserScript: deferredUserScript,
           ),
         ),
       );

@@ -12,11 +12,13 @@ import 'package:webview_flutter/webview_flutter.dart';
 class CrispChatPage extends StatefulWidget {
   final String websiteId;
   final String? userScript;
+  final Future<String?> Function()? deferredUserScript;
 
   const CrispChatPage({
     super.key,
     required this.websiteId,
     this.userScript,
+    this.deferredUserScript,
   });
 
   /// 是否支持内嵌 WebView（桌面端统一使用独立窗口）
@@ -29,6 +31,7 @@ class CrispChatPage extends StatefulWidget {
 class _CrispChatPageState extends State<CrispChatPage> {
   late final WebViewController _controller;
   bool _isLoading = true;
+  bool _deferredUserScriptStarted = false;
 
   @override
   void initState() {
@@ -46,6 +49,7 @@ class _CrispChatPageState extends State<CrispChatPage> {
             if (userScript != null && userScript.isNotEmpty) {
               _controller.runJavaScript(userScript);
             }
+            unawaited(_runDeferredUserScript());
             if (mounted) setState(() => _isLoading = false);
           },
         ),
@@ -57,6 +61,18 @@ class _CrispChatPageState extends State<CrispChatPage> {
       Uri.parse(
           'https://go.crisp.chat/chat/embed/?website_id=${widget.websiteId}'),
     );
+  }
+
+  Future<void> _runDeferredUserScript() async {
+    if (_deferredUserScriptStarted) return;
+    final deferredUserScript = widget.deferredUserScript;
+    if (deferredUserScript == null) return;
+    _deferredUserScriptStarted = true;
+    try {
+      final script = await deferredUserScript();
+      if (!mounted || script == null || script.isEmpty) return;
+      await _controller.runJavaScript(script);
+    } catch (_) {}
   }
 
   Future<void> _configureAndroidFileSelection(

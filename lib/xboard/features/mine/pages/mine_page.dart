@@ -34,6 +34,7 @@ class _MinePageState extends ConsumerState<MinePage>
     with SingleTickerProviderStateMixin {
   late final AnimationController _refreshAnim;
   StreamSubscription? _configSub;
+  bool _isOpeningCustomerService = false;
 
   @override
   void initState() {
@@ -43,11 +44,14 @@ class _MinePageState extends ConsumerState<MinePage>
       duration: const Duration(milliseconds: 700),
     );
     _configSub = XBoardConfig.configChangeStream.listen((_) {
+      CustomerServiceHelper.prewarm();
       if (mounted) setState(() {});
     });
+    CustomerServiceHelper.prewarm();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
       ref.read(xboardUserProvider.notifier).ensureUserSnapshotLoaded();
+      CustomerServiceHelper.prewarm();
     });
   }
 
@@ -90,19 +94,48 @@ class _MinePageState extends ConsumerState<MinePage>
 
   Widget _buildCustomerServiceButton(BuildContext context) {
     final theme = Theme.of(context);
+    final primary = theme.colorScheme.primary;
     return TextButton.icon(
       style: XbUiButton.textChipPrimary(context),
-      icon: Icon(
-        Icons.support_agent_outlined,
-        size: 18,
-        color: theme.colorScheme.primary,
+      icon: AnimatedSwitcher(
+        duration: const Duration(milliseconds: 180),
+        child: _isOpeningCustomerService
+            ? SizedBox(
+                key: const ValueKey('opening'),
+                width: 18,
+                height: 18,
+                child: CircularProgressIndicator(
+                  strokeWidth: 2,
+                  valueColor: AlwaysStoppedAnimation(primary),
+                ),
+              )
+            : Icon(
+                Icons.support_agent_outlined,
+                key: const ValueKey('support'),
+                size: 18,
+                color: primary,
+              ),
       ),
       label: Text(
         appLocalizations.contactSupport,
-        style: TextStyle(color: theme.colorScheme.primary),
+        style: TextStyle(color: primary),
       ),
-      onPressed: () => CustomerServiceHelper.open(context),
+      onPressed: _isOpeningCustomerService
+          ? null
+          : () => _openCustomerService(context),
     );
+  }
+
+  Future<void> _openCustomerService(BuildContext context) async {
+    if (_isOpeningCustomerService) return;
+    setState(() => _isOpeningCustomerService = true);
+    try {
+      await CustomerServiceHelper.open(context);
+    } finally {
+      if (mounted) {
+        setState(() => _isOpeningCustomerService = false);
+      }
+    }
   }
 
   Widget _buildAccountInfoCard(
