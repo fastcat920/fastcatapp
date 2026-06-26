@@ -419,15 +419,17 @@ class ListItem<T> extends StatelessWidget {
             radioDelegate.onChanged!(radioDelegate.value);
           }
         },
-        leading: RadioGroup<T>(
+        leading: Radio<T>(
+          materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+          value: radioDelegate.value,
+          // Keep the legacy Radio API until CI moves past Flutter 3.27.
+          // ignore: deprecated_member_use
           groupValue: radioDelegate.groupValue,
-          onChanged: (value) => radioDelegate.onChanged?.call(value),
-          child: Radio<T>(
-            materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
-            value: radioDelegate.value,
-            toggleable: true,
-            enabled: radioDelegate.onChanged != null,
-          ),
+          // ignore: deprecated_member_use
+          onChanged: radioDelegate.onChanged == null
+              ? null
+              : (value) => radioDelegate.onChanged?.call(value),
+          toggleable: true,
         ),
         trailing: trailing,
       );

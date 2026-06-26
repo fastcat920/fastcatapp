@@ -59,92 +59,90 @@ class _PaymentMethodSelectorDialogState
       ),
       content: ConstrainedBox(
         constraints: const BoxConstraints(maxWidth: 400),
-        child: RadioGroup<int>(
-          groupValue: _selectedMethod?.id,
-          onChanged: (value) {
-            if (value == null) return;
-            final method = widget.paymentMethods.firstWhere(
-              (method) => method.id == value,
-            );
-            setState(() {
-              _selectedMethod = method;
-            });
-          },
-          child: ListView.separated(
-            shrinkWrap: true,
-            itemCount: widget.paymentMethods.length,
-            separatorBuilder: (context, index) => const SizedBox(height: 8),
-            itemBuilder: (context, index) {
-              final method = widget.paymentMethods[index];
-              final isSelected = _selectedMethod?.id == method.id;
+        child: ListView.separated(
+          shrinkWrap: true,
+          itemCount: widget.paymentMethods.length,
+          separatorBuilder: (context, index) => const SizedBox(height: 8),
+          itemBuilder: (context, index) {
+            final method = widget.paymentMethods[index];
+            final isSelected = _selectedMethod?.id == method.id;
 
-              return Container(
-                decoration: BoxDecoration(
-                  color: isDark ? null : Colors.white,
-                  borderRadius: BorderRadius.circular(12),
-                  border: Border.all(
-                    color: isSelected
-                        ? theme.colorScheme.primary
-                        : (isDark
-                            ? theme.colorScheme.outline.withValues(alpha: 0.3)
-                            : const Color(0xFFEEF0F4)),
-                    width: isSelected ? 2 : 1,
-                  ),
-                  boxShadow: isDark
-                      ? null
-                      : const [
-                          BoxShadow(
-                            color: Color(0x0A1565C0),
-                            blurRadius: 16,
-                            offset: Offset(0, 4),
-                          ),
-                        ],
+            return Container(
+              decoration: BoxDecoration(
+                color: isDark ? null : Colors.white,
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(
+                  color: isSelected
+                      ? theme.colorScheme.primary
+                      : (isDark
+                          ? theme.colorScheme.outline.withValues(alpha: 0.3)
+                          : const Color(0xFFEEF0F4)),
+                  width: isSelected ? 2 : 1,
                 ),
-                child: ListTile(
-                  contentPadding:
-                      const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
+                boxShadow: isDark
+                    ? null
+                    : const [
+                        BoxShadow(
+                          color: Color(0x0A1565C0),
+                          blurRadius: 16,
+                          offset: Offset(0, 4),
+                        ),
+                      ],
+              ),
+              child: ListTile(
+                contentPadding:
+                    const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                leading: method.iconUrl != null && method.iconUrl!.isNotEmpty
+                    ? CachedNetworkImage(
+                        imageUrl: method.iconUrl!,
+                        width: 32,
+                        height: 32,
+                        errorWidget: (context, url, error) =>
+                            const Icon(Icons.payment, size: 32),
+                      )
+                    : const Icon(Icons.payment, size: 32),
+                title: Text(
+                  method.name,
+                  style: TextStyle(
+                    fontWeight:
+                        isSelected ? FontWeight.bold : FontWeight.normal,
+                    color: isSelected ? theme.colorScheme.primary : null,
                   ),
-                  leading: method.iconUrl != null && method.iconUrl!.isNotEmpty
-                      ? CachedNetworkImage(
-                          imageUrl: method.iconUrl!,
-                          width: 32,
-                          height: 32,
-                          errorWidget: (context, url, error) =>
-                              const Icon(Icons.payment, size: 32),
-                        )
-                      : const Icon(Icons.payment, size: 32),
-                  title: Text(
-                    method.name,
-                    style: TextStyle(
-                      fontWeight:
-                          isSelected ? FontWeight.bold : FontWeight.normal,
-                      color: isSelected ? theme.colorScheme.primary : null,
-                    ),
-                  ),
-                  subtitle: method.feePercentage > 0
-                      ? Text(
-                          '${AppLocalizations.of(context).xboardHandlingFee}: ${method.feePercentage.toStringAsFixed(1)}%',
-                          style: TextStyle(
-                            fontSize: 12,
-                            color: Colors.grey.shade600,
-                          ),
-                        )
-                      : null,
-                  trailing: Radio<int>(
-                    value: method.id,
-                    activeColor: theme.colorScheme.primary,
-                  ),
-                  onTap: () {
+                ),
+                subtitle: method.feePercentage > 0
+                    ? Text(
+                        '${AppLocalizations.of(context).xboardHandlingFee}: ${method.feePercentage.toStringAsFixed(1)}%',
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: Colors.grey.shade600,
+                        ),
+                      )
+                    : null,
+                trailing: Radio<int>(
+                  value: method.id,
+                  // Keep the legacy Radio API until CI moves past Flutter 3.27.
+                  // ignore: deprecated_member_use
+                  groupValue: _selectedMethod?.id,
+                  // ignore: deprecated_member_use
+                  onChanged: (value) {
+                    if (value == null) return;
                     setState(() {
                       _selectedMethod = method;
                     });
                   },
+                  activeColor: theme.colorScheme.primary,
                 ),
-              );
-            },
-          ),
+                onTap: () {
+                  setState(() {
+                    _selectedMethod = method;
+                  });
+                },
+              ),
+            );
+          },
         ),
       ),
       actions: [

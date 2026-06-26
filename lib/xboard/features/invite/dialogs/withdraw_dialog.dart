@@ -106,7 +106,9 @@ class _WithdrawDialogState extends ConsumerState<WithdrawDialog> {
           const SizedBox(height: 16),
           if (!_isWithdrawing && !_isSuccess) ...[
             DropdownButtonFormField<String>(
-              initialValue: _selectedMethod,
+              // Keep value for CI's Flutter 3.27 SDK.
+              // ignore: deprecated_member_use
+              value: _selectedMethod,
               decoration: InputDecoration(
                 labelText: appLocalizations.withdrawMethod,
                 border: OutlineInputBorder(

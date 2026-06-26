@@ -21,62 +21,34 @@ class ThemeDialog extends ConsumerWidget {
         appLocalizations.selectTheme,
         style: XbUiText.sectionTitle(context),
       ),
-      content: RadioGroup<ThemeMode>(
-        groupValue: currentThemeMode,
-        onChanged: (value) {
-          if (value == null) return;
-          ref.read(themeSettingProvider.notifier).updateState(
-                (state) => state.copyWith(themeMode: value),
-              );
-          Navigator.of(context).pop();
-        },
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            RadioListTile<ThemeMode>(
-              activeColor: isDark ? null : theme.colorScheme.primary,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12),
-              ),
-              title: Row(
-                children: [
-                  const Icon(Icons.auto_mode),
-                  const SizedBox(width: 8),
-                  Text(appLocalizations.auto),
-                ],
-              ),
-              value: ThemeMode.system,
-            ),
-            RadioListTile<ThemeMode>(
-              activeColor: isDark ? null : theme.colorScheme.primary,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12),
-              ),
-              title: Row(
-                children: [
-                  const Icon(Icons.light_mode),
-                  const SizedBox(width: 8),
-                  Text(appLocalizations.light),
-                ],
-              ),
-              value: ThemeMode.light,
-            ),
-            RadioListTile<ThemeMode>(
-              activeColor: isDark ? null : theme.colorScheme.primary,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12),
-              ),
-              title: Row(
-                children: [
-                  const Icon(Icons.dark_mode),
-                  const SizedBox(width: 8),
-                  Text(appLocalizations.dark),
-                ],
-              ),
-              value: ThemeMode.dark,
-            ),
-          ],
-        ),
+      content: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          _ThemeModeTile(
+            value: ThemeMode.system,
+            groupValue: currentThemeMode,
+            activeColor: isDark ? null : theme.colorScheme.primary,
+            icon: Icons.auto_mode,
+            label: appLocalizations.auto,
+            onChanged: (value) => _updateThemeMode(context, ref, value),
+          ),
+          _ThemeModeTile(
+            value: ThemeMode.light,
+            groupValue: currentThemeMode,
+            activeColor: isDark ? null : theme.colorScheme.primary,
+            icon: Icons.light_mode,
+            label: appLocalizations.light,
+            onChanged: (value) => _updateThemeMode(context, ref, value),
+          ),
+          _ThemeModeTile(
+            value: ThemeMode.dark,
+            groupValue: currentThemeMode,
+            activeColor: isDark ? null : theme.colorScheme.primary,
+            icon: Icons.dark_mode,
+            label: appLocalizations.dark,
+            onChanged: (value) => _updateThemeMode(context, ref, value),
+          ),
+        ],
       ),
       actions: [
         OutlinedButton(
@@ -85,6 +57,59 @@ class ThemeDialog extends ConsumerWidget {
           child: Text(appLocalizations.cancel),
         ),
       ],
+    );
+  }
+
+  void _updateThemeMode(
+    BuildContext context,
+    WidgetRef ref,
+    ThemeMode? value,
+  ) {
+    if (value == null) return;
+    ref.read(themeSettingProvider.notifier).updateState(
+          (state) => state.copyWith(themeMode: value),
+        );
+    Navigator.of(context).pop();
+  }
+}
+
+class _ThemeModeTile extends StatelessWidget {
+  final ThemeMode value;
+  final ThemeMode groupValue;
+  final Color? activeColor;
+  final IconData icon;
+  final String label;
+  final ValueChanged<ThemeMode?> onChanged;
+
+  const _ThemeModeTile({
+    required this.value,
+    required this.groupValue,
+    required this.activeColor,
+    required this.icon,
+    required this.label,
+    required this.onChanged,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return RadioListTile<ThemeMode>(
+      activeColor: activeColor,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(12),
+      ),
+      title: Row(
+        children: [
+          Icon(icon),
+          const SizedBox(width: 8),
+          Text(label),
+        ],
+      ),
+      value: value,
+      // Keep the legacy RadioListTile API until CI moves past Flutter 3.27.
+      // ignore: deprecated_member_use
+      groupValue: groupValue,
+      // ignore: deprecated_member_use
+      onChanged: onChanged,
     );
   }
 }
