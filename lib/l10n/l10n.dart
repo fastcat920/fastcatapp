@@ -950,16 +950,6 @@ class AppLocalizations {
     return Intl.message('Core', name: 'core', desc: '', args: []);
   }
 
-  /// `Tab animation`
-  String get tabAnimation {
-    return Intl.message(
-      'Tab animation',
-      name: 'tabAnimation',
-      desc: '',
-      args: [],
-    );
-  }
-
   /// `A multi-platform proxy client based on ClashMeta`
   String get desc {
     return Intl.message(
@@ -2800,16 +2790,6 @@ class AppLocalizations {
     );
   }
 
-  /// `Effective only in mobile view`
-  String get tabAnimationDesc {
-    return Intl.message(
-      'Effective only in mobile view',
-      name: 'tabAnimationDesc',
-      desc: '',
-      args: [],
-    );
-  }
-
   /// `Are you sure you want to save?`
   String get saveTip {
     return Intl.message(
@@ -2948,6 +2928,11 @@ class AppLocalizations {
   /// `Clear Data`
   String get clearData {
     return Intl.message('Clear Data', name: 'clearData', desc: '', args: []);
+  }
+
+  /// `Zoom`
+  String get zoom {
+    return Intl.message('Zoom', name: 'zoom', desc: '', args: []);
   }
 
   /// `Text Scaling`
@@ -6169,32 +6154,6 @@ class AppLocalizations {
       args: [],
     );
   }
-  String get subscriptionUpdateSuccess {
-    return Intl.message(
-      'Subscription updated',
-      name: 'subscriptionUpdateSuccess',
-      desc: '',
-      args: [],
-    );
-  }
-
-  String get subscriptionImportSuccess {
-    return Intl.message(
-      'Subscription imported',
-      name: 'subscriptionImportSuccess',
-      desc: '',
-      args: [],
-    );
-  }
-
-  String get inviteCodeGenerated {
-    return Intl.message(
-      'Invite code generated',
-      name: 'inviteCodeGenerated',
-      desc: '',
-      args: [],
-    );
-  }
 
   /// `Please check network and retry`
   String get checkNetwork {
@@ -7396,10 +7355,10 @@ class AppLocalizations {
     );
   }
 
-  /// `No documents available`
+  /// `No documents`
   String get xboardNoDocuments {
     return Intl.message(
-      'No documents available',
+      'No documents',
       name: 'xboardNoDocuments',
       desc: '',
       args: [],
@@ -8385,32 +8344,6 @@ class AppLocalizations {
       args: [],
     );
   }
-  String get backendErrorInviteLimitReached {
-    return Intl.message(
-      'Maximum number of invites reached',
-      name: 'backendErrorInviteLimitReached',
-      desc: '',
-      args: [],
-    );
-  }
-
-  String get subscriptionUpdateFailed {
-    return Intl.message(
-      'Subscription update failed',
-      name: 'subscriptionUpdateFailed',
-      desc: '',
-      args: [],
-    );
-  }
-
-  String get subscriptionImportFailed {
-    return Intl.message(
-      'Subscription import failed',
-      name: 'subscriptionImportFailed',
-      desc: '',
-      args: [],
-    );
-  }
 
   /// `This email is already registered`
   String get backendErrorEmailExists {
@@ -8879,16 +8812,6 @@ class AppLocalizations {
       name: 'xboardDeviceManagement',
       desc: '',
       args: [],
-    );
-  }
-
-  /// `{count} devices`
-  String xboardDeviceUnit(num count) {
-    return Intl.message(
-      '\${count} devices',
-      name: 'xboardDeviceUnit',
-      desc: '',
-      args: [count],
     );
   }
 
@@ -9892,7 +9815,17 @@ class AppLocalizations {
     return Intl.message('Got it', name: 'xboardGotIt', desc: '', args: []);
   }
 
-  /// `Network error, please check your local network`
+  /// `{count} devices`
+  String xboardDeviceUnit(Object count) {
+    return Intl.message(
+      '$count devices',
+      name: 'xboardDeviceUnit',
+      desc: '',
+      args: [count],
+    );
+  }
+
+  /// `Service is temporarily unavailable, please try again later.`
   String get xboardLoginErrorNetwork {
     return Intl.message(
       'Service is temporarily unavailable, please try again later.',
@@ -9941,6 +9874,66 @@ class AppLocalizations {
       args: [],
     );
   }
+
+  /// `Subscription updated`
+  String get subscriptionUpdateSuccess {
+    return Intl.message(
+      'Subscription updated',
+      name: 'subscriptionUpdateSuccess',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Subscription imported`
+  String get subscriptionImportSuccess {
+    return Intl.message(
+      'Subscription imported',
+      name: 'subscriptionImportSuccess',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Invite code generated`
+  String get inviteCodeGenerated {
+    return Intl.message(
+      'Invite code generated',
+      name: 'inviteCodeGenerated',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Maximum number of invites reached`
+  String get backendErrorInviteLimitReached {
+    return Intl.message(
+      'Maximum number of invites reached',
+      name: 'backendErrorInviteLimitReached',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Subscription update failed`
+  String get subscriptionUpdateFailed {
+    return Intl.message(
+      'Subscription update failed',
+      name: 'subscriptionUpdateFailed',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Subscription import failed`
+  String get subscriptionImportFailed {
+    return Intl.message(
+      'Subscription import failed',
+      name: 'subscriptionImportFailed',
+      desc: '',
+      args: [],
+    );
+  }
 }
 
 class AppLocalizationDelegate extends LocalizationsDelegate<AppLocalizations> {
@@ -9949,7 +9942,6 @@ class AppLocalizationDelegate extends LocalizationsDelegate<AppLocalizations> {
   List<Locale> get supportedLocales {
     return const <Locale>[
       Locale.fromSubtags(languageCode: 'en'),
-
       Locale.fromSubtags(languageCode: 'zh', countryCode: 'CN'),
     ];
   }

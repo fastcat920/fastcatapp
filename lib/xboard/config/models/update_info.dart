@@ -1,16 +1,16 @@
-/// 更新配置模型 — 与 release_config_plaintext.json 的 update 字段对应
-///
-/// OSS config.json 中 update 字段格式：
-/// {
-///   "min_version": "1.0.0",
-///   "changelog": "更新说明",
-///   "latest": {
-///     "android": { "version": "1.0.0", "url": "https://...", "force": false },
-///     "windows": { "version": "1.0.0", "url": "https://...", "force": false },
-///     "macos":   { "version": "1.0.0", "url": "https://...", "force": false },
-///     "linux":   { "version": "1.0.0", "url": "https://...", "force": false }
-///   }
-/// }
+// 更新配置模型 — 与 release_config_plaintext.json 的 update 字段对应
+//
+// OSS config.json 中 update 字段格式：
+// {
+//   "min_version": "1.0.0",
+//   "changelog": "更新说明",
+//   "latest": {
+//     "android": { "version": "1.0.0", "url": "https://...", "force": false },
+//     "windows": { "version": "1.0.0", "url": "https://...", "force": false },
+//     "macos":   { "version": "1.0.0", "url": "https://...", "force": false },
+//     "linux":   { "version": "1.0.0", "url": "https://...", "force": false }
+//   }
+// }
 
 /// 单平台更新信息
 class UpdatePlatformInfo {
@@ -33,10 +33,10 @@ class UpdatePlatformInfo {
   }
 
   Map<String, dynamic> toJson() => {
-    'version': version,
-    'url': url,
-    'force': force,
-  };
+        'version': version,
+        'url': url,
+        'force': force,
+      };
 
   @override
   String toString() => 'UpdatePlatformInfo(version: $version, force: $force)';
@@ -65,7 +65,8 @@ class UpdateRichConfig {
       minVersion: json['min_version'] as String?,
       changelog: json['changelog'] as String?,
       latest: latestJson.map(
-        (k, v) => MapEntry(k, UpdatePlatformInfo.fromJson(v as Map<String, dynamic>)),
+        (k, v) =>
+            MapEntry(k, UpdatePlatformInfo.fromJson(v as Map<String, dynamic>)),
       ),
     );
   }
@@ -77,10 +78,10 @@ class UpdateRichConfig {
   bool get isNotEmpty => latest.isNotEmpty;
 
   Map<String, dynamic> toJson() => {
-    if (minVersion != null) 'min_version': minVersion,
-    if (changelog != null) 'changelog': changelog,
-    'latest': latest.map((k, v) => MapEntry(k, v.toJson())),
-  };
+        if (minVersion != null) 'min_version': minVersion,
+        if (changelog != null) 'changelog': changelog,
+        'latest': latest.map((k, v) => MapEntry(k, v.toJson())),
+      };
 
   @override
   String toString() =>

@@ -105,27 +105,14 @@ Future<void> main(List<String> args) async {
     initialHasToken: initialHasToken,
   );
 
-  // Phase 1: Run independent init tasks in parallel.
-  // clashCore.preload() is isolated with a timeout — it's the most likely
-  // culprit for cold-start hangs when the OS killed the previous process.
   int? version;
   try {
     final fastInitResult = await Future.wait([
       _initializeXBoardServicesWithPrefs(prefs),
-      _initRemoteTaskManager(),
       system.version,
     ]);
 
-    remoteTaskManager = fastInitResult[1] as RemoteTaskManager?;
-    version = fastInitResult[2] as int;
-
-    await clashCore.preload().timeout(
-      const Duration(seconds: 5),
-      onTimeout: () {
-        debugPrint('[Main] clashCore.preload() 超时（5s），将在 init() 中重试');
-        return false;
-      },
-    );
+    version = fastInitResult[1] as int;
 
     await system.detectTV();
     await globalState.initApp(version);
@@ -154,6 +141,10 @@ Future<void> main(List<String> args) async {
     ],
     child: const Application(),
   ));
+
+  unawaited(_initRemoteTaskManager().then((manager) {
+    remoteTaskManager = manager;
+  }));
 }
 
 Future<InitialUserSnapshot> _loadInitialUserSnapshot(

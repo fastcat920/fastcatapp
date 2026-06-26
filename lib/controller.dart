@@ -868,6 +868,7 @@ class AppController {
       commonPrint.log(details.stack.toString());
     };
     updateTray(true);
+    await _syncLaunchWindowVisibility();
     await _initCore();
     await _initStatus();
     autoLaunch?.updateStatus(
@@ -882,6 +883,15 @@ class AppController {
     await _handlePreference();
     await _handlerDisclaimer();
     _ref.read(initProvider.notifier).value = true;
+  }
+
+  Future<void> _syncLaunchWindowVisibility() async {
+    if (!system.isDesktop) return;
+    if (_ref.read(appSettingProvider).silentLaunch) {
+      await window?.hide();
+      return;
+    }
+    await window?.show();
   }
 
   _initStatus() async {

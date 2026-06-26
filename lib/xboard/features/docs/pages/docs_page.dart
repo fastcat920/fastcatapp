@@ -1,7 +1,6 @@
 import 'dart:async';
 import 'dart:io';
 import 'package:flutter/material.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:fl_clash/l10n/l10n.dart';
 import 'package:fl_clash/xboard/adapter/state/knowledge_state.dart';
@@ -19,7 +18,6 @@ String _localeToDocsLanguage(Locale locale) {
   if (country != null && country.isNotEmpty) return '$lang-$country';
   return lang;
 }
-
 
 /// 知识库文章模型
 class KnowledgeArticle {
@@ -301,8 +299,7 @@ class _DocsPageState extends ConsumerState<DocsPage>
       loading: () => const Center(child: CircularProgressIndicator()),
       error: (error, _) => XbErrorState(
         message: error.toString(),
-        onRetry: () =>
-            ref.invalidate(knowledgeArticlesProvider(language)),
+        onRetry: () => ref.invalidate(knowledgeArticlesProvider(language)),
       ),
       data: (result) {
         final articles = _parseArticles(result);
@@ -593,7 +590,6 @@ p{margin:8px 0}
     }
   }
 
-
   /// Strip leading Markdown H1 title from body if it matches the article title.
   /// This avoids duplicating the title (already shown in AppBar).
   String _stripLeadingTitle(String body) {
@@ -632,7 +628,6 @@ p{margin:8px 0}
   void dispose() {
     super.dispose();
   }
-
 
   static String _parseDetailBody(dynamic result) {
     String findBody(dynamic value) {
@@ -859,7 +854,6 @@ p{margin:8px 0}
           }
           return iaw.NavigationActionPolicy.ALLOW;
         },
-
       );
     }
 

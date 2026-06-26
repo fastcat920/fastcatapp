@@ -28,7 +28,7 @@ class LanguageSelector extends ConsumerWidget {
       itemBuilder: (BuildContext context) {
         return supportedLanguages.map<PopupMenuEntry<String>>(
           (Map<String, String> language) {
-                        final isSelected = language['code'] == (currentLocale ?? '');
+            final isSelected = language['code'] == (currentLocale ?? '');
             return PopupMenuItem<String>(
               value: language['code'],
               child: Row(

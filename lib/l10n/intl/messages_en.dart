@@ -106,23 +106,25 @@ class MessageLookup extends MessageLookupByLibrary {
 
   static String m38(count, limit) => "${count} active · Limit ${limit}";
 
-  static String m39(date) => "Expired on ${date}";
+  static String m39(count) => "${count} devices";
 
-  static String m40(date) => "Valid until ${date}";
+  static String m40(date) => "Expired on ${date}";
 
-  static String m41(date, days) => "Expires on ${date}, ${days} days remaining";
+  static String m41(date) => "Valid until ${date}";
 
-  static String m42(count) => "${count} candidates";
+  static String m42(date, days) => "Expires on ${date}, ${days} days remaining";
 
-  static String m43(message) => "Subscription import: ${message}";
+  static String m43(count) => "${count} candidates";
 
-  static String m44(count) => "${count} nodes";
+  static String m44(message) => "Subscription import: ${message}";
 
-  static String m45(error) => "Redeem failed: ${error}";
+  static String m45(count) => "${count} nodes";
 
-  static String m46(days) => "Used traffic will reset in ${days} days";
+  static String m46(error) => "Redeem failed: ${error}";
 
-  static String m47(time) => "Running time: ${time}";
+  static String m47(days) => "Used traffic will reset in ${days} days";
+
+  static String m48(time) => "Running time: ${time}";
 
   final messages = _notInlinedMessages(_notInlinedMessages);
   static Map<String, Function> _notInlinedMessages(_) => <String, Function>{
@@ -284,9 +286,9 @@ class MessageLookup extends MessageLookupByLibrary {
     "backendErrorInviteCodeNotFound": MessageLookupByLibrary.simpleMessage(
       "Invite code does not exist",
     ),
-    "backendErrorInviteLimitReached": MessageLookupByLibrary.simpleMessage("Maximum number of invites reached"),
-    "subscriptionUpdateFailed": MessageLookupByLibrary.simpleMessage("Subscription update failed"),
-    "subscriptionImportFailed": MessageLookupByLibrary.simpleMessage("Subscription import failed"),
+    "backendErrorInviteLimitReached": MessageLookupByLibrary.simpleMessage(
+      "Maximum number of invites reached",
+    ),
     "backendErrorMinimumWithdrawalCommission": m0,
     "backendErrorMinimumWithdrawalCommissionGeneric":
         MessageLookupByLibrary.simpleMessage(
@@ -677,9 +679,9 @@ class MessageLookup extends MessageLookupByLibrary {
     "inviteCodeGenFailed": MessageLookupByLibrary.simpleMessage(
       "Invite code generation failed",
     ),
-    "subscriptionUpdateSuccess": MessageLookupByLibrary.simpleMessage("Subscription updated"),
-    "subscriptionImportSuccess": MessageLookupByLibrary.simpleMessage("Subscription imported"),
-    "inviteCodeGenerated": MessageLookupByLibrary.simpleMessage("Invite code generated"),
+    "inviteCodeGenerated": MessageLookupByLibrary.simpleMessage(
+      "Invite code generated",
+    ),
     "inviteCodeOptional": MessageLookupByLibrary.simpleMessage(
       "Invite Code (optional)",
     ),
@@ -704,13 +706,11 @@ class MessageLookup extends MessageLookupByLibrary {
     "ipv6InboundDesc": MessageLookupByLibrary.simpleMessage(
       "Allow IPv6 inbound",
     ),
-    "ja": MessageLookupByLibrary.simpleMessage("Japanese"),
     "just": MessageLookupByLibrary.simpleMessage("Just"),
     "keepAliveIntervalDesc": MessageLookupByLibrary.simpleMessage(
       "Tcp keep alive interval",
     ),
     "key": MessageLookupByLibrary.simpleMessage("Key"),
-    "ko": MessageLookupByLibrary.simpleMessage("Korean"),
     "language": MessageLookupByLibrary.simpleMessage("Language"),
     "layout": MessageLookupByLibrary.simpleMessage("Layout"),
     "light": MessageLookupByLibrary.simpleMessage("Light"),
@@ -1194,6 +1194,12 @@ class MessageLookup extends MessageLookupByLibrary {
       "Subscription expiring soon",
     ),
     "subscriptionExpiringInDaysDetail": m23,
+    "subscriptionImportFailed": MessageLookupByLibrary.simpleMessage(
+      "Subscription import failed",
+    ),
+    "subscriptionImportSuccess": MessageLookupByLibrary.simpleMessage(
+      "Subscription imported",
+    ),
     "subscriptionNoSubscription": MessageLookupByLibrary.simpleMessage(
       "No subscription",
     ),
@@ -1212,6 +1218,12 @@ class MessageLookup extends MessageLookupByLibrary {
     "subscriptionTrafficExhaustedDetail": MessageLookupByLibrary.simpleMessage(
       "Plan traffic has been used up, please purchase more traffic or upgrade plan",
     ),
+    "subscriptionUpdateFailed": MessageLookupByLibrary.simpleMessage(
+      "Subscription update failed",
+    ),
+    "subscriptionUpdateSuccess": MessageLookupByLibrary.simpleMessage(
+      "Subscription updated",
+    ),
     "subscriptionValid": MessageLookupByLibrary.simpleMessage(
       "Subscription valid",
     ),
@@ -1226,10 +1238,6 @@ class MessageLookup extends MessageLookupByLibrary {
       "Attach HTTP proxy to VpnService",
     ),
     "tab": MessageLookupByLibrary.simpleMessage("Tab"),
-    "tabAnimation": MessageLookupByLibrary.simpleMessage("Tab animation"),
-    "tabAnimationDesc": MessageLookupByLibrary.simpleMessage(
-      "Effective only in mobile view",
-    ),
     "tapToConnect": MessageLookupByLibrary.simpleMessage("Tap to connect"),
     "tcpConcurrent": MessageLookupByLibrary.simpleMessage("TCP concurrent"),
     "tcpConcurrentDesc": MessageLookupByLibrary.simpleMessage(
@@ -1677,6 +1685,7 @@ class MessageLookup extends MessageLookupByLibrary {
     ),
     "xboardDeviceRevoked": MessageLookupByLibrary.simpleMessage("Removed"),
     "xboardDeviceSummary": m38,
+    "xboardDeviceUnit": m39,
     "xboardDeviceUnknown": MessageLookupByLibrary.simpleMessage("Unknown"),
     "xboardDeviceUnknownVersion": MessageLookupByLibrary.simpleMessage(
       "Unknown version",
@@ -1696,9 +1705,6 @@ class MessageLookup extends MessageLookupByLibrary {
       "Discounted price",
     ),
     "xboardDocsCenter": MessageLookupByLibrary.simpleMessage("Docs center"),
-    "xboardNoDocuments": MessageLookupByLibrary.simpleMessage(
-      "No documents available"
-    ),
     "xboardDownloadingConfig": MessageLookupByLibrary.simpleMessage(
       "Downloading configuration file",
     ),
@@ -1721,9 +1727,9 @@ class MessageLookup extends MessageLookupByLibrary {
       "Enter gift card redemption code",
     ),
     "xboardExcellent": MessageLookupByLibrary.simpleMessage("Excellent"),
-    "xboardExpiredOnDate": m39,
-    "xboardExpiresOnDate": m40,
-    "xboardExpiresOnWithDays": m41,
+    "xboardExpiredOnDate": m40,
+    "xboardExpiresOnDate": m41,
+    "xboardExpiresOnWithDays": m42,
     "xboardExpiryTime": MessageLookupByLibrary.simpleMessage("Expiry time"),
     "xboardFailedToCheckPaymentStatus": MessageLookupByLibrary.simpleMessage(
       "Failed to check payment status",
@@ -1742,7 +1748,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "xboardForgotPassword": MessageLookupByLibrary.simpleMessage(
       "Forgot Password",
     ),
-    "xboardGatewayCandidateCount": m42,
+    "xboardGatewayCandidateCount": m43,
     "xboardGatewayStatus": MessageLookupByLibrary.simpleMessage(
       "Gateway status",
     ),
@@ -1816,7 +1822,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "xboardHealthLastEvent": MessageLookupByLibrary.simpleMessage(
       "Latest event",
     ),
-    "xboardHealthSubscriptionImport": m43,
+    "xboardHealthSubscriptionImport": m44,
     "xboardHealthTunApplied": MessageLookupByLibrary.simpleMessage("Applied"),
     "xboardHealthTunPending": MessageLookupByLibrary.simpleMessage(
       "Waiting to apply",
@@ -1874,7 +1880,7 @@ class MessageLookup extends MessageLookupByLibrary {
       "Too many login attempts. Please try again later.",
     ),
     "xboardLoginErrorNetwork": MessageLookupByLibrary.simpleMessage(
-      "Network error, please check your local network",
+      "Service is temporarily unavailable, please try again later.",
     ),
     "xboardLoginExpired": MessageLookupByLibrary.simpleMessage(
       "Login expired, please login again",
@@ -1933,6 +1939,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "xboardNoAvailableSubscription": MessageLookupByLibrary.simpleMessage(
       "No available subscription",
     ),
+    "xboardNoDocuments": MessageLookupByLibrary.simpleMessage("No documents"),
     "xboardNoGatewayActive": MessageLookupByLibrary.simpleMessage(
       "No active gateway",
     ),
@@ -1944,6 +1951,9 @@ class MessageLookup extends MessageLookupByLibrary {
     ),
     "xboardNoPaymentMethods": MessageLookupByLibrary.simpleMessage(
       "No payment methods",
+    ),
+    "xboardNoPlansAvailable": MessageLookupByLibrary.simpleMessage(
+      "No plans available",
     ),
     "xboardNoSubscriptionInfo": MessageLookupByLibrary.simpleMessage(
       "No subscription information",
@@ -1957,7 +1967,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "xboardNoTrafficRecords": MessageLookupByLibrary.simpleMessage(
       "No traffic records",
     ),
-    "xboardNodeCount": m44,
+    "xboardNodeCount": m45,
     "xboardNodeHealth": MessageLookupByLibrary.simpleMessage("Node status"),
     "xboardNodeName": MessageLookupByLibrary.simpleMessage("Node Name"),
     "xboardNodeSelection": MessageLookupByLibrary.simpleMessage(
@@ -2153,7 +2163,7 @@ class MessageLookup extends MessageLookupByLibrary {
     ),
     "xboardRechargeNow": MessageLookupByLibrary.simpleMessage("Recharge now"),
     "xboardRedeemFailed": MessageLookupByLibrary.simpleMessage("Redeem failed"),
-    "xboardRedeemFailedWithError": m45,
+    "xboardRedeemFailedWithError": m46,
     "xboardRedeemNow": MessageLookupByLibrary.simpleMessage("Redeem now"),
     "xboardRedeemSuccess": MessageLookupByLibrary.simpleMessage(
       "Redeem successful",
@@ -2209,7 +2219,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "xboardResetTrafficConfirmContent": MessageLookupByLibrary.simpleMessage(
       "This will reset the used traffic, but will not extend the plan duration. Continue?",
     ),
-    "xboardResetTrafficInDays": m46,
+    "xboardResetTrafficInDays": m47,
     "xboardResetTrafficToday": MessageLookupByLibrary.simpleMessage(
       "Used traffic has been reset today",
     ),
@@ -2220,7 +2230,7 @@ class MessageLookup extends MessageLookupByLibrary {
       "3. Return to app after payment, system will detect automatically",
     ),
     "xboardRunDiagnosis": MessageLookupByLibrary.simpleMessage("Run check"),
-    "xboardRunningTime": m47,
+    "xboardRunningTime": m48,
     "xboardSecureEncryption": MessageLookupByLibrary.simpleMessage(
       "Secure encryption",
     ),
@@ -2418,8 +2428,6 @@ class MessageLookup extends MessageLookupByLibrary {
     "xboardYearlyPayment": MessageLookupByLibrary.simpleMessage("Yearly"),
     "years": MessageLookupByLibrary.simpleMessage("Years"),
     "zh_CN": MessageLookupByLibrary.simpleMessage("Simplified Chinese"),
-      "xboardDeviceUnit": xboardDeviceUnit,
-};
-
-  static String xboardDeviceUnit(num count) => "${count} devices";
+    "zoom": MessageLookupByLibrary.simpleMessage("Zoom"),
+  };
 }

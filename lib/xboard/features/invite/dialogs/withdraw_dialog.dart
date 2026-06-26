@@ -106,7 +106,7 @@ class _WithdrawDialogState extends ConsumerState<WithdrawDialog> {
           const SizedBox(height: 16),
           if (!_isWithdrawing && !_isSuccess) ...[
             DropdownButtonFormField<String>(
-              value: _selectedMethod,
+              initialValue: _selectedMethod,
               decoration: InputDecoration(
                 labelText: appLocalizations.withdrawMethod,
                 border: OutlineInputBorder(

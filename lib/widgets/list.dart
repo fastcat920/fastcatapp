@@ -419,12 +419,15 @@ class ListItem<T> extends StatelessWidget {
             radioDelegate.onChanged!(radioDelegate.value);
           }
         },
-        leading: Radio<T>(
-          materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
-          value: radioDelegate.value,
+        leading: RadioGroup<T>(
           groupValue: radioDelegate.groupValue,
-          onChanged: radioDelegate.onChanged,
-          toggleable: true,
+          onChanged: (value) => radioDelegate.onChanged?.call(value),
+          child: Radio<T>(
+            materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+            value: radioDelegate.value,
+            toggleable: true,
+            enabled: radioDelegate.onChanged != null,
+          ),
         ),
         trailing: trailing,
       );

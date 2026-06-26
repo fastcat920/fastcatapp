@@ -21,79 +21,62 @@ class ThemeDialog extends ConsumerWidget {
         appLocalizations.selectTheme,
         style: XbUiText.sectionTitle(context),
       ),
-      content: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          RadioListTile<ThemeMode>(
-            activeColor: isDark ? null : theme.colorScheme.primary,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(12),
+      content: RadioGroup<ThemeMode>(
+        groupValue: currentThemeMode,
+        onChanged: (value) {
+          if (value == null) return;
+          ref.read(themeSettingProvider.notifier).updateState(
+                (state) => state.copyWith(themeMode: value),
+              );
+          Navigator.of(context).pop();
+        },
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            RadioListTile<ThemeMode>(
+              activeColor: isDark ? null : theme.colorScheme.primary,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
+              title: Row(
+                children: [
+                  const Icon(Icons.auto_mode),
+                  const SizedBox(width: 8),
+                  Text(appLocalizations.auto),
+                ],
+              ),
+              value: ThemeMode.system,
             ),
-            title: Row(
-              children: [
-                const Icon(Icons.auto_mode),
-                const SizedBox(width: 8),
-                Text(appLocalizations.auto),
-              ],
+            RadioListTile<ThemeMode>(
+              activeColor: isDark ? null : theme.colorScheme.primary,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
+              title: Row(
+                children: [
+                  const Icon(Icons.light_mode),
+                  const SizedBox(width: 8),
+                  Text(appLocalizations.light),
+                ],
+              ),
+              value: ThemeMode.light,
             ),
-            value: ThemeMode.system,
-            groupValue: currentThemeMode,
-            onChanged: (value) {
-              if (value != null) {
-                ref.read(themeSettingProvider.notifier).updateState(
-                      (state) => state.copyWith(themeMode: value),
-                    );
-                Navigator.of(context).pop();
-              }
-            },
-          ),
-          RadioListTile<ThemeMode>(
-            activeColor: isDark ? null : theme.colorScheme.primary,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(12),
+            RadioListTile<ThemeMode>(
+              activeColor: isDark ? null : theme.colorScheme.primary,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
+              title: Row(
+                children: [
+                  const Icon(Icons.dark_mode),
+                  const SizedBox(width: 8),
+                  Text(appLocalizations.dark),
+                ],
+              ),
+              value: ThemeMode.dark,
             ),
-            title: Row(
-              children: [
-                const Icon(Icons.light_mode),
-                const SizedBox(width: 8),
-                Text(appLocalizations.light),
-              ],
-            ),
-            value: ThemeMode.light,
-            groupValue: currentThemeMode,
-            onChanged: (value) {
-              if (value != null) {
-                ref.read(themeSettingProvider.notifier).updateState(
-                      (state) => state.copyWith(themeMode: value),
-                    );
-                Navigator.of(context).pop();
-              }
-            },
-          ),
-          RadioListTile<ThemeMode>(
-            activeColor: isDark ? null : theme.colorScheme.primary,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(12),
-            ),
-            title: Row(
-              children: [
-                const Icon(Icons.dark_mode),
-                const SizedBox(width: 8),
-                Text(appLocalizations.dark),
-              ],
-            ),
-            value: ThemeMode.dark,
-            groupValue: currentThemeMode,
-            onChanged: (value) {
-              if (value != null) {
-                ref.read(themeSettingProvider.notifier).updateState(
-                      (state) => state.copyWith(themeMode: value),
-                    );
-                Navigator.of(context).pop();
-              }
-            },
-          ),
-        ],
+          ],
+        ),
       ),
       actions: [
         OutlinedButton(

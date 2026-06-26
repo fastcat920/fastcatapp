@@ -136,6 +136,8 @@ class SubscriptionStatusChecker {
           .read(xboardSubscriptionProvider.notifier)
           .loadPlanById(currentPlanId);
 
+      if (!context.mounted) return;
+
       if (currentPlan != null) {
         _logger.info('[套餐续费] 找到当前套餐，跳转到购买页面: ${currentPlan.name}');
         // 统一通过 planId 参数进入，Plans 页面内部会处理隐藏套餐直拉与跳转。
@@ -152,6 +154,7 @@ class SubscriptionStatusChecker {
 
     // 没找到套餐：跳转到套餐列表页面
     _logger.info('[套餐续费] 跳转到套餐列表页面');
+    if (!context.mounted) return;
     if (isDesktop) {
       context.go('/plans');
     } else {

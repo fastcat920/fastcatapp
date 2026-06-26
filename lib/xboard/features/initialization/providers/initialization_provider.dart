@@ -31,15 +31,24 @@ class XBoardInitializationNotifier extends StateNotifier<InitializationState> {
 
   /// 上次已知的域名列表，用于检测变化
   Set<String>? _lastKnownDomains;
+  StreamSubscription<Map<String, dynamic>>? _configSub;
+  bool _configListenRequested = false;
+  bool _disposed = false;
 
   XBoardInitializationNotifier(this.ref) : super(const InitializationState()) {
     _logger.info('[Initialization] Provider 已创建');
-    _listenForConfigChanges();
+    unawaited(_listenForConfigChanges());
   }
 
   /// 监听配置变化流，域名列表变化时主动清除竞速缓存
-  void _listenForConfigChanges() {
-    XBoardConfig.configChangeStream.listen((_) {
+  Future<void> _listenForConfigChanges() async {
+    if (_configListenRequested) return;
+    _configListenRequested = true;
+    while (!XBoardConfig.isInitialized && !_disposed) {
+      await Future.delayed(const Duration(milliseconds: 500));
+    }
+    if (_disposed) return;
+    _configSub = XBoardConfig.configChangeStream.listen((_) {
       final current = XBoardConfig.allPanelUrls.toSet();
       if (_lastKnownDomains != null &&
           current.isNotEmpty &&
@@ -49,6 +58,13 @@ class XBoardInitializationNotifier extends StateNotifier<InitializationState> {
       }
       _lastKnownDomains = current;
     });
+  }
+
+  @override
+  void dispose() {
+    _disposed = true;
+    _configSub?.cancel();
+    super.dispose();
   }
 
   /// 统一初始化入口
@@ -73,6 +89,7 @@ class XBoardInitializationNotifier extends StateNotifier<InitializationState> {
 
     try {
       _logger.info('[Initialization] 🚀 开始初始化流程');
+      await _ensureConfigInitialized();
 
       // ========== 步骤 0: 加载远程配置（限时 20 秒） ==========
       // 重试时也重新拉取，确保能获取到最新配置
@@ -223,6 +240,13 @@ class XBoardInitializationNotifier extends StateNotifier<InitializationState> {
 
       rethrow;
     }
+  }
+
+  Future<void> _ensureConfigInitialized() async {
+    if (XBoardConfig.isInitialized) return;
+    _logger.warning('[Initialization] 配置模块未初始化，执行兜底初始化');
+    await XBoardConfig.initialize();
+    unawaited(_listenForConfigChanges());
   }
 
   /// 刷新（重新初始化）

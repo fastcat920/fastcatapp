@@ -18,8 +18,8 @@ class StatItemWidget extends StatelessWidget {
     return Column(
       children: [
         Icon(
-          icon, 
-          size: 32, 
+          icon,
+          size: 32,
           color: colorScheme.primary,
         ),
         const SizedBox(height: 8),
@@ -35,7 +35,7 @@ class StatItemWidget extends StatelessWidget {
           title,
           style: TextStyle(
             fontSize: 12,
-            color: colorScheme.onSurface.withOpacity(0.6),
+            color: colorScheme.onSurface.withValues(alpha: 0.6),
           ),
         ),
       ],

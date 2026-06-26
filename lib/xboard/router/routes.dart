@@ -1,7 +1,6 @@
 import 'package:fl_clash/xboard/features/subscription/pages/xboard_home_page.dart';
 import 'package:fl_clash/xboard/features/subscription/pages/subscription_page.dart';
 import 'package:fl_clash/xboard/features/payment/pages/plans.dart';
-import 'package:fl_clash/xboard/features/payment/pages/plan_purchase_page.dart';
 import 'package:fl_clash/xboard/features/payment/pages/payment_gateway_page.dart';
 import 'package:fl_clash/xboard/features/invite/pages/invite_page.dart';
 import 'package:fl_clash/xboard/features/mine/pages/mine_page.dart';
@@ -10,7 +9,6 @@ import 'package:fl_clash/xboard/features/mine/pages/device_page.dart';
 import 'package:fl_clash/xboard/features/mine/pages/gift_card_page.dart';
 import 'package:fl_clash/xboard/features/mine/pages/order_page.dart';
 import 'package:fl_clash/xboard/features/auth/pages/login_page.dart';
-import 'package:fl_clash/xboard/domain/domain.dart';
 import 'package:fl_clash/views/logs.dart';
 import 'package:fl_clash/widgets/scaffold.dart';
 import 'package:flutter/material.dart';

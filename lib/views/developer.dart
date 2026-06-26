@@ -296,7 +296,7 @@ class _GatewayDiagnosticsPageState extends State<_GatewayDiagnosticsPage> {
                                         await _runtime.reverifyAllCandidates(
                                       userAgent: globalState.ua,
                                     );
-                                    if (!mounted) return;
+                                    if (!context.mounted) return;
                                     final failedCount = _runtime.candidates
                                         .where(
                                           (candidate) =>
@@ -353,7 +353,7 @@ class _GatewayDiagnosticsPageState extends State<_GatewayDiagnosticsPage> {
                                   setState(() => _isClearingCircuits = true);
                                   try {
                                     await _runtime.clearCircuitBreakers();
-                                    if (!mounted) return;
+                                    if (!context.mounted) return;
                                     context.showNotifier('已清空熔断状态');
                                   } finally {
                                     if (mounted) {

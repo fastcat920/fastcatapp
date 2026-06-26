@@ -98,23 +98,25 @@ class MessageLookup extends MessageLookupByLibrary {
 
   static String m38(count, limit) => "活跃 ${count} 台 · 限额 ${limit}";
 
-  static String m39(date) => "已于 ${date} 到期";
+  static String m39(count) => "${count}台";
 
-  static String m40(date) => "有效期至 ${date}";
+  static String m40(date) => "已于 ${date} 到期";
 
-  static String m41(date, days) => "于 ${date} 到期，距离到期还有 ${days} 天";
+  static String m41(date) => "有效期至 ${date}";
 
-  static String m42(count) => "${count} 个候选";
+  static String m42(date, days) => "于 ${date} 到期，距离到期还有 ${days} 天";
 
-  static String m43(message) => "订阅导入：${message}";
+  static String m43(count) => "${count} 个候选";
 
-  static String m44(count) => "${count} 个节点";
+  static String m44(message) => "订阅导入：${message}";
 
-  static String m45(error) => "兑换失败：${error}";
+  static String m45(count) => "${count} 个节点";
 
-  static String m46(days) => "已用流量将在 ${days} 天后重置";
+  static String m46(error) => "兑换失败：${error}";
 
-  static String m47(time) => "运行时间: ${time}";
+  static String m47(days) => "已用流量将在 ${days} 天后重置";
+
+  static String m48(time) => "运行时间: ${time}";
 
   final messages = _notInlinedMessages(_notInlinedMessages);
   static Map<String, Function> _notInlinedMessages(_) => <String, Function>{
@@ -224,9 +226,9 @@ class MessageLookup extends MessageLookupByLibrary {
     "backendErrorInviteCodeNotFound": MessageLookupByLibrary.simpleMessage(
       "邀请码不存在",
     ),
-    "backendErrorInviteLimitReached": MessageLookupByLibrary.simpleMessage("已达到创建数量上限"),
-    "subscriptionUpdateFailed": MessageLookupByLibrary.simpleMessage("订阅更新失败"),
-    "subscriptionImportFailed": MessageLookupByLibrary.simpleMessage("订阅导入失败"),
+    "backendErrorInviteLimitReached": MessageLookupByLibrary.simpleMessage(
+      "已达到创建数量上限",
+    ),
     "backendErrorMinimumWithdrawalCommission": m0,
     "backendErrorMinimumWithdrawalCommissionGeneric":
         MessageLookupByLibrary.simpleMessage("未达到最低提现佣金要求"),
@@ -493,8 +495,6 @@ class MessageLookup extends MessageLookupByLibrary {
     "invite": MessageLookupByLibrary.simpleMessage("邀请"),
     "inviteCode": MessageLookupByLibrary.simpleMessage("邀请码"),
     "inviteCodeGenFailed": MessageLookupByLibrary.simpleMessage("邀请码生成失败"),
-    "subscriptionUpdateSuccess": MessageLookupByLibrary.simpleMessage("订阅更新成功"),
-    "subscriptionImportSuccess": MessageLookupByLibrary.simpleMessage("订阅导入成功"),
     "inviteCodeGenerated": MessageLookupByLibrary.simpleMessage("邀请码生成成功"),
     "inviteCodeOptional": MessageLookupByLibrary.simpleMessage("邀请码（可选）"),
     "inviteCodeRequired": MessageLookupByLibrary.simpleMessage("需要邀请码"),
@@ -510,11 +510,9 @@ class MessageLookup extends MessageLookupByLibrary {
     "ipcidr": MessageLookupByLibrary.simpleMessage("IP/掩码"),
     "ipv6Desc": MessageLookupByLibrary.simpleMessage("开启后将可以接收IPv6流量"),
     "ipv6InboundDesc": MessageLookupByLibrary.simpleMessage("允许IPv6入站"),
-    "ja": MessageLookupByLibrary.simpleMessage("日语"),
     "just": MessageLookupByLibrary.simpleMessage("刚刚"),
     "keepAliveIntervalDesc": MessageLookupByLibrary.simpleMessage("TCP保持活动间隔"),
     "key": MessageLookupByLibrary.simpleMessage("键"),
-    "ko": MessageLookupByLibrary.simpleMessage("韩语"),
     "language": MessageLookupByLibrary.simpleMessage("语言"),
     "layout": MessageLookupByLibrary.simpleMessage("布局"),
     "light": MessageLookupByLibrary.simpleMessage("浅色"),
@@ -843,6 +841,8 @@ class MessageLookup extends MessageLookupByLibrary {
       "订阅即将过期",
     ),
     "subscriptionExpiringInDaysDetail": m23,
+    "subscriptionImportFailed": MessageLookupByLibrary.simpleMessage("订阅导入失败"),
+    "subscriptionImportSuccess": MessageLookupByLibrary.simpleMessage("订阅导入成功"),
     "subscriptionNoSubscription": MessageLookupByLibrary.simpleMessage("无订阅套餐"),
     "subscriptionNoSubscriptionDetail": MessageLookupByLibrary.simpleMessage(
       "当前账户暂无可用的订阅套餐，请购买套餐后使用",
@@ -857,6 +857,8 @@ class MessageLookup extends MessageLookupByLibrary {
     "subscriptionTrafficExhaustedDetail": MessageLookupByLibrary.simpleMessage(
       "套餐流量已用完，请购买更多流量或升级套餐",
     ),
+    "subscriptionUpdateFailed": MessageLookupByLibrary.simpleMessage("订阅更新失败"),
+    "subscriptionUpdateSuccess": MessageLookupByLibrary.simpleMessage("订阅更新成功"),
     "subscriptionValid": MessageLookupByLibrary.simpleMessage("订阅有效"),
     "subscriptionValidDetail": m24,
     "switchTheme": MessageLookupByLibrary.simpleMessage("切换主题"),
@@ -867,8 +869,6 @@ class MessageLookup extends MessageLookupByLibrary {
     "systemProxy": MessageLookupByLibrary.simpleMessage("系统代理"),
     "systemProxyDesc": MessageLookupByLibrary.simpleMessage("设置系统代理"),
     "tab": MessageLookupByLibrary.simpleMessage("标签页"),
-    "tabAnimation": MessageLookupByLibrary.simpleMessage("选项卡动画"),
-    "tabAnimationDesc": MessageLookupByLibrary.simpleMessage("仅在移动视图中有效"),
     "tapToConnect": MessageLookupByLibrary.simpleMessage("点击连接"),
     "tcpConcurrent": MessageLookupByLibrary.simpleMessage("TCP并发"),
     "tcpConcurrentDesc": MessageLookupByLibrary.simpleMessage("开启后允许TCP并发"),
@@ -1174,6 +1174,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "xboardDeviceRemoved": MessageLookupByLibrary.simpleMessage("设备已移除"),
     "xboardDeviceRevoked": MessageLookupByLibrary.simpleMessage("已移除"),
     "xboardDeviceSummary": m38,
+    "xboardDeviceUnit": m39,
     "xboardDeviceUnknown": MessageLookupByLibrary.simpleMessage("未知"),
     "xboardDeviceUnknownVersion": MessageLookupByLibrary.simpleMessage("未知版本"),
     "xboardDeviceUnlimited": MessageLookupByLibrary.simpleMessage("无限制"),
@@ -1185,9 +1186,6 @@ class MessageLookup extends MessageLookupByLibrary {
     "xboardDiscounted": MessageLookupByLibrary.simpleMessage("已优惠"),
     "xboardDiscountedPrice": MessageLookupByLibrary.simpleMessage("优惠后价格"),
     "xboardDocsCenter": MessageLookupByLibrary.simpleMessage("文档中心"),
-    "xboardNoDocuments": MessageLookupByLibrary.simpleMessage(
-      "暂无文档"
-    ),
     "xboardDownloadingConfig": MessageLookupByLibrary.simpleMessage("下载配置文件"),
     "xboardEmail": MessageLookupByLibrary.simpleMessage("邮箱"),
     "xboardEmailUnavailable": MessageLookupByLibrary.simpleMessage("邮箱不可用"),
@@ -1204,9 +1202,9 @@ class MessageLookup extends MessageLookupByLibrary {
       "请输入礼品卡兑换码",
     ),
     "xboardExcellent": MessageLookupByLibrary.simpleMessage("优秀"),
-    "xboardExpiredOnDate": m39,
-    "xboardExpiresOnDate": m40,
-    "xboardExpiresOnWithDays": m41,
+    "xboardExpiredOnDate": m40,
+    "xboardExpiresOnDate": m41,
+    "xboardExpiresOnWithDays": m42,
     "xboardExpiryTime": MessageLookupByLibrary.simpleMessage("过期时间"),
     "xboardFailedToCheckPaymentStatus": MessageLookupByLibrary.simpleMessage(
       "检查支付状态失败",
@@ -1223,7 +1221,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "xboardFair": MessageLookupByLibrary.simpleMessage("一般"),
     "xboardForceUpdate": MessageLookupByLibrary.simpleMessage("强制更新"),
     "xboardForgotPassword": MessageLookupByLibrary.simpleMessage("忘记密码"),
-    "xboardGatewayCandidateCount": m42,
+    "xboardGatewayCandidateCount": m43,
     "xboardGatewayStatus": MessageLookupByLibrary.simpleMessage("网关状态"),
     "xboardGetGroupLinkFailed": MessageLookupByLibrary.simpleMessage(
       "获取群组链接失败",
@@ -1274,7 +1272,7 @@ class MessageLookup extends MessageLookupByLibrary {
       "不可用",
     ),
     "xboardHealthLastEvent": MessageLookupByLibrary.simpleMessage("最近事件"),
-    "xboardHealthSubscriptionImport": m43,
+    "xboardHealthSubscriptionImport": m44,
     "xboardHealthTunApplied": MessageLookupByLibrary.simpleMessage("已应用"),
     "xboardHealthTunPending": MessageLookupByLibrary.simpleMessage("等待应用"),
     "xboardHealthy": MessageLookupByLibrary.simpleMessage("正常"),
@@ -1310,7 +1308,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "xboardLoggedIn": MessageLookupByLibrary.simpleMessage("已登录"),
     "xboardLogin": MessageLookupByLibrary.simpleMessage("登录"),
     "xboardLoginErrorConfigLoad": MessageLookupByLibrary.simpleMessage(
-      "服务暂时不可用，请稍后重试",
+      "配置加载失败，请稍后再试",
     ),
     "xboardLoginErrorCredentials": MessageLookupByLibrary.simpleMessage(
       "账号或密码错误，请先检查账号密码",
@@ -1322,7 +1320,7 @@ class MessageLookup extends MessageLookupByLibrary {
       "登录尝试过于频繁，请稍后再试",
     ),
     "xboardLoginErrorNetwork": MessageLookupByLibrary.simpleMessage(
-      "网络错误，请先检查本机网络状态",
+      "服务暂时不可用，请稍后重试",
     ),
     "xboardLoginExpired": MessageLookupByLibrary.simpleMessage("登录已过期，请重新登录"),
     "xboardLoginFailed": MessageLookupByLibrary.simpleMessage("登录失败"),
@@ -1361,17 +1359,19 @@ class MessageLookup extends MessageLookupByLibrary {
     "xboardNoAvailableSubscription": MessageLookupByLibrary.simpleMessage(
       "无可用套餐",
     ),
+    "xboardNoDocuments": MessageLookupByLibrary.simpleMessage("暂无文档"),
     "xboardNoGatewayActive": MessageLookupByLibrary.simpleMessage("暂无可用网关"),
     "xboardNoInternetConnection": MessageLookupByLibrary.simpleMessage(
       "无网络连接，请检查网络设置",
     ),
     "xboardNoOrderRecords": MessageLookupByLibrary.simpleMessage("暂无订单记录"),
     "xboardNoPaymentMethods": MessageLookupByLibrary.simpleMessage("暂无可用支付方式"),
+    "xboardNoPlansAvailable": MessageLookupByLibrary.simpleMessage("暂无套餐信息"),
     "xboardNoSubscriptionInfo": MessageLookupByLibrary.simpleMessage("暂无套餐信息"),
     "xboardNoSubscriptionPlans": MessageLookupByLibrary.simpleMessage("暂无套餐信息"),
     "xboardNoTicketRecords": MessageLookupByLibrary.simpleMessage("暂无工单记录"),
     "xboardNoTrafficRecords": MessageLookupByLibrary.simpleMessage("暂无流量记录"),
-    "xboardNodeCount": m44,
+    "xboardNodeCount": m45,
     "xboardNodeHealth": MessageLookupByLibrary.simpleMessage("节点状态"),
     "xboardNodeName": MessageLookupByLibrary.simpleMessage("节点名称"),
     "xboardNodeSelection": MessageLookupByLibrary.simpleMessage("节点选择"),
@@ -1499,7 +1499,7 @@ class MessageLookup extends MessageLookupByLibrary {
     ),
     "xboardRechargeNow": MessageLookupByLibrary.simpleMessage("立即充值"),
     "xboardRedeemFailed": MessageLookupByLibrary.simpleMessage("兑换失败"),
-    "xboardRedeemFailedWithError": m45,
+    "xboardRedeemFailedWithError": m46,
     "xboardRedeemNow": MessageLookupByLibrary.simpleMessage("立即兑换"),
     "xboardRedeemSuccess": MessageLookupByLibrary.simpleMessage("兑换成功"),
     "xboardRefresh": MessageLookupByLibrary.simpleMessage("刷新"),
@@ -1539,7 +1539,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "xboardResetTrafficConfirmContent": MessageLookupByLibrary.simpleMessage(
       "此操作将重置已使用的流量，但不会增加套餐时长，是否继续？",
     ),
-    "xboardResetTrafficInDays": m46,
+    "xboardResetTrafficInDays": m47,
     "xboardResetTrafficToday": MessageLookupByLibrary.simpleMessage(
       "已用流量已在今天重置",
     ),
@@ -1550,7 +1550,7 @@ class MessageLookup extends MessageLookupByLibrary {
       "3. 支付完成后返回应用，系统将自动检测",
     ),
     "xboardRunDiagnosis": MessageLookupByLibrary.simpleMessage("运行自检"),
-    "xboardRunningTime": m47,
+    "xboardRunningTime": m48,
     "xboardSecureEncryption": MessageLookupByLibrary.simpleMessage("安全加密"),
     "xboardSelectPaymentMethod": MessageLookupByLibrary.simpleMessage("选择支付方式"),
     "xboardSelectPaymentPeriod": MessageLookupByLibrary.simpleMessage("选择购买周期"),
@@ -1676,8 +1676,6 @@ class MessageLookup extends MessageLookupByLibrary {
     "xboardYearlyPayment": MessageLookupByLibrary.simpleMessage("年付"),
     "years": MessageLookupByLibrary.simpleMessage("年"),
     "zh_CN": MessageLookupByLibrary.simpleMessage("中文简体"),
-      "xboardDeviceUnit": xboardDeviceUnit,
-};
-
-  static String xboardDeviceUnit(num count) => "${count}台";
+    "zoom": MessageLookupByLibrary.simpleMessage("缩放"),
+  };
 }
