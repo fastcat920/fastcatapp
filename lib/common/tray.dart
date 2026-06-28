@@ -14,6 +14,8 @@ import 'constant.dart';
 import 'window.dart';
 
 class Tray {
+  Traffic? _lastTitleTraffic;
+
   Future _updateSystemTray({
     required Brightness? brightness,
     bool force = false,
@@ -177,6 +179,9 @@ class Tray {
         brightness: trayState.brightness,
         force: focus,
       );
+      if (trayState.isStart) {
+        await updateTrayTitle(_lastTitleTraffic);
+      }
     }
     if (!trayState.isStart) {
       await updateTrayTitle();
@@ -184,9 +189,10 @@ class Tray {
   }
 
   updateTrayTitle([Traffic? traffic]) async {
-    if (!Platform.isMacOS) {
+    if (!Platform.isMacOS && !Platform.isLinux) {
       return;
     }
+    _lastTitleTraffic = traffic;
     if (traffic == null) {
       await trayManager.setTitle("");
       return;
