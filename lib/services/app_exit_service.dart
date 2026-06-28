@@ -46,7 +46,9 @@ class AppExitService {
 
     try {
       await appPath.markClearCacheOnNextStart();
-      await _shutdownRuntimeForRestart();
+      await _shutdownRuntimeForRestart(
+        timeout: const Duration(milliseconds: 700),
+      );
       await singleInstanceLock.release();
       await _restartApplication();
     } finally {
@@ -62,7 +64,9 @@ class AppExitService {
     );
   }
 
-  Future<void> _shutdownRuntimeForRestart() async {
+  Future<void> _shutdownRuntimeForRestart({
+    required Duration timeout,
+  }) async {
     try {
       final shutdownTasks = <Future<void>>[
         system.setMacOSDns(true),
@@ -76,8 +80,7 @@ class AppExitService {
       if (serviceDestroy != null) {
         shutdownTasks.add(_ignoreTaskResult(serviceDestroy));
       }
-      await Future.wait<void>(shutdownTasks)
-          .timeout(const Duration(seconds: 3));
+      await Future.wait<void>(shutdownTasks).timeout(timeout);
     } catch (e) {
       commonPrint.log('shutdown before restart timeout or failed: $e');
     }

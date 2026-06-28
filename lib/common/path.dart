@@ -339,7 +339,7 @@ class AppPath {
     final profilesDirectory =
         Directory(join(directory.path, profilesDirectoryName));
     if (await profilesDirectory.exists()) {
-      await profilesDirectory.delete(recursive: true);
+      await _moveDirectoryAsideAndDelete(profilesDirectory);
     }
   }
 
@@ -391,6 +391,26 @@ class AppPath {
         await targetFile.parent.create(recursive: true);
         await entity.copy(targetFile.path);
       }
+    }
+  }
+
+  Future<void> _moveDirectoryAsideAndDelete(Directory directory) async {
+    final cleanupDirectory = Directory(
+      join(
+        directory.parent.path,
+        '.${basename(directory.path)}_cleanup_'
+        '${DateTime.now().microsecondsSinceEpoch}',
+      ),
+    );
+    try {
+      final staged = await directory.rename(cleanupDirectory.path);
+      unawaited(() async {
+        try {
+          await staged.delete(recursive: true);
+        } catch (_) {}
+      }());
+    } catch (_) {
+      await directory.delete(recursive: true);
     }
   }
 }
