@@ -171,6 +171,7 @@ class AppPath {
       if (appData?.isNotEmpty != true) return [];
       return [
         Directory(join(appData!, 'com.follow', appName)),
+        Directory(join(appData, 'com.follow', 'fastcat')),
         Directory(join(appData, 'fastcat')),
       ];
     }
@@ -178,6 +179,8 @@ class AppPath {
       final home = Platform.environment['HOME'] ?? Directory.current.path;
       return [
         Directory(join(home, 'Library', 'Application Support', packageName)),
+        Directory(
+            join(home, 'Library', 'Application Support', 'com.core.fastcat')),
         Directory(join(home, 'Library', 'Application Support', 'fastcat')),
       ];
     }
@@ -194,11 +197,21 @@ class AppPath {
 
   Future<void> _migrateLegacyMacOSPreferencesPlist(Directory target) async {
     final home = Platform.environment['HOME'] ?? Directory.current.path;
-    final source = File(
-      join(home, 'Library', 'Preferences', '$packageName.plist'),
-    );
+    final candidates = [
+      '$packageName.plist',
+      'com.core.fastcat.plist',
+    ];
     final destination = File(join(target.path, 'shared_preferences.json'));
-    if (!await source.exists() || await destination.exists()) return;
+    if (await destination.exists()) return;
+    File? source;
+    for (final candidate in candidates) {
+      final file = File(join(home, 'Library', 'Preferences', candidate));
+      if (await file.exists()) {
+        source = file;
+        break;
+      }
+    }
+    if (source == null) return;
     final result = await Process.run(
       'plutil',
       ['-convert', 'json', '-o', '-', source.path],
