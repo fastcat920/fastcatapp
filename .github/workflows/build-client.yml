@@ -272,7 +272,7 @@ jobs:
             -replace '\{\{SETUP_ICON_FILE\}\}', $icon `
             -replace '\{\{SOURCE_DIR\}\}', $buildOut `
             -replace '\{\{PRIVILEGES_REQUIRED\}\}', "admin" `
-            -replace '\{\{ARCH\}\}', "x64" `
+            -replace '\{\{ARCH\}\}', "x64compatible" `
             -replace '\{\{CREATE_DESKTOP_ICON\}\}', "true"
 
           # Replace locale template loop with en+zh
