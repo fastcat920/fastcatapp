@@ -388,11 +388,21 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Setup Flutter
+        if: matrix.arch == 'amd64'
         uses: subosito/flutter-action@v2
         with:
           flutter-version: ${{ env.FLUTTER_VERSION }}
           channel: stable
           cache: true
+
+      - name: Setup Flutter arm64
+        if: matrix.arch == 'arm64'
+        shell: bash
+        run: |
+          git clone --depth 1 --branch "${FLUTTER_VERSION}" https://github.com/flutter/flutter.git "$RUNNER_TEMP/flutter"
+          echo "$RUNNER_TEMP/flutter/bin" >> "$GITHUB_PATH"
+          "$RUNNER_TEMP/flutter/bin/flutter" config --no-analytics
+          "$RUNNER_TEMP/flutter/bin/flutter" --version
 
       - name: Setup Go
         uses: actions/setup-go@v5
