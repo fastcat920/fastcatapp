@@ -25,6 +25,18 @@ class SingleInstanceLock {
       return false;
     }
   }
+
+  Future<void> release() async {
+    final accessFile = _accessFile;
+    if (accessFile == null) return;
+    _accessFile = null;
+    try {
+      await accessFile.unlock();
+    } catch (_) {}
+    try {
+      await accessFile.close();
+    } catch (_) {}
+  }
 }
 
 final singleInstanceLock = SingleInstanceLock();

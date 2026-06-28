@@ -5,6 +5,7 @@ import 'package:fl_clash/clash/clash.dart';
 import 'package:fl_clash/common/common.dart';
 import 'package:fl_clash/models/models.dart';
 import 'package:fl_clash/state.dart';
+import 'package:path/path.dart';
 
 class AppExitService {
   const AppExitService();
@@ -46,6 +47,7 @@ class AppExitService {
     try {
       await appPath.markClearCacheOnNextStart();
       await _shutdownRuntimeForRestart();
+      await singleInstanceLock.release();
       await _restartApplication();
     } finally {
       exitOnce();
@@ -98,9 +100,18 @@ class AppExitService {
       }
     }
     if (Platform.isWindows) {
+      final executablePath = Platform.resolvedExecutable;
+      final executableDir = dirname(executablePath);
       await Process.start(
-        'cmd',
-        ['/c', 'start', '', Platform.resolvedExecutable],
+        'cmd.exe',
+        [
+          '/d',
+          '/c',
+          'ping -n 2 127.0.0.1 > nul & '
+              'start "" /D "${_escapeWindowsCommandArgument(executableDir)}" '
+              '"${_escapeWindowsCommandArgument(executablePath)}"',
+        ],
+        workingDirectory: executableDir,
         mode: ProcessStartMode.detached,
       );
       return;
@@ -118,5 +129,9 @@ class AppExitService {
     final markerIndex = executablePath.indexOf(marker);
     if (markerIndex == -1) return null;
     return executablePath.substring(0, markerIndex + '.app'.length);
+  }
+
+  String _escapeWindowsCommandArgument(String value) {
+    return value.replaceAll('"', r'\"');
   }
 }
