@@ -4,8 +4,8 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:url_launcher/url_launcher.dart';
-import 'package:path_provider/path_provider.dart';
 import 'package:desktop_webview_window/desktop_webview_window.dart';
+import 'package:fl_clash/common/path.dart';
 import 'package:fl_clash/providers/providers.dart';
 import 'package:fl_clash/state.dart';
 import 'package:fl_clash/xboard/adapter/initialization/sdk_provider.dart';
@@ -46,7 +46,7 @@ class CustomerServiceHelper {
       Platform.isWindows || Platform.isMacOS || Platform.isLinux;
 
   static int get _desktopCustomerServiceTitleBarHeight =>
-      Platform.isWindows ? 0 : 40;
+      Platform.isWindows || Platform.isLinux ? 0 : 40;
 
   /// 预热客服启动所需的轻量资源，减少首次点击后的等待。
   static void prewarm() {
@@ -67,8 +67,8 @@ class CustomerServiceHelper {
   /// 获取 WebView2 用户数据目录（可写路径）
   static Future<String> _webview2DataFolder() async {
     return _webview2DataFolderFuture ??= () async {
-      final dir = await getApplicationSupportDirectory();
-      return '${dir.path}/webview2_data';
+      final dir = await appPath.homeDirPath;
+      return '$dir/webview2_data';
     }();
   }
 
@@ -267,6 +267,7 @@ class CustomerServiceHelper {
           titleBarHeight: _desktopCustomerServiceTitleBarHeight,
           userDataFolderWindows: dataFolder,
           resizable: false,
+          showTitleBarActions: !Platform.isLinux,
         ),
       );
 
@@ -619,6 +620,7 @@ if(window===window.top){
           titleBarHeight: _desktopCustomerServiceTitleBarHeight,
           userDataFolderWindows: dataFolder,
           resizable: false,
+          showTitleBarActions: !Platform.isLinux,
         ),
       );
 

@@ -14,6 +14,14 @@ on:
         description: Build Windows amd64 client
         type: boolean
         default: true
+      build_windows_arm64:
+        description: Build experimental Windows arm64 client
+        type: boolean
+        default: false
+      build_windows_universal:
+        description: Build single Windows installer with x64 and arm64 payloads
+        type: boolean
+        default: false
       build_ios:
         description: Build iOS IPA
         type: boolean
@@ -106,7 +114,7 @@ jobs:
   windows:
     name: Windows amd64
     runs-on: windows-latest
-    if: github.event_name == 'push' || inputs.build_windows
+    if: github.event_name == 'push' || inputs.build_windows || inputs.build_windows_universal
 
     steps:
       - name: Checkout
@@ -249,8 +257,7 @@ jobs:
             return ""
           }
           $display = yv "display_name"; if (-not $display) { $display = yv "app_name" }; Write-Host "DISPLAY_NAME resolved to: $display"
-          $exe    = yv "executable_name"; if (-not $exe) { $exe = "fastcat.exe" }
-          $out    = yv "output_base_file_name"; if (-not $out) { $out = $exe }
+          $exe    = yv "executable_name"; if (-not $exe) { $exe = "FastCat.exe" }
           $pub    = yv "publisher"
           $pubUrl = yv "publisher_url"
           $icon   = yv "setup_icon_file"
@@ -259,6 +266,7 @@ jobs:
           $ver = "1.0.0"
           $ps = Get-Content "pubspec.yaml" -Raw
           if ($ps -match "(?m)^version:\s*(.+)$") { $ver = ($matches[1] -split '\+')[0].Trim() }
+          $out = "$([IO.Path]::GetFileNameWithoutExtension($exe))-Windows-$ver-x64.exe"
 
           # Render ISS template
           $iss = (Get-Content "windows\packaging\exe\inno_setup.iss" -Raw) `
@@ -269,6 +277,7 @@ jobs:
             -replace '\{\{PUBLISHER_URL\}\}', $pubUrl `
             -replace '\{\{OUTPUT_BASE_FILENAME\}\}', ([IO.Path]::GetFileNameWithoutExtension($out)) `
             -replace '\{\{EXECUTABLE_NAME\}\}', ([IO.Path]::GetFileName($exe)) `
+            -replace '\{\{INSTALL_DIR_NAME\}\}', ([IO.Path]::GetFileNameWithoutExtension($exe)) `
             -replace '\{\{SETUP_ICON_FILE\}\}', $icon `
             -replace '\{\{SOURCE_DIR\}\}', $buildOut `
             -replace '\{\{PRIVILEGES_REQUIRED\}\}', "admin" `
@@ -330,6 +339,372 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: fastcat-windows-amd64
+          path: dist/**
+          if-no-files-found: error
+
+      - name: Upload Windows amd64 payload
+        uses: actions/upload-artifact@v4
+        if: github.event_name == 'workflow_dispatch' && inputs.build_windows_universal
+        with:
+          name: fastcat-windows-amd64-payload
+          path: build/windows/x64/runner/Release/**
+          if-no-files-found: error
+
+  windows_arm64:
+    name: Windows arm64
+    runs-on: windows-11-arm
+    if: github.event_name == 'workflow_dispatch' && (inputs.build_windows_arm64 || inputs.build_windows_universal)
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Flutter
+        shell: pwsh
+        run: |
+          git clone --depth 1 --branch stable https://github.com/flutter/flutter.git "$env:RUNNER_TEMP\flutter"
+          "$env:RUNNER_TEMP\flutter\bin" >> $env:GITHUB_PATH
+          & "$env:RUNNER_TEMP\flutter\bin\flutter.bat" config --no-analytics
+          & "$env:RUNNER_TEMP\flutter\bin\flutter.bat" --version
+
+      - name: Setup Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: "1.20.x"
+          cache-dependency-path: core/go.sum
+
+      - name: Setup Rust
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Install Inno Setup
+        shell: pwsh
+        run: choco install innosetup --no-progress -y
+
+      - name: Link Inno Setup to expected path
+        shell: pwsh
+        run: |
+          $innoDirs = Get-ChildItem "C:\Program Files\Inno Setup*" -Directory -ErrorAction SilentlyContinue
+          if ($innoDirs) {
+            $target = $innoDirs[0].FullName
+            $link = "C:\Program Files (x86)\Inno Setup 6"
+            if (-not (Test-Path $link)) {
+              New-Item -ItemType Junction -Path $link -Target $target -Force | Out-Null
+              Write-Host "Junction created: $link -> $target"
+            } else {
+              Write-Host "Junction already exists: $link"
+            }
+            "INNO_SETUP_HOME=$target" >> $env:GITHUB_ENV
+          } else {
+            Write-Host "No Inno Setup directory found under C:\Program Files"
+          }
+
+      - name: Bundle VC++ Redist arm64
+        shell: pwsh
+        run: |
+          Write-Host "Downloading VC++ Redist arm64..."
+          Invoke-WebRequest -Uri "https://aka.ms/vs/17/release/vc_redist.arm64.exe" -OutFile "vc_redist.x64.exe"
+          Write-Host "vc_redist arm64 downloaded as vc_redist.x64.exe for the shared installer template"
+
+          Write-Host "Copying ARM64 VC++ runtime DLLs from VS installation..."
+          $vsPath = & "${env:ProgramFiles(x86)}\Microsoft Visual Studio\Installer\vswhere.exe" -latest -requires Microsoft.VisualStudio.Component.VC.Tools.ARM64 -property installationPath 2>$null
+          if (-not $vsPath) {
+            Write-Host "WARNING: vswhere returned no ARM64 VS path, trying fallback dirs..."
+            $fallback = Get-ChildItem "C:\Program Files*\Microsoft Visual Studio\*\*\VC\Redist\MSVC\*\arm64\Microsoft.VC143.CRT\*.dll" -Recurse -ErrorAction SilentlyContinue | Select-Object -First 3
+            if ($fallback) {
+              New-Item -Force -ItemType Directory windows\vc_redist | Out-Null
+              Copy-Item $fallback windows\vc_redist\ -Force
+              Write-Host "DLLs copied via fallback"
+            }
+          } else {
+            $dllDir = Get-ChildItem "$vsPath\VC\Redist\MSVC\*\arm64\Microsoft.VC143.CRT" -Directory | Sort-Object -Descending | Select-Object -First 1
+            if ($dllDir) {
+              New-Item -Force -ItemType Directory windows\vc_redist | Out-Null
+              Copy-Item "$($dllDir.FullName)\msvcp140.dll" windows\vc_redist\ -Force -ErrorAction SilentlyContinue
+              Copy-Item "$($dllDir.FullName)\vcruntime140.dll" windows\vc_redist\ -Force -ErrorAction SilentlyContinue
+              Copy-Item "$($dllDir.FullName)\vcruntime140_1.dll" windows\vc_redist\ -Force -ErrorAction SilentlyContinue
+              Write-Host "DLLs copied from $($dllDir.FullName)"
+            } else {
+              Write-Host "WARNING: ARM64 CRT DLL directory not found under $vsPath"
+            }
+          }
+          Write-Host "=== windows/vc_redist/ contents ==="
+          if (Test-Path windows\vc_redist) { Get-ChildItem windows\vc_redist } else { Write-Host "(empty)" }
+
+      - name: Enable Windows desktop
+        run: flutter config --enable-windows-desktop
+
+      - name: Flutter doctor
+        run: flutter doctor -v
+
+      - name: Clean build cache
+        run: flutter clean
+
+      - name: Get packages
+        run: flutter pub get
+
+      - name: Build Windows arm64 client
+        shell: pwsh
+        env:
+          XOR_KEY: ${{ secrets.XOR_KEY }}
+        run: dart run setup.dart windows --arch arm64 --out app --env stable
+
+      - name: Verify ARM64 binaries
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = "Stop"
+          function Get-PeMachine($Path) {
+            $bytes = [IO.File]::ReadAllBytes($Path)
+            $peOffset = [BitConverter]::ToInt32($bytes, 0x3c)
+            return [BitConverter]::ToUInt16($bytes, $peOffset + 4)
+          }
+
+          $expected = 0xaa64
+          $cfg = Get-Content "windows\packaging\exe\make_config.yaml" -Raw
+          $exe = "FastCat.exe"
+          if ($cfg -match "(?m)^executable_name:\s*(.+)$") {
+            $exe = $matches[1].Trim().Trim('"').Trim("'")
+          }
+
+          $paths = @(
+            "build\windows\arm64\runner\Release\$exe",
+            "build\windows\arm64\runner\Release\flutter_windows.dll",
+            "build\windows\arm64\runner\Release\fastcatCore.exe",
+            "build\windows\arm64\runner\Release\fastcatHelperService.exe"
+          )
+
+          foreach ($path in $paths) {
+            if (-not (Test-Path $path)) { throw "Missing ARM64 artifact: $path" }
+            $machine = Get-PeMachine $path
+            Write-Host "$path machine=0x$($machine.ToString('x4'))"
+            if ($machine -ne $expected) {
+              throw "$path is not ARM64 (expected 0xaa64)"
+            }
+          }
+
+      - name: Build Windows arm64 exe installer
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = "Stop"
+          $iscc = Get-Command iscc | Select-Object -ExpandProperty Source
+          Write-Host "iscc: $iscc"
+
+          $buildOut = (Resolve-Path "build\windows\arm64\runner\Release").Path
+          if (-not (Test-Path $buildOut)) { throw "Flutter ARM64 build not found: $buildOut" }
+
+          $cfg = Get-Content "windows\packaging\exe\make_config.yaml" -Raw
+          function yv($k) {
+            if ($cfg -match "(?m)^${k}:\s*(.+)$") {
+              $v = $matches[1].Trim()
+              if ($v -match '^"(.*)"$' -or $v -match "^'(.*)'$") { $v = $matches[1] }
+              return $v
+            }
+            return ""
+          }
+          $display = yv "display_name"; if (-not $display) { $display = yv "app_name" }; Write-Host "DISPLAY_NAME resolved to: $display"
+          $exe    = yv "executable_name"; if (-not $exe) { $exe = "FastCat.exe" }
+          $pub    = yv "publisher"
+          $pubUrl = yv "publisher_url"
+          $icon   = yv "setup_icon_file"
+          $appId  = yv "app_id"; if (-not $appId) { $appId = "{" + [guid]::NewGuid() + "}" }
+
+          $ver = "1.0.0"
+          $ps = Get-Content "pubspec.yaml" -Raw
+          if ($ps -match "(?m)^version:\s*(.+)$") { $ver = ($matches[1] -split '\+')[0].Trim() }
+          $out = "$([IO.Path]::GetFileNameWithoutExtension($exe))-Windows-$ver-arm64.exe"
+
+          $iss = (Get-Content "windows\packaging\exe\inno_setup.iss" -Raw) `
+            -replace '\{\{APP_ID\}\}', $appId `
+            -replace '\{\{APP_VERSION\}\}', $ver `
+            -replace '\{\{DISPLAY_NAME\}\}', $display `
+            -replace '\{\{PUBLISHER_NAME\}\}', $pub `
+            -replace '\{\{PUBLISHER_URL\}\}', $pubUrl `
+            -replace '\{\{OUTPUT_BASE_FILENAME\}\}', ([IO.Path]::GetFileNameWithoutExtension($out)) `
+            -replace '\{\{EXECUTABLE_NAME\}\}', ([IO.Path]::GetFileName($exe)) `
+            -replace '\{\{INSTALL_DIR_NAME\}\}', ([IO.Path]::GetFileNameWithoutExtension($exe)) `
+            -replace '\{\{SETUP_ICON_FILE\}\}', $icon `
+            -replace '\{\{SOURCE_DIR\}\}', $buildOut `
+            -replace '\{\{PRIVILEGES_REQUIRED\}\}', "admin" `
+            -replace '\{\{ARCH\}\}', "arm64" `
+            -replace '\{\{CREATE_DESKTOP_ICON\}\}', "true"
+
+          $nl = [Environment]::NewLine
+          $locales = 'Name: "english"; MessagesFile: "compiler:Default.isl"' + $nl +
+                     'Name: "chineseSimplified"; MessagesFile: "..\\windows\\packaging\\exe\\ChineseSimplified.isl"'
+          $iss = $iss -replace '(?s)\{% for locale in LOCALES %\}.*?\{% endfor %\}', $locales
+          $iss = $iss -replace '\{% if CREATE_DESKTOP_ICON != true %\}unchecked\{% else %\}checkedonce\{% endif %\}', 'checkedonce'
+          $iss = $iss -replace '\{% if PRIVILEGES_REQUIRED == .admin. %\}runascurrentuser\{% endif %\}', 'runascurrentuser'
+          $iss = $iss -replace '\{%[^%]*%\}', ''
+          $iss = $iss -replace '\{\{[^}]*\}\}', ''
+
+          $issFile = "build\setup-arm64.iss"
+          New-Item -Force -ItemType Directory (Split-Path $issFile) | Out-Null
+          [IO.File]::WriteAllText((Resolve-Path ".").Path + "\" + $issFile, $iss)
+          Write-Host "ISS written to $issFile"
+          Copy-Item vc_redist.x64.exe build\ -Force
+
+          & $iscc $issFile
+          if ($LASTEXITCODE -ne 0) { throw "iscc failed: $LASTEXITCODE" }
+
+          $exeFile = Join-Path (Split-Path $issFile -Parent) "$out"
+          if (-not (Test-Path $exeFile)) {
+            $exeFile = Join-Path (Get-Location) "$out"
+          }
+          if (-not (Test-Path $exeFile)) {
+            $found = Get-ChildItem -Recurse -Filter "$out" -ErrorAction SilentlyContinue | Select-Object -First 1
+            if ($found) { $exeFile = $found.FullName }
+          }
+          if (Test-Path $exeFile) {
+            New-Item -Force -ItemType Directory dist | Out-Null
+            Copy-Item $exeFile dist\ -Force
+            Write-Host "ARM64 exe copied to dist/"
+          } else {
+            Write-Host "WARNING: ARM64 exe not found, searching..."
+            Get-ChildItem -Recurse -Filter *.exe -ErrorAction SilentlyContinue | Select-Object FullName, Length | Format-Table -AutoSize
+            throw "ARM64 exe file not produced"
+          }
+
+      - name: List dist contents
+        shell: pwsh
+        if: always()
+        run: |
+          Write-Host "=== dist/ ==="
+          if (Test-Path dist) { Get-ChildItem dist -Recurse | Select-Object FullName, Length }
+          else { Write-Host "dist/ absent" }
+          Write-Host "=== ARM64 release dir ==="
+          if (Test-Path "build\windows\arm64\runner\Release") {
+            Get-ChildItem "build\windows\arm64\runner\Release" | Select-Object FullName, Length
+          }
+
+      - name: Upload Windows arm64 artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: fastcat-windows-arm64
+          path: dist/**
+          if-no-files-found: error
+
+      - name: Upload Windows arm64 payload
+        uses: actions/upload-artifact@v4
+        if: github.event_name == 'workflow_dispatch' && inputs.build_windows_universal
+        with:
+          name: fastcat-windows-arm64-payload
+          path: build/windows/arm64/runner/Release/**
+          if-no-files-found: error
+
+  windows_universal:
+    name: Windows universal installer
+    runs-on: windows-latest
+    needs: [windows, windows_arm64]
+    if: github.event_name == 'workflow_dispatch' && inputs.build_windows_universal
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install Inno Setup
+        shell: pwsh
+        run: choco install innosetup --no-progress -y
+
+      - name: Download Windows amd64 payload
+        uses: actions/download-artifact@v4
+        with:
+          name: fastcat-windows-amd64-payload
+          path: build/universal/x64
+
+      - name: Download Windows arm64 payload
+        uses: actions/download-artifact@v4
+        with:
+          name: fastcat-windows-arm64-payload
+          path: build/universal/arm64
+
+      - name: Bundle VC++ Redists
+        shell: pwsh
+        run: |
+          Invoke-WebRequest -Uri "https://aka.ms/vs/17/release/vc_redist.x64.exe" -OutFile "vc_redist.x64.exe"
+          Invoke-WebRequest -Uri "https://aka.ms/vs/17/release/vc_redist.arm64.exe" -OutFile "vc_redist.arm64.exe"
+
+      - name: Build Windows universal exe installer
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = "Stop"
+          $iscc = Get-Command iscc | Select-Object -ExpandProperty Source
+          Write-Host "iscc: $iscc"
+
+          $x64Source = (Resolve-Path "build\universal\x64").Path
+          $arm64Source = (Resolve-Path "build\universal\arm64").Path
+          $brandCfg = Get-Content "assets\config\config.yaml" -Raw
+          $appNameEn = "FastCat"
+          if ($brandCfg -match "(?m)^app_name_en:\s*(.+)$") {
+            $appNameEn = $matches[1].Trim().Trim('"').Trim("'")
+          }
+          $exe = "$appNameEn.exe"
+          if (-not (Test-Path (Join-Path $x64Source $exe))) { throw "Missing x64 payload $exe" }
+          if (-not (Test-Path (Join-Path $arm64Source $exe))) { throw "Missing arm64 payload $exe" }
+
+          $cfg = Get-Content "windows\packaging\exe\make_config.yaml" -Raw
+          function yv($k) {
+            if ($cfg -match "(?m)^${k}:\s*(.+)$") {
+              $v = $matches[1].Trim()
+              if ($v -match '^"(.*)"$' -or $v -match "^'(.*)'$") { $v = $matches[1] }
+              return $v
+            }
+            return ""
+          }
+          $ver = "1.0.0"
+          $ps = Get-Content "pubspec.yaml" -Raw
+          if ($ps -match "(?m)^version:\s*(.+)$") { $ver = ($matches[1] -split '\+')[0].Trim() }
+          $display = $appNameEn
+          $out = "$appNameEn-Windows-$ver.exe"
+          $pub    = yv "publisher"
+          $pubUrl = yv "publisher_url"
+          $icon   = yv "setup_icon_file"
+          $appId  = yv "app_id"; if (-not $appId) { $appId = "{" + [guid]::NewGuid() + "}" }
+
+          $iss = (Get-Content "windows\packaging\exe\inno_setup_dual_payload.iss" -Raw) `
+            -replace '\{\{APP_ID\}\}', $appId `
+            -replace '\{\{APP_VERSION\}\}', $ver `
+            -replace '\{\{DISPLAY_NAME\}\}', $display `
+            -replace '\{\{PUBLISHER_NAME\}\}', $pub `
+            -replace '\{\{PUBLISHER_URL\}\}', $pubUrl `
+            -replace '\{\{OUTPUT_BASE_FILENAME\}\}', ([IO.Path]::GetFileNameWithoutExtension($out)) `
+            -replace '\{\{EXECUTABLE_NAME\}\}', ([IO.Path]::GetFileName($exe)) `
+            -replace '\{\{INSTALL_DIR_NAME\}\}', ([IO.Path]::GetFileNameWithoutExtension($exe)) `
+            -replace '\{\{SETUP_ICON_FILE\}\}', $icon `
+            -replace '\{\{X64_SOURCE_DIR\}\}', $x64Source `
+            -replace '\{\{ARM64_SOURCE_DIR\}\}', $arm64Source `
+            -replace '\{\{PRIVILEGES_REQUIRED\}\}', "admin"
+
+          $issFile = "build\setup-universal.iss"
+          New-Item -Force -ItemType Directory (Split-Path $issFile) | Out-Null
+          [IO.File]::WriteAllText((Resolve-Path ".").Path + "\" + $issFile, $iss)
+          Copy-Item vc_redist.x64.exe build\ -Force
+          Copy-Item vc_redist.arm64.exe build\ -Force
+
+          & $iscc $issFile
+          if ($LASTEXITCODE -ne 0) { throw "iscc failed: $LASTEXITCODE" }
+
+          $exeFile = Join-Path (Split-Path $issFile -Parent) "$out"
+          if (-not (Test-Path $exeFile)) {
+            $found = Get-ChildItem -Recurse -Filter "$out" -ErrorAction SilentlyContinue | Select-Object -First 1
+            if ($found) { $exeFile = $found.FullName }
+          }
+          if (-not (Test-Path $exeFile)) { throw "Universal exe file not produced" }
+
+          New-Item -Force -ItemType Directory dist | Out-Null
+          Copy-Item $exeFile dist\ -Force
+          Write-Host "Universal exe copied to dist/"
+
+      - name: List universal dist contents
+        shell: pwsh
+        if: always()
+        run: |
+          Write-Host "=== dist/ ==="
+          if (Test-Path dist) { Get-ChildItem dist -Recurse | Select-Object FullName, Length }
+          else { Write-Host "dist/ absent" }
+
+      - name: Upload Windows universal artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: fastcat-windows-universal
           path: dist/**
           if-no-files-found: error
 

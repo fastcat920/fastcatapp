@@ -12,7 +12,12 @@ import WebKit
 class WebViewLayoutController: NSViewController {
   private lazy var titleBarController: FlutterViewController = {
     let project = FlutterDartProject()
-    project.dartEntrypointArguments = ["web_view_title_bar", "\(viewId)", "\(titleBarTopPadding)"]
+    project.dartEntrypointArguments = [
+      "web_view_title_bar",
+      "\(viewId)",
+      "\(titleBarTopPadding)",
+      showTitleBarActions ? "true" : "false"
+    ]
     return FlutterViewController(project: project)
   }()
 
@@ -33,12 +38,14 @@ class WebViewLayoutController: NSViewController {
   private let titleBarHeight: Int
 
   private let titleBarTopPadding: Int
+  private let showTitleBarActions: Bool
 
-  public init(methodChannel: FlutterMethodChannel, viewId: Int64, titleBarHeight: Int, titleBarTopPadding: Int) {
+  public init(methodChannel: FlutterMethodChannel, viewId: Int64, titleBarHeight: Int, titleBarTopPadding: Int, showTitleBarActions: Bool) {
     self.viewId = viewId
     self.methodChannel = methodChannel
     self.titleBarHeight = titleBarHeight
     self.titleBarTopPadding = titleBarTopPadding
+    self.showTitleBarActions = showTitleBarActions
     super.init(nibName: "WebViewLayoutController", bundle: Bundle(for: WebViewLayoutController.self))
   }
 

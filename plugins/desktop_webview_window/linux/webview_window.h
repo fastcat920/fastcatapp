@@ -20,7 +20,8 @@ class WebviewWindow {
       std::function<void()> on_close_callback,
       const std::string &title, int width, int height,
       int title_bar_height,
-      bool resizable
+      bool resizable,
+      bool show_title_bar_actions
   );
 
   virtual ~WebviewWindow();

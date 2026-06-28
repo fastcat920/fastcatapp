@@ -940,6 +940,16 @@ class AppLocalizations {
     return Intl.message('Exit', name: 'exit', desc: '', args: []);
   }
 
+  /// `Clear cache and restart`
+  String get clearCacheAndRestart {
+    return Intl.message(
+      'Clear cache and restart',
+      name: 'clearCacheAndRestart',
+      desc: '',
+      args: [],
+    );
+  }
+
   /// `System proxy`
   String get systemProxy {
     return Intl.message(

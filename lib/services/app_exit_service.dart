@@ -1,9 +1,11 @@
 import 'dart:async';
+import 'dart:io';
 
 import 'package:fl_clash/clash/clash.dart';
 import 'package:fl_clash/common/common.dart';
 import 'package:fl_clash/models/models.dart';
 import 'package:fl_clash/state.dart';
+import 'package:path/path.dart';
 
 class AppExitService {
   const AppExitService();
@@ -34,11 +36,109 @@ class AppExitService {
     }
   }
 
+  Future<void> handleClearCacheAndRestart() async {
+    var didExit = false;
+    void exitOnce() {
+      if (didExit) return;
+      didExit = true;
+      system.exit();
+    }
+
+    try {
+      await appPath.markClearCacheOnNextStart();
+      await _shutdownRuntimeForRestart(
+        timeout: const Duration(milliseconds: 700),
+      );
+      await singleInstanceLock.release();
+      await _restartApplication();
+    } finally {
+      exitOnce();
+    }
+  }
+
   Future<void> handleClear() async {
     await preferences.clearPreferences();
     commonPrint.log('clear preferences');
     globalState.config = Config(
       themeProps: defaultThemeProps,
     );
+  }
+
+  Future<void> _shutdownRuntimeForRestart({
+    required Duration timeout,
+  }) async {
+    try {
+      final shutdownTasks = <Future<void>>[
+        system.setMacOSDns(true),
+        clashCore.shutdown(),
+      ];
+      final proxyStop = proxy?.stopProxy();
+      if (proxyStop != null) {
+        shutdownTasks.add(_ignoreTaskResult(proxyStop));
+      }
+      final serviceDestroy = clashService?.destroy();
+      if (serviceDestroy != null) {
+        shutdownTasks.add(_ignoreTaskResult(serviceDestroy));
+      }
+      await Future.wait<void>(shutdownTasks).timeout(timeout);
+    } catch (e) {
+      commonPrint.log('shutdown before restart timeout or failed: $e');
+    }
+  }
+
+  Future<void> _ignoreTaskResult(FutureOr<dynamic> task) async {
+    await task;
+  }
+
+  Future<void> _restartApplication() async {
+    if (Platform.isMacOS) {
+      final appBundlePath = _macOSAppBundlePath();
+      if (appBundlePath != null) {
+        await Process.start(
+          'open',
+          ['-n', appBundlePath],
+          mode: ProcessStartMode.detached,
+        );
+        return;
+      }
+    }
+    if (Platform.isWindows) {
+      final executablePath = Platform.resolvedExecutable;
+      final executableDir = dirname(executablePath);
+      final command = 'Start-Sleep -Milliseconds 500; '
+          "Start-Process -FilePath '${_escapePowerShellString(executablePath)}' "
+          "-WorkingDirectory '${_escapePowerShellString(executableDir)}'";
+      await Process.start(
+        'powershell.exe',
+        [
+          '-NoProfile',
+          '-NonInteractive',
+          '-WindowStyle',
+          'Hidden',
+          '-Command',
+          command,
+        ],
+        workingDirectory: executableDir,
+        mode: ProcessStartMode.detached,
+      );
+      return;
+    }
+    await Process.start(
+      Platform.resolvedExecutable,
+      const [],
+      mode: ProcessStartMode.detached,
+    );
+  }
+
+  String? _macOSAppBundlePath() {
+    final executablePath = Platform.resolvedExecutable;
+    final marker = '.app/Contents/MacOS/';
+    final markerIndex = executablePath.indexOf(marker);
+    if (markerIndex == -1) return null;
+    return executablePath.substring(0, markerIndex + '.app'.length);
+  }
+
+  String _escapePowerShellString(String value) {
+    return value.replaceAll("'", "''");
   }
 }

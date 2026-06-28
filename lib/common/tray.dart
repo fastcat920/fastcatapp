@@ -14,6 +14,8 @@ import 'constant.dart';
 import 'window.dart';
 
 class Tray {
+  Traffic? _lastTitleTraffic;
+
   Future _updateSystemTray({
     required Brightness? brightness,
     bool force = false,
@@ -156,6 +158,13 @@ class Tray {
     menuItems.add(autoStartMenuItem);
     menuItems.add(copyEnvVarMenuItem);
     menuItems.add(MenuItem.separator());
+    final clearCacheAndRestartMenuItem = MenuItem(
+      label: appLocalizations.clearCacheAndRestart,
+      onClick: (_) async {
+        await globalState.appController.handleClearCacheAndRestart();
+      },
+    );
+    menuItems.add(clearCacheAndRestartMenuItem);
     final exitMenuItem = MenuItem(
       label: appLocalizations.exit,
       onClick: (_) async {
@@ -170,6 +179,9 @@ class Tray {
         brightness: trayState.brightness,
         force: focus,
       );
+      if (trayState.isStart) {
+        await updateTrayTitle(_lastTitleTraffic);
+      }
     }
     if (!trayState.isStart) {
       await updateTrayTitle();
@@ -177,9 +189,10 @@ class Tray {
   }
 
   updateTrayTitle([Traffic? traffic]) async {
-    if (!Platform.isMacOS) {
+    if (!Platform.isMacOS && !Platform.isLinux) {
       return;
     }
+    _lastTitleTraffic = traffic;
     if (traffic == null) {
       await trayManager.setTitle("");
       return;

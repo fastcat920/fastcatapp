@@ -49,6 +49,9 @@ static void webview_window_plugin_handle_method_call(
     auto title_bar_height = fl_value_get_int(fl_value_lookup_string(args, "titleBarHeight"));
     auto *resizable_value = fl_value_lookup_string(args, "resizable");
     auto resizable = resizable_value ? fl_value_get_bool(resizable_value) : true;
+    auto *show_title_bar_actions_value = fl_value_lookup_string(args, "showTitleBarActions");
+    auto show_title_bar_actions =
+        show_title_bar_actions_value ? fl_value_get_bool(show_title_bar_actions_value) : true;
 
     auto window_id = next_window_id_;
     g_object_ref(self);
@@ -57,7 +60,7 @@ static void webview_window_plugin_handle_method_call(
         [self, window_id]() {
           self->windows->erase(window_id);
           g_object_unref(self);
-        }, title, width, height, title_bar_height, resizable);
+        }, title, width, height, title_bar_height, resizable, show_title_bar_actions);
     self->windows->insert({window_id, std::move(webview)});
     next_window_id_++;
     fl_method_call_respond_success(method_call, fl_value_new_int(window_id), nullptr);

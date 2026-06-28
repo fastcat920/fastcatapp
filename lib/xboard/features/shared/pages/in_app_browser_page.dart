@@ -3,8 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 import 'package:desktop_webview_window/desktop_webview_window.dart';
-import 'package:path_provider/path_provider.dart';
 import 'package:window_manager/window_manager.dart';
+import 'package:fl_clash/common/path.dart';
 
 /// 软件内 WebView 页面（通用）
 ///
@@ -42,8 +42,8 @@ class InAppBrowserPage extends StatefulWidget {
       );
     } else if (Platform.isWindows || Platform.isLinux) {
       try {
-        final appDir = await getApplicationSupportDirectory();
-        final dataFolder = '${appDir.path}/webview2_data';
+        final appDir = await appPath.homeDirPath;
+        final dataFolder = '$appDir/webview2_data';
 
         // 获取主客户端窗口逻辑大小和位置，乘以 DPI 缩放比转为物理像素
         final mainSize = await windowManager.getSize();
@@ -124,8 +124,7 @@ class _InAppBrowserPageState extends State<InAppBrowserPage> {
       body: Stack(
         children: [
           WebViewWidget(controller: _controller),
-          if (_isLoading)
-            const LinearProgressIndicator(minHeight: 3),
+          if (_isLoading) const LinearProgressIndicator(minHeight: 3),
         ],
       ),
     );
