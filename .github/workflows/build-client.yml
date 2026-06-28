@@ -258,7 +258,6 @@ jobs:
           }
           $display = yv "display_name"; if (-not $display) { $display = yv "app_name" }; Write-Host "DISPLAY_NAME resolved to: $display"
           $exe    = yv "executable_name"; if (-not $exe) { $exe = "FastCat.exe" }
-          $out    = yv "output_base_file_name"; if (-not $out) { $out = $exe }
           $pub    = yv "publisher"
           $pubUrl = yv "publisher_url"
           $icon   = yv "setup_icon_file"
@@ -267,6 +266,7 @@ jobs:
           $ver = "1.0.0"
           $ps = Get-Content "pubspec.yaml" -Raw
           if ($ps -match "(?m)^version:\s*(.+)$") { $ver = ($matches[1] -split '\+')[0].Trim() }
+          $out = "$([IO.Path]::GetFileNameWithoutExtension($exe))-Windows-$ver.exe"
 
           # Render ISS template
           $iss = (Get-Content "windows\packaging\exe\inno_setup.iss" -Raw) `
@@ -502,9 +502,6 @@ jobs:
           }
           $display = yv "display_name"; if (-not $display) { $display = yv "app_name" }; Write-Host "DISPLAY_NAME resolved to: $display"
           $exe    = yv "executable_name"; if (-not $exe) { $exe = "FastCat.exe" }
-          $out    = yv "output_base_file_name"; if (-not $out) { $out = $exe }
-          $outBase = [IO.Path]::GetFileNameWithoutExtension($out)
-          if ($outBase -notmatch '(?i)arm64') { $out = "$outBase-arm64.exe" }
           $pub    = yv "publisher"
           $pubUrl = yv "publisher_url"
           $icon   = yv "setup_icon_file"
@@ -513,6 +510,7 @@ jobs:
           $ver = "1.0.0"
           $ps = Get-Content "pubspec.yaml" -Raw
           if ($ps -match "(?m)^version:\s*(.+)$") { $ver = ($matches[1] -split '\+')[0].Trim() }
+          $out = "$([IO.Path]::GetFileNameWithoutExtension($exe))-Windows-$ver-arm64.exe"
 
           $iss = (Get-Content "windows\packaging\exe\inno_setup.iss" -Raw) `
             -replace '\{\{APP_ID\}\}', $appId `
