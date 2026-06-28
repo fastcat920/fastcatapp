@@ -4,6 +4,7 @@
   "direct": "直连",
   "dashboard": "仪表盘",
   "proxies": "代理",
+  "nodeSelection": "节点选择",
   "profile": "配置",
   "profiles": "配置",
   "tools": "工具",

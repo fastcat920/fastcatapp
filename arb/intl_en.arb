@@ -4,6 +4,7 @@
   "direct": "Direct",
   "dashboard": "Dashboard",
   "proxies": "Proxies",
+  "nodeSelection": "Node Selection",
   "profile": "Profile",
   "profiles": "Profiles",
   "tools": "Tools",

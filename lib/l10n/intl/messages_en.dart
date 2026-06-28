@@ -806,6 +806,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "noProxyDesc": MessageLookupByLibrary.simpleMessage(
       "Please create a profile or add a valid profile",
     ),
+    "nodeSelection": MessageLookupByLibrary.simpleMessage("Node Selection"),
     "noResolve": MessageLookupByLibrary.simpleMessage("No resolve IP"),
     "none": MessageLookupByLibrary.simpleMessage("none"),
     "notConnected": MessageLookupByLibrary.simpleMessage("Not connected"),

@@ -12,6 +12,13 @@ import 'package:intl/intl.dart';
 
 typedef OnSelected = void Function(int index);
 
+String _getHomeTitle(PageLabel pageLabel) {
+  return switch (pageLabel) {
+    PageLabel.proxies => appLocalizations.nodeSelection,
+    _ => Intl.message(pageLabel.name),
+  };
+}
+
 class HomePage extends StatelessWidget {
   const HomePage({super.key});
 
@@ -39,9 +46,7 @@ class HomePage extends StatelessWidget {
               viewMode != ViewMode.mobile ? navigationBar : null;
           return CommonScaffold(
             key: globalState.homeScaffoldKey,
-            title: Intl.message(
-              pageLabel.name,
-            ),
+            title: _getHomeTitle(pageLabel),
             sideNavigationBar: sideNavigationBar,
             body: child!,
             bottomNavigationBar: bottomNavigationBar,

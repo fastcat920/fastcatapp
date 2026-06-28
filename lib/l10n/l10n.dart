@@ -80,6 +80,16 @@ class AppLocalizations {
     return Intl.message('Proxies', name: 'proxies', desc: '', args: []);
   }
 
+  /// `Node Selection`
+  String get nodeSelection {
+    return Intl.message(
+      'Node Selection',
+      name: 'nodeSelection',
+      desc: '',
+      args: [],
+    );
+  }
+
   /// `Profile`
   String get profile {
     return Intl.message('Profile', name: 'profile', desc: '', args: []);
