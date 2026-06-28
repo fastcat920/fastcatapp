@@ -105,14 +105,18 @@ class AppExitService {
     if (Platform.isWindows) {
       final executablePath = Platform.resolvedExecutable;
       final executableDir = dirname(executablePath);
+      final command = 'Start-Sleep -Milliseconds 500; '
+          "Start-Process -FilePath '${_escapePowerShellString(executablePath)}' "
+          "-WorkingDirectory '${_escapePowerShellString(executableDir)}'";
       await Process.start(
-        'cmd.exe',
+        'powershell.exe',
         [
-          '/d',
-          '/c',
-          'ping -n 2 127.0.0.1 > nul & '
-              'start "" /D "${_escapeWindowsCommandArgument(executableDir)}" '
-              '"${_escapeWindowsCommandArgument(executablePath)}"',
+          '-NoProfile',
+          '-NonInteractive',
+          '-WindowStyle',
+          'Hidden',
+          '-Command',
+          command,
         ],
         workingDirectory: executableDir,
         mode: ProcessStartMode.detached,
@@ -134,7 +138,7 @@ class AppExitService {
     return executablePath.substring(0, markerIndex + '.app'.length);
   }
 
-  String _escapeWindowsCommandArgument(String value) {
-    return value.replaceAll('"', r'\"');
+  String _escapePowerShellString(String value) {
+    return value.replaceAll("'", "''");
   }
 }
