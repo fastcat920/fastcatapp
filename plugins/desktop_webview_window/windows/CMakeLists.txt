@@ -32,8 +32,16 @@ target_include_directories(${PLUGIN_NAME} INTERFACE
 target_link_libraries(${PLUGIN_NAME} PRIVATE flutter flutter_wrapper_plugin flutter_wrapper_app)
 
 add_library(Webview2 SHARED IMPORTED GLOBAL)
-SET_PROPERTY(TARGET Webview2 PROPERTY IMPORTED_LOCATION ${CMAKE_CURRENT_SOURCE_DIR}/libs/x64/Webview2Loader.dll)
-SET_PROPERTY(TARGET Webview2 PROPERTY IMPORTED_IMPLIB ${CMAKE_CURRENT_SOURCE_DIR}/libs/x64/Webview2Loader.dll.lib)
+if(CMAKE_GENERATOR_PLATFORM STREQUAL "ARM64")
+        set(WEBVIEW2_LOADER_DLL "${CMAKE_BINARY_DIR}/packages/Microsoft.Web.WebView2/runtimes/win-arm64/native/WebView2Loader.dll")
+        set(WEBVIEW2_LOADER_LIB "${CMAKE_BINARY_DIR}/packages/Microsoft.Web.WebView2/build/native/arm64/WebView2Loader.dll.lib")
+else()
+        set(WEBVIEW2_LOADER_DLL "${CMAKE_CURRENT_SOURCE_DIR}/libs/x64/Webview2Loader.dll")
+        set(WEBVIEW2_LOADER_LIB "${CMAKE_CURRENT_SOURCE_DIR}/libs/x64/Webview2Loader.dll.lib")
+endif()
+
+SET_PROPERTY(TARGET Webview2 PROPERTY IMPORTED_LOCATION ${WEBVIEW2_LOADER_DLL})
+SET_PROPERTY(TARGET Webview2 PROPERTY IMPORTED_IMPLIB ${WEBVIEW2_LOADER_LIB})
 
 target_link_libraries(${PLUGIN_NAME} PRIVATE Webview2 uxtheme)
 
