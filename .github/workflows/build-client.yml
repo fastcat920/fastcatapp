@@ -19,7 +19,7 @@ on:
         type: boolean
         default: true
       build_linux:
-        description: Build Linux amd64 packages
+        description: Build Linux amd64 and arm64 packages
         type: boolean
         default: true
       build_macos:
@@ -371,9 +371,17 @@ jobs:
           if-no-files-found: error
 
   linux:
-    name: Linux amd64
-    runs-on: ubuntu-latest
+    name: Linux ${{ matrix.arch }}
+    runs-on: ${{ matrix.runner }}
     if: github.event_name == 'push' || inputs.build_linux
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - arch: amd64
+            runner: ubuntu-latest
+          - arch: arm64
+            runner: ubuntu-24.04-arm
 
     steps:
       - name: Checkout
@@ -419,7 +427,7 @@ jobs:
       - name: Build Linux packages
         env:
           XOR_KEY: ${{ secrets.XOR_KEY }}
-        run: dart run setup.dart linux --arch amd64 --out app --env stable
+        run: dart run setup.dart linux --arch ${{ matrix.arch }} --out app --env stable
 
       - name: List dist contents
         shell: bash
@@ -434,7 +442,7 @@ jobs:
       - name: Upload Linux artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: fastcat-linux-amd64
+          name: fastcat-linux-${{ matrix.arch }}
           path: dist/**
           if-no-files-found: error
 

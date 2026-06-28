@@ -746,7 +746,7 @@ class BuildCommand extends Command {
       .map((e) => e.arch!)
       .toList();
 
-  _getLinuxDependencies(Arch arch) async {
+  _getLinuxDependencies() async {
     await Build.exec(
       Build.getExecutable("sudo apt update -y"),
     );
@@ -762,31 +762,9 @@ class BuildCommand extends Command {
     await Build.exec(
       Build.getExecutable("sudo apt install -y locate"),
     );
-    if (arch == Arch.amd64) {
-      await Build.exec(
-        Build.getExecutable("sudo apt install -y rpm patchelf"),
-      );
-      await Build.exec(
-        Build.getExecutable("sudo apt install -y libfuse2"),
-      );
-
-      final downloadName = arch == Arch.amd64 ? "x86_64" : "aarch64";
-      await Build.exec(
-        Build.getExecutable(
-          "wget -O appimagetool https://github.com/AppImage/AppImageKit/releases/download/continuous/appimagetool-$downloadName.AppImage",
-        ),
-      );
-      await Build.exec(
-        Build.getExecutable(
-          "chmod +x appimagetool",
-        ),
-      );
-      await Build.exec(
-        Build.getExecutable(
-          "sudo mv appimagetool /usr/local/bin/",
-        ),
-      );
-    }
+    await Build.exec(
+      Build.getExecutable("sudo apt install -y rpm patchelf"),
+    );
   }
 
   _getMacosDependencies() async {
@@ -1063,12 +1041,15 @@ end tell
   void _normalizeArtifactNames({
     required String osName,
     required List<String> extensions,
+    String? archName,
   }) {
     final appEn = Build.appNameEn;
     final version = Build.appVersion;
     final dir = Directory(Build.distPath);
+    final archSuffix =
+        archName == null || archName.trim().isEmpty ? '' : '-$archName';
     print(
-        '[setup.dart] 🔍 normalizeArtifactNames: os=$osName version=$version appEn=$appEn dir=${dir.path}');
+        '[setup.dart] 🔍 normalizeArtifactNames: os=$osName version=$version appEn=$appEn arch=$archName dir=${dir.path}');
     if (!dir.existsSync()) {
       print('[setup.dart] ⚠️ dist/ does not exist, skip rename');
       return;
@@ -1089,7 +1070,7 @@ end tell
         // 文件名必须包含版本号（3.3.9 可匹配 3.3.9+1）
         if (!lowerName.contains(version)) continue;
 
-        final newName = '$appEn-$osName-$version.$ext';
+        final newName = '$appEn-$osName-$version$archSuffix.$ext';
         final newPath = join(Build.distPath, newName);
         final newFile = File(newPath);
         if (newFile.existsSync()) newFile.deleteSync();
@@ -1570,17 +1551,17 @@ end tell
       case Target.linux:
         _applyDartConstant();
         _applyLinuxAppName();
+        final linuxArch = arch!;
         final targetMap = {
           Arch.arm64: "linux-arm64",
           Arch.amd64: "linux-x64",
         };
         final targets = [
           "deb",
-          if (arch == Arch.amd64) "appimage",
-          if (arch == Arch.amd64) "rpm",
+          "rpm",
         ].join(",");
-        final defaultTarget = targetMap[arch];
-        await _getLinuxDependencies(arch!);
+        final defaultTarget = targetMap[linuxArch];
+        await _getLinuxDependencies();
         await _buildDistributor(
           target: target,
           targets: targets,
@@ -1590,7 +1571,8 @@ end tell
 
         _normalizeArtifactNames(
           osName: 'Linux',
-          extensions: ['deb', 'AppImage', 'rpm'],
+          extensions: ['deb', 'rpm'],
+          archName: linuxArch.name,
         );
         return;
       case Target.android:
