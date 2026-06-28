@@ -20,6 +20,7 @@ class CreateConfiguration {
   final bool useWindowPositionAndSize;
   final bool openMaximized;
   final bool resizable;
+  final bool showTitleBarActions;
 
   const CreateConfiguration({
     this.windowWidth = 1280,
@@ -33,6 +34,7 @@ class CreateConfiguration {
     this.useWindowPositionAndSize = false,
     this.openMaximized = false,
     this.resizable = true,
+    this.showTitleBarActions = true,
   });
 
   factory CreateConfiguration.platform() {
@@ -53,5 +55,6 @@ class CreateConfiguration {
         "useWindowPositionAndSize": useWindowPositionAndSize,
         "openMaximized": openMaximized,
         "resizable": resizable,
+        "showTitleBarActions": showTitleBarActions,
       };
 }

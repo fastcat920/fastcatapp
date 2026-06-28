@@ -34,12 +34,14 @@ WebviewWindow::WebviewWindow(
     MethodChannelPtr method_channel,
     int64_t window_id,
     int title_bar_height,
+    bool show_title_bar_actions,
     std::function<void()> on_close_callback
 ) : method_channel_(std::move(method_channel)),
     window_id_(window_id),
     on_close_callback_(std::move(on_close_callback)),
     hwnd_(),
-    title_bar_height_(title_bar_height) {
+    title_bar_height_(title_bar_height),
+    show_title_bar_actions_(show_title_bar_actions) {
 
 }
 
@@ -124,7 +126,12 @@ void WebviewWindow::CreateAndShow(const std::wstring &title, int height, int wid
 
   // Create the title bar view only when the caller reserves space for it.
   if (title_bar_height > 0) {
-    std::vector<std::string> args = {"web_view_title_bar", std::to_string(window_id_)};
+    std::vector<std::string> args = {
+      "web_view_title_bar",
+      std::to_string(window_id_),
+      "0",
+      show_title_bar_actions_ ? "true" : "false"
+    };
     flutter_action_bar_ = std::make_unique<webview_window::FlutterView>(std::move(args));
     auto title_bar_handle = flutter_action_bar_->GetWindow();
     SetParent(title_bar_handle, hwnd_.get());

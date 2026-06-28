@@ -28,6 +28,7 @@ class WebviewWindowController: NSWindowController {
        width: Int, height: Int,
        title: String, titleBarHeight: Int,
        titleBarTopPadding: Int,
+       showTitleBarActions: Bool,
        resizable: Bool) {
     self.viewId = viewId
     self.methodChannel = methodChannel
@@ -53,7 +54,8 @@ class WebviewWindowController: NSWindowController {
     let contentViewController = WebViewLayoutController(
       methodChannel: methodChannel,
       viewId: viewId, titleBarHeight: titleBarHeight,
-      titleBarTopPadding: titleBarTopPadding)
+      titleBarTopPadding: titleBarTopPadding,
+      showTitleBarActions: showTitleBarActions)
     newWindow.contentViewController = contentViewController
     newWindow.setContentSize(NSSize(width: width, height: height))
     newWindow.center()

@@ -156,6 +156,13 @@ class Tray {
     menuItems.add(autoStartMenuItem);
     menuItems.add(copyEnvVarMenuItem);
     menuItems.add(MenuItem.separator());
+    final clearCacheAndRestartMenuItem = MenuItem(
+      label: appLocalizations.clearCacheAndRestart,
+      onClick: (_) async {
+        await globalState.appController.handleClearCacheAndRestart();
+      },
+    );
+    menuItems.add(clearCacheAndRestartMenuItem);
     final exitMenuItem = MenuItem(
       label: appLocalizations.exit,
       onClick: (_) async {

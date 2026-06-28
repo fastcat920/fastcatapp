@@ -28,6 +28,7 @@ bool runWebViewTitleBarWidget(
     return false;
   }
   final titleBarTopPadding = int.tryParse(args.length > 2 ? args[2] : '0') ?? 0;
+  final showTitleBarActions = args.length <= 3 || args[3] != 'false';
   runZonedGuarded(
     () {
       WidgetsFlutterBinding.ensureInitialized();
@@ -35,7 +36,11 @@ bool runWebViewTitleBarWidget(
         webViewId: webViewId,
         titleBarTopPadding: titleBarTopPadding,
         backgroundColor: backgroundColor,
-        builder: builder ?? _defaultTitleBar,
+        builder: builder ??
+            (context) => _defaultTitleBar(
+                  context,
+                  showActions: showTitleBarActions,
+                ),
       ));
     },
     onError ??
@@ -213,7 +218,13 @@ class _TitleBarAppState extends State<_TitleBarApp>
   }
 }
 
-Widget _defaultTitleBar(BuildContext context) {
+Widget _defaultTitleBar(
+  BuildContext context, {
+  bool showActions = true,
+}) {
+  if (!showActions) {
+    return const Row(children: [Spacer()]);
+  }
   final state = TitleBarWebViewState.of(context);
   final controller = TitleBarWebViewController.of(context);
   return Row(

@@ -34,12 +34,14 @@ public class DesktopWebviewWindowPlugin: NSObject, FlutterPlugin {
       let titleBarHeight = argument["titleBarHeight"] as? Int ?? 50
       let titleBarTopPadding = argument["titleBarTopPadding"] as? Int ?? 0
       let resizable = argument["resizable"] as? Bool ?? true
+      let showTitleBarActions = argument["showTitleBarActions"] as? Bool ?? true
 
       let controller = WebviewWindowController(
         viewId: viewId, methodChannel: methodChannel,
         width: width, height: height, title: title,
         titleBarHeight: titleBarHeight,
         titleBarTopPadding: titleBarTopPadding,
+        showTitleBarActions: showTitleBarActions,
         resizable: resizable
       )
       controller.webviewPlugin = self

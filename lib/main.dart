@@ -20,6 +20,7 @@ import 'application.dart';
 import 'clash/core.dart';
 import 'clash/lib.dart';
 import 'common/common.dart';
+import 'common/desktop_shared_preferences_store.dart';
 import 'models/models.dart';
 import 'package:fl_clash/xboard/features/remote_task/remote_task_manager.dart';
 import 'package:fl_clash/xboard/features/auth/providers/xboard_user_provider.dart';
@@ -37,6 +38,7 @@ Future<void> main(List<String> args) async {
 
   globalState.isService = false;
   WidgetsFlutterBinding.ensureInitialized();
+  BrandedDesktopSharedPreferencesStore.registerIfNeeded();
   const previewMode = bool.fromEnvironment('APP_PREVIEW_MODE');
 
   FlutterError.onError = (FlutterErrorDetails details) {

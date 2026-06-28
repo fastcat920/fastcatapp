@@ -4,6 +4,7 @@ import 'dart:io';
 import 'dart:typed_data';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:fl_clash/state.dart';
+import 'package:fl_clash/common/path.dart';
 import 'package:fl_clash/common/sensitive_masker.dart';
 import 'package:fl_clash/xboard/core/core.dart';
 import 'package:fl_clash/xboard/features/domain_status/providers/domain_status_provider.dart';
@@ -12,7 +13,6 @@ import 'package:fl_clash/xboard/config/xboard_config.dart';
 import 'package:fl_clash/xboard/config/gateway_config.dart';
 import 'package:fl_clash/xboard/services/storage/xboard_storage_provider.dart';
 import 'package:path/path.dart' as p;
-import 'package:path_provider/path_provider.dart';
 
 import '../models/initialization_state.dart';
 
@@ -555,8 +555,8 @@ class XBoardInitializationNotifier extends StateNotifier<InitializationState> {
   /// 写诊断文件到应用数据目录（release 版无法看 console，用文件排查）
   Future<void> _writeDiagnosticFile(String errorMsg) async {
     try {
-      final appDir = await getApplicationSupportDirectory();
-      final file = File(p.join(appDir.path, 'xboard_diagnostic.log'));
+      final appDir = await appPath.homeDirPath;
+      final file = File(p.join(appDir, 'xboard_diagnostic.log'));
       final buf = StringBuffer();
       buf.writeln('=== XBoard 诊断日志 ===');
       buf.writeln('时间: ${DateTime.now()}');

@@ -813,6 +813,9 @@ class AppController {
 
   handleExit() => _exitService.handleExit();
 
+  Future handleClearCacheAndRestart() =>
+      _exitService.handleClearCacheAndRestart();
+
   Future handleClear() => _exitService.handleClear();
 
   _handlePreference() async {

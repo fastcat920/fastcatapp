@@ -59,12 +59,17 @@ void WebviewWindowPlugin::HandleMethodCall(
     auto useWindowPositionAndSize = std::get<bool>(arguments->at(flutter::EncodableValue("useWindowPositionAndSize")));
     auto openMaximized = std::get<bool>(arguments->at(flutter::EncodableValue("openMaximized")));
     auto resizable = std::get<bool>(arguments->at(flutter::EncodableValue("resizable")));
+    auto showTitleBarActions = true;
+    auto showTitleBarActionsIter = arguments->find(flutter::EncodableValue("showTitleBarActions"));
+    if (showTitleBarActionsIter != arguments->end()) {
+      showTitleBarActions = std::get<bool>(showTitleBarActionsIter->second);
+    }
     auto windowPosX = arguments->at(flutter::EncodableValue("windowPosX")).LongValue();
     auto windowPosY = arguments->at(flutter::EncodableValue("windowPosY")).LongValue();
 
     auto window_id = next_window_id_;
     auto window = std::make_unique<WebviewWindow>(
-        method_channel_, window_id, int(titleBarHeight),
+        method_channel_, window_id, int(titleBarHeight), showTitleBarActions,
         [this, window_id]() {
           windows_.erase(window_id);
         });

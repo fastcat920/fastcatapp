@@ -64,7 +64,8 @@ WebviewWindow::WebviewWindow(
     int width,
     int height,
     int title_bar_height,
-    bool resizable
+    bool resizable,
+    bool show_title_bar_actions
 ) : method_channel_(method_channel),
     window_id_(window_id),
     on_close_callback_(std::move(on_close_callback)),
@@ -94,7 +95,12 @@ WebviewWindow::WebviewWindow(
 
   // initial flutter_view
   g_autoptr(FlDartProject) project = fl_dart_project_new();
-  const char *args[] = {"web_view_title_bar", g_strdup_printf("%ld", window_id), nullptr};
+  const char *args[] = {
+      "web_view_title_bar",
+      g_strdup_printf("%ld", window_id),
+      "0",
+      show_title_bar_actions ? "true" : "false",
+      nullptr};
   fl_dart_project_set_dart_entrypoint_arguments(project, const_cast<char **>(args));
   auto *title_bar = fl_view_new(project);
 

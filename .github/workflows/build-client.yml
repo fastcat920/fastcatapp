@@ -257,7 +257,7 @@ jobs:
             return ""
           }
           $display = yv "display_name"; if (-not $display) { $display = yv "app_name" }; Write-Host "DISPLAY_NAME resolved to: $display"
-          $exe    = yv "executable_name"; if (-not $exe) { $exe = "fastcat.exe" }
+          $exe    = yv "executable_name"; if (-not $exe) { $exe = "FastCat.exe" }
           $out    = yv "output_base_file_name"; if (-not $out) { $out = $exe }
           $pub    = yv "publisher"
           $pubUrl = yv "publisher_url"
@@ -277,6 +277,7 @@ jobs:
             -replace '\{\{PUBLISHER_URL\}\}', $pubUrl `
             -replace '\{\{OUTPUT_BASE_FILENAME\}\}', ([IO.Path]::GetFileNameWithoutExtension($out)) `
             -replace '\{\{EXECUTABLE_NAME\}\}', ([IO.Path]::GetFileName($exe)) `
+            -replace '\{\{INSTALL_DIR_NAME\}\}', ([IO.Path]::GetFileNameWithoutExtension($exe)) `
             -replace '\{\{SETUP_ICON_FILE\}\}', $icon `
             -replace '\{\{SOURCE_DIR\}\}', $buildOut `
             -replace '\{\{PRIVILEGES_REQUIRED\}\}', "admin" `
@@ -458,8 +459,14 @@ jobs:
           }
 
           $expected = 0xaa64
+          $cfg = Get-Content "windows\packaging\exe\make_config.yaml" -Raw
+          $exe = "FastCat.exe"
+          if ($cfg -match "(?m)^executable_name:\s*(.+)$") {
+            $exe = $matches[1].Trim().Trim('"').Trim("'")
+          }
+
           $paths = @(
-            "build\windows\arm64\runner\Release\fastcat.exe",
+            "build\windows\arm64\runner\Release\$exe",
             "build\windows\arm64\runner\Release\flutter_windows.dll",
             "build\windows\arm64\runner\Release\fastcatCore.exe",
             "build\windows\arm64\runner\Release\fastcatHelperService.exe"
@@ -494,7 +501,7 @@ jobs:
             return ""
           }
           $display = yv "display_name"; if (-not $display) { $display = yv "app_name" }; Write-Host "DISPLAY_NAME resolved to: $display"
-          $exe    = yv "executable_name"; if (-not $exe) { $exe = "fastcat.exe" }
+          $exe    = yv "executable_name"; if (-not $exe) { $exe = "FastCat.exe" }
           $out    = yv "output_base_file_name"; if (-not $out) { $out = $exe }
           $outBase = [IO.Path]::GetFileNameWithoutExtension($out)
           if ($outBase -notmatch '(?i)arm64') { $out = "$outBase-arm64.exe" }
@@ -515,6 +522,7 @@ jobs:
             -replace '\{\{PUBLISHER_URL\}\}', $pubUrl `
             -replace '\{\{OUTPUT_BASE_FILENAME\}\}', ([IO.Path]::GetFileNameWithoutExtension($out)) `
             -replace '\{\{EXECUTABLE_NAME\}\}', ([IO.Path]::GetFileName($exe)) `
+            -replace '\{\{INSTALL_DIR_NAME\}\}', ([IO.Path]::GetFileNameWithoutExtension($exe)) `
             -replace '\{\{SETUP_ICON_FILE\}\}', $icon `
             -replace '\{\{SOURCE_DIR\}\}', $buildOut `
             -replace '\{\{PRIVILEGES_REQUIRED\}\}', "admin" `
@@ -625,8 +633,14 @@ jobs:
 
           $x64Source = (Resolve-Path "build\universal\x64").Path
           $arm64Source = (Resolve-Path "build\universal\arm64").Path
-          if (-not (Test-Path (Join-Path $x64Source "fastcat.exe"))) { throw "Missing x64 payload fastcat.exe" }
-          if (-not (Test-Path (Join-Path $arm64Source "fastcat.exe"))) { throw "Missing arm64 payload fastcat.exe" }
+          $brandCfg = Get-Content "assets\config\config.yaml" -Raw
+          $appNameEn = "FastCat"
+          if ($brandCfg -match "(?m)^app_name_en:\s*(.+)$") {
+            $appNameEn = $matches[1].Trim().Trim('"').Trim("'")
+          }
+          $exe = "$appNameEn.exe"
+          if (-not (Test-Path (Join-Path $x64Source $exe))) { throw "Missing x64 payload $exe" }
+          if (-not (Test-Path (Join-Path $arm64Source $exe))) { throw "Missing arm64 payload $exe" }
 
           $cfg = Get-Content "windows\packaging\exe\make_config.yaml" -Raw
           function yv($k) {
@@ -637,19 +651,15 @@ jobs:
             }
             return ""
           }
-          $display = yv "display_name"; if (-not $display) { $display = yv "app_name" }
-          $exe    = yv "executable_name"; if (-not $exe) { $exe = "fastcat.exe" }
-          $out    = yv "output_base_file_name"; if (-not $out) { $out = $exe }
-          $outBase = [IO.Path]::GetFileNameWithoutExtension($out)
-          if ($outBase -notmatch '(?i)universal') { $out = "$outBase-universal.exe" }
+          $ver = "1.0.0"
+          $ps = Get-Content "pubspec.yaml" -Raw
+          if ($ps -match "(?m)^version:\s*(.+)$") { $ver = ($matches[1] -split '\+')[0].Trim() }
+          $display = $appNameEn
+          $out = "$appNameEn-Windows-$ver.exe"
           $pub    = yv "publisher"
           $pubUrl = yv "publisher_url"
           $icon   = yv "setup_icon_file"
           $appId  = yv "app_id"; if (-not $appId) { $appId = "{" + [guid]::NewGuid() + "}" }
-
-          $ver = "1.0.0"
-          $ps = Get-Content "pubspec.yaml" -Raw
-          if ($ps -match "(?m)^version:\s*(.+)$") { $ver = ($matches[1] -split '\+')[0].Trim() }
 
           $iss = (Get-Content "windows\packaging\exe\inno_setup_dual_payload.iss" -Raw) `
             -replace '\{\{APP_ID\}\}', $appId `
@@ -659,6 +669,7 @@ jobs:
             -replace '\{\{PUBLISHER_URL\}\}', $pubUrl `
             -replace '\{\{OUTPUT_BASE_FILENAME\}\}', ([IO.Path]::GetFileNameWithoutExtension($out)) `
             -replace '\{\{EXECUTABLE_NAME\}\}', ([IO.Path]::GetFileName($exe)) `
+            -replace '\{\{INSTALL_DIR_NAME\}\}', ([IO.Path]::GetFileNameWithoutExtension($exe)) `
             -replace '\{\{SETUP_ICON_FILE\}\}', $icon `
             -replace '\{\{X64_SOURCE_DIR\}\}', $x64Source `
             -replace '\{\{ARM64_SOURCE_DIR\}\}', $arm64Source `
