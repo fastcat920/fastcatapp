@@ -52,13 +52,70 @@ GroupsState currentGroupsState(Ref ref) {
   return GroupsState(
     value: switch (mode) {
       Mode.direct => [],
-      Mode.global => groups.toList(),
-      Mode.rule => groups
-          .where((item) => item.hidden != true)
-          .where((element) => element.name != GroupName.GLOBAL.name)
-          .toList(),
+      Mode.global => _buildGlobalModeGroups(groups),
+      Mode.rule => _buildRuleModeGroups(groups),
     },
   );
+}
+
+List<Group> _buildRuleModeGroups(List<Group> groups) {
+  final mainGroup = _findMainProxyGroup(groups);
+  if (mainGroup == null) return [];
+  return [
+    mainGroup.copyWith(
+      all: _prioritizeComputedGroupProxies(mainGroup.all, groups),
+    ),
+  ];
+}
+
+List<Group> _buildGlobalModeGroups(List<Group> groups) {
+  final globalGroup = groups.getGroup(GroupName.GLOBAL.name);
+  final mainGroup = _findMainProxyGroup(groups);
+  final sourceGroup = mainGroup ?? globalGroup;
+  if (sourceGroup == null) return [];
+  return [
+    sourceGroup.copyWith(
+      name: globalGroup?.name ?? sourceGroup.name,
+      type: globalGroup?.type ?? sourceGroup.type,
+      now: globalGroup?.now ?? sourceGroup.now,
+      testUrl: globalGroup?.testUrl ?? sourceGroup.testUrl,
+      all: _prioritizeComputedGroupProxies(sourceGroup.all, groups),
+    ),
+  ];
+}
+
+Group? _findMainProxyGroup(List<Group> groups) {
+  final visibleGroups = groups
+      .where((item) => item.hidden != true)
+      .where((item) => item.name != GroupName.GLOBAL.name)
+      .toList();
+  final selectorGroups =
+      visibleGroups.where((item) => item.type == GroupType.Selector).toList();
+  if (selectorGroups.isNotEmpty) {
+    return selectorGroups.firstWhere(
+      (item) => item.all.any((proxy) => _isComputedGroupProxy(proxy, groups)),
+      orElse: () => selectorGroups.first,
+    );
+  }
+  return visibleGroups.firstOrNull;
+}
+
+List<Proxy> _prioritizeComputedGroupProxies(
+  List<Proxy> proxies,
+  List<Group> groups,
+) {
+  final computedProxies =
+      proxies.where((proxy) => _isComputedGroupProxy(proxy, groups)).toList();
+  final nodeProxies =
+      proxies.where((proxy) => !_isComputedGroupProxy(proxy, groups)).toList();
+  return [...computedProxies, ...nodeProxies];
+}
+
+bool _isComputedGroupProxy(Proxy proxy, List<Group> groups) {
+  final proxyGroup = groups.getGroup(proxy.name);
+  final proxyType = GroupTypeExtension.getGroupType(proxy.type);
+  return proxyGroup?.type.isComputedSelected == true ||
+      proxyType?.isComputedSelected == true;
 }
 
 @riverpod

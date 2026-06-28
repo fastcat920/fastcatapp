@@ -1,6 +1,7 @@
 import 'dart:math';
 
 import 'package:fl_clash/common/common.dart';
+import 'package:fl_clash/enum/enum.dart';
 import 'package:fl_clash/providers/providers.dart';
 import 'package:fl_clash/state.dart';
 import 'package:fl_clash/widgets/widgets.dart';
@@ -12,6 +13,19 @@ import 'card.dart';
 import 'common.dart';
 
 typedef GroupNameKeyMap = Map<String, GlobalObjectKey<ProxyGroupViewState>>;
+
+String getProxyGroupDisplayName(WidgetRef ref, String groupName) {
+  final mode = ref.watch(
+    patchClashConfigProvider.select((state) => state.mode),
+  );
+  return switch (mode) {
+    Mode.rule => appLocalizations.rule,
+    Mode.global when groupName == GroupName.GLOBAL.name =>
+      appLocalizations.global,
+    Mode.global => appLocalizations.global,
+    Mode.direct => groupName,
+  };
+}
 
 class ProxiesTabView extends ConsumerStatefulWidget {
   const ProxiesTabView({super.key});
@@ -93,7 +107,7 @@ class ProxiesTabViewState extends ConsumerState<ProxiesTabView>
                     children: [
                       for (final groupName in state.groupNames)
                         SettingTextCard(
-                          groupName,
+                          getProxyGroupDisplayName(ref, groupName),
                           onPressed: () {
                             final index = state.groupNames.indexWhere(
                               (item) => item == groupName,
@@ -231,7 +245,7 @@ class ProxiesTabViewState extends ConsumerState<ProxiesTabView>
                     tabs: [
                       for (final groupName in groupNames)
                         Tab(
-                          text: groupName,
+                          text: getProxyGroupDisplayName(ref, groupName),
                         ),
                     ],
                   ),

@@ -1094,7 +1094,8 @@ class AppController {
   }
 
   List<Proxy> getSortProxies(List<Proxy> proxies, [String? url]) {
-    return switch (_ref.read(proxiesStyleSettingProvider).sortType) {
+    final sortedProxies =
+        switch (_ref.read(proxiesStyleSettingProvider).sortType) {
       ProxiesSortType.none => proxies,
       ProxiesSortType.delay => _sortOfDelay(
           proxies: proxies,
@@ -1102,6 +1103,20 @@ class AppController {
         ),
       ProxiesSortType.name => _sortOfName(proxies),
     };
+    final groups = _ref.read(groupsProvider);
+    final computedProxies = sortedProxies.where((proxy) {
+      final group = groups.getGroup(proxy.name);
+      final type = GroupTypeExtension.getGroupType(proxy.type);
+      return group?.type.isComputedSelected == true ||
+          type?.isComputedSelected == true;
+    }).toList();
+    final nodeProxies = sortedProxies.where((proxy) {
+      final group = groups.getGroup(proxy.name);
+      final type = GroupTypeExtension.getGroupType(proxy.type);
+      return group?.type.isComputedSelected != true &&
+          type?.isComputedSelected != true;
+    }).toList();
+    return [...computedProxies, ...nodeProxies];
   }
 
   clearEffect(String profileId) => _profileController.clearEffect(profileId);
