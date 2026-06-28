@@ -266,7 +266,7 @@ jobs:
           $ver = "1.0.0"
           $ps = Get-Content "pubspec.yaml" -Raw
           if ($ps -match "(?m)^version:\s*(.+)$") { $ver = ($matches[1] -split '\+')[0].Trim() }
-          $out = "$([IO.Path]::GetFileNameWithoutExtension($exe))-Windows-$ver.exe"
+          $out = "$([IO.Path]::GetFileNameWithoutExtension($exe))-Windows-$ver-x64.exe"
 
           # Render ISS template
           $iss = (Get-Content "windows\packaging\exe\inno_setup.iss" -Raw) `
