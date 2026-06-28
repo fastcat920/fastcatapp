@@ -414,7 +414,7 @@ class _NodeSelectorBarState extends ConsumerState<NodeSelectorBar> {
       MaterialPageRoute(
         builder: (ctx) => CommonScaffold(
           backgroundColor: isDark ? null : XbUiTokens.pageBackgroundLight,
-          title: AppLocalizations.of(ctx).xboardProxy,
+          title: AppLocalizations.of(ctx).xboardNodeSelection,
           actions: [
             Consumer(
               builder: (_, ref, __) {
