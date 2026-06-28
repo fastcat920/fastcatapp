@@ -1,14 +1,15 @@
-display_name: Apex
+display_name: 快猫
 
 icon: ./assets/images/icon.png
 
 keywords:
-  - Apex
+  - 快猫
+  - fastcat
   - Clash
   - ClashMeta
   - Proxy
 
-generic_name: Apex
+generic_name: fastcat
 
 categories:
   - Network

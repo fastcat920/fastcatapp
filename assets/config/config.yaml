@@ -2,7 +2,7 @@
 # 填写远程配置源 URL，客户端启动时自动拉取面板域名
 
 app_name: 快猫
-app_name_en: fastcat
+app_name_en: FastCat
 
 # 面板类型：xboard 或 v2board
 # 必须与远程 config.json 中的 panel_type 一致

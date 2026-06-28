@@ -1883,10 +1883,12 @@ void _applyWindowsAppName() {
   }
 }
 
-/// 用 APP_NAME 替换 Linux 原生窗口标题
+/// 用 APP_NAME / APP_NAME_EN 替换 Linux 原生窗口标题和打包配置
 void _applyLinuxAppName() {
-  final appName = _loadAppBrandConfig().appName;
-  print('[setup.dart] 🐧 Linux 应用名称: $appName');
+  final brand = _loadAppBrandConfig();
+  final appName = brand.appName;
+  final appNameEn = brand.appNameEn;
+  print('[setup.dart] 🐧 Linux 应用名称: $appName ($appNameEn)');
 
   final appPath = join(current, 'linux', 'my_application.cc');
   final appFile = File(appPath);
@@ -1900,8 +1902,41 @@ void _applyLinuxAppName() {
       RegExp(r'gtk_window_set_title\(window,\s*"[^"]+"\)'),
       'gtk_window_set_title(window, "$appName")',
     );
+    content = content.replaceAll(
+      RegExp(r'gtk_window_set_default_size\(window,\s*\d+,\s*\d+\)'),
+      'gtk_window_set_default_size(window, 800, 600)',
+    );
     appFile.writeAsStringSync(content);
-    print('[setup.dart]   ✅ my_application.cc window title → $appName');
+    print(
+        '[setup.dart]   ✅ my_application.cc title → $appName, size → 800x600');
+  }
+
+  final linuxMakeConfigPaths = [
+    join(current, 'linux', 'packaging', 'deb', 'make_config.yaml'),
+    join(current, 'linux', 'packaging', 'rpm', 'make_config.yaml'),
+    join(current, 'linux', 'packaging', 'appimage', 'make_config.yaml'),
+  ];
+  for (final makeConfigPath in linuxMakeConfigPaths) {
+    final makeConfigFile = File(makeConfigPath);
+    if (!makeConfigFile.existsSync()) continue;
+    var content = makeConfigFile.readAsStringSync();
+    content = _replaceYamlValue(content, 'display_name', appName);
+    content = _replaceYamlValue(content, 'generic_name', appNameEn);
+    if (content.contains(RegExp(r'^package_name:', multiLine: true))) {
+      content = _replaceYamlValue(content, 'package_name', appNameEn);
+    }
+    content = content.replaceFirst(
+      RegExp(r'keywords:\n(?:  - .+\n)+', multiLine: true),
+      'keywords:\n'
+      '  - $appName\n'
+      '  - $appNameEn\n'
+      '  - Clash\n'
+      '  - ClashMeta\n'
+      '  - Proxy\n',
+    );
+    makeConfigFile.writeAsStringSync(content);
+    print(
+        '[setup.dart]   ✅ ${relative(makeConfigPath, from: current)} → $appName / $appNameEn');
   }
 }
 

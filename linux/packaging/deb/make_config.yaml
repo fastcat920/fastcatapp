@@ -1,5 +1,5 @@
-display_name: Apex
-package_name: Apex
+display_name: 快猫
+package_name: fastcat
 maintainer:
   name: chen08209
   email: chen08209@gmail.com
@@ -15,12 +15,13 @@ dependencies:
   - libkeybinder-3.0-dev
 
 keywords:
-  - Apex
+  - 快猫
+  - fastcat
   - Clash
   - ClashMeta
   - Proxy
 
-generic_name: Apex
+generic_name: fastcat
 
 categories:
   - Network
