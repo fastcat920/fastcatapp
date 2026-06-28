@@ -120,7 +120,7 @@ class AppPath {
     if (!Platform.isWindows && !Platform.isMacOS && !Platform.isLinux) {
       return getApplicationSupportDirectory();
     }
-    final directory = Directory(_brandedDesktopDataPath());
+    final directory = await _canonicalBrandedDesktopDataDirectory();
     if (await _consumePendingClearCacheRequest(directory)) {
       await directory.create(recursive: true);
       return directory;
@@ -128,6 +128,66 @@ class AppPath {
     await directory.create(recursive: true);
     await _migrateLegacyDesktopData(directory);
     return directory;
+  }
+
+  Future<Directory> _canonicalBrandedDesktopDataDirectory() async {
+    final directory = Directory(_brandedDesktopDataPath());
+    await _normalizeDesktopBrandDirectoryName(directory);
+    return directory;
+  }
+
+  Future<void> _normalizeDesktopBrandDirectoryName(Directory target) async {
+    final parent = target.parent;
+    if (!await parent.exists()) return;
+
+    Directory? differentCaseDirectory;
+    await for (final entity in parent.list(followLinks: false)) {
+      if (entity is! Directory) continue;
+      final name = basename(entity.path);
+      if (name == appNameEn) return;
+      if (name.toLowerCase() == appNameEn.toLowerCase()) {
+        differentCaseDirectory = entity;
+      }
+    }
+    if (differentCaseDirectory == null) return;
+
+    final renamed = await _renameDirectoryToCanonicalName(
+      source: differentCaseDirectory,
+      target: target,
+    );
+    if (renamed) return;
+
+    await _copyDirectoryContentsIfMissing(differentCaseDirectory, target);
+  }
+
+  Future<bool> _renameDirectoryToCanonicalName({
+    required Directory source,
+    required Directory target,
+  }) async {
+    if (source.path == target.path) return true;
+    final temp = Directory(
+      join(
+        target.parent.path,
+        '${appNameEn}_rename_${DateTime.now().microsecondsSinceEpoch}',
+      ),
+    );
+    try {
+      final staged = await source.rename(temp.path);
+      await staged.rename(target.path);
+      return true;
+    } catch (_) {
+      try {
+        if (await temp.exists()) {
+          await temp.rename(source.path);
+        }
+      } catch (_) {}
+    }
+    try {
+      await source.rename(target.path);
+      return true;
+    } catch (_) {
+      return false;
+    }
   }
 
   Future<void> markClearCacheOnNextStart() async {
@@ -312,6 +372,12 @@ class AppPath {
   Future<void> _copyDirectoryIfMissing(
       Directory source, Directory target) async {
     if (!await source.exists() || await target.exists()) return;
+    await _copyDirectoryContentsIfMissing(source, target);
+  }
+
+  Future<void> _copyDirectoryContentsIfMissing(
+      Directory source, Directory target) async {
+    if (!await source.exists()) return;
     await target.create(recursive: true);
     await for (final entity
         in source.list(recursive: true, followLinks: false)) {
@@ -320,8 +386,10 @@ class AppPath {
       if (entity is Directory) {
         await Directory(targetPath).create(recursive: true);
       } else if (entity is File) {
-        await File(targetPath).parent.create(recursive: true);
-        await entity.copy(targetPath);
+        final targetFile = File(targetPath);
+        if (await targetFile.exists()) continue;
+        await targetFile.parent.create(recursive: true);
+        await entity.copy(targetFile.path);
       }
     }
   }
