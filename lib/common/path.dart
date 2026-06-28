@@ -121,9 +121,22 @@ class AppPath {
       return getApplicationSupportDirectory();
     }
     final directory = Directory(_brandedDesktopDataPath());
+    if (await _consumePendingClearCacheRequest(directory)) {
+      await directory.create(recursive: true);
+      return directory;
+    }
     await directory.create(recursive: true);
     await _migrateLegacyDesktopData(directory);
     return directory;
+  }
+
+  Future<void> markClearCacheOnNextStart() async {
+    if (!Platform.isWindows && !Platform.isMacOS && !Platform.isLinux) {
+      return;
+    }
+    final marker = File(_clearCacheMarkerPath);
+    await marker.parent.create(recursive: true);
+    await marker.writeAsString(DateTime.now().toIso8601String(), flush: true);
   }
 
   String _brandedDesktopDataPath() {
@@ -163,6 +176,24 @@ class AppPath {
     if (Platform.isMacOS) {
       await _migrateLegacyMacOSPreferencesPlist(target);
     }
+  }
+
+  Future<bool> _consumePendingClearCacheRequest(Directory target) async {
+    final marker = File(_clearCacheMarkerPath);
+    if (!await marker.exists()) return false;
+    await _deleteCacheFilesIn(target);
+    for (final legacyDir in _legacyDesktopDataDirectories()) {
+      await _deleteCacheFilesIn(legacyDir);
+    }
+    if (Platform.isMacOS) {
+      await _deleteLegacyMacOSPreferencesPlists();
+    }
+    try {
+      await marker.delete();
+    } catch (_) {
+      return true;
+    }
+    return true;
   }
 
   List<Directory> _legacyDesktopDataDirectories() {
@@ -237,6 +268,37 @@ class AppPath {
     } catch (_) {
       return;
     }
+  }
+
+  Future<void> _deleteCacheFilesIn(Directory directory) async {
+    final sharedPreferencesFile =
+        File(join(directory.path, 'shared_preferences.json'));
+    if (await sharedPreferencesFile.exists()) {
+      await sharedPreferencesFile.delete();
+    }
+    final profilesDirectory =
+        Directory(join(directory.path, profilesDirectoryName));
+    if (await profilesDirectory.exists()) {
+      await profilesDirectory.delete(recursive: true);
+    }
+  }
+
+  Future<void> _deleteLegacyMacOSPreferencesPlists() async {
+    final home = Platform.environment['HOME'] ?? Directory.current.path;
+    final candidates = [
+      '$packageName.plist',
+      'com.core.fastcat.plist',
+    ];
+    for (final candidate in candidates) {
+      final file = File(join(home, 'Library', 'Preferences', candidate));
+      if (await file.exists()) {
+        await file.delete();
+      }
+    }
+  }
+
+  String get _clearCacheMarkerPath {
+    return join(Directory.systemTemp.path, '${appNameEn}_clear_cache_on_start');
   }
 
   Future<void> _copyFileIfMissing(String sourcePath, String targetPath) async {

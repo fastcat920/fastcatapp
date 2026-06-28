@@ -46,7 +46,7 @@ class CustomerServiceHelper {
       Platform.isWindows || Platform.isMacOS || Platform.isLinux;
 
   static int get _desktopCustomerServiceTitleBarHeight =>
-      Platform.isWindows ? 0 : 40;
+      Platform.isWindows || Platform.isLinux ? 0 : 40;
 
   /// 预热客服启动所需的轻量资源，减少首次点击后的等待。
   static void prewarm() {
