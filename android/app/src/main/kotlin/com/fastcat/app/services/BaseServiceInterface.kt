@@ -30,27 +30,27 @@ interface BaseServiceInterface {
     suspend fun startForeground(title: String, content: String)
 }
 
-fun Service.createApexNotificationBuilder(): Deferred<NotificationCompat.Builder> =
+fun Service.createFastCatNotificationBuilder(): Deferred<NotificationCompat.Builder> =
     CoroutineScope(Dispatchers.Main).async {
         val stopText = GlobalState.getText("stop")
-        val intent = Intent(this@createApexNotificationBuilder, MainActivity::class.java)
+        val intent = Intent(this@createFastCatNotificationBuilder, MainActivity::class.java)
 
         val pendingIntent = if (Build.VERSION.SDK_INT >= 31) {
             PendingIntent.getActivity(
-                this@createApexNotificationBuilder,
+                this@createFastCatNotificationBuilder,
                 0,
                 intent,
                 PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT
             )
         } else {
             PendingIntent.getActivity(
-                this@createApexNotificationBuilder, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT
+                this@createFastCatNotificationBuilder, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT
             )
         }
 
         with(
             NotificationCompat.Builder(
-                this@createApexNotificationBuilder, GlobalState.NOTIFICATION_CHANNEL
+                this@createFastCatNotificationBuilder, GlobalState.NOTIFICATION_CHANNEL
             )
         ) {
             setSmallIcon(R.drawable.ic)

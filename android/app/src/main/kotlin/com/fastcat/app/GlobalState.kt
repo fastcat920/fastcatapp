@@ -24,7 +24,7 @@ enum class RunState {
 object GlobalState {
     val runLock = ReentrantLock()
 
-    const val NOTIFICATION_CHANNEL = "Apex"
+    const val NOTIFICATION_CHANNEL = "FastCat"
 
     const val NOTIFICATION_ID = 1
 
@@ -106,7 +106,7 @@ object GlobalState {
         if (serviceEngine != null) return
         destroyServiceEngine()
         runLock.withLock {
-            serviceEngine = FlutterEngine(ApexApplication.getAppContext())
+            serviceEngine = FlutterEngine(FastCatApplication.getAppContext())
             serviceEngine?.plugins?.add(VpnPlugin)
             serviceEngine?.plugins?.add(AppPlugin())
             serviceEngine?.plugins?.add(TilePlugin())

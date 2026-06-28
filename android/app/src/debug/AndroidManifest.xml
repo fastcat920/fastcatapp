@@ -9,7 +9,7 @@
         android:label="快猫 Debug"
         tools:replace="android:label">
         <service
-            android:name=".services.ApexTileService"
+            android:name=".services.FastCatTileService"
             android:label="快猫 Debug"
             tools:replace="android:label"
             tools:targetApi="24" />

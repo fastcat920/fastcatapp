@@ -1,4 +1,4 @@
-module apex-device-gateway
+module fastcat-device-gateway
 
 go 1.23
 

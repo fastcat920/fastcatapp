@@ -343,7 +343,7 @@ class PacketTunnelProvider: NEPacketTunnelProvider {
 
   private func makeError(_ msg: String) -> NSError {
     NSError(
-      domain: "ApexPacketTunnel",
+      domain: "FastCatPacketTunnel",
       code: -1,
       userInfo: [NSLocalizedDescriptionKey: msg]
     )

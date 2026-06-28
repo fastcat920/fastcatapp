@@ -95,9 +95,9 @@ class VPNManager: NSObject {
     let proto = NETunnelProviderProtocol()
     // Must match the PacketTunnel extension bundle ID set in build.yaml
     proto.providerBundleIdentifier = Bundle.main.bundleIdentifier! + ".PacketTunnel"
-    proto.serverAddress = "Apex"
+    proto.serverAddress = "FastCat"
     mgr.protocolConfiguration = proto
-    mgr.localizedDescription = Bundle.main.object(forInfoDictionaryKey: "CFBundleDisplayName") as? String ?? "Apex"
+    mgr.localizedDescription = Bundle.main.object(forInfoDictionaryKey: "CFBundleDisplayName") as? String ?? "FastCat"
     mgr.isEnabled = true
 
     // On-demand rules: keep the tunnel always running.
@@ -402,7 +402,7 @@ class VPNManager: NSObject {
 
   private func notifyStatusChange() {
     NotificationCenter.default.post(
-      name: Notification.Name("apex.vpn.statusChanged"),
+      name: Notification.Name("fastcat.vpn.statusChanged"),
       object: statusString
     )
   }
@@ -417,7 +417,7 @@ class VPNStatusStreamHandler: NSObject, FlutterStreamHandler {
     sink = events
     NotificationCenter.default.addObserver(
       self, selector: #selector(statusChanged(_:)),
-      name: Notification.Name("apex.vpn.statusChanged"), object: nil
+      name: Notification.Name("fastcat.vpn.statusChanged"), object: nil
     )
     events(VPNManager.shared.statusString)
     return nil

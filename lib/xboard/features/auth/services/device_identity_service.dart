@@ -40,7 +40,7 @@ class XBoardDeviceIdentityService {
       return existing;
     }
 
-    final deviceId = 'apex-${_uuid.v4()}';
+    final deviceId = 'fastcat-${_uuid.v4()}';
     await prefs.setString(_deviceIdKey, deviceId);
     return deviceId;
   }

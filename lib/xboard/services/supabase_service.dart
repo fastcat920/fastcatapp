@@ -12,10 +12,10 @@ class SupabaseService {
   // ── 混淆存储（XOR + Base64）──
   // 运行时解密，防止反编译直接看到明文
   static const _obfuscatedUrl =
-      'CQQRCCxJWl8NGAYSFD5FUlpFFQgAHTwWDxERDE8AEC9TUlNHBF4GFw==';
+      'DhUHBBBbW3AfDxcAEwAEBzdDREpRAwIWDgIRGnEAAAAAAAAAAHFRXw==';
   static const _obfuscatedKey =
-      'EhI6CCoRGRkSCgARCTptA3x+DAYoHCgKIChWJCQ5VCZdX3kBBi8HKGw0TCovAw==';
-  static const _obfKey = 'apex_supabase_2024';
+      'FQMsBBYDGDYAHREDDgQsVhF4XUR5AhYKITtWMho5RAkODSpGAgBQYAFzXzs9FQ==';
+  static const _obfKey = 'fastcat_supabase_2024';
 
   static String get _url => _deobfuscate(_obfuscatedUrl, _obfKey);
   static String get _apiKey => _deobfuscate(_obfuscatedKey, _obfKey);

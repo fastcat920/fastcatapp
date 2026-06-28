@@ -7,7 +7,7 @@ import 'package:flutter/services.dart';
 
 /// iOS implementation of [ClashHandlerInterface].
 ///
-/// All clash operations are routed via MethodChannel "apex/clash" to the Swift
+/// All clash operations are routed via MethodChannel "fastcat/clash" to the Swift
 /// layer in AppDelegate, which forwards them to the PacketTunnel extension via
 /// [NETunnelProviderSession.sendProviderMessage]. The extension executes the
 /// request against the embedded libclash.a and returns the result.
@@ -15,7 +15,7 @@ import 'package:flutter/services.dart';
 /// When the VPN tunnel is not running, operations return safe empty/default
 /// values rather than throwing.
 class ClashIOS extends ClashHandlerInterface {
-  static const MethodChannel _channel = MethodChannel("apex/clash");
+  static const MethodChannel _channel = MethodChannel("fastcat/clash");
 
   // ── ClashHandlerInterface stubs ─────────────────────────────────────────
 

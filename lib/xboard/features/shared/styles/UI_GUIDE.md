@@ -14,11 +14,11 @@
 
 统一从以下文件使用样式 token：
 
-- [ui_tokens.dart](/Users/pizihu/Downloads/Apex-clinet/lib/xboard/features/shared/styles/ui_tokens.dart)
+- [ui_tokens.dart](/Users/pizihu/Downloads/FastCat-client/lib/xboard/features/shared/styles/ui_tokens.dart)
 
 对外导出：
 
-- [styles.dart](/Users/pizihu/Downloads/Apex-clinet/lib/xboard/features/shared/styles/styles.dart)
+- [styles.dart](/Users/pizihu/Downloads/FastCat-client/lib/xboard/features/shared/styles/styles.dart)
 
 ---
 

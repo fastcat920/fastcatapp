@@ -11,7 +11,7 @@ import android.net.NetworkRequest
 import android.os.Build
 import android.os.IBinder
 import androidx.core.content.getSystemService
-import com.fastcat.app.ApexApplication
+import com.fastcat.app.FastCatApplication
 import com.fastcat.app.GlobalState
 import com.fastcat.app.RunState
 import com.fastcat.app.core.Core
@@ -20,8 +20,8 @@ import com.fastcat.app.extensions.resolveDns
 import com.fastcat.app.models.StartForegroundParams
 import com.fastcat.app.models.VpnOptions
 import com.fastcat.app.services.BaseServiceInterface
-import com.fastcat.app.services.ApexService
-import com.fastcat.app.services.ApexVpnService
+import com.fastcat.app.services.FastCatService
+import com.fastcat.app.services.FastCatVpnService
 import com.google.gson.Gson
 import io.flutter.embedding.engine.plugins.FlutterPlugin
 import io.flutter.plugin.common.MethodCall
@@ -38,7 +38,7 @@ import kotlin.concurrent.withLock
 
 data object VpnPlugin : FlutterPlugin, MethodChannel.MethodCallHandler {
     private lateinit var flutterMethodChannel: MethodChannel
-    private var apexService: BaseServiceInterface? = null
+    private var fastCatService: BaseServiceInterface? = null
     private var options: VpnOptions? = null
     private var isBind: Boolean = false
     private lateinit var scope: CoroutineScope
@@ -47,15 +47,15 @@ data object VpnPlugin : FlutterPlugin, MethodChannel.MethodCallHandler {
     private val uidPageNameMap = mutableMapOf<Int, String>()
 
     private val connectivity by lazy {
-        ApexApplication.getAppContext().getSystemService<ConnectivityManager>()
+        FastCatApplication.getAppContext().getSystemService<ConnectivityManager>()
     }
 
     private val connection = object : ServiceConnection {
         override fun onServiceConnected(className: ComponentName, service: IBinder) {
             isBind = true
-            apexService = when (service) {
-                is ApexVpnService.LocalBinder -> service.getService()
-                is ApexService.LocalBinder -> service.getService()
+            fastCatService = when (service) {
+                is FastCatVpnService.LocalBinder -> service.getService()
+                is FastCatService.LocalBinder -> service.getService()
                 else -> throw Exception("invalid binder")
             }
             handleStartService()
@@ -63,7 +63,7 @@ data object VpnPlugin : FlutterPlugin, MethodChannel.MethodCallHandler {
 
         override fun onServiceDisconnected(arg: ComponentName) {
             isBind = false
-            apexService = null
+            fastCatService = null
         }
     }
 
@@ -102,7 +102,7 @@ data object VpnPlugin : FlutterPlugin, MethodChannel.MethodCallHandler {
     fun handleStart(options: VpnOptions): Boolean {
         onUpdateNetwork();
         if (options.enable != this.options?.enable) {
-            this.apexService = null
+            this.fastCatService = null
         }
         this.options = options
         when (options.enable) {
@@ -176,7 +176,7 @@ data object VpnPlugin : FlutterPlugin, MethodChannel.MethodCallHandler {
             )
             if (lastStartForegroundParams != startForegroundParams) {
                 lastStartForegroundParams = startForegroundParams
-                apexService?.startForeground(
+                fastCatService?.startForeground(
                     startForegroundParams.title,
                     startForegroundParams.content,
                 )
@@ -209,14 +209,14 @@ data object VpnPlugin : FlutterPlugin, MethodChannel.MethodCallHandler {
     }
 
     private fun handleStartService() {
-        if (apexService == null) {
+        if (fastCatService == null) {
             bindService()
             return
         }
         GlobalState.runLock.withLock {
             if (GlobalState.runState.value == RunState.START) return
             GlobalState.runState.value = RunState.START
-            val fd = apexService?.start(options!!)
+            val fd = fastCatService?.start(options!!)
             Core.startTun(
                 fd = fd ?: 0,
                 protect = this::protect,
@@ -227,7 +227,7 @@ data object VpnPlugin : FlutterPlugin, MethodChannel.MethodCallHandler {
     }
 
     private fun protect(fd: Int): Boolean {
-        return (apexService as? ApexVpnService)?.protect(fd) == true
+        return (fastCatService as? FastCatVpnService)?.protect(fd) == true
     }
 
     private fun resolverProcess(
@@ -246,7 +246,7 @@ data object VpnPlugin : FlutterPlugin, MethodChannel.MethodCallHandler {
         }
         if (!uidPageNameMap.containsKey(nextUid)) {
             uidPageNameMap[nextUid] =
-                ApexApplication.getAppContext().packageManager?.getPackagesForUid(nextUid)
+                FastCatApplication.getAppContext().packageManager?.getPackagesForUid(nextUid)
                     ?.first() ?: ""
         }
         return uidPageNameMap[nextUid] ?: ""
@@ -260,19 +260,19 @@ data object VpnPlugin : FlutterPlugin, MethodChannel.MethodCallHandler {
             // 再停 VPN Service，避免部分 ROM 上 HTTP 代理残留
             Core.stopTun()
             stopForegroundJob()
-            apexService?.stop()
+            fastCatService?.stop()
             GlobalState.handleTryDestroy()
         }
     }
 
     private fun bindService() {
         if (isBind) {
-            ApexApplication.getAppContext().unbindService(connection)
+            FastCatApplication.getAppContext().unbindService(connection)
         }
         val intent = when (options?.enable == true) {
-            true -> Intent(ApexApplication.getAppContext(), ApexVpnService::class.java)
-            false -> Intent(ApexApplication.getAppContext(), ApexService::class.java)
+            true -> Intent(FastCatApplication.getAppContext(), FastCatVpnService::class.java)
+            false -> Intent(FastCatApplication.getAppContext(), FastCatService::class.java)
         }
-        ApexApplication.getAppContext().bindService(intent, connection, Context.BIND_AUTO_CREATE)
+        FastCatApplication.getAppContext().bindService(intent, connection, Context.BIND_AUTO_CREATE)
     }
 }

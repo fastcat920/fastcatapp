@@ -1166,17 +1166,6 @@ end tell
     if (!builtApp.existsSync()) {
       throw "Built macOS app not found: ${builtApp.path}";
     }
-    final legacyCoreFile = File(join(
-      builtApp.path,
-      "Contents",
-      "MacOS",
-      "ApexCore",
-    ));
-    if (legacyCoreFile.existsSync()) {
-      legacyCoreFile.deleteSync();
-      print('[setup.dart]   ✅ removed legacy ApexCore from macOS app bundle');
-    }
-
     final dmgRoot = Directory(join(Build.distPath, "dmg-root"));
     if (dmgRoot.existsSync()) {
       dmgRoot.deleteSync(recursive: true);

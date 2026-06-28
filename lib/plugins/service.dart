@@ -16,7 +16,7 @@ class Service {
   Service._internal() {
     // iOS uses a dedicated VPN channel; Android uses the legacy "service" channel
     methodChannel = Platform.isIOS
-        ? const MethodChannel("apex/vpn")
+        ? const MethodChannel("fastcat/vpn")
         : const MethodChannel("service");
   }
 

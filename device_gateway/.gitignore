@@ -2,4 +2,4 @@ data/
 *.env
 *.local
 device-gateway
-apex-device-gateway
+fastcat-device-gateway

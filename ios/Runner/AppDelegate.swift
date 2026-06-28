@@ -21,7 +21,7 @@ import NetworkExtension
 
     // ── VPN control channel ──────────────────────────────────────────────
     let vpnChannel = FlutterMethodChannel(
-      name: "apex/vpn",
+      name: "fastcat/vpn",
       binaryMessenger: controller.binaryMessenger
     )
     vpnChannel.setMethodCallHandler { call, result in
@@ -69,7 +69,7 @@ import NetworkExtension
 
     // ── Clash operations channel ─────────────────────────────────────────
     let clashChannel = FlutterMethodChannel(
-      name: "apex/clash",
+      name: "fastcat/clash",
       binaryMessenger: controller.binaryMessenger
     )
     clashChannel.setMethodCallHandler { call, result in
@@ -83,7 +83,7 @@ import NetworkExtension
 
     // ── VPN status event channel ─────────────────────────────────────────
     let statusChannel = FlutterEventChannel(
-      name: "apex/vpn_status",
+      name: "fastcat/vpn_status",
       binaryMessenger: controller.binaryMessenger
     )
     statusChannel.setStreamHandler(VPNStatusStreamHandler())

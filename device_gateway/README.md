@@ -1,4 +1,4 @@
-# Apex Device Gateway
+# FastCat Device Gateway
 
 Standalone device authorization gateway for XBoard-compatible APIs.
 
