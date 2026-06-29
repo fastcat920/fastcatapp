@@ -103,25 +103,7 @@ class AppExitService {
       }
     }
     if (Platform.isWindows) {
-      final executablePath = Platform.resolvedExecutable;
-      final executableDir = dirname(executablePath);
-      final launched = windows?.launch(
-            executablePath,
-            workingDirectory: executableDir,
-          ) ??
-          false;
-      if (launched) return;
-      await Process.start(
-        'cmd.exe',
-        [
-          '/d',
-          '/c',
-          'start "" /D "${_escapeWindowsCommandArgument(executableDir)}" '
-              '"${_escapeWindowsCommandArgument(executablePath)}"',
-        ],
-        workingDirectory: executableDir,
-        mode: ProcessStartMode.detached,
-      );
+      await _restartWindowsApplication();
       return;
     }
     await Process.start(
@@ -129,6 +111,81 @@ class AppExitService {
       const [],
       mode: ProcessStartMode.detached,
     );
+  }
+
+  Future<void> _restartWindowsApplication() async {
+    final executablePath = Platform.resolvedExecutable;
+    final executableDir = dirname(executablePath);
+    try {
+      final restartScript = await _createWindowsRestartScript();
+      await Process.start(
+        'cmd.exe',
+        [
+          '/d',
+          '/c',
+          'call',
+          restartScript.path,
+          pid.toString(),
+          executablePath,
+          executableDir,
+        ],
+        workingDirectory: executableDir,
+        mode: ProcessStartMode.detached,
+      );
+      return;
+    } catch (e) {
+      commonPrint.log('start restart script failed: $e');
+    }
+
+    final launched = windows?.launch(
+          executablePath,
+          workingDirectory: executableDir,
+        ) ??
+        false;
+    if (launched) return;
+    await Process.start(
+      'cmd.exe',
+      [
+        '/d',
+        '/c',
+        'start "" /D "${_escapeWindowsCommandArgument(executableDir)}" '
+            '"${_escapeWindowsCommandArgument(executablePath)}"',
+      ],
+      workingDirectory: executableDir,
+      mode: ProcessStartMode.detached,
+    );
+  }
+
+  Future<File> _createWindowsRestartScript() async {
+    final script = File(
+      '${Directory.systemTemp.path}${Platform.pathSeparator}'
+      'FastCat_restart_${DateTime.now().microsecondsSinceEpoch}.cmd',
+    );
+    await script.writeAsString(
+      '''
+@echo off
+setlocal
+set "OLD_PID=%~1"
+set "APP_EXE=%~2"
+set "APP_DIR=%~3"
+set /a WAIT_COUNT=0
+
+:wait_for_exit
+if "%OLD_PID%"=="" goto launch_app
+if %WAIT_COUNT% GEQ 30 goto launch_app
+tasklist /FI "PID eq %OLD_PID%" 2>NUL | find "%OLD_PID%" >NUL
+if errorlevel 1 goto launch_app
+set /a WAIT_COUNT+=1
+timeout /t 1 /nobreak >NUL
+goto wait_for_exit
+
+:launch_app
+start "" /D "%APP_DIR%" "%APP_EXE%"
+del "%~f0" >NUL 2>NUL
+''',
+      flush: true,
+    );
+    return script;
   }
 
   String? _macOSAppBundlePath() {
