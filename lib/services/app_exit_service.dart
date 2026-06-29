@@ -119,11 +119,10 @@ class AppExitService {
     try {
       final restartScript = await _createWindowsRestartScript();
       await Process.start(
-        'cmd.exe',
+        'wscript.exe',
         [
-          '/d',
-          '/c',
-          'call',
+          '//B',
+          '//Nologo',
           restartScript.path,
           pid.toString(),
           executablePath,
@@ -159,29 +158,55 @@ class AppExitService {
   Future<File> _createWindowsRestartScript() async {
     final script = File(
       '${Directory.systemTemp.path}${Platform.pathSeparator}'
-      'FastCat_restart_${DateTime.now().microsecondsSinceEpoch}.cmd',
+      'FastCat_restart_${DateTime.now().microsecondsSinceEpoch}.vbs',
     );
     await script.writeAsString(
-      '''
-@echo off
-setlocal
-set "OLD_PID=%~1"
-set "APP_EXE=%~2"
-set "APP_DIR=%~3"
-set /a WAIT_COUNT=0
+      r'''
+Option Explicit
 
-:wait_for_exit
-if "%OLD_PID%"=="" goto launch_app
-if %WAIT_COUNT% GEQ 30 goto launch_app
-tasklist /FI "PID eq %OLD_PID%" 2>NUL | find "%OLD_PID%" >NUL
-if errorlevel 1 goto launch_app
-set /a WAIT_COUNT+=1
-timeout /t 1 /nobreak >NUL
-goto wait_for_exit
+If WScript.Arguments.Count < 3 Then
+  WScript.Quit 1
+End If
 
-:launch_app
-start "" /D "%APP_DIR%" "%APP_EXE%"
-del "%~f0" >NUL 2>NUL
+Dim oldPid, appExe, appDir, shell, fso, wmi, processes, waitCount
+oldPid = WScript.Arguments.Item(0)
+appExe = WScript.Arguments.Item(1)
+appDir = WScript.Arguments.Item(2)
+Set shell = CreateObject("WScript.Shell")
+Set fso = CreateObject("Scripting.FileSystemObject")
+
+On Error Resume Next
+Set wmi = GetObject("winmgmts:\\.\root\cimv2")
+If Err.Number <> 0 Then
+  Set wmi = Nothing
+  Err.Clear
+End If
+On Error GoTo 0
+
+waitCount = 0
+
+If Len(oldPid) > 0 And Not wmi Is Nothing Then
+  Do While waitCount < 60
+    On Error Resume Next
+    Set processes = wmi.ExecQuery("SELECT ProcessId FROM Win32_Process WHERE ProcessId = " & oldPid)
+    If Err.Number <> 0 Then
+      Err.Clear
+      Exit Do
+    End If
+    On Error GoTo 0
+    If processes.Count = 0 Then
+      Exit Do
+    End If
+    WScript.Sleep 500
+    waitCount = waitCount + 1
+  Loop
+End If
+
+On Error Resume Next
+shell.CurrentDirectory = appDir
+shell.Run """" & appExe & """", 1, False
+
+fso.DeleteFile WScript.ScriptFullName, True
 ''',
       flush: true,
     );
