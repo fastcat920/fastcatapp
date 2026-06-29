@@ -12,13 +12,14 @@ icon: ./assets/images/icon.png
 
 keywords:
   - 快猫
-  - fastcat
+  - FastCat
   - Clash
   - ClashMeta
   - Proxy
 
-generic_name: fastcat
+generic_name: FastCat
 
 group: Applications/Internet
 
 startup_notify: true
+startup_wm_class: com.fastcat.app

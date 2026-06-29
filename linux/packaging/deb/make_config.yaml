@@ -16,14 +16,20 @@ dependencies:
 
 keywords:
   - 快猫
-  - fastcat
+  - FastCat
   - Clash
   - ClashMeta
   - Proxy
 
-generic_name: fastcat
+generic_name: FastCat
 
 categories:
   - Network
 
 startup_notify: true
+startup_wm_class: com.fastcat.app
+
+postinstall_scripts:
+  - cp /usr/share/applications/FastCat.desktop /usr/share/applications/com.fastcat.app.desktop || true
+postuninstall_scripts:
+  - rm -f /usr/share/applications/com.fastcat.app.desktop

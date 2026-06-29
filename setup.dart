@@ -1877,12 +1877,21 @@ void _applyLinuxAppName() {
   final brand = _loadAppBrandConfig();
   final appName = brand.appName;
   final appNameEn = brand.appNameEn;
+  const applicationId = 'com.fastcat.app';
   print('[setup.dart] 🐧 Linux 应用名称: $appName ($appNameEn)');
 
   final appPath = join(current, 'linux', 'my_application.cc');
   final appFile = File(appPath);
   if (appFile.existsSync()) {
     var content = appFile.readAsStringSync();
+    content = content.replaceAll(
+      RegExp(r'g_set_application_name\("[^"]+"\)'),
+      'g_set_application_name("$appName")',
+    );
+    content = content.replaceAll(
+      RegExp(r'gtk_window_set_icon_name\(window,\s*"[^"]+"\)'),
+      'gtk_window_set_icon_name(window, "$appNameEn")',
+    );
     content = content.replaceAll(
       RegExp(r'gtk_header_bar_set_title\(header_bar,\s*"[^"]+"\)'),
       'gtk_header_bar_set_title(header_bar, "$appName")',
@@ -1911,9 +1920,21 @@ void _applyLinuxAppName() {
     var content = makeConfigFile.readAsStringSync();
     content = _replaceYamlValue(content, 'display_name', appName);
     content = _replaceYamlValue(content, 'generic_name', appNameEn);
+    content = _replaceYamlValue(content, 'startup_wm_class', applicationId);
     if (content.contains(RegExp(r'^package_name:', multiLine: true))) {
-      content = _replaceYamlValue(content, 'package_name', appNameEn);
+      content =
+          _replaceYamlValue(content, 'package_name', appNameEn.toLowerCase());
     }
+    content = content.replaceAll(
+      RegExp(
+          r'cp /usr/share/applications/[^ ]+\.desktop /usr/share/applications/[^ ]+\.desktop \|\| true'),
+      'cp /usr/share/applications/$appNameEn.desktop '
+      '/usr/share/applications/$applicationId.desktop || true',
+    );
+    content = content.replaceAll(
+      RegExp(r'rm -f /usr/share/applications/[^ ]+\.desktop'),
+      'rm -f /usr/share/applications/$applicationId.desktop',
+    );
     content = content.replaceFirst(
       RegExp(r'keywords:\n(?:  - .+\n)+', multiLine: true),
       'keywords:\n'
