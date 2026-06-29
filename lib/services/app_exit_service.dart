@@ -5,7 +5,7 @@ import 'package:fl_clash/clash/clash.dart';
 import 'package:fl_clash/common/common.dart';
 import 'package:fl_clash/models/models.dart';
 import 'package:fl_clash/state.dart';
-import 'package:path/path.dart';
+import 'package:path/path.dart' show dirname;
 
 class AppExitService {
   const AppExitService();
@@ -105,18 +105,19 @@ class AppExitService {
     if (Platform.isWindows) {
       final executablePath = Platform.resolvedExecutable;
       final executableDir = dirname(executablePath);
-      final command = 'Start-Sleep -Milliseconds 500; '
-          "Start-Process -FilePath '${_escapePowerShellString(executablePath)}' "
-          "-WorkingDirectory '${_escapePowerShellString(executableDir)}'";
+      final launched = windows?.launch(
+            executablePath,
+            workingDirectory: executableDir,
+          ) ??
+          false;
+      if (launched) return;
       await Process.start(
-        'powershell.exe',
+        'cmd.exe',
         [
-          '-NoProfile',
-          '-NonInteractive',
-          '-WindowStyle',
-          'Hidden',
-          '-Command',
-          command,
+          '/d',
+          '/c',
+          'start "" /D "${_escapeWindowsCommandArgument(executableDir)}" '
+              '"${_escapeWindowsCommandArgument(executablePath)}"',
         ],
         workingDirectory: executableDir,
         mode: ProcessStartMode.detached,
@@ -138,7 +139,7 @@ class AppExitService {
     return executablePath.substring(0, markerIndex + '.app'.length);
   }
 
-  String _escapePowerShellString(String value) {
-    return value.replaceAll("'", "''");
+  String _escapeWindowsCommandArgument(String value) {
+    return value.replaceAll('"', r'\"');
   }
 }

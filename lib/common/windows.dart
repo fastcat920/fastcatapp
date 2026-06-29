@@ -68,9 +68,10 @@ class Windows {
   /// 用 "open" verb 启动带 UAC manifest 的 GUI 程序。
   /// 适用于 exe 已声明 highestAvailable / requireAdministrator 的情况：
   /// 由 exe 自身 manifest 触发提权，避免 "runas" 与 manifest 冲突。
-  bool launch(String command) {
+  bool launch(String command, {String? workingDirectory}) {
     final commandPtr = command.toNativeUtf16();
     final operationPtr = 'open'.toNativeUtf16();
+    final workingDirectoryPtr = workingDirectory?.toNativeUtf16();
 
     final shellExecute = _shell32.lookupFunction<
         Int32 Function(
@@ -93,12 +94,15 @@ class Windows {
       operationPtr,
       commandPtr,
       nullptr,
-      nullptr,
+      workingDirectoryPtr ?? nullptr,
       1, // SW_SHOWNORMAL
     );
 
     calloc.free(commandPtr);
     calloc.free(operationPtr);
+    if (workingDirectoryPtr != null) {
+      calloc.free(workingDirectoryPtr);
+    }
 
     commonPrint.log("windows launch: $command resultCode:$result");
     return result > 32;
