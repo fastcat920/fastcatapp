@@ -892,7 +892,6 @@ func (s *Server) handleHeartbeat(w http.ResponseWriter, r *http.Request) {
 		ses.LastSeenAt = now
 		ses.LastIP = clientIP
 	}
-	_ = s.store.saveLocked()
 	s.store.mu.Unlock()
 	if responseDevice == nil {
 		responseDevice = ctx.Device
@@ -1369,7 +1368,6 @@ func (s *Server) authorize(r *http.Request) (*SessionContext, error) {
 			device.LastSeenAt = now
 			s.updateDeviceIPInfoLocked(device, clientIP)
 			device.UserAgent = userAgent
-			shouldSave = true
 		}
 		sessionCopy = *session
 		deviceCopy = *device
@@ -1446,7 +1444,6 @@ func (s *Server) authorizeSubscribeToken(r *http.Request, token string) (*Sessio
 			device.LastSeenAt = now
 			s.updateDeviceIPInfoLocked(device, clientIP)
 			device.UserAgent = userAgent
-			shouldSave = true
 		}
 		sessionCopy = *session
 		deviceCopy = *device
@@ -1648,7 +1645,6 @@ func (s *Server) rewriteSubscriptionResponse(r *http.Request, sessionCtx *Sessio
 			session.BusinessSubURLCipher = encryptedSubURL
 		}
 	}
-	_ = s.store.saveLocked()
 
 	if sessionCtx.SubscribeToken != "" {
 		data["subscribe_url"] = s.gatewaySubscribeURL(r, sessionCtx.SubscribeToken)
@@ -1971,7 +1967,6 @@ func (s *Server) businessSubscribeURL(ctx context.Context, sessionCtx *SessionCo
 		s.store.mu.Lock()
 		if session := s.store.Sessions[sessionCtx.Session.ID]; session != nil {
 			session.BusinessSubURLCipher = encryptedSubURL
-			_ = s.store.saveLocked()
 		}
 		s.store.mu.Unlock()
 	}
