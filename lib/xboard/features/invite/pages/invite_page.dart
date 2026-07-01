@@ -779,13 +779,14 @@ class _InviteCodesTab extends StatelessWidget {
                             strokeWidth: 2, color: Colors.white),
                       )
                     : const Icon(Icons.add, size: 16),
-                label: Text(appLocalizations.generateInviteCode),
+                label: DefaultTextStyle.merge(
+                  style: const TextStyle(fontSize: 13),
+                  child: Text(appLocalizations.generateInviteCode),
+                ),
                 style: XbUiButton.filledPrimary(context).copyWith(
                   backgroundColor: btnIsDark
                       ? null
                       : WidgetStatePropertyAll(theme.colorScheme.primary),
-                  textStyle:
-                      const WidgetStatePropertyAll(TextStyle(fontSize: 13)),
                 ),
               );
             }),
