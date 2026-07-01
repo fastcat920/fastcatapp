@@ -24,6 +24,7 @@ class PeriodSelector extends StatelessWidget {
     if (periods.isEmpty) {
       return const SizedBox.shrink();
     }
+    final colorScheme = Theme.of(context).colorScheme;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -35,7 +36,7 @@ class PeriodSelector extends StatelessWidget {
             style: TextStyle(
               fontSize: 15,
               fontWeight: FontWeight.w600,
-              color: Colors.grey.shade700,
+              color: colorScheme.onSurface,
             ),
           ),
         ),
@@ -134,6 +135,7 @@ class _PeriodCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
     final periodPrice = period['price']?.toDouble() ?? 0.0;
     final displayPrice = isSelected && couponType != null
         ? PriceCalculator.calculateFinalPrice(
@@ -156,120 +158,131 @@ class _PeriodCard extends StatelessWidget {
     final horizontalSpacing = (3 * scaleFactor).clamp(2.0, 5.0);
     final verticalSpacing = (3 * scaleFactor).clamp(2.0, 5.0);
     final priceSpacing = (4 * scaleFactor).clamp(3.0, 6.0);
+    final selectedForeground =
+        isDark ? const Color(0xFF1F2937) : colorScheme.onPrimary;
+    final unselectedForeground =
+        isDark ? colorScheme.onSurface : Colors.grey.shade800;
+    final mutedForeground = isDark
+        ? colorScheme.onSurfaceVariant.withValues(alpha: 0.72)
+        : Colors.grey.shade400;
+    final cardColor = isSelected
+        ? colorScheme.primary
+        : (isDark ? colorScheme.surfaceContainerLow : Colors.white);
+    final borderColor = isSelected
+        ? colorScheme.primary
+        : (isDark
+            ? colorScheme.outline.withValues(alpha: 0.18)
+            : const Color(0xFFEEF0F4));
 
     return Material(
       color: Colors.transparent,
       borderRadius: BorderRadius.circular(borderRadius),
       clipBehavior: Clip.antiAlias,
       child: InkWell(
-      onTap: onTap,
-      borderRadius: BorderRadius.circular(borderRadius),
-      child: Container(
-        padding: EdgeInsets.symmetric(horizontal: padding, vertical: padding),
-        decoration: BoxDecoration(
-          color: isSelected
-              ? theme.colorScheme.primary
-              : (isDark ? Colors.grey.shade50 : Colors.white),
-          borderRadius: BorderRadius.circular(borderRadius),
-          border: Border.all(
-            color: isDark
-                ? (isSelected
-                    ? theme.colorScheme.primary
-                    : Colors.grey.shade300)
-                : (isSelected
-                    ? theme.colorScheme.primary
-                    : const Color(0xFFEEF0F4)),
-            width: isSelected ? 1.5 : 1,
-          ),
-          boxShadow: isSelected
-              ? [
-                  BoxShadow(
-                    color: theme.colorScheme.primary.withValues(alpha: 0.25),
-                    blurRadius: isDark ? 4 : 8,
-                    offset: const Offset(0, 2),
-                  ),
-                ]
-              : (isDark
-                  ? null
-                  : [
-                      const BoxShadow(
-                        color: Color(0x0A1565C0),
-                        blurRadius: 8,
-                        offset: Offset(0, 2),
-                      ),
-                    ]),
-        ),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: [
-            // 第一行：图标 + 周期名称
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Icon(
-                  isSelected ? Icons.check_circle : Icons.circle_outlined,
-                  color: isSelected ? Colors.white : Colors.grey.shade400,
-                  size: iconSize,
-                ),
-                SizedBox(width: horizontalSpacing),
-                Flexible(
-                  child: Text(
-                    period['label'],
-                    style: TextStyle(
-                      fontSize: labelFontSize,
-                      fontWeight: FontWeight.bold,
-                      color: isSelected ? Colors.white : Colors.grey.shade800,
-                    ),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    textAlign: TextAlign.center,
-                  ),
-                ),
-              ],
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(borderRadius),
+        child: Container(
+          padding: EdgeInsets.symmetric(horizontal: padding, vertical: padding),
+          decoration: BoxDecoration(
+            color: cardColor,
+            borderRadius: BorderRadius.circular(borderRadius),
+            border: Border.all(
+              color: borderColor,
+              width: isSelected ? 1.5 : 1,
             ),
-            SizedBox(height: verticalSpacing),
-            // 第二行：价格（有折扣时显示原价+折扣价，否则只显示价格）
-            if (hasDiscount)
+            boxShadow: isSelected
+                ? [
+                    BoxShadow(
+                      color: colorScheme.primary.withValues(alpha: 0.25),
+                      blurRadius: isDark ? 4 : 8,
+                      offset: const Offset(0, 2),
+                    ),
+                  ]
+                : (isDark
+                    ? null
+                    : [
+                        const BoxShadow(
+                          color: Color(0x0A1565C0),
+                          blurRadius: 8,
+                          offset: Offset(0, 2),
+                        ),
+                      ]),
+          ),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              // 第一行：图标 + 周期名称
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
-                crossAxisAlignment: CrossAxisAlignment.baseline,
-                textBaseline: TextBaseline.alphabetic,
                 children: [
-                  Text(
-                    PriceCalculator.formatPrice(periodPrice),
-                    style: TextStyle(
-                      fontSize: originalPriceFontSize,
-                      decoration: TextDecoration.lineThrough,
-                      decorationColor: Colors.white70,
-                      color: Colors.white70,
-                    ),
+                  Icon(
+                    isSelected ? Icons.check_circle : Icons.circle_outlined,
+                    color: isSelected ? selectedForeground : mutedForeground,
+                    size: iconSize,
                   ),
-                  SizedBox(width: priceSpacing),
-                  Text(
-                    PriceCalculator.formatPrice(displayPrice),
-                    style: TextStyle(
-                      fontSize: priceFontSize,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.white,
+                  SizedBox(width: horizontalSpacing),
+                  Flexible(
+                    child: Text(
+                      period['label'],
+                      style: TextStyle(
+                        fontSize: labelFontSize,
+                        fontWeight: FontWeight.bold,
+                        color: isSelected
+                            ? selectedForeground
+                            : unselectedForeground,
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      textAlign: TextAlign.center,
                     ),
                   ),
                 ],
-              )
-            else
-              Text(
-                PriceCalculator.formatPrice(periodPrice),
-                style: TextStyle(
-                  fontSize: priceFontSize,
-                  fontWeight: FontWeight.bold,
-                  color: isSelected ? Colors.white : theme.colorScheme.primary,
-                ),
-                textAlign: TextAlign.center,
               ),
-          ],
+              SizedBox(height: verticalSpacing),
+              // 第二行：价格（有折扣时显示原价+折扣价，否则只显示价格）
+              if (hasDiscount)
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  crossAxisAlignment: CrossAxisAlignment.baseline,
+                  textBaseline: TextBaseline.alphabetic,
+                  children: [
+                    Text(
+                      PriceCalculator.formatPrice(periodPrice),
+                      style: TextStyle(
+                        fontSize: originalPriceFontSize,
+                        decoration: TextDecoration.lineThrough,
+                        decorationColor:
+                            selectedForeground.withValues(alpha: 0.62),
+                        color: selectedForeground.withValues(alpha: 0.62),
+                      ),
+                    ),
+                    SizedBox(width: priceSpacing),
+                    Text(
+                      PriceCalculator.formatPrice(displayPrice),
+                      style: TextStyle(
+                        fontSize: priceFontSize,
+                        fontWeight: FontWeight.bold,
+                        color: selectedForeground,
+                      ),
+                    ),
+                  ],
+                )
+              else
+                Text(
+                  PriceCalculator.formatPrice(periodPrice),
+                  style: TextStyle(
+                    fontSize: priceFontSize,
+                    fontWeight: FontWeight.bold,
+                    color:
+                        isSelected ? selectedForeground : colorScheme.primary,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+            ],
+          ),
         ),
       ),
-    ),
     );
   }
 }

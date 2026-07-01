@@ -26,8 +26,8 @@ class CouponInputSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
     final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -35,15 +35,14 @@ class CouponInputSection extends StatelessWidget {
           padding: const EdgeInsets.only(left: 4, bottom: 12),
           child: Row(
             children: [
-              Icon(Icons.local_offer,
-                  color: isDark ? null : theme.colorScheme.primary, size: 20),
+              Icon(Icons.local_offer, color: colorScheme.primary, size: 20),
               const SizedBox(width: 6),
               Text(
                 AppLocalizations.of(context).xboardCouponOptional,
                 style: TextStyle(
                   fontSize: 15,
                   fontWeight: FontWeight.w600,
-                  color: Colors.grey.shade700,
+                  color: colorScheme.onSurface,
                 ),
               ),
               if (isValid == true && discountAmount != null) ...[
@@ -130,14 +129,17 @@ class _CouponTextField extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+    final isDark = theme.brightness == Brightness.dark;
     return Container(
       height: 48,
       decoration: BoxDecoration(
-        color: isDark ? Colors.grey.shade50 : const Color(0xFFF5F7FA),
+        color:
+            isDark ? colorScheme.surfaceContainerLow : const Color(0xFFF5F7FA),
         borderRadius: BorderRadius.circular(12),
         border: Border.all(
-          color: _getBorderColor(isDark),
+          color: _getBorderColor(colorScheme, isDark),
           width: 1.5,
         ),
       ),
@@ -151,7 +153,7 @@ class _CouponTextField extends StatelessWidget {
           onTap: beginEditing,
           controller: controller,
           style: TextStyle(
-            color: Colors.grey.shade900,
+            color: colorScheme.onSurface,
             fontSize: 15,
             fontWeight: FontWeight.w600,
             letterSpacing: 0.5,
@@ -160,13 +162,13 @@ class _CouponTextField extends StatelessWidget {
             border: InputBorder.none,
             hintText: AppLocalizations.of(context).xboardEnterCouponCode,
             hintStyle: TextStyle(
-              color: Colors.grey.shade400,
+              color: colorScheme.onSurfaceVariant.withValues(alpha: 0.62),
               fontSize: 14,
               fontWeight: FontWeight.normal,
             ),
             prefixIcon: Icon(
               Icons.confirmation_number_outlined,
-              color: _getIconColor(),
+              color: _getIconColor(colorScheme),
               size: 20,
             ),
             suffixIcon: isValid != null
@@ -188,16 +190,18 @@ class _CouponTextField extends StatelessWidget {
     );
   }
 
-  Color _getBorderColor(bool isDark) {
+  Color _getBorderColor(ColorScheme colorScheme, bool isDark) {
     if (isValid == false) return Colors.red.shade300;
     if (isValid == true) return Colors.green.shade400;
-    return isDark ? Colors.grey.shade300 : const Color(0xFFEEF0F4);
+    return isDark
+        ? colorScheme.outline.withValues(alpha: 0.28)
+        : const Color(0xFFEEF0F4);
   }
 
-  Color _getIconColor() {
+  Color _getIconColor(ColorScheme colorScheme) {
     if (isValid == false) return Colors.red.shade400;
     if (isValid == true) return Colors.green.shade400;
-    return Colors.grey.shade400;
+    return colorScheme.onSurfaceVariant.withValues(alpha: 0.72);
   }
 }
 

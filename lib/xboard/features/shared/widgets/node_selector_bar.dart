@@ -409,53 +409,56 @@ class _NodeSelectorBarState extends ConsumerState<NodeSelectorBar> {
   }
 
   void _openProxiesView(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
     Navigator.of(context).push(
       MaterialPageRoute(
-        builder: (ctx) => CommonScaffold(
-          backgroundColor: isDark ? null : XbUiTokens.pageBackgroundLight,
-          title: AppLocalizations.of(ctx).xboardNodeSelection,
-          actions: [
-            Consumer(
-              builder: (_, ref, __) {
-                final isImporting =
-                    ref.watch(profileImportProvider).isImporting;
-                return TextButton.icon(
-                  onPressed: isImporting
-                      ? null
-                      : () {
-                          final url =
-                              ref.read(subscriptionInfoProvider)?.subscribeUrl;
-                          if (url != null && url.isNotEmpty) {
-                            ref
-                                .read(profileImportProvider.notifier)
-                                .importSubscription(url, forceRefresh: true);
-                          }
-                        },
-                  icon: isImporting
-                      ? const SizedBox(
-                          width: 20,
-                          height: 20,
-                          child: CircularProgressIndicator(strokeWidth: 2),
-                        )
-                      : const Icon(Icons.refresh),
-                  label: Text(AppLocalizations.of(context).xboardUpdateNodes),
-                );
-              },
+        builder: (ctx) {
+          final isDark = Theme.of(ctx).brightness == Brightness.dark;
+          return CommonScaffold(
+            backgroundColor: isDark ? null : XbUiTokens.pageBackgroundLight,
+            title: AppLocalizations.of(ctx).xboardNodeSelection,
+            actions: [
+              Consumer(
+                builder: (_, ref, __) {
+                  final isImporting =
+                      ref.watch(profileImportProvider).isImporting;
+                  return TextButton.icon(
+                    onPressed: isImporting
+                        ? null
+                        : () {
+                            final url = ref
+                                .read(subscriptionInfoProvider)
+                                ?.subscribeUrl;
+                            if (url != null && url.isNotEmpty) {
+                              ref
+                                  .read(profileImportProvider.notifier)
+                                  .importSubscription(url, forceRefresh: true);
+                            }
+                          },
+                    icon: isImporting
+                        ? const SizedBox(
+                            width: 20,
+                            height: 20,
+                            child: CircularProgressIndicator(strokeWidth: 2),
+                          )
+                        : const Icon(Icons.refresh),
+                    label: Text(AppLocalizations.of(ctx).xboardUpdateNodes),
+                  );
+                },
+              ),
+              TextButton.icon(
+                onPressed: () {
+                  autoLatencyService.testCurrentGroupNodes(maxNodes: 999);
+                },
+                icon: const Icon(Icons.network_check),
+                label: Text(AppLocalizations.of(ctx).xboardTestLatency),
+              ),
+            ],
+            body: Container(
+              color: isDark ? null : XbUiTokens.pageBackgroundLight,
+              child: const _AutoPopProxiesView(),
             ),
-            TextButton.icon(
-              onPressed: () {
-                autoLatencyService.testCurrentGroupNodes(maxNodes: 999);
-              },
-              icon: const Icon(Icons.network_check),
-              label: Text(AppLocalizations.of(context).xboardTestLatency),
-            ),
-          ],
-          body: Container(
-            color: isDark ? null : XbUiTokens.pageBackgroundLight,
-            child: const _AutoPopProxiesView(),
-          ),
-        ),
+          );
+        },
       ),
     );
   }
