@@ -15,7 +15,10 @@ class ProxyManager extends ConsumerStatefulWidget {
 }
 
 class _ProxyManagerState extends ConsumerState<ProxyManager> {
-  _updateProxy(ProxyState proxyState) async {
+  int _proxyUpdateId = 0;
+
+  Future<void> _updateProxy(ProxyState proxyState) async {
+    final updateId = ++_proxyUpdateId;
     final isStart = proxyState.isStart;
     final systemProxy = proxyState.systemProxy;
     final port = proxyState.port;
@@ -26,7 +29,12 @@ class _ProxyManagerState extends ConsumerState<ProxyManager> {
           "[ProxyManager] >>> Calling startProxy(port=$port, bypass=${proxyState.bassDomain.length} domains)");
       final result = await proxy?.startProxy(port, proxyState.bassDomain);
       commonPrint.log("[ProxyManager] <<< startProxy result: $result");
-      if (result == false && mounted) {
+      if (!mounted || updateId != _proxyUpdateId) {
+        commonPrint.log(
+            "[ProxyManager] ignore stale startProxy result: updateId=$updateId, current=$_proxyUpdateId");
+        return;
+      }
+      if (result == false) {
         globalState.showNotifier(
           "${appLocalizations.systemProxy} ${appLocalizations.xboardOperationFailed}",
         );
@@ -34,7 +42,7 @@ class _ProxyManagerState extends ConsumerState<ProxyManager> {
     } else {
       commonPrint.log(
           "[ProxyManager] >>> Calling stopProxy (isStart=$isStart, systemProxy=$systemProxy)");
-      proxy?.stopProxy();
+      await proxy?.stopProxy();
     }
   }
 

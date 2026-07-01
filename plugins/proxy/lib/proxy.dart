@@ -37,13 +37,20 @@ class Proxy extends ProxyPlatform {
     try {
       final homeDir = Platform.environment['HOME']!;
       final configDir = join(homeDir, ".config");
-      final cmdList = List<List<String>>.empty(growable: true);
+      final requiredCommands = List<List<String>>.empty(growable: true);
+      final optionalCommands = List<List<String>>.empty(growable: true);
       final desktop = Platform.environment['XDG_CURRENT_DESKTOP'];
       final isKDE = desktop?.toLowerCase().contains("kde") == true;
+      final kdeWriteCommand = isKDE
+          ? await _resolveLinuxCommand(["kwriteconfig6", "kwriteconfig5"])
+          : null;
+      final kdeReadCommand = isKDE
+          ? await _resolveLinuxCommand(["kreadconfig6", "kreadconfig5"])
+          : null;
       if (isKDE) {
-        cmdList.add(
+        requiredCommands.add(
           [
-            "kwriteconfig5",
+            kdeWriteCommand!,
             "--file",
             "$configDir/kioslaverc",
             "--group",
@@ -53,9 +60,9 @@ class Proxy extends ProxyPlatform {
             "1"
           ],
         );
-        cmdList.add(
+        optionalCommands.add(
           [
-            "kwriteconfig5",
+            kdeWriteCommand,
             "--file",
             "$configDir/kioslaverc",
             "--group",
@@ -66,11 +73,11 @@ class Proxy extends ProxyPlatform {
           ],
         );
       } else {
-        cmdList.add(
+        requiredCommands.add(
           ["gsettings", "set", "org.gnome.system.proxy", "mode", "manual"],
         );
-        final ignoreHosts = "\"['${bypassDomain.join("', '")}']\"";
-        cmdList.add(
+        final ignoreHosts = _toGSettingsStringList(bypassDomain);
+        optionalCommands.add(
           [
             "gsettings",
             "set",
@@ -82,7 +89,7 @@ class Proxy extends ProxyPlatform {
       }
       for (final type in ProxyTypes.values) {
         if (!isKDE) {
-          cmdList.add(
+          requiredCommands.add(
             [
               "gsettings",
               "set",
@@ -91,7 +98,7 @@ class Proxy extends ProxyPlatform {
               url
             ],
           );
-          cmdList.add(
+          requiredCommands.add(
             [
               "gsettings",
               "set",
@@ -102,9 +109,9 @@ class Proxy extends ProxyPlatform {
           );
         }
         if (isKDE) {
-          cmdList.add(
+          requiredCommands.add(
             [
-              "kwriteconfig5",
+              kdeWriteCommand!,
               "--file",
               "$configDir/kioslaverc",
               "--group",
@@ -116,14 +123,32 @@ class Proxy extends ProxyPlatform {
           );
         }
       }
-      for (final cmd in cmdList) {
-        if (!await _runLinuxCommandChecked(cmd)) {
-          return false;
+      var commandSuccess = true;
+      for (final cmd in requiredCommands) {
+        commandSuccess = await _runLinuxCommandChecked(cmd) && commandSuccess;
+      }
+      for (final cmd in optionalCommands) {
+        final success = await _runLinuxCommandChecked(cmd);
+        if (!success) {
+          _logLinuxProxyWarning(
+            "optional command",
+            "ignored failure: ${cmd.join(" ")}",
+          );
         }
       }
-      return isKDE
-          ? await _verifyLinuxKdeProxy(configDir, port)
+      final verified = isKDE
+          ? await _verifyLinuxKdeProxy(configDir, port, kdeReadCommand!)
           : await _verifyLinuxGnomeProxy(port);
+      if (verified) {
+        if (!commandSuccess) {
+          _logLinuxProxyWarning(
+            "start proxy",
+            "settings verified after command failure",
+          );
+        }
+        return true;
+      }
+      return false;
     } catch (e) {
       _logLinuxProxyFailure("start proxy", e);
       return false;
@@ -133,14 +158,20 @@ class Proxy extends ProxyPlatform {
   Future<bool> _stopProxyWithLinux() async {
     try {
       final homeDir = Platform.environment['HOME']!;
-      final configDir = join(homeDir, ".config/");
+      final configDir = join(homeDir, ".config");
       final cmdList = List<List<String>>.empty(growable: true);
       final desktop = Platform.environment['XDG_CURRENT_DESKTOP'];
       final isKDE = desktop?.toLowerCase().contains("kde") == true;
+      final kdeWriteCommand = isKDE
+          ? await _resolveLinuxCommand(["kwriteconfig6", "kwriteconfig5"])
+          : null;
+      final kdeReadCommand = isKDE
+          ? await _resolveLinuxCommand(["kreadconfig6", "kreadconfig5"])
+          : null;
       if (isKDE) {
         cmdList.add(
           [
-            "kwriteconfig5",
+            kdeWriteCommand!,
             "--file",
             "$configDir/kioslaverc",
             "--group",
@@ -161,7 +192,7 @@ class Proxy extends ProxyPlatform {
         }
       }
       return isKDE
-          ? await _verifyLinuxKdeProxyStopped(configDir)
+          ? await _verifyLinuxKdeProxyStopped(configDir, kdeReadCommand!)
           : await _verifyLinuxGnomeProxyStopped();
     } catch (e) {
       _logLinuxProxyFailure("stop proxy", e);
@@ -180,6 +211,7 @@ class Proxy extends ProxyPlatform {
       _logLinuxProxyFailure("verify GNOME mode", "mode=$mode");
       return false;
     }
+    var hasMatchedProxy = false;
     for (final type in ProxyTypes.values) {
       final schema = "org.gnome.system.proxy.${type.name}";
       final host = await _readGSettingsValue([
@@ -194,15 +226,19 @@ class Proxy extends ProxyPlatform {
         schema,
         "port",
       ]);
-      if (host != url || int.tryParse(portValue ?? "") != port) {
-        _logLinuxProxyFailure(
+      final matched = _matchesLinuxProxy(host, portValue, port);
+      hasMatchedProxy = hasMatchedProxy || matched;
+      if (!matched) {
+        _logLinuxProxyWarning(
           "verify GNOME ${type.name}",
           "host=$host port=$portValue",
         );
-        return false;
       }
     }
-    return true;
+    if (!hasMatchedProxy) {
+      _logLinuxProxyFailure("verify GNOME proxy", "no matching proxy entry");
+    }
+    return hasMatchedProxy;
   }
 
   Future<bool> _verifyLinuxGnomeProxyStopped() async {
@@ -219,26 +255,40 @@ class Proxy extends ProxyPlatform {
     return success;
   }
 
-  Future<bool> _verifyLinuxKdeProxy(String configDir, int port) async {
-    final proxyType = await _readKdeProxyValue(configDir, "ProxyType");
+  Future<bool> _verifyLinuxKdeProxy(
+    String configDir,
+    int port,
+    String readCommand,
+  ) async {
+    final proxyType =
+        await _readKdeProxyValue(configDir, readCommand, "ProxyType");
     if (proxyType != "1") {
       _logLinuxProxyFailure("verify KDE proxy type", "ProxyType=$proxyType");
       return false;
     }
+    var hasMatchedProxy = false;
     for (final type in ProxyTypes.values) {
       final key = "${type.name}Proxy";
-      final value = await _readKdeProxyValue(configDir, key);
+      final value = await _readKdeProxyValue(configDir, readCommand, key);
       final expectedValue = "${type.name}://$url:$port";
-      if (value != expectedValue) {
-        _logLinuxProxyFailure("verify KDE $key", "value=$value");
-        return false;
+      final matched = value == expectedValue;
+      hasMatchedProxy = hasMatchedProxy || matched;
+      if (!matched) {
+        _logLinuxProxyWarning("verify KDE $key", "value=$value");
       }
     }
-    return true;
+    if (!hasMatchedProxy) {
+      _logLinuxProxyFailure("verify KDE proxy", "no matching proxy entry");
+    }
+    return hasMatchedProxy;
   }
 
-  Future<bool> _verifyLinuxKdeProxyStopped(String configDir) async {
-    final proxyType = await _readKdeProxyValue(configDir, "ProxyType");
+  Future<bool> _verifyLinuxKdeProxyStopped(
+    String configDir,
+    String readCommand,
+  ) async {
+    final proxyType =
+        await _readKdeProxyValue(configDir, readCommand, "ProxyType");
     final success = proxyType == "0";
     if (!success) {
       _logLinuxProxyFailure("verify KDE stop", "ProxyType=$proxyType");
@@ -254,9 +304,13 @@ class Proxy extends ProxyPlatform {
     return _normalizeLinuxSettingValue(value);
   }
 
-  Future<String?> _readKdeProxyValue(String configDir, String key) {
+  Future<String?> _readKdeProxyValue(
+    String configDir,
+    String readCommand,
+    String key,
+  ) {
     return _readLinuxCommandText([
-      "kreadconfig5",
+      readCommand,
       "--file",
       "$configDir/kioslaverc",
       "--group",
@@ -296,7 +350,7 @@ class Proxy extends ProxyPlatform {
   }
 
   Future<ProcessResult> _runLinuxCommand(List<String> command) {
-    return Process.run(command[0], command.sublist(1), runInShell: true);
+    return Process.run(command[0], command.sublist(1));
   }
 
   String _normalizeLinuxSettingValue(String value) {
@@ -314,8 +368,43 @@ class Proxy extends ProxyPlatform {
     return normalized;
   }
 
+  bool _matchesLinuxProxy(String? host, String? portValue, int port) {
+    return host == url && int.tryParse(portValue ?? "") == port;
+  }
+
+  String _toGSettingsStringList(List<String> values) {
+    return "[${values.map(_quoteGSettingsString).join(", ")}]";
+  }
+
+  String _quoteGSettingsString(String value) {
+    final escaped = value.replaceAll(r"\", r"\\").replaceAll("'", r"\'");
+    return "'$escaped'";
+  }
+
+  Future<String> _resolveLinuxCommand(List<String> candidates) async {
+    for (final command in candidates) {
+      if (await _linuxCommandExists(command)) {
+        return command;
+      }
+    }
+    return candidates.last;
+  }
+
+  Future<bool> _linuxCommandExists(String command) async {
+    try {
+      final result = await Process.run("which", [command]);
+      return result.exitCode == 0;
+    } catch (_) {
+      return false;
+    }
+  }
+
   void _logLinuxProxyFailure(String action, Object details) {
     debugPrint("[Proxy][Linux] $action failed: $details");
+  }
+
+  void _logLinuxProxyWarning(String action, Object details) {
+    debugPrint("[Proxy][Linux] $action warning: $details");
   }
 
   Future<bool> _startProxyWithMacos(int port, List<String> bypassDomain) async {
