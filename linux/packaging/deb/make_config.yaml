@@ -13,6 +13,7 @@ icon: ./assets/images/icon.png
 dependencies:
   - libayatana-appindicator3-dev
   - libkeybinder-3.0-dev
+  - fonts-noto-cjk
 
 keywords:
   - 快猫
@@ -30,6 +31,7 @@ startup_notify: true
 startup_wm_class: com.fastcat.app
 
 postinstall_scripts:
-  - cp /usr/share/applications/FastCat.desktop /usr/share/applications/com.fastcat.app.desktop || true
+  - if [ -f /usr/share/applications/FastCat.desktop ]; then cp /usr/share/applications/FastCat.desktop /usr/share/applications/com.fastcat.app.desktop; fi
+  - rm -f /usr/share/applications/FastCat.desktop /usr/share/applications/fastcat.desktop
 postuninstall_scripts:
-  - rm -f /usr/share/applications/com.fastcat.app.desktop
+  - rm -f /usr/share/applications/com.fastcat.app.desktop /usr/share/applications/FastCat.desktop /usr/share/applications/fastcat.desktop

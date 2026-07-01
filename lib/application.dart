@@ -34,6 +34,18 @@ class Application extends ConsumerStatefulWidget {
 
 class ApplicationState extends ConsumerState<Application>
     with WidgetsBindingObserver {
+  static const _fontFamilyFallback = [
+    'Noto Sans CJK SC',
+    'Noto Sans CJK',
+    'Noto Sans SC',
+    'Source Han Sans SC',
+    'WenQuanYi Micro Hei',
+    'Microsoft YaHei',
+    'PingFang SC',
+    'Arial Unicode MS',
+    'sans-serif',
+  ];
+
   Timer? _autoUpdateProfilesTaskTimer;
   // Router 只创建一次，通过 refresh() 触发 redirect 重新求值
   // 避免每次 auth 状态变化都重建 GoRouter 导致 StatefulShellRoute 重置（Windows 空白屏）
@@ -405,12 +417,15 @@ class ApplicationState extends ConsumerState<Application>
               routerConfig: _router,
               scrollBehavior: BaseScrollBehavior(),
               title: localizedAppName,
-              locale: locale != null && locale.isNotEmpty ? utils.getLocaleForString(locale) : null,
+              locale: locale != null && locale.isNotEmpty
+                  ? utils.getLocaleForString(locale)
+                  : null,
               supportedLocales: AppLocalizations.delegate.supportedLocales,
               localeResolutionCallback: (locale, supportedLocales) {
                 if (locale != null) {
                   if (locale.languageCode == 'zh') {
-                    return const Locale.fromSubtags(languageCode: 'zh', countryCode: 'CN');
+                    return const Locale.fromSubtags(
+                        languageCode: 'zh', countryCode: 'CN');
                   }
                   if (locale.languageCode == 'en') {
                     return const Locale.fromSubtags(languageCode: 'en');
@@ -421,6 +436,7 @@ class ApplicationState extends ConsumerState<Application>
               themeMode: themeProps.themeMode,
               theme: ThemeData(
                 useMaterial3: true,
+                fontFamilyFallback: _fontFamilyFallback,
                 pageTransitionsTheme: _pageTransitionsTheme,
                 colorScheme: _getAppColorScheme(
                   brightness: Brightness.light,
@@ -501,6 +517,7 @@ class ApplicationState extends ConsumerState<Application>
               ),
               darkTheme: ThemeData(
                 useMaterial3: true,
+                fontFamilyFallback: _fontFamilyFallback,
                 pageTransitionsTheme: _pageTransitionsTheme,
                 colorScheme: _getAppColorScheme(
                   brightness: Brightness.dark,

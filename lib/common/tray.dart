@@ -2,19 +2,20 @@ import 'dart:io';
 
 import 'package:fl_clash/common/utils.dart';
 import 'package:fl_clash/enum/enum.dart';
+import 'package:fl_clash/l10n/l10n.dart';
 import 'package:fl_clash/models/models.dart';
 import 'package:fl_clash/state.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:intl/intl.dart';
 import 'package:tray_manager/tray_manager.dart';
 
-import 'app_localizations.dart';
 import 'constant.dart';
 import 'window.dart';
 
 class Tray {
   Traffic? _lastTitleTraffic;
+  int _updateSerial = 0;
+  String? _latestLocale;
 
   Future _updateSystemTray({
     required Brightness? brightness,
@@ -49,6 +50,13 @@ class Tray {
     if (Platform.isAndroid || Platform.isIOS) {
       return;
     }
+    final updateSerial = ++_updateSerial;
+    _latestLocale = trayState.locale;
+    final l10n = await _loadTrayLocalizations(trayState.locale);
+    if (updateSerial != _updateSerial) {
+      await _loadTrayLocalizations(_latestLocale);
+      return;
+    }
     if (!Platform.isLinux) {
       await _updateSystemTray(
         brightness: trayState.brightness,
@@ -57,16 +65,14 @@ class Tray {
     }
     List<MenuItem> menuItems = [];
     final showMenuItem = MenuItem(
-      label: appLocalizations.show,
+      label: l10n.show,
       onClick: (_) {
         window?.show();
       },
     );
     menuItems.add(showMenuItem);
     final startMenuItem = MenuItem.checkbox(
-      label: trayState.isStart
-          ? appLocalizations.trayDisconnect
-          : appLocalizations.trayStartConnection,
+      label: trayState.isStart ? l10n.trayDisconnect : l10n.trayStartConnection,
       onClick: (_) async {
         globalState.appController.updateStart();
       },
@@ -77,7 +83,7 @@ class Tray {
     for (final mode in Mode.values.where((mode) => mode != Mode.direct)) {
       menuItems.add(
         MenuItem.checkbox(
-          label: Intl.message(mode.name),
+          label: _modeLabel(l10n, mode),
           onClick: (_) {
             globalState.appController.changeMode(mode);
           },
@@ -124,7 +130,7 @@ class Tray {
     if (trayState.isStart) {
       menuItems.add(
         MenuItem.checkbox(
-          label: appLocalizations.tun,
+          label: l10n.tun,
           onClick: (_) {
             globalState.appController.updateTun();
           },
@@ -133,7 +139,7 @@ class Tray {
       );
       menuItems.add(
         MenuItem.checkbox(
-          label: appLocalizations.systemProxy,
+          label: l10n.systemProxy,
           onClick: (_) {
             globalState.appController.updateSystemProxy();
           },
@@ -143,14 +149,14 @@ class Tray {
       menuItems.add(MenuItem.separator());
     }
     final autoStartMenuItem = MenuItem.checkbox(
-      label: appLocalizations.autoLaunch,
+      label: l10n.autoLaunch,
       onClick: (_) async {
         globalState.appController.updateAutoLaunch();
       },
       checked: trayState.autoLaunch,
     );
     final copyEnvVarMenuItem = MenuItem(
-      label: appLocalizations.copyEnvVar,
+      label: l10n.copyEnvVar,
       onClick: (_) async {
         await _copyEnv(trayState.port);
       },
@@ -159,20 +165,21 @@ class Tray {
     menuItems.add(copyEnvVarMenuItem);
     menuItems.add(MenuItem.separator());
     final clearCacheAndRestartMenuItem = MenuItem(
-      label: appLocalizations.clearCacheAndRestart,
+      label: l10n.clearCacheAndRestart,
       onClick: (_) async {
         await globalState.appController.handleClearCacheAndRestart();
       },
     );
     menuItems.add(clearCacheAndRestartMenuItem);
     final exitMenuItem = MenuItem(
-      label: appLocalizations.exit,
+      label: l10n.exit,
       onClick: (_) async {
         await globalState.appController.handleExit();
       },
     );
     menuItems.add(exitMenuItem);
     final menu = Menu(items: menuItems);
+    if (updateSerial != _updateSerial) return;
     await trayManager.setContextMenu(menu);
     if (Platform.isLinux) {
       await _updateSystemTray(
@@ -186,6 +193,31 @@ class Tray {
     if (!trayState.isStart) {
       await updateTrayTitle();
     }
+  }
+
+  Future<AppLocalizations> _loadTrayLocalizations(String? localeString) {
+    return AppLocalizations.load(_resolveTrayLocale(localeString));
+  }
+
+  Locale _resolveTrayLocale(String? localeString) {
+    final locale = utils.getLocaleForString(localeString) ??
+        WidgetsBinding.instance.platformDispatcher.locale;
+    return switch (locale.languageCode) {
+      'zh' => const Locale.fromSubtags(
+          languageCode: 'zh',
+          countryCode: 'CN',
+        ),
+      'en' => const Locale.fromSubtags(languageCode: 'en'),
+      _ => const Locale.fromSubtags(languageCode: 'en'),
+    };
+  }
+
+  String _modeLabel(AppLocalizations l10n, Mode mode) {
+    return switch (mode) {
+      Mode.rule => l10n.rule,
+      Mode.global => l10n.global,
+      Mode.direct => l10n.direct,
+    };
   }
 
   updateTrayTitle([Traffic? traffic]) async {

@@ -659,6 +659,21 @@ String _replaceYamlValue(String content, String key, String value) {
   return '$content$suffix$replacement\n';
 }
 
+String _replaceYamlListBlock(
+  String content,
+  String key,
+  List<String> values,
+) {
+  final replacement =
+      '$key:\n${values.map((value) => '  - $value').join('\n')}\n';
+  final pattern = RegExp('^$key:\n(?:  - .+\n)+', multiLine: true);
+  if (pattern.hasMatch(content)) {
+    return content.replaceFirst(pattern, replacement);
+  }
+  final suffix = content.endsWith('\n') ? '' : '\n';
+  return '$content$suffix$replacement';
+}
+
 String _safeAsciiDmgVolumeName(String value) {
   final explicit = Platform.environment["DMG_VOLUME_NAME"];
   final source = explicit?.trim().isNotEmpty == true ? explicit!.trim() : value;
@@ -1925,16 +1940,27 @@ void _applyLinuxAppName() {
       content =
           _replaceYamlValue(content, 'package_name', appNameEn.toLowerCase());
     }
-    content = content.replaceAll(
-      RegExp(
-          r'cp /usr/share/applications/[^ ]+\.desktop /usr/share/applications/[^ ]+\.desktop \|\| true'),
-      'cp /usr/share/applications/$appNameEn.desktop '
-      '/usr/share/applications/$applicationId.desktop || true',
-    );
-    content = content.replaceAll(
-      RegExp(r'rm -f /usr/share/applications/[^ ]+\.desktop'),
-      'rm -f /usr/share/applications/$applicationId.desktop',
-    );
+    if (basename(dirname(makeConfigPath)) == 'deb') {
+      final desktopSource = '/usr/share/applications/$appNameEn.desktop';
+      const desktopTarget = '/usr/share/applications/$applicationId.desktop';
+      final legacyDesktop =
+          '/usr/share/applications/${appNameEn.toLowerCase()}.desktop';
+      content = _replaceYamlListBlock(
+        content,
+        'postinstall_scripts',
+        [
+          'if [ -f $desktopSource ]; then cp $desktopSource $desktopTarget; fi',
+          'rm -f $desktopSource $legacyDesktop',
+        ],
+      );
+      content = _replaceYamlListBlock(
+        content,
+        'postuninstall_scripts',
+        [
+          'rm -f $desktopTarget $desktopSource $legacyDesktop',
+        ],
+      );
+    }
     content = content.replaceFirst(
       RegExp(r'keywords:\n(?:  - .+\n)+', multiLine: true),
       'keywords:\n'
