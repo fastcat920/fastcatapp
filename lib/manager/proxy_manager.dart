@@ -1,6 +1,7 @@
 import 'package:fl_clash/common/common.dart';
 import 'package:fl_clash/models/models.dart';
 import 'package:fl_clash/providers/state.dart';
+import 'package:fl_clash/state.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -25,6 +26,11 @@ class _ProxyManagerState extends ConsumerState<ProxyManager> {
           "[ProxyManager] >>> Calling startProxy(port=$port, bypass=${proxyState.bassDomain.length} domains)");
       final result = await proxy?.startProxy(port, proxyState.bassDomain);
       commonPrint.log("[ProxyManager] <<< startProxy result: $result");
+      if (result == false && mounted) {
+        globalState.showNotifier(
+          "${appLocalizations.systemProxy} ${appLocalizations.xboardOperationFailed}",
+        );
+      }
     } else {
       commonPrint.log(
           "[ProxyManager] >>> Calling stopProxy (isStart=$isStart, systemProxy=$systemProxy)");

@@ -197,8 +197,10 @@ class Tray {
       await trayManager.setTitle("");
       return;
     }
+    final up = _compactTrafficText(traffic.up);
+    final down = _compactTrafficText(traffic.down);
     await trayManager.setTitle(
-      "↑${_compactTrafficText(traffic.up)}\n↓${_compactTrafficText(traffic.down)}",
+      Platform.isLinux ? "↑$up ↓$down" : "↑$up\n↓$down",
     );
   }
 

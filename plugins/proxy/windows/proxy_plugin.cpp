@@ -21,8 +21,9 @@
 
 #include <memory>
 #include <sstream>
+#include <string>
 
-void startProxy(const int port, const flutter::EncodableList& bypassDomain)
+bool startProxy(const int port, const flutter::EncodableList& bypassDomain)
 {
   INTERNET_PER_CONN_OPTION_LIST list;
   DWORD dwBufSize = sizeof(list);
@@ -31,72 +32,62 @@ void startProxy(const int port, const flutter::EncodableList& bypassDomain)
 
   auto url = "127.0.0.1:" + std::to_string(port);
   auto wUrl = std::wstring(url.begin(), url.end());
-  auto fullAddr = new WCHAR[url.length() + 1];
-  wcscpy_s(fullAddr, url.length() + 1, wUrl.c_str());
-
   std::wstring wBypassList;
 
   for (const auto& domain : bypassDomain) {
     if (!wBypassList.empty()) {
        wBypassList += L";";
     }
-    wBypassList += std::wstring(std::get<std::string>(domain).begin(), std::get<std::string>(domain).end());
+    const auto& domainText = std::get<std::string>(domain);
+    wBypassList += std::wstring(domainText.begin(), domainText.end());
   }
-
-  auto bypassAddr = new WCHAR[wBypassList.length() + 1];
-  wcscpy_s(bypassAddr, wBypassList.length() + 1, wBypassList.c_str());
 
   list.dwOptionCount = 3;
-  list.pOptions = new INTERNET_PER_CONN_OPTION[3];
-
-  if (!list.pOptions)
-  {
-    return;
-  }
+  INTERNET_PER_CONN_OPTION options[3];
+  list.pOptions = options;
 
   list.pOptions[0].dwOption = INTERNET_PER_CONN_FLAGS;
   list.pOptions[0].Value.dwValue = PROXY_TYPE_DIRECT | PROXY_TYPE_PROXY;
 
   list.pOptions[1].dwOption = INTERNET_PER_CONN_PROXY_SERVER;
-  list.pOptions[1].Value.pszValue = fullAddr;
+  list.pOptions[1].Value.pszValue = const_cast<LPWSTR>(wUrl.c_str());
 
   list.pOptions[2].dwOption = INTERNET_PER_CONN_PROXY_BYPASS;
-  list.pOptions[2].Value.pszValue = bypassAddr;
+  list.pOptions[2].Value.pszValue = const_cast<LPWSTR>(wBypassList.c_str());
 
-  InternetSetOption(nullptr, INTERNET_OPTION_PER_CONNECTION_OPTION, &list, dwBufSize);
+  bool success = InternetSetOption(nullptr, INTERNET_OPTION_PER_CONNECTION_OPTION, &list, dwBufSize) != FALSE;
 
   RASENTRYNAME entry;
   entry.dwSize = sizeof(entry);
   std::vector<RASENTRYNAME> entries;
-  DWORD size = sizeof(entry), count;
+  DWORD size = sizeof(entry), count = 0;
   LPRASENTRYNAME entryAddr = &entry;
   auto ret = RasEnumEntries(nullptr, nullptr, entryAddr, &size, &count);
   if (ret == ERROR_BUFFER_TOO_SMALL)
   {
     entries.resize(count);
-    entries[0].dwSize = sizeof(RASENTRYNAME);
+    for (auto& item : entries) {
+      item.dwSize = sizeof(RASENTRYNAME);
+    }
     entryAddr = entries.data();
     ret = RasEnumEntries(nullptr, nullptr, entryAddr, &size, &count);
   }
-  if (ret != ERROR_SUCCESS)
+  if (ret == ERROR_SUCCESS)
   {
-    return;
-  }
-  for (DWORD i = 0; i < count; i++)
-  {
-    list.pszConnection = entryAddr[i].szEntryName;
-    InternetSetOption(nullptr, INTERNET_OPTION_PER_CONNECTION_OPTION, &list, dwBufSize);
+    for (DWORD i = 0; i < count; i++)
+    {
+      list.pszConnection = entryAddr[i].szEntryName;
+      success = InternetSetOption(nullptr, INTERNET_OPTION_PER_CONNECTION_OPTION, &list, dwBufSize) != FALSE && success;
+    }
   }
 
-  delete[] fullAddr;
-  delete[] bypassAddr;
-  delete[] list.pOptions;
+  success = InternetSetOption(nullptr, INTERNET_OPTION_SETTINGS_CHANGED, nullptr, 0) != FALSE && success;
+  success = InternetSetOption(nullptr, INTERNET_OPTION_REFRESH, nullptr, 0) != FALSE && success;
 
-  InternetSetOption(nullptr, INTERNET_OPTION_SETTINGS_CHANGED, nullptr, 0);
-  InternetSetOption(nullptr, INTERNET_OPTION_REFRESH, nullptr, 0);
+  return success;
 }
 
-void stopProxy()
+bool stopProxy()
 {
   INTERNET_PER_CONN_OPTION_LIST list;
   DWORD dwBufSize = sizeof(list);
@@ -104,41 +95,41 @@ void stopProxy()
   list.dwSize = sizeof(list);
   list.pszConnection = nullptr;
   list.dwOptionCount = 1;
-  list.pOptions = new INTERNET_PER_CONN_OPTION[1];
-  if (nullptr == list.pOptions)
-  {
-    return;
-  }
+  INTERNET_PER_CONN_OPTION options[1];
+  list.pOptions = options;
   list.pOptions[0].dwOption = INTERNET_PER_CONN_FLAGS;
   list.pOptions[0].Value.dwValue = PROXY_TYPE_DIRECT;
 
-  InternetSetOption(nullptr, INTERNET_OPTION_PER_CONNECTION_OPTION, &list, dwBufSize);
+  bool success = InternetSetOption(nullptr, INTERNET_OPTION_PER_CONNECTION_OPTION, &list, dwBufSize) != FALSE;
 
   RASENTRYNAME entry;
   entry.dwSize = sizeof(entry);
   std::vector<RASENTRYNAME> entries;
-  DWORD size = sizeof(entry), count;
+  DWORD size = sizeof(entry), count = 0;
   LPRASENTRYNAME entryAddr = &entry;
   auto ret = RasEnumEntries(nullptr, nullptr, entryAddr, &size, &count);
   if (ret == ERROR_BUFFER_TOO_SMALL)
   {
     entries.resize(count);
-    entries[0].dwSize = sizeof(RASENTRYNAME);
+    for (auto& item : entries) {
+      item.dwSize = sizeof(RASENTRYNAME);
+    }
     entryAddr = entries.data();
     ret = RasEnumEntries(nullptr, nullptr, entryAddr, &size, &count);
   }
-  if (ret != ERROR_SUCCESS)
+  if (ret == ERROR_SUCCESS)
   {
-    return;
+    for (DWORD i = 0; i < count; i++)
+    {
+      list.pszConnection = entryAddr[i].szEntryName;
+      success = InternetSetOption(nullptr, INTERNET_OPTION_PER_CONNECTION_OPTION, &list, dwBufSize) != FALSE && success;
+    }
   }
-  for (DWORD i = 0; i < count; i++)
-  {
-    list.pszConnection = entryAddr[i].szEntryName;
-    InternetSetOption(nullptr, INTERNET_OPTION_PER_CONNECTION_OPTION, &list, dwBufSize);
-  }
-  delete[] list.pOptions;
-  InternetSetOption(nullptr, INTERNET_OPTION_SETTINGS_CHANGED, nullptr, 0);
-  InternetSetOption(nullptr, INTERNET_OPTION_REFRESH, nullptr, 0);
+
+  success = InternetSetOption(nullptr, INTERNET_OPTION_SETTINGS_CHANGED, nullptr, 0) != FALSE && success;
+  success = InternetSetOption(nullptr, INTERNET_OPTION_REFRESH, nullptr, 0) != FALSE && success;
+
+  return success;
 }
 
 namespace proxy
@@ -174,16 +165,14 @@ namespace proxy
   {
     if (method_call.method_name().compare("StopProxy") == 0)
     {
-      stopProxy();
-      result->Success(true);
+      result->Success(stopProxy());
     }
     else if (method_call.method_name().compare("StartProxy") == 0)
     {
       auto *arguments = std::get_if<flutter::EncodableMap>(method_call.arguments());
       auto port = std::get<int>(arguments->at(flutter::EncodableValue("port")));
       auto bypassDomain = std::get<flutter::EncodableList>(arguments->at(flutter::EncodableValue("bypassDomain")));
-      startProxy(port, bypassDomain);
-      result->Success(true);
+      result->Success(startProxy(port, bypassDomain));
     }
     else
     {
