@@ -2201,14 +2201,14 @@ void _applyLinuxAppName() {
         [
           ...stopProcessCommands,
           'if [ -f $desktopSource ]; then cp $desktopSource $desktopTarget; fi',
-          'rm -f $desktopSource $legacyDesktop',
+          'rm -f $legacyDesktop',
         ],
       );
       content = _replaceYamlListBlock(
         content,
         'postuninstall_scripts',
         [
-          'rm -f $desktopTarget $desktopSource $legacyDesktop',
+          'rm -f $desktopTarget $legacyDesktop',
         ],
       );
     } else if (basename(dirname(makeConfigPath)) == 'rpm') {
