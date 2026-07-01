@@ -34,7 +34,9 @@ postinstall_scripts:
   - for name in 'fastcat' 'FastCat' '快猫' 'fl_clash' 'fastcatCore'; do if command -v pkill >/dev/null 2>&1; then pkill -TERM -x "$name" >/dev/null 2>&1 || true; elif command -v killall >/dev/null 2>&1; then killall -TERM "$name" >/dev/null 2>&1 || true; fi; done
   - sleep 1
   - for name in 'fastcat' 'FastCat' '快猫' 'fl_clash' 'fastcatCore'; do if command -v pkill >/dev/null 2>&1; then pkill -KILL -x "$name" >/dev/null 2>&1 || true; elif command -v killall >/dev/null 2>&1; then killall -KILL "$name" >/dev/null 2>&1 || true; fi; done
-  - if [ -f /usr/share/applications/FastCat.desktop ]; then cp /usr/share/applications/FastCat.desktop /usr/share/applications/com.fastcat.app.desktop; fi
-  - rm -f /usr/share/applications/fastcat.desktop
+  - printf '%s\n' '[Desktop Entry]' 'Type=Application' 'Version=3.5.5' 'Name=快猫' 'GenericName=FastCat' 'Icon=/usr/share/icons/hicolor/256x256/apps/FastCat.png' 'Exec=FastCat %U' 'Categories=Network;' 'Keywords=快猫;FastCat;Clash;ClashMeta;Proxy;' 'StartupNotify=true' 'StartupWMClass=com.fastcat.app' > /usr/share/applications/com.fastcat.app.desktop
+  - chmod 644 /usr/share/applications/com.fastcat.app.desktop
+  - rm -f /usr/share/applications/FastCat.desktop /usr/share/applications/fastcat.desktop
+  - command -v update-desktop-database >/dev/null 2>&1 && update-desktop-database /usr/share/applications >/dev/null 2>&1 || true
 postuninstall_scripts:
-  - rm -f /usr/share/applications/com.fastcat.app.desktop /usr/share/applications/fastcat.desktop
+  - rm -f /usr/share/applications/com.fastcat.app.desktop /usr/share/applications/FastCat.desktop /usr/share/applications/fastcat.desktop

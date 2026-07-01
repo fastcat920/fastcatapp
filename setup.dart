@@ -814,6 +814,43 @@ String _linuxInstallerStopProcessScript({
   return '${lines.join('\n')}\n';
 }
 
+List<String> _linuxDesktopEntryLines({
+  required String appName,
+  required String appNameEn,
+  required String applicationId,
+}) {
+  return [
+    '[Desktop Entry]',
+    'Type=Application',
+    'Version=${Build.appVersion}',
+    'Name=$appName',
+    'GenericName=$appNameEn',
+    'Icon=/usr/share/icons/hicolor/256x256/apps/$appNameEn.png',
+    'Exec=$appNameEn %U',
+    'Categories=Network;',
+    'Keywords=$appName;$appNameEn;Clash;ClashMeta;Proxy;',
+    'StartupNotify=true',
+    'StartupWMClass=$applicationId',
+  ];
+}
+
+String _linuxWriteDesktopEntryCommand({
+  required String appName,
+  required String appNameEn,
+  required String applicationId,
+  required String desktopPath,
+}) {
+  final args = [
+    _shellSingleQuote('%s\\n'),
+    ..._linuxDesktopEntryLines(
+      appName: appName,
+      appNameEn: appNameEn,
+      applicationId: applicationId,
+    ).map(_shellSingleQuote),
+  ].join(' ');
+  return 'printf $args > ${_shellSingleQuote(desktopPath)}';
+}
+
 String _safeAsciiDmgVolumeName(String value) {
   final explicit = Platform.environment["DMG_VOLUME_NAME"];
   final source = explicit?.trim().isNotEmpty == true ? explicit!.trim() : value;
@@ -1229,6 +1266,13 @@ end tell
         description: 'unpack deb for preinst',
       );
 
+      _patchLinuxDebDesktopEntry(
+        packageDir: packageDir,
+        appName: appName,
+        appNameEn: appNameEn,
+        applicationId: 'com.fastcat.app',
+      );
+
       final debianDir = Directory(join(packageDir.path, 'DEBIAN'));
       debianDir.createSync(recursive: true);
       final preinstFile = File(join(debianDir.path, 'preinst'));
@@ -1256,10 +1300,39 @@ end tell
 
       patchedDeb.copySync(debFile.path);
       print(
-          '[setup.dart]   ✅ injected deb preinst process cleanup: ${debFile.path}');
+          '[setup.dart]   ✅ patched deb preinst and desktop entry: ${debFile.path}');
     }
 
     workRoot.deleteSync(recursive: true);
+  }
+
+  void _patchLinuxDebDesktopEntry({
+    required Directory packageDir,
+    required String appName,
+    required String appNameEn,
+    required String applicationId,
+  }) {
+    final applicationsDir =
+        Directory(join(packageDir.path, 'usr', 'share', 'applications'));
+    applicationsDir.createSync(recursive: true);
+
+    final canonicalDesktop =
+        File(join(applicationsDir.path, '$applicationId.desktop'));
+    canonicalDesktop.writeAsStringSync(
+      '${_linuxDesktopEntryLines(
+        appName: appName,
+        appNameEn: appNameEn,
+        applicationId: applicationId,
+      ).join('\n')}\n',
+    );
+
+    for (final legacyDesktop in [
+      File(join(applicationsDir.path, '$appNameEn.desktop')),
+      File(join(applicationsDir.path, '${appNameEn.toLowerCase()}.desktop')),
+    ]) {
+      if (legacyDesktop.path == canonicalDesktop.path) continue;
+      if (legacyDesktop.existsSync()) legacyDesktop.deleteSync();
+    }
   }
 
   Future<void> _runPackagingCommand(
@@ -2200,15 +2273,22 @@ void _applyLinuxAppName() {
         'postinstall_scripts',
         [
           ...stopProcessCommands,
-          'if [ -f $desktopSource ]; then cp $desktopSource $desktopTarget; fi',
-          'rm -f $legacyDesktop',
+          _linuxWriteDesktopEntryCommand(
+            appName: appName,
+            appNameEn: appNameEn,
+            applicationId: applicationId,
+            desktopPath: desktopTarget,
+          ),
+          'chmod 644 $desktopTarget',
+          'rm -f $desktopSource $legacyDesktop',
+          'command -v update-desktop-database >/dev/null 2>&1 && update-desktop-database /usr/share/applications >/dev/null 2>&1 || true',
         ],
       );
       content = _replaceYamlListBlock(
         content,
         'postuninstall_scripts',
         [
-          'rm -f $desktopTarget $legacyDesktop',
+          'rm -f $desktopTarget $desktopSource $legacyDesktop',
         ],
       );
     } else if (basename(dirname(makeConfigPath)) == 'rpm') {
