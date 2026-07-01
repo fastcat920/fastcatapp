@@ -38,13 +38,18 @@ class _CrispChatPageState extends State<CrispChatPage> {
   bool _didFallbackToOfficial = false;
   bool _isLoading = true;
   bool _deferredUserScriptStarted = false;
+  late bool _isDarkMode;
+  bool _didStartLoading = false;
 
   @override
   void initState() {
     super.initState();
+    _isDarkMode =
+        WidgetsBinding.instance.platformDispatcher.platformBrightness ==
+            Brightness.dark;
     _controller = WebViewController()
       ..setJavaScriptMode(JavaScriptMode.unrestricted)
-      ..setBackgroundColor(const Color(0xFFF5F5F5))
+      ..setBackgroundColor(_customerServiceBackgroundColor(_isDarkMode))
       ..setNavigationDelegate(
         NavigationDelegate(
           onPageStarted: (url) {
@@ -71,8 +76,24 @@ class _CrispChatPageState extends State<CrispChatPage> {
         ),
       );
     unawaited(_configureAndroidFileSelection(_controller));
+  }
 
-    _loadPreferredCrispUrl();
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    final nextIsDarkMode = Theme.of(context).brightness == Brightness.dark;
+    if (_isDarkMode != nextIsDarkMode) {
+      _isDarkMode = nextIsDarkMode;
+      unawaited(
+        _controller.setBackgroundColor(
+          _customerServiceBackgroundColor(_isDarkMode),
+        ),
+      );
+    }
+    if (!_didStartLoading) {
+      _didStartLoading = true;
+      _loadPreferredCrispUrl();
+    }
   }
 
   @override
@@ -183,9 +204,15 @@ class _CrispChatPageState extends State<CrispChatPage> {
     return Uri.file(path).toString();
   }
 
+  Color _customerServiceBackgroundColor(bool isDarkMode) {
+    return isDarkMode ? const Color(0xFF111827) : const Color(0xFFF5F5F5);
+  }
+
   @override
   Widget build(BuildContext context) {
+    final backgroundColor = _customerServiceBackgroundColor(_isDarkMode);
     return Scaffold(
+      backgroundColor: backgroundColor,
       appBar: AppBar(
         title: const Text('在线客服'),
         leading: IconButton(
@@ -196,7 +223,13 @@ class _CrispChatPageState extends State<CrispChatPage> {
       body: Stack(
         children: [
           WebViewWidget(controller: _controller),
-          if (_isLoading) const Center(child: CircularProgressIndicator()),
+          if (_isLoading)
+            Positioned.fill(
+              child: ColoredBox(
+                color: backgroundColor,
+                child: const Center(child: CircularProgressIndicator()),
+              ),
+            ),
         ],
       ),
     );

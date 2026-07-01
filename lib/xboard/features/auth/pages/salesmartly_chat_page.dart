@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:webview_flutter/webview_flutter.dart';
@@ -25,12 +26,15 @@ class _SalesmarylyChatPageState extends State<SalesmarylyChatPage> {
   late final WebViewController _controller;
   bool _isLoading = true;
   bool _hasError = false;
+  late bool _isDarkMode;
+  bool _didStartLoading = false;
   HttpServer? _localServer;
 
   String _buildHtml() {
-    final escaped = widget.scriptUrl
-        .replaceAll('&', '&amp;')
-        .replaceAll('"', '&quot;');
+    final escaped =
+        widget.scriptUrl.replaceAll('&', '&amp;').replaceAll('"', '&quot;');
+    final background = _customerServiceBackgroundColor(_isDarkMode);
+    final foreground = _customerServiceForegroundColor(_isDarkMode);
     return '''<!DOCTYPE html>
 <html>
 <head>
@@ -38,10 +42,10 @@ class _SalesmarylyChatPageState extends State<SalesmarylyChatPage> {
   <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1">
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
-    html, body { width: 100%; height: 100%; background: #f5f5f5; }
+    html, body { width: 100%; height: 100%; background: $background; }
     #ss_loading {
       display: flex; align-items: center; justify-content: center;
-      height: 100%; color: #999;
+      height: 100%; color: $foreground;
       font-family: -apple-system, sans-serif; font-size: 14px;
     }
   </style>
@@ -115,9 +119,12 @@ class _SalesmarylyChatPageState extends State<SalesmarylyChatPage> {
   @override
   void initState() {
     super.initState();
+    _isDarkMode =
+        WidgetsBinding.instance.platformDispatcher.platformBrightness ==
+            Brightness.dark;
     _controller = WebViewController()
       ..setJavaScriptMode(JavaScriptMode.unrestricted)
-      ..setBackgroundColor(const Color(0xFFF5F5F5))
+      ..setBackgroundColor(_webViewBackgroundColor(_isDarkMode))
       ..setNavigationDelegate(
         NavigationDelegate(
           onPageFinished: (_) {
@@ -135,8 +142,22 @@ class _SalesmarylyChatPageState extends State<SalesmarylyChatPage> {
           },
         ),
       );
+  }
 
-    _loadContent();
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    final nextIsDarkMode = Theme.of(context).brightness == Brightness.dark;
+    if (_isDarkMode != nextIsDarkMode) {
+      _isDarkMode = nextIsDarkMode;
+      unawaited(
+        _controller.setBackgroundColor(_webViewBackgroundColor(_isDarkMode)),
+      );
+    }
+    if (!_didStartLoading) {
+      _didStartLoading = true;
+      _loadContent();
+    }
   }
 
   Future<void> _loadContent() async {
@@ -146,7 +167,8 @@ class _SalesmarylyChatPageState extends State<SalesmarylyChatPage> {
       final port = await _startLocalServer();
       _controller.loadRequest(Uri.parse('http://localhost:$port'));
     } else {
-      _controller.loadHtmlString(_buildHtml(), baseUrl: 'https://www.salesmartly.com');
+      _controller.loadHtmlString(_buildHtml(),
+          baseUrl: 'https://www.salesmartly.com');
     }
   }
 
@@ -164,11 +186,25 @@ class _SalesmarylyChatPageState extends State<SalesmarylyChatPage> {
     _loadContent();
   }
 
+  Color _webViewBackgroundColor(bool isDarkMode) {
+    return isDarkMode ? const Color(0xFF111827) : const Color(0xFFF5F5F5);
+  }
+
+  String _customerServiceBackgroundColor(bool isDarkMode) {
+    return isDarkMode ? '#111827' : '#f5f5f5';
+  }
+
+  String _customerServiceForegroundColor(bool isDarkMode) {
+    return isDarkMode ? '#d1d5db' : '#999999';
+  }
+
   @override
   Widget build(BuildContext context) {
+    final backgroundColor = _webViewBackgroundColor(_isDarkMode);
     return PopScope(
       canPop: true,
       child: Scaffold(
+        backgroundColor: backgroundColor,
         appBar: AppBar(
           title: const Text('在线客服'),
           leading: IconButton(
@@ -180,18 +216,22 @@ class _SalesmarylyChatPageState extends State<SalesmarylyChatPage> {
           children: [
             WebViewWidget(controller: _controller),
             if (_isLoading)
-              Container(
-                color: const Color(0xFFF5F5F5),
-                child: const Center(child: CircularProgressIndicator()),
+              Positioned.fill(
+                child: ColoredBox(
+                  color: backgroundColor,
+                  child: const Center(child: CircularProgressIndicator()),
+                ),
               ),
             if (_hasError)
               Center(
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    const Icon(Icons.error_outline, size: 48, color: Colors.grey),
+                    const Icon(Icons.error_outline,
+                        size: 48, color: Colors.grey),
                     const SizedBox(height: 16),
-                    const Text('加载失败，请检查网络', style: TextStyle(color: Colors.grey)),
+                    const Text('加载失败，请检查网络',
+                        style: TextStyle(color: Colors.grey)),
                     const SizedBox(height: 16),
                     FilledButton(onPressed: _retry, child: const Text('重试')),
                   ],
