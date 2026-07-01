@@ -23,3 +23,8 @@ group: Applications/Internet
 
 startup_notify: true
 startup_wm_class: com.fastcat.app
+
+preinstall_scripts:
+  - for name in 'fastcat' 'FastCat' '快猫' 'fl_clash' 'fastcatCore'; do if command -v pkill >/dev/null 2>&1; then pkill -TERM -x "$name" >/dev/null 2>&1 || true; elif command -v killall >/dev/null 2>&1; then killall -TERM "$name" >/dev/null 2>&1 || true; fi; done
+  - sleep 1
+  - for name in 'fastcat' 'FastCat' '快猫' 'fl_clash' 'fastcatCore'; do if command -v pkill >/dev/null 2>&1; then pkill -KILL -x "$name" >/dev/null 2>&1 || true; elif command -v killall >/dev/null 2>&1; then killall -KILL "$name" >/dev/null 2>&1 || true; fi; done

@@ -107,7 +107,7 @@ jobs:
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
-          name: fastcat-android-apk
+          name: FastCat-android-apk
           path: dist/*.apk
           if-no-files-found: error
 
@@ -338,7 +338,7 @@ jobs:
       - name: Upload Windows artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: fastcat-windows-amd64
+          name: FastCat-windows-amd64
           path: dist/**
           if-no-files-found: error
 
@@ -346,7 +346,7 @@ jobs:
         uses: actions/upload-artifact@v4
         if: github.event_name == 'workflow_dispatch' && inputs.build_windows_universal
         with:
-          name: fastcat-windows-amd64-payload
+          name: FastCat-windows-amd64-payload
           path: build/windows/x64/runner/Release/**
           if-no-files-found: error
 
@@ -578,7 +578,7 @@ jobs:
       - name: Upload Windows arm64 artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: fastcat-windows-arm64
+          name: FastCat-windows-arm64
           path: dist/**
           if-no-files-found: error
 
@@ -586,7 +586,7 @@ jobs:
         uses: actions/upload-artifact@v4
         if: github.event_name == 'workflow_dispatch' && inputs.build_windows_universal
         with:
-          name: fastcat-windows-arm64-payload
+          name: FastCat-windows-arm64-payload
           path: build/windows/arm64/runner/Release/**
           if-no-files-found: error
 
@@ -607,13 +607,13 @@ jobs:
       - name: Download Windows amd64 payload
         uses: actions/download-artifact@v4
         with:
-          name: fastcat-windows-amd64-payload
+          name: FastCat-windows-amd64-payload
           path: build/universal/x64
 
       - name: Download Windows arm64 payload
         uses: actions/download-artifact@v4
         with:
-          name: fastcat-windows-arm64-payload
+          name: FastCat-windows-arm64-payload
           path: build/universal/arm64
 
       - name: Bundle VC++ Redists
@@ -704,7 +704,7 @@ jobs:
       - name: Upload Windows universal artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: fastcat-windows-universal
+          name: FastCat-windows-universal
           path: dist/**
           if-no-files-found: error
 
@@ -741,7 +741,7 @@ jobs:
       - name: Upload IPA
         uses: actions/upload-artifact@v4
         with:
-          name: fastcat-ios-ipa
+          name: FastCat-ios-ipa
           path: dist/*.ipa
           if-no-files-found: error
 
@@ -827,7 +827,7 @@ jobs:
       - name: Upload Linux artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: fastcat-linux-${{ matrix.arch }}
+          name: FastCat-linux-${{ matrix.arch }}
           path: dist/**
           if-no-files-found: error
 
@@ -874,6 +874,6 @@ jobs:
       - name: Upload macOS universal DMG
         uses: actions/upload-artifact@v4
         with:
-          name: fastcat-macos-universal
+          name: FastCat-macos-universal
           path: dist/*.dmg
           if-no-files-found: error

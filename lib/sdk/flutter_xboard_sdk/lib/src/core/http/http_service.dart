@@ -116,7 +116,7 @@ class HttpService {
       headers: {
         'Accept': 'application/json',
         // 使用配置的 User-Agent，如果未设置则使用默认值
-        'User-Agent': httpConfig.userAgent ?? 'fastcat-SDK',
+        'User-Agent': httpConfig.userAgent ?? 'FastCat-SDK',
       },
     ));
 

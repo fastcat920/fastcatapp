@@ -1,7 +1,7 @@
 #!/bin/bash
 set -e
 # ============================================================
-# fastcat macOS DMG 打包脚本
+# FastCat macOS DMG 打包脚本
 # 用法: ./scripts/package_dmg.sh
 # 前置: flutter build macos --release --dart-define=XOR_KEY=...
 # ============================================================
@@ -10,7 +10,7 @@ PROJECT_DIR="$(cd "$(dirname "$0")/.." && pwd)"
 
 # 从 config.yaml 读取产品名
 APP_NAME="快猫"
-APP_NAME_EN="fastcat"
+APP_NAME_EN="FastCat"
 CONFIG_YAML="${PROJECT_DIR}/assets/config/config.yaml"
 if [ -f "$CONFIG_YAML" ]; then
   YAML_APP_NAME=$(grep -E '^app_name:' "$CONFIG_YAML" | sed 's/^app_name:[[:space:]]*//' | tr -d '\r' | xargs)
@@ -27,7 +27,7 @@ if [ -f "$PUBSPEC" ]; then
   VERSION="${RAW_VERSION%%+*}"
 fi
 
-# DMG 文件名用英文名 + 版本号：fastcat-3.3.5.dmg
+# DMG 文件名用英文名 + 版本号：FastCat-3.5.5.dmg
 if [ -n "$VERSION" ]; then
   DMG_NAME="${APP_NAME_EN}-${VERSION}.dmg"
 else
@@ -37,14 +37,14 @@ fi
 APP="${PROJECT_DIR}/build/macos/Build/Products/Release/${APP_NAME}.app"
 DMG_PATH="${PROJECT_DIR}/dist/${DMG_NAME}"
 # 卷标保持 ASCII（Finder 背景图 alias 要求）
-VOL_NAME="fastcat"
+VOL_NAME="$APP_NAME_EN"
 
 BG_SRC="${PROJECT_DIR}/macos/packaging/dmg/background.png"
-TMP_DMG="/tmp/fastcat-tmp.dmg"
+TMP_DMG="/tmp/${APP_NAME_EN}-tmp.dmg"
 
 [ -d "$APP" ] || { echo "❌ app 未构建: $APP"; exit 1; }
 
-mount | grep -i fastcat | awk '{print $1}' | while read dev; do
+mount | grep -i -- "$VOL_NAME" | awk '{print $1}' | while read dev; do
   hdiutil detach "$dev" -force 2>/dev/null
 done
 

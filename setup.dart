@@ -404,6 +404,7 @@ class Build {
         Build.getExecutable("dart pub global activate -s path $distributorDir"),
       );
       await _patchFlutterAppPackagerAppImageCopy();
+      await _patchFlutterAppPackagerRpmPreinstall();
       return;
     }
 
@@ -414,6 +415,7 @@ class Build {
       Build.getExecutable("dart pub global activate flutter_distributor"),
     );
     await _patchFlutterAppPackagerAppImageCopy();
+    await _patchFlutterAppPackagerRpmPreinstall();
   }
 
   static Future<void> _patchFlutterAppPackagerAppImageCopy() async {
@@ -548,6 +550,89 @@ class Build {
     }
   }
 
+  static Future<void> _patchFlutterAppPackagerRpmPreinstall() async {
+    if (!Platform.isLinux) return;
+
+    final pubCache = Platform.environment["PUB_CACHE"] ??
+        join(Platform.environment["HOME"] ?? "", ".pub-cache");
+    if (pubCache.trim().isEmpty) return;
+
+    final hostedDir = Directory(join(pubCache, "hosted"));
+    if (!hostedDir.existsSync()) {
+      print(
+          "[setup.dart] flutter_app_packager rpm preinstall patch skipped: hosted pub-cache not found");
+      return;
+    }
+
+    final patchFiles = <File>[];
+    for (final hostEntity in hostedDir.listSync(followLinks: false)) {
+      if (hostEntity is! Directory) continue;
+      for (final packageEntity in hostEntity.listSync(followLinks: false)) {
+        if (packageEntity is! Directory) continue;
+        if (!basename(packageEntity.path).startsWith("flutter_app_packager-")) {
+          continue;
+        }
+        final patchFile = File(join(
+          packageEntity.path,
+          "lib",
+          "src",
+          "makers",
+          "rpm",
+          "make_rpm_config.dart",
+        ));
+        if (patchFile.existsSync()) patchFiles.add(patchFile);
+      }
+    }
+
+    if (patchFiles.isEmpty) {
+      print(
+          "[setup.dart] flutter_app_packager rpm preinstall patch skipped: rpm config not found");
+      return;
+    }
+
+    var hasPatchedRpmConfig = false;
+    for (final patchFile in patchFiles) {
+      var content = patchFile.readAsStringSync();
+      if (content.contains("preinstallScripts:")) {
+        hasPatchedRpmConfig = true;
+        print(
+            "[setup.dart] flutter_app_packager rpm preinstall patch already applied: ${patchFile.path}");
+        continue;
+      }
+
+      final replacements = <String, String>{
+        "    this.description,\n    this.prep,":
+            "    this.description,\n    this.preinstallScripts,\n    this.prep,",
+        "      description: json['description'] as String?,\n      prep:":
+            "      description: json['description'] as String?,\n      preinstallScripts: json['preinstall_scripts'] != null\n          ? List.castFrom<dynamic, String>(json['preinstall_scripts'])\n          : null,\n      prep:",
+        "  String? description;\n  String? prep;":
+            "  String? description;\n  List<String>? preinstallScripts;\n  String? prep;",
+        "          '%description': description ?? pubspec.description,\n          '%install':":
+            "          '%description': description ?? pubspec.description,\n          '%pre': preinstallScripts == null || preinstallScripts!.isEmpty\n              ? null\n              : preinstallScripts!.join('\\n'),\n          '%install':",
+      };
+
+      for (final entry in replacements.entries) {
+        if (!content.contains(entry.key)) {
+          print(
+              "[setup.dart] flutter_app_packager rpm preinstall patch skipped: unsupported rpm config at ${patchFile.path}");
+          content = "";
+          break;
+        }
+        content = content.replaceFirst(entry.key, entry.value);
+      }
+      if (content.isEmpty) continue;
+
+      patchFile.writeAsStringSync(content);
+      hasPatchedRpmConfig = true;
+      print(
+          "[setup.dart] flutter_app_packager rpm preinstall patch applied: ${patchFile.path}");
+    }
+
+    if (hasPatchedRpmConfig) {
+      _deleteFlutterDistributorSnapshots(pubCache);
+    }
+  }
+
   static void _deleteFlutterDistributorSnapshots(String pubCache) {
     final binDir = Directory(
         join(pubCache, "global_packages", "flutter_distributor", "bin"));
@@ -623,7 +708,7 @@ _AppBrandConfig _loadAppBrandConfig() {
 
   final envAppName = _nonEmptyString(Platform.environment['APP_NAME']);
   final envAppNameEn = _nonEmptyString(Platform.environment['APP_NAME_EN']);
-  final appName = envAppName ?? yamlAppName ?? 'fastcat';
+  final appName = envAppName ?? yamlAppName ?? 'FastCat';
   final appNameEn = _safeAsciiAppName(envAppNameEn ?? yamlAppNameEn ?? appName);
   final config = _AppBrandConfig(appName: appName, appNameEn: appNameEn);
   _cachedAppBrandConfig = config;
@@ -641,7 +726,7 @@ String _safeAsciiAppName(String value) {
       .replaceAll(RegExp(r'[^A-Za-z0-9._-]+'), '')
       .replaceAll(RegExp(r'\.+$'), '')
       .trim();
-  return sanitized.isEmpty ? 'fastcat' : sanitized;
+  return sanitized.isEmpty ? 'FastCat' : sanitized;
 }
 
 String _yamlScalar(String value) {
@@ -674,6 +759,61 @@ String _replaceYamlListBlock(
   return '$content$suffix$replacement';
 }
 
+List<String> _linuxInstallerProcessNames({
+  required String appName,
+  required String appNameEn,
+}) {
+  final names = <String>[
+    appNameEn,
+    appNameEn.toLowerCase(),
+    appName,
+    'FastCat',
+    'fastcat',
+    'fl_clash',
+    Build.coreName,
+  ];
+  return {
+    for (final name in names)
+      if (name.trim().isNotEmpty && !RegExp(r'\s').hasMatch(name.trim()))
+        name.trim()
+  }.toList();
+}
+
+String _shellSingleQuote(String value) {
+  return "'${value.replaceAll("'", "'\"'\"'")}'";
+}
+
+List<String> _linuxInstallerStopProcessCommands({
+  required String appName,
+  required String appNameEn,
+}) {
+  final processNames = _linuxInstallerProcessNames(
+    appName: appName,
+    appNameEn: appNameEn,
+  ).map(_shellSingleQuote).join(' ');
+  return [
+    'for name in $processNames; do if command -v pkill >/dev/null 2>&1; then pkill -TERM -x "\$name" >/dev/null 2>&1 || true; elif command -v killall >/dev/null 2>&1; then killall -TERM "\$name" >/dev/null 2>&1 || true; fi; done',
+    'sleep 1',
+    'for name in $processNames; do if command -v pkill >/dev/null 2>&1; then pkill -KILL -x "\$name" >/dev/null 2>&1 || true; elif command -v killall >/dev/null 2>&1; then killall -KILL "\$name" >/dev/null 2>&1 || true; fi; done',
+  ];
+}
+
+String _linuxInstallerStopProcessScript({
+  required String appName,
+  required String appNameEn,
+}) {
+  final lines = [
+    '#!/usr/bin/env sh',
+    'set -e',
+    ..._linuxInstallerStopProcessCommands(
+      appName: appName,
+      appNameEn: appNameEn,
+    ),
+    'exit 0',
+  ];
+  return '${lines.join('\n')}\n';
+}
+
 String _safeAsciiDmgVolumeName(String value) {
   final explicit = Platform.environment["DMG_VOLUME_NAME"];
   final source = explicit?.trim().isNotEmpty == true ? explicit!.trim() : value;
@@ -687,7 +827,7 @@ String _safeAsciiDmgVolumeName(String value) {
       .replaceAll(RegExp(r"\s+"), " ")
       .trim();
   final volumeName =
-      ascii.isNotEmpty ? ascii : (fallback.isNotEmpty ? fallback : "fastcat");
+      ascii.isNotEmpty ? ascii : (fallback.isNotEmpty ? fallback : "FastCat");
   return volumeName.length <= 27 ? volumeName : volumeName.substring(0, 27);
 }
 
@@ -1048,6 +1188,89 @@ end tell
       Build.getExecutable(
         "flutter_distributor package --skip-clean --platform ${target.name} --targets $targets --flutter-build-args=verbose$args --build-dart-define=APP_ENV=$env",
       ),
+    );
+  }
+
+  Future<void> _injectLinuxDebPreinstall({
+    required String appName,
+    required String appNameEn,
+  }) async {
+    if (!Platform.isLinux) return;
+
+    final distDir = Directory(Build.distPath);
+    if (!distDir.existsSync()) return;
+
+    final debFiles = distDir
+        .listSync(recursive: true)
+        .whereType<File>()
+        .where((file) => file.path.toLowerCase().endsWith('.deb'))
+        .toList();
+    if (debFiles.isEmpty) {
+      print('[setup.dart] ⚠️ no deb artifacts found for preinst injection');
+      return;
+    }
+
+    final workRoot = Directory(join(current, '.dart_tool', 'linux-preinst'));
+    if (workRoot.existsSync()) {
+      workRoot.deleteSync(recursive: true);
+    }
+    workRoot.createSync(recursive: true);
+
+    for (var i = 0; i < debFiles.length; i++) {
+      final debFile = debFiles[i];
+      final packageDir = Directory(join(workRoot.path, 'deb-$i'));
+      final patchedDeb = File(join(
+        workRoot.path,
+        '${basenameWithoutExtension(debFile.path)}.patched.deb',
+      ));
+
+      await _runPackagingCommand(
+        ['dpkg-deb', '-R', debFile.path, packageDir.path],
+        description: 'unpack deb for preinst',
+      );
+
+      final debianDir = Directory(join(packageDir.path, 'DEBIAN'));
+      debianDir.createSync(recursive: true);
+      final preinstFile = File(join(debianDir.path, 'preinst'));
+      preinstFile.writeAsStringSync(
+        _linuxInstallerStopProcessScript(
+          appName: appName,
+          appNameEn: appNameEn,
+        ),
+      );
+      await _runPackagingCommand(
+        ['chmod', '755', preinstFile.path],
+        description: 'chmod deb preinst',
+      );
+
+      await _runPackagingCommand(
+        [
+          'dpkg-deb',
+          '--build',
+          '--root-owner-group',
+          packageDir.path,
+          patchedDeb.path,
+        ],
+        description: 'rebuild deb with preinst',
+      );
+
+      patchedDeb.copySync(debFile.path);
+      print(
+          '[setup.dart]   ✅ injected deb preinst process cleanup: ${debFile.path}');
+    }
+
+    workRoot.deleteSync(recursive: true);
+  }
+
+  Future<void> _runPackagingCommand(
+    List<String> command, {
+    required String description,
+  }) async {
+    final result = await Process.run(command.first, command.sublist(1));
+    if (result.exitCode == 0) return;
+    throw Exception(
+      '$description failed: ${command.join(' ')}\n'
+      '${result.stderr.toString().trim().isNotEmpty ? result.stderr : result.stdout}',
     );
   }
 
@@ -1572,6 +1795,10 @@ end tell
           args: " --build-target-platform $defaultTarget$ddArgs",
           env: env,
         );
+        await _injectLinuxDebPreinstall(
+          appName: Build.appName,
+          appNameEn: Build.appNameEn,
+        );
 
         _normalizeArtifactNames(
           osName: 'Linux',
@@ -1690,6 +1917,7 @@ void _applyDistributorOptions() {
 void _applyMacosAppName() {
   final brand = _loadAppBrandConfig();
   final appName = brand.appName;
+  final appNameEn = brand.appNameEn;
   print('[setup.dart] 🍎 macOS 应用名称: $appName');
 
   // macOS Xcode 原生支持 Unicode，PRODUCT_NAME 可直接使用中文
@@ -1710,9 +1938,13 @@ void _applyMacosAppName() {
       RegExp(r'DISPLAY_NAME\s*=\s*.+'),
       'DISPLAY_NAME = $appName',
     );
+    content = content.replaceFirst(
+      RegExp(r'PRODUCT_COPYRIGHT\s*=\s*.+'),
+      'PRODUCT_COPYRIGHT = Copyright © 2024 $appNameEn. All rights reserved.',
+    );
     xcconfigFile.writeAsStringSync(content);
     print(
-        '[setup.dart]   ✅ AppInfo.xcconfig PRODUCT_NAME → $productName, DISPLAY_NAME → $appName');
+        '[setup.dart]   ✅ AppInfo.xcconfig PRODUCT_NAME → $productName, DISPLAY_NAME → $appName, COPYRIGHT → $appNameEn');
   }
 
   // 2. DMG make_config.json: title 用 ASCII 卷标，.app path 用 PRODUCT_NAME。
@@ -1924,6 +2156,18 @@ void _applyLinuxAppName() {
         '[setup.dart]   ✅ my_application.cc title → $appName, size → 800x600');
   }
 
+  final cmakePath = join(current, 'linux', 'CMakeLists.txt');
+  final cmakeFile = File(cmakePath);
+  if (cmakeFile.existsSync()) {
+    var content = cmakeFile.readAsStringSync();
+    content = content.replaceFirst(
+      RegExp(r'set\(BINARY_NAME\s+"[^"]+"\)'),
+      'set(BINARY_NAME "$appNameEn")',
+    );
+    cmakeFile.writeAsStringSync(content);
+    print('[setup.dart]   ✅ CMake BINARY_NAME → $appNameEn');
+  }
+
   final linuxMakeConfigPaths = [
     join(current, 'linux', 'packaging', 'deb', 'make_config.yaml'),
     join(current, 'linux', 'packaging', 'rpm', 'make_config.yaml'),
@@ -1933,10 +2177,16 @@ void _applyLinuxAppName() {
     final makeConfigFile = File(makeConfigPath);
     if (!makeConfigFile.existsSync()) continue;
     var content = makeConfigFile.readAsStringSync();
+    final stopProcessCommands = _linuxInstallerStopProcessCommands(
+      appName: appName,
+      appNameEn: appNameEn,
+    );
     content = _replaceYamlValue(content, 'display_name', appName);
     content = _replaceYamlValue(content, 'generic_name', appNameEn);
     content = _replaceYamlValue(content, 'startup_wm_class', applicationId);
     if (content.contains(RegExp(r'^package_name:', multiLine: true))) {
+      // Debian package identifiers must stay lower-case even when the
+      // installed binary and desktop files use the branded name.
       content =
           _replaceYamlValue(content, 'package_name', appNameEn.toLowerCase());
     }
@@ -1949,6 +2199,7 @@ void _applyLinuxAppName() {
         content,
         'postinstall_scripts',
         [
+          ...stopProcessCommands,
           'if [ -f $desktopSource ]; then cp $desktopSource $desktopTarget; fi',
           'rm -f $desktopSource $legacyDesktop',
         ],
@@ -1959,6 +2210,12 @@ void _applyLinuxAppName() {
         [
           'rm -f $desktopTarget $desktopSource $legacyDesktop',
         ],
+      );
+    } else if (basename(dirname(makeConfigPath)) == 'rpm') {
+      content = _replaceYamlListBlock(
+        content,
+        'preinstall_scripts',
+        stopProcessCommands,
       );
     }
     content = content.replaceFirst(
