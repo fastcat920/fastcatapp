@@ -206,15 +206,6 @@ void WebviewWindow::SetBrightness(int brightness) {
 
   GdkRGBA rgba;
   if (gdk_rgba_parse(&rgba, background)) {
-    if (window_ != nullptr) {
-      gtk_widget_override_background_color(window_, GTK_STATE_FLAG_NORMAL, &rgba);
-    }
-    if (header_bar_ != nullptr) {
-      gtk_widget_override_background_color(header_bar_, GTK_STATE_FLAG_NORMAL, &rgba);
-    }
-    if (box_ != nullptr) {
-      gtk_widget_override_background_color(GTK_WIDGET(box_), GTK_STATE_FLAG_NORMAL, &rgba);
-    }
     if (webview_ != nullptr) {
       webkit_web_view_set_background_color(WEBKIT_WEB_VIEW(webview_), &rgba);
     }
