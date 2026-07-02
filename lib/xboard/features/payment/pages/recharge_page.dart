@@ -184,7 +184,7 @@ class _RechargePageState extends ConsumerState<RechargePage> {
       } else if (paymentData != null &&
           paymentData is String &&
           paymentData.isNotEmpty) {
-        // 应用内 WebView 支付
+        // 统一支付页
         PaymentWaitingManager.hide();
         if (!mounted) return;
         final success = await PaymentWebViewPage.open(

@@ -21,7 +21,7 @@ const _desktopUserAgent = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) '
     'AppleWebKit/537.36 (KHTML, like Gecko) '
     'Chrome/125.0.0.0 Safari/537.36';
 
-/// In-app payment WebView page that replaces the external-browser flow.
+/// Unified in-app payment page for all platforms.
 ///
 /// All platforms use an embedded WebView:
 /// - Android / iOS / macOS → webview_flutter (system WebView / WKWebView)
@@ -40,7 +40,7 @@ class PaymentWebViewPage extends ConsumerStatefulWidget {
     required this.tradeNo,
   });
 
-  /// Push this page onto the navigator.
+  /// Opens the unified in-app payment page.
   /// Returns `true` if the payment completed successfully.
   static Future<bool?> open(
     BuildContext context, {

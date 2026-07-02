@@ -1,7 +1,6 @@
 import 'package:fl_clash/xboard/features/subscription/pages/xboard_home_page.dart';
 import 'package:fl_clash/xboard/features/subscription/pages/subscription_page.dart';
 import 'package:fl_clash/xboard/features/payment/pages/plans.dart';
-import 'package:fl_clash/xboard/features/payment/pages/payment_gateway_page.dart';
 import 'package:fl_clash/xboard/features/invite/pages/invite_page.dart';
 import 'package:fl_clash/xboard/features/mine/pages/mine_page.dart';
 import 'package:fl_clash/xboard/features/mine/pages/account_info_page.dart';
@@ -142,21 +141,6 @@ final List<RouteBase> routes = [
         ],
       ),
     ],
-  ),
-
-  // 支付网关页面
-  GoRoute(
-    path: '/payment/gateway',
-    name: 'payment_gateway',
-    pageBuilder: (context, state) {
-      final params = state.extra as Map<String, dynamic>?;
-      return MaterialPage(
-        child: PaymentGatewayPage(
-          paymentUrl: params?['paymentUrl'] as String? ?? '',
-          tradeNo: params?['tradeNo'] as String? ?? '',
-        ),
-      );
-    },
   ),
 
   // 订阅详情页面
