@@ -632,7 +632,11 @@ jobs:
           $x64Source = (Resolve-Path "build\universal\x64").Path
           $arm64Source = (Resolve-Path "build\universal\arm64").Path
           $brandCfg = Get-Content "assets\config\config.yaml" -Raw
+          $appName = "快猫"
           $appNameEn = "FastCat"
+          if ($brandCfg -match "(?m)^app_name:\s*(.+)$") {
+            $appName = $matches[1].Trim().Trim('"').Trim("'")
+          }
           if ($brandCfg -match "(?m)^app_name_en:\s*(.+)$") {
             $appNameEn = $matches[1].Trim().Trim('"').Trim("'")
           }
@@ -652,7 +656,7 @@ jobs:
           $ver = "1.0.0"
           $ps = Get-Content "pubspec.yaml" -Raw
           if ($ps -match "(?m)^version:\s*(.+)$") { $ver = ($matches[1] -split '\+')[0].Trim() }
-          $display = $appNameEn
+          $display = $appName
           $out = "$appNameEn-Windows-$ver.exe"
           $pub    = yv "publisher"
           $pubUrl = yv "publisher_url"

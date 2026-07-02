@@ -15,6 +15,7 @@ import 'package:fl_clash/xboard/config/xboard_config.dart';
 import 'package:fl_clash/xboard/features/auth/auth.dart';
 import 'package:fl_clash/xboard/domain/domain.dart';
 import 'package:fl_clash/xboard/features/auth/pages/crisp_chat_page.dart';
+import 'package:fl_clash/xboard/features/auth/pages/desktop_customer_service_window.dart';
 import 'package:fl_clash/xboard/features/auth/pages/salesmartly_chat_page.dart';
 import 'package:fl_clash/xboard/features/auth/utils/crisp_url_helper.dart';
 import 'package:fl_clash/xboard/core/core.dart';
@@ -35,7 +36,8 @@ const _desktopCrispDirectEmbedFallbackDelay = Duration(seconds: 25);
 /// 统一客服入口：按业务约定仅使用 Crisp（远程优先，本地兜底）
 ///
 /// Android/iOS → 内嵌 WebView（webview_flutter）
-/// Windows/macOS/Linux → 独立 WebView 窗口（desktop_webview_window）
+/// Windows/Linux → 轻量客服子窗口（webview_win_floating）
+/// macOS → 独立 WebView 窗口（desktop_webview_window）
 class CustomerServiceHelper {
   CustomerServiceHelper._();
 
@@ -55,6 +57,9 @@ class CustomerServiceHelper {
 
   static bool get _isDesktopPlatform =>
       Platform.isWindows || Platform.isMacOS || Platform.isLinux;
+
+  static bool get _useCustomerServiceChildWindow =>
+      DesktopCustomerServiceWindowLauncher.isSupported;
 
   static int get _desktopCustomerServiceTitleBarHeight =>
       Platform.isWindows || Platform.isLinux ? 0 : 40;
@@ -240,7 +245,7 @@ class CustomerServiceHelper {
       unawaited(_fallbackCrispProxyUrl());
     }
     unawaited(_prewarmCrispRoute());
-    if (_isDesktopPlatform) {
+    if (_isDesktopPlatform && !_useCustomerServiceChildWindow) {
       unawaited(_isDesktopWebviewAvailable());
       if (Platform.isWindows) {
         unawaited(_webview2DataFolder());
@@ -432,13 +437,27 @@ class CustomerServiceHelper {
       if (!context.mounted) return;
       final isDarkMode = _isDarkMode(context);
       final userScript = _buildCrispUserScript(context, ipData: ipData);
+      if (_useCustomerServiceChildWindow) {
+        final launched = await DesktopCustomerServiceWindowLauncher.open(
+          websiteId: crispId,
+          crispProxyUrl: crispProxyUrl,
+          userScript: userScript,
+        );
+        if (!launched && context.mounted) {
+          XBoardNotification.showError('客服窗口启动失败，请稍后重试');
+        }
+        return;
+      }
       if (_isDesktopPlatform) {
-        await _openCrispInDesktopWebview(
+        final webview = await _openCrispInDesktopWebview(
           crispId,
           crispProxyUrl: crispProxyUrl,
           isDarkMode: isDarkMode,
           userScript: userScript,
         );
+        if (webview == null && context.mounted) {
+          XBoardNotification.showError('客服窗口启动失败，请稍后重试');
+        }
         return;
       }
       _openCrisp(
@@ -854,15 +873,31 @@ if(window===window.top){
   }) {
     final effectiveUserScript =
         userScript ?? _buildCrispUserScript(context, ipData: ipData);
-    if (_isDesktopPlatform) {
-      // 桌面端：用 desktop_webview_window 独立窗口
+    if (_useCustomerServiceChildWindow) {
       unawaited(() async {
-        await _openCrispInDesktopWebview(
+        final launched = await DesktopCustomerServiceWindowLauncher.open(
+          websiteId: websiteId,
+          crispProxyUrl: crispProxyUrl,
+          userScript: effectiveUserScript,
+        );
+        if (!launched) {
+          XBoardNotification.showError('客服窗口启动失败，请稍后重试');
+        }
+      }());
+      return;
+    }
+    if (_isDesktopPlatform) {
+      // macOS：继续使用已验证的 desktop_webview_window 独立窗口
+      unawaited(() async {
+        final webview = await _openCrispInDesktopWebview(
           websiteId,
           crispProxyUrl: crispProxyUrl,
           isDarkMode: _isDarkMode(context),
           userScript: effectiveUserScript,
         );
+        if (webview == null) {
+          XBoardNotification.showError('客服窗口启动失败，请稍后重试');
+        }
       }());
       return;
     } else if (CrispChatPage.isSupported) {
@@ -956,10 +991,7 @@ if(window===window.top){
       // 先检查 WebView2 Runtime 是否已安装
       final available = await _isDesktopWebviewAvailable();
       if (!available) {
-        launchUrl(
-          Uri.parse(officialUrl),
-          mode: LaunchMode.externalApplication,
-        );
+        _logger.warning('[Crisp] 桌面 WebView 不可用，客服窗口启动失败');
         return null;
       }
 
@@ -1045,12 +1077,8 @@ if(window===window.top){
         await webview.launch(preferredUrl);
         return webview;
       } catch (fallbackError) {
-        _logger.error('[Crisp] WebView2 启动失败，回退浏览器', fallbackError);
+        _logger.error('[Crisp] 桌面客服 WebView 启动失败', fallbackError);
       }
-      launchUrl(
-        Uri.parse(officialUrl),
-        mode: LaunchMode.externalApplication,
-      );
       return null;
     }
   }
@@ -1103,11 +1131,7 @@ if(window===window.top){
       _logger.info('[Crisp] 已启动 Linux 桌面 WebView，加载远端 HTTPS Crisp SDK 启动页');
       return webview;
     } catch (e) {
-      _logger.error('[Crisp] Linux 桌面客服启动失败，回退浏览器', e);
-      launchUrl(
-        Uri.parse(officialUrl),
-        mode: LaunchMode.externalApplication,
-      );
+      _logger.error('[Crisp] Linux 桌面客服启动失败', e);
       return null;
     }
   }
