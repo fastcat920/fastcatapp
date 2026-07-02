@@ -63,7 +63,7 @@ class InAppBrowserPage extends StatefulWidget {
             userDataFolderWindows: dataFolder,
           ),
         );
-        webview.launch(url);
+        await webview.launch(url);
       } catch (_) {
         await launchUrl(Uri.parse(url), mode: LaunchMode.externalApplication);
       }

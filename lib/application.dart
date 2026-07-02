@@ -21,6 +21,7 @@ import 'package:fl_clash/xboard/core/logger/capture_logger.dart'
 import 'package:flutter_xboard_sdk/flutter_xboard_sdk.dart';
 import 'package:fl_clash/xboard/router/app_router.dart' as xboard_router;
 import 'package:fl_clash/xboard/features/initialization/initialization.dart';
+import 'package:fl_clash/xboard/features/auth/utils/customer_service_helper.dart';
 import 'package:fl_clash/xboard/features/auth/services/device_heartbeat_service.dart';
 
 class Application extends ConsumerStatefulWidget {
@@ -66,6 +67,18 @@ class ApplicationState extends ConsumerState<Application>
     int? primaryColor,
   }) {
     return ref.read(genColorSchemeProvider(brightness));
+  }
+
+  Brightness _effectiveBrightness(
+    ThemeMode themeMode,
+    Brightness? platformBrightness,
+  ) {
+    return switch (themeMode) {
+      ThemeMode.dark => Brightness.dark,
+      ThemeMode.light => Brightness.light,
+      ThemeMode.system => platformBrightness ??
+          WidgetsBinding.instance.platformDispatcher.platformBrightness,
+    };
   }
 
   @override
@@ -356,6 +369,18 @@ class ApplicationState extends ConsumerState<Application>
             final locale =
                 ref.watch(appSettingProvider.select((state) => state.locale));
             final themeProps = ref.watch(themeSettingProvider);
+            final appBrightness = ref.watch(appBrightnessProvider);
+            final effectiveBrightness = _effectiveBrightness(
+              themeProps.themeMode,
+              appBrightness,
+            );
+            CustomerServiceHelper.syncDesktopTheme(
+              effectiveBrightness,
+              accentColor: _getAppColorScheme(
+                brightness: effectiveBrightness,
+                primaryColor: themeProps.primaryColor,
+              ).primary,
+            );
 
             // 使用 go_router 的路由系统
             return MaterialApp.router(

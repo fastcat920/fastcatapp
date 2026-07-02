@@ -35,7 +35,7 @@ abstract class Webview {
   void setPromptHandler(PromptHandler? handler);
 
   /// Navigates to the given URL.
-  void launch(String url);
+  Future<void> launch(String url);
 
   /// change webview theme.
   ///

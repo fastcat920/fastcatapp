@@ -90,20 +90,26 @@ void WebView::OnWebviewControllerCreated() {
     return;
   }
 
-  ICoreWebView2Settings *settings;
-  webview_->get_Settings(&settings);
-  settings->put_IsScriptEnabled(true);
-  settings->put_IsZoomControlEnabled(false);
-  settings->put_AreDefaultContextMenusEnabled(false);
-  settings->put_IsStatusBarEnabled(false);
-  settings->put_IsWebMessageEnabled(true);
+  ICoreWebView2Settings *settings = nullptr;
+  if (SUCCEEDED(webview_->get_Settings(&settings)) && settings != nullptr) {
+    settings->put_IsScriptEnabled(true);
+    settings->put_IsZoomControlEnabled(false);
+    settings->put_AreDefaultContextMenusEnabled(false);
+    settings->put_IsStatusBarEnabled(false);
+    settings->put_IsWebMessageEnabled(true);
 
-  ICoreWebView2Settings2 *settings2;
-  auto hr = settings->QueryInterface(IID_PPV_ARGS(&settings2));
-  if (SUCCEEDED(hr)) {
-    LPWSTR user_agent[256];
-    settings2->get_UserAgent(user_agent);
-    default_user_agent_ = std::wstring(*user_agent);
+    ICoreWebView2Settings2 *settings2 = nullptr;
+    auto hr = settings->QueryInterface(IID_PPV_ARGS(&settings2));
+    if (SUCCEEDED(hr) && settings2 != nullptr) {
+      LPWSTR user_agent = nullptr;
+      if (SUCCEEDED(settings2->get_UserAgent(&user_agent)) &&
+          user_agent != nullptr) {
+        default_user_agent_ = std::wstring(user_agent);
+        CoTaskMemFree(user_agent);
+      }
+      settings2->Release();
+    }
+    settings->Release();
   }
 
   UpdateBounds();
@@ -242,12 +248,15 @@ void WebView::AddScriptToExecuteOnDocumentCreated(const std::wstring &javaScript
 
 void WebView::SetApplicationNameForUserAgent(const std::wstring &name) {
   if (webview_) {
-    ICoreWebView2Settings *settings;
-    webview_->get_Settings(&settings);
-    ICoreWebView2Settings2 *settings2;
-    auto hr = settings->QueryInterface(IID_PPV_ARGS(&settings2));
-    if (SUCCEEDED(hr)) {
-      settings2->put_UserAgent((default_user_agent_ + name).c_str());
+    ICoreWebView2Settings *settings = nullptr;
+    if (SUCCEEDED(webview_->get_Settings(&settings)) && settings != nullptr) {
+      ICoreWebView2Settings2 *settings2 = nullptr;
+      auto hr = settings->QueryInterface(IID_PPV_ARGS(&settings2));
+      if (SUCCEEDED(hr) && settings2 != nullptr) {
+        settings2->put_UserAgent((default_user_agent_ + name).c_str());
+        settings2->Release();
+      }
+      settings->Release();
     }
   }
 }

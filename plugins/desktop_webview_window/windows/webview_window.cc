@@ -31,7 +31,7 @@ constexpr DWORD kDwmUseImmersiveDarkMode = 20;
 constexpr DWORD kDwmUseImmersiveDarkModeBefore20H1 = 19;
 
 COLORREF BackgroundColorForBrightness(int brightness) {
-  return brightness == 0 ? RGB(17, 24, 39) : RGB(245, 245, 245);
+  return brightness == 0 ? RGB(16, 16, 16) : RGB(245, 245, 245);
 }
 
 }
