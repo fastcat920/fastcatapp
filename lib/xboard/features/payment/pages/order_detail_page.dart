@@ -975,6 +975,10 @@ class _OrderInfoCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+    final amountColor =
+        isDark ? Colors.white : Theme.of(context).colorScheme.primary;
     final shouldShowBalance = pricing.balanceUsed > 0;
     final isDeposit = period == 'deposit' || order?.period == 'deposit';
     final l10n = AppLocalizations.of(context);
@@ -1031,7 +1035,7 @@ class _OrderInfoCard extends StatelessWidget {
             value: '¥${pricing.packageAmount.toStringAsFixed(2)}',
             valueFontSize: 14,
             valueWeight: FontWeight.w700,
-            valueColor: Theme.of(context).colorScheme.primary,
+            valueColor: amountColor,
           ),
           if (pricing.discountAmount > 0) ...[
             const SizedBox(height: 12),
@@ -1068,7 +1072,7 @@ class _OrderInfoCard extends StatelessWidget {
               value: '-¥${pricing.balanceUsed.toStringAsFixed(2)}',
               valueFontSize: 14,
               valueWeight: FontWeight.w700,
-              valueColor: Theme.of(context).colorScheme.primary,
+              valueColor: amountColor,
             ),
           ],
           if (pricing.refundAmount > 0) ...[
@@ -1098,7 +1102,7 @@ class _OrderInfoCard extends StatelessWidget {
               Text(
                 '¥${pricing.payableAmount.toStringAsFixed(2)}',
                 style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                      color: Theme.of(context).colorScheme.primary,
+                      color: amountColor,
                       fontWeight: FontWeight.w800,
                     ),
               ),

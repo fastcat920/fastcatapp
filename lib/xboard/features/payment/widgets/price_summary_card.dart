@@ -167,6 +167,8 @@ class _FinalPriceRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
     return Row(
       children: [
         Text(
@@ -174,7 +176,7 @@ class _FinalPriceRow extends StatelessWidget {
           style: TextStyle(
             fontSize: 13,
             fontWeight: FontWeight.bold,
-            color: Colors.grey.shade800,
+            color: isDark ? Colors.white : Colors.grey.shade800,
           ),
         ),
         const Spacer(),
@@ -183,7 +185,7 @@ class _FinalPriceRow extends StatelessWidget {
           style: TextStyle(
             fontSize: 20,
             fontWeight: FontWeight.bold,
-            color: Theme.of(context).colorScheme.primary,
+            color: isDark ? Colors.white : theme.colorScheme.primary,
           ),
         ),
       ],

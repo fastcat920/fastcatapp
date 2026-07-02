@@ -89,11 +89,24 @@ class WebviewWindowController: NSWindowController {
 
   func setAppearance(brightness: Int) {
     applyAppearance(to: window, brightness: brightness)
+    (window?.contentViewController as? WebViewLayoutController)?.setBrightness(brightness: brightness)
+  }
+
+  func setVisibility(visible: Bool) {
+    if visible {
+      showWindow(nil)
+      window?.makeKeyAndOrderFront(nil)
+      NSApp.activate(ignoringOtherApps: true)
+    } else {
+      window?.orderOut(nil)
+    }
   }
 
   private func applyAppearance(to window: NSWindow?, brightness: Int) {
+    let background: NSColor
     switch brightness {
     case 0:
+      background = NSColor(red: 17.0 / 255.0, green: 24.0 / 255.0, blue: 39.0 / 255.0, alpha: 1)
       if #available(macOS 10.14, *) {
         window?.appearance = NSAppearance(named: .darkAqua)
       } else {
@@ -101,12 +114,16 @@ class WebviewWindowController: NSWindowController {
       }
       break
     case 1:
+      background = NSColor(red: 245.0 / 255.0, green: 245.0 / 255.0, blue: 245.0 / 255.0, alpha: 1)
       window?.appearance = NSAppearance(named: .aqua)
       break
     default:
+      background = NSColor.windowBackgroundColor
       window?.appearance = nil
       break
     }
+    window?.backgroundColor = background
+    window?.isOpaque = true
   }
 
   deinit {

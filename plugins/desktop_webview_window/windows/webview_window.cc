@@ -30,6 +30,10 @@ int Scale(int source, double scale_factor) {
 constexpr DWORD kDwmUseImmersiveDarkMode = 20;
 constexpr DWORD kDwmUseImmersiveDarkModeBefore20H1 = 19;
 
+COLORREF BackgroundColorForBrightness(int brightness) {
+  return brightness == 0 ? RGB(17, 24, 39) : RGB(245, 245, 245);
+}
+
 }
 
 using namespace Microsoft::WRL;
@@ -73,10 +77,10 @@ void WebviewWindow::CreateAndShow(const std::wstring &title, int height, int wid
   UINT dpi = FlutterDesktopGetDpiForMonitor(monitor);
   double scale_factor = dpi / 96.0;
 
-  DWORD dwStyle = WS_OVERLAPPEDWINDOW | WS_VISIBLE;
+  DWORD dwStyle = WS_OVERLAPPEDWINDOW;
   if (!resizable) {
     // Remove resize border and maximize box for fixed-size window
-    dwStyle = WS_OVERLAPPED | WS_CAPTION | WS_SYSMENU | WS_MINIMIZEBOX | WS_VISIBLE;
+    dwStyle = WS_OVERLAPPED | WS_CAPTION | WS_SYSMENU | WS_MINIMIZEBOX;
   }
   if (openMaximized)
     dwStyle |= WS_MAXIMIZE;
@@ -176,6 +180,7 @@ void WebviewWindow::SetBrightness(int brightness) {
   if (web_view_) {
     web_view_->SetBrightness(brightness);
   }
+  InvalidateRect(hwnd_.get(), nullptr, TRUE);
   SetWindowPos(
       hwnd_.get(),
       nullptr,
@@ -189,10 +194,12 @@ void WebviewWindow::SetBrightness(int brightness) {
 
 void WebviewWindow::setVisibility(bool visible)
 {
-  if(visible)
+  if(visible) {
     ::ShowWindow(hwnd_.get(), SW_SHOW);
-  else
+    ::SetForegroundWindow(hwnd_.get());
+  } else {
     ::ShowWindow(hwnd_.get(), SW_HIDE);
+  }
 }
 
 // static
@@ -232,6 +239,14 @@ WebviewWindow::MessageHandler(
   }
 
   switch (message) {
+    case WM_ERASEBKGND: {
+      RECT rect;
+      GetClientRect(hwnd, &rect);
+      HBRUSH brush = CreateSolidBrush(BackgroundColorForBrightness(brightness_));
+      FillRect(reinterpret_cast<HDC>(wparam), &rect, brush);
+      DeleteObject(brush);
+      return 1;
+    }
     case WM_DESTROY: {
       flutter_action_bar_.reset();
       web_view_.reset();

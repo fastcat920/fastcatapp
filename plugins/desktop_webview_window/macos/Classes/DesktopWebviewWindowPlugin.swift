@@ -145,6 +145,23 @@ public class DesktopWebviewWindowPlugin: NSObject, FlutterPlugin {
       wc.setAppearance(brightness: brightness)
       result(nil)
       break
+    case "setWebviewWindowVisibility":
+      guard let argument = call.arguments as? [String: Any?] else {
+        result(FlutterError(code: "0", message: "arg is not map", details: nil))
+        return
+      }
+      guard let viewId = argument["viewId"] as? Int64 else {
+        result(FlutterError(code: "0", message: "param viewId not found", details: nil))
+        return
+      }
+      guard let wc = webviews[viewId] else {
+        result(FlutterError(code: "0", message: "can not find webview for id: \(viewId)", details: nil))
+        return
+      }
+      let visible = argument["visible"] as? Bool ?? true
+      wc.setVisibility(visible: visible)
+      result(nil)
+      break
     case "addScriptToExecuteOnDocumentCreated":
       guard let argument = call.arguments as? [String: Any?] else {
         result(FlutterError(code: "0", message: "arg is not map", details: nil))

@@ -43,6 +43,8 @@ class CustomerServiceHelper {
   static Future<String>? _fallbackCrispProxyUrlFuture;
   static _PendingCrispProxyProbe? _usableCrispProxyProbe;
   static _CrispProxyCacheEntry? _usableCrispProxyCache;
+  static Webview? _desktopCustomerServiceWebview;
+  static Future<Webview?>? _desktopCustomerServiceOpening;
 
   /// 是否有任何客服渠道可用（仅远程 Crisp）
   static bool get isAvailable => XBoardConfig.crispWebsiteId.isNotEmpty;
@@ -71,6 +73,53 @@ class CustomerServiceHelper {
 
   static Brightness _customerServiceBrightness(bool isDarkMode) {
     return isDarkMode ? Brightness.dark : Brightness.light;
+  }
+
+  static Future<Webview?> _reuseDesktopCustomerServiceWindow({
+    required bool isDarkMode,
+  }) async {
+    final webview = _desktopCustomerServiceWebview;
+    if (webview != null) {
+      await _activateDesktopCustomerServiceWindow(
+        webview,
+        isDarkMode: isDarkMode,
+      );
+      return webview;
+    }
+
+    final opening = _desktopCustomerServiceOpening;
+    if (opening != null) {
+      final openingWebview = await opening;
+      if (openingWebview != null) {
+        await _activateDesktopCustomerServiceWindow(
+          openingWebview,
+          isDarkMode: isDarkMode,
+        );
+      }
+      return openingWebview;
+    }
+    return null;
+  }
+
+  static Future<void> _activateDesktopCustomerServiceWindow(
+    Webview webview, {
+    required bool isDarkMode,
+  }) async {
+    webview.setBrightness(_customerServiceBrightness(isDarkMode));
+    try {
+      await webview.setWebviewWindowVisibility(true);
+    } catch (e) {
+      _logger.debug('[CustomerService] 激活已有客服窗口失败: $e');
+    }
+  }
+
+  static void _trackDesktopCustomerServiceWindow(Webview webview) {
+    _desktopCustomerServiceWebview = webview;
+    unawaited(webview.onClose.whenComplete(() {
+      if (identical(_desktopCustomerServiceWebview, webview)) {
+        _desktopCustomerServiceWebview = null;
+      }
+    }));
   }
 
   /// 预热客服启动所需的轻量资源，减少首次点击后的等待。
@@ -336,12 +385,38 @@ class CustomerServiceHelper {
     String scriptUrl, {
     required bool isDarkMode,
   }) async {
+    final existing = await _reuseDesktopCustomerServiceWindow(
+      isDarkMode: isDarkMode,
+    );
+    if (existing != null) return;
+
+    final future = _createSalesmartlyDesktopWebview(
+      scriptUrl,
+      isDarkMode: isDarkMode,
+    );
+    _desktopCustomerServiceOpening = future;
+    try {
+      final webview = await future;
+      if (webview != null) {
+        _trackDesktopCustomerServiceWindow(webview);
+      }
+    } finally {
+      if (identical(_desktopCustomerServiceOpening, future)) {
+        _desktopCustomerServiceOpening = null;
+      }
+    }
+  }
+
+  static Future<Webview?> _createSalesmartlyDesktopWebview(
+    String scriptUrl, {
+    required bool isDarkMode,
+  }) async {
     try {
       final available = await _isDesktopWebviewAvailable();
       if (!available) {
         _logger.warning('[SalesSmartly] WebView2 不可用，回退浏览器');
         _openSalesmartlyInBrowser(scriptUrl, isDarkMode: isDarkMode);
-        return;
+        return null;
       }
 
       final dataFolder = Platform.isWindows ? await _webview2DataFolder() : '';
@@ -378,9 +453,11 @@ if(window===window.top){
       webview.launch('https://www.salesmartly.com/robots.txt');
 
       _logger.info('[SalesSmartly] 已启动 WebView2，注入客服 SDK');
+      return webview;
     } catch (e) {
       _logger.error('[SalesSmartly] WebView2 启动失败，回退浏览器', e);
       _openSalesmartlyInBrowser(scriptUrl, isDarkMode: isDarkMode);
+      return null;
     }
   }
 
@@ -700,6 +777,35 @@ if(window===window.top){
   /// 桌面端：用 desktop_webview_window 打开 Crisp 聊天
   /// 用 SDK 注入方式代替直接加载 embed URL（解决 WebView2 空白问题）
   static Future<Webview?> _openCrispInDesktopWebview(
+    String websiteId, {
+    String? crispProxyUrl,
+    required bool isDarkMode,
+  }) async {
+    final existing = await _reuseDesktopCustomerServiceWindow(
+      isDarkMode: isDarkMode,
+    );
+    if (existing != null) return existing;
+
+    final future = _createCrispDesktopWebview(
+      websiteId,
+      crispProxyUrl: crispProxyUrl,
+      isDarkMode: isDarkMode,
+    );
+    _desktopCustomerServiceOpening = future;
+    try {
+      final webview = await future;
+      if (webview != null) {
+        _trackDesktopCustomerServiceWindow(webview);
+      }
+      return webview;
+    } finally {
+      if (identical(_desktopCustomerServiceOpening, future)) {
+        _desktopCustomerServiceOpening = null;
+      }
+    }
+  }
+
+  static Future<Webview?> _createCrispDesktopWebview(
     String websiteId, {
     String? crispProxyUrl,
     required bool isDarkMode,

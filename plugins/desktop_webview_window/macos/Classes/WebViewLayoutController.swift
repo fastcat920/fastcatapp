@@ -40,7 +40,18 @@ class WebViewLayoutController: NSViewController {
 
   private let titleBarTopPadding: Int
   private let showTitleBarActions: Bool
-  private let brightness: Int
+  private var brightness: Int
+
+  private var nativeBackgroundColor: NSColor {
+    switch brightness {
+    case 0:
+      return NSColor(red: 17.0 / 255.0, green: 24.0 / 255.0, blue: 39.0 / 255.0, alpha: 1)
+    case 1:
+      return NSColor(red: 245.0 / 255.0, green: 245.0 / 255.0, blue: 245.0 / 255.0, alpha: 1)
+    default:
+      return NSColor.windowBackgroundColor
+    }
+  }
 
   public init(methodChannel: FlutterMethodChannel, viewId: Int64, titleBarHeight: Int, titleBarTopPadding: Int, showTitleBarActions: Bool, brightness: Int) {
     self.viewId = viewId
@@ -58,6 +69,7 @@ class WebViewLayoutController: NSViewController {
 
   override func loadView() {
     super.loadView()
+    applyNativeBackground()
 
     addChild(titleBarController)
     titleBarController.view.translatesAutoresizingMaskIntoConstraints = false
@@ -82,6 +94,7 @@ class WebViewLayoutController: NSViewController {
 
     view.addSubview(webView)
     webView.translatesAutoresizingMaskIntoConstraints = false
+    applyNativeBackground()
     NSLayoutConstraint.activate([
       webView.topAnchor.constraint(equalTo: flutterView.bottomAnchor),
       webView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
@@ -154,6 +167,24 @@ class WebViewLayoutController: NSViewController {
 
   func setApplicationNameForUserAgent(applicationName: String) {
     webView.customUserAgent = (defaultUserAgent ?? "") + applicationName
+  }
+
+  func setBrightness(brightness: Int) {
+    self.brightness = brightness
+    applyNativeBackground()
+  }
+
+  private func applyNativeBackground() {
+    let backgroundColor = nativeBackgroundColor
+    view.wantsLayer = true
+    view.layer?.backgroundColor = backgroundColor.cgColor
+    titleBarController.view.wantsLayer = true
+    titleBarController.view.layer?.backgroundColor = backgroundColor.cgColor
+    webView.wantsLayer = true
+    webView.layer?.backgroundColor = backgroundColor.cgColor
+    if #available(macOS 12.0, *) {
+      webView.underPageBackgroundColor = backgroundColor
+    }
   }
 
   func destroy() {

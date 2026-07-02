@@ -37,6 +37,8 @@ class WebviewWindow {
 
   void SetBrightness(int brightness);
 
+  void SetVisibility(bool visible);
+
   void OnLoadChanged(WebKitLoadEvent load_event);
 
   void GoBack();
@@ -62,6 +64,7 @@ class WebviewWindow {
   std::string default_user_agent_;
 
   GtkWidget *window_ = nullptr;
+  GtkWidget *header_bar_ = nullptr;
   GtkWidget *webview_ = nullptr;
   GtkBox *box_ = nullptr;
 

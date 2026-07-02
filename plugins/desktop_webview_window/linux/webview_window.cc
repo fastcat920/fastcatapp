@@ -96,6 +96,13 @@ WebviewWindow::WebviewWindow(
   gtk_window_set_position(GTK_WINDOW(window_), GTK_WIN_POS_CENTER);
   gtk_window_set_resizable(GTK_WINDOW(window_), resizable ? TRUE : FALSE);
   apply_widget_background(window_, "fastcat-webview-window");
+  if (title_bar_height <= 0) {
+    header_bar_ = gtk_header_bar_new();
+    gtk_header_bar_set_title(GTK_HEADER_BAR(header_bar_), title.c_str());
+    gtk_header_bar_set_show_close_button(GTK_HEADER_BAR(header_bar_), TRUE);
+    apply_widget_background(header_bar_, "fastcat-webview-header");
+    gtk_window_set_titlebar(GTK_WINDOW(window_), header_bar_);
+  }
 
   box_ = GTK_BOX(gtk_box_new(GTK_ORIENTATION_VERTICAL, 0));
   apply_widget_background(GTK_WIDGET(box_), "fastcat-webview-box");
@@ -202,6 +209,9 @@ void WebviewWindow::SetBrightness(int brightness) {
     if (window_ != nullptr) {
       gtk_widget_override_background_color(window_, GTK_STATE_FLAG_NORMAL, &rgba);
     }
+    if (header_bar_ != nullptr) {
+      gtk_widget_override_background_color(header_bar_, GTK_STATE_FLAG_NORMAL, &rgba);
+    }
     if (box_ != nullptr) {
       gtk_widget_override_background_color(GTK_WIDGET(box_), GTK_STATE_FLAG_NORMAL, &rgba);
     }
@@ -212,9 +222,25 @@ void WebviewWindow::SetBrightness(int brightness) {
 
   auto *provider = gtk_css_provider_new();
   const std::string css =
-      std::string("#fastcat-webview-window, #fastcat-webview-box {") +
+      std::string("#fastcat-webview-window, #fastcat-webview-box, #fastcat-webview-header {") +
       "background: " + background + ";" +
+      "background-image: none;" +
       "color: " + foreground + ";" +
+      "box-shadow: none;" +
+      "}" +
+      "#fastcat-webview-header label, #fastcat-webview-header image {" +
+      "color: " + foreground + ";" +
+      "}" +
+      "#fastcat-webview-header button {" +
+      "background: transparent;" +
+      "background-image: none;" +
+      "color: " + foreground + ";" +
+      "border-color: transparent;" +
+      "box-shadow: none;" +
+      "}" +
+      "#fastcat-webview-header button:hover {" +
+      "background: " + std::string(is_dark ? "#1f2937" : "#e5e7eb") + ";" +
+      "background-image: none;" +
       "}";
   gtk_css_provider_load_from_data(provider, css.c_str(), -1, nullptr);
   auto *screen = gdk_screen_get_default();
@@ -229,6 +255,15 @@ void WebviewWindow::SetBrightness(int brightness) {
 
 void WebviewWindow::Close() {
   gtk_window_close(GTK_WINDOW(window_));
+}
+
+void WebviewWindow::SetVisibility(bool visible) {
+  if (visible) {
+    gtk_widget_show_all(GTK_WIDGET(window_));
+    gtk_window_present(GTK_WINDOW(window_));
+  } else {
+    gtk_widget_hide(GTK_WIDGET(window_));
+  }
 }
 
 void WebviewWindow::OnLoadChanged(WebKitLoadEvent load_event) {
