@@ -205,7 +205,7 @@ class _CrispChatPageState extends State<CrispChatPage> {
   }
 
   Color _customerServiceBackgroundColor(bool isDarkMode) {
-    return isDarkMode ? const Color(0xFF111827) : const Color(0xFFF5F5F5);
+    return isDarkMode ? const Color(0xFF101010) : const Color(0xFFF5F5F5);
   }
 
   @override

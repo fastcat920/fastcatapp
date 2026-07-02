@@ -192,8 +192,8 @@ void WebviewWindow::SetApplicationNameForUserAgent(const std::string &app_name) 
 void WebviewWindow::SetBrightness(int brightness) {
   brightness_ = brightness;
   const bool is_dark = brightness == 0;
-  const char *background = is_dark ? "#111827" : "#f5f5f5";
-  const char *foreground = is_dark ? "#d1d5db" : "#111827";
+  const char *background = is_dark ? "#101010" : "#f5f5f5";
+  const char *foreground = is_dark ? "#f3f4f6" : "#111827";
 
   auto *settings = gtk_settings_get_default();
   if (settings != nullptr && brightness >= 0) {
@@ -230,7 +230,7 @@ void WebviewWindow::SetBrightness(int brightness) {
       "box-shadow: none;" +
       "}" +
       "#fastcat-webview-header button:hover {" +
-      "background: " + std::string(is_dark ? "#1f2937" : "#e5e7eb") + ";" +
+      "background: " + std::string(is_dark ? "#1f1f1f" : "#e5e7eb") + ";" +
       "background-image: none;" +
       "}";
   gtk_css_provider_load_from_data(provider, css.c_str(), -1, nullptr);

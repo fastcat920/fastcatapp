@@ -106,7 +106,7 @@ class WebviewWindowController: NSWindowController {
     let background: NSColor
     switch brightness {
     case 0:
-      background = NSColor(red: 17.0 / 255.0, green: 24.0 / 255.0, blue: 39.0 / 255.0, alpha: 1)
+      background = NSColor(red: 16.0 / 255.0, green: 16.0 / 255.0, blue: 16.0 / 255.0, alpha: 1)
       if #available(macOS 10.14, *) {
         window?.appearance = NSAppearance(named: .darkAqua)
       } else {

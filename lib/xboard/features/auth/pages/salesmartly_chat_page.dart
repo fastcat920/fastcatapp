@@ -187,11 +187,11 @@ class _SalesmarylyChatPageState extends State<SalesmarylyChatPage> {
   }
 
   Color _webViewBackgroundColor(bool isDarkMode) {
-    return isDarkMode ? const Color(0xFF111827) : const Color(0xFFF5F5F5);
+    return isDarkMode ? const Color(0xFF101010) : const Color(0xFFF5F5F5);
   }
 
   String _customerServiceBackgroundColor(bool isDarkMode) {
-    return isDarkMode ? '#111827' : '#f5f5f5';
+    return isDarkMode ? '#101010' : '#f5f5f5';
   }
 
   String _customerServiceForegroundColor(bool isDarkMode) {

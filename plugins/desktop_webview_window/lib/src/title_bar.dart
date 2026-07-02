@@ -209,7 +209,7 @@ class _TitleBarAppState extends State<_TitleBarApp>
             ? ThemeMode.light
             : ThemeMode.system;
     const lightBackground = Color(0xFFF5F5F5);
-    const darkBackground = Color(0xFF111827);
+    const darkBackground = Color(0xFF101010);
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       themeMode: themeMode,

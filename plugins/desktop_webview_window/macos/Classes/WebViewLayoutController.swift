@@ -45,7 +45,7 @@ class WebViewLayoutController: NSViewController {
   private var nativeBackgroundColor: NSColor {
     switch brightness {
     case 0:
-      return NSColor(red: 17.0 / 255.0, green: 24.0 / 255.0, blue: 39.0 / 255.0, alpha: 1)
+      return NSColor(red: 16.0 / 255.0, green: 16.0 / 255.0, blue: 16.0 / 255.0, alpha: 1)
     case 1:
       return NSColor(red: 245.0 / 255.0, green: 245.0 / 255.0, blue: 245.0 / 255.0, alpha: 1)
     default:

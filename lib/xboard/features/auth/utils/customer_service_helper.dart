@@ -60,11 +60,11 @@ class CustomerServiceHelper {
   }
 
   static String _customerServiceBackground(bool isDarkMode) {
-    return isDarkMode ? '#111827' : '#f5f5f5';
+    return isDarkMode ? '#101010' : '#f5f5f5';
   }
 
   static String _customerServiceForeground(bool isDarkMode) {
-    return isDarkMode ? '#d1d5db' : '#999999';
+    return isDarkMode ? '#f3f4f6' : '#999999';
   }
 
   static String _customerServiceAccent(bool isDarkMode) {
@@ -80,46 +80,54 @@ class CustomerServiceHelper {
   }) async {
     final webview = _desktopCustomerServiceWebview;
     if (webview != null) {
-      await _activateDesktopCustomerServiceWindow(
+      final activated = await _activateDesktopCustomerServiceWindow(
         webview,
         isDarkMode: isDarkMode,
       );
-      return webview;
+      if (activated) return webview;
+      _clearDesktopCustomerServiceWindow(webview);
     }
 
     final opening = _desktopCustomerServiceOpening;
     if (opening != null) {
       final openingWebview = await opening;
       if (openingWebview != null) {
-        await _activateDesktopCustomerServiceWindow(
+        final activated = await _activateDesktopCustomerServiceWindow(
           openingWebview,
           isDarkMode: isDarkMode,
         );
+        if (activated) return openingWebview;
+        _clearDesktopCustomerServiceWindow(openingWebview);
       }
-      return openingWebview;
     }
     return null;
   }
 
-  static Future<void> _activateDesktopCustomerServiceWindow(
+  static Future<bool> _activateDesktopCustomerServiceWindow(
     Webview webview, {
     required bool isDarkMode,
   }) async {
-    webview.setBrightness(_customerServiceBrightness(isDarkMode));
     try {
       await webview.setWebviewWindowVisibility(true);
+      webview.setBrightness(_customerServiceBrightness(isDarkMode));
+      return true;
     } catch (e) {
       _logger.debug('[CustomerService] 激活已有客服窗口失败: $e');
+      return false;
     }
   }
 
   static void _trackDesktopCustomerServiceWindow(Webview webview) {
     _desktopCustomerServiceWebview = webview;
     unawaited(webview.onClose.whenComplete(() {
-      if (identical(_desktopCustomerServiceWebview, webview)) {
-        _desktopCustomerServiceWebview = null;
-      }
+      _clearDesktopCustomerServiceWindow(webview);
     }));
+  }
+
+  static void _clearDesktopCustomerServiceWindow(Webview? webview) {
+    if (webview == null || identical(_desktopCustomerServiceWebview, webview)) {
+      _desktopCustomerServiceWebview = null;
+    }
   }
 
   /// 预热客服启动所需的轻量资源，减少首次点击后的等待。
@@ -813,6 +821,13 @@ if(window===window.top){
     final officialUrl = officialCrispEmbedUri(websiteId).toString();
     final preferredUrl =
         crispEmbedUri(websiteId: websiteId, proxyUrl: crispProxyUrl).toString();
+    if (Platform.isLinux) {
+      return _createLinuxCrispDesktopWebview(
+        preferredUrl: preferredUrl,
+        officialUrl: officialUrl,
+        isDarkMode: isDarkMode,
+      );
+    }
     _DesktopCrispBootstrapPage? bootstrapPage;
     Webview? createdWebview;
     try {
@@ -882,6 +897,73 @@ if(window===window.top){
       );
       return null;
     }
+  }
+
+  static Future<Webview?> _createLinuxCrispDesktopWebview({
+    required String preferredUrl,
+    required String officialUrl,
+    required bool isDarkMode,
+  }) async {
+    try {
+      final dataFolder = Platform.isWindows ? await _webview2DataFolder() : '';
+      final webview = await WebviewWindow.create(
+        configuration: CreateConfiguration(
+          title: '在线客服',
+          windowWidth: _desktopCustomerServiceWindowWidth,
+          windowHeight: _desktopCustomerServiceWindowHeight,
+          titleBarHeight: _desktopCustomerServiceTitleBarHeight,
+          userDataFolderWindows: dataFolder,
+          resizable: false,
+          showTitleBarActions: !Platform.isLinux,
+          brightness: _customerServiceBrightness(isDarkMode),
+        ),
+      );
+      webview.setBrightness(_customerServiceBrightness(isDarkMode));
+      if (isDarkMode) {
+        webview.addScriptToExecuteOnDocumentCreated(
+          _buildLinuxCrispDarkBootstrapScript(),
+        );
+      }
+      webview.launch(preferredUrl);
+      _logger.info('[Crisp] 已启动 Linux 桌面 WebView，直接加载客服 embed 页面');
+      return webview;
+    } catch (e) {
+      _logger.error('[Crisp] Linux 桌面客服启动失败，回退浏览器', e);
+      launchUrl(
+        Uri.parse(officialUrl),
+        mode: LaunchMode.externalApplication,
+      );
+      return null;
+    }
+  }
+
+  static String _buildLinuxCrispDarkBootstrapScript() {
+    final background = _customerServiceBackground(true);
+    final foreground = _customerServiceForeground(true);
+    return '''
+(function(){
+  try {
+    document.documentElement.style.background = '$background';
+    document.documentElement.style.colorScheme = 'dark';
+    function applyDarkBootstrap() {
+      try {
+        document.documentElement.style.background = '$background';
+        if (document.body) {
+          document.body.style.background = '$background';
+          document.body.style.color = '$foreground';
+        }
+        if (!document.getElementById('fastcat-crisp-dark-bootstrap')) {
+          var style = document.createElement('style');
+          style.id = 'fastcat-crisp-dark-bootstrap';
+          style.textContent = 'html,body,#page,.site-wrapper,.chat-common{background:$background!important;color:$foreground!important;color-scheme:dark!important;}';
+          (document.head || document.documentElement).appendChild(style);
+        }
+      } catch(_) {}
+    }
+    applyDarkBootstrap();
+    document.addEventListener('DOMContentLoaded', applyDarkBootstrap, {once:true});
+  } catch(_) {}
+})();''';
   }
 
   static Future<_DesktopCrispBootstrapPage> _startDesktopCrispBootstrapPage({

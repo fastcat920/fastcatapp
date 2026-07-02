@@ -22,7 +22,7 @@ class DesktopNavigationRail extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final colorScheme = Theme.of(context).colorScheme;
     final isDark = colorScheme.brightness == Brightness.dark;
-    final backgroundColor = isDark ? const Color(0xFF111827) : Colors.white;
+    final backgroundColor = isDark ? colorScheme.surface : Colors.white;
 
     // Material 祖先必须存在，否则 InkWell 的 Material.of 会抛出异常。
     return Material(

@@ -209,9 +209,9 @@ void WebView::ApplyDefaultBackgroundColor() {
   COREWEBVIEW2_COLOR color;
   color.A = 255;
   if (brightness_ == 0) {
-    color.R = 17;
-    color.G = 24;
-    color.B = 39;
+    color.R = 16;
+    color.G = 16;
+    color.B = 16;
   } else {
     color.R = 245;
     color.G = 245;
