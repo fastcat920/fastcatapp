@@ -202,8 +202,7 @@ void WebView::ApplyDefaultBackgroundColor() {
     return;
   }
   wil::com_ptr<ICoreWebView2Controller2> controller2;
-  auto hr = webview_controller_.query_to(&controller2);
-  if (FAILED(hr) || !controller2) {
+  if (!webview_controller_.try_query_to(&controller2) || !controller2) {
     return;
   }
   COREWEBVIEW2_COLOR color;
