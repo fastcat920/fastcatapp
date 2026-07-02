@@ -6,6 +6,7 @@
 #include <memory>
 #include <cstring>
 #include <map>
+#include <utility>
 
 #include <webkit2/webkit2.h>
 
@@ -99,7 +100,9 @@ static void webview_window_plugin_handle_method_call(
     self->windows->at(window_id)->RunJavaScriptWhenContentReady(java_script);
     fl_method_call_respond_success(method_call, nullptr, nullptr);
   } else if (strcmp(method, "clearAll") == 0) {
-    for (const auto &item: *self->windows) {
+    std::map<int64_t, std::unique_ptr<WebviewWindow>> local;
+    std::swap(local, *self->windows);
+    for (const auto &item: local) {
       item.second->Close();
     }
     // If application didn't create a webview, but we called webkit_website_data_manager_clear, there will be a segment fault.

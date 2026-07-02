@@ -69,6 +69,7 @@ class WebviewWindow {
   GtkBox *box_ = nullptr;
 
   int brightness_ = -1;
+  bool destroyed_ = false;
 
 };
 

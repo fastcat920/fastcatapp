@@ -82,14 +82,20 @@ WebviewWindow::WebviewWindow(
   g_signal_connect(G_OBJECT(window_), "destroy",
                    G_CALLBACK(+[](GtkWidget *, gpointer arg) {
                      auto *window = static_cast<WebviewWindow *>(arg);
+                     if (window->destroyed_) return;
+                     window->destroyed_ = true;
+                     const auto window_id = window->window_id_;
+                     auto *method_channel = window->method_channel_;
+                     g_object_ref(method_channel);
+                     auto *args = fl_value_new_map();
+                     fl_value_set(args, fl_value_new_string("id"), fl_value_new_int(window_id));
+                     fl_method_channel_invoke_method(
+                         FL_METHOD_CHANNEL(method_channel), "onWindowClose", args,
+                         nullptr, nullptr, nullptr);
+                     g_object_unref(method_channel);
                      if (window->on_close_callback_) {
                        window->on_close_callback_();
                      }
-                     auto *args = fl_value_new_map();
-                     fl_value_set(args, fl_value_new_string("id"), fl_value_new_int(window->window_id_));
-                     fl_method_channel_invoke_method(
-                         FL_METHOD_CHANNEL(window->method_channel_), "onWindowClose", args,
-                         nullptr, nullptr, nullptr);
                    }), this);
   gtk_window_set_title(GTK_WINDOW(window_), title.c_str());
   gtk_window_set_default_size(GTK_WINDOW(window_), width, height);
@@ -133,6 +139,11 @@ WebviewWindow::WebviewWindow(
 
   // initial web_view
   webview_ = webkit_web_view_new();
+  auto *context = webkit_web_view_get_context(WEBKIT_WEB_VIEW(webview_));
+  auto *cookie_manager = webkit_web_context_get_cookie_manager(context);
+  webkit_cookie_manager_set_accept_policy(
+      cookie_manager,
+      WEBKIT_COOKIE_POLICY_ACCEPT_ALWAYS);
   g_signal_connect(G_OBJECT(webview_), "load-failed-with-tls-errors",
                    G_CALLBACK(on_load_failed_with_tls_errors), this);
   g_signal_connect(G_OBJECT(webview_), "create",
@@ -145,6 +156,7 @@ WebviewWindow::WebviewWindow(
                    G_CALLBACK(run_file_chooser_cb), this);
 
   auto settings = webkit_web_view_get_settings(WEBKIT_WEB_VIEW(webview_));
+  webkit_settings_set_enable_javascript(settings, true);
   webkit_settings_set_javascript_can_open_windows_automatically(settings, true);
   default_user_agent_ = webkit_settings_get_user_agent(settings);
   gtk_box_pack_end(box_, webview_, true, true, 0);
