@@ -42,6 +42,9 @@ class _LoginPageState extends ConsumerState<LoginPage> {
     if (_gatewayOverrideUrl.trim().isEmpty) {
       _initializeXBoard();
     }
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      CustomerServiceHelper.prewarm();
+    });
   }
 
   @override
@@ -58,6 +61,8 @@ class _LoginPageState extends ConsumerState<LoginPage> {
         await ref.read(initializationProvider.notifier).initialize();
       } catch (e) {
         // 初始化失败，UI 会显示错误状态
+      } finally {
+        CustomerServiceHelper.prewarm();
       }
     });
   }
@@ -176,8 +181,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
         lower.contains('network is unreachable')) {
       return al.xboardLoginErrorNetwork;
     }
-    if (
-        lower.contains("invalid credentials") ||
+    if (lower.contains("invalid credentials") ||
         lower.contains('unauthorized') ||
         lower.contains('email or password') ||
         lower.contains('password error') ||

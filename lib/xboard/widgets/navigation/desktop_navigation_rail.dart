@@ -30,25 +30,15 @@ class DesktopNavigationRail extends ConsumerWidget {
       child: Container(
         width: 96,
         decoration: BoxDecoration(
-          gradient: isDark
-              ? LinearGradient(
-                  begin: Alignment.topCenter,
-                  end: Alignment.bottomCenter,
-                  colors: [
-                    colorScheme.surfaceContainer,
-                    colorScheme.surfaceContainerHighest.withValues(alpha: 0.5),
-                  ],
-                )
-              : null,
-          color: isDark ? null : Colors.white,
-          border: isDark
-              ? null
-              : const Border(
-                  right: BorderSide(
-                    color: Color(0xFFEEF0F4),
-                    width: 1,
-                  ),
-                ),
+          color: isDark ? colorScheme.surface : Colors.white,
+          border: Border(
+            right: BorderSide(
+              color: isDark
+                  ? colorScheme.outline.withValues(alpha: 0.18)
+                  : const Color(0xFFEEF0F4),
+              width: 1,
+            ),
+          ),
         ),
         child: Column(
           children: [

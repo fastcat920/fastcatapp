@@ -54,6 +54,10 @@ gboolean run_file_chooser_cb(WebKitWebView *web_view,
   return window->RunFileChooser(request);
 }
 
+void apply_widget_background(GtkWidget *widget, const char *css_name) {
+  gtk_widget_set_name(widget, css_name);
+}
+
 }
 
 WebviewWindow::WebviewWindow(
@@ -65,11 +69,13 @@ WebviewWindow::WebviewWindow(
     int height,
     int title_bar_height,
     bool resizable,
-    bool show_title_bar_actions
+    bool show_title_bar_actions,
+    int brightness
 ) : method_channel_(method_channel),
     window_id_(window_id),
     on_close_callback_(std::move(on_close_callback)),
-    default_user_agent_() {
+    default_user_agent_(),
+    brightness_(brightness) {
   g_object_ref(method_channel_);
 
   window_ = gtk_window_new(GTK_WINDOW_TOPLEVEL);
@@ -89,8 +95,10 @@ WebviewWindow::WebviewWindow(
   gtk_window_set_default_size(GTK_WINDOW(window_), width, height);
   gtk_window_set_position(GTK_WINDOW(window_), GTK_WIN_POS_CENTER);
   gtk_window_set_resizable(GTK_WINDOW(window_), resizable ? TRUE : FALSE);
+  apply_widget_background(window_, "fastcat-webview-window");
 
   box_ = GTK_BOX(gtk_box_new(GTK_ORIENTATION_VERTICAL, 0));
+  apply_widget_background(GTK_WIDGET(box_), "fastcat-webview-box");
   gtk_container_add(GTK_CONTAINER(window_), GTK_WIDGET(box_));
 
   FlView *title_bar = nullptr;
@@ -102,6 +110,7 @@ WebviewWindow::WebviewWindow(
         g_strdup_printf("%ld", window_id),
         "0",
         show_title_bar_actions ? "true" : "false",
+        g_strdup_printf("%d", brightness_),
         nullptr};
     fl_dart_project_set_dart_entrypoint_arguments(project, const_cast<char **>(args));
     title_bar = fl_view_new(project);
@@ -132,6 +141,7 @@ WebviewWindow::WebviewWindow(
   webkit_settings_set_javascript_can_open_windows_automatically(settings, true);
   default_user_agent_ = webkit_settings_get_user_agent(settings);
   gtk_box_pack_end(box_, webview_, true, true, 0);
+  SetBrightness(brightness_);
 
   gtk_widget_show_all(GTK_WIDGET(window_));
   gtk_widget_grab_focus(GTK_WIDGET(webview_));
@@ -170,6 +180,51 @@ void WebviewWindow::RunJavaScriptWhenContentReady(const char *java_script) {
 void WebviewWindow::SetApplicationNameForUserAgent(const std::string &app_name) {
   auto *setting = webkit_web_view_get_settings(WEBKIT_WEB_VIEW(webview_));
   webkit_settings_set_user_agent(setting, (default_user_agent_ + app_name).c_str());
+}
+
+void WebviewWindow::SetBrightness(int brightness) {
+  brightness_ = brightness;
+  const bool is_dark = brightness == 0;
+  const char *background = is_dark ? "#111827" : "#f5f5f5";
+  const char *foreground = is_dark ? "#d1d5db" : "#111827";
+
+  auto *settings = gtk_settings_get_default();
+  if (settings != nullptr && brightness >= 0) {
+    g_object_set(
+        G_OBJECT(settings),
+        "gtk-application-prefer-dark-theme",
+        is_dark ? TRUE : FALSE,
+        nullptr);
+  }
+
+  GdkRGBA rgba;
+  if (gdk_rgba_parse(&rgba, background)) {
+    if (window_ != nullptr) {
+      gtk_widget_override_background_color(window_, GTK_STATE_FLAG_NORMAL, &rgba);
+    }
+    if (box_ != nullptr) {
+      gtk_widget_override_background_color(GTK_WIDGET(box_), GTK_STATE_FLAG_NORMAL, &rgba);
+    }
+    if (webview_ != nullptr) {
+      webkit_web_view_set_background_color(WEBKIT_WEB_VIEW(webview_), &rgba);
+    }
+  }
+
+  auto *provider = gtk_css_provider_new();
+  const std::string css =
+      std::string("#fastcat-webview-window, #fastcat-webview-box {") +
+      "background: " + background + ";" +
+      "color: " + foreground + ";" +
+      "}";
+  gtk_css_provider_load_from_data(provider, css.c_str(), -1, nullptr);
+  auto *screen = gdk_screen_get_default();
+  if (screen != nullptr) {
+    gtk_style_context_add_provider_for_screen(
+        screen,
+        GTK_STYLE_PROVIDER(provider),
+        GTK_STYLE_PROVIDER_PRIORITY_APPLICATION);
+  }
+  g_object_unref(provider);
 }
 
 void WebviewWindow::Close() {

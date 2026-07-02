@@ -28,9 +28,11 @@ using namespace Microsoft::WRL;
 WebView::WebView(
     std::shared_ptr<flutter::MethodChannel<flutter::EncodableValue>> method_channel,
     int64_t web_view_id, std::wstring userDataFolder,
+    int brightness,
     std::function<void(HRESULT)> on_web_view_created
 ) : method_channel_(std::move(method_channel)),
     web_view_id_(web_view_id), user_data_folder_(std::move(userDataFolder)),
+    brightness_(brightness),
     on_web_view_created_callback_(std::move(on_web_view_created)) {
   RegisterWindowClass(kWebViewClassName, WndProc);
   view_window_ = wil::unique_hwnd(::CreateWindowEx(
@@ -81,6 +83,7 @@ void WebView::OnWebviewControllerCreated() {
     return;
   }
   webview_controller_->get_CoreWebView2(&webview_);
+  ApplyDefaultBackgroundColor();
 
   if (!webview_) {
     std::cerr << "failed to get core webview" << std::endl;
@@ -194,6 +197,29 @@ void WebView::OnWebviewControllerCreated() {
 
 }
 
+void WebView::ApplyDefaultBackgroundColor() {
+  if (!webview_controller_) {
+    return;
+  }
+  wil::com_ptr<ICoreWebView2Controller2> controller2;
+  auto hr = webview_controller_.query_to(&controller2);
+  if (FAILED(hr) || !controller2) {
+    return;
+  }
+  COREWEBVIEW2_COLOR color;
+  color.A = 255;
+  if (brightness_ == 0) {
+    color.R = 17;
+    color.G = 24;
+    color.B = 39;
+  } else {
+    color.R = 245;
+    color.G = 245;
+    color.B = 245;
+  }
+  controller2->put_DefaultBackgroundColor(color);
+}
+
 void WebView::UpdateBounds() {
   // Resize WebView to fit the bounds of the parent window
   RECT bounds;
@@ -225,6 +251,11 @@ void WebView::SetApplicationNameForUserAgent(const std::wstring &name) {
       settings2->put_UserAgent((default_user_agent_ + name).c_str());
     }
   }
+}
+
+void WebView::SetBrightness(int brightness) {
+  brightness_ = brightness;
+  ApplyDefaultBackgroundColor();
 }
 
 void WebView::GoBack() {

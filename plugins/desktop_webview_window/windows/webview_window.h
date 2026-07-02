@@ -33,6 +33,7 @@ class WebviewWindow {
                 int64_t window_id,
                 int title_bar_height,
                 bool show_title_bar_actions,
+                int brightness,
                 std::function<void()> on_close_callback);
 
   virtual ~WebviewWindow();
@@ -87,6 +88,8 @@ class WebviewWindow {
   int title_bar_height_;
 
   bool show_title_bar_actions_;
+
+  int brightness_;
 
   // Processes and route salient window messages for mouse handling,
   // size change and DPI. Delegates handling of these to member overloads that

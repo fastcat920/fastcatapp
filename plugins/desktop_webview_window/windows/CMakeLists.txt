@@ -43,7 +43,7 @@ endif()
 SET_PROPERTY(TARGET Webview2 PROPERTY IMPORTED_LOCATION ${WEBVIEW2_LOADER_DLL})
 SET_PROPERTY(TARGET Webview2 PROPERTY IMPORTED_IMPLIB ${WEBVIEW2_LOADER_LIB})
 
-target_link_libraries(${PLUGIN_NAME} PRIVATE Webview2 uxtheme)
+target_link_libraries(${PLUGIN_NAME} PRIVATE Webview2 uxtheme dwmapi)
 
 # List of absolute paths to libraries that should be bundled with the plugin
 set(desktop_webview_window_bundled_libraries

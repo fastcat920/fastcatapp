@@ -1,21 +1,16 @@
 import 'dart:async';
 import 'dart:io';
 
-import 'package:desktop_webview_window/desktop_webview_window.dart'
-    as desktopwv;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:flutter/services.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 import 'package:webview_win_floating/webview_win_floating.dart' as winwv;
 import 'package:url_launcher/url_launcher.dart';
-import 'package:window_manager/window_manager.dart';
 
 import 'package:fl_clash/l10n/l10n.dart';
 import 'package:fl_clash/xboard/adapter/state/order_state.dart';
 import 'package:fl_clash/xboard/core/core.dart';
 import 'package:fl_clash/xboard/features/shared/styles/styles.dart';
-import 'package:fl_clash/xboard/utils/xboard_notification.dart';
 
 const _logger = FileLogger('payment_webview_page.dart');
 
@@ -30,8 +25,7 @@ const _desktopUserAgent = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) '
 ///
 /// All platforms use an embedded WebView:
 /// - Android / iOS / macOS → webview_flutter (system WebView / WKWebView)
-/// - Windows → webview_win_floating (native floating WebView)
-/// - Linux → desktop_webview_window (in-app WebView window)
+/// - Windows / Linux → webview_win_floating (native embedded WebView)
 ///
 /// Auto-polling runs on every platform as a reliable fallback.
 ///
@@ -70,25 +64,17 @@ class PaymentWebViewPage extends ConsumerStatefulWidget {
 class _PaymentWebViewPageState extends ConsumerState<PaymentWebViewPage> {
   WebViewController? _webViewController;
   winwv.WinWebViewController? _desktopFloatingWebViewController;
-  desktopwv.Webview? _desktopWindowWebView;
-  VoidCallback? _desktopWindowNavigationListener;
-  desktopwv.OnUrlRequestCallback? _desktopWindowUrlRequestCallback;
   Timer? _pollTimer;
   Timer? _loadStateTimer;
   bool _isPageLoading = true;
   bool _showPageLoadingMessage = false;
   bool _isPolling = false;
   bool _isChecking = false;
-  bool _desktopWindowOpening = false;
-  bool _desktopWindowOpened = false;
-  bool _desktopWindowClosed = false;
-  String? _desktopWindowError;
 
   /// Platforms that use webview_flutter (system WebView)
   bool get _useSystemWebView =>
       Platform.isAndroid || Platform.isIOS || Platform.isMacOS;
-  bool get _useDesktopFloatingWebView => Platform.isWindows;
-  bool get _useDesktopWindowWebView => Platform.isLinux;
+  bool get _useDesktopFloatingWebView => Platform.isWindows || Platform.isLinux;
 
   @override
   void initState() {
@@ -97,8 +83,6 @@ class _PaymentWebViewPageState extends ConsumerState<PaymentWebViewPage> {
       _initWebView();
     } else if (_useDesktopFloatingWebView) {
       _initDesktopFloatingWebView();
-    } else if (_useDesktopWindowWebView) {
-      unawaited(_openDesktopWindowWebView());
     }
     _startPolling();
   }
@@ -108,7 +92,6 @@ class _PaymentWebViewPageState extends ConsumerState<PaymentWebViewPage> {
     _stopPolling();
     _loadStateTimer?.cancel();
     _webViewController = null;
-    _closeDesktopWindowWebView();
     final desktopController = _desktopFloatingWebViewController;
     _desktopFloatingWebViewController = null;
     if (desktopController != null) {
@@ -153,12 +136,14 @@ class _PaymentWebViewPageState extends ConsumerState<PaymentWebViewPage> {
 
   Future<void> _initDesktopFloatingWebView() async {
     _beginPageLoading();
-    final controller = winwv.WinWebViewController(
-      params: const winwv.WindowsWebViewControllerCreationParams(
-        profileName: 'fastcat-payment',
-        suspendDuringDeactive: false,
-      ),
-    );
+    final controller = Platform.isWindows
+        ? winwv.WinWebViewController(
+            params: const winwv.WindowsWebViewControllerCreationParams(
+              profileName: 'fastcat-payment',
+              suspendDuringDeactive: false,
+            ),
+          )
+        : winwv.WinWebViewController();
     _desktopFloatingWebViewController = controller;
     if (mounted) setState(() {});
     await controller.setJavaScriptMode(JavaScriptMode.unrestricted);
@@ -184,180 +169,6 @@ class _PaymentWebViewPageState extends ConsumerState<PaymentWebViewPage> {
     );
     await controller.loadRequest(Uri.parse(widget.paymentUrl));
     if (mounted) setState(() {});
-  }
-
-  Future<void> _openDesktopWindowWebView() async {
-    if (!_useDesktopWindowWebView || _desktopWindowOpening) return;
-    final existingWebView = _desktopWindowWebView;
-    if (existingWebView != null) {
-      try {
-        await existingWebView.setWebviewWindowVisibility(true);
-        existingWebView.launch(widget.paymentUrl);
-        return;
-      } catch (e) {
-        _logger.warning('Show desktop payment WebView failed: $e');
-        _detachDesktopWindowWebView(existingWebView);
-      }
-    }
-
-    if (!mounted) return;
-    final l10n = AppLocalizations.of(context);
-    _beginPageLoading();
-    if (mounted) {
-      setState(() {
-        _desktopWindowOpening = true;
-        _desktopWindowClosed = false;
-        _desktopWindowError = null;
-      });
-    }
-
-    try {
-      final webview = await desktopwv.WebviewWindow.create(
-        configuration: await _buildDesktopPaymentWindowConfiguration(
-            l10n.xboardPaymentGateway),
-      );
-      if (!mounted) {
-        webview.close();
-        return;
-      }
-
-      void handleDesktopWindowNavigation() {
-        if (!mounted) return;
-        final isNavigating = webview.isNavigating.value;
-        if (isNavigating) {
-          _beginPageLoading();
-        } else {
-          _finishPageLoading();
-        }
-      }
-
-      final navigationListener = handleDesktopWindowNavigation;
-      final urlRequestCallback = _handleDesktopWindowUrlRequest;
-      _desktopWindowWebView = webview;
-      _desktopWindowNavigationListener = navigationListener;
-      _desktopWindowUrlRequestCallback = urlRequestCallback;
-      webview.isNavigating.addListener(navigationListener);
-      webview.addOnUrlRequestCallback(urlRequestCallback);
-      unawaited(webview.setApplicationNameForUserAgent('FastCat'));
-      webview.launch(widget.paymentUrl);
-      _finishPageLoading();
-
-      if (mounted) {
-        setState(() {
-          _desktopWindowOpening = false;
-          _desktopWindowOpened = true;
-          _desktopWindowClosed = false;
-          _desktopWindowError = null;
-        });
-      }
-
-      unawaited(webview.onClose.then((_) {
-        if (!mounted) return;
-        _detachDesktopWindowWebView(webview);
-        _finishPageLoading();
-        setState(() {
-          _desktopWindowOpening = false;
-          _desktopWindowClosed = true;
-        });
-      }));
-    } catch (e, stackTrace) {
-      _logger.error('Open desktop payment WebView failed', e, stackTrace);
-      _finishPageLoading();
-      if (mounted) {
-        setState(() {
-          _desktopWindowOpening = false;
-          _desktopWindowError = l10n.xboardOpenPaymentFailed;
-        });
-        XBoardNotification.showError(l10n.xboardOpenPaymentFailed);
-      }
-    }
-  }
-
-  Future<desktopwv.CreateConfiguration> _buildDesktopPaymentWindowConfiguration(
-    String title,
-  ) async {
-    const fallbackWidth = 980;
-    const fallbackHeight = 680;
-    try {
-      final mainSize = await windowManager.getSize();
-      final mainPosition = await windowManager.getPosition();
-      final views = WidgetsBinding.instance.platformDispatcher.views;
-      final ratio = views.isNotEmpty ? views.first.devicePixelRatio : 1.0;
-      final width = _clampInt((mainSize.width * ratio).round(), 760, 1280);
-      final height = _clampInt((mainSize.height * ratio).round(), 560, 900);
-      return desktopwv.CreateConfiguration(
-        title: title,
-        windowWidth: width,
-        windowHeight: height,
-        windowPosX: (mainPosition.dx * ratio).round(),
-        windowPosY: (mainPosition.dy * ratio).round(),
-        useWindowPositionAndSize: true,
-        resizable: true,
-        showTitleBarActions: false,
-      );
-    } catch (e) {
-      _logger.warning('Use fallback desktop payment window size: $e');
-      return desktopwv.CreateConfiguration(
-        title: title,
-        windowWidth: fallbackWidth,
-        windowHeight: fallbackHeight,
-        resizable: true,
-        showTitleBarActions: false,
-      );
-    }
-  }
-
-  int _clampInt(int value, int min, int max) {
-    if (value < min) return min;
-    if (value > max) return max;
-    return value;
-  }
-
-  void _handleDesktopWindowUrlRequest(String url) {
-    final uri = Uri.tryParse(url);
-    if (uri == null) return;
-    final scheme = uri.scheme.toLowerCase();
-    if (_isStandardWebScheme(scheme)) return;
-    unawaited(_launchExternalPaymentUri(uri));
-  }
-
-  void _detachDesktopWindowWebView(desktopwv.Webview webview) {
-    final navigationListener = _desktopWindowNavigationListener;
-    if (navigationListener != null) {
-      webview.isNavigating.removeListener(navigationListener);
-    }
-    final urlRequestCallback = _desktopWindowUrlRequestCallback;
-    if (urlRequestCallback != null) {
-      webview.removeOnUrlRequestCallback(urlRequestCallback);
-    }
-    if (identical(_desktopWindowWebView, webview)) {
-      _desktopWindowWebView = null;
-    }
-    _desktopWindowNavigationListener = null;
-    _desktopWindowUrlRequestCallback = null;
-  }
-
-  void _closeDesktopWindowWebView() {
-    final webview = _desktopWindowWebView;
-    if (webview == null) return;
-    _detachDesktopWindowWebView(webview);
-    try {
-      webview.close();
-    } catch (e) {
-      _logger.debug('Desktop payment WebView close failed: $e');
-    }
-  }
-
-  Future<void> _copyPaymentUrl() async {
-    final l10n = AppLocalizations.of(context);
-    try {
-      await Clipboard.setData(ClipboardData(text: widget.paymentUrl));
-      if (mounted) {
-        XBoardNotification.showSuccess(l10n.xboardPaymentLinkCopied);
-      }
-    } catch (e) {
-      _logger.warning('Copy payment URL failed: $e');
-    }
   }
 
   void _beginPageLoading() {
@@ -490,7 +301,6 @@ class _PaymentWebViewPageState extends ConsumerState<PaymentWebViewPage> {
 
   void _handlePaymentSuccess() {
     _stopPolling();
-    _closeDesktopWindowWebView();
     if (mounted) {
       Navigator.of(context).pop(true);
     }
@@ -498,7 +308,6 @@ class _PaymentWebViewPageState extends ConsumerState<PaymentWebViewPage> {
 
   void _handleCancel() {
     _stopPolling();
-    _closeDesktopWindowWebView();
     Navigator.of(context).pop(null);
   }
 
@@ -541,17 +350,6 @@ class _PaymentWebViewPageState extends ConsumerState<PaymentWebViewPage> {
               controller: _desktopFloatingWebViewController!,
             )
           : const SizedBox.expand();
-    } else if (_useDesktopWindowWebView) {
-      webView = _DesktopWindowPaymentStatus(
-        isOpening: _desktopWindowOpening,
-        isOpened: _desktopWindowOpened,
-        isClosed: _desktopWindowClosed,
-        errorMessage: _desktopWindowError,
-        isChecking: _isChecking,
-        onReopen: _openDesktopWindowWebView,
-        onCopyLink: _copyPaymentUrl,
-        onCheckStatus: _checkPaymentStatus,
-      );
     } else {
       webView = const SizedBox.expand();
     }
@@ -565,139 +363,6 @@ class _PaymentWebViewPageState extends ConsumerState<PaymentWebViewPage> {
             showMessage: _showPageLoadingMessage,
           ),
       ],
-    );
-  }
-}
-
-class _DesktopWindowPaymentStatus extends StatelessWidget {
-  final bool isOpening;
-  final bool isOpened;
-  final bool isClosed;
-  final String? errorMessage;
-  final bool isChecking;
-  final VoidCallback onReopen;
-  final VoidCallback onCopyLink;
-  final VoidCallback onCheckStatus;
-
-  const _DesktopWindowPaymentStatus({
-    required this.isOpening,
-    required this.isOpened,
-    required this.isClosed,
-    required this.errorMessage,
-    required this.isChecking,
-    required this.onReopen,
-    required this.onCopyLink,
-    required this.onCheckStatus,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    final l10n = AppLocalizations.of(context);
-    final theme = Theme.of(context);
-    final hasError = errorMessage != null;
-    final statusColor = hasError
-        ? XbUiStatusColor.error(context)
-        : isClosed
-            ? XbUiStatusColor.pending(context)
-            : XbUiStatusColor.processing(context);
-    final statusText = errorMessage ??
-        (isOpening
-            ? l10n.xboardPreparingPaymentPage
-            : isClosed
-                ? l10n.xboardReopenPaymentPageTip
-                : isOpened
-                    ? l10n.xboardPaymentPageOpenedCompleteAndReturn
-                    : l10n.xboardPreparingPaymentPage);
-
-    return Center(
-      child: SingleChildScrollView(
-        padding: const EdgeInsets.all(24),
-        child: ConstrainedBox(
-          constraints: const BoxConstraints(maxWidth: 560),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Container(
-                width: 64,
-                height: 64,
-                decoration: BoxDecoration(
-                  color: statusColor.withValues(alpha: 0.12),
-                  shape: BoxShape.circle,
-                ),
-                child: Icon(
-                  hasError
-                      ? Icons.error_outline
-                      : isClosed
-                          ? Icons.open_in_new
-                          : Icons.payment,
-                  color: statusColor,
-                  size: 32,
-                ),
-              ),
-              const SizedBox(height: 18),
-              Text(
-                statusText,
-                textAlign: TextAlign.center,
-                style: theme.textTheme.titleMedium?.copyWith(
-                  fontWeight: FontWeight.w700,
-                ),
-              ),
-              const SizedBox(height: 10),
-              Text(
-                l10n.xboardReturnAfterPaymentAutoDetect,
-                textAlign: TextAlign.center,
-                style: theme.textTheme.bodyMedium?.copyWith(
-                  color: theme.colorScheme.onSurface.withValues(alpha: 0.68),
-                ),
-              ),
-              const SizedBox(height: 22),
-              Wrap(
-                spacing: 10,
-                runSpacing: 10,
-                alignment: WrapAlignment.center,
-                children: [
-                  FilledButton.icon(
-                    onPressed: isOpening ? null : onReopen,
-                    icon: isOpening
-                        ? const SizedBox(
-                            width: 16,
-                            height: 16,
-                            child: CircularProgressIndicator(strokeWidth: 2),
-                          )
-                        : const Icon(Icons.open_in_new),
-                    label: Text(l10n.xboardReopenPayment),
-                    style: XbUiButton.filledPrimary(context),
-                  ),
-                  OutlinedButton.icon(
-                    onPressed: onCopyLink,
-                    icon: const Icon(Icons.copy),
-                    label: Text(l10n.xboardCopyLink),
-                    style: XbUiButton.outlinedNeutral(context),
-                  ),
-                  FilledButton.icon(
-                    onPressed: isChecking ? null : onCheckStatus,
-                    icon: isChecking
-                        ? const SizedBox(
-                            width: 16,
-                            height: 16,
-                            child: CircularProgressIndicator(strokeWidth: 2),
-                          )
-                        : const Icon(Icons.refresh),
-                    label: Text(
-                      isChecking ? l10n.xboardChecking : l10n.xboardCheckStatus,
-                    ),
-                    style: XbUiButton.filledPrimary(context).copyWith(
-                      backgroundColor: WidgetStatePropertyAll(
-                        XbUiStatusColor.pending(context),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ],
-          ),
-        ),
-      ),
     );
   }
 }
@@ -776,7 +441,7 @@ class _StatusBanner extends StatelessWidget {
     } else {
       bg = XbUiStatusColor.muted(context).withValues(alpha: 0.12);
       fg = XbUiStatusColor.muted(context);
-      text = l10n.xboardCompletePaymentInBrowser;
+      text = l10n.xboardPaymentPageOpenedCompleteAndReturn;
       icon = Icons.info_outline;
     }
 

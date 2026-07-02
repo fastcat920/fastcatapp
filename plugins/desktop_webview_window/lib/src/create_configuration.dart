@@ -1,5 +1,7 @@
 import 'dart:io';
 
+import 'package:flutter/foundation.dart';
+
 class CreateConfiguration {
   final int windowWidth;
   final int windowHeight;
@@ -21,6 +23,7 @@ class CreateConfiguration {
   final bool openMaximized;
   final bool resizable;
   final bool showTitleBarActions;
+  final Brightness? brightness;
 
   const CreateConfiguration({
     this.windowWidth = 1280,
@@ -35,6 +38,7 @@ class CreateConfiguration {
     this.openMaximized = false,
     this.resizable = true,
     this.showTitleBarActions = true,
+    this.brightness,
   });
 
   factory CreateConfiguration.platform() {
@@ -56,5 +60,6 @@ class CreateConfiguration {
         "openMaximized": openMaximized,
         "resizable": resizable,
         "showTitleBarActions": showTitleBarActions,
+        "brightness": brightness?.index ?? -1,
       };
 }

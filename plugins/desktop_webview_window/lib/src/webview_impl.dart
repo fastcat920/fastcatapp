@@ -133,7 +133,7 @@ class WebviewImpl extends Webview {
     /// -1 : system default
     /// 0 : dark
     /// 1 : light
-    if (!Platform.isMacOS) {
+    if (!(Platform.isWindows || Platform.isLinux || Platform.isMacOS)) {
       return;
     }
     channel.invokeMethod("setBrightness", {
@@ -219,7 +219,8 @@ class WebviewImpl extends Webview {
   }
 
   @override
-  void removeOnWebMessageReceivedCallback(OnWebMessageReceivedCallback callback) {
+  void removeOnWebMessageReceivedCallback(
+      OnWebMessageReceivedCallback callback) {
     _onWebMessageReceivedCallbacks.remove(callback);
   }
 

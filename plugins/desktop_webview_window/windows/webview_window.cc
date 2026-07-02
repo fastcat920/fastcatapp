@@ -3,6 +3,7 @@
 //
 
 #include <windows.h>
+#include <dwmapi.h>
 
 #include "webview_window.h"
 
@@ -26,6 +27,9 @@ int Scale(int source, double scale_factor) {
   return static_cast<int>(source * scale_factor);
 }
 
+constexpr DWORD kDwmUseImmersiveDarkMode = 20;
+constexpr DWORD kDwmUseImmersiveDarkModeBefore20H1 = 19;
+
 }
 
 using namespace Microsoft::WRL;
@@ -35,13 +39,15 @@ WebviewWindow::WebviewWindow(
     int64_t window_id,
     int title_bar_height,
     bool show_title_bar_actions,
+    int brightness,
     std::function<void()> on_close_callback
 ) : method_channel_(std::move(method_channel)),
     window_id_(window_id),
     on_close_callback_(std::move(on_close_callback)),
     hwnd_(),
     title_bar_height_(title_bar_height),
-    show_title_bar_actions_(show_title_bar_actions) {
+    show_title_bar_actions_(show_title_bar_actions),
+    brightness_(brightness) {
 
 }
 
@@ -94,6 +100,7 @@ void WebviewWindow::CreateAndShow(const std::wstring &title, int height, int wid
     callback(false);
     return;
   }
+  SetBrightness(brightness_);
 
   // Centered window on screen.
   RECT rc;
@@ -107,7 +114,7 @@ void WebviewWindow::CreateAndShow(const std::wstring &title, int height, int wid
 
   // Create the browser view.
   web_view_ = std::make_unique<webview_window::WebView>(
-      method_channel_, window_id_, userDataFolder,
+      method_channel_, window_id_, userDataFolder, brightness_,
       [callback](HRESULT hr) {
         if (SUCCEEDED(hr)) {
           callback(true);
@@ -130,7 +137,8 @@ void WebviewWindow::CreateAndShow(const std::wstring &title, int height, int wid
       "web_view_title_bar",
       std::to_string(window_id_),
       "0",
-      show_title_bar_actions_ ? "true" : "false"
+      show_title_bar_actions_ ? "true" : "false",
+      std::to_string(brightness_)
     };
     flutter_action_bar_ = std::make_unique<webview_window::FlutterView>(std::move(args));
     auto title_bar_handle = flutter_action_bar_->GetWindow();
@@ -147,6 +155,36 @@ void WebviewWindow::CreateAndShow(const std::wstring &title, int height, int wid
 }
 
 void WebviewWindow::SetBrightness(int brightness) {
+  brightness_ = brightness;
+  if (!hwnd_) {
+    return;
+  }
+  if (brightness < 0) {
+    return;
+  }
+  BOOL use_dark_mode = brightness == 0 ? TRUE : FALSE;
+  DwmSetWindowAttribute(
+      hwnd_.get(),
+      kDwmUseImmersiveDarkMode,
+      &use_dark_mode,
+      sizeof(use_dark_mode));
+  DwmSetWindowAttribute(
+      hwnd_.get(),
+      kDwmUseImmersiveDarkModeBefore20H1,
+      &use_dark_mode,
+      sizeof(use_dark_mode));
+  if (web_view_) {
+    web_view_->SetBrightness(brightness);
+  }
+  SetWindowPos(
+      hwnd_.get(),
+      nullptr,
+      0,
+      0,
+      0,
+      0,
+      SWP_NOMOVE | SWP_NOSIZE | SWP_NOZORDER | SWP_NOACTIVATE |
+          SWP_FRAMECHANGED);
 }
 
 void WebviewWindow::setVisibility(bool visible)

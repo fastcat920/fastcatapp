@@ -26,6 +26,7 @@ class WebView {
   WebView(std::shared_ptr<flutter::MethodChannel<flutter::EncodableValue>> method_channel,
           int64_t web_view_id,
           std::wstring userDataFolder,
+          int brightness,
           std::function<void(HRESULT)> on_web_view_created_callback
   );
 
@@ -40,6 +41,8 @@ class WebView {
   void AddScriptToExecuteOnDocumentCreated(const std::wstring &javaScript);
 
   void SetApplicationNameForUserAgent(const std::wstring &application_name);
+
+  void SetBrightness(int brightness);
 
   void GoBack();
 
@@ -79,7 +82,11 @@ class WebView {
 
   std::wstring user_data_folder_;
 
+  int brightness_;
+
   void OnWebviewControllerCreated();
+
+  void ApplyDefaultBackgroundColor();
 
   [[nodiscard]] bool CanGoBack() const;
 

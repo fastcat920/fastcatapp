@@ -26,6 +26,9 @@ const _desktopCustomerServiceWindowWidth = 420;
 const _desktopCustomerServiceWindowHeight = 680;
 const _crispProxyProbeTimeout = Duration(seconds: 4);
 const _crispProxyProbePreviewBytes = 4096;
+const _crispProxyUsableCacheTtl = Duration(minutes: 10);
+const _crispReadyProbeTimeout = Duration(seconds: 15);
+const _crispReadyProbeInterval = Duration(milliseconds: 500);
 
 /// 统一客服入口：按业务约定仅使用 Crisp（远程优先，本地兜底）
 ///
@@ -38,6 +41,8 @@ class CustomerServiceHelper {
   static Future<bool>? _desktopWebviewAvailableFuture;
   static Future<String>? _fallbackCrispWebsiteIdFuture;
   static Future<String>? _fallbackCrispProxyUrlFuture;
+  static _PendingCrispProxyProbe? _usableCrispProxyProbe;
+  static _CrispProxyCacheEntry? _usableCrispProxyCache;
 
   /// 是否有任何客服渠道可用（仅远程 Crisp）
   static bool get isAvailable => XBoardConfig.crispWebsiteId.isNotEmpty;
@@ -64,6 +69,10 @@ class CustomerServiceHelper {
     return isDarkMode ? '#60a5fa' : '#2563eb';
   }
 
+  static Brightness _customerServiceBrightness(bool isDarkMode) {
+    return isDarkMode ? Brightness.dark : Brightness.light;
+  }
+
   /// 预热客服启动所需的轻量资源，减少首次点击后的等待。
   static void prewarm() {
     if (XBoardConfig.crispWebsiteId.trim().isEmpty) {
@@ -72,11 +81,22 @@ class CustomerServiceHelper {
     if (XBoardConfig.crispProxyUrl.trim().isEmpty) {
       unawaited(_fallbackCrispProxyUrl());
     }
+    unawaited(_prewarmCrispRoute());
     if (_isDesktopPlatform) {
       unawaited(_isDesktopWebviewAvailable());
       if (Platform.isWindows) {
         unawaited(_webview2DataFolder());
       }
+    }
+  }
+
+  static Future<void> _prewarmCrispRoute() async {
+    try {
+      final websiteId = await _resolveCrispWebsiteId();
+      if (websiteId.isEmpty) return;
+      await _resolveUsableCrispProxyUrl(websiteId);
+    } catch (e) {
+      _logger.debug('[Crisp] 预热客服线路失败: $e');
     }
   }
 
@@ -140,14 +160,50 @@ class CustomerServiceHelper {
   static Future<String> _resolveUsableCrispProxyUrl(String websiteId) async {
     final proxyUrl = await _resolveCrispProxyUrl();
     if (!isCrispProxyConfigured(proxyUrl)) return '';
-    final proxyEmbedUri = crispEmbedUri(
+    final now = DateTime.now();
+    final cached = _usableCrispProxyCache;
+    if (cached != null && cached.matches(websiteId, proxyUrl, now)) {
+      return cached.usableProxyUrl;
+    }
+
+    final pending = _usableCrispProxyProbe;
+    if (pending != null &&
+        pending.websiteId == websiteId &&
+        pending.proxyUrl == proxyUrl) {
+      return pending.future;
+    }
+
+    final future = () async {
+      final proxyEmbedUri = crispEmbedUri(
+        websiteId: websiteId,
+        proxyUrl: proxyUrl,
+      );
+      final usable = await _isCrispProxyEmbedUsable(proxyEmbedUri);
+      final usableProxyUrl = usable ? proxyUrl : '';
+      _usableCrispProxyCache = _CrispProxyCacheEntry(
+        websiteId: websiteId,
+        proxyUrl: proxyUrl,
+        usableProxyUrl: usableProxyUrl,
+        createdAt: DateTime.now(),
+      );
+      if (!usable) {
+        _logger.warning('[Crisp] 代理预检失败，使用官方域名: $proxyEmbedUri');
+      }
+      return usableProxyUrl;
+    }();
+
+    _usableCrispProxyProbe = _PendingCrispProxyProbe(
       websiteId: websiteId,
       proxyUrl: proxyUrl,
+      future: future,
     );
-    final usable = await _isCrispProxyEmbedUsable(proxyEmbedUri);
-    if (usable) return proxyUrl;
-    _logger.warning('[Crisp] 代理预检失败，使用官方域名: $proxyEmbedUri');
-    return '';
+    try {
+      return await future;
+    } finally {
+      if (identical(_usableCrispProxyProbe?.future, future)) {
+        _usableCrispProxyProbe = null;
+      }
+    }
   }
 
   static Future<bool> _isCrispProxyEmbedUsable(Uri uri) async {
@@ -218,12 +274,15 @@ class CustomerServiceHelper {
       if (_isDesktopPlatform) {
         final webview = await _openCrispInDesktopWebview(
           crispId,
-          userScript: userScript,
           crispProxyUrl: crispProxyUrl,
           isDarkMode: isDarkMode,
         );
         if (webview != null && context.mounted) {
-          unawaited(_applyCrispIPDataWhenReady(context, webview));
+          unawaited(_applyCrispUserDataWhenReady(
+            context,
+            webview,
+            baseUserScript: userScript,
+          ));
         }
         return;
       }
@@ -295,8 +354,10 @@ class CustomerServiceHelper {
           userDataFolderWindows: dataFolder,
           resizable: false,
           showTitleBarActions: !Platform.isLinux,
+          brightness: _customerServiceBrightness(isDarkMode),
         ),
       );
+      webview.setBrightness(_customerServiceBrightness(isDarkMode));
 
       final scriptUrlEscaped = scriptUrl.replaceAll("'", "\\'");
       final bg = _customerServiceBackground(isDarkMode);
@@ -601,12 +662,20 @@ if(window===window.top){
         userScript ?? _buildCrispUserScript(context, ipData: ipData);
     if (_isDesktopPlatform) {
       // 桌面端：用 desktop_webview_window 独立窗口
-      unawaited(_openCrispInDesktopWebview(
-        websiteId,
-        userScript: effectiveUserScript,
-        crispProxyUrl: crispProxyUrl,
-        isDarkMode: _isDarkMode(context),
-      ));
+      unawaited(() async {
+        final webview = await _openCrispInDesktopWebview(
+          websiteId,
+          crispProxyUrl: crispProxyUrl,
+          isDarkMode: _isDarkMode(context),
+        );
+        if (webview != null && context.mounted) {
+          unawaited(_applyCrispUserDataWhenReady(
+            context,
+            webview,
+            baseUserScript: effectiveUserScript,
+          ));
+        }
+      }());
       return;
     } else if (CrispChatPage.isSupported) {
       // Android/iOS：内嵌 WebView 全屏
@@ -632,7 +701,6 @@ if(window===window.top){
   /// 用 SDK 注入方式代替直接加载 embed URL（解决 WebView2 空白问题）
   static Future<Webview?> _openCrispInDesktopWebview(
     String websiteId, {
-    required String userScript,
     String? crispProxyUrl,
     required bool isDarkMode,
   }) async {
@@ -654,7 +722,6 @@ if(window===window.top){
 
       bootstrapPage = await _startDesktopCrispBootstrapPage(
         websiteId: websiteId,
-        userScript: userScript,
         isDarkMode: isDarkMode,
       );
       final dataFolder = Platform.isWindows ? await _webview2DataFolder() : '';
@@ -667,10 +734,11 @@ if(window===window.top){
           userDataFolderWindows: dataFolder,
           resizable: false,
           showTitleBarActions: !Platform.isLinux,
+          brightness: _customerServiceBrightness(isDarkMode),
         ),
       );
       createdWebview = webview;
-      webview.setBrightness(isDarkMode ? Brightness.dark : Brightness.light);
+      webview.setBrightness(_customerServiceBrightness(isDarkMode));
 
       unawaited(webview.onClose.whenComplete(bootstrapPage.close));
       webview.launch(bootstrapPage.url);
@@ -693,9 +761,10 @@ if(window===window.top){
             userDataFolderWindows: dataFolder,
             resizable: false,
             showTitleBarActions: !Platform.isLinux,
+            brightness: _customerServiceBrightness(isDarkMode),
           ),
         );
-        webview.setBrightness(isDarkMode ? Brightness.dark : Brightness.light);
+        webview.setBrightness(_customerServiceBrightness(isDarkMode));
         webview.launch(preferredUrl);
         return webview;
       } catch (fallbackError) {
@@ -711,12 +780,10 @@ if(window===window.top){
 
   static Future<_DesktopCrispBootstrapPage> _startDesktopCrispBootstrapPage({
     required String websiteId,
-    required String userScript,
     required bool isDarkMode,
   }) async {
     final html = _buildDesktopCrispBootstrapHtml(
       websiteId: websiteId,
-      userScript: userScript,
       isDarkMode: isDarkMode,
     );
     final server = await HttpServer.bind(InternetAddress.loopbackIPv4, 0);
@@ -736,7 +803,6 @@ if(window===window.top){
 
   static String _buildDesktopCrispBootstrapHtml({
     required String websiteId,
-    required String userScript,
     required bool isDarkMode,
   }) {
     final websiteIdJson = jsonEncode(websiteId);
@@ -788,7 +854,6 @@ if(window===window.top){
   <script>
     window.\$crisp = window.\$crisp || [];
     window.CRISP_WEBSITE_ID = $websiteIdJson;
-    $userScript
     (function(){
       var loading = document.getElementById('loading');
       var loadingText = document.getElementById('loading-text');
@@ -859,19 +924,52 @@ if(window===window.top){
 </html>''';
   }
 
-  static Future<void> _applyCrispIPDataWhenReady(
+  static Future<void> _applyCrispUserDataWhenReady(
     BuildContext context,
-    Webview webview,
-  ) async {
+    Webview webview, {
+    required String baseUserScript,
+  }) async {
     try {
+      await _waitForCrispReady(webview);
+      if (!context.mounted) return;
+      await webview.evaluateJavaScript(baseUserScript);
+      if (!context.mounted) return;
       final ipData = await _resolveCrispIPData(context);
       if (ipData == null || !context.mounted) return;
       final script = _buildCrispUserScript(context, ipData: ipData);
       await webview.evaluateJavaScript(script);
-      _logger.debug('[Crisp] 已后台补充客服 IP 数据');
+      _logger.debug('[Crisp] 已在客服就绪后补充用户资料');
     } catch (e) {
-      _logger.debug('[Crisp] 后台补充客服 IP 数据失败: $e');
+      _logger.debug('[Crisp] 补充客服用户资料失败: $e');
     }
+  }
+
+  static Future<bool> _waitForCrispReady(Webview webview) async {
+    final deadline = DateTime.now().add(_crispReadyProbeTimeout);
+    while (DateTime.now().isBefore(deadline)) {
+      try {
+        final result = await webview.evaluateJavaScript('''
+(function(){
+  try {
+    var crispQueueReady = !!(window.\$crisp && typeof window.\$crisp.push === 'function');
+    var sdkReady = !!window.CRISP_READY_TRIGGER || crispQueueReady;
+    var frames = document.querySelectorAll('iframe');
+    for (var i = 0; i < frames.length; i++) {
+      var src = frames[i].src || '';
+      if (sdkReady && src.indexOf('crisp') !== -1) return 'ready';
+    }
+    return 'pending';
+  } catch(_) {
+    return 'pending';
+  }
+})()
+''');
+        if (result?.contains('ready') == true) return true;
+      } catch (_) {}
+      await Future.delayed(_crispReadyProbeInterval);
+    }
+    _logger.debug('[Crisp] 等待客服就绪超时，继续后台补充用户资料');
+    return false;
   }
 
   static String _buildCrispUserScript(
@@ -1041,6 +1139,38 @@ class _DesktopCrispBootstrapPage {
   Future<void> close() async {
     await server.close(force: true);
   }
+}
+
+class _CrispProxyCacheEntry {
+  const _CrispProxyCacheEntry({
+    required this.websiteId,
+    required this.proxyUrl,
+    required this.usableProxyUrl,
+    required this.createdAt,
+  });
+
+  final String websiteId;
+  final String proxyUrl;
+  final String usableProxyUrl;
+  final DateTime createdAt;
+
+  bool matches(String websiteId, String proxyUrl, DateTime now) {
+    return this.websiteId == websiteId &&
+        this.proxyUrl == proxyUrl &&
+        now.difference(createdAt) < _crispProxyUsableCacheTtl;
+  }
+}
+
+class _PendingCrispProxyProbe {
+  const _PendingCrispProxyProbe({
+    required this.websiteId,
+    required this.proxyUrl,
+    required this.future,
+  });
+
+  final String websiteId;
+  final String proxyUrl;
+  final Future<String> future;
 }
 
 class _CrispIPData {

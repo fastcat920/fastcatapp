@@ -29,6 +29,7 @@ class WebviewWindowController: NSWindowController {
        title: String, titleBarHeight: Int,
        titleBarTopPadding: Int,
        showTitleBarActions: Bool,
+       brightness: Int,
        resizable: Bool) {
     self.viewId = viewId
     self.methodChannel = methodChannel
@@ -50,12 +51,14 @@ class WebviewWindowController: NSWindowController {
     if !resizable {
       newWindow.standardWindowButton(.zoomButton)?.isHidden = true
     }
+    applyAppearance(to: newWindow, brightness: brightness)
 
     let contentViewController = WebViewLayoutController(
       methodChannel: methodChannel,
       viewId: viewId, titleBarHeight: titleBarHeight,
       titleBarTopPadding: titleBarTopPadding,
-      showTitleBarActions: showTitleBarActions)
+      showTitleBarActions: showTitleBarActions,
+      brightness: brightness)
     newWindow.contentViewController = contentViewController
     newWindow.setContentSize(NSSize(width: width, height: height))
     newWindow.center()
@@ -85,6 +88,10 @@ class WebviewWindowController: NSWindowController {
   }
 
   func setAppearance(brightness: Int) {
+    applyAppearance(to: window, brightness: brightness)
+  }
+
+  private func applyAppearance(to window: NSWindow?, brightness: Int) {
     switch brightness {
     case 0:
       if #available(macOS 10.14, *) {

@@ -29,12 +29,14 @@ bool runWebViewTitleBarWidget(
   }
   final titleBarTopPadding = int.tryParse(args.length > 2 ? args[2] : '0') ?? 0;
   final showTitleBarActions = args.length <= 3 || args[3] != 'false';
+  final brightness = int.tryParse(args.length > 4 ? args[4] : '-1') ?? -1;
   runZonedGuarded(
     () {
       WidgetsFlutterBinding.ensureInitialized();
       runApp(_TitleBarApp(
         webViewId: webViewId,
         titleBarTopPadding: titleBarTopPadding,
+        brightness: brightness,
         backgroundColor: backgroundColor,
         builder: builder ??
             (context) => _defaultTitleBar(
@@ -134,6 +136,7 @@ class _TitleBarApp extends StatefulWidget {
     required this.webViewId,
     required this.titleBarTopPadding,
     required this.builder,
+    required this.brightness,
     this.backgroundColor,
   }) : super(key: key);
 
@@ -142,6 +145,8 @@ class _TitleBarApp extends StatefulWidget {
   final int titleBarTopPadding;
 
   final WidgetBuilder builder;
+
+  final int brightness;
 
   final Color? backgroundColor;
 
@@ -198,21 +203,49 @@ class _TitleBarAppState extends State<_TitleBarApp>
 
   @override
   Widget build(BuildContext context) {
+    final themeMode = widget.brightness == 0
+        ? ThemeMode.dark
+        : widget.brightness == 1
+            ? ThemeMode.light
+            : ThemeMode.system;
+    const lightBackground = Color(0xFFF5F5F5);
+    const darkBackground = Color(0xFF111827);
     return MaterialApp(
       debugShowCheckedModeBanner: false,
-      home: Material(
-        color:
-            widget.backgroundColor ?? Theme.of(context).scaffoldBackgroundColor,
-        child: Padding(
-          padding: EdgeInsets.only(top: widget.titleBarTopPadding.toDouble()),
-          child: TitleBarWebViewState(
-            isLoading: _isLoading,
-            canGoBack: _canGoBack,
-            canGoForward: _canGoForward,
-            url: _url,
-            child: Builder(builder: widget.builder),
-          ),
+      themeMode: themeMode,
+      theme: ThemeData(
+        brightness: Brightness.light,
+        scaffoldBackgroundColor: widget.backgroundColor ?? lightBackground,
+        colorScheme: ColorScheme.fromSeed(
+          seedColor: const Color(0xFF2563EB),
         ),
+      ),
+      darkTheme: ThemeData(
+        brightness: Brightness.dark,
+        scaffoldBackgroundColor: widget.backgroundColor ?? darkBackground,
+        colorScheme: ColorScheme.fromSeed(
+          seedColor: const Color(0xFF60A5FA),
+          brightness: Brightness.dark,
+        ),
+      ),
+      home: Builder(
+        builder: (context) {
+          return Material(
+            color: widget.backgroundColor ??
+                Theme.of(context).scaffoldBackgroundColor,
+            child: Padding(
+              padding:
+                  EdgeInsets.only(top: widget.titleBarTopPadding.toDouble()),
+              child: TitleBarWebViewState(
+                isLoading: _isLoading,
+                canGoBack: _canGoBack,
+                canGoForward: _canGoForward,
+                url: _url,
+                child: Builder(builder: widget.builder),
+              ),
+            ),
+          );
+        },
       ),
     );
   }

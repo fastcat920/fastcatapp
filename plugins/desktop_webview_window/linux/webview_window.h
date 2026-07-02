@@ -21,7 +21,8 @@ class WebviewWindow {
       const std::string &title, int width, int height,
       int title_bar_height,
       bool resizable,
-      bool show_title_bar_actions
+      bool show_title_bar_actions,
+      int brightness
   );
 
   virtual ~WebviewWindow();
@@ -33,6 +34,8 @@ class WebviewWindow {
   void Close();
 
   void SetApplicationNameForUserAgent(const std::string &app_name);
+
+  void SetBrightness(int brightness);
 
   void OnLoadChanged(WebKitLoadEvent load_event);
 
@@ -61,6 +64,8 @@ class WebviewWindow {
   GtkWidget *window_ = nullptr;
   GtkWidget *webview_ = nullptr;
   GtkBox *box_ = nullptr;
+
+  int brightness_ = -1;
 
 };
 

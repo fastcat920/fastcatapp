@@ -31,7 +31,7 @@ import 'package:flutter_xboard_sdk/flutter_xboard_sdk.dart';
 RemoteTaskManager? remoteTaskManager;
 
 Future<void> main(List<String> args) async {
-  if ((Platform.isWindows || Platform.isLinux) &&
+  if ((Platform.isWindows || Platform.isLinux || Platform.isMacOS) &&
       runWebViewTitleBarWidget(args)) {
     return;
   }

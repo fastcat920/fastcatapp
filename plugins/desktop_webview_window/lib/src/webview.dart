@@ -39,7 +39,7 @@ abstract class Webview {
 
   /// change webview theme.
   ///
-  /// available only: macOS (Brightness.dark only 10.14+)
+  /// Change the native WebView window theme when supported.
   void setBrightness(Brightness? brightness);
 
   void addScriptToExecuteOnDocumentCreated(String javaScript);

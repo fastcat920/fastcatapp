@@ -64,12 +64,18 @@ void WebviewWindowPlugin::HandleMethodCall(
     if (showTitleBarActionsIter != arguments->end()) {
       showTitleBarActions = std::get<bool>(showTitleBarActionsIter->second);
     }
+    auto brightness = -1;
+    auto brightnessIter = arguments->find(flutter::EncodableValue("brightness"));
+    if (brightnessIter != arguments->end()) {
+      brightness = int(brightnessIter->second.LongValue());
+    }
     auto windowPosX = arguments->at(flutter::EncodableValue("windowPosX")).LongValue();
     auto windowPosY = arguments->at(flutter::EncodableValue("windowPosY")).LongValue();
 
     auto window_id = next_window_id_;
     auto window = std::make_unique<WebviewWindow>(
         method_channel_, window_id, int(titleBarHeight), showTitleBarActions,
+        brightness,
         [this, window_id]() {
           windows_.erase(window_id);
         });
@@ -142,6 +148,16 @@ void WebviewWindowPlugin::HandleMethodCall(
     result->Success();
   } else if (method_call.method_name() == "isWebviewAvailable") {
     result->Success(flutter::EncodableValue(IsWebViewRuntimeAvailable()));
+  } else if (method_call.method_name() == "setBrightness") {
+    auto *arguments = std::get_if<flutter::EncodableMap>(method_call.arguments());
+    auto window_id = arguments->at(flutter::EncodableValue("viewId")).LongValue();
+    auto brightness = arguments->at(flutter::EncodableValue("brightness")).LongValue();
+    if (!windows_.count(window_id)) {
+      result->Error("0", "can not find webview window for id");
+      return;
+    }
+    windows_[window_id]->SetBrightness(int(brightness));
+    result->Success();
   } else if (method_call.method_name() == "back") {
     auto *arguments = std::get_if<flutter::EncodableMap>(method_call.arguments());
     auto window_id = arguments->at(flutter::EncodableValue("viewId")).LongValue();
