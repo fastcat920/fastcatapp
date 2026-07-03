@@ -1,7 +1,6 @@
 export 'webview_plugin.dart';
 
 import 'dart:async';
-import 'dart:convert';
 import 'dart:developer';
 import 'dart:io';
 import 'dart:typed_data';
@@ -351,7 +350,7 @@ class WinWebViewController {
   }
 
   void notifyOnHttpError_(String url, int errorCode) {
-    if (_navigationDelegate.onPageFinished != null) {
+    if (_navigationDelegate.onHttpError != null) {
       var uri = Uri.parse(url);
       var request = WebResourceRequest(uri: uri);
       var response = WebResourceResponse(uri: uri, statusCode: errorCode);

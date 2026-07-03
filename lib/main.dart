@@ -27,6 +27,7 @@ import 'package:fl_clash/xboard/features/auth/providers/xboard_user_provider.dar
 import 'package:fl_clash/xboard/infrastructure/infrastructure.dart';
 import 'package:fl_clash/xboard/services/services.dart';
 import 'package:flutter_xboard_sdk/flutter_xboard_sdk.dart';
+import 'package:webview_win_floating/webview_plugin.dart';
 
 RemoteTaskManager? remoteTaskManager;
 
@@ -38,6 +39,9 @@ Future<void> main(List<String> args) async {
 
   globalState.isService = false;
   WidgetsFlutterBinding.ensureInitialized();
+  if (Platform.isWindows || Platform.isLinux) {
+    WindowsWebViewPlatform.registerWith();
+  }
   BrandedDesktopSharedPreferencesStore.registerIfNeeded();
   const previewMode = bool.fromEnvironment('APP_PREVIEW_MODE');
 

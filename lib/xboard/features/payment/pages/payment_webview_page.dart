@@ -1,7 +1,6 @@
 import 'dart:async';
 import 'dart:io';
 
-import 'package:flutter_inappwebview/flutter_inappwebview.dart' as inapp;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:webview_flutter/webview_flutter.dart';
@@ -13,7 +12,6 @@ import 'package:fl_clash/xboard/core/core.dart';
 import 'package:fl_clash/xboard/features/shared/styles/styles.dart';
 
 const _logger = FileLogger('payment_webview_page.dart');
-const _linuxDesktopWebViewFallbackDelay = Duration(seconds: 2);
 
 /// Desktop Chrome UA used on mobile so payment gateways serve the QR-code
 /// page instead of the H5 cashier that tries (and fails) to invoke Alipay /
@@ -26,7 +24,7 @@ const _desktopUserAgent = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) '
 ///
 /// All platforms use an embedded WebView:
 /// - Android / iOS / macOS → webview_flutter (system WebView / WKWebView)
-/// - Windows / Linux → flutter_inappwebview (desktop embedded WebView)
+/// - Windows / Linux → webview_flutter via webview_win_floating
 ///
 /// Auto-polling runs on every platform as a reliable fallback.
 ///
@@ -66,27 +64,24 @@ class _PaymentWebViewPageState extends ConsumerState<PaymentWebViewPage> {
   WebViewController? _webViewController;
   Timer? _pollTimer;
   Timer? _loadStateTimer;
-  Timer? _desktopLoadFallbackTimer;
   bool _isPageLoading = true;
   bool _showPageLoadingMessage = false;
   bool _isPolling = false;
   bool _isChecking = false;
-  bool _desktopReceivedLoadSignal = false;
-  bool _desktopUseImperativeLoad = false;
 
   /// Platforms that use webview_flutter (system WebView)
   bool get _useSystemWebView =>
-      Platform.isAndroid || Platform.isIOS || Platform.isMacOS;
-  bool get _useDesktopEmbeddedWebView => Platform.isWindows || Platform.isLinux;
+      Platform.isAndroid ||
+      Platform.isIOS ||
+      Platform.isMacOS ||
+      Platform.isWindows ||
+      Platform.isLinux;
 
   @override
   void initState() {
     super.initState();
     if (_useSystemWebView) {
       _initWebView();
-    } else if (_useDesktopEmbeddedWebView) {
-      _beginPageLoading();
-      _scheduleDesktopLoadFallback();
     }
     _startPolling();
   }
@@ -95,7 +90,6 @@ class _PaymentWebViewPageState extends ConsumerState<PaymentWebViewPage> {
   void dispose() {
     _stopPolling();
     _loadStateTimer?.cancel();
-    _desktopLoadFallbackTimer?.cancel();
     _webViewController = null;
     super.dispose();
   }
@@ -124,7 +118,20 @@ class _PaymentWebViewPageState extends ConsumerState<PaymentWebViewPage> {
           },
         ),
       )
-      ..loadRequest(Uri.parse(widget.paymentUrl));
+      ..loadRequest(
+        Uri.parse(widget.paymentUrl),
+        headers: {'Accept-Language': _preferredLanguageHeader()},
+      );
+  }
+
+  String _preferredLanguageHeader() {
+    final locales = WidgetsBinding.instance.platformDispatcher.locales;
+    final tags = locales.isEmpty
+        ? <String>[
+            WidgetsBinding.instance.platformDispatcher.locale.toLanguageTag()
+          ]
+        : locales.map((locale) => locale.toLanguageTag()).toList();
+    return tags.take(3).join(',');
   }
 
   void _beginPageLoading() {
@@ -181,64 +188,6 @@ class _PaymentWebViewPageState extends ConsumerState<PaymentWebViewPage> {
     await _launchExternalPaymentUri(uri);
 
     return NavigationDecision.prevent;
-  }
-
-  Future<inapp.NavigationActionPolicy> _onDesktopNavigationRequest(
-    inapp.NavigationAction action,
-  ) async {
-    final url = action.request.url?.uriValue.toString() ?? '';
-    final decision = await _onNavigationRequest(
-      NavigationRequest(url: url, isMainFrame: true),
-    );
-    return decision == NavigationDecision.navigate
-        ? inapp.NavigationActionPolicy.ALLOW
-        : inapp.NavigationActionPolicy.CANCEL;
-  }
-
-  void _scheduleDesktopLoadFallback() {
-    if (!_useDesktopEmbeddedWebView || !Platform.isLinux) return;
-    _desktopLoadFallbackTimer?.cancel();
-    _desktopLoadFallbackTimer = Timer(_linuxDesktopWebViewFallbackDelay, () {
-      if (!mounted || _desktopReceivedLoadSignal || _desktopUseImperativeLoad) {
-        return;
-      }
-      _logger.warning(
-        'Linux payment WebView did not emit load signals, retrying with imperative load',
-      );
-      setState(() {
-        _desktopUseImperativeLoad = true;
-      });
-    });
-  }
-
-  void _markDesktopLoadSignal(String source) {
-    if (!_useDesktopEmbeddedWebView) return;
-    if (!_desktopReceivedLoadSignal) {
-      _logger.info('Desktop payment WebView load signal: $source');
-    }
-    _desktopReceivedLoadSignal = true;
-    _desktopLoadFallbackTimer?.cancel();
-  }
-
-  bool _isMeaningfulDesktopUrl(inapp.WebUri? uri) {
-    final value = uri?.toString() ?? '';
-    if (value.isEmpty || value == 'about:blank') return false;
-    return value.startsWith('http://') || value.startsWith('https://');
-  }
-
-  Future<void> _loadDesktopPaymentImperatively(
-    inapp.InAppWebViewController controller,
-  ) async {
-    try {
-      await controller.loadUrl(
-        urlRequest: inapp.URLRequest(
-          url: inapp.WebUri.uri(Uri.parse(widget.paymentUrl)),
-        ),
-      );
-    } catch (e) {
-      _logger.warning('Desktop payment imperative load failed: $e');
-      _finishPageLoading();
-    }
   }
 
   bool _isStandardWebScheme(String scheme) {
@@ -358,65 +307,6 @@ class _PaymentWebViewPageState extends ConsumerState<PaymentWebViewPage> {
       webView = _webViewController != null
           ? WebViewWidget(controller: _webViewController!)
           : const SizedBox.expand();
-    } else if (_useDesktopEmbeddedWebView) {
-      webView = inapp.InAppWebView(
-        key: ValueKey(
-          'payment-linux-${_desktopUseImperativeLoad ? 'imperative' : 'initial'}',
-        ),
-        initialUrlRequest: _desktopUseImperativeLoad
-            ? null
-            : inapp.URLRequest(
-                url: inapp.WebUri.uri(Uri.parse(widget.paymentUrl)),
-              ),
-        initialSettings: inapp.InAppWebViewSettings(
-          javaScriptEnabled: true,
-          userAgent: _desktopUserAgent,
-          transparentBackground: false,
-          disableContextMenu: true,
-          mediaPlaybackRequiresUserGesture: false,
-          useShouldOverrideUrlLoading: true,
-        ),
-        onWebViewCreated: (controller) {
-          if (_desktopUseImperativeLoad) {
-            unawaited(_loadDesktopPaymentImperatively(controller));
-          }
-        },
-        onLoadStart: (_, url) {
-          if (_isMeaningfulDesktopUrl(url)) {
-            _markDesktopLoadSignal('start:${url?.toString() ?? ''}');
-          }
-          _beginPageLoading();
-        },
-        onProgressChanged: (_, progress) {
-          if (progress >= 100) _finishPageLoading();
-        },
-        onLoadStop: (_, url) {
-          if (_isMeaningfulDesktopUrl(url)) {
-            _markDesktopLoadSignal('stop:${url?.toString() ?? ''}');
-          }
-          _finishPageLoading();
-        },
-        shouldOverrideUrlLoading: (_, action) =>
-            _onDesktopNavigationRequest(action),
-        onReceivedError: (_, request, error) {
-          _markDesktopLoadSignal('error:${error.type}');
-          _logger.warning(
-            'Desktop payment WebView resource error: ${request.url} ${error.description}',
-          );
-          if (request.isForMainFrame ?? true) {
-            _finishPageLoading();
-          }
-        },
-        onReceivedHttpError: (_, request, response) {
-          _markDesktopLoadSignal('http:${response.statusCode}');
-          _logger.warning(
-            'Desktop payment WebView HTTP error: ${request.url} ${response.statusCode}',
-          );
-          if (request.isForMainFrame ?? true) {
-            _finishPageLoading();
-          }
-        },
-      );
     } else {
       webView = const SizedBox.expand();
     }
