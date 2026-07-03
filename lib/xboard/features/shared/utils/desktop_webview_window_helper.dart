@@ -1,4 +1,6 @@
 import 'dart:io';
+// ignore: unnecessary_import
+import 'dart:ui' show Brightness;
 
 import 'package:desktop_webview_window/desktop_webview_window.dart';
 import 'package:flutter/widgets.dart';
