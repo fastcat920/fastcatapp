@@ -606,6 +606,12 @@ class _DesktopCrispChatPageState extends State<DesktopCrispChatPage> {
       fit: StackFit.expand,
       children: [
         inapp.InAppWebView(
+          initialData: inapp.InAppWebViewInitialData(
+            data: _buildSdkBootstrapHtml(),
+            baseUrl: inapp.WebUri.uri(_sdkBootstrapBaseUri()),
+            mimeType: 'text/html',
+            encoding: 'utf-8',
+          ),
           initialSettings: inapp.InAppWebViewSettings(
             javaScriptEnabled: true,
             userAgent: _desktopCrispUserAgent,
@@ -616,7 +622,6 @@ class _DesktopCrispChatPageState extends State<DesktopCrispChatPage> {
           ),
           onWebViewCreated: (controller) {
             _controller = controller;
-            unawaited(_loadSdkBootstrap());
           },
           onLoadStart: (_, url) {
             final urlText = url?.toString() ?? '';

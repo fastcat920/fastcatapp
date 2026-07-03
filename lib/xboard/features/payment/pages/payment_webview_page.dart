@@ -63,14 +63,12 @@ class PaymentWebViewPage extends ConsumerStatefulWidget {
 
 class _PaymentWebViewPageState extends ConsumerState<PaymentWebViewPage> {
   WebViewController? _webViewController;
-  inapp.InAppWebViewController? _desktopWebViewController;
   Timer? _pollTimer;
   Timer? _loadStateTimer;
   bool _isPageLoading = true;
   bool _showPageLoadingMessage = false;
   bool _isPolling = false;
   bool _isChecking = false;
-  bool _desktopInitialLoadStarted = false;
 
   /// Platforms that use webview_flutter (system WebView)
   bool get _useSystemWebView =>
@@ -93,7 +91,6 @@ class _PaymentWebViewPageState extends ConsumerState<PaymentWebViewPage> {
     _stopPolling();
     _loadStateTimer?.cancel();
     _webViewController = null;
-    _desktopWebViewController = null;
     super.dispose();
   }
 
@@ -122,23 +119,6 @@ class _PaymentWebViewPageState extends ConsumerState<PaymentWebViewPage> {
         ),
       )
       ..loadRequest(Uri.parse(widget.paymentUrl));
-  }
-
-  Future<void> _startDesktopInitialLoad() async {
-    if (_desktopInitialLoadStarted) return;
-    final controller = _desktopWebViewController;
-    if (controller == null) return;
-    _desktopInitialLoadStarted = true;
-    try {
-      await controller.loadUrl(
-        urlRequest: inapp.URLRequest(
-          url: inapp.WebUri.uri(Uri.parse(widget.paymentUrl)),
-        ),
-      );
-    } catch (e) {
-      _logger.warning('Desktop payment WebView load failed: $e');
-      _finishPageLoading();
-    }
   }
 
   void _beginPageLoading() {
@@ -328,6 +308,9 @@ class _PaymentWebViewPageState extends ConsumerState<PaymentWebViewPage> {
           : const SizedBox.expand();
     } else if (_useDesktopEmbeddedWebView) {
       webView = inapp.InAppWebView(
+        initialUrlRequest: inapp.URLRequest(
+          url: inapp.WebUri.uri(Uri.parse(widget.paymentUrl)),
+        ),
         initialSettings: inapp.InAppWebViewSettings(
           javaScriptEnabled: true,
           userAgent: _desktopUserAgent,
@@ -336,10 +319,6 @@ class _PaymentWebViewPageState extends ConsumerState<PaymentWebViewPage> {
           mediaPlaybackRequiresUserGesture: false,
           useShouldOverrideUrlLoading: true,
         ),
-        onWebViewCreated: (controller) {
-          _desktopWebViewController = controller;
-          unawaited(_startDesktopInitialLoad());
-        },
         onLoadStart: (_, __) => _beginPageLoading(),
         onProgressChanged: (_, progress) {
           if (progress >= 100) _finishPageLoading();
