@@ -72,12 +72,14 @@ class LinuxCefCrispChatPage extends StatefulWidget {
   final String websiteId;
   final String? crispProxyUrl;
   final String? userScript;
+  final String? fallbackWebsiteUrl;
 
   const LinuxCefCrispChatPage({
     super.key,
     required this.websiteId,
     this.crispProxyUrl,
     this.userScript,
+    this.fallbackWebsiteUrl,
   });
 
   static bool get isSupported => Platform.isLinux;
@@ -770,9 +772,11 @@ class _LinuxCefCrispChatPageState extends State<LinuxCefCrispChatPage> {
   Timer? _embedFallbackTimer;
   bool _controllerInitialized = false;
   bool _usingBootstrap = false;
+  bool _usingFallbackWebsite = false;
   bool _usingProxy = false;
   bool _didFallbackToOfficial = false;
   bool _didFallbackToEmbed = false;
+  bool _didLoadFallbackWebsite = false;
   bool _isLoading = true;
   bool _hasTimedOut = false;
   bool _didStartLoading = false;
@@ -836,13 +840,13 @@ class _LinuxCefCrispChatPageState extends State<LinuxCefCrispChatPage> {
     controller.setWebviewListener(
       cef.WebviewEventsListener(
         onLoadStart: (_, url) {
-          if (!_usingBootstrap) {
+          if (!_usingBootstrap && !_usingFallbackWebsite) {
             _usingProxy = _isProxyUrl(url);
           }
           _setLoading();
         },
         onLoadEnd: (controller, _) {
-          if (!_usingBootstrap) {
+          if (!_usingBootstrap && !_usingFallbackWebsite) {
             unawaited(_injectDirectEmbedMonitor());
           }
           _finishLoading();
@@ -907,9 +911,11 @@ class _LinuxCefCrispChatPageState extends State<LinuxCefCrispChatPage> {
   Future<void> _loadBootstrap() async {
     _embedFallbackTimer?.cancel();
     _usingBootstrap = true;
+    _usingFallbackWebsite = false;
     _usingProxy = false;
     _didFallbackToOfficial = false;
     _didFallbackToEmbed = false;
+    _didLoadFallbackWebsite = false;
     _setLoading();
     _embedFallbackTimer = Timer(
       const Duration(seconds: 45),
@@ -982,6 +988,7 @@ class _LinuxCefCrispChatPageState extends State<LinuxCefCrispChatPage> {
   void _loadEmbed(Uri uri, {required bool usingProxy}) {
     _embedFallbackTimer?.cancel();
     _usingBootstrap = false;
+    _usingFallbackWebsite = false;
     _usingProxy = usingProxy;
     _hasTimedOut = false;
     if (!usingProxy) {
@@ -1009,7 +1016,7 @@ class _LinuxCefCrispChatPageState extends State<LinuxCefCrispChatPage> {
       _fallbackToOfficialIfNeeded();
       return;
     }
-    _showTimeout();
+    _loadFallbackWebsiteIfNeeded();
   }
 
   void _handleRouteError() {
@@ -1021,17 +1028,35 @@ class _LinuxCefCrispChatPageState extends State<LinuxCefCrispChatPage> {
       _fallbackToOfficialIfNeeded();
       return;
     }
-    _showTimeout();
+    _loadFallbackWebsiteIfNeeded();
   }
 
   void _fallbackToOfficialIfNeeded() {
     if (!_usingProxy || _didFallbackToOfficial) {
-      _showTimeout();
+      _loadFallbackWebsiteIfNeeded();
       return;
     }
     _didFallbackToOfficial = true;
     _usingProxy = false;
     _loadEmbed(officialCrispEmbedUri(widget.websiteId), usingProxy: false);
+  }
+
+  void _loadFallbackWebsiteIfNeeded() {
+    final fallbackUri = _fallbackWebsiteUri();
+    if (fallbackUri == null || _didLoadFallbackWebsite) {
+      _showTimeout();
+      return;
+    }
+    _embedFallbackTimer?.cancel();
+    _usingBootstrap = false;
+    _usingFallbackWebsite = true;
+    _usingProxy = false;
+    _didLoadFallbackWebsite = true;
+    _setLoading();
+    debugPrint('[Crisp][LinuxCEF] loadUrl fallback website: $fallbackUri');
+    unawaited(_loadUrl(fallbackUri.toString()).catchError((_) {
+      _showTimeout();
+    }));
   }
 
   bool _isProxyUrl(String url) {
@@ -1044,6 +1069,16 @@ class _LinuxCefCrispChatPageState extends State<LinuxCefCrispChatPage> {
       websiteId: widget.websiteId,
       proxyUrl: widget.crispProxyUrl,
     );
+  }
+
+  Uri? _fallbackWebsiteUri() {
+    final value = widget.fallbackWebsiteUrl?.trim() ?? '';
+    if (value.isEmpty) return null;
+    final withScheme =
+        value.startsWith(RegExp(r'https?://')) ? value : 'https://$value';
+    final uri = Uri.tryParse(withScheme);
+    if (uri == null || uri.host.isEmpty) return null;
+    return uri;
   }
 
   Future<bool> _isCrispReady() async {

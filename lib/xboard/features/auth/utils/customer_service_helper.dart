@@ -314,6 +314,19 @@ class CustomerServiceHelper {
     return _fallbackCrispProxyUrl();
   }
 
+  static Future<String> _resolveFallbackWebsiteUrl() async {
+    for (final url in XBoardConfig.websiteUrls) {
+      final trimmed = url.trim();
+      if (trimmed.isNotEmpty) return trimmed;
+    }
+    try {
+      return (await ConfigFileLoaderHelper.getFallbackWebsiteUrl()).trim();
+    } catch (e) {
+      _logger.debug('[Crisp] 读取本地官网兜底配置失败: $e');
+      return '';
+    }
+  }
+
   static Future<String> _resolveUsableCrispProxyUrl(String websiteId) async {
     final proxyUrl = await _resolveCrispProxyUrl();
     if (!isCrispProxyConfigured(proxyUrl)) return '';
@@ -425,7 +438,11 @@ class CustomerServiceHelper {
     if (crispId.isNotEmpty) {
       if (!context.mounted) return;
       final ipDataFuture = _resolveCrispIPDataForInitialInjection(context);
-      final crispProxyUrl = await _resolveUsableCrispProxyUrl(crispId);
+      final crispProxyUrl = Platform.isLinux
+          ? await _resolveCrispProxyUrl()
+          : await _resolveUsableCrispProxyUrl(crispId);
+      final fallbackWebsiteUrl =
+          Platform.isLinux ? await _resolveFallbackWebsiteUrl() : '';
       if (!context.mounted) return;
       final ipData = await ipDataFuture;
       if (!context.mounted) return;
@@ -435,6 +452,7 @@ class CustomerServiceHelper {
         crispId,
         userScript: userScript,
         crispProxyUrl: crispProxyUrl,
+        fallbackWebsiteUrl: fallbackWebsiteUrl,
       );
       return;
     }
@@ -838,6 +856,7 @@ if(window===window.top){
     String websiteId, {
     String? userScript,
     String? crispProxyUrl,
+    String? fallbackWebsiteUrl,
     _CrispIPData? ipData,
     Future<String?> Function()? deferredUserScript,
   }) async {
@@ -851,6 +870,7 @@ if(window===window.top){
             websiteId: websiteId,
             crispProxyUrl: crispProxyUrl,
             userScript: effectiveUserScript,
+            fallbackWebsiteUrl: fallbackWebsiteUrl,
           ),
         ),
       );
