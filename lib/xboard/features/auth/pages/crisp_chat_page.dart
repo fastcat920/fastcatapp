@@ -12,6 +12,7 @@ import 'package:fl_clash/xboard/features/auth/utils/crisp_url_helper.dart';
 const _desktopCrispUserAgent = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) '
     'AppleWebKit/537.36 (KHTML, like Gecko) '
     'Chrome/125.0.0.0 Safari/537.36';
+const _linuxDesktopCrispFallbackDelay = Duration(seconds: 2);
 
 /// Crisp 客服嵌入页面
 ///
@@ -95,6 +96,7 @@ class _DesktopCrispChatPageState extends State<DesktopCrispChatPage> {
   inapp.InAppWebViewController? _controller;
   Timer? _sdkFallbackTimer;
   Timer? _embedFallbackTimer;
+  Timer? _linuxBlankFallbackTimer;
   bool _usingSdkBootstrap = false;
   bool _usingProxy = false;
   bool _didFallbackToOfficial = false;
@@ -102,6 +104,8 @@ class _DesktopCrispChatPageState extends State<DesktopCrispChatPage> {
   bool _hasTimedOut = false;
   bool _didStartLoading = false;
   bool _didFailStartup = false;
+  bool _receivedLoadSignal = false;
+  bool _useImperativeBootstrapLoad = false;
   late bool _isDarkMode;
   String? _localeTag;
 
@@ -135,6 +139,7 @@ class _DesktopCrispChatPageState extends State<DesktopCrispChatPage> {
   void dispose() {
     _sdkFallbackTimer?.cancel();
     _embedFallbackTimer?.cancel();
+    _linuxBlankFallbackTimer?.cancel();
     _controller = null;
     super.dispose();
   }
@@ -153,6 +158,27 @@ class _DesktopCrispChatPageState extends State<DesktopCrispChatPage> {
     setState(() => _isLoading = false);
   }
 
+  void _scheduleLinuxBlankFallback() {
+    if (!Platform.isLinux) return;
+    _linuxBlankFallbackTimer?.cancel();
+    _linuxBlankFallbackTimer = Timer(_linuxDesktopCrispFallbackDelay, () {
+      if (!mounted || !_isLoading || _useImperativeBootstrapLoad) {
+        return;
+      }
+      setState(() {
+        _useImperativeBootstrapLoad = true;
+      });
+    });
+  }
+
+  void _markLoadSignal(String source) {
+    if (!_receivedLoadSignal) {
+      debugPrint('[Crisp][Linux] WebView load signal: $source');
+    }
+    _receivedLoadSignal = true;
+    _linuxBlankFallbackTimer?.cancel();
+  }
+
   Future<void> _loadSdkBootstrap() async {
     final controller = _controller;
     if (controller == null) return;
@@ -167,6 +193,7 @@ class _DesktopCrispChatPageState extends State<DesktopCrispChatPage> {
       () => unawaited(_fallbackFromSdkToEmbed()),
     );
     try {
+      debugPrint('[Crisp][Desktop] loadData bootstrap');
       await controller.loadData(
         data: _buildSdkBootstrapHtml(),
         baseUrl: inapp.WebUri.uri(_sdkBootstrapBaseUri()),
@@ -205,6 +232,7 @@ class _DesktopCrispChatPageState extends State<DesktopCrispChatPage> {
       const Duration(seconds: 25),
       () => unawaited(_handleEmbedTimeout()),
     );
+    debugPrint('[Crisp][Desktop] loadUrl embed: $uri');
     unawaited(controller
         .loadUrl(
       urlRequest: inapp.URLRequest(url: inapp.WebUri.uri(uri)),
@@ -606,9 +634,14 @@ class _DesktopCrispChatPageState extends State<DesktopCrispChatPage> {
       fit: StackFit.expand,
       children: [
         inapp.InAppWebView(
+          key: ValueKey(
+            'crisp-desktop-${_useImperativeBootstrapLoad ? 'imperative' : 'initial'}',
+          ),
           initialData: inapp.InAppWebViewInitialData(
-            data: _buildSdkBootstrapHtml(),
-            baseUrl: inapp.WebUri.uri(_sdkBootstrapBaseUri()),
+            data: _useImperativeBootstrapLoad ? '' : _buildSdkBootstrapHtml(),
+            baseUrl: _useImperativeBootstrapLoad
+                ? null
+                : inapp.WebUri.uri(_sdkBootstrapBaseUri()),
             mimeType: 'text/html',
             encoding: 'utf-8',
           ),
@@ -622,8 +655,13 @@ class _DesktopCrispChatPageState extends State<DesktopCrispChatPage> {
           ),
           onWebViewCreated: (controller) {
             _controller = controller;
+            _scheduleLinuxBlankFallback();
+            if (_useImperativeBootstrapLoad) {
+              unawaited(_loadSdkBootstrap());
+            }
           },
           onLoadStart: (_, url) {
+            _markLoadSignal('start:${url?.toString() ?? ''}');
             final urlText = url?.toString() ?? '';
             if (!_usingSdkBootstrap) {
               _usingProxy = _isProxyUrl(urlText);
@@ -631,11 +669,15 @@ class _DesktopCrispChatPageState extends State<DesktopCrispChatPage> {
             _setLoading();
           },
           onProgressChanged: (_, progress) {
+            if (progress > 0) {
+              _markLoadSignal('progress:$progress');
+            }
             if (progress >= 100 && !_usingSdkBootstrap) {
               _finishLoading();
             }
           },
           onLoadStop: (_, __) {
+            _markLoadSignal('stop');
             if (!_usingSdkBootstrap) {
               unawaited(_injectDirectEmbedMonitor());
             }
@@ -645,10 +687,12 @@ class _DesktopCrispChatPageState extends State<DesktopCrispChatPage> {
             return inapp.NavigationActionPolicy.ALLOW;
           },
           onReceivedHttpError: (_, request, response) {
+            _markLoadSignal('http:${response.statusCode}');
             if (!_isCrispEmbedUri(request.url.uriValue)) return;
             _handleRouteError();
           },
           onReceivedError: (_, request, error) {
+            _markLoadSignal('error:${error.type}');
             if (!(request.isForMainFrame ?? true)) return;
             _handleRouteError();
           },
