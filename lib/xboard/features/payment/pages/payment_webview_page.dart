@@ -1,7 +1,6 @@
 import 'dart:async';
 import 'dart:io';
 
-import 'package:desktop_webview_window/desktop_webview_window.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:webview_flutter/webview_flutter.dart';
@@ -65,29 +64,23 @@ class PaymentWebViewPage extends ConsumerStatefulWidget {
 class _PaymentWebViewPageState extends ConsumerState<PaymentWebViewPage> {
   WebViewController? _webViewController;
   winwv.WinWebViewController? _desktopFloatingWebViewController;
-  Webview? _linuxDesktopWebview;
   Timer? _pollTimer;
   Timer? _loadStateTimer;
   bool _isPageLoading = true;
   bool _showPageLoadingMessage = false;
   bool _isPolling = false;
   bool _isChecking = false;
-  bool _linuxWindowOpen = false;
-  bool _linuxWindowLaunchFailed = false;
 
   /// Platforms that use webview_flutter (system WebView)
   bool get _useSystemWebView =>
       Platform.isAndroid || Platform.isIOS || Platform.isMacOS;
-  bool get _useDesktopFloatingWebView => Platform.isWindows;
-  bool get _useLinuxDesktopWindow => Platform.isLinux;
+  bool get _useDesktopFloatingWebView => Platform.isWindows || Platform.isLinux;
 
   @override
   void initState() {
     super.initState();
     if (_useSystemWebView) {
       _initWebView();
-    } else if (_useLinuxDesktopWindow) {
-      _initLinuxDesktopWindow();
     } else if (_useDesktopFloatingWebView) {
       _initDesktopFloatingWebView();
     }
@@ -101,24 +94,15 @@ class _PaymentWebViewPageState extends ConsumerState<PaymentWebViewPage> {
     _webViewController = null;
     final desktopController = _desktopFloatingWebViewController;
     _desktopFloatingWebViewController = null;
-    final linuxWebview = _linuxDesktopWebview;
-    _linuxDesktopWebview = null;
     if (desktopController != null) {
       unawaited(Future<void>(() async {
         try {
-          await desktopController.setVisibility(false);
+          if (!Platform.isLinux) {
+            await desktopController.setVisibility(false);
+          }
           await desktopController.dispose();
         } catch (e) {
           _logger.debug('Desktop floating WebView dispose failed: $e');
-        }
-      }));
-    }
-    if (linuxWebview != null) {
-      unawaited(Future<void>(() async {
-        try {
-          linuxWebview.close();
-        } catch (e) {
-          _logger.debug('Linux desktop payment window dispose failed: $e');
         }
       }));
     }
@@ -187,38 +171,6 @@ class _PaymentWebViewPageState extends ConsumerState<PaymentWebViewPage> {
     );
     await controller.loadRequest(Uri.parse(widget.paymentUrl));
     if (mounted) setState(() {});
-  }
-
-  Future<void> _initLinuxDesktopWindow() async {
-    _beginPageLoading();
-    _linuxWindowLaunchFailed = false;
-    try {
-      final webview = await WebviewWindow.create(
-        configuration: CreateConfiguration(
-          title: '支付网关',
-          windowWidth: 980,
-          windowHeight: 760,
-          resizable: true,
-          showTitleBarActions: true,
-        ),
-      );
-      _linuxDesktopWebview = webview;
-      _linuxWindowOpen = true;
-      unawaited(webview.onClose.whenComplete(() {
-        _linuxWindowOpen = false;
-        if (mounted) {
-          setState(() {});
-        }
-      }));
-      await webview.launch(widget.paymentUrl);
-      _finishPageLoading();
-      if (mounted) setState(() {});
-    } catch (e) {
-      _linuxWindowLaunchFailed = true;
-      _finishPageLoading();
-      _logger.error('Linux desktop payment window start failed', e);
-      if (mounted) setState(() {});
-    }
   }
 
   void _beginPageLoading() {
@@ -351,9 +303,6 @@ class _PaymentWebViewPageState extends ConsumerState<PaymentWebViewPage> {
 
   void _handlePaymentSuccess() {
     _stopPolling();
-    try {
-      _linuxDesktopWebview?.close();
-    } catch (_) {}
     if (mounted) {
       Navigator.of(context).pop(true);
     }
@@ -361,21 +310,7 @@ class _PaymentWebViewPageState extends ConsumerState<PaymentWebViewPage> {
 
   void _handleCancel() {
     _stopPolling();
-    try {
-      _linuxDesktopWebview?.close();
-    } catch (_) {}
     Navigator.of(context).pop(null);
-  }
-
-  Future<void> _reopenLinuxDesktopWindow() async {
-    final webview = _linuxDesktopWebview;
-    if (webview != null && _linuxWindowOpen) {
-      try {
-        await webview.setWebviewWindowVisibility(true);
-        return;
-      } catch (_) {}
-    }
-    await _initLinuxDesktopWindow();
   }
 
   // ── Build ───────────────────────────────────────────────────────────
@@ -411,12 +346,6 @@ class _PaymentWebViewPageState extends ConsumerState<PaymentWebViewPage> {
       webView = _webViewController != null
           ? WebViewWidget(controller: _webViewController!)
           : const SizedBox.expand();
-    } else if (_useLinuxDesktopWindow) {
-      webView = _LinuxDesktopWindowPanel(
-        isWindowOpen: _linuxWindowOpen,
-        launchFailed: _linuxWindowLaunchFailed,
-        onOpenWindow: _reopenLinuxDesktopWindow,
-      );
     } else if (_useDesktopFloatingWebView) {
       webView = _desktopFloatingWebViewController != null
           ? winwv.WinWebViewWidget(
@@ -436,60 +365,6 @@ class _PaymentWebViewPageState extends ConsumerState<PaymentWebViewPage> {
             showMessage: _showPageLoadingMessage,
           ),
       ],
-    );
-  }
-}
-
-class _LinuxDesktopWindowPanel extends StatelessWidget {
-  final bool isWindowOpen;
-  final bool launchFailed;
-  final Future<void> Function() onOpenWindow;
-
-  const _LinuxDesktopWindowPanel({
-    required this.isWindowOpen,
-    required this.launchFailed,
-    required this.onOpenWindow,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    final l10n = AppLocalizations.of(context);
-    final theme = Theme.of(context);
-    final text = launchFailed
-        ? l10n.onlineSupportConnectionError
-        : isWindowOpen
-            ? l10n.xboardPaymentPageOpenedCompleteAndReturn
-            : l10n.xboardLoadingPaymentPage;
-
-    return Center(
-      child: ConstrainedBox(
-        constraints: const BoxConstraints(maxWidth: 460),
-        child: Padding(
-          padding: const EdgeInsets.all(24),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Icon(
-                Icons.open_in_new,
-                size: 40,
-                color: theme.colorScheme.primary,
-              ),
-              const SizedBox(height: 16),
-              Text(
-                text,
-                textAlign: TextAlign.center,
-                style: theme.textTheme.bodyMedium,
-              ),
-              const SizedBox(height: 16),
-              FilledButton.icon(
-                onPressed: onOpenWindow,
-                icon: const Icon(Icons.open_in_new),
-                label: Text(l10n.xboardPaymentGateway),
-              ),
-            ],
-          ),
-        ),
-      ),
     );
   }
 }
