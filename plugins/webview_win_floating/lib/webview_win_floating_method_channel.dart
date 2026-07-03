@@ -1,6 +1,5 @@
 import 'dart:developer';
 import 'dart:convert';
-import 'dart:ui';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
@@ -173,12 +172,16 @@ class MethodChannelWebviewWinFloating extends WebviewWinFloatingPlatform {
     Size size,
     double devicePixelRatio,
   ) async {
+    // GTK uses logical coordinates here; multiplying by DPR can push the
+    // native WebView out of the Flutter widget on scaled Linux desktops.
+    final scale =
+        defaultTargetPlatform == TargetPlatform.linux ? 1.0 : devicePixelRatio;
     await methodChannel.invokeMethod<bool>('updateBounds', {
       "webviewId": webviewId,
-      "left": (offset.dx * devicePixelRatio).toInt(),
-      "top": (offset.dy * devicePixelRatio).toInt(),
-      "right": ((offset.dx + size.width) * devicePixelRatio).toInt(),
-      "bottom": ((offset.dy + size.height) * devicePixelRatio).toInt(),
+      "left": (offset.dx * scale).round(),
+      "top": (offset.dy * scale).round(),
+      "right": ((offset.dx + size.width) * scale).round(),
+      "bottom": ((offset.dy + size.height) * scale).round(),
     });
   }
 
@@ -355,7 +358,7 @@ class MethodChannelWebviewWinFloating extends WebviewWinFloatingPlatform {
   Future<void> setBackgroundColor(int webviewId, Color color) async {
     await methodChannel.invokeMethod<void>('setBackgroundColor', {
       "webviewId": webviewId,
-      "color": color.value,
+      "color": color.toARGB32(),
     });
   }
 

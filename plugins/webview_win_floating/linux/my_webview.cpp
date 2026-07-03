@@ -1,5 +1,7 @@
 #include "my_webview.h"
 
+#include <algorithm>
+
 GtkWidget* MyWebView::getWidget() {
     return m_webview;
 }
@@ -234,12 +236,33 @@ MyWebView::MyWebView(GtkWidget* container, MyWebViewCreateParams params, const g
     
     m_user_content_manager = webkit_user_content_manager_new();
     m_webview = webkit_web_view_new_with_user_content_manager(m_user_content_manager);
+    WebKitSettings* settings = webkit_web_view_get_settings(WEBKIT_WEB_VIEW(m_webview));
+    if (settings) {
+        webkit_settings_set_enable_javascript(settings, TRUE);
+        webkit_settings_set_javascript_can_open_windows_automatically(settings, TRUE);
+        webkit_settings_set_enable_html5_database(settings, TRUE);
+        webkit_settings_set_enable_html5_local_storage(settings, TRUE);
+        webkit_settings_set_enable_media_stream(settings, TRUE);
+        webkit_settings_set_enable_mediasource(settings, TRUE);
+        webkit_settings_set_enable_webgl(settings, TRUE);
+        webkit_settings_set_allow_file_access_from_file_urls(settings, TRUE);
+        webkit_settings_set_allow_universal_access_from_file_urls(settings, TRUE);
+    }
+
+    auto *context = webkit_web_view_get_context(WEBKIT_WEB_VIEW(m_webview));
+    auto *cookie_manager = webkit_web_context_get_cookie_manager(context);
+    webkit_cookie_manager_set_accept_policy(
+        cookie_manager,
+        WEBKIT_COOKIE_POLICY_ACCEPT_ALWAYS);
 
     // NOTE: there is no way to set userDataFolder(cacheDir) and 'user_content_manager' at the same time...
     if (userDataFolder) g_print("[webview_win_floating] 'userDataFolder' is not allowed in Linux\n");
 
     m_container = container; // GtkFixed   
-    gtk_fixed_put(GTK_FIXED(m_container), m_webview, 50, 0); // left-top
+    gtk_widget_set_hexpand(m_webview, TRUE);
+    gtk_widget_set_vexpand(m_webview, TRUE);
+    gtk_widget_set_size_request(m_webview, 1, 1);
+    gtk_fixed_put(GTK_FIXED(m_container), m_webview, 0, 0); // left-top
     gtk_widget_show_all(m_container);
 
     // listen webview events
@@ -271,10 +294,11 @@ MyWebView::~MyWebView() {
 
 void MyWebView::updateBounds(RECT& bounds) {
     //g_print("=====> updateBounds: (%d, %d), %d x %d\n", bounds.left, bounds.top, bounds.right - bounds.left, bounds.bottom - bounds.top);
-    int width = bounds.right - bounds.left;
-    int height = bounds.bottom - bounds.top;
+    int width = std::max(1, bounds.right - bounds.left);
+    int height = std::max(1, bounds.bottom - bounds.top);
     gtk_fixed_move(GTK_FIXED(m_container), m_webview, bounds.left, bounds.top); // left-top
     gtk_widget_set_size_request(m_webview, width, height); // width-height
+    gtk_widget_show(m_webview);
 }
 
 void MyWebView::enableJavascript(bool bEnable) {
@@ -442,10 +466,10 @@ void MyWebView::setVisible(bool isVisible) {
 }
 
 void MyWebView::setBackgroundColor(int32_t argb) {
-    int a = (argb >> 24) | 0xFF;
-    int r = (argb >> 16) | 0xFF;
-    int g = (argb >> 8) | 0xFF;
-    int b = argb | 0xFF;
+    int a = (argb >> 24) & 0xFF;
+    int r = (argb >> 16) & 0xFF;
+    int g = (argb >> 8) & 0xFF;
+    int b = argb & 0xFF;
     GdkRGBA color = { (float)r/255, (float)g/255, (float)b/255, (float)a/255};
     webkit_web_view_set_background_color(WEBKIT_WEB_VIEW(m_webview), &color);
 }
