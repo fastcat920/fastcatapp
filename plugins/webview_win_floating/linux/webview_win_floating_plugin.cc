@@ -75,7 +75,10 @@ void setNotImplementedResult(FlMethodCall* method_call) {
 
 GtkWindow* get_window(WebviewWinFloatingPlugin* self) {
   FlView* view = fl_plugin_registrar_get_view(self->registrar);
-  return GTK_WINDOW(gtk_widget_get_toplevel(GTK_WIDGET(view)));
+  if (view == nullptr) return nullptr;
+  GtkWidget* top_level = gtk_widget_get_toplevel(GTK_WIDGET(view));
+  if (top_level == nullptr || !GTK_IS_WINDOW(top_level)) return nullptr;
+  return GTK_WINDOW(top_level);
 }
 
 gboolean on_flutter_view_motion(GtkEventController *controller, gdouble x, gdouble y, gpointer user_data) {
@@ -90,7 +93,9 @@ gboolean on_flview_focus_out(GtkWidget *widget, GdkEventFocus *event, gpointer u
   // when flutter view lose focus, listen 'motion' event for flutter view
   //g_print("===========> on_flview_focus_out\n");
   WebviewWinFloatingPlugin* self = (WebviewWinFloatingPlugin*) user_data;
-  self->motion_signal_id = g_signal_connect(self->event_controller, "motion", G_CALLBACK(on_flutter_view_motion), self);
+  if (self->event_controller != nullptr && self->motion_signal_id == 0) {
+    self->motion_signal_id = g_signal_connect(self->event_controller, "motion", G_CALLBACK(on_flutter_view_motion), self);
+  }
   return FALSE;
 }
 
@@ -98,8 +103,10 @@ gboolean on_flview_focus_in(GtkWidget *widget, GdkEventFocus *event, gpointer us
   // when flutter view gain focus, stop listening 'motion' event for flutter view
   //g_print("===========> on_flview_focus_in\n");
   WebviewWinFloatingPlugin* self = (WebviewWinFloatingPlugin*) user_data;
-  g_signal_handler_disconnect(self->event_controller, self->motion_signal_id);
-  self->motion_signal_id = 0;
+  if (self->event_controller != nullptr && self->motion_signal_id != 0) {
+    g_signal_handler_disconnect(self->event_controller, self->motion_signal_id);
+    self->motion_signal_id = 0;
+  }
   return FALSE;
 }
 
@@ -148,8 +155,8 @@ static void my_fixed_class_init(MyFixedClass *klass) {
 static void my_fixed_init(MyFixed *self) {
 }
 
-void initWidgetContainer(WebviewWinFloatingPlugin* self) {
-  if (self->webviewContainer) return;
+bool initWidgetContainer(WebviewWinFloatingPlugin* self) {
+  if (self->webviewContainer) return true;
 
   // for plugin first-time init, 
   //   - get FLView widget added by flutter
@@ -159,7 +166,16 @@ void initWidgetContainer(WebviewWinFloatingPlugin* self) {
 
   // get FLView (flutter view)
   GtkWindow *window = get_window(self);
+  if (window == nullptr || !GTK_IS_WINDOW(window) || !GTK_IS_BIN(window)) {
+    g_warning("[webview_win_floating] initWidgetContainer(): invalid GTK window");
+    return false;
+  }
+
   self->flView = gtk_bin_get_child(GTK_BIN(window));
+  if (self->flView == nullptr) {
+    g_warning("[webview_win_floating] initWidgetContainer(): Flutter view is not ready");
+    return false;
+  }
 
   // NOTE: my_fixed_get_type() is a custom GtkFixedWidget. It support:
   //   - can assign a 'main_widget' and make it always fill parent size
@@ -212,7 +228,8 @@ void initWidgetContainer(WebviewWinFloatingPlugin* self) {
   guint handler_id = g_signal_handler_find(window, G_SIGNAL_MATCH_DATA, 0, 0, NULL, NULL, self->flView);
   if (handler_id > 0) {
     g_signal_handler_disconnect(window, handler_id);
-  }  
+  }
+  return true;
 }
 
 void cb_delete_webview(gpointer key, gpointer value, gpointer user_data) {
@@ -228,11 +245,17 @@ void destroyAllWebViews(WebviewWinFloatingPlugin* self) {
 }
 
 void onInit(WebviewWinFloatingPlugin* self) {
-  initWidgetContainer(self);
+  // Keep init side-effect free on Linux startup. Creating the GTK overlay
+  // container before the first embedded WebView is needed can destabilize the
+  // Flutter view during application launch.
   destroyAllWebViews(self);
 }
 
-void createWebview(FlMethodChannel *method_channel, WebviewWinFloatingPlugin* self, int webviewId, const gchar* url, const gchar* userDataFolder) {
+bool createWebview(FlMethodChannel *method_channel, WebviewWinFloatingPlugin* self, int webviewId, const gchar* url, const gchar* userDataFolder) {
+  if (!initWidgetContainer(self)) {
+    return false;
+  }
+
   MyWebViewCreateParams params;
 
   params.onNavigationRequest = [=](int requestId, const gchar *url, bool isNewWindow) -> void {
@@ -347,6 +370,7 @@ void createWebview(FlMethodChannel *method_channel, WebviewWinFloatingPlugin* se
   g_print("[webview] native create: id = %d\n", webviewId);
 
   if (url) webview->loadUrl((gchar*)url);
+  return true;
 }
 
 // Jacky }
@@ -380,8 +404,11 @@ static void webview_win_floating_plugin_handle_method_call(
   if (isCreateCall) {
     const gchar* url = fl_value_get_string(fl_value_lookup_string(args, "url"));
     const gchar* userDataFolder = fl_value_get_string(fl_value_lookup_string(args, "userDataFolder"));    
-    createWebview(channel, self, webviewId, url, userDataFolder);
-    setBoolResult(method_call, true);  
+    if (createWebview(channel, self, webviewId, url, userDataFolder)) {
+      setBoolResult(method_call, true);
+    } else {
+      setErrorResult(method_call, "failed to initialize Linux WebView container");
+    }
   } else if (strcmp(method, "updateBounds") == 0) {
     RECT rect;
     rect.left = fl_value_get_int(fl_value_lookup_string(args, "left"));
@@ -537,6 +564,10 @@ void webview_win_floating_plugin_register_with_registrar(FlPluginRegistrar* regi
   // Jacky {
   plugin->registrar = FL_PLUGIN_REGISTRAR(g_object_ref(registrar));
   plugin->webviewMap = g_hash_table_new(g_direct_hash, g_direct_equal);
+  plugin->webviewContainer = nullptr;
+  plugin->flView = nullptr;
+  plugin->event_controller = nullptr;
+  plugin->motion_signal_id = 0;
   // Jacky }
 
   g_autoptr(FlStandardMethodCodec) codec = fl_standard_method_codec_new();

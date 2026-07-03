@@ -17,7 +17,10 @@ class MethodChannelWebviewWinFloating extends WebviewWinFloatingPlatform {
   final webviewMap = <int, WeakReference<WinWebViewController>>{};
   MethodChannelWebviewWinFloating() {
     // When hot-reload in debugging mode, clear all old webviews created before hot-reload
-    methodChannel.invokeMethod<bool>('init');
+    methodChannel.invokeMethod<bool>('init').catchError((Object error) {
+      log('[webview_win_floating] init failed: $error');
+      return null;
+    });
 
     assert(() {
       // When hot-reload in debugging mode, skip the following code
