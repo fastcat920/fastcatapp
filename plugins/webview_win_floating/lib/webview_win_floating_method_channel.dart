@@ -358,7 +358,8 @@ class MethodChannelWebviewWinFloating extends WebviewWinFloatingPlatform {
   Future<void> setBackgroundColor(int webviewId, Color color) async {
     await methodChannel.invokeMethod<void>('setBackgroundColor', {
       "webviewId": webviewId,
-      "color": color.toARGB32(),
+      // ignore: deprecated_member_use
+      "color": color.value,
     });
   }
 
