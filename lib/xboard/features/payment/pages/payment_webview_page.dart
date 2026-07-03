@@ -6,12 +6,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 import 'package:url_launcher/url_launcher.dart';
-import 'package:desktop_webview_window/desktop_webview_window.dart';
+import 'package:webview_cef/webview_cef.dart' as cef;
 
 import 'package:fl_clash/l10n/l10n.dart';
 import 'package:fl_clash/xboard/adapter/state/order_state.dart';
 import 'package:fl_clash/xboard/core/core.dart';
-import 'package:fl_clash/xboard/features/shared/utils/desktop_webview_window_helper.dart';
+import 'package:fl_clash/xboard/features/shared/utils/linux_cef_webview_manager.dart';
 import 'package:fl_clash/xboard/features/shared/styles/styles.dart';
 
 const _logger = FileLogger('payment_webview_page.dart');
@@ -28,7 +28,7 @@ const _desktopUserAgent = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) '
 /// All platforms use an embedded WebView:
 /// - Android / iOS / macOS → webview_flutter (system WebView / WKWebView)
 /// - Windows → webview_flutter via webview_win_floating
-/// - Linux → desktop_webview_window, avoiding GTK inline WebView instability
+/// - Linux → webview_cef, an embedded Chromium/CEF texture
 ///
 /// Auto-polling runs on every platform as a reliable fallback.
 ///
@@ -66,18 +66,15 @@ class PaymentWebViewPage extends ConsumerStatefulWidget {
 
 class _PaymentWebViewPageState extends ConsumerState<PaymentWebViewPage> {
   WebViewController? _webViewController;
-  Webview? _desktopPaymentWebview;
+  cef.WebViewController? _linuxCefController;
   Timer? _pollTimer;
   Timer? _loadStateTimer;
   bool _isPageLoading = true;
   bool _showPageLoadingMessage = false;
   bool _isPolling = false;
   bool _isChecking = false;
-  bool _isOpeningDesktopWebview = false;
-  bool _desktopWebviewOpened = false;
-  bool _isCompleting = false;
-  bool _isCancelling = false;
-  String? _desktopWebviewError;
+  bool _isInitializingLinuxCef = false;
+  String? _linuxCefError;
 
   /// Platforms that use webview_flutter (system WebView)
   bool get _useSystemWebView =>
@@ -86,13 +83,13 @@ class _PaymentWebViewPageState extends ConsumerState<PaymentWebViewPage> {
       Platform.isMacOS ||
       Platform.isWindows;
 
-  bool get _useDesktopWindowWebView => Platform.isLinux;
+  bool get _useLinuxCefWebView => Platform.isLinux;
 
   @override
   void initState() {
     super.initState();
-    if (_useDesktopWindowWebView) {
-      unawaited(_openDesktopPaymentWebview());
+    if (_useLinuxCefWebView) {
+      unawaited(_initLinuxCefWebView());
     } else if (_useSystemWebView) {
       _initWebView();
     }
@@ -104,7 +101,7 @@ class _PaymentWebViewPageState extends ConsumerState<PaymentWebViewPage> {
     _stopPolling();
     _loadStateTimer?.cancel();
     _webViewController = null;
-    _closeDesktopPaymentWebview();
+    _disposeLinuxCefController();
     super.dispose();
   }
 
@@ -138,58 +135,105 @@ class _PaymentWebViewPageState extends ConsumerState<PaymentWebViewPage> {
       );
   }
 
-  Future<void> _openDesktopPaymentWebview() async {
-    if (_isOpeningDesktopWebview) return;
-    _isOpeningDesktopWebview = true;
-    _desktopWebviewError = null;
+  Future<void> _initLinuxCefWebView() async {
+    if (_isInitializingLinuxCef) return;
+    _isInitializingLinuxCef = true;
+    _linuxCefError = null;
     _beginPageLoading();
 
-    final title = AppLocalizations.of(context).xboardPaymentGateway;
-    final brightness = Theme.of(context).brightness;
+    final injectScripts = cef.InjectUserScripts()
+      ..add(cef.UserScript(
+        _buildLinuxCefPaymentDocumentScript(),
+        cef.ScriptInjectTime.LOAD_START,
+      ))
+      ..add(cef.UserScript(
+        _buildLinuxCefPaymentDocumentScript(),
+        cef.ScriptInjectTime.LOAD_END,
+      ));
+    final controller = cef.WebviewManager().createWebView(
+      loading: const SizedBox.expand(),
+      injectUserScripts: injectScripts,
+    );
+    controller.setWebviewListener(
+      cef.WebviewEventsListener(
+        onUrlChanged: _handleLinuxCefUrl,
+        onLoadStart: (_, url) {
+          _handleLinuxCefUrl(url);
+          _beginPageLoading();
+        },
+        onLoadEnd: (controller, url) {
+          _handleLinuxCefUrl(url);
+          unawaited(_installLinuxCefPaymentBridge(controller));
+          _finishPageLoading();
+        },
+        onConsoleMessage: (level, message, source, line) {
+          if (level >= 3) {
+            _logger.debug(
+              'Linux CEF payment console[$level] $source:$line $message',
+            );
+          }
+        },
+      ),
+    );
+    if (mounted) {
+      setState(() {
+        _linuxCefController = controller;
+        _linuxCefError = null;
+      });
+    }
+
     try {
-      final webview = await DesktopWebviewWindowHelper.create(
-        title: title,
-        matchMainWindow: true,
-        resizable: true,
-        brightness: brightness,
+      await LinuxCefWebviewManager.ensureInitialized(
+        userAgent: _desktopUserAgent,
       );
       if (!mounted) {
-        webview.close();
+        await controller.dispose().catchError((_) {});
         return;
       }
-      _desktopPaymentWebview = webview;
-      _desktopWebviewOpened = true;
-      _desktopWebviewError = null;
-      webview
-        ..setBrightness(brightness)
-        ..addScriptToExecuteOnDocumentCreated(
-          _buildDesktopPaymentDocumentScript(),
-        )
-        ..addOnUrlRequestCallback(_handleDesktopUrlRequest);
-      unawaited(webview.onClose.whenComplete(() {
-        if (!mounted) return;
-        _desktopPaymentWebview = null;
-        if (!_isCompleting && !_isCancelling) {
-          _handleCancel();
-        }
-      }));
-      await webview.launch(widget.paymentUrl);
+      await controller.initialize(widget.paymentUrl);
+      if (!mounted) return;
+      await _installLinuxCefPaymentBridge(controller);
       _finishPageLoading();
     } catch (e) {
-      _logger.warning('Failed to open Linux payment WebView window: $e');
+      _logger.warning('Failed to initialize Linux CEF payment WebView: $e');
       if (mounted) {
         setState(() {
-          _desktopWebviewError = e.toString();
-          _desktopWebviewOpened = false;
+          _linuxCefError = e.toString();
+          if (identical(_linuxCefController, controller)) {
+            _linuxCefController = null;
+          }
         });
       }
       _finishPageLoading();
     } finally {
-      _isOpeningDesktopWebview = false;
+      _isInitializingLinuxCef = false;
     }
   }
 
-  String _buildDesktopPaymentDocumentScript() {
+  Future<void> _installLinuxCefPaymentBridge(
+    cef.WebViewController controller,
+  ) async {
+    try {
+      await controller.setJavaScriptChannels({
+        cef.JavascriptChannel(
+          name: 'FastCatPayment',
+          onMessageReceived: (message) {
+            final uri = Uri.tryParse(message.message);
+            if (uri == null) return;
+            final scheme = uri.scheme.toLowerCase();
+            if (_isStandardWebScheme(scheme)) return;
+            _logger.info('Linux CEF payment custom scheme: $scheme');
+            unawaited(_launchExternalPaymentUri(uri));
+          },
+        ),
+      });
+      await controller.executeJavaScript(_buildLinuxCefPaymentDocumentScript());
+    } catch (e) {
+      _logger.debug('Failed to install Linux CEF payment bridge: $e');
+    }
+  }
+
+  String _buildLinuxCefPaymentDocumentScript() {
     final languages = _preferredLanguageHeader()
         .split(',')
         .where((tag) => tag.trim().isNotEmpty)
@@ -211,28 +255,88 @@ class _PaymentWebViewPageState extends ConsumerState<PaymentWebViewPage> {
       Object.defineProperty(navigator, 'language', { get: function(){ return language; }, configurable: true });
       Object.defineProperty(navigator, 'languages', { get: function(){ return languages; }, configurable: true });
     } catch (_) {}
+    if (!window.__fastcatPaymentExternalBridgeInstalled) {
+      window.__fastcatPaymentExternalBridgeInstalled = true;
+      var standardSchemes = { http: true, https: true, about: true, data: true, javascript: true };
+      function shouldOpenExternally(value) {
+        try {
+          var url = String(value || '');
+          var match = /^([a-zA-Z][a-zA-Z0-9+.-]*):/.exec(url);
+          if (!match) return false;
+          return !standardSchemes[String(match[1]).toLowerCase()];
+        } catch (_) {
+          return false;
+        }
+      }
+      function openExternally(value) {
+        try {
+          var url = String(value || '');
+          if (!shouldOpenExternally(url)) return false;
+          if (typeof window.FastCatPayment === 'function') {
+            window.FastCatPayment(url, function(){});
+          }
+          return true;
+        } catch (_) {
+          return false;
+        }
+      }
+      document.addEventListener('click', function(event) {
+        var node = event.target;
+        while (node && node !== document) {
+          if (node.href && openExternally(node.href)) {
+            event.preventDefault();
+            event.stopPropagation();
+            return false;
+          }
+          node = node.parentElement;
+        }
+      }, true);
+      document.addEventListener('submit', function(event) {
+        var form = event.target;
+        if (form && form.action && openExternally(form.action)) {
+          event.preventDefault();
+          event.stopPropagation();
+          return false;
+        }
+      }, true);
+      var originalOpen = window.open;
+      window.open = function(url) {
+        if (openExternally(url)) return null;
+        return originalOpen ? originalOpen.apply(window, arguments) : null;
+      };
+      try {
+        var originalAssign = window.location.assign.bind(window.location);
+        window.location.assign = function(url) {
+          if (openExternally(url)) return;
+          return originalAssign(url);
+        };
+      } catch (_) {}
+      try {
+        var originalReplace = window.location.replace.bind(window.location);
+        window.location.replace = function(url) {
+          if (openExternally(url)) return;
+          return originalReplace(url);
+        };
+      } catch (_) {}
+    }
   } catch (_) {}
 })();''';
   }
 
-  void _handleDesktopUrlRequest(String url) {
+  void _handleLinuxCefUrl(String url) {
     final uri = Uri.tryParse(url);
     if (uri == null) return;
     final scheme = uri.scheme.toLowerCase();
     if (_isStandardWebScheme(scheme)) return;
-    _logger.info('Desktop payment custom scheme: $scheme');
+    _logger.info('Linux CEF payment custom scheme: $scheme');
     unawaited(_launchExternalPaymentUri(uri));
   }
 
-  void _closeDesktopPaymentWebview() {
-    final webview = _desktopPaymentWebview;
-    _desktopPaymentWebview = null;
-    if (webview == null) return;
-    try {
-      webview.close();
-    } catch (e) {
-      _logger.debug('Failed to close Linux payment WebView window: $e');
-    }
+  void _disposeLinuxCefController() {
+    final controller = _linuxCefController;
+    _linuxCefController = null;
+    if (controller == null) return;
+    unawaited(controller.dispose().catchError((_) {}));
   }
 
   String _preferredLanguageHeader() {
@@ -374,18 +478,16 @@ class _PaymentWebViewPageState extends ConsumerState<PaymentWebViewPage> {
   }
 
   void _handlePaymentSuccess() {
-    _isCompleting = true;
     _stopPolling();
-    _closeDesktopPaymentWebview();
+    _disposeLinuxCefController();
     if (mounted) {
       Navigator.of(context).pop(true);
     }
   }
 
   void _handleCancel() {
-    _isCancelling = true;
     _stopPolling();
-    _closeDesktopPaymentWebview();
+    _disposeLinuxCefController();
     Navigator.of(context).pop(null);
   }
 
@@ -418,13 +520,24 @@ class _PaymentWebViewPageState extends ConsumerState<PaymentWebViewPage> {
 
   Widget _buildWebView() {
     late final Widget webView;
-    if (_useDesktopWindowWebView) {
-      webView = _DesktopPaymentWindowStatus(
-        isOpening: _isOpeningDesktopWebview,
-        opened: _desktopWebviewOpened,
-        error: _desktopWebviewError,
-        onRetry: _openDesktopPaymentWebview,
-      );
+    if (_useLinuxCefWebView) {
+      final controller = _linuxCefController;
+      webView = _linuxCefError != null
+          ? _LinuxCefPaymentStatus(
+              isInitializing: _isInitializingLinuxCef,
+              error: _linuxCefError,
+              onRetry: _initLinuxCefWebView,
+            )
+          : controller != null
+              ? ValueListenableBuilder<bool>(
+                  valueListenable: controller,
+                  builder: (context, ready, child) {
+                    return ready
+                        ? controller.webviewWidget
+                        : const SizedBox.expand();
+                  },
+                )
+              : const SizedBox.expand();
     } else if (_useSystemWebView) {
       webView = _webViewController != null
           ? WebViewWidget(controller: _webViewController!)
@@ -446,15 +559,13 @@ class _PaymentWebViewPageState extends ConsumerState<PaymentWebViewPage> {
   }
 }
 
-class _DesktopPaymentWindowStatus extends StatelessWidget {
-  final bool isOpening;
-  final bool opened;
+class _LinuxCefPaymentStatus extends StatelessWidget {
+  final bool isInitializing;
   final String? error;
   final VoidCallback onRetry;
 
-  const _DesktopPaymentWindowStatus({
-    required this.isOpening,
-    required this.opened,
+  const _LinuxCefPaymentStatus({
+    required this.isInitializing,
     required this.error,
     required this.onRetry,
   });
@@ -466,9 +577,7 @@ class _DesktopPaymentWindowStatus extends StatelessWidget {
     final hasError = error != null;
     final text = hasError
         ? l10n.xboardFailedToOpenPaymentPage
-        : opened
-            ? l10n.xboardPaymentPageOpenedCompleteAndReturn
-            : l10n.xboardPreparingPaymentPage;
+        : l10n.xboardPreparingPaymentPage;
 
     return Center(
       child: Padding(
@@ -479,11 +588,7 @@ class _DesktopPaymentWindowStatus extends StatelessWidget {
             mainAxisSize: MainAxisSize.min,
             children: [
               Icon(
-                hasError
-                    ? Icons.error_outline
-                    : opened
-                        ? Icons.open_in_new
-                        : Icons.payment,
+                hasError ? Icons.error_outline : Icons.payment,
                 size: 36,
                 color: hasError ? colorScheme.error : colorScheme.primary,
               ),
@@ -508,7 +613,7 @@ class _DesktopPaymentWindowStatus extends StatelessWidget {
               if (hasError) ...[
                 const SizedBox(height: 16),
                 FilledButton.icon(
-                  onPressed: isOpening ? null : onRetry,
+                  onPressed: isInitializing ? null : onRetry,
                   icon: const Icon(Icons.refresh),
                   label: Text(l10n.xboardReopen),
                 ),
