@@ -34,8 +34,4 @@ class LinuxCefWebviewManager {
       rethrow;
     }
   }
-
-  static String htmlDataUrl(String html) {
-    return 'data:text/html;charset=utf-8,${Uri.encodeComponent(html)}';
-  }
 }
