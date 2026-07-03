@@ -39,7 +39,7 @@ Future<void> main(List<String> args) async {
 
   globalState.isService = false;
   WidgetsFlutterBinding.ensureInitialized();
-  if (Platform.isWindows || Platform.isLinux) {
+  if (Platform.isWindows) {
     WindowsWebViewPlatform.registerWith();
   }
   BrandedDesktopSharedPreferencesStore.registerIfNeeded();

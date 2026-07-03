@@ -1,14 +1,17 @@
 import 'dart:async';
+import 'dart:convert';
 import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:desktop_webview_window/desktop_webview_window.dart';
 
 import 'package:fl_clash/l10n/l10n.dart';
 import 'package:fl_clash/xboard/adapter/state/order_state.dart';
 import 'package:fl_clash/xboard/core/core.dart';
+import 'package:fl_clash/xboard/features/shared/utils/desktop_webview_window_helper.dart';
 import 'package:fl_clash/xboard/features/shared/styles/styles.dart';
 
 const _logger = FileLogger('payment_webview_page.dart');
@@ -24,7 +27,8 @@ const _desktopUserAgent = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) '
 ///
 /// All platforms use an embedded WebView:
 /// - Android / iOS / macOS → webview_flutter (system WebView / WKWebView)
-/// - Windows / Linux → webview_flutter via webview_win_floating
+/// - Windows → webview_flutter via webview_win_floating
+/// - Linux → desktop_webview_window, avoiding GTK inline WebView instability
 ///
 /// Auto-polling runs on every platform as a reliable fallback.
 ///
@@ -62,25 +66,34 @@ class PaymentWebViewPage extends ConsumerStatefulWidget {
 
 class _PaymentWebViewPageState extends ConsumerState<PaymentWebViewPage> {
   WebViewController? _webViewController;
+  Webview? _desktopPaymentWebview;
   Timer? _pollTimer;
   Timer? _loadStateTimer;
   bool _isPageLoading = true;
   bool _showPageLoadingMessage = false;
   bool _isPolling = false;
   bool _isChecking = false;
+  bool _isOpeningDesktopWebview = false;
+  bool _desktopWebviewOpened = false;
+  bool _isCompleting = false;
+  bool _isCancelling = false;
+  String? _desktopWebviewError;
 
   /// Platforms that use webview_flutter (system WebView)
   bool get _useSystemWebView =>
       Platform.isAndroid ||
       Platform.isIOS ||
       Platform.isMacOS ||
-      Platform.isWindows ||
-      Platform.isLinux;
+      Platform.isWindows;
+
+  bool get _useDesktopWindowWebView => Platform.isLinux;
 
   @override
   void initState() {
     super.initState();
-    if (_useSystemWebView) {
+    if (_useDesktopWindowWebView) {
+      unawaited(_openDesktopPaymentWebview());
+    } else if (_useSystemWebView) {
       _initWebView();
     }
     _startPolling();
@@ -91,6 +104,7 @@ class _PaymentWebViewPageState extends ConsumerState<PaymentWebViewPage> {
     _stopPolling();
     _loadStateTimer?.cancel();
     _webViewController = null;
+    _closeDesktopPaymentWebview();
     super.dispose();
   }
 
@@ -122,6 +136,103 @@ class _PaymentWebViewPageState extends ConsumerState<PaymentWebViewPage> {
         Uri.parse(widget.paymentUrl),
         headers: {'Accept-Language': _preferredLanguageHeader()},
       );
+  }
+
+  Future<void> _openDesktopPaymentWebview() async {
+    if (_isOpeningDesktopWebview) return;
+    _isOpeningDesktopWebview = true;
+    _desktopWebviewError = null;
+    _beginPageLoading();
+
+    final title = AppLocalizations.of(context).xboardPaymentGateway;
+    final brightness = Theme.of(context).brightness;
+    try {
+      final webview = await DesktopWebviewWindowHelper.create(
+        title: title,
+        matchMainWindow: true,
+        resizable: true,
+        brightness: brightness,
+      );
+      if (!mounted) {
+        webview.close();
+        return;
+      }
+      _desktopPaymentWebview = webview;
+      _desktopWebviewOpened = true;
+      _desktopWebviewError = null;
+      webview
+        ..setBrightness(brightness)
+        ..addScriptToExecuteOnDocumentCreated(
+          _buildDesktopPaymentDocumentScript(),
+        )
+        ..addOnUrlRequestCallback(_handleDesktopUrlRequest);
+      unawaited(webview.onClose.whenComplete(() {
+        if (!mounted) return;
+        _desktopPaymentWebview = null;
+        if (!_isCompleting && !_isCancelling) {
+          _handleCancel();
+        }
+      }));
+      await webview.launch(widget.paymentUrl);
+      _finishPageLoading();
+    } catch (e) {
+      _logger.warning('Failed to open Linux payment WebView window: $e');
+      if (mounted) {
+        setState(() {
+          _desktopWebviewError = e.toString();
+          _desktopWebviewOpened = false;
+        });
+      }
+      _finishPageLoading();
+    } finally {
+      _isOpeningDesktopWebview = false;
+    }
+  }
+
+  String _buildDesktopPaymentDocumentScript() {
+    final languages = _preferredLanguageHeader()
+        .split(',')
+        .where((tag) => tag.trim().isNotEmpty)
+        .map((tag) => tag.trim())
+        .toList();
+    final primaryLanguage = languages.isEmpty ? 'en' : languages.first;
+    final languagesJson =
+        jsonEncode(languages.isEmpty ? [primaryLanguage] : languages);
+    final primaryLanguageJson = jsonEncode(primaryLanguage);
+    final isDarkMode = Theme.of(context).brightness == Brightness.dark;
+    return '''
+(function(){
+  try {
+    var language = $primaryLanguageJson;
+    var languages = $languagesJson;
+    document.documentElement.lang = language;
+    document.documentElement.style.colorScheme = ${isDarkMode ? "'dark'" : "'light'"};
+    try {
+      Object.defineProperty(navigator, 'language', { get: function(){ return language; }, configurable: true });
+      Object.defineProperty(navigator, 'languages', { get: function(){ return languages; }, configurable: true });
+    } catch (_) {}
+  } catch (_) {}
+})();''';
+  }
+
+  void _handleDesktopUrlRequest(String url) {
+    final uri = Uri.tryParse(url);
+    if (uri == null) return;
+    final scheme = uri.scheme.toLowerCase();
+    if (_isStandardWebScheme(scheme)) return;
+    _logger.info('Desktop payment custom scheme: $scheme');
+    unawaited(_launchExternalPaymentUri(uri));
+  }
+
+  void _closeDesktopPaymentWebview() {
+    final webview = _desktopPaymentWebview;
+    _desktopPaymentWebview = null;
+    if (webview == null) return;
+    try {
+      webview.close();
+    } catch (e) {
+      _logger.debug('Failed to close Linux payment WebView window: $e');
+    }
   }
 
   String _preferredLanguageHeader() {
@@ -263,14 +374,18 @@ class _PaymentWebViewPageState extends ConsumerState<PaymentWebViewPage> {
   }
 
   void _handlePaymentSuccess() {
+    _isCompleting = true;
     _stopPolling();
+    _closeDesktopPaymentWebview();
     if (mounted) {
       Navigator.of(context).pop(true);
     }
   }
 
   void _handleCancel() {
+    _isCancelling = true;
     _stopPolling();
+    _closeDesktopPaymentWebview();
     Navigator.of(context).pop(null);
   }
 
@@ -303,7 +418,14 @@ class _PaymentWebViewPageState extends ConsumerState<PaymentWebViewPage> {
 
   Widget _buildWebView() {
     late final Widget webView;
-    if (_useSystemWebView) {
+    if (_useDesktopWindowWebView) {
+      webView = _DesktopPaymentWindowStatus(
+        isOpening: _isOpeningDesktopWebview,
+        opened: _desktopWebviewOpened,
+        error: _desktopWebviewError,
+        onRetry: _openDesktopPaymentWebview,
+      );
+    } else if (_useSystemWebView) {
       webView = _webViewController != null
           ? WebViewWidget(controller: _webViewController!)
           : const SizedBox.expand();
@@ -320,6 +442,81 @@ class _PaymentWebViewPageState extends ConsumerState<PaymentWebViewPage> {
             showMessage: _showPageLoadingMessage,
           ),
       ],
+    );
+  }
+}
+
+class _DesktopPaymentWindowStatus extends StatelessWidget {
+  final bool isOpening;
+  final bool opened;
+  final String? error;
+  final VoidCallback onRetry;
+
+  const _DesktopPaymentWindowStatus({
+    required this.isOpening,
+    required this.opened,
+    required this.error,
+    required this.onRetry,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+    final colorScheme = Theme.of(context).colorScheme;
+    final hasError = error != null;
+    final text = hasError
+        ? l10n.xboardFailedToOpenPaymentPage
+        : opened
+            ? l10n.xboardPaymentPageOpenedCompleteAndReturn
+            : l10n.xboardPreparingPaymentPage;
+
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.all(24),
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 420),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(
+                hasError
+                    ? Icons.error_outline
+                    : opened
+                        ? Icons.open_in_new
+                        : Icons.payment,
+                size: 36,
+                color: hasError ? colorScheme.error : colorScheme.primary,
+              ),
+              const SizedBox(height: 14),
+              Text(
+                text,
+                textAlign: TextAlign.center,
+                style: const TextStyle(
+                  fontSize: 15,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+              const SizedBox(height: 8),
+              Text(
+                l10n.xboardWaitingForPayment,
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  fontSize: 13,
+                  color: colorScheme.onSurface.withValues(alpha: 0.62),
+                ),
+              ),
+              if (hasError) ...[
+                const SizedBox(height: 16),
+                FilledButton.icon(
+                  onPressed: isOpening ? null : onRetry,
+                  icon: const Icon(Icons.refresh),
+                  label: Text(l10n.xboardReopen),
+                ),
+              ],
+            ],
+          ),
+        ),
+      ),
     );
   }
 }
