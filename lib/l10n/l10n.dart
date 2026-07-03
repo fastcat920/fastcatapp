@@ -28,10 +28,9 @@ class AppLocalizations {
   static const AppLocalizationDelegate delegate = AppLocalizationDelegate();
 
   static Future<AppLocalizations> load(Locale locale) {
-    final name =
-        (locale.countryCode?.isEmpty ?? false)
-            ? locale.languageCode
-            : locale.toString();
+    final name = (locale.countryCode?.isEmpty ?? false)
+        ? locale.languageCode
+        : locale.toString();
     final localeName = Intl.canonicalizedLocale(name);
     return initializeMessages(localeName).then((_) {
       Intl.defaultLocale = localeName;
@@ -6030,6 +6029,26 @@ class AppLocalizations {
     return Intl.message('Loading...', name: 'loading', desc: '', args: []);
   }
 
+  /// `Loading is taking longer than expected, please wait...`
+  String get customerServiceLoadingSlow {
+    return Intl.message(
+      'Loading is taking longer than expected, please wait...',
+      name: 'customerServiceLoadingSlow',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Support failed to load, please check your network and try again.`
+  String get customerServiceLoadFailed {
+    return Intl.message(
+      'Support failed to load, please check your network and try again.',
+      name: 'customerServiceLoadFailed',
+      desc: '',
+      args: [],
+    );
+  }
+
   /// `Register Account`
   String get registerAccount {
     return Intl.message(
@@ -6808,7 +6827,7 @@ class AppLocalizations {
   /// `Online Support`
   String get onlineSupportTitle {
     return Intl.message(
-      'Online Support',
+      'Support',
       name: 'onlineSupportTitle',
       desc: '',
       args: [],

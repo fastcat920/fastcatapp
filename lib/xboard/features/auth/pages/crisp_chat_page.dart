@@ -3,10 +3,10 @@ import 'dart:convert';
 import 'dart:io';
 import 'package:file_picker/file_picker.dart';
 import 'package:fl_clash/l10n/l10n.dart';
+import 'package:flutter_inappwebview/flutter_inappwebview.dart' as inapp;
 import 'package:flutter/material.dart';
 import 'package:webview_flutter_android/webview_flutter_android.dart';
 import 'package:webview_flutter/webview_flutter.dart';
-import 'package:webview_win_floating/webview_win_floating.dart' as winwv;
 import 'package:fl_clash/xboard/features/auth/utils/crisp_url_helper.dart';
 
 const _desktopCrispUserAgent = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) '
@@ -41,7 +41,7 @@ class CrispChatPage extends StatefulWidget {
 
 /// Windows/Linux 桌面端 Crisp 客服页。
 ///
-/// 使用 webview_win_floating 在应用内承载 Crisp。
+/// 使用 flutter_inappwebview 在应用内承载 Crisp。
 class DesktopCrispChatPage extends StatefulWidget {
   final String websiteId;
   final String? crispProxyUrl;
@@ -64,8 +64,35 @@ class DesktopCrispChatPage extends StatefulWidget {
   State<DesktopCrispChatPage> createState() => _DesktopCrispChatPageState();
 }
 
+class _CustomerServiceStrings {
+  const _CustomerServiceStrings({
+    required this.title,
+    required this.connecting,
+    required this.loadingSlow,
+    required this.loadFailed,
+    required this.timeout,
+  });
+
+  final String title;
+  final String connecting;
+  final String loadingSlow;
+  final String loadFailed;
+  final String timeout;
+
+  static _CustomerServiceStrings of(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+    return _CustomerServiceStrings(
+      title: l10n.contactSupport,
+      connecting: l10n.onlineSupportConnecting,
+      loadingSlow: l10n.customerServiceLoadingSlow,
+      loadFailed: l10n.customerServiceLoadFailed,
+      timeout: l10n.xboardConnectionTimeout,
+    );
+  }
+}
+
 class _DesktopCrispChatPageState extends State<DesktopCrispChatPage> {
-  winwv.WinWebViewController? _controller;
+  inapp.InAppWebViewController? _controller;
   Timer? _sdkFallbackTimer;
   Timer? _embedFallbackTimer;
   bool _usingSdkBootstrap = false;
@@ -76,6 +103,7 @@ class _DesktopCrispChatPageState extends State<DesktopCrispChatPage> {
   bool _didStartLoading = false;
   bool _didFailStartup = false;
   late bool _isDarkMode;
+  String? _localeTag;
 
   @override
   void initState() {
@@ -89,14 +117,17 @@ class _DesktopCrispChatPageState extends State<DesktopCrispChatPage> {
   void didChangeDependencies() {
     super.didChangeDependencies();
     final nextIsDarkMode = Theme.of(context).brightness == Brightness.dark;
+    final nextLocaleTag = Localizations.localeOf(context).toLanguageTag();
     if (_isDarkMode != nextIsDarkMode) {
       _isDarkMode = nextIsDarkMode;
-      unawaited(_applyDesktopBackgroundColor());
       unawaited(_applyDesktopTheme());
+    }
+    if (_localeTag != nextLocaleTag) {
+      _localeTag = nextLocaleTag;
+      unawaited(_applyDesktopLocale());
     }
     if (!_didStartLoading) {
       _didStartLoading = true;
-      unawaited(_initDesktopWebView());
     }
   }
 
@@ -104,70 +135,8 @@ class _DesktopCrispChatPageState extends State<DesktopCrispChatPage> {
   void dispose() {
     _sdkFallbackTimer?.cancel();
     _embedFallbackTimer?.cancel();
-    final controller = _controller;
     _controller = null;
-    if (controller != null) {
-      unawaited(Future<void>(() async {
-        try {
-          if (!Platform.isLinux) {
-            await controller.setVisibility(false);
-          }
-          await controller.dispose();
-        } catch (_) {}
-      }));
-    }
     super.dispose();
-  }
-
-  Future<void> _initDesktopWebView() async {
-    _setLoading();
-    try {
-      final controller = Platform.isWindows
-          ? winwv.WinWebViewController(
-              params: const winwv.WindowsWebViewControllerCreationParams(
-                profileName: 'fastcat-support',
-                suspendDuringDeactive: false,
-              ),
-            )
-          : winwv.WinWebViewController();
-      _controller = controller;
-      if (mounted) setState(() {});
-      await _applyDesktopBackgroundColor();
-      await controller.setJavaScriptMode(JavaScriptMode.unrestricted);
-      await controller.setUserAgent(_desktopCrispUserAgent);
-      await controller.setNavigationDelegate(
-        winwv.WinNavigationDelegate(
-          onPageStarted: (url) {
-            if (!_usingSdkBootstrap) {
-              _usingProxy = _isProxyUrl(url);
-            }
-            _setLoading();
-          },
-          onProgress: (progress) {
-            if (progress >= 100 && !_usingSdkBootstrap) {
-              _finishLoading();
-            }
-          },
-          onPageFinished: (_) {
-            if (!_usingSdkBootstrap) {
-              unawaited(_injectDirectEmbedMonitor());
-            }
-            _finishLoading();
-          },
-          onHttpError: (error) {
-            if (!_isCrispEmbedUri(error.request?.uri)) return;
-            _handleRouteError();
-          },
-          onWebResourceError: (error) {
-            if (error.isForMainFrame == false) return;
-            _handleRouteError();
-          },
-        ),
-      );
-      await _loadSdkBootstrap();
-    } catch (_) {
-      _showStartupFailure();
-    }
   }
 
   void _setLoading() {
@@ -198,9 +167,11 @@ class _DesktopCrispChatPageState extends State<DesktopCrispChatPage> {
       () => unawaited(_fallbackFromSdkToEmbed()),
     );
     try {
-      await controller.loadHtmlString(
-        _buildSdkBootstrapHtml(),
-        baseUrl: _sdkBootstrapBaseUri().toString(),
+      await controller.loadData(
+        data: _buildSdkBootstrapHtml(),
+        baseUrl: inapp.WebUri.uri(_sdkBootstrapBaseUri()),
+        mimeType: 'text/html',
+        encoding: 'utf-8',
       );
     } catch (_) {
       _showStartupFailure();
@@ -234,7 +205,11 @@ class _DesktopCrispChatPageState extends State<DesktopCrispChatPage> {
       const Duration(seconds: 25),
       () => unawaited(_handleEmbedTimeout()),
     );
-    unawaited(controller.loadRequest(uri).catchError((_) {
+    unawaited(controller
+        .loadUrl(
+      urlRequest: inapp.URLRequest(url: inapp.WebUri.uri(uri)),
+    )
+        .catchError((_) {
       _handleRouteError();
     }));
   }
@@ -313,7 +288,7 @@ class _DesktopCrispChatPageState extends State<DesktopCrispChatPage> {
 
   Future<bool> _isCrispReady() async {
     try {
-      final result = await _controller?.runJavaScriptReturningResult('''
+      final result = await _controller?.evaluateJavascript(source: '''
 (function(){
   try {
     return window.__fastcatCrispReady === true;
@@ -351,16 +326,22 @@ class _DesktopCrispChatPageState extends State<DesktopCrispChatPage> {
   }
 
   String _buildSdkBootstrapHtml() {
+    final strings = _strings;
     final websiteIdJson = jsonEncode(widget.websiteId);
+    final localeTagJson = jsonEncode(_localeTag ?? 'en');
     final background = _customerServiceBackgroundColorValue(_isDarkMode);
     final foreground = _customerServiceForegroundColorValue(_isDarkMode);
     final userScript = widget.userScript ?? '';
+    final titleJson = jsonEncode(strings.title);
+    final connectingJson = jsonEncode(strings.connecting);
+    final loadingSlowJson = jsonEncode(strings.loadingSlow);
+    final loadFailedJson = jsonEncode(strings.loadFailed);
     return '''<!DOCTYPE html>
 <html>
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1">
-  <title>在线客服</title>
+  <title>${strings.title}</title>
   <style>
     * { box-sizing: border-box; }
     html, body {
@@ -396,17 +377,28 @@ class _DesktopCrispChatPageState extends State<DesktopCrispChatPage> {
   </style>
 </head>
 <body>
-  <div id="loading"><span id="spinner"></span><span id="loading-text">正在连接客服...</span></div>
+  <div id="loading"><span id="spinner"></span><span id="loading-text">${strings.connecting}</span></div>
   <script>
     window.\$crisp = window.\$crisp || [];
     window.CRISP_WEBSITE_ID = $websiteIdJson;
     window.__fastcatCrispReady = false;
+    window.__fastcatCustomerServiceLocale = $localeTagJson;
+    try {
+      Object.defineProperty(navigator, 'language', { get: function(){ return window.__fastcatCustomerServiceLocale; }, configurable: true });
+      Object.defineProperty(navigator, 'languages', { get: function(){ return [window.__fastcatCustomerServiceLocale]; }, configurable: true });
+    } catch (_) {}
     $userScript
 
     (function(){
+      var title = $titleJson;
+      var connecting = $connectingJson;
+      var loadingSlow = $loadingSlowJson;
+      var loadFailed = $loadFailedJson;
       var loading = document.getElementById('loading');
       var loadingText = document.getElementById('loading-text');
       var ready = false;
+      document.title = title;
+      document.documentElement.lang = window.__fastcatCustomerServiceLocale || 'en';
 
       function openChat(){
         try {
@@ -447,7 +439,7 @@ class _DesktopCrispChatPageState extends State<DesktopCrispChatPage> {
         clearInterval(openTimer);
         openChat();
         expandFrames();
-        if (!ready && loadingText) loadingText.textContent = '加载较慢，请稍候...';
+        if (!ready && loadingText) loadingText.textContent = loadingSlow;
       }, 15000);
 
       new MutationObserver(function(){
@@ -463,7 +455,7 @@ class _DesktopCrispChatPageState extends State<DesktopCrispChatPage> {
       script.src = 'https://client.crisp.chat/l.js';
       script.async = true;
       script.onerror = function(){
-        if (loadingText) loadingText.textContent = '客服加载失败，请检查网络后重试';
+        if (loadingText) loadingText.textContent = loadFailed;
       };
       document.head.appendChild(script);
     })();
@@ -476,6 +468,7 @@ class _DesktopCrispChatPageState extends State<DesktopCrispChatPage> {
     final background = _customerServiceBackgroundColorValue(_isDarkMode);
     final foreground = _customerServiceForegroundColorValue(_isDarkMode);
     final userScript = widget.userScript ?? '';
+    final localeTag = _localeTag ?? 'en';
     final script = '''
 (function(){
   try {
@@ -486,8 +479,10 @@ class _DesktopCrispChatPageState extends State<DesktopCrispChatPage> {
       $userScript
     } catch(_) {}
     window.__fastcatCrispReady = false;
+    window.__fastcatCustomerServiceLocale = '${_escapeJsString(localeTag)}';
     document.documentElement.style.background = '$background';
     document.documentElement.style.colorScheme = '${_isDarkMode ? 'dark' : 'light'}';
+    document.documentElement.lang = window.__fastcatCustomerServiceLocale;
     if (document.body) {
       document.body.style.background = '$background';
       document.body.style.color = '$foreground';
@@ -510,18 +505,7 @@ class _DesktopCrispChatPageState extends State<DesktopCrispChatPage> {
   } catch(_) {}
 })();''';
     try {
-      await _controller?.runJavaScript(script);
-    } catch (_) {}
-  }
-
-  Future<void> _applyDesktopBackgroundColor() async {
-    if (Platform.isLinux) return;
-    final controller = _controller;
-    if (controller == null) return;
-    try {
-      await controller.setBackgroundColor(
-        _customerServiceBackgroundColor(_isDarkMode),
-      );
+      await _controller?.evaluateJavascript(source: script);
     } catch (_) {}
   }
 
@@ -541,20 +525,44 @@ class _DesktopCrispChatPageState extends State<DesktopCrispChatPage> {
   } catch(_) {}
 })();''';
     try {
-      await controller.runJavaScript(script);
+      await controller.evaluateJavascript(source: script);
+    } catch (_) {}
+  }
+
+  Future<void> _applyDesktopLocale() async {
+    final controller = _controller;
+    if (controller == null || !mounted) return;
+    final strings = _strings;
+    final payload = jsonEncode({
+      'title': strings.title,
+      'connecting': strings.connecting,
+      'loadingSlow': strings.loadingSlow,
+      'loadFailed': strings.loadFailed,
+      'locale': _localeTag ?? 'en',
+    });
+    final script = '''
+(function(){
+  try {
+    var payload = $payload;
+    window.__fastcatCustomerServiceLocale = payload.locale;
+    document.title = payload.title;
+    document.documentElement.lang = payload.locale;
+    var loadingText = document.getElementById('loading-text');
+    if (loadingText && loadingText.textContent) {
+      var current = loadingText.textContent;
+      if (current !== payload.loadingSlow && current !== payload.loadFailed) {
+        loadingText.textContent = payload.connecting;
+      }
+    }
+  } catch(_) {}
+})();''';
+    try {
+      await controller.evaluateJavascript(source: script);
     } catch (_) {}
   }
 
   Future<void> _handleRetry() async {
-    if (_controller == null || _didFailStartup) {
-      final oldController = _controller;
-      _controller = null;
-      if (oldController != null) {
-        unawaited(oldController.dispose());
-      }
-      await _initDesktopWebView();
-      return;
-    }
+    if (_controller == null) return;
     await _loadSdkBootstrap();
   }
 
@@ -570,18 +578,76 @@ class _DesktopCrispChatPageState extends State<DesktopCrispChatPage> {
     return isDarkMode ? '#f3f4f6' : '#999999';
   }
 
+  _CustomerServiceStrings get _strings => mounted
+      ? _CustomerServiceStrings.of(context)
+      : const _CustomerServiceStrings(
+          title: 'Support',
+          connecting: 'Connecting...',
+          loadingSlow: 'Loading is taking longer than expected, please wait...',
+          loadFailed:
+              'Support failed to load, please check your network and try again.',
+          timeout: 'Connection timeout, please check network connection',
+        );
+
+  String _escapeJsString(String value) {
+    return value
+        .replaceAll(r'\', r'\\')
+        .replaceAll("'", r"\'")
+        .replaceAll('\n', r'\n')
+        .replaceAll('\r', r'\r');
+  }
+
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
+    final strings = _strings;
     final backgroundColor = _customerServiceBackgroundColor(_isDarkMode);
-    final controller = _controller;
     final body = Stack(
       fit: StackFit.expand,
       children: [
-        if (controller != null)
-          winwv.WinWebViewWidget(controller: controller)
-        else
-          const SizedBox.expand(),
+        inapp.InAppWebView(
+          initialSettings: inapp.InAppWebViewSettings(
+            javaScriptEnabled: true,
+            userAgent: _desktopCrispUserAgent,
+            transparentBackground: false,
+            disableContextMenu: true,
+            mediaPlaybackRequiresUserGesture: false,
+            useShouldOverrideUrlLoading: true,
+          ),
+          onWebViewCreated: (controller) {
+            _controller = controller;
+            unawaited(_loadSdkBootstrap());
+          },
+          onLoadStart: (_, url) {
+            final urlText = url?.toString() ?? '';
+            if (!_usingSdkBootstrap) {
+              _usingProxy = _isProxyUrl(urlText);
+            }
+            _setLoading();
+          },
+          onProgressChanged: (_, progress) {
+            if (progress >= 100 && !_usingSdkBootstrap) {
+              _finishLoading();
+            }
+          },
+          onLoadStop: (_, __) {
+            if (!_usingSdkBootstrap) {
+              unawaited(_injectDirectEmbedMonitor());
+            }
+            _finishLoading();
+          },
+          shouldOverrideUrlLoading: (_, __) async {
+            return inapp.NavigationActionPolicy.ALLOW;
+          },
+          onReceivedHttpError: (_, request, response) {
+            if (!_isCrispEmbedUri(request.url.uriValue)) return;
+            _handleRouteError();
+          },
+          onReceivedError: (_, request, error) {
+            if (!(request.isForMainFrame ?? true)) return;
+            _handleRouteError();
+          },
+        ),
         if (_isLoading)
           ColoredBox(
             color: backgroundColor,
@@ -605,7 +671,7 @@ class _DesktopCrispChatPageState extends State<DesktopCrispChatPage> {
                     Text(
                       _didFailStartup
                           ? l10n.onlineSupportConnectionError
-                          : '客服连接超时',
+                          : strings.timeout,
                       textAlign: TextAlign.center,
                       style: const TextStyle(fontSize: 14),
                     ),
@@ -626,7 +692,8 @@ class _DesktopCrispChatPageState extends State<DesktopCrispChatPage> {
       backgroundColor: backgroundColor,
       appBar: widget.showAppBar
           ? AppBar(
-              title: Text(l10n.onlineSupportTitle),
+              centerTitle: true,
+              title: Text(strings.title),
               leading: IconButton(
                 icon: const Icon(Icons.close),
                 tooltip: l10n.close,
@@ -658,6 +725,7 @@ class _CrispChatPageState extends State<CrispChatPage> {
   bool _deferredUserScriptStarted = false;
   late bool _isDarkMode;
   bool _didStartLoading = false;
+  String? _localeTag;
 
   @override
   void initState() {
@@ -705,9 +773,15 @@ class _CrispChatPageState extends State<CrispChatPage> {
   void didChangeDependencies() {
     super.didChangeDependencies();
     final nextIsDarkMode = Theme.of(context).brightness == Brightness.dark;
+    final nextLocaleTag = Localizations.localeOf(context).toLanguageTag();
     if (_isDarkMode != nextIsDarkMode) {
       _isDarkMode = nextIsDarkMode;
       unawaited(_applySystemWebViewBackgroundColor());
+      unawaited(_applySystemTheme());
+    }
+    if (_localeTag != nextLocaleTag) {
+      _localeTag = nextLocaleTag;
+      unawaited(_applySystemLocale());
     }
     if (!_didStartLoading) {
       _didStartLoading = true;
@@ -876,16 +950,22 @@ class _CrispChatPageState extends State<CrispChatPage> {
   }
 
   String _buildSdkBootstrapHtml() {
+    final strings = _strings;
     final websiteIdJson = jsonEncode(widget.websiteId);
+    final localeTagJson = jsonEncode(_localeTag ?? 'en');
     final background = _customerServiceBackgroundColorValue(_isDarkMode);
     final foreground = _customerServiceForegroundColorValue(_isDarkMode);
     final userScript = widget.userScript ?? '';
+    final titleJson = jsonEncode(strings.title);
+    final connectingJson = jsonEncode(strings.connecting);
+    final loadingSlowJson = jsonEncode(strings.loadingSlow);
+    final loadFailedJson = jsonEncode(strings.loadFailed);
     return '''<!DOCTYPE html>
 <html>
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1">
-  <title>在线客服</title>
+  <title>${strings.title}</title>
   <style>
     * { box-sizing: border-box; }
     html, body {
@@ -921,17 +1001,28 @@ class _CrispChatPageState extends State<CrispChatPage> {
   </style>
 </head>
 <body>
-  <div id="loading"><span id="spinner"></span><span id="loading-text">正在连接客服...</span></div>
+  <div id="loading"><span id="spinner"></span><span id="loading-text">${strings.connecting}</span></div>
   <script>
     window.\$crisp = window.\$crisp || [];
     window.CRISP_WEBSITE_ID = $websiteIdJson;
     window.__fastcatCrispReady = false;
+    window.__fastcatCustomerServiceLocale = $localeTagJson;
+    try {
+      Object.defineProperty(navigator, 'language', { get: function(){ return window.__fastcatCustomerServiceLocale; }, configurable: true });
+      Object.defineProperty(navigator, 'languages', { get: function(){ return [window.__fastcatCustomerServiceLocale]; }, configurable: true });
+    } catch (_) {}
     $userScript
 
     (function(){
+      var title = $titleJson;
+      var connecting = $connectingJson;
+      var loadingSlow = $loadingSlowJson;
+      var loadFailed = $loadFailedJson;
       var loading = document.getElementById('loading');
       var loadingText = document.getElementById('loading-text');
       var ready = false;
+      document.title = title;
+      document.documentElement.lang = window.__fastcatCustomerServiceLocale || 'en';
 
       function openChat(){
         try {
@@ -972,7 +1063,7 @@ class _CrispChatPageState extends State<CrispChatPage> {
         clearInterval(openTimer);
         openChat();
         expandFrames();
-        if (!ready && loadingText) loadingText.textContent = '加载较慢，请稍候...';
+        if (!ready && loadingText) loadingText.textContent = loadingSlow;
       }, 15000);
 
       new MutationObserver(function(){
@@ -988,7 +1079,7 @@ class _CrispChatPageState extends State<CrispChatPage> {
       script.src = 'https://client.crisp.chat/l.js';
       script.async = true;
       script.onerror = function(){
-        if (loadingText) loadingText.textContent = '客服加载失败，请检查网络后重试';
+        if (loadingText) loadingText.textContent = loadFailed;
       };
       document.head.appendChild(script);
     })();
@@ -1001,6 +1092,7 @@ class _CrispChatPageState extends State<CrispChatPage> {
     final background = _customerServiceBackgroundColorValue(_isDarkMode);
     final foreground = _customerServiceForegroundColorValue(_isDarkMode);
     final userScript = widget.userScript ?? '';
+    final localeTag = _localeTag ?? 'en';
     final script = '''
 (function(){
   try {
@@ -1011,8 +1103,10 @@ class _CrispChatPageState extends State<CrispChatPage> {
       $userScript
     } catch(_) {}
     window.__fastcatCrispReady = false;
+    window.__fastcatCustomerServiceLocale = '${_escapeJsString(localeTag)}';
     document.documentElement.style.background = '$background';
     document.documentElement.style.colorScheme = '${_isDarkMode ? 'dark' : 'light'}';
+    document.documentElement.lang = window.__fastcatCustomerServiceLocale;
     if (document.body) {
       document.body.style.background = '$background';
       document.body.style.color = '$foreground';
@@ -1057,6 +1151,55 @@ class _CrispChatPageState extends State<CrispChatPage> {
       await _controller.setBackgroundColor(
         _customerServiceBackgroundColor(_isDarkMode),
       );
+    } catch (_) {}
+  }
+
+  Future<void> _applySystemTheme() async {
+    final script = '''
+(function(){
+  try {
+    if (typeof window.__fastcatApplyCustomerServiceTheme !== 'function') return;
+    window.__fastcatApplyCustomerServiceTheme({
+      isDark: ${_isDarkMode ? 'true' : 'false'},
+      background: '${_customerServiceBackgroundColorValue(_isDarkMode)}',
+      foreground: '${_customerServiceForegroundColorValue(_isDarkMode)}',
+      accent: '${_isDarkMode ? '#60a5fa' : '#2563eb'}'
+    });
+  } catch(_) {}
+})();''';
+    try {
+      await _controller.runJavaScript(script);
+    } catch (_) {}
+  }
+
+  Future<void> _applySystemLocale() async {
+    if (!mounted) return;
+    final strings = _strings;
+    final payload = jsonEncode({
+      'title': strings.title,
+      'connecting': strings.connecting,
+      'loadingSlow': strings.loadingSlow,
+      'loadFailed': strings.loadFailed,
+      'locale': _localeTag ?? 'en',
+    });
+    final script = '''
+(function(){
+  try {
+    var payload = $payload;
+    window.__fastcatCustomerServiceLocale = payload.locale;
+    document.title = payload.title;
+    document.documentElement.lang = payload.locale;
+    var loadingText = document.getElementById('loading-text');
+    if (loadingText && loadingText.textContent) {
+      var current = loadingText.textContent;
+      if (current !== payload.loadingSlow && current !== payload.loadFailed) {
+        loadingText.textContent = payload.connecting;
+      }
+    }
+  } catch(_) {}
+})();''';
+    try {
+      await _controller.runJavaScript(script);
     } catch (_) {}
   }
 
@@ -1126,13 +1269,34 @@ class _CrispChatPageState extends State<CrispChatPage> {
     return isDarkMode ? '#f3f4f6' : '#999999';
   }
 
+  _CustomerServiceStrings get _strings => mounted
+      ? _CustomerServiceStrings.of(context)
+      : const _CustomerServiceStrings(
+          title: 'Support',
+          connecting: 'Connecting...',
+          loadingSlow: 'Loading is taking longer than expected, please wait...',
+          loadFailed:
+              'Support failed to load, please check your network and try again.',
+          timeout: 'Connection timeout, please check network connection',
+        );
+
+  String _escapeJsString(String value) {
+    return value
+        .replaceAll(r'\', r'\\')
+        .replaceAll("'", r"\'")
+        .replaceAll('\n', r'\n')
+        .replaceAll('\r', r'\r');
+  }
+
   @override
   Widget build(BuildContext context) {
+    final strings = _strings;
     final backgroundColor = _customerServiceBackgroundColor(_isDarkMode);
     return Scaffold(
       backgroundColor: backgroundColor,
       appBar: AppBar(
-        title: const Text('在线客服'),
+        centerTitle: true,
+        title: Text(strings.title),
         leading: IconButton(
           icon: const Icon(Icons.close),
           onPressed: () => Navigator.of(context).pop(),
@@ -1152,10 +1316,10 @@ class _CrispChatPageState extends State<CrispChatPage> {
             Positioned.fill(
               child: ColoredBox(
                 color: backgroundColor,
-                child: const Center(
+                child: Center(
                   child: Text(
-                    '客服连接超时',
-                    style: TextStyle(fontSize: 14),
+                    strings.timeout,
+                    style: const TextStyle(fontSize: 14),
                   ),
                 ),
               ),
