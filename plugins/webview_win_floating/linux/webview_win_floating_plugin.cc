@@ -236,6 +236,7 @@ void createWebview(FlMethodChannel *method_channel, WebviewWinFloatingPlugin* se
   MyWebViewCreateParams params;
 
   params.onNavigationRequest = [=](int requestId, const gchar *url, bool isNewWindow) -> void {
+    if (!url || url[0] == '\0') return;
     auto *args = fl_value_new_map();
     fl_value_set(args, fl_value_new_string("webviewId"), fl_value_new_int(webviewId));
     fl_value_set(args, fl_value_new_string("requestId"), fl_value_new_int(requestId));
@@ -246,6 +247,7 @@ void createWebview(FlMethodChannel *method_channel, WebviewWinFloatingPlugin* se
   };
 
   params.onPageStarted = [=](const gchar *url) -> void {
+    if (!url || url[0] == '\0') return;
     auto *args = fl_value_new_map();
     fl_value_set(args, fl_value_new_string("webviewId"), fl_value_new_int(webviewId));
     fl_value_set(args, fl_value_new_string("url"), fl_value_new_string(url));
@@ -254,6 +256,7 @@ void createWebview(FlMethodChannel *method_channel, WebviewWinFloatingPlugin* se
   };
 
   params.onPageFinished = [=](const gchar *url) -> void {
+    if (!url || url[0] == '\0') return;
     auto *args = fl_value_new_map();
     fl_value_set(args, fl_value_new_string("webviewId"), fl_value_new_int(webviewId));
     fl_value_set(args, fl_value_new_string("url"), fl_value_new_string(url));
@@ -262,6 +265,7 @@ void createWebview(FlMethodChannel *method_channel, WebviewWinFloatingPlugin* se
   };
 
   params.onHttpError = [=](const gchar *url, int errCode) -> void {
+    if (!url || url[0] == '\0') return;
     auto *args = fl_value_new_map();
     fl_value_set(args, fl_value_new_string("webviewId"), fl_value_new_int(webviewId));
     fl_value_set(args, fl_value_new_string("url"), fl_value_new_string(url));
@@ -271,6 +275,7 @@ void createWebview(FlMethodChannel *method_channel, WebviewWinFloatingPlugin* se
   };
 
   params.onSslAuthError = [=](const gchar *url) -> void {
+    if (!url || url[0] == '\0') return;
     auto *args = fl_value_new_map();
     fl_value_set(args, fl_value_new_string("webviewId"), fl_value_new_int(webviewId));
     fl_value_set(args, fl_value_new_string("url"), fl_value_new_string(url));
@@ -279,6 +284,7 @@ void createWebview(FlMethodChannel *method_channel, WebviewWinFloatingPlugin* se
   };
 
   params.onWebResourceError = [=](const gchar *url, int errCode, const gchar *errType) -> void {
+    if (!url || url[0] == '\0') return;
     auto *args = fl_value_new_map();
     fl_value_set(args, fl_value_new_string("webviewId"), fl_value_new_int(webviewId));
     fl_value_set(args, fl_value_new_string("url"), fl_value_new_string(url));
@@ -289,6 +295,7 @@ void createWebview(FlMethodChannel *method_channel, WebviewWinFloatingPlugin* se
   };
 
   params.onUrlChange = [=](const gchar *url) -> void {
+    if (!url || url[0] == '\0') return;
     auto *args = fl_value_new_map();
     fl_value_set(args, fl_value_new_string("webviewId"), fl_value_new_int(webviewId));
     fl_value_set(args, fl_value_new_string("url"), fl_value_new_string(url));
@@ -297,6 +304,7 @@ void createWebview(FlMethodChannel *method_channel, WebviewWinFloatingPlugin* se
   };
 
   params.onPageTitleChanged = [=](const gchar *title) -> void {
+    if (!title || title[0] == '\0') return;
     auto *args = fl_value_new_map();
     fl_value_set(args, fl_value_new_string("webviewId"), fl_value_new_int(webviewId));
     fl_value_set(args, fl_value_new_string("title"), fl_value_new_string(title));
@@ -323,10 +331,12 @@ void createWebview(FlMethodChannel *method_channel, WebviewWinFloatingPlugin* se
   };
   
   params.onWebMessageReceived = [=](gchar *channelName, gchar *message) -> void {
+    if (!channelName || channelName[0] == '\0') return;
     auto *args = fl_value_new_map();
     fl_value_set(args, fl_value_new_string("webviewId"), fl_value_new_int(webviewId));
     fl_value_set(args, fl_value_new_string("JkChannelName"), fl_value_new_string(channelName));
-    fl_value_set(args, fl_value_new_string("message"), fl_value_new_string(message));
+    fl_value_set(args, fl_value_new_string("message"),
+                 message != NULL ? fl_value_new_string(message) : fl_value_new_null());
     fl_method_channel_invoke_method(FL_METHOD_CHANNEL(method_channel),
                   "OnWebMessageReceived", args, NULL, NULL, NULL);
   };

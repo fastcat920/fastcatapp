@@ -624,7 +624,7 @@ class _DesktopCrispChatPageState extends State<DesktopCrispChatPage> {
                 icon: const Icon(Icons.close),
                 tooltip: l10n.close,
                 onPressed: widget.onClose ??
-                    () => Navigator.of(context, rootNavigator: true).pop(),
+                    () => Navigator.of(context).pop(),
               ),
               actions: [
                 IconButton(
@@ -661,7 +661,6 @@ class _CrispChatPageState extends State<CrispChatPage> {
             Brightness.dark;
     _controller = WebViewController()
       ..setJavaScriptMode(JavaScriptMode.unrestricted)
-      ..setBackgroundColor(_customerServiceBackgroundColor(_isDarkMode))
       ..setNavigationDelegate(
         NavigationDelegate(
           onPageStarted: (url) {
@@ -692,6 +691,7 @@ class _CrispChatPageState extends State<CrispChatPage> {
           },
         ),
       );
+    unawaited(_applySystemWebViewBackgroundColor());
     unawaited(_configureAndroidFileSelection(_controller));
   }
 
@@ -701,11 +701,7 @@ class _CrispChatPageState extends State<CrispChatPage> {
     final nextIsDarkMode = Theme.of(context).brightness == Brightness.dark;
     if (_isDarkMode != nextIsDarkMode) {
       _isDarkMode = nextIsDarkMode;
-      unawaited(
-        _controller.setBackgroundColor(
-          _customerServiceBackgroundColor(_isDarkMode),
-        ),
-      );
+      unawaited(_applySystemWebViewBackgroundColor());
     }
     if (!_didStartLoading) {
       _didStartLoading = true;
@@ -1049,6 +1045,15 @@ class _CrispChatPageState extends State<CrispChatPage> {
     } catch (_) {}
   }
 
+  Future<void> _applySystemWebViewBackgroundColor() async {
+    if (!(Platform.isAndroid || Platform.isIOS)) return;
+    try {
+      await _controller.setBackgroundColor(
+        _customerServiceBackgroundColor(_isDarkMode),
+      );
+    } catch (_) {}
+  }
+
   Future<void> _configureAndroidFileSelection(
       WebViewController controller) async {
     if (!Platform.isAndroid) return;
@@ -1124,7 +1129,7 @@ class _CrispChatPageState extends State<CrispChatPage> {
         title: const Text('在线客服'),
         leading: IconButton(
           icon: const Icon(Icons.close),
-          onPressed: () => Navigator.of(context, rootNavigator: true).pop(),
+          onPressed: () => Navigator.of(context).pop(),
         ),
       ),
       body: Stack(

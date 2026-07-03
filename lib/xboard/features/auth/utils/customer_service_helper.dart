@@ -844,7 +844,7 @@ if(window===window.top){
         userScript ?? _buildCrispUserScript(context, ipData: ipData);
     if (Platform.isWindows || Platform.isLinux) {
       if (!context.mounted) return;
-      await Navigator.of(context, rootNavigator: true).push(
+      await Navigator.of(context).push(
         MaterialPageRoute(
           builder: (_) => DesktopCrispChatPage(
             websiteId: websiteId,
@@ -857,7 +857,7 @@ if(window===window.top){
     }
     if (CrispChatPage.isSupported) {
       if (!context.mounted) return;
-      await Navigator.of(context, rootNavigator: true).push(
+      await Navigator.of(context).push(
         MaterialPageRoute(
           builder: (_) => CrispChatPage(
             websiteId: websiteId,

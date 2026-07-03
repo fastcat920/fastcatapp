@@ -33,6 +33,7 @@ gboolean MyWebView::on_decide_policy(WebKitPolicyDecision *decision,
     // WebKitURIRequest
     WebKitURIRequest *navigation_request = webkit_navigation_action_get_request(navigation_action);
     auto uri = webkit_uri_request_get_uri(navigation_request);
+    if (!uri || uri[0] == '\0') return FALSE;
     //const gchar *httpMethod = webkit_uri_request_get_http_method(navigation_request);
     //bool isPostMethod = strcmp(httpMethod, "POST");
 
@@ -137,6 +138,7 @@ gboolean on_load_failed_with_tls_error(
 void on_url_changed(WebKitWebView *web_view, GParamSpec *pspec, gpointer user_data)
 {
     const gchar *url = webkit_web_view_get_uri(web_view);
+    if (!url || url[0] == '\0') return;
     MyWebViewCreateParams *params = (MyWebViewCreateParams*) user_data;
     params->onUrlChange(url);
 }
@@ -220,6 +222,7 @@ GtkWidget* on_new_window(
     // when try to open link in new window, we just open link in current webview
     WebKitURIRequest *request = webkit_navigation_action_get_request(navigation_action);
     const char *url = webkit_uri_request_get_uri(request);
+    if (!url || url[0] == '\0') return NULL;
 
     MyWebView *webview = (MyWebView*) user_data;
     webview->loadUrl((char*)url);
