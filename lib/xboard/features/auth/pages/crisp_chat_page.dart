@@ -16,7 +16,7 @@ const _desktopCrispUserAgent = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) '
 /// Crisp 客服嵌入页面
 ///
 /// 在应用内通过 WebView 加载 Crisp 聊天窗口，无需跳转外部浏览器。
-/// 支持 Android、iOS；桌面端使用 desktop_webview_window 独立窗口。
+/// Android/iOS/macOS 使用系统 WebView。
 class CrispChatPage extends StatefulWidget {
   final String websiteId;
   final String? crispProxyUrl;
@@ -31,8 +31,9 @@ class CrispChatPage extends StatefulWidget {
     this.deferredUserScript,
   });
 
-  /// 是否支持内嵌 WebView（桌面端统一使用独立窗口）
-  static bool get isSupported => Platform.isAndroid || Platform.isIOS;
+  /// 是否支持系统内嵌 WebView
+  static bool get isSupported =>
+      Platform.isAndroid || Platform.isIOS || Platform.isMacOS;
 
   @override
   State<CrispChatPage> createState() => _CrispChatPageState();
@@ -40,9 +41,7 @@ class CrispChatPage extends StatefulWidget {
 
 /// Windows/Linux 桌面端 Crisp 客服页。
 ///
-/// 使用 webview_win_floating 承载 Crisp。主客户端会在 Windows/Linux
-/// 启动一个轻量 Flutter 子进程来显示此页面，保持独立窗口体验，同时避免
-/// 旧独立 native WebView 窗口异常时连带关闭主客户端。
+/// 使用 webview_win_floating 在应用内承载 Crisp。
 class DesktopCrispChatPage extends StatefulWidget {
   final String websiteId;
   final String? crispProxyUrl;
@@ -97,6 +96,7 @@ class _DesktopCrispChatPageState extends State<DesktopCrispChatPage> {
           _customerServiceBackgroundColor(_isDarkMode),
         ),
       );
+      unawaited(_applyDesktopTheme());
     }
     if (!_didStartLoading) {
       _didStartLoading = true;
@@ -515,6 +515,26 @@ class _DesktopCrispChatPageState extends State<DesktopCrispChatPage> {
 })();''';
     try {
       await _controller?.runJavaScript(script);
+    } catch (_) {}
+  }
+
+  Future<void> _applyDesktopTheme() async {
+    final controller = _controller;
+    if (controller == null) return;
+    final script = '''
+(function(){
+  try {
+    if (typeof window.__fastcatApplyCustomerServiceTheme !== 'function') return;
+    window.__fastcatApplyCustomerServiceTheme({
+      isDark: ${_isDarkMode ? 'true' : 'false'},
+      background: '${_customerServiceBackgroundColorValue(_isDarkMode)}',
+      foreground: '${_customerServiceForegroundColorValue(_isDarkMode)}',
+      accent: '${_isDarkMode ? '#60a5fa' : '#2563eb'}'
+    });
+  } catch(_) {}
+})();''';
+    try {
+      await controller.runJavaScript(script);
     } catch (_) {}
   }
 

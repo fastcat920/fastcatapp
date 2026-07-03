@@ -15,7 +15,6 @@ import 'package:fl_clash/xboard/config/xboard_config.dart';
 import 'package:fl_clash/xboard/features/auth/auth.dart';
 import 'package:fl_clash/xboard/domain/domain.dart';
 import 'package:fl_clash/xboard/features/auth/pages/crisp_chat_page.dart';
-import 'package:fl_clash/xboard/features/auth/pages/desktop_customer_service_window.dart';
 import 'package:fl_clash/xboard/features/auth/pages/salesmartly_chat_page.dart';
 import 'package:fl_clash/xboard/features/auth/utils/crisp_url_helper.dart';
 import 'package:fl_clash/xboard/core/core.dart';
@@ -30,14 +29,11 @@ const _crispProxyProbeTimeout = Duration(seconds: 4);
 const _crispProxyProbePreviewBytes = 4096;
 const _crispProxyUsableCacheTtl = Duration(minutes: 10);
 const _crispUserDataResolveTimeout = Duration(milliseconds: 1800);
-const _desktopCrispRouteFallbackDelay = Duration(seconds: 12);
-const _desktopCrispDirectEmbedFallbackDelay = Duration(seconds: 25);
 
 /// 统一客服入口：按业务约定仅使用 Crisp（远程优先，本地兜底）
 ///
-/// Android/iOS → 内嵌 WebView（webview_flutter）
-/// Windows/Linux → 轻量客服子窗口（webview_win_floating）
-/// macOS → 独立 WebView 窗口（desktop_webview_window）
+/// Android/iOS/macOS → 内嵌 WebView（webview_flutter）
+/// Windows/Linux → 内嵌 WebView 页（webview_win_floating）
 class CustomerServiceHelper {
   CustomerServiceHelper._();
 
@@ -57,9 +53,6 @@ class CustomerServiceHelper {
 
   static bool get _isDesktopPlatform =>
       Platform.isWindows || Platform.isMacOS || Platform.isLinux;
-
-  static bool get _useCustomerServiceChildWindow =>
-      DesktopCustomerServiceWindowLauncher.isSupported;
 
   static int get _desktopCustomerServiceTitleBarHeight =>
       Platform.isWindows || Platform.isLinux ? 0 : 40;
@@ -245,7 +238,7 @@ class CustomerServiceHelper {
       unawaited(_fallbackCrispProxyUrl());
     }
     unawaited(_prewarmCrispRoute());
-    if (_isDesktopPlatform && !_useCustomerServiceChildWindow) {
+    if (_isDesktopPlatform) {
       unawaited(_isDesktopWebviewAvailable());
       if (Platform.isWindows) {
         unawaited(_webview2DataFolder());
@@ -435,32 +428,8 @@ class CustomerServiceHelper {
       if (!context.mounted) return;
       final ipData = await ipDataFuture;
       if (!context.mounted) return;
-      final isDarkMode = _isDarkMode(context);
       final userScript = _buildCrispUserScript(context, ipData: ipData);
-      if (_useCustomerServiceChildWindow) {
-        final launched = await DesktopCustomerServiceWindowLauncher.open(
-          websiteId: crispId,
-          crispProxyUrl: crispProxyUrl,
-          userScript: userScript,
-        );
-        if (!launched && context.mounted) {
-          XBoardNotification.showError('客服窗口启动失败，请稍后重试');
-        }
-        return;
-      }
-      if (_isDesktopPlatform) {
-        final webview = await _openCrispInDesktopWebview(
-          crispId,
-          crispProxyUrl: crispProxyUrl,
-          isDarkMode: isDarkMode,
-          userScript: userScript,
-        );
-        if (webview == null && context.mounted) {
-          XBoardNotification.showError('客服窗口启动失败，请稍后重试');
-        }
-        return;
-      }
-      _openCrisp(
+      await _openCrisp(
         context,
         crispId,
         userScript: userScript,
@@ -474,7 +443,7 @@ class CustomerServiceHelper {
   // ignore: unused_element
   static void _openSalesmartly(BuildContext context, String scriptUrl) {
     if (Platform.isWindows || Platform.isMacOS || Platform.isLinux) {
-      // 桌面端：用 desktop_webview_window 独立窗口
+      // Salesmartly 仍保留旧桌面兜底实现，当前客服主链路已统一为 Crisp 内嵌页。
       _openSalesmartlyInDesktopWebview(
         scriptUrl,
         isDarkMode: _isDarkMode(context),
@@ -863,46 +832,32 @@ if(window===window.top){
     return '';
   }
 
-  static void _openCrisp(
+  static Future<void> _openCrisp(
     BuildContext context,
     String websiteId, {
     String? userScript,
     String? crispProxyUrl,
     _CrispIPData? ipData,
     Future<String?> Function()? deferredUserScript,
-  }) {
+  }) async {
     final effectiveUserScript =
         userScript ?? _buildCrispUserScript(context, ipData: ipData);
-    if (_useCustomerServiceChildWindow) {
-      unawaited(() async {
-        final launched = await DesktopCustomerServiceWindowLauncher.open(
-          websiteId: websiteId,
-          crispProxyUrl: crispProxyUrl,
-          userScript: effectiveUserScript,
-        );
-        if (!launched) {
-          XBoardNotification.showError('客服窗口启动失败，请稍后重试');
-        }
-      }());
+    if (Platform.isWindows || Platform.isLinux) {
+      if (!context.mounted) return;
+      await Navigator.of(context, rootNavigator: true).push(
+        MaterialPageRoute(
+          builder: (_) => DesktopCrispChatPage(
+            websiteId: websiteId,
+            crispProxyUrl: crispProxyUrl,
+            userScript: effectiveUserScript,
+          ),
+        ),
+      );
       return;
     }
-    if (_isDesktopPlatform) {
-      // macOS：继续使用已验证的 desktop_webview_window 独立窗口
-      unawaited(() async {
-        final webview = await _openCrispInDesktopWebview(
-          websiteId,
-          crispProxyUrl: crispProxyUrl,
-          isDarkMode: _isDarkMode(context),
-          userScript: effectiveUserScript,
-        );
-        if (webview == null) {
-          XBoardNotification.showError('客服窗口启动失败，请稍后重试');
-        }
-      }());
-      return;
-    } else if (CrispChatPage.isSupported) {
-      // Android/iOS：内嵌 WebView 全屏
-      Navigator.of(context, rootNavigator: true).push(
+    if (CrispChatPage.isSupported) {
+      if (!context.mounted) return;
+      await Navigator.of(context, rootNavigator: true).push(
         MaterialPageRoute(
           builder: (_) => CrispChatPage(
             websiteId: websiteId,
@@ -912,736 +867,12 @@ if(window===window.top){
           ),
         ),
       );
-    } else {
-      launchUrl(
-        crispEmbedUri(websiteId: websiteId, proxyUrl: crispProxyUrl),
-        mode: LaunchMode.externalApplication,
-      );
-    }
-  }
-
-  /// 桌面端：用 desktop_webview_window 打开 Crisp 聊天
-  /// 用 SDK 注入方式代替直接加载 embed URL（解决 WebView2 空白问题）
-  static Future<Webview?> _openCrispInDesktopWebview(
-    String websiteId, {
-    String? crispProxyUrl,
-    required bool isDarkMode,
-    required String userScript,
-  }) async {
-    final existing = await _reuseDesktopCustomerServiceWindow(
-      isDarkMode: isDarkMode,
-    );
-    if (existing != null) {
-      await _applyCrispUserScriptToDesktop(existing, userScript);
-      return existing;
-    }
-
-    final future = _createCrispDesktopWebview(
-      websiteId,
-      crispProxyUrl: crispProxyUrl,
-      isDarkMode: isDarkMode,
-      userScript: userScript,
-    );
-    _desktopCustomerServiceOpening = future;
-    try {
-      final webview = await future;
-      if (webview != null) {
-        _trackDesktopCustomerServiceWindow(webview);
-      }
-      return webview;
-    } finally {
-      if (identical(_desktopCustomerServiceOpening, future)) {
-        _desktopCustomerServiceOpening = null;
-      }
-    }
-  }
-
-  static Future<void> _applyCrispUserScriptToDesktop(
-    Webview webview,
-    String userScript,
-  ) async {
-    try {
-      await webview.evaluateJavaScript(userScript);
-    } catch (e) {
-      _logger.debug('[Crisp] 刷新客服用户资料失败: $e');
-    }
-  }
-
-  static Future<Webview?> _createCrispDesktopWebview(
-    String websiteId, {
-    String? crispProxyUrl,
-    required bool isDarkMode,
-    required String userScript,
-  }) async {
-    final officialUrl = officialCrispEmbedUri(websiteId).toString();
-    final preferredUrl =
-        crispEmbedUri(websiteId: websiteId, proxyUrl: crispProxyUrl).toString();
-    if (Platform.isLinux) {
-      return _createLinuxCrispDesktopWebview(
-        websiteId: websiteId,
-        preferredUrl: preferredUrl,
-        officialUrl: officialUrl,
-        isDarkMode: isDarkMode,
-        userScript: userScript,
-      );
-    }
-    _DesktopCrispBootstrapPage? bootstrapPage;
-    Webview? createdWebview;
-    try {
-      // 先检查 WebView2 Runtime 是否已安装
-      final available = await _isDesktopWebviewAvailable();
-      if (!available) {
-        _logger.warning('[Crisp] 桌面 WebView 不可用，客服窗口启动失败');
-        return null;
-      }
-
-      bootstrapPage = await _startDesktopCrispBootstrapPage(
-        websiteId: websiteId,
-        isDarkMode: isDarkMode,
-        userScript: userScript,
-      );
-      final dataFolder = Platform.isWindows ? await _webview2DataFolder() : '';
-      final webview = await WebviewWindow.create(
-        configuration: CreateConfiguration(
-          title: '在线客服',
-          windowWidth: _desktopCustomerServiceWindowWidth,
-          windowHeight: _desktopCustomerServiceWindowHeight,
-          titleBarHeight: _desktopCustomerServiceTitleBarHeight,
-          userDataFolderWindows: dataFolder,
-          resizable: false,
-          showTitleBarActions: false,
-          brightness: _customerServiceBrightness(isDarkMode),
-        ),
-      );
-      createdWebview = webview;
-      await _applyDesktopCustomerServiceTheme(
-        webview,
-        isDarkMode: isDarkMode,
-      );
-
-      unawaited(webview.onClose.whenComplete(bootstrapPage.close));
-      final directFallbackUrl = _directCrispEmbedFallbackUrl(
-        preferredUrl: preferredUrl,
-        officialUrl: officialUrl,
-      );
-      webview.addScriptToExecuteOnDocumentCreated(
-        _buildDesktopCrispDirectEmbedMonitorScript(
-          isDarkMode: isDarkMode,
-          userScript: userScript,
-          officialUrl: officialUrl,
-        ),
-      );
-      _scheduleDesktopCrispRouteFallback(
-        webview,
-        fallbackUrl: directFallbackUrl,
-        logMessage: _crispRouteFallbackLogMessage(
-          fallbackUrl: directFallbackUrl,
-          officialUrl: officialUrl,
-        ),
-      );
-
-      await webview.launch(bootstrapPage.url);
-
-      _logger.info('[Crisp] 已启动桌面 WebView，加载客服 SDK 启动页');
-      return webview;
-    } catch (e) {
-      _logger.error('[Crisp] 桌面客服启动页失败，尝试加载 embed 页面', e);
-      await bootstrapPage?.close();
-      createdWebview?.close();
-      try {
-        final dataFolder =
-            Platform.isWindows ? await _webview2DataFolder() : '';
-        final webview = await WebviewWindow.create(
-          configuration: CreateConfiguration(
-            title: '在线客服',
-            windowWidth: _desktopCustomerServiceWindowWidth,
-            windowHeight: _desktopCustomerServiceWindowHeight,
-            titleBarHeight: _desktopCustomerServiceTitleBarHeight,
-            userDataFolderWindows: dataFolder,
-            resizable: false,
-            showTitleBarActions: false,
-            brightness: _customerServiceBrightness(isDarkMode),
-          ),
-        );
-        webview.addScriptToExecuteOnDocumentCreated(
-          _buildDesktopCrispDirectEmbedMonitorScript(
-            isDarkMode: isDarkMode,
-            userScript: userScript,
-            officialUrl: officialUrl,
-          ),
-        );
-        await _applyDesktopCustomerServiceTheme(
-          webview,
-          isDarkMode: isDarkMode,
-        );
-        await webview.launch(preferredUrl);
-        return webview;
-      } catch (fallbackError) {
-        _logger.error('[Crisp] 桌面客服 WebView 启动失败', fallbackError);
-      }
-      return null;
-    }
-  }
-
-  static Future<Webview?> _createLinuxCrispDesktopWebview({
-    required String websiteId,
-    required String preferredUrl,
-    required String officialUrl,
-    required bool isDarkMode,
-    required String userScript,
-  }) async {
-    try {
-      final webview = await WebviewWindow.create(
-        configuration: CreateConfiguration(
-          title: '在线客服',
-          windowWidth: _desktopCustomerServiceWindowWidth,
-          windowHeight: _desktopCustomerServiceWindowHeight,
-          titleBarHeight: _desktopCustomerServiceTitleBarHeight,
-          resizable: false,
-          showTitleBarActions: false,
-          brightness: _customerServiceBrightness(isDarkMode),
-        ),
-      );
-      final bootstrapUrl = _linuxCrispSdkBootstrapUri(preferredUrl);
-      final directFallbackUrl = _directCrispEmbedFallbackUrl(
-        preferredUrl: preferredUrl,
-        officialUrl: officialUrl,
-      );
-      webview.addScriptToExecuteOnDocumentCreated(
-        _buildLinuxCrispSdkBootstrapScript(
-          websiteId: websiteId,
-          isDarkMode: isDarkMode,
-          userScript: userScript,
-          officialUrl: officialUrl,
-        ),
-      );
-      await _applyDesktopCustomerServiceTheme(
-        webview,
-        isDarkMode: isDarkMode,
-      );
-      _scheduleDesktopCrispRouteFallback(
-        webview,
-        fallbackUrl: directFallbackUrl,
-        logMessage: _crispRouteFallbackLogMessage(
-          fallbackUrl: directFallbackUrl,
-          officialUrl: officialUrl,
-        ),
-      );
-      await webview.launch(bootstrapUrl);
-      _logger.info('[Crisp] 已启动 Linux 桌面 WebView，加载远端 HTTPS Crisp SDK 启动页');
-      return webview;
-    } catch (e) {
-      _logger.error('[Crisp] Linux 桌面客服启动失败', e);
-      return null;
-    }
-  }
-
-  static String _linuxCrispSdkBootstrapUri(String baseUrl) {
-    final uri = Uri.parse(baseUrl);
-    return uri.replace(
-      queryParameters: {
-        ...uri.queryParameters,
-        'fastcat_bootstrap': 'sdk',
-      },
-    ).toString();
-  }
-
-  static String _directCrispEmbedFallbackUrl({
-    required String preferredUrl,
-    required String officialUrl,
-  }) {
-    return preferredUrl == officialUrl ? officialUrl : preferredUrl;
-  }
-
-  static String _crispRouteFallbackLogMessage({
-    required String fallbackUrl,
-    required String officialUrl,
-  }) {
-    return fallbackUrl == officialUrl
-        ? '[Crisp] 客服 SDK 加载较慢，切换官方 embed 页面'
-        : '[Crisp] 客服 SDK 加载较慢，切换代理 embed 页面';
-  }
-
-  static String _buildDesktopCrispDirectEmbedMonitorScript({
-    required bool isDarkMode,
-    required String userScript,
-    required String officialUrl,
-  }) {
-    final officialUrlJson = jsonEncode(officialUrl);
-    final background = _customerServiceBackground(isDarkMode);
-    final foreground = _customerServiceForeground(isDarkMode);
-    final accent =
-        _desktopCustomerServiceAccent ?? _customerServiceAccent(isDarkMode);
-    final colorScheme = isDarkMode ? 'dark' : 'light';
-    final timeoutMs = _desktopCrispDirectEmbedFallbackDelay.inMilliseconds;
-    return '''
-(function(){
-  try {
-    if (window.__fastcatCrispDirectMonitorInstalled) return;
-    window.__fastcatCrispDirectMonitorInstalled = true;
-    var background = '$background';
-    var foreground = '$foreground';
-    var accent = '$accent';
-    var colorScheme = '$colorScheme';
-    var officialUrl = $officialUrlJson;
-
-    function applyTheme(theme) {
-      try {
-        if (theme) {
-          background = theme.background || background;
-          foreground = theme.foreground || foreground;
-          accent = theme.accent || accent;
-          colorScheme = theme.isDark ? 'dark' : 'light';
-        }
-        document.documentElement.style.background = background;
-        document.documentElement.style.colorScheme = colorScheme;
-        if (document.body) {
-          document.body.style.background = background;
-          document.body.style.color = foreground;
-        }
-        var style = document.getElementById('fastcat-customer-service-theme');
-        if (!style) {
-          style = document.createElement('style');
-          style.id = 'fastcat-customer-service-theme';
-          (document.head || document.documentElement).appendChild(style);
-        }
-        style.textContent = 'html,body{width:100%;height:100%;margin:0;background:' + background + '!important;color:' + foreground + '!important;color-scheme:' + colorScheme + '!important;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;}#fastcat-customer-service-timeout{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;background:' + background + ';color:' + foreground + ';font-size:14px;z-index:2147483647;}#spinner{border-top-color:' + accent + '!important;}';
-      } catch(_) {}
-    }
-
-    window.__fastcatApplyCustomerServiceTheme = applyTheme;
-    applyTheme();
-
-    var search = String(window.location.search || '');
-    if (search.indexOf('fastcat_bootstrap=sdk') !== -1) return;
-
-    window.\$crisp = window.\$crisp || [];
-    try {
-      $userScript
-    } catch(_) {}
-
-    window.__fastcatCrispReady = false;
-
-    function markReady(){
-      window.__fastcatCrispReady = true;
-    }
-
-    function showFailure(message) {
-      try {
-        applyTheme();
-        if (!document.body) return;
-        document.body.innerHTML = '<div id="fastcat-customer-service-timeout">' + message + '</div>';
-      } catch(_) {}
-    }
-
-    function directLooksReady(){
-      try {
-        var interactive = document.querySelector('textarea,input,[contenteditable="true"],button,a[href^="mailto:"],iframe[src*="crisp"],.crisp-client,[class*="crisp"]');
-        if (interactive) markReady();
-      } catch(_) {}
-    }
-
-    document.addEventListener('DOMContentLoaded', directLooksReady, {once:true});
-    new MutationObserver(directLooksReady).observe(document.documentElement, {
-      childList: true,
-      subtree: true,
-      attributes: true
-    });
-    setTimeout(function(){
-      directLooksReady();
-      if (window.__fastcatCrispReady) return;
-      var current = String(window.location.href || '').split('#')[0];
-      var target = String(officialUrl || '').split('#')[0];
-      if (target && current !== target) {
-        window.location.replace(officialUrl);
-        return;
-      }
-      showFailure('客服连接超时');
-    }, $timeoutMs);
-  } catch(_) {}
-})();''';
-  }
-
-  static String _buildLinuxCrispSdkBootstrapScript({
-    required String websiteId,
-    required bool isDarkMode,
-    required String userScript,
-    required String officialUrl,
-  }) {
-    final websiteIdJson = jsonEncode(websiteId);
-    final officialUrlJson = jsonEncode(officialUrl);
-    final background = _customerServiceBackground(isDarkMode);
-    final foreground = _customerServiceForeground(isDarkMode);
-    final accent =
-        _desktopCustomerServiceAccent ?? _customerServiceAccent(isDarkMode);
-    final colorScheme = isDarkMode ? 'dark' : 'light';
-    return '''
-(function(){
-  try {
-    if (window.__fastcatCrispBootstrapped) return;
-    window.__fastcatCrispBootstrapped = true;
-    var background = '$background';
-    var foreground = '$foreground';
-    var accent = '$accent';
-    var colorScheme = '$colorScheme';
-    var websiteId = $websiteIdJson;
-    var officialUrl = $officialUrlJson;
-
-    function applyTheme(theme) {
-      try {
-        if (theme) {
-          background = theme.background || background;
-          foreground = theme.foreground || foreground;
-          accent = theme.accent || accent;
-          colorScheme = theme.isDark ? 'dark' : 'light';
-        }
-        document.documentElement.style.background = background;
-        document.documentElement.style.colorScheme = colorScheme;
-        if (document.body) {
-          document.body.style.background = background;
-          document.body.style.color = foreground;
-        }
-        var style = document.getElementById('fastcat-customer-service-theme');
-        if (!style) {
-          style = document.createElement('style');
-          style.id = 'fastcat-customer-service-theme';
-          (document.head || document.documentElement).appendChild(style);
-        }
-        style.textContent = 'html,body{width:100%;height:100%;margin:0;background:' + background + '!important;color:' + foreground + '!important;color-scheme:' + colorScheme + '!important;overflow:hidden;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;}#loading{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;gap:12px;background:' + background + ';color:' + foreground + ';font-size:14px;z-index:2147483647;}#spinner{width:18px;height:18px;border:2px solid rgba(148,163,184,.35);border-top-color:' + accent + ';border-radius:50%;animation:fastcatSpin .8s linear infinite;}@keyframes fastcatSpin{to{transform:rotate(360deg)}}';
-      } catch(_) {}
-    }
-
-    window.__fastcatApplyCustomerServiceTheme = applyTheme;
-    window.__fastcatCrispReady = false;
-
-    function showFailure(message) {
-      try {
-        applyTheme();
-        document.body.innerHTML = '<div id="loading"><span id="loading-text">' + message + '</span></div>';
-      } catch(_) {}
-    }
-
-    window.\$crisp = window.\$crisp || [];
-    try {
-      $userScript
-    } catch(_) {}
-
-    function installDirectEmbedMonitor() {
-      try {
-        applyTheme();
-        function markDirectReady(){
-          window.__fastcatCrispReady = true;
-        }
-        function directLooksReady(){
-          try {
-            var interactive = document.querySelector('textarea,input,[contenteditable="true"],button,a[href^="mailto:"],iframe[src*="crisp"],.crisp-client,[class*="crisp"]');
-            if (interactive) {
-              markDirectReady();
-            }
-          } catch(_) {}
-        }
-        document.addEventListener('DOMContentLoaded', directLooksReady, {once:true});
-        new MutationObserver(directLooksReady).observe(document.documentElement, {
-          childList: true,
-          subtree: true,
-          attributes: true
-        });
-        setTimeout(function(){
-          directLooksReady();
-          if (window.__fastcatCrispReady) return;
-          var current = String(window.location.href || '').split('#')[0];
-          var target = String(officialUrl || '').split('#')[0];
-          if (target && current !== target) {
-            window.location.replace(officialUrl);
-            return;
-          }
-          showFailure('客服连接超时');
-        }, 25000);
-      } catch(_) {}
-    }
-
-    var search = String(window.location.search || '');
-    if (search.indexOf('fastcat_bootstrap=sdk') === -1) {
-      installDirectEmbedMonitor();
       return;
     }
-
-    document.open();
-    document.write('<!DOCTYPE html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1"><title>在线客服</title></head><body><div id="loading"><span id="spinner"></span><span id="loading-text">正在连接客服...</span></div></body></html>');
-    document.close();
-    applyTheme();
-
-    window.CRISP_WEBSITE_ID = websiteId;
-    $userScript
-
-    function openChat(){
-      try {
-        window.\$crisp = window.\$crisp || [];
-        window.\$crisp.push(["safe", true]);
-        window.\$crisp.push(["do", "chat:show"]);
-        window.\$crisp.push(["do", "chat:open"]);
-      } catch(_) {}
-    }
-
-    function markReady(){
-      window.__fastcatCrispReady = true;
-      openChat();
-      var loading = document.getElementById('loading');
-      if (loading) loading.style.display = 'none';
-    }
-
-    function expandFrames(){
-      var frames = document.querySelectorAll('iframe');
-      for (var i = 0; i < frames.length; i++) {
-        var src = frames[i].src || '';
-        if (src.indexOf('crisp') === -1) continue;
-        frames[i].style.cssText = 'position:fixed!important;top:0!important;left:0!important;width:100vw!important;height:100vh!important;max-width:none!important;max-height:none!important;border:none!important;border-radius:0!important;z-index:2147483646!important;background:' + background + '!important;';
-        var parent = frames[i].parentElement;
-        if (parent) parent.style.cssText = 'position:fixed!important;top:0!important;left:0!important;width:100vw!important;height:100vh!important;z-index:2147483646!important;background:' + background + '!important;';
-        markReady();
-      }
-    }
-
-    window.CRISP_READY_TRIGGER = markReady;
-
-    var openTimer = setInterval(function(){
-      openChat();
-      expandFrames();
-    }, 500);
-    setTimeout(function(){
-      clearInterval(openTimer);
-      openChat();
-      expandFrames();
-      var loadingText = document.getElementById('loading-text');
-      if (!window.__fastcatCrispReady && loadingText) loadingText.textContent = '加载较慢，请稍候...';
-    }, 15000);
-
-    new MutationObserver(function(){
-      openChat();
-      expandFrames();
-    }).observe(document.documentElement, {
-      childList: true,
-      subtree: true,
-      attributes: true
-    });
-
-    var script = document.createElement('script');
-    script.src = 'https://client.crisp.chat/l.js';
-    script.async = true;
-    script.onerror = function(){
-      var loadingText = document.getElementById('loading-text');
-      if (loadingText) loadingText.textContent = '客服加载失败，请检查网络后重试';
-    };
-    (document.head || document.documentElement).appendChild(script);
-  } catch(_) {}
-})();''';
-  }
-
-  static void _scheduleDesktopCrispRouteFallback(
-    Webview webview, {
-    required String fallbackUrl,
-    required String logMessage,
-  }) {
-    final timer = Timer(_desktopCrispRouteFallbackDelay, () async {
-      try {
-        final result = await webview.evaluateJavaScript('''
-(function(){
-  try {
-    return window.__fastcatCrispReady === true ? 'ready' : 'pending';
-  } catch (_) {
-    return 'pending';
-  }
-})();''');
-        if (result?.contains('ready') == true) return;
-        _logger.warning(logMessage);
-        await webview.launch(fallbackUrl);
-      } catch (e) {
-        _logger.debug('[Crisp] 客服线路回退检查失败: $e');
-      }
-    });
-    unawaited(webview.onClose.whenComplete(timer.cancel));
-  }
-
-  static Future<_DesktopCrispBootstrapPage> _startDesktopCrispBootstrapPage({
-    required String websiteId,
-    required bool isDarkMode,
-    required String userScript,
-  }) async {
-    final html = _buildDesktopCrispBootstrapHtml(
-      websiteId: websiteId,
-      isDarkMode: isDarkMode,
-      userScript: userScript,
+    await launchUrl(
+      crispEmbedUri(websiteId: websiteId, proxyUrl: crispProxyUrl),
+      mode: LaunchMode.externalApplication,
     );
-    final server = await HttpServer.bind(InternetAddress.loopbackIPv4, 0);
-    server.listen((request) {
-      request.response
-        ..statusCode = HttpStatus.ok
-        ..headers.contentType = ContentType.html
-        ..headers.set('Cache-Control', 'no-store')
-        ..write(html);
-      request.response.close();
-    });
-    return _DesktopCrispBootstrapPage(
-      server: server,
-      url: 'http://127.0.0.1:${server.port}/?fastcat_bootstrap=sdk',
-    );
-  }
-
-  static String _buildDesktopCrispBootstrapHtml({
-    required String websiteId,
-    required bool isDarkMode,
-    required String userScript,
-  }) {
-    final websiteIdJson = jsonEncode(websiteId);
-    final background = _customerServiceBackground(isDarkMode);
-    final foreground = _customerServiceForeground(isDarkMode);
-    final accent =
-        _desktopCustomerServiceAccent ?? _customerServiceAccent(isDarkMode);
-    final colorScheme = isDarkMode ? 'dark' : 'light';
-    return '''<!DOCTYPE html>
-<html>
-<head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1">
-  <title>在线客服</title>
-  <style>
-    * { box-sizing: border-box; }
-    html, body {
-      width: 100%;
-      height: 100%;
-      margin: 0;
-      background: $background;
-      color: $foreground;
-      overflow: hidden;
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-    }
-    #loading {
-      position: fixed;
-      inset: 0;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 12px;
-      background: $background;
-      color: $foreground;
-      font-size: 14px;
-      z-index: 2147483647;
-    }
-    #spinner {
-      width: 18px;
-      height: 18px;
-      border: 2px solid rgba(148, 163, 184, 0.35);
-      border-top-color: $accent;
-      border-radius: 50%;
-      animation: spin 0.8s linear infinite;
-    }
-    @keyframes spin { to { transform: rotate(360deg); } }
-  </style>
-</head>
-<body>
-  <div id="loading"><span id="spinner"></span><span id="loading-text">正在连接客服...</span></div>
-  <script>
-    window.\$crisp = window.\$crisp || [];
-    window.CRISP_WEBSITE_ID = $websiteIdJson;
-    window.__fastcatCrispReady = false;
-    $userScript
-    (function(){
-      var loading = document.getElementById('loading');
-      var loadingText = document.getElementById('loading-text');
-      var ready = false;
-      var background = '$background';
-      var foreground = '$foreground';
-      var accent = '$accent';
-      var colorScheme = '$colorScheme';
-
-      window.__fastcatApplyCustomerServiceTheme = function(theme) {
-        try {
-          background = theme.background || background;
-          foreground = theme.foreground || foreground;
-          accent = theme.accent || accent;
-          colorScheme = theme.isDark ? 'dark' : 'light';
-          document.documentElement.style.background = background;
-          document.documentElement.style.colorScheme = colorScheme;
-          document.body.style.background = background;
-          document.body.style.color = foreground;
-          if (loading) {
-            loading.style.background = background;
-            loading.style.color = foreground;
-          }
-          var style = document.getElementById('fastcat-customer-service-theme');
-          if (!style) {
-            style = document.createElement('style');
-            style.id = 'fastcat-customer-service-theme';
-            document.head.appendChild(style);
-          }
-          style.textContent = 'html,body,#page,.site-wrapper,.chat-common{background:' + background + '!important;color:' + foreground + '!important;color-scheme:' + colorScheme + '!important;}#spinner{border-top-color:' + accent + '!important;}';
-        } catch(_) {}
-      };
-
-      function openChat(){
-        try {
-          window.\$crisp = window.\$crisp || [];
-          window.\$crisp.push(["safe", true]);
-          window.\$crisp.push(["do", "chat:show"]);
-          window.\$crisp.push(["do", "chat:open"]);
-        } catch(_) {}
-      }
-
-      function markReady(){
-        if (ready) return;
-        ready = true;
-        window.__fastcatCrispReady = true;
-        openChat();
-        if (loading) loading.style.display = 'none';
-      }
-
-      function expandFrames(){
-        var frames = document.querySelectorAll('iframe');
-        for (var i = 0; i < frames.length; i++) {
-          var src = frames[i].src || '';
-          if (src.indexOf('crisp') === -1) continue;
-          frames[i].style.cssText = 'position:fixed!important;top:0!important;left:0!important;width:100vw!important;height:100vh!important;max-width:none!important;max-height:none!important;border:none!important;border-radius:0!important;z-index:2147483646!important;background:' + background + '!important;';
-          var parent = frames[i].parentElement;
-          if (parent) parent.style.cssText = 'position:fixed!important;top:0!important;left:0!important;width:100vw!important;height:100vh!important;z-index:2147483646!important;background:' + background + '!important;';
-          markReady();
-        }
-      }
-
-      window.CRISP_READY_TRIGGER = function(){
-        markReady();
-      };
-
-      var openTimer = setInterval(function(){
-        openChat();
-        expandFrames();
-      }, 500);
-      setTimeout(function(){
-        clearInterval(openTimer);
-        openChat();
-        expandFrames();
-        if (!ready && loadingText) loadingText.textContent = '加载较慢，请稍候...';
-      }, 15000);
-
-      new MutationObserver(function(){
-        openChat();
-        expandFrames();
-      }).observe(document.documentElement, {
-        childList: true,
-        subtree: true,
-        attributes: true
-      });
-
-      var script = document.createElement('script');
-      script.src = 'https://client.crisp.chat/l.js';
-      script.async = true;
-      script.onerror = function(){
-        if (loadingText) loadingText.textContent = '客服加载失败，请检查网络后重试';
-      };
-      document.head.appendChild(script);
-    })();
-  </script>
-</body>
-</html>''';
   }
 
   static String _buildCrispUserScript(
@@ -1796,20 +1027,6 @@ if(window===window.top){
             ? 1
             : 2;
     return '${size.toStringAsFixed(precision)} ${units[unitIndex]}';
-  }
-}
-
-class _DesktopCrispBootstrapPage {
-  final HttpServer server;
-  final String url;
-
-  const _DesktopCrispBootstrapPage({
-    required this.server,
-    required this.url,
-  });
-
-  Future<void> close() async {
-    await server.close(force: true);
   }
 }
 

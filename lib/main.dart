@@ -11,7 +11,6 @@ import 'package:fl_clash/plugins/vpn.dart';
 import 'package:fl_clash/state.dart';
 import 'package:fl_clash/xboard/config/xboard_config.dart';
 import 'package:fl_clash/xboard/domain/domain.dart';
-import 'package:fl_clash/xboard/features/auth/pages/desktop_customer_service_window.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -32,12 +31,6 @@ import 'package:flutter_xboard_sdk/flutter_xboard_sdk.dart';
 RemoteTaskManager? remoteTaskManager;
 
 Future<void> main(List<String> args) async {
-  if ((Platform.isWindows || Platform.isLinux) &&
-      isDesktopCustomerServiceWindowArgs(args)) {
-    await runDesktopCustomerServiceWindow(args);
-    return;
-  }
-
   if ((Platform.isWindows || Platform.isLinux || Platform.isMacOS) &&
       runWebViewTitleBarWidget(args)) {
     return;

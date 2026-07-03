@@ -29,3 +29,8 @@ analyzer:
     - "**/generated/**"
     - "lib/l10n/intl/**"
     - "lib/sdk/**"
+    - "plugins/webview_win_floating/**"
+    - "plugins/webview_win_floating/example/**"
+    - "plugins/webview_win_floating/test/**"
+    - "plugins/webview_win_floating/linux/test/**"
+    - "plugins/webview_win_floating/windows/test/**"
