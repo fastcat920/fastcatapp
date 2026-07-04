@@ -71,6 +71,12 @@ class DesktopWebviewWindowHelper {
       }
     }
 
+    if (Platform.isLinux && (matchMainWindow || centerOnMainWindow)) {
+      // Some Linux window managers ignore explicit coordinates for new GTK
+      // toplevels. Let GTK request screen centering while keeping the size.
+      useWindowPositionAndSize = false;
+    }
+
     return WebviewWindow.create(
       configuration: CreateConfiguration(
         title: title,

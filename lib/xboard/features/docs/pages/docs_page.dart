@@ -586,6 +586,7 @@ class _ArticleDetailPageState extends ConsumerState<_ArticleDetailPage> {
     final hrColor = isDark ? '#444' : '#e0e0e0';
 
     return '''<!DOCTYPE html><html><head>
+<meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <style>
 body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;padding:16px;line-height:1.7;word-wrap:break-word;color:$textColor;background:$bgColor;max-width:100%}
@@ -598,7 +599,14 @@ hr{border:none;border-top:1px solid $hrColor;margin:16px 0}
 ul,ol{padding-left:24px}table{border-collapse:collapse;width:100%}
 th,td{border:1px solid #ddd;padding:8px;text-align:left}th{background:$codeBg}
 p{margin:8px 0}
-</style></head><body>$s</body></html>''';
+</style></head><body><p>$s</p></body></html>''';
+  }
+
+  static bool _looksLikeHtmlContent(String content) {
+    return RegExp(
+      r'<(?:p|div|span|button|a|img|h[1-6]|ul|ol|li|table|thead|tbody|tr|td|th|br)\b',
+      caseSensitive: false,
+    ).hasMatch(content);
   }
 
   static String _prepareHtmlWidgetContent(String documentHtml) {
@@ -610,6 +618,31 @@ p{margin:8px 0}
     bodyHtml = bodyHtml.replaceAll(
       RegExp(r'<style\b[^>]*>[\s\S]*?<\/style>', caseSensitive: false),
       '',
+    );
+    bodyHtml = bodyHtml.replaceAllMapped(
+      RegExp(r'<img\b[^>]*>', caseSensitive: false),
+      (match) {
+        var tag = match.group(0)!;
+        final lazySource = RegExp(
+          "\\b(?:data-src|data-original|data-lazy-src)=['\\\"]([^'\\\"]+)['\\\"]",
+          caseSensitive: false,
+        ).firstMatch(tag)?.group(1);
+        if (lazySource == null || lazySource.trim().isEmpty) return tag;
+        final srcPattern = RegExp(
+          "\\bsrc=['\\\"]([^'\\\"]*)['\\\"]",
+          caseSensitive: false,
+        );
+        final srcMatch = srcPattern.firstMatch(tag);
+        final currentSrc = srcMatch?.group(1)?.trim() ?? '';
+        if (srcMatch == null) {
+          tag = tag.replaceFirst('>', ' src="$lazySource">');
+        } else if (currentSrc.isEmpty ||
+            currentSrc == '#' ||
+            currentSrc.startsWith('data:image/gif')) {
+          tag = tag.replaceFirst(srcPattern, 'src="$lazySource"');
+        }
+        return tag;
+      },
     );
     bodyHtml = bodyHtml.replaceAllMapped(
       RegExp(r'<button\b(?![^>]*data-fastcat-button)[^>]*>',
@@ -630,6 +663,15 @@ p{margin:8px 0}
       },
     );
     return bodyHtml;
+  }
+
+  static String _prepareLinuxHtmlWidgetContent({
+    required String rawContent,
+    required String convertedHtml,
+  }) {
+    final source =
+        _looksLikeHtmlContent(rawContent) ? rawContent : convertedHtml;
+    return _prepareHtmlWidgetContent(source);
   }
 
   @override
@@ -753,7 +795,10 @@ p{margin:8px 0}
     final fullHtml = _contentToHtml(content, isDark: isDark);
 
     if (Platform.isLinux) {
-      _htmlWidgetHtml = _prepareHtmlWidgetContent(fullHtml);
+      _htmlWidgetHtml = _prepareLinuxHtmlWidgetContent(
+        rawContent: content,
+        convertedHtml: fullHtml,
+      );
       _useHtmlWidget = true;
       if (mounted) setState(() => _webLoading = false);
       return;
