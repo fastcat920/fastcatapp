@@ -207,11 +207,25 @@ class _DesktopCrispChatPageState extends State<DesktopCrispChatPage> {
   }
 
   Future<void> _loadSdkBootstrap() async {
+    _sdkFallbackTimer?.cancel();
+    _embedFallbackTimer?.cancel();
+    _usingSdkBootstrap = true;
+    _usingProxy = false;
     _didFallbackToOfficial = false;
-    _loadEmbed(
-      _preferredEmbedUri(),
-      usingProxy: isCrispProxyConfigured(widget.crispProxyUrl),
+    _setLoading();
+    _sdkFallbackTimer = Timer(
+      crispProxyFallbackDelay,
+      () => unawaited(_fallbackFromSdkToEmbed()),
     );
+    try {
+      debugPrint('[Crisp][Desktop] loadData bootstrap');
+      await _controller.loadHtmlString(
+        _buildSdkBootstrapHtml(),
+        baseUrl: _sdkBootstrapBaseUri().toString(),
+      );
+    } catch (_) {
+      _showStartupFailure();
+    }
   }
 
   Future<void> _fallbackFromSdkToEmbed() async {
@@ -310,7 +324,6 @@ class _DesktopCrispChatPageState extends State<DesktopCrispChatPage> {
     );
   }
 
-  // ignore: unused_element
   Uri _sdkBootstrapBaseUri() {
     final uri = _preferredEmbedUri();
     return uri.replace(
@@ -349,7 +362,6 @@ class _DesktopCrispChatPageState extends State<DesktopCrispChatPage> {
     });
   }
 
-  // ignore: unused_element
   void _showStartupFailure() {
     _sdkFallbackTimer?.cancel();
     _embedFallbackTimer?.cancel();
@@ -361,7 +373,6 @@ class _DesktopCrispChatPageState extends State<DesktopCrispChatPage> {
     });
   }
 
-  // ignore: unused_element
   String _buildSdkBootstrapHtml() {
     final strings = _strings;
     final websiteIdJson = jsonEncode(widget.websiteId);
@@ -392,6 +403,13 @@ class _DesktopCrispChatPageState extends State<DesktopCrispChatPage> {
       color: $foreground;
       overflow: hidden;
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+    #crisp-chatbox,
+    .crisp-client,
+    iframe[src*="crisp"] {
+      max-width: none !important;
+      max-height: none !important;
+      transform: none !important;
     }
     #loading {
       position: fixed;
@@ -495,13 +513,41 @@ class _DesktopCrispChatPageState extends State<DesktopCrispChatPage> {
       }
 
       function expandFrames(){
+        function forceNode(node){
+          if (!node || !node.style) return;
+          node.style.cssText = 'position:fixed!important;inset:0!important;left:0!important;top:0!important;right:auto!important;bottom:auto!important;width:100vw!important;height:100vh!important;min-width:100vw!important;min-height:100vh!important;max-width:none!important;max-height:none!important;margin:0!important;padding:0!important;border:none!important;border-radius:0!important;transform:none!important;z-index:2147483646!important;background:$background!important;overflow:hidden!important;';
+        }
+        function forceParents(node){
+          var parent = node ? node.parentElement : null;
+          var depth = 0;
+          while (parent && parent !== document.body && depth < 4) {
+            forceNode(parent);
+            parent = parent.parentElement;
+            depth++;
+          }
+        }
+        try {
+          document.documentElement.style.overflow = 'hidden';
+          document.documentElement.style.width = '100%';
+          document.documentElement.style.height = '100%';
+          if (document.body) {
+            document.body.style.overflow = 'hidden';
+            document.body.style.width = '100%';
+            document.body.style.height = '100%';
+            document.body.style.margin = '0';
+            document.body.style.background = '$background';
+          }
+          var crispNodes = document.querySelectorAll('#crisp-chatbox,.crisp-client');
+          for (var n = 0; n < crispNodes.length; n++) {
+            forceNode(crispNodes[n]);
+          }
+        } catch (_) {}
         var frames = document.querySelectorAll('iframe');
         for (var i = 0; i < frames.length; i++) {
           var src = frames[i].src || '';
           if (src.indexOf('crisp') === -1) continue;
-          frames[i].style.cssText = 'position:fixed!important;top:0!important;left:0!important;width:100vw!important;height:100vh!important;max-width:none!important;max-height:none!important;border:none!important;border-radius:0!important;z-index:2147483646!important;background:$background!important;';
-          var parent = frames[i].parentElement;
-          if (parent) parent.style.cssText = 'position:fixed!important;top:0!important;left:0!important;width:100vw!important;height:100vh!important;z-index:2147483646!important;background:$background!important;';
+          forceNode(frames[i]);
+          forceParents(frames[i]);
           markReady();
         }
       }
