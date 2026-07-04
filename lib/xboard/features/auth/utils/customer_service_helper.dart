@@ -7,6 +7,7 @@ import 'package:url_launcher/url_launcher.dart';
 import 'package:desktop_webview_window/desktop_webview_window.dart';
 import 'package:fl_clash/common/color.dart';
 import 'package:fl_clash/common/path.dart';
+import 'package:fl_clash/l10n/l10n.dart';
 import 'package:fl_clash/providers/providers.dart';
 import 'package:fl_clash/state.dart';
 import 'package:fl_clash/xboard/adapter/initialization/sdk_provider.dart';
@@ -17,6 +18,7 @@ import 'package:fl_clash/xboard/domain/domain.dart';
 import 'package:fl_clash/xboard/features/auth/pages/crisp_chat_page.dart';
 import 'package:fl_clash/xboard/features/auth/pages/salesmartly_chat_page.dart';
 import 'package:fl_clash/xboard/features/auth/utils/crisp_url_helper.dart';
+import 'package:fl_clash/xboard/features/shared/utils/desktop_webview_window_helper.dart';
 import 'package:fl_clash/xboard/core/core.dart';
 import 'package:fl_clash/xboard/utils/xboard_notification.dart';
 import 'package:flutter_xboard_sdk/flutter_xboard_sdk.dart';
@@ -70,10 +72,7 @@ class CustomerServiceHelper {
     return isDarkMode ? '#f3f4f6' : '#999999';
   }
 
-  static String _customerServiceAccent(
-    bool isDarkMode, {
-    Color? accentColor,
-  }) {
+  static String _customerServiceAccent(bool isDarkMode, {Color? accentColor}) {
     return accentColor?.hex ?? (isDarkMode ? '#60a5fa' : '#2563eb');
   }
 
@@ -81,10 +80,7 @@ class CustomerServiceHelper {
     return isDarkMode ? Brightness.dark : Brightness.light;
   }
 
-  static void syncDesktopTheme(
-    Brightness brightness, {
-    Color? accentColor,
-  }) {
+  static void syncDesktopTheme(Brightness brightness, {Color? accentColor}) {
     if (!_isDesktopPlatform) return;
     final accent = _customerServiceAccent(
       brightness == Brightness.dark,
@@ -98,11 +94,13 @@ class CustomerServiceHelper {
     _desktopCustomerServiceAccent = accent;
     final webview = _desktopCustomerServiceWebview;
     if (webview == null) return;
-    unawaited(_applyDesktopCustomerServiceTheme(
-      webview,
-      isDarkMode: brightness == Brightness.dark,
-      accent: accent,
-    ));
+    unawaited(
+      _applyDesktopCustomerServiceTheme(
+        webview,
+        isDarkMode: brightness == Brightness.dark,
+        accent: accent,
+      ),
+    );
   }
 
   static Future<void> _applyDesktopCustomerServiceTheme(
@@ -111,7 +109,8 @@ class CustomerServiceHelper {
     String? accent,
   }) async {
     final brightness = _customerServiceBrightness(isDarkMode);
-    final effectiveAccent = accent ??
+    final effectiveAccent =
+        accent ??
         _desktopCustomerServiceAccent ??
         _customerServiceAccent(isDarkMode);
     _desktopCustomerServiceBrightness = brightness;
@@ -205,10 +204,7 @@ class CustomerServiceHelper {
   }) async {
     try {
       await webview.setWebviewWindowVisibility(true);
-      await _applyDesktopCustomerServiceTheme(
-        webview,
-        isDarkMode: isDarkMode,
-      );
+      await _applyDesktopCustomerServiceTheme(webview, isDarkMode: isDarkMode);
       return true;
     } catch (e) {
       _logger.debug('[CustomerService] 激活已有客服窗口失败: $e');
@@ -218,9 +214,11 @@ class CustomerServiceHelper {
 
   static void _trackDesktopCustomerServiceWindow(Webview webview) {
     _desktopCustomerServiceWebview = webview;
-    unawaited(webview.onClose.whenComplete(() {
-      _clearDesktopCustomerServiceWindow(webview);
-    }));
+    unawaited(
+      webview.onClose.whenComplete(() {
+        _clearDesktopCustomerServiceWindow(webview);
+      }),
+    );
   }
 
   static void _clearDesktopCustomerServiceWindow(Webview? webview) {
@@ -441,8 +439,9 @@ class CustomerServiceHelper {
       final crispProxyUrl = Platform.isLinux
           ? await _resolveCrispProxyUrl()
           : await _resolveUsableCrispProxyUrl(crispId);
-      final fallbackWebsiteUrl =
-          Platform.isLinux ? await _resolveFallbackWebsiteUrl() : '';
+      final fallbackWebsiteUrl = Platform.isLinux
+          ? await _resolveFallbackWebsiteUrl()
+          : '';
       if (!context.mounted) return;
       final ipData = await ipDataFuture;
       if (!context.mounted) return;
@@ -477,10 +476,7 @@ class CustomerServiceHelper {
       );
     } else {
       // 其他平台：外部浏览器
-      _openSalesmartlyInBrowser(
-        scriptUrl,
-        isDarkMode: _isDarkMode(context),
-      );
+      _openSalesmartlyInBrowser(scriptUrl, isDarkMode: _isDarkMode(context));
     }
   }
 
@@ -540,17 +536,15 @@ class CustomerServiceHelper {
           brightness: _customerServiceBrightness(isDarkMode),
         ),
       );
-      await _applyDesktopCustomerServiceTheme(
-        webview,
-        isDarkMode: isDarkMode,
-      );
+      await _applyDesktopCustomerServiceTheme(webview, isDarkMode: isDarkMode);
 
       final scriptUrlEscaped = scriptUrl.replaceAll("'", "\\'");
       final bg = _customerServiceBackground(isDarkMode);
       final fg = _customerServiceForeground(isDarkMode);
       // 注入脚本：在 DOMContentLoaded 后用 document.write 重写页面，注入 SDK
       // 使用 ssq.push API（官方文档推荐）
-      final injectJs = '''
+      final injectJs =
+          '''
 if(window===window.top){
   document.addEventListener('DOMContentLoaded',function(){
     document.open();
@@ -663,18 +657,15 @@ if(window===window.top){
     BuildContext context,
   ) async {
     try {
-      return await _resolveCrispIPData(context).timeout(
-        _crispUserDataResolveTimeout,
-        onTimeout: () => null,
-      );
+      return await _resolveCrispIPData(
+        context,
+      ).timeout(_crispUserDataResolveTimeout, onTimeout: () => null);
     } catch (_) {
       return null;
     }
   }
 
-  static Future<_CrispIPData?> _resolveCrispIPData(
-    BuildContext context,
-  ) async {
+  static Future<_CrispIPData?> _resolveCrispIPData(BuildContext context) async {
     try {
       final container = ProviderScope.containerOf(context, listen: false);
       final sdk = await container.read(xboardSdkProvider.future);
@@ -790,8 +781,9 @@ if(window===window.top){
       final uri = Uri.tryParse(url.trim());
       if (uri == null || !uri.hasScheme || uri.host.isEmpty) return;
       final origin = _originFromUri(uri);
-      final pathPrefix =
-          uri.path.isNotEmpty && uri.path != '/' ? uri.path : null;
+      final pathPrefix = uri.path.isNotEmpty && uri.path != '/'
+          ? uri.path
+          : null;
       addEndpoint(origin, apiPrefix ?? pathPrefix ?? _configuredApiPrefix());
     }
 
@@ -863,16 +855,11 @@ if(window===window.top){
     final effectiveUserScript =
         userScript ?? _buildCrispUserScript(context, ipData: ipData);
     if (Platform.isLinux) {
-      if (!context.mounted) return;
-      await Navigator.of(context).push(
-        MaterialPageRoute(
-          builder: (_) => LinuxCefCrispChatPage(
-            websiteId: websiteId,
-            crispProxyUrl: crispProxyUrl,
-            userScript: effectiveUserScript,
-            fallbackWebsiteUrl: fallbackWebsiteUrl,
-          ),
-        ),
+      await _openCrispInLinuxDesktopWebview(
+        context,
+        websiteId: websiteId,
+        crispProxyUrl: crispProxyUrl,
+        userScript: effectiveUserScript,
       );
       return;
     }
@@ -916,8 +903,9 @@ if(window===window.top){
     final data = _buildCrispUserData(context, ipData: ipData);
     final email = (data['email'] as String?)?.trim();
     final nickname = (data['nickname'] as String?)?.trim();
-    final sessionData =
-        (data['sessionData'] as List<List<String>>).where((entry) {
+    final sessionData = (data['sessionData'] as List<List<String>>).where((
+      entry,
+    ) {
       return entry.length == 2 && entry[0].trim().isNotEmpty;
     }).toList();
     final emailJson = jsonEncode(email ?? '');
@@ -970,8 +958,9 @@ if(window===window.top){
     final userState = container.read(xboardUserProvider);
     final userInfo = container.read(userInfoProvider);
     final subscriptionInfo = container.read(subscriptionInfoProvider);
-    final profileSubscriptionInfo =
-        container.read(currentProfileProvider)?.subscriptionInfo;
+    final profileSubscriptionInfo = container
+        .read(currentProfileProvider)
+        ?.subscriptionInfo;
 
     final email = (userInfo?.email ?? userState.email ?? '').trim();
     final appVersion = _getAppVersionText();
@@ -979,7 +968,7 @@ if(window===window.top){
     final usedTraffic = profileSubscriptionInfo != null
         ? profileSubscriptionInfo.upload + profileSubscriptionInfo.download
         : (subscriptionInfo?.uploadedBytes ?? 0) +
-            (subscriptionInfo?.downloadedBytes ?? 0);
+              (subscriptionInfo?.downloadedBytes ?? 0);
     final totalTraffic =
         profileSubscriptionInfo?.total ?? subscriptionInfo?.transferLimit ?? 0;
     final expiredAt = subscriptionInfo?.expiredAt;
@@ -1013,6 +1002,411 @@ if(window===window.top){
     return fallback?.trim() ?? '';
   }
 
+  static Future<void> _openCrispInLinuxDesktopWebview(
+    BuildContext context, {
+    required String websiteId,
+    String? crispProxyUrl,
+    required String userScript,
+  }) async {
+    final existing = await _reuseDesktopCustomerServiceWindow(
+      isDarkMode: _isDarkMode(context),
+    );
+    if (existing != null) return;
+
+    final future = _createLinuxCrispDesktopWebview(
+      context,
+      websiteId: websiteId,
+      crispProxyUrl: crispProxyUrl,
+      userScript: userScript,
+    );
+    _desktopCustomerServiceOpening = future;
+    try {
+      final webview = await future;
+      if (webview != null) {
+        _trackDesktopCustomerServiceWindow(webview);
+      }
+    } finally {
+      if (identical(_desktopCustomerServiceOpening, future)) {
+        _desktopCustomerServiceOpening = null;
+      }
+    }
+  }
+
+  static Future<Webview?> _createLinuxCrispDesktopWebview(
+    BuildContext context, {
+    required String websiteId,
+    String? crispProxyUrl,
+    required String userScript,
+  }) async {
+    HttpServer? server;
+    try {
+      final l10n = AppLocalizations.of(context);
+      final isDarkMode = _isDarkMode(context);
+      final localeTag = Localizations.localeOf(context).toLanguageTag();
+      final preferredEmbedUri = crispEmbedUri(
+        websiteId: websiteId,
+        proxyUrl: crispProxyUrl,
+      );
+      final officialEmbedUri = officialCrispEmbedUri(websiteId);
+      final html = _buildLinuxCrispBootstrapHtml(
+        websiteId: websiteId,
+        preferredEmbedUri: preferredEmbedUri,
+        userScript: userScript,
+        localeTag: localeTag,
+        isDarkMode: isDarkMode,
+        title: l10n.contactSupport,
+        connecting: l10n.onlineSupportConnecting,
+        loadingSlow: l10n.customerServiceLoadingSlow,
+        loadFailed: l10n.customerServiceLoadFailed,
+      );
+
+      server = await HttpServer.bind(InternetAddress.loopbackIPv4, 0);
+      unawaited(_serveLinuxCrispBootstrapRequests(server, html));
+
+      final webview = await DesktopWebviewWindowHelper.create(
+        title: l10n.contactSupport,
+        windowWidth: _desktopCustomerServiceWindowWidth,
+        windowHeight: _desktopCustomerServiceWindowHeight,
+        brightness: _customerServiceBrightness(isDarkMode),
+      );
+      await _applyDesktopCustomerServiceTheme(webview, isDarkMode: isDarkMode);
+      webview.addScriptToExecuteOnDocumentCreated(
+        _buildLinuxCrispDesktopDocumentScript(
+          userScript: userScript,
+          localeTag: localeTag,
+          isDarkMode: isDarkMode,
+          preferredEmbedUri: preferredEmbedUri,
+          officialEmbedUri: officialEmbedUri,
+          crispProxyUrl: crispProxyUrl,
+          timeoutText: l10n.xboardConnectionTimeout,
+        ),
+      );
+      unawaited(
+        webview.onClose.whenComplete(() {
+          final localServer = server;
+          if (localServer != null) {
+            unawaited(localServer.close(force: true));
+          }
+        }),
+      );
+      await webview.launch(
+        Uri(
+          scheme: 'http',
+          host: InternetAddress.loopbackIPv4.address,
+          port: server.port,
+          path: '/crisp',
+        ).toString(),
+      );
+      return webview;
+    } catch (e) {
+      _logger.error('[Crisp] Linux desktop webview 启动失败', e);
+      await server?.close(force: true);
+      await launchUrl(
+        crispEmbedUri(websiteId: websiteId, proxyUrl: crispProxyUrl),
+        mode: LaunchMode.externalApplication,
+      );
+      return null;
+    }
+  }
+
+  static Future<void> _serveLinuxCrispBootstrapRequests(
+    HttpServer server,
+    String html,
+  ) async {
+    try {
+      await for (final request in server) {
+        try {
+          if (request.uri.path == '/favicon.ico') {
+            request.response.statusCode = HttpStatus.noContent;
+            await request.response.close();
+            continue;
+          }
+          request.response
+            ..statusCode = HttpStatus.ok
+            ..headers.contentType = ContentType.html
+            ..headers.set('Cache-Control', 'no-cache')
+            ..write(html);
+          await request.response.close();
+        } catch (_) {
+          await request.response.close().catchError((_) {});
+        }
+      }
+    } catch (_) {}
+  }
+
+  static String _buildLinuxCrispBootstrapHtml({
+    required String websiteId,
+    required Uri preferredEmbedUri,
+    required String userScript,
+    required String localeTag,
+    required bool isDarkMode,
+    required String title,
+    required String connecting,
+    required String loadingSlow,
+    required String loadFailed,
+  }) {
+    final websiteIdJson = jsonEncode(websiteId);
+    final preferredEmbedJson = jsonEncode(preferredEmbedUri.toString());
+    final localeTagJson = jsonEncode(localeTag);
+    final titleJson = jsonEncode(title);
+    final connectingJson = jsonEncode(connecting);
+    final loadingSlowJson = jsonEncode(loadingSlow);
+    final loadFailedJson = jsonEncode(loadFailed);
+    final background = _customerServiceBackground(isDarkMode);
+    final foreground = _customerServiceForeground(isDarkMode);
+    final colorMode = isDarkMode ? 'dark' : 'light';
+    return '''<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1">
+  <title>$title</title>
+  <style>
+    * { box-sizing: border-box; }
+    html, body {
+      width: 100%;
+      height: 100%;
+      margin: 0;
+      background: $background;
+      color: $foreground;
+      overflow: hidden;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+    #loading {
+      position: fixed;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+      background: $background;
+      color: $foreground;
+      font-size: 14px;
+      z-index: 2147483647;
+    }
+    #spinner {
+      width: 18px;
+      height: 18px;
+      border: 2px solid rgba(148, 163, 184, 0.35);
+      border-top-color: #2563eb;
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+  </style>
+</head>
+<body>
+  <div id="loading"><span id="spinner"></span><span id="loading-text">$connecting</span></div>
+  <script>
+    window.\$crisp = window.\$crisp || [];
+    window.CRISP_WEBSITE_ID = $websiteIdJson;
+    window.CRISP_RUNTIME_CONFIG = {
+      locale: $localeTagJson,
+      lock_full_view: true
+    };
+    window.__fastcatCrispReady = false;
+    window.__fastcatCustomerServiceLocale = $localeTagJson;
+    window.__fastcatApplyCustomerServiceTheme = function(theme){
+      try {
+        document.documentElement.style.background = theme.background;
+        document.documentElement.style.colorScheme = theme.isDark ? 'dark' : 'light';
+        if (document.body) {
+          document.body.style.background = theme.background;
+          document.body.style.color = theme.foreground;
+        }
+        window.\$crisp = window.\$crisp || [];
+        window.\$crisp.push(["config", "locale", [window.__fastcatCustomerServiceLocale || 'en']]);
+        window.\$crisp.push(["config", "color:mode", [theme.isDark ? "dark" : "light"]]);
+      } catch (_) {}
+    };
+    try {
+      Object.defineProperty(navigator, 'language', { get: function(){ return window.__fastcatCustomerServiceLocale; }, configurable: true });
+      Object.defineProperty(navigator, 'languages', { get: function(){ return [window.__fastcatCustomerServiceLocale]; }, configurable: true });
+    } catch (_) {}
+    try {
+      $userScript
+    } catch (_) {}
+
+    (function(){
+      var ready = false;
+      var loading = document.getElementById('loading');
+      var loadingText = document.getElementById('loading-text');
+      document.title = $titleJson;
+      document.documentElement.lang = window.__fastcatCustomerServiceLocale || 'en';
+      window.__fastcatApplyCustomerServiceTheme({
+        isDark: ${isDarkMode ? 'true' : 'false'},
+        background: '$background',
+        foreground: '$foreground'
+      });
+
+      function openChat(){
+        try {
+          window.\$crisp = window.\$crisp || [];
+          window.\$crisp.push(["config", "locale", [window.__fastcatCustomerServiceLocale || 'en']]);
+          window.\$crisp.push(["config", "color:mode", ['$colorMode']]);
+          window.\$crisp.push(["safe", true]);
+          window.\$crisp.push(["do", "chat:show"]);
+          window.\$crisp.push(["do", "chat:open"]);
+        } catch(_) {}
+      }
+
+      function markReady(){
+        if (ready) return;
+        ready = true;
+        window.__fastcatCrispReady = true;
+        openChat();
+        if (loading) loading.style.display = 'none';
+      }
+
+      function expandFrames(){
+        var frames = document.querySelectorAll('iframe');
+        for (var i = 0; i < frames.length; i++) {
+          var src = frames[i].src || '';
+          if (src.indexOf('crisp') === -1) continue;
+          frames[i].style.cssText = 'position:fixed!important;top:0!important;left:0!important;width:100vw!important;height:100vh!important;max-width:none!important;max-height:none!important;border:none!important;border-radius:0!important;z-index:2147483646!important;background:$background!important;';
+          var parent = frames[i].parentElement;
+          if (parent) parent.style.cssText = 'position:fixed!important;top:0!important;left:0!important;width:100vw!important;height:100vh!important;z-index:2147483646!important;background:$background!important;';
+          markReady();
+        }
+      }
+
+      var openTimer = setInterval(function(){
+        openChat();
+        expandFrames();
+      }, 500);
+      setTimeout(function(){
+        if (ready) return;
+        clearInterval(openTimer);
+        if (loadingText) loadingText.textContent = $loadingSlowJson;
+        location.replace($preferredEmbedJson);
+      }, 15000);
+      setTimeout(function(){
+        if (!ready && loadingText) loadingText.textContent = $loadFailedJson;
+      }, 24000);
+      new MutationObserver(function(){
+        openChat();
+        expandFrames();
+      }).observe(document.documentElement, {
+        childList: true,
+        subtree: true,
+        attributes: true
+      });
+      var script = document.createElement('script');
+      script.src = 'https://client.crisp.chat/l.js';
+      script.async = true;
+      script.onerror = function(){
+        if (loadingText) loadingText.textContent = $loadFailedJson;
+      };
+      document.head.appendChild(script);
+      if (loadingText) loadingText.textContent = $connectingJson;
+    })();
+  </script>
+</body>
+</html>''';
+  }
+
+  static String _buildLinuxCrispDesktopDocumentScript({
+    required String userScript,
+    required String localeTag,
+    required bool isDarkMode,
+    required Uri preferredEmbedUri,
+    required Uri officialEmbedUri,
+    String? crispProxyUrl,
+    required String timeoutText,
+  }) {
+    final background = _customerServiceBackground(isDarkMode);
+    final foreground = _customerServiceForeground(isDarkMode);
+    final preferredEmbedJson = jsonEncode(preferredEmbedUri.toString());
+    final officialEmbedJson = jsonEncode(officialEmbedUri.toString());
+    final localeTagJson = jsonEncode(localeTag);
+    final timeoutTextJson = jsonEncode(timeoutText);
+    final proxyBaseJson = jsonEncode(normalizeCrispProxyUrl(crispProxyUrl));
+    return '''
+(function(){
+  try {
+    window.\$crisp = window.\$crisp || [];
+    try {
+      $userScript
+    } catch(_) {}
+    window.__fastcatCustomerServiceLocale = $localeTagJson;
+    window.__fastcatApplyCustomerServiceTheme = function(theme){
+      try {
+        document.documentElement.style.background = theme.background;
+        document.documentElement.style.colorScheme = theme.isDark ? 'dark' : 'light';
+        if (document.body) {
+          document.body.style.background = theme.background;
+          document.body.style.color = theme.foreground;
+        }
+        window.\$crisp = window.\$crisp || [];
+        window.\$crisp.push(["config", "locale", [window.__fastcatCustomerServiceLocale || 'en']]);
+        window.\$crisp.push(["config", "color:mode", [theme.isDark ? "dark" : "light"]]);
+      } catch (_) {}
+    };
+    window.__fastcatApplyCustomerServiceTheme({
+      isDark: ${isDarkMode ? 'true' : 'false'},
+      background: '$background',
+      foreground: '$foreground'
+    });
+    try {
+      Object.defineProperty(navigator, 'language', { get: function(){ return window.__fastcatCustomerServiceLocale; }, configurable: true });
+      Object.defineProperty(navigator, 'languages', { get: function(){ return [window.__fastcatCustomerServiceLocale]; }, configurable: true });
+    } catch (_) {}
+    document.documentElement.lang = window.__fastcatCustomerServiceLocale;
+
+    function markReady(){
+      window.__fastcatCrispReady = true;
+      var loading = document.getElementById('loading');
+      if (loading) loading.style.display = 'none';
+      var timeout = document.getElementById('fastcat-support-timeout');
+      if (timeout) timeout.remove();
+    }
+
+    function looksReady(){
+      try {
+        var interactive = document.querySelector('textarea,input,[contenteditable="true"],button,a[href^="mailto:"],iframe[src*="crisp"],.crisp-client,[class*="crisp"]');
+        if (interactive) markReady();
+      } catch(_) {}
+    }
+
+    looksReady();
+    new MutationObserver(looksReady).observe(document.documentElement, {
+      childList: true,
+      subtree: true,
+      attributes: true
+    });
+
+    if (window.__fastcatCrispDesktopFallbackInstalled) return;
+    window.__fastcatCrispDesktopFallbackInstalled = true;
+    var preferredEmbedUrl = $preferredEmbedJson;
+    var officialEmbedUrl = $officialEmbedJson;
+    var proxyBaseUrl = $proxyBaseJson;
+    var timeoutText = $timeoutTextJson;
+    setTimeout(function(){
+      if (window.__fastcatCrispReady) return;
+      var url = String(location.href || '');
+      var isEmbed = url.indexOf('/chat/embed/') !== -1;
+      var isProxyEmbed = proxyBaseUrl && url.indexOf(proxyBaseUrl) === 0 && isEmbed;
+      if (isProxyEmbed) {
+        location.replace(officialEmbedUrl);
+        return;
+      }
+      if (!isEmbed) {
+        location.replace(preferredEmbedUrl);
+        return;
+      }
+      var timeout = document.getElementById('fastcat-support-timeout');
+      if (!timeout) {
+        timeout = document.createElement('div');
+        timeout.id = 'fastcat-support-timeout';
+        timeout.style.cssText = 'position:fixed;inset:0;display:flex;align-items:center;justify-content:center;background:$background;color:$foreground;font:14px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;z-index:2147483647;padding:24px;text-align:center;';
+        timeout.textContent = timeoutText;
+        document.body.appendChild(timeout);
+      }
+    }, 25000);
+  } catch(_) {}
+})();''';
+  }
+
   static int? _resolveResetDaysLeft(DomainSubscription? subscriptionInfo) {
     if (subscriptionInfo == null) return null;
     final fromNextReset = _calcResetDaysLeft(subscriptionInfo.nextResetAt);
@@ -1028,8 +1422,11 @@ if(window===window.top){
     final now = DateTime.now();
     if (!nextResetAt.isAfter(now)) return 0;
     final nowDate = DateTime(now.year, now.month, now.day);
-    final resetDate =
-        DateTime(nextResetAt.year, nextResetAt.month, nextResetAt.day);
+    final resetDate = DateTime(
+      nextResetAt.year,
+      nextResetAt.month,
+      nextResetAt.day,
+    );
     final days = resetDate.difference(nowDate).inDays;
     return days < 0 ? 0 : days;
   }
@@ -1058,8 +1455,8 @@ if(window===window.top){
     final precision = size >= 100
         ? 0
         : size >= 10
-            ? 1
-            : 2;
+        ? 1
+        : 2;
     return '${size.toStringAsFixed(precision)} ${units[unitIndex]}';
   }
 }

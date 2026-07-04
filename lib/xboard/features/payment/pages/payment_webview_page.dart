@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:desktop_webview_window/desktop_webview_window.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:webview_flutter/webview_flutter.dart';
@@ -12,6 +13,7 @@ import 'package:fl_clash/l10n/l10n.dart';
 import 'package:fl_clash/xboard/adapter/state/order_state.dart';
 import 'package:fl_clash/xboard/core/core.dart';
 import 'package:fl_clash/xboard/features/shared/utils/linux_cef_webview_manager.dart';
+import 'package:fl_clash/xboard/features/shared/utils/desktop_webview_window_helper.dart';
 import 'package:fl_clash/xboard/features/shared/styles/styles.dart';
 
 const _logger = FileLogger('payment_webview_page.dart');
@@ -19,7 +21,8 @@ const _logger = FileLogger('payment_webview_page.dart');
 /// Desktop Chrome UA used on mobile so payment gateways serve the QR-code
 /// page instead of the H5 cashier that tries (and fails) to invoke Alipay /
 /// WeChat via JSBridge.
-const _desktopUserAgent = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) '
+const _desktopUserAgent =
+    'Mozilla/5.0 (Windows NT 10.0; Win64; x64) '
     'AppleWebKit/537.36 (KHTML, like Gecko) '
     'Chrome/125.0.0.0 Safari/537.36';
 
@@ -50,14 +53,251 @@ class PaymentWebViewPage extends ConsumerStatefulWidget {
     required String paymentUrl,
     required String tradeNo,
   }) {
+    if (Platform.isLinux) {
+      return _openLinuxDesktopPaymentWindow(
+        context,
+        paymentUrl: paymentUrl,
+        tradeNo: tradeNo,
+      );
+    }
     return Navigator.of(context).push<bool>(
       MaterialPageRoute(
-        builder: (_) => PaymentWebViewPage(
-          paymentUrl: paymentUrl,
-          tradeNo: tradeNo,
-        ),
+        builder: (_) =>
+            PaymentWebViewPage(paymentUrl: paymentUrl, tradeNo: tradeNo),
       ),
     );
+  }
+
+  static Future<bool?> _openLinuxDesktopPaymentWindow(
+    BuildContext context, {
+    required String paymentUrl,
+    required String tradeNo,
+  }) async {
+    final container = ProviderScope.containerOf(context, listen: false);
+    final l10n = AppLocalizations.of(context);
+    final brightness = Theme.of(context).brightness;
+    final languageHeader = _preferredLanguageHeaderStatic();
+
+    Webview? webview;
+    Timer? pollTimer;
+    var closedByApp = false;
+    var isChecking = false;
+    final completer = Completer<bool?>();
+
+    Future<void> finish(bool? result) async {
+      if (completer.isCompleted) return;
+      pollTimer?.cancel();
+      if (result == true && webview != null) {
+        closedByApp = true;
+        webview!.close();
+      }
+      completer.complete(result);
+    }
+
+    Future<void> scheduleNextPoll(Duration delay) async {
+      pollTimer?.cancel();
+      if (completer.isCompleted) return;
+      pollTimer = Timer(delay, () {
+        unawaited(checkPaymentStatus());
+      });
+    }
+
+    Future<void> checkPaymentStatus() async {
+      if (isChecking || completer.isCompleted) return;
+      isChecking = true;
+      var shouldContinuePolling = true;
+      try {
+        clearGetOrderCache(tradeNo);
+        container.invalidate(getOrderProvider(tradeNo));
+        final order = await container.read(getOrderProvider(tradeNo).future);
+        if (order != null) {
+          if (order.status == 3 || order.status == 4) {
+            await finish(true);
+            return;
+          }
+          if (order.status == 2) {
+            shouldContinuePolling = false;
+            pollTimer?.cancel();
+            return;
+          }
+        }
+      } catch (e) {
+        _logger.warning('Linux desktop payment status check failed: $e');
+      } finally {
+        isChecking = false;
+        if (shouldContinuePolling &&
+            !completer.isCompleted &&
+            pollTimer?.isActive != true) {
+          unawaited(scheduleNextPoll(const Duration(seconds: 5)));
+        }
+      }
+    }
+
+    try {
+      webview = await DesktopWebviewWindowHelper.create(
+        title: l10n.xboardPaymentGateway,
+        windowWidth: 1100,
+        windowHeight: 760,
+        matchMainWindow: true,
+        brightness: brightness,
+      );
+      webview.addOnUrlRequestCallback((url) {
+        final uri = Uri.tryParse(url);
+        if (uri == null) return;
+        final scheme = uri.scheme.toLowerCase();
+        if (_isStandardWebSchemeStatic(scheme)) return;
+        _logger.info('Linux desktop payment custom scheme: $scheme');
+        unawaited(_launchExternalPaymentUriStatic(uri));
+      });
+      webview.addScriptToExecuteOnDocumentCreated(
+        _buildLinuxDesktopPaymentDocumentScript(
+          languageHeader: languageHeader,
+          isDarkMode: brightness == Brightness.dark,
+        ),
+      );
+      unawaited(
+        webview.onClose.whenComplete(() async {
+          pollTimer?.cancel();
+          if (!closedByApp) {
+            await finish(null);
+          }
+        }),
+      );
+      await webview.launch(paymentUrl);
+      await scheduleNextPoll(const Duration(seconds: 3));
+      return await completer.future;
+    } catch (e) {
+      _logger.warning('Failed to open Linux desktop payment window: $e');
+      final uri = Uri.tryParse(paymentUrl);
+      if (uri != null) {
+        await launchUrl(uri, mode: LaunchMode.externalApplication);
+      }
+      await scheduleNextPoll(const Duration(seconds: 3));
+      return completer.future;
+    }
+  }
+
+  static String _preferredLanguageHeaderStatic() {
+    final locales = WidgetsBinding.instance.platformDispatcher.locales;
+    final tags = locales.isEmpty
+        ? <String>[
+            WidgetsBinding.instance.platformDispatcher.locale.toLanguageTag(),
+          ]
+        : locales.map((locale) => locale.toLanguageTag()).toList();
+    return tags.take(3).join(',');
+  }
+
+  static String _buildLinuxDesktopPaymentDocumentScript({
+    required String languageHeader,
+    required bool isDarkMode,
+  }) {
+    final languages = languageHeader
+        .split(',')
+        .where((tag) => tag.trim().isNotEmpty)
+        .map((tag) => tag.trim())
+        .toList();
+    final primaryLanguage = languages.isEmpty ? 'en' : languages.first;
+    final languagesJson = jsonEncode(
+      languages.isEmpty ? [primaryLanguage] : languages,
+    );
+    final primaryLanguageJson = jsonEncode(primaryLanguage);
+    return '''
+(function(){
+  try {
+    var language = $primaryLanguageJson;
+    var languages = $languagesJson;
+    document.documentElement.lang = language;
+    document.documentElement.style.colorScheme = ${isDarkMode ? "'dark'" : "'light'"};
+    try {
+      Object.defineProperty(navigator, 'language', { get: function(){ return language; }, configurable: true });
+      Object.defineProperty(navigator, 'languages', { get: function(){ return languages; }, configurable: true });
+    } catch (_) {}
+    if (!window.__fastcatPaymentExternalBridgeInstalled) {
+      window.__fastcatPaymentExternalBridgeInstalled = true;
+      var standardSchemes = { http: true, https: true, about: true, data: true, javascript: true };
+      function shouldOpenExternally(value) {
+        try {
+          var url = String(value || '');
+          var match = /^([a-zA-Z][a-zA-Z0-9+.-]*):/.exec(url);
+          if (!match) return false;
+          return !standardSchemes[String(match[1]).toLowerCase()];
+        } catch (_) {
+          return false;
+        }
+      }
+      function openExternally(value) {
+        try {
+          var url = String(value || '');
+          if (!shouldOpenExternally(url)) return false;
+          if (window.flutter_inappwebview && typeof window.flutter_inappwebview.callHandler === 'function') {
+            window.flutter_inappwebview.callHandler('FastCatPayment', url);
+          }
+          return true;
+        } catch (_) {
+          return false;
+        }
+      }
+      document.addEventListener('click', function(event) {
+        var node = event.target;
+        while (node && node !== document) {
+          if (node.href && openExternally(node.href)) {
+            event.preventDefault();
+            event.stopPropagation();
+            return false;
+          }
+          node = node.parentElement;
+        }
+      }, true);
+      document.addEventListener('submit', function(event) {
+        var form = event.target;
+        if (form && form.action && openExternally(form.action)) {
+          event.preventDefault();
+          event.stopPropagation();
+          return false;
+        }
+      }, true);
+      var originalOpen = window.open;
+      window.open = function(url) {
+        if (openExternally(url)) return null;
+        return originalOpen ? originalOpen.apply(window, arguments) : null;
+      };
+      try {
+        var originalAssign = window.location.assign.bind(window.location);
+        window.location.assign = function(url) {
+          if (openExternally(url)) return;
+          return originalAssign(url);
+        };
+      } catch (_) {}
+      try {
+        var originalReplace = window.location.replace.bind(window.location);
+        window.location.replace = function(url) {
+          if (openExternally(url)) return;
+          return originalReplace(url);
+        };
+      } catch (_) {}
+    }
+  } catch (_) {}
+})();''';
+  }
+
+  static bool _isStandardWebSchemeStatic(String scheme) {
+    return scheme == 'http' ||
+        scheme == 'https' ||
+        scheme == 'about' ||
+        scheme == 'data' ||
+        scheme == 'javascript';
+  }
+
+  static Future<void> _launchExternalPaymentUriStatic(Uri uri) async {
+    try {
+      if (await canLaunchUrl(uri)) {
+        await launchUrl(uri, mode: LaunchMode.externalApplication);
+      }
+    } catch (e) {
+      _logger.warning(
+        'Failed to launch Linux desktop payment URI ${uri.scheme}: $e',
+      );
+    }
   }
 
   @override
@@ -142,14 +382,18 @@ class _PaymentWebViewPageState extends ConsumerState<PaymentWebViewPage> {
     _beginPageLoading();
 
     final injectScripts = cef.InjectUserScripts()
-      ..add(cef.UserScript(
-        _buildLinuxCefPaymentDocumentScript(),
-        cef.ScriptInjectTime.LOAD_START,
-      ))
-      ..add(cef.UserScript(
-        _buildLinuxCefPaymentDocumentScript(),
-        cef.ScriptInjectTime.LOAD_END,
-      ));
+      ..add(
+        cef.UserScript(
+          _buildLinuxCefPaymentDocumentScript(),
+          cef.ScriptInjectTime.LOAD_START,
+        ),
+      )
+      ..add(
+        cef.UserScript(
+          _buildLinuxCefPaymentDocumentScript(),
+          cef.ScriptInjectTime.LOAD_END,
+        ),
+      );
     final controller = cef.WebviewManager().createWebView(
       loading: const SizedBox.expand(),
       injectUserScripts: injectScripts,
@@ -240,8 +484,9 @@ class _PaymentWebViewPageState extends ConsumerState<PaymentWebViewPage> {
         .map((tag) => tag.trim())
         .toList();
     final primaryLanguage = languages.isEmpty ? 'en' : languages.first;
-    final languagesJson =
-        jsonEncode(languages.isEmpty ? [primaryLanguage] : languages);
+    final languagesJson = jsonEncode(
+      languages.isEmpty ? [primaryLanguage] : languages,
+    );
     final primaryLanguageJson = jsonEncode(primaryLanguage);
     final isDarkMode = Theme.of(context).brightness == Brightness.dark;
     return '''
@@ -343,7 +588,7 @@ class _PaymentWebViewPageState extends ConsumerState<PaymentWebViewPage> {
     final locales = WidgetsBinding.instance.platformDispatcher.locales;
     final tags = locales.isEmpty
         ? <String>[
-            WidgetsBinding.instance.platformDispatcher.locale.toLanguageTag()
+            WidgetsBinding.instance.platformDispatcher.locale.toLanguageTag(),
           ]
         : locales.map((locale) => locale.toLanguageTag()).toList();
     return tags.take(3).join(',');
@@ -388,7 +633,8 @@ class _PaymentWebViewPageState extends ConsumerState<PaymentWebViewPage> {
   }
 
   Future<NavigationDecision> _onNavigationRequest(
-      NavigationRequest request) async {
+    NavigationRequest request,
+  ) async {
     final uri = Uri.tryParse(request.url);
     if (uri == null) return NavigationDecision.navigate;
 
@@ -419,8 +665,9 @@ class _PaymentWebViewPageState extends ConsumerState<PaymentWebViewPage> {
         await launchUrl(uri, mode: LaunchMode.externalApplication);
       }
     } catch (e) {
-      _logger
-          .warning('Failed to launch external payment URI ${uri.scheme}: $e');
+      _logger.warning(
+        'Failed to launch external payment URI ${uri.scheme}: $e',
+      );
     }
   }
 
@@ -509,9 +756,7 @@ class _PaymentWebViewPageState extends ConsumerState<PaymentWebViewPage> {
       ),
       body: Column(
         children: [
-          _StatusBanner(
-            isPolling: _isPolling,
-          ),
+          _StatusBanner(isPolling: _isPolling),
           Expanded(child: _buildWebView()),
         ],
       ),
@@ -529,15 +774,15 @@ class _PaymentWebViewPageState extends ConsumerState<PaymentWebViewPage> {
               onRetry: _initLinuxCefWebView,
             )
           : controller != null
-              ? ValueListenableBuilder<bool>(
-                  valueListenable: controller,
-                  builder: (context, ready, child) {
-                    return ready
-                        ? controller.webviewWidget
-                        : const SizedBox.expand();
-                  },
-                )
-              : const SizedBox.expand();
+          ? ValueListenableBuilder<bool>(
+              valueListenable: controller,
+              builder: (context, ready, child) {
+                return ready
+                    ? controller.webviewWidget
+                    : const SizedBox.expand();
+              },
+            )
+          : const SizedBox.expand();
     } else if (_useSystemWebView) {
       webView = _webViewController != null
           ? WebViewWidget(controller: _webViewController!)
@@ -551,9 +796,7 @@ class _PaymentWebViewPageState extends ConsumerState<PaymentWebViewPage> {
       children: [
         webView,
         if (_isPageLoading)
-          _PaymentGatewayLoadingOverlay(
-            showMessage: _showPageLoadingMessage,
-          ),
+          _PaymentGatewayLoadingOverlay(showMessage: _showPageLoadingMessage),
       ],
     );
   }
@@ -629,9 +872,7 @@ class _LinuxCefPaymentStatus extends StatelessWidget {
 class _PaymentGatewayLoadingOverlay extends StatelessWidget {
   final bool showMessage;
 
-  const _PaymentGatewayLoadingOverlay({
-    required this.showMessage,
-  });
+  const _PaymentGatewayLoadingOverlay({required this.showMessage});
 
   @override
   Widget build(BuildContext context) {
@@ -680,9 +921,7 @@ class _PaymentGatewayLoadingOverlay extends StatelessWidget {
 class _StatusBanner extends StatelessWidget {
   final bool isPolling;
 
-  const _StatusBanner({
-    required this.isPolling,
-  });
+  const _StatusBanner({required this.isPolling});
 
   @override
   Widget build(BuildContext context) {

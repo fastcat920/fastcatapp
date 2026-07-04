@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:fl_clash/l10n/l10n.dart';
 import 'package:fl_clash/xboard/adapter/state/knowledge_state.dart';
+import 'package:fl_clash/xboard/features/shared/styles/html_styles.dart';
 import 'package:fl_clash/xboard/features/shared/widgets/xb_error_state.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:webview_flutter/webview_flutter.dart';
@@ -106,18 +107,18 @@ class _DocsPageState extends ConsumerState<DocsPage>
     final theme = Theme.of(context);
     final language = _localeToDocsLanguage(Localizations.localeOf(context));
 
-    ref.listen<AsyncValue<dynamic>>(
-      knowledgeArticlesProvider(language),
-      (_, next) {
-        if (next.isLoading && !_refreshAnim.isAnimating) {
-          _refreshAnim.repeat();
-        } else if (!next.isLoading && _refreshAnim.isAnimating) {
-          _refreshAnim
-            ..stop()
-            ..reset();
-        }
-      },
-    );
+    ref.listen<AsyncValue<dynamic>>(knowledgeArticlesProvider(language), (
+      _,
+      next,
+    ) {
+      if (next.isLoading && !_refreshAnim.isAnimating) {
+        _refreshAnim.repeat();
+      } else if (!next.isLoading && _refreshAnim.isAnimating) {
+        _refreshAnim
+          ..stop()
+          ..reset();
+      }
+    });
 
     final asyncArticles = ref.watch(knowledgeArticlesProvider(language));
     final isDarkScaffold = Theme.of(context).brightness == Brightness.dark;
@@ -264,11 +265,17 @@ class _DocsPageState extends ConsumerState<DocsPage>
               ),
               child: ListTile(
                 shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(14)),
-                contentPadding:
-                    const EdgeInsets.symmetric(horizontal: 32, vertical: 2),
-                leading: Icon(Icons.article_outlined,
-                    size: 20, color: isDark ? null : theme.colorScheme.primary),
+                  borderRadius: BorderRadius.circular(14),
+                ),
+                contentPadding: const EdgeInsets.symmetric(
+                  horizontal: 32,
+                  vertical: 2,
+                ),
+                leading: Icon(
+                  Icons.article_outlined,
+                  size: 20,
+                  color: isDark ? null : theme.colorScheme.primary,
+                ),
                 title: Text(article.title),
                 subtitle: Text(
                   _formatDate(article.createdDate),
@@ -277,8 +284,11 @@ class _DocsPageState extends ConsumerState<DocsPage>
                     color: theme.colorScheme.onSurfaceVariant,
                   ),
                 ),
-                trailing: Icon(Icons.chevron_right,
-                    size: 18, color: isDark ? null : const Color(0xFF9CA3B4)),
+                trailing: Icon(
+                  Icons.chevron_right,
+                  size: 18,
+                  color: isDark ? null : const Color(0xFF9CA3B4),
+                ),
                 onTap: () => _showArticleDetail(article, language),
               ),
             ),
@@ -308,12 +318,18 @@ class _DocsPageState extends ConsumerState<DocsPage>
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Icon(Icons.article_outlined,
-                    size: 56, color: theme.colorScheme.onSurfaceVariant),
+                Icon(
+                  Icons.article_outlined,
+                  size: 56,
+                  color: theme.colorScheme.onSurfaceVariant,
+                ),
                 const SizedBox(height: 16),
-                Text(AppLocalizations.of(context).xboardNoDocuments,
-                    style: theme.textTheme.titleMedium
-                        ?.copyWith(color: theme.colorScheme.onSurfaceVariant)),
+                Text(
+                  AppLocalizations.of(context).xboardNoDocuments,
+                  style: theme.textTheme.titleMedium?.copyWith(
+                    color: theme.colorScheme.onSurfaceVariant,
+                  ),
+                ),
               ],
             ),
           );
@@ -352,24 +368,24 @@ class _DocsPageState extends ConsumerState<DocsPage>
       rawList = articles is List
           ? articles
           : nestedData is List
-              ? nestedData
-              : dataField.values
-                  .whereType<List>()
-                  .expand((list) => list)
-                  .toList();
+          ? nestedData
+          : dataField.values.whereType<List>().expand((list) => list).toList();
     } else {
       rawList = [];
     }
     return rawList
         .whereType<Map>()
-        .map((e) => KnowledgeArticle.fromJson(
-              e.map((key, value) => MapEntry(key.toString(), value)),
-            ))
+        .map(
+          (e) => KnowledgeArticle.fromJson(
+            e.map((key, value) => MapEntry(key.toString(), value)),
+          ),
+        )
         .toList();
   }
 
   Map<String, List<KnowledgeArticle>> _groupArticles(
-      List<KnowledgeArticle> articles) {
+    List<KnowledgeArticle> articles,
+  ) {
     final map = <String, List<KnowledgeArticle>>{};
     for (final a in articles) {
       map.putIfAbsent(a.category, () => []).add(a);
@@ -380,10 +396,8 @@ class _DocsPageState extends ConsumerState<DocsPage>
   void _showArticleDetail(KnowledgeArticle article, String language) {
     Navigator.of(context).push(
       MaterialPageRoute(
-        builder: (_) => _ArticleDetailPage(
-          article: article,
-          language: language,
-        ),
+        builder: (_) =>
+            _ArticleDetailPage(article: article, language: language),
       ),
     );
   }
@@ -398,10 +412,7 @@ class _ArticleDetailPage extends ConsumerStatefulWidget {
   final KnowledgeArticle article;
   final String language;
 
-  const _ArticleDetailPage({
-    required this.article,
-    required this.language,
-  });
+  const _ArticleDetailPage({required this.article, required this.language});
 
   @override
   ConsumerState<_ArticleDetailPage> createState() => _ArticleDetailPageState();
@@ -411,7 +422,9 @@ class _ArticleDetailPageState extends ConsumerState<_ArticleDetailPage> {
   String? _resolvedBody;
   WebViewController? _webController;
   bool _useInAppWebView = false;
+  bool _useHtmlWidget = false;
   String? _inAppWebViewHtml;
+  String? _htmlWidgetHtml;
   bool _webLoading = true;
 
   KnowledgeArticleDetailRequest get _detailRequest =>
@@ -432,8 +445,9 @@ class _ArticleDetailPageState extends ConsumerState<_ArticleDetailPage> {
 
     s = s.replaceAllMapped(
       RegExp(
-          r'<([a-zA-Z][a-zA-Z0-9]*)\b[^>]*>[\s\S]*?</\1>|<([a-zA-Z][a-zA-Z0-9]*)\b[^>]*/?>',
-          multiLine: true),
+        r'<([a-zA-Z][a-zA-Z0-9]*)\b[^>]*>[\s\S]*?</\1>|<([a-zA-Z][a-zA-Z0-9]*)\b[^>]*/?>',
+        multiLine: true,
+      ),
       (m) {
         final key = '\x00HTML_BLOCK_${blockIndex++}\x00';
         htmlBlocks[key] = m.group(0)!;
@@ -485,12 +499,18 @@ class _ArticleDetailPageState extends ConsumerState<_ArticleDetailPage> {
     }
 
     s = s
-        .replaceAllMapped(RegExp(r'\*\*\*(.*?)\*\*\*'),
-            (m) => '<strong><em>${m.group(1)}</em></strong>')
         .replaceAllMapped(
-            RegExp(r'\*\*(.*?)\*\*'), (m) => '<strong>${m.group(1)}</strong>')
+          RegExp(r'\*\*\*(.*?)\*\*\*'),
+          (m) => '<strong><em>${m.group(1)}</em></strong>',
+        )
         .replaceAllMapped(
-            RegExp(r'\*(.*?)\*'), (m) => '<em>${m.group(1)}</em>');
+          RegExp(r'\*\*(.*?)\*\*'),
+          (m) => '<strong>${m.group(1)}</strong>',
+        )
+        .replaceAllMapped(
+          RegExp(r'\*(.*?)\*'),
+          (m) => '<em>${m.group(1)}</em>',
+        );
 
     s = s.replaceAllMapped(
       RegExp(r'`([^`]+)`'),
@@ -521,18 +541,16 @@ class _ArticleDetailPageState extends ConsumerState<_ArticleDetailPage> {
       (m) => '<li>${m.group(1)!}</li>',
     );
 
-    s = s.replaceAllMapped(
-      RegExp(r'(^> .+(\n> .+)*)', multiLine: true),
-      (m) {
-        final inner =
-            m.group(0)!.replaceAll(RegExp(r'^> ', multiLine: true), '');
-        return '<blockquote>${inner.replaceAll('\n', '<br>')}</blockquote>';
-      },
-    );
+    s = s.replaceAllMapped(RegExp(r'(^> .+(\n> .+)*)', multiLine: true), (m) {
+      final inner = m.group(0)!.replaceAll(RegExp(r'^> ', multiLine: true), '');
+      return '<blockquote>${inner.replaceAll('\n', '<br>')}</blockquote>';
+    });
 
     s = s.replaceAllMapped(
-      RegExp(r'(^\|.+\|[ \t]*\n)(^\|[-| :]+\|[ \t]*\n)((?:^\|.+\|[ \t]*\n?)+)',
-          multiLine: true),
+      RegExp(
+        r'(^\|.+\|[ \t]*\n)(^\|[-| :]+\|[ \t]*\n)((?:^\|.+\|[ \t]*\n?)+)',
+        multiLine: true,
+      ),
       (m) {
         final headerLine = m.group(1)!.trim();
         final bodyLines = m.group(3)!.trim().split('\n');
@@ -578,6 +596,14 @@ ul,ol{padding-left:24px}table{border-collapse:collapse;width:100%}
 th,td{border:1px solid #ddd;padding:8px;text-align:left}th{background:$codeBg}
 p{margin:8px 0}
 </style></head><body>$s</body></html>''';
+  }
+
+  static String _extractBodyHtml(String documentHtml) {
+    final match = RegExp(
+      r'<body[^>]*>([\s\S]*)</body>',
+      caseSensitive: false,
+    ).firstMatch(documentHtml);
+    return match?.group(1)?.trim() ?? documentHtml;
   }
 
   @override
@@ -632,12 +658,15 @@ p{margin:8px 0}
   static String _parseDetailBody(dynamic result) {
     String findBody(dynamic value) {
       if (value is Map) {
-        final normalized =
-            value.map((key, value) => MapEntry(key.toString(), value));
-        final direct = KnowledgeArticle._pickString(
-          normalized,
-          ['body', 'content', 'answer', 'description'],
+        final normalized = value.map(
+          (key, value) => MapEntry(key.toString(), value),
         );
+        final direct = KnowledgeArticle._pickString(normalized, [
+          'body',
+          'content',
+          'answer',
+          'description',
+        ]);
         if (direct.isNotEmpty) return direct;
 
         for (final key in const [
@@ -675,7 +704,9 @@ p{margin:8px 0}
     _resolvedBody = null;
     _webController = null;
     _useInAppWebView = false;
+    _useHtmlWidget = false;
     _inAppWebViewHtml = null;
+    _htmlWidgetHtml = null;
     _webLoading = true;
   }
 
@@ -692,10 +723,17 @@ p{margin:8px 0}
   void _initWebView(String content) {
     final isDark =
         WidgetsBinding.instance.platformDispatcher.platformBrightness ==
-            Brightness.dark;
+        Brightness.dark;
     final fullHtml = _contentToHtml(content, isDark: isDark);
 
-    if (Platform.isWindows || Platform.isLinux) {
+    if (Platform.isLinux) {
+      _htmlWidgetHtml = _extractBodyHtml(fullHtml);
+      _useHtmlWidget = true;
+      if (mounted) setState(() => _webLoading = false);
+      return;
+    }
+
+    if (Platform.isWindows) {
       _inAppWebViewHtml = fullHtml;
       _useInAppWebView = true;
       if (mounted) setState(() => _webLoading = false);
@@ -705,20 +743,23 @@ p{margin:8px 0}
     if (!(Platform.isAndroid || Platform.isIOS || Platform.isMacOS)) return;
     _webController = WebViewController()
       ..setJavaScriptMode(JavaScriptMode.unrestricted)
-      ..setNavigationDelegate(NavigationDelegate(
-        onPageFinished: (_) {
-          if (mounted) setState(() => _webLoading = false);
-        },
-        onNavigationRequest: (request) {
-          if (!request.isMainFrame) return NavigationDecision.navigate;
-          final uri = Uri.tryParse(request.url);
-          if (uri != null && (uri.scheme == 'http' || uri.scheme == 'https')) {
-            launchUrl(uri, mode: LaunchMode.externalApplication);
-            return NavigationDecision.prevent;
-          }
-          return NavigationDecision.navigate;
-        },
-      ))
+      ..setNavigationDelegate(
+        NavigationDelegate(
+          onPageFinished: (_) {
+            if (mounted) setState(() => _webLoading = false);
+          },
+          onNavigationRequest: (request) {
+            if (!request.isMainFrame) return NavigationDecision.navigate;
+            final uri = Uri.tryParse(request.url);
+            if (uri != null &&
+                (uri.scheme == 'http' || uri.scheme == 'https')) {
+              launchUrl(uri, mode: LaunchMode.externalApplication);
+              return NavigationDecision.prevent;
+            }
+            return NavigationDecision.navigate;
+          },
+        ),
+      )
       ..loadHtmlString(fullHtml);
   }
 
@@ -729,14 +770,13 @@ p{margin:8px 0}
 
     Widget contentArea;
     if (_resolvedBody == null) {
-      final asyncDetail =
-          ref.watch(knowledgeArticleDetailProvider(_detailRequest));
+      final asyncDetail = ref.watch(
+        knowledgeArticleDetailProvider(_detailRequest),
+      );
       contentArea = asyncDetail.when(
         loading: () => const Center(child: CircularProgressIndicator()),
-        error: (e, _) => XbErrorState(
-          message: e.toString(),
-          onRetry: _retryDetail,
-        ),
+        error: (e, _) =>
+            XbErrorState(message: e.toString(), onRetry: _retryDetail),
         data: (result) {
           if (_resolvedBody == null) {
             final fetchedBody = _parseDetailBody(result);
@@ -781,7 +821,9 @@ p{margin:8px 0}
                   children: [
                     Container(
                       padding: const EdgeInsets.symmetric(
-                          horizontal: 8, vertical: 3),
+                        horizontal: 8,
+                        vertical: 3,
+                      ),
                       decoration: BoxDecoration(
                         color: theme.brightness == Brightness.dark
                             ? theme.colorScheme.primaryContainer
@@ -798,13 +840,17 @@ p{margin:8px 0}
                       ),
                     ),
                     const SizedBox(width: 12),
-                    Icon(Icons.access_time,
-                        size: 13, color: theme.colorScheme.onSurfaceVariant),
+                    Icon(
+                      Icons.access_time,
+                      size: 13,
+                      color: theme.colorScheme.onSurfaceVariant,
+                    ),
                     const SizedBox(width: 4),
                     Text(
                       _formatDateTime(article.createdDate),
-                      style: theme.textTheme.bodySmall
-                          ?.copyWith(color: theme.colorScheme.onSurfaceVariant),
+                      style: theme.textTheme.bodySmall?.copyWith(
+                        color: theme.colorScheme.onSurfaceVariant,
+                      ),
                     ),
                   ],
                 ),
@@ -842,18 +888,34 @@ p{margin:8px 0}
           mimeType: 'text/html',
           encoding: 'utf-8',
         ),
-        initialSettings: iaw.InAppWebViewSettings(
-          javaScriptEnabled: true,
-        ),
+        initialSettings: iaw.InAppWebViewSettings(javaScriptEnabled: true),
         shouldOverrideUrlLoading: (controller, navigationAction) async {
           final url = navigationAction.request.url?.toString() ?? '';
           if (!Platform.isWindows && _isDownloadLink(url)) {
-            await launchUrl(Uri.parse(url),
-                mode: LaunchMode.externalApplication);
+            await launchUrl(
+              Uri.parse(url),
+              mode: LaunchMode.externalApplication,
+            );
             return iaw.NavigationActionPolicy.CANCEL;
           }
           return iaw.NavigationActionPolicy.ALLOW;
         },
+      );
+    }
+
+    if (_useHtmlWidget && _htmlWidgetHtml != null) {
+      return SingleChildScrollView(
+        padding: const EdgeInsets.fromLTRB(16, 12, 16, 16),
+        child: NoticeHtmlStyles.buildNoticeHtml(
+          context: context,
+          htmlContent: _htmlWidgetHtml!,
+          onTapUrl: (url) {
+            final uri = url == null ? null : Uri.tryParse(url);
+            if (uri != null) {
+              unawaited(launchUrl(uri, mode: LaunchMode.externalApplication));
+            }
+          },
+        ),
       );
     }
 
