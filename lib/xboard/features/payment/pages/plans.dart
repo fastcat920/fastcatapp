@@ -400,10 +400,13 @@ class _PlansViewState extends ConsumerState<PlansView> {
                   elevation: 0,
                   scrolledUnderElevation: 1,
                   actions: [
-                    IconButton(
-                      icon: const Icon(Icons.refresh),
-                      onPressed: _refreshPlans,
-                      tooltip: appLocalizations.refresh,
+                    Padding(
+                      padding: const EdgeInsets.only(right: 12),
+                      child: IconButton(
+                        icon: const Icon(Icons.refresh),
+                        onPressed: _refreshPlans,
+                        tooltip: appLocalizations.refresh,
+                      ),
                     ),
                   ],
                 )
@@ -459,7 +462,7 @@ class _PlansViewState extends ConsumerState<PlansView> {
                         }
                         if (isDesktop || useSideNavigation) {
                           return SingleChildScrollView(
-                            padding: const EdgeInsets.fromLTRB(16, 6, 16, 12),
+                            padding: const EdgeInsets.fromLTRB(16, 12, 16, 12),
                             child: LayoutBuilder(
                               builder: (context, constraints) {
                                 const gap = 12.0;

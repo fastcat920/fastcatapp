@@ -84,7 +84,7 @@ class _InvitePageState extends ConsumerState<InvitePage>
           slivers: [
             SliverToBoxAdapter(
               child: Padding(
-                padding: EdgeInsets.fromLTRB(16, isDesktop ? 6 : 12, 16, 12),
+                padding: const EdgeInsets.fromLTRB(16, 12, 16, 12),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
@@ -129,10 +129,13 @@ class _InvitePageState extends ConsumerState<InvitePage>
               automaticallyImplyLeading: false,
               actions: isDesktop
                   ? [
-                      IconButton(
-                        icon: const Icon(Icons.refresh),
-                        onPressed: _doRefresh,
-                        tooltip: appLocalizations.refresh,
+                      Padding(
+                        padding: const EdgeInsets.only(right: 12),
+                        child: IconButton(
+                          icon: const Icon(Icons.refresh),
+                          onPressed: _doRefresh,
+                          tooltip: appLocalizations.refresh,
+                        ),
                       ),
                     ]
                   : null,

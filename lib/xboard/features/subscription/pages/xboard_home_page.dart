@@ -149,7 +149,7 @@ class _XBoardHomePageState extends ConsumerState<XBoardHomePage>
               ),
               actions: [
                 Padding(
-                  padding: const EdgeInsets.only(right: 8),
+                  padding: const EdgeInsets.only(right: 12),
                   child: TextButton.icon(
                     style: XbUiButton.textChipPrimary(context),
                     icon: _isCheckingWebsite
@@ -177,15 +177,18 @@ class _XBoardHomePageState extends ConsumerState<XBoardHomePage>
                         : () => _openOfficialWebsite(context),
                   ),
                 ),
-                IconButton(
-                  icon: Icon(
-                    Icons.menu_open,
-                    color: Theme.of(context)
-                        .colorScheme
-                        .onSurfaceVariant,
+                Padding(
+                  padding: const EdgeInsets.only(right: 12),
+                  child: IconButton(
+                    icon: Icon(
+                      Icons.menu_open,
+                      color: Theme.of(context)
+                          .colorScheme
+                          .onSurfaceVariant,
+                    ),
+                    tooltip: 'TUN',
+                    onPressed: () => _showVpnSheet(context),
                   ),
-                  tooltip: 'TUN',
-                  onPressed: () => _showVpnSheet(context),
                 ),
               ],
             )
@@ -264,7 +267,7 @@ class _XBoardHomePageState extends ConsumerState<XBoardHomePage>
                 final isPortraitHome =
                     constraints.maxHeight >= constraints.maxWidth;
                 final showTopInfo = !compactMode;
-                final topInfoTopGap = isDesktop ? 0.0 : 12.0;
+                final topInfoTopGap = 12.0;
                 final shouldCompactConnectButton =
                     compactMode || isLandscapeHome;
                 final connectButtonScale =

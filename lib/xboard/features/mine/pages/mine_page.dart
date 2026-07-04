@@ -257,9 +257,14 @@ class _MinePageState extends ConsumerState<MinePage>
                     child: _buildCustomerServiceButton(context),
                   ),
                 if (isDesktop) ...[
-                  _buildCustomerServiceButton(context),
-                  const SizedBox(width: 8),
-                  _buildRefreshButton(),
+                  Padding(
+                    padding: const EdgeInsets.only(right: 12),
+                    child: _buildCustomerServiceButton(context),
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.only(right: 12),
+                    child: _buildRefreshButton(),
+                  ),
                 ],
               ],
             ),
@@ -267,7 +272,7 @@ class _MinePageState extends ConsumerState<MinePage>
         onRefresh: _doRefresh,
         child: ListView(
           physics: const AlwaysScrollableScrollPhysics(),
-          padding: EdgeInsets.fromLTRB(16, isDesktop ? 6 : 12, 16, 12),
+          padding: const EdgeInsets.fromLTRB(16, 12, 16, 12),
           children: [
 // Desktop title + actions are now in the fixed AppBar.
             _buildAccountInfoCard(
