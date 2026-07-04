@@ -6,11 +6,9 @@ import 'package:fl_clash/l10n/l10n.dart';
 import 'package:flutter/material.dart';
 import 'package:webview_flutter_android/webview_flutter_android.dart';
 import 'package:webview_flutter/webview_flutter.dart';
+import 'package:webview_windows/webview_windows.dart';
+import 'package:fl_clash/common/webview2_check.dart';
 import 'package:fl_clash/xboard/features/auth/utils/crisp_url_helper.dart';
-
-const _desktopCrispUserAgent = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) '
-    'AppleWebKit/537.36 (KHTML, like Gecko) '
-    'Chrome/125.0.0.0 Safari/537.36';
 
 String _crispLocaleFromTag(String localeTag) {
   final normalized = localeTag.trim().replaceAll('_', '-').toLowerCase();
@@ -82,7 +80,7 @@ class DesktopCrispChatPage extends StatefulWidget {
     this.onClose,
   });
 
-  static bool get isSupported => Platform.isWindows;
+  static bool get isSupported => Platform.isWindows && WebView2Check.isInstalled();
 
   @override
   State<DesktopCrispChatPage> createState() => _DesktopCrispChatPageState();
@@ -116,7 +114,7 @@ class _CustomerServiceStrings {
 }
 
 class _DesktopCrispChatPageState extends State<DesktopCrispChatPage> {
-  late final WebViewController _controller;
+  late final WebviewController _controller;
   Timer? _sdkFallbackTimer;
   Timer? _embedFallbackTimer;
   bool _usingSdkBootstrap = false;
@@ -124,8 +122,8 @@ class _DesktopCrispChatPageState extends State<DesktopCrispChatPage> {
   bool _didFallbackToOfficial = false;
   bool _isLoading = true;
   bool _hasTimedOut = false;
-  bool _didStartLoading = false;
   bool _didFailStartup = false;
+  bool _didStartLoading = false;
   late bool _isDarkMode;
   String? _localeTag;
 
@@ -135,34 +133,7 @@ class _DesktopCrispChatPageState extends State<DesktopCrispChatPage> {
     _isDarkMode =
         WidgetsBinding.instance.platformDispatcher.platformBrightness ==
             Brightness.dark;
-    _controller = WebViewController()
-      ..setJavaScriptMode(JavaScriptMode.unrestricted)
-      ..setUserAgent(_desktopCrispUserAgent)
-      ..setNavigationDelegate(
-        NavigationDelegate(
-          onPageStarted: (url) {
-            if (!_usingSdkBootstrap) {
-              _usingProxy = _isProxyUrl(url);
-            }
-            _setLoading();
-          },
-          onPageFinished: (_) {
-            if (!_usingSdkBootstrap) {
-              unawaited(_injectDirectEmbedMonitor());
-            }
-            _finishLoading();
-          },
-          onWebResourceError: (error) {
-            if (error.isForMainFrame == false) return;
-            _handleRouteError();
-          },
-          onHttpError: (error) {
-            if (!_isCrispEmbedUri(error.request?.uri)) return;
-            _handleRouteError();
-          },
-        ),
-      );
-    unawaited(_applyDesktopWebViewBackgroundColor());
+    _controller = WebviewController();
   }
 
   @override
@@ -172,16 +143,15 @@ class _DesktopCrispChatPageState extends State<DesktopCrispChatPage> {
     final nextLocaleTag = Localizations.localeOf(context).toLanguageTag();
     if (_isDarkMode != nextIsDarkMode) {
       _isDarkMode = nextIsDarkMode;
-      unawaited(_applyDesktopWebViewBackgroundColor());
-      unawaited(_applyDesktopTheme());
+      unawaited(_applyTheme());
     }
     if (_localeTag != nextLocaleTag) {
       _localeTag = nextLocaleTag;
-      unawaited(_applyDesktopLocale());
+      unawaited(_applyLocale());
     }
     if (!_didStartLoading) {
       _didStartLoading = true;
-      unawaited(_loadSdkBootstrap());
+      unawaited(_initAndLoad());
     }
   }
 
@@ -189,7 +159,21 @@ class _DesktopCrispChatPageState extends State<DesktopCrispChatPage> {
   void dispose() {
     _sdkFallbackTimer?.cancel();
     _embedFallbackTimer?.cancel();
+    _controller.dispose();
     super.dispose();
+  }
+
+  Future<void> _initAndLoad() async {
+    try {
+      await _controller.initialize();
+      await _controller.setBackgroundColor(
+        _customerServiceBackgroundColor(_isDarkMode),
+      );
+      await _controller.setPopupWindowPolicy(WebviewPopupWindowPolicy.deny);
+      unawaited(_loadSdkBootstrap());
+    } catch (_) {
+      _showStartupFailure();
+    }
   }
 
   void _setLoading() {
@@ -199,11 +183,6 @@ class _DesktopCrispChatPageState extends State<DesktopCrispChatPage> {
       _hasTimedOut = false;
       _didFailStartup = false;
     });
-  }
-
-  void _finishLoading() {
-    if (!mounted) return;
-    setState(() => _isLoading = false);
   }
 
   Future<void> _loadSdkBootstrap() async {
@@ -218,11 +197,7 @@ class _DesktopCrispChatPageState extends State<DesktopCrispChatPage> {
       () => unawaited(_fallbackFromSdkToEmbed()),
     );
     try {
-      debugPrint('[Crisp][Desktop] loadData bootstrap');
-      await _controller.loadHtmlString(
-        _buildSdkBootstrapHtml(),
-        baseUrl: _sdkBootstrapBaseUri().toString(),
-      );
+      await _controller.loadStringContent(_buildSdkBootstrapHtml());
     } catch (_) {
       _showStartupFailure();
     }
@@ -250,8 +225,7 @@ class _DesktopCrispChatPageState extends State<DesktopCrispChatPage> {
       const Duration(seconds: 25),
       () => unawaited(_handleEmbedTimeout()),
     );
-    debugPrint('[Crisp][Desktop] loadUrl embed: $uri');
-    unawaited(_controller.loadRequest(uri).catchError((_) {
+    unawaited(_controller.loadUrl(uri.toString()).catchError((_) {
       _handleRouteError();
     }));
   }
@@ -295,25 +269,6 @@ class _DesktopCrispChatPageState extends State<DesktopCrispChatPage> {
     );
   }
 
-  bool _isProxyUrl(String url) {
-    final proxy = normalizeCrispProxyUrl(widget.crispProxyUrl);
-    return proxy.isNotEmpty && url.startsWith(proxy);
-  }
-
-  bool _isProxyEmbedUri(Uri? uri) {
-    if (uri == null) return false;
-    final proxy = normalizeCrispProxyUrl(widget.crispProxyUrl);
-    if (proxy.isEmpty) return false;
-    return uri.toString().startsWith(proxy) && uri.path.contains('/chat/embed');
-  }
-
-  bool _isCrispEmbedUri(Uri? uri) {
-    if (uri == null) return false;
-    if (!uri.path.contains('/chat/embed')) return false;
-    if (_isProxyEmbedUri(uri)) return true;
-    return uri.host == Uri.parse(crispOfficialBaseUrl).host;
-  }
-
   Uri _preferredEmbedUri() {
     return _localizedCrispUri(
       crispEmbedUri(
@@ -324,19 +279,9 @@ class _DesktopCrispChatPageState extends State<DesktopCrispChatPage> {
     );
   }
 
-  Uri _sdkBootstrapBaseUri() {
-    final uri = _preferredEmbedUri();
-    return uri.replace(
-      queryParameters: {
-        ...uri.queryParameters,
-        'fastcat_bootstrap': 'sdk',
-      },
-    );
-  }
-
   Future<bool> _isCrispReady() async {
     try {
-      final result = await _controller.runJavaScriptReturningResult('''
+      final result = await _controller.executeScript('''
 (function(){
   try {
     return window.__fastcatCrispReady === true;
@@ -344,8 +289,8 @@ class _DesktopCrispChatPageState extends State<DesktopCrispChatPage> {
     return false;
   }
 })();''');
-      if (result is bool) return result;
-      return result.toString().contains('true');
+      if (result == null) return false;
+      return result.contains('true');
     } catch (_) {
       return false;
     }
@@ -371,6 +316,21 @@ class _DesktopCrispChatPageState extends State<DesktopCrispChatPage> {
       _hasTimedOut = true;
       _didFailStartup = true;
     });
+  }
+
+  void _handleRetry() {
+    _sdkFallbackTimer?.cancel();
+    _embedFallbackTimer?.cancel();
+    _didStartLoading = false;
+    _usingSdkBootstrap = false;
+    _usingProxy = false;
+    _didFallbackToOfficial = false;
+    _hasTimedOut = false;
+    _didFailStartup = false;
+    _isLoading = true;
+    if (_localeTag != null) {
+      unawaited(_initAndLoad());
+    }
   }
 
   String _buildSdkBootstrapHtml() {
@@ -403,24 +363,6 @@ class _DesktopCrispChatPageState extends State<DesktopCrispChatPage> {
       color: $foreground;
       overflow: hidden;
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-    }
-    #crisp-chatbox,
-    .crisp-client,
-    iframe[src*="crisp"] {
-      width: 100% !important;
-      height: 100% !important;
-      min-width: 100% !important;
-      min-height: 100% !important;
-      max-width: none !important;
-      max-height: none !important;
-      position: fixed !important;
-      top: 0 !important;
-      left: 0 !important;
-      margin: 0 !important;
-      padding: 0 !important;
-      border: none !important;
-      border-radius: 0 !important;
-      transform: none !important;
     }
     #loading {
       position: fixed;
@@ -523,20 +465,12 @@ class _DesktopCrispChatPageState extends State<DesktopCrispChatPage> {
         if (loading) loading.style.display = 'none';
       }
 
+      function forceNode(node){
+        if (!node || !node.style) return;
+        node.style.cssText = 'position:absolute!important;inset:0!important;left:0!important;top:0!important;width:100%!important;height:100%!important;min-width:100%!important;min-height:100%!important;max-width:none!important;max-height:none!important;margin:0!important;padding:0!important;border:none!important;border-radius:0!important;transform:none!important;z-index:2147483646!important;background:$background!important;overflow:hidden!important;';
+      }
+
       function expandFrames(){
-        function forceNode(node){
-          if (!node || !node.style) return;
-          node.style.cssText = 'position:fixed!important;inset:0!important;left:0!important;top:0!important;right:auto!important;bottom:auto!important;width:100vw!important;height:100vh!important;min-width:100vw!important;min-height:100vh!important;max-width:none!important;max-height:none!important;margin:0!important;padding:0!important;border:none!important;border-radius:0!important;transform:none!important;z-index:2147483646!important;background:$background!important;overflow:hidden!important;';
-        }
-        function forceParents(node){
-          var parent = node ? node.parentElement : null;
-          var depth = 0;
-          while (parent && parent !== document.body && depth < 4) {
-            forceNode(parent);
-            parent = parent.parentElement;
-            depth++;
-          }
-        }
         try {
           document.documentElement.style.overflow = 'hidden';
           document.documentElement.style.width = '100%';
@@ -552,15 +486,16 @@ class _DesktopCrispChatPageState extends State<DesktopCrispChatPage> {
           for (var n = 0; n < crispNodes.length; n++) {
             forceNode(crispNodes[n]);
           }
+          var frames = document.querySelectorAll('iframe');
+          for (var i = 0; i < frames.length; i++) {
+            var src = frames[i].src || '';
+            if (src.indexOf('crisp') === -1) continue;
+            forceNode(frames[i]);
+            var parent = frames[i].parentElement;
+            if (parent) forceNode(parent);
+            markReady();
+          }
         } catch (_) {}
-        var frames = document.querySelectorAll('iframe');
-        for (var i = 0; i < frames.length; i++) {
-          var src = frames[i].src || '';
-          if (src.indexOf('crisp') === -1) continue;
-          forceNode(frames[i]);
-          forceParents(frames[i]);
-          markReady();
-        }
       }
 
       window.CRISP_READY_TRIGGER = markReady;
@@ -598,90 +533,7 @@ class _DesktopCrispChatPageState extends State<DesktopCrispChatPage> {
 </html>''';
   }
 
-  Future<void> _injectDirectEmbedMonitor() async {
-    final background = _customerServiceBackgroundColorValue(_isDarkMode);
-    final foreground = _customerServiceForegroundColorValue(_isDarkMode);
-    final userScript = widget.userScript ?? '';
-    final localeTag = _localeTag ?? 'en';
-    final crispLocale = _crispLocaleFromTag(localeTag);
-    final script = '''
-(function(){
-  try {
-    if (window.__fastcatCrispDirectMonitorInstalled) return;
-    window.__fastcatCrispDirectMonitorInstalled = true;
-    window.\$crisp = window.\$crisp || [];
-    try {
-      $userScript
-    } catch(_) {}
-    window.__fastcatCrispReady = false;
-    window.__fastcatCustomerServiceLocale = '${_escapeJsString(localeTag)}';
-    window.__fastcatCustomerServiceCrispLocale = '${_escapeJsString(crispLocale)}';
-    window.CRISP_RUNTIME_CONFIG = window.CRISP_RUNTIME_CONFIG || {};
-    window.CRISP_RUNTIME_CONFIG.locale = window.__fastcatCustomerServiceCrispLocale;
-    window.__fastcatApplyCustomerServiceTheme = function(theme){
-      try {
-        document.documentElement.style.background = theme.background;
-        document.documentElement.style.colorScheme = theme.isDark ? 'dark' : 'light';
-        if (document.body) {
-          document.body.style.background = theme.background;
-          document.body.style.color = theme.foreground;
-        }
-        var style = document.getElementById('fastcat-customer-service-theme');
-        if (!style) {
-          style = document.createElement('style');
-          style.id = 'fastcat-customer-service-theme';
-          (document.head || document.documentElement).appendChild(style);
-        }
-        style.textContent = ''
-          + 'html,body{background:' + theme.background + ' !important;color:' + theme.foreground + ' !important;color-scheme:' + (theme.isDark ? 'dark' : 'light') + ' !important;}'
-          + '#loading{background:' + theme.background + ' !important;color:' + theme.foreground + ' !important;}'
-          + '#spinner{border:2px solid rgba(148,163,184,0.35) !important;border-top-color:' + (theme.accent || '#2563eb') + ' !important;}'
-          + 'iframe[src*="crisp"],.crisp-client,[class*="crisp"],[id*="crisp"]{width:100% !important;height:100% !important;max-width:none !important;max-height:none !important;position:fixed !important;top:0 !important;left:0 !important;margin:0 !important;padding:0 !important;border:none !important;border-radius:0 !important;background:' + theme.background + ' !important;color-scheme:' + (theme.isDark ? 'dark' : 'light') + ' !important;}';
-        window.\$crisp = window.\$crisp || [];
-        window.\$crisp.push(["config", "locale", [window.__fastcatCustomerServiceCrispLocale || 'en']]);
-        window.\$crisp.push(["config", "color:mode", [theme.isDark ? "dark" : "light"]]);
-        window.CRISP_RUNTIME_CONFIG = window.CRISP_RUNTIME_CONFIG || {};
-        window.CRISP_RUNTIME_CONFIG.locale = window.__fastcatCustomerServiceCrispLocale || 'en';
-      } catch (_) {}
-    };
-    document.documentElement.style.background = '$background';
-    document.documentElement.style.colorScheme = '${_isDarkMode ? 'dark' : 'light'}';
-    document.documentElement.lang = window.__fastcatCustomerServiceLocale;
-    if (document.body) {
-      document.body.style.background = '$background';
-      document.body.style.color = '$foreground';
-    }
-    window.__fastcatApplyCustomerServiceTheme({
-      isDark: ${_isDarkMode ? 'true' : 'false'},
-      background: '$background',
-      foreground: '$foreground'
-    });
-    function markReady(){
-      window.__fastcatCrispReady = true;
-    }
-    function directLooksReady(){
-      try {
-        window.\$crisp = window.\$crisp || [];
-        window.\$crisp.push(["config", "locale", [window.__fastcatCustomerServiceCrispLocale || 'en']]);
-        window.\$crisp.push(["config", "color:mode", [${_isDarkMode ? '"dark"' : '"light"'}]]);
-        var interactive = document.querySelector('textarea,input,[contenteditable="true"],button,a[href^="mailto:"],iframe[src*="crisp"],.crisp-client,[class*="crisp"]');
-        if (interactive) markReady();
-      } catch(_) {}
-    }
-    directLooksReady();
-    new MutationObserver(directLooksReady).observe(document.documentElement, {
-      childList: true,
-      subtree: true,
-      attributes: true
-    });
-  } catch(_) {}
-})();''';
-    try {
-      await _controller.runJavaScript(script);
-    } catch (_) {}
-  }
-
-  Future<void> _applyDesktopTheme() async {
+  Future<void> _applyTheme() async {
     final script = '''
 (function(){
   try {
@@ -695,11 +547,11 @@ class _DesktopCrispChatPageState extends State<DesktopCrispChatPage> {
   } catch(_) {}
 })();''';
     try {
-      await _controller.runJavaScript(script);
+      await _controller.executeScript(script);
     } catch (_) {}
   }
 
-  Future<void> _applyDesktopLocale() async {
+  Future<void> _applyLocale() async {
     if (!mounted) return;
     final strings = _strings;
     final payload = jsonEncode({
@@ -742,19 +594,7 @@ class _DesktopCrispChatPageState extends State<DesktopCrispChatPage> {
   } catch(_) {}
 })();''';
     try {
-      await _controller.runJavaScript(script);
-    } catch (_) {}
-  }
-
-  Future<void> _handleRetry() async {
-    await _loadSdkBootstrap();
-  }
-
-  Future<void> _applyDesktopWebViewBackgroundColor() async {
-    try {
-      await _controller.setBackgroundColor(
-        _customerServiceBackgroundColor(_isDarkMode),
-      );
+      await _controller.executeScript(script);
     } catch (_) {}
   }
 
@@ -781,14 +621,6 @@ class _DesktopCrispChatPageState extends State<DesktopCrispChatPage> {
           timeout: 'Connection timeout, please check network connection',
         );
 
-  String _escapeJsString(String value) {
-    return value
-        .replaceAll(r'\', r'\\')
-        .replaceAll("'", r"\'")
-        .replaceAll('\n', r'\n')
-        .replaceAll('\r', r'\r');
-  }
-
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
@@ -797,44 +629,41 @@ class _DesktopCrispChatPageState extends State<DesktopCrispChatPage> {
     final body = Stack(
       fit: StackFit.expand,
       children: [
-        WebViewWidget(controller: _controller),
-        if (_isLoading)
+        Webview(_controller),
+        if (_isLoading || _hasTimedOut)
           ColoredBox(
             color: backgroundColor,
-            child: const Center(child: CircularProgressIndicator()),
-          ),
-        if (_hasTimedOut)
-          ColoredBox(
-            color: backgroundColor,
-            child: Center(
-              child: Padding(
-                padding: const EdgeInsets.all(24),
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Icon(
-                      Icons.support_agent_outlined,
-                      size: 32,
-                      color: Theme.of(context).colorScheme.primary,
+            child: _hasTimedOut
+                ? Center(
+                    child: Padding(
+                      padding: const EdgeInsets.all(24),
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(
+                            Icons.support_agent_outlined,
+                            size: 32,
+                            color: Theme.of(context).colorScheme.primary,
+                          ),
+                          const SizedBox(height: 12),
+                          Text(
+                            _didFailStartup
+                                ? l10n.onlineSupportConnectionError
+                                : strings.timeout,
+                            textAlign: TextAlign.center,
+                            style: const TextStyle(fontSize: 14),
+                          ),
+                          const SizedBox(height: 16),
+                          FilledButton.icon(
+                            onPressed: _handleRetry,
+                            icon: const Icon(Icons.refresh),
+                            label: Text(l10n.refresh),
+                          ),
+                        ],
+                      ),
                     ),
-                    const SizedBox(height: 12),
-                    Text(
-                      _didFailStartup
-                          ? l10n.onlineSupportConnectionError
-                          : strings.timeout,
-                      textAlign: TextAlign.center,
-                      style: const TextStyle(fontSize: 14),
-                    ),
-                    const SizedBox(height: 16),
-                    FilledButton.icon(
-                      onPressed: _handleRetry,
-                      icon: const Icon(Icons.refresh),
-                      label: Text(l10n.refresh),
-                    ),
-                  ],
-                ),
-              ),
-            ),
+                  )
+                : const Center(child: CircularProgressIndicator()),
           ),
       ],
     );

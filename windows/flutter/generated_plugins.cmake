@@ -17,6 +17,7 @@ list(APPEND FLUTTER_PLUGIN_LIST
   tray_manager
   url_launcher_windows
   webview_win_floating
+  webview_windows
   window_ext
   window_manager
 )
