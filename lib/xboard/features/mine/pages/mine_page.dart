@@ -247,16 +247,20 @@ class _MinePageState extends ConsumerState<MinePage>
 
     return Scaffold(
       backgroundColor: isDark ? null : const Color(0xFFFAFBFD),
-      appBar: isDesktop
-          ? null
-          : AppBar(
+      appBar: AppBar(
               title: Text(appLocalizations.userCenter),
               automaticallyImplyLeading: false,
               actions: [
-                Padding(
-                  padding: const EdgeInsets.only(right: 16),
-                  child: _buildCustomerServiceButton(context),
-                ),
+                if (!isDesktop)
+                  Padding(
+                    padding: const EdgeInsets.only(right: 16),
+                    child: _buildCustomerServiceButton(context),
+                  ),
+                if (isDesktop) ...[
+                  _buildCustomerServiceButton(context),
+                  const SizedBox(width: 8),
+                  _buildRefreshButton(),
+                ],
               ],
             ),
       body: RefreshIndicator(
@@ -265,26 +269,7 @@ class _MinePageState extends ConsumerState<MinePage>
           physics: const AlwaysScrollableScrollPhysics(),
           padding: EdgeInsets.fromLTRB(16, isDesktop ? 6 : 12, 16, 12),
           children: [
-            if (isDesktop) ...[
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text(
-                    appLocalizations.userCenter,
-                    style: theme.textTheme.titleLarge
-                        ?.copyWith(fontWeight: FontWeight.bold),
-                  ),
-                  Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      _buildCustomerServiceButton(context),
-                      _buildRefreshButton(),
-                    ],
-                  ),
-                ],
-              ),
-              const SizedBox(height: 12),
-            ],
+// Desktop title + actions are now in the fixed AppBar.
             _buildAccountInfoCard(
               context,
               userState,

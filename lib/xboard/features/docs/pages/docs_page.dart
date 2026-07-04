@@ -599,7 +599,7 @@ hr{border:none;border-top:1px solid $hrColor;margin:16px 0}
 ul,ol{padding-left:24px}table{border-collapse:collapse;width:100%}
 th,td{border:1px solid #ddd;padding:8px;text-align:left}th{background:$codeBg}
 p{margin:8px 0}
-</style></head><body><p>$s</p></body></html>''';
+</style></head><body><div>$s</div></body></html>''';
   }
 
   static bool _looksLikeHtmlContent(String content) {
@@ -665,13 +665,42 @@ p{margin:8px 0}
     return bodyHtml;
   }
 
+  /// Prepares the content for rendering with flutter_widget_from_html.
+  ///
+  /// Unlike _prepareHtmlWidgetContent, this method preserves the inline-styled
+  /// HTML produced by _contentToHtml so that headings, code blocks, tables,
+  /// and other elements render correctly on Linux where a full WebView is
+  /// unavailable.
   static String _prepareLinuxHtmlWidgetContent({
     required String rawContent,
     required String convertedHtml,
   }) {
-    final source =
-        _looksLikeHtmlContent(rawContent) ? rawContent : convertedHtml;
-    return _prepareHtmlWidgetContent(source);
+    // If the raw content already contains HTML tags, extract the body portion
+    // and clean it for flutter_widget_from_html rendering.
+    if (_looksLikeHtmlContent(rawContent)) {
+      final bodyMatch = RegExp(
+        r'<body[^>]*>([\s\S]*)</body>',
+        caseSensitive: false,
+      ).firstMatch(rawContent);
+      var bodyHtml = bodyMatch?.group(1)?.trim() ?? rawContent;
+      // Remove <style> blocks (they won't be parsed by flutter_widget_from_html)
+      bodyHtml = bodyHtml.replaceAll(
+        RegExp(r'<style\b[^>]*>[\s\S]*?<\/style>', caseSensitive: false),
+        '',
+      );
+      return _prepareHtmlWidgetContent(bodyHtml);
+    }
+    // For Markdown content, use the converted HTML from _contentToHtml which
+    // already contains inline-compatible styles. Just extract the body so we
+    // don't pass the full <html>/<head> document to flutter_widget_from_html.
+    final bodyMatch = RegExp(
+      r'<body[^>]*>([\s\S]*)</body>',
+      caseSensitive: false,
+    ).firstMatch(convertedHtml);
+    if (bodyMatch != null) {
+      return bodyMatch.group(1)!.trim();
+    }
+    return convertedHtml;
   }
 
   @override

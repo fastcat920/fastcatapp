@@ -105,7 +105,12 @@ WebviewWindow::WebviewWindow(
                    }), this);
   gtk_window_set_title(GTK_WINDOW(window_), title.c_str());
   gtk_window_set_default_size(GTK_WINDOW(window_), width, height);
-  if (!use_window_position_and_size_) {
+  if (use_window_position_and_size_) {
+    // When the caller provides explicit coordinates, move the window
+    // there.  This is needed on Linux where GTK_WIN_POS_CENTER may be
+    // ignored by some window managers / Wayland compositors.
+    gtk_window_move(GTK_WINDOW(window_), window_pos_x, window_pos_y);
+  } else {
     gtk_window_set_position(GTK_WINDOW(window_), GTK_WIN_POS_CENTER);
   }
   gtk_window_set_resizable(GTK_WINDOW(window_), resizable ? TRUE : FALSE);

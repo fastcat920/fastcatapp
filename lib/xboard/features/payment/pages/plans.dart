@@ -393,9 +393,21 @@ class _PlansViewState extends ConsumerState<PlansView> {
               elevation: 0,
               scrolledUnderElevation: 1,
             )
-          // 套餐列表：移动端才显示 AppBar
+          // 桌面端套餐列表：显示固定 AppBar + 刷新按钮
           : isDesktop
-              ? null
+              ? AppBar(
+                  title: Text(appLocalizations.xboardPlans),
+                  elevation: 0,
+                  scrolledUnderElevation: 1,
+                  actions: [
+                    IconButton(
+                      icon: const Icon(Icons.refresh),
+                      onPressed: _refreshPlans,
+                      tooltip: appLocalizations.refresh,
+                    ),
+                  ],
+                )
+              // 移动端
               : AppBar(
                   title: Text(appLocalizations.xboardPlans),
                   // 使用 push 路由后，自动显示返回按钮
@@ -446,7 +458,6 @@ class _PlansViewState extends ConsumerState<PlansView> {
                           );
                         }
                         if (isDesktop || useSideNavigation) {
-                          final showHeader = isDesktop;
                           return SingleChildScrollView(
                             padding: const EdgeInsets.fromLTRB(16, 6, 16, 12),
                             child: LayoutBuilder(
@@ -458,23 +469,7 @@ class _PlansViewState extends ConsumerState<PlansView> {
                                 return Column(
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
-                                    if (showHeader) ...[
-                                      Row(
-                                        children: [
-                                          Text(
-                                            appLocalizations.xboardPlans,
-                                            style: XbUiText.pageTitle(context),
-                                          ),
-                                          const Spacer(),
-                                          IconButton(
-                                            icon: const Icon(Icons.refresh),
-                                            onPressed: _refreshPlans,
-                                            tooltip: appLocalizations.refresh,
-                                          ),
-                                        ],
-                                      ),
-                                      const SizedBox(height: 12),
-                                    ],
+                                    // Desktop title + refresh are now in the fixed AppBar.
                                     Wrap(
                                       spacing: gap,
                                       runSpacing: gap,

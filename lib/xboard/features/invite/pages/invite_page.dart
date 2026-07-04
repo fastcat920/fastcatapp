@@ -63,47 +63,18 @@ class _InvitePageState extends ConsumerState<InvitePage>
         inviteState.hasInviteData || inviteState.userInfo != null;
     final bool hasError = inviteState.errorMessage != null;
 
-    Widget desktopTitleBar() => Row(
-          children: [
-            Text(
-              appLocalizations.invite,
-              style: theme.textTheme.titleLarge
-                  ?.copyWith(fontWeight: FontWeight.bold),
-            ),
-            const Spacer(),
-            IconButton(
-              icon: const Icon(Icons.refresh),
-              onPressed: _doRefresh,
-              tooltip: appLocalizations.refresh,
-            ),
-          ],
-        );
 
     Widget body;
     if (!dataReady && !hasError) {
       // 全屏加载中
-      body = isDesktop
-          ? Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-              Padding(
-                  padding: const EdgeInsets.fromLTRB(16, 6, 16, 0),
-                  child: desktopTitleBar()),
-              const Expanded(child: Center(child: CircularProgressIndicator())),
-            ])
-          : const Center(child: CircularProgressIndicator());
+      body = const Center(child: CircularProgressIndicator());
     } else if (!dataReady && hasError) {
       // 加载失败
       final errorContent = XbErrorState(
         message: inviteState.errorMessage!,
         onRetry: _doRefresh,
       );
-      body = isDesktop
-          ? Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-              Padding(
-                  padding: const EdgeInsets.fromLTRB(16, 6, 16, 0),
-                  child: desktopTitleBar()),
-              Expanded(child: errorContent),
-            ])
-          : errorContent;
+      body = errorContent;
     } else {
       // 数据已就绪 → 显示完整内容
       body = RefreshIndicator(
@@ -117,10 +88,7 @@ class _InvitePageState extends ConsumerState<InvitePage>
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    if (isDesktop) ...[
-                      desktopTitleBar(),
-                      const SizedBox(height: 12),
-                    ],
+                    // Desktop title + refresh are now in the fixed AppBar.
 
                     // ── 余额卡片
                     _BalanceCards(state: inviteState),
@@ -156,11 +124,18 @@ class _InvitePageState extends ConsumerState<InvitePage>
     final isDark = theme.brightness == Brightness.dark;
     return Scaffold(
       backgroundColor: isDark ? null : const Color(0xFFFAFBFD),
-      appBar: isDesktop
-          ? null
-          : AppBar(
+      appBar: AppBar(
               title: Text(appLocalizations.invite),
               automaticallyImplyLeading: false,
+              actions: isDesktop
+                  ? [
+                      IconButton(
+                        icon: const Icon(Icons.refresh),
+                        onPressed: _doRefresh,
+                        tooltip: appLocalizations.refresh,
+                      ),
+                    ]
+                  : null,
             ),
       body: body,
     );

@@ -123,10 +123,11 @@ class _XBoardHomePageState extends ConsumerState<XBoardHomePage>
     final isCompactMobileHome =
         isTvHome || (!isDesktop && mediaSize.height < 640);
 
+    final bool showDesktopAppBar = isDesktop && !isCompactMobileHome;
+    final bool showMobileAppBar = !(isDesktop || isCompactMobileHome);
     return Scaffold(
-      appBar: isDesktop || isCompactMobileHome
-          ? null
-          : AppBar(
+      appBar: showDesktopAppBar
+          ? AppBar(
               automaticallyImplyLeading: false,
               titleSpacing: 16,
               title: const _HomeBrandHeader(),
@@ -148,7 +149,7 @@ class _XBoardHomePageState extends ConsumerState<XBoardHomePage>
               ),
               actions: [
                 Padding(
-                  padding: const EdgeInsets.only(right: 16),
+                  padding: const EdgeInsets.only(right: 8),
                   child: TextButton.icon(
                     style: XbUiButton.textChipPrimary(context),
                     icon: _isCheckingWebsite
@@ -176,8 +177,72 @@ class _XBoardHomePageState extends ConsumerState<XBoardHomePage>
                         : () => _openOfficialWebsite(context),
                   ),
                 ),
+                IconButton(
+                  icon: Icon(
+                    Icons.menu_open,
+                    color: Theme.of(context)
+                        .colorScheme
+                        .onSurfaceVariant,
+                  ),
+                  tooltip: 'TUN',
+                  onPressed: () => _showVpnSheet(context),
+                ),
               ],
-            ),
+            )
+          : showMobileAppBar
+              ? AppBar(
+                  automaticallyImplyLeading: false,
+                  titleSpacing: 16,
+                  title: const _HomeBrandHeader(),
+                  backgroundColor: Theme.of(context).brightness == Brightness.dark
+                      ? Theme.of(context).colorScheme.surface
+                      : Colors.white,
+                  elevation: 0,
+                  scrolledUnderElevation: 0,
+                  systemOverlayStyle: SystemUiOverlayStyle(
+                    statusBarColor: Colors.transparent,
+                    statusBarIconBrightness:
+                        Theme.of(context).brightness == Brightness.dark
+                            ? Brightness.light
+                            : Brightness.dark,
+                    statusBarBrightness:
+                        Theme.of(context).brightness == Brightness.dark
+                            ? Brightness.dark
+                            : Brightness.light,
+                  ),
+                  actions: [
+                    Padding(
+                      padding: const EdgeInsets.only(right: 16),
+                      child: TextButton.icon(
+                        style: XbUiButton.textChipPrimary(context),
+                        icon: _isCheckingWebsite
+                            ? SizedBox(
+                                width: 18,
+                                height: 18,
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 2,
+                                  color: Theme.of(context).colorScheme.primary,
+                                ),
+                              )
+                            : Icon(Icons.language_outlined,
+                                size: 18,
+                                color: Theme.of(context).colorScheme.primary),
+                        label: Text(
+                          _isCheckingWebsite
+                              ? AppLocalizations.of(context).checking
+                              : AppLocalizations.of(context).officialWebsite,
+                          style: TextStyle(
+                            color: Theme.of(context).colorScheme.primary,
+                          ),
+                        ),
+                        onPressed: _isCheckingWebsite
+                            ? null
+                            : () => _openOfficialWebsite(context),
+                      ),
+                    ),
+                  ],
+                )
+              : null,
       body: Consumer(
         builder: (_, ref, __) {
           const horizontalPadding = 16.0;
@@ -254,71 +319,7 @@ class _XBoardHomePageState extends ConsumerState<XBoardHomePage>
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.stretch,
                       children: [
-                        if (isDesktop && !compactMode)
-                          Padding(
-                            padding: const EdgeInsets.fromLTRB(
-                                horizontalPadding, 6, horizontalPadding, 0),
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                const _HomeBrandHeader(),
-                                Row(
-                                  mainAxisSize: MainAxisSize.min,
-                                  children: [
-                                    TextButton.icon(
-                                      style:
-                                          XbUiButton.textChipPrimary(context),
-                                      icon: _isCheckingWebsite
-                                          ? SizedBox(
-                                              width: 18,
-                                              height: 18,
-                                              child: CircularProgressIndicator(
-                                                strokeWidth: 2,
-                                                color: Theme.of(context)
-                                                    .colorScheme
-                                                    .primary,
-                                              ),
-                                            )
-                                          : Icon(
-                                              Icons.language_outlined,
-                                              size: 18,
-                                              color: Theme.of(context)
-                                                  .colorScheme
-                                                  .primary,
-                                            ),
-                                      label: Text(
-                                        _isCheckingWebsite
-                                            ? AppLocalizations.of(context)
-                                                .checking
-                                            : AppLocalizations.of(context)
-                                                .officialWebsite,
-                                        style: TextStyle(
-                                          color: Theme.of(context)
-                                              .colorScheme
-                                              .primary,
-                                        ),
-                                      ),
-                                      onPressed: _isCheckingWebsite
-                                          ? null
-                                          : () => _openOfficialWebsite(context),
-                                    ),
-                                    IconButton(
-                                      icon: Icon(
-                                        Icons.menu_open,
-                                        color: Theme.of(context)
-                                            .colorScheme
-                                            .onSurfaceVariant,
-                                      ),
-                                      tooltip: 'TUN',
-                                      onPressed: () => _showVpnSheet(context),
-                                    ),
-                                  ],
-                                ),
-                              ],
-                            ),
-                          ),
-                        if (isDesktop && !compactMode)
-                          const SizedBox(height: 12),
+// Desktop header is now rendered in the AppBar (stays fixed on scroll).
                         // ── 未连接显示公告，已连接显示套餐信息。空间不足时隐藏，优先保留主操作区。 ──
                         if (showTopInfo)
                           if (isDesktop)
