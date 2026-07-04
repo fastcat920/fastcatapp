@@ -33,13 +33,41 @@ set(cef_prebuilt_path "${CEF_CDN}/${cef_prebuilt_url_name}")
 function(extract_file filename extract_dir)
     message(WARNING "${filename} will extract to ${extract_dir} ...")
 
-    set(temp_dir ${CMAKE_BINARY_DIR}/tmp_for_extract.dir)
-    if(EXISTS ${temp_dir})
-        file(REMOVE_RECURSE ${temp_dir})
+    set(temp_dir "${CMAKE_BINARY_DIR}/tmp_for_extract.dir")
+    if(EXISTS "${temp_dir}")
+        file(REMOVE_RECURSE "${temp_dir}")
     endif()
-    file(MAKE_DIRECTORY ${temp_dir})
-    execute_process(COMMAND ${CMAKE_COMMAND} -E tar -xf ${filename}
-            WORKING_DIRECTORY ${temp_dir})
+    file(MAKE_DIRECTORY "${temp_dir}")
+
+    set(extract_result 1)
+    set(extract_stderr "")
+
+    # CMake's built-in tar extraction is flaky with the Linux ARM64 CEF bundle
+    # in some VM setups, so prefer the system tar implementation when available.
+    if(CMAKE_SYSTEM_NAME STREQUAL "Linux")
+        find_program(TAR_EXECUTABLE tar)
+        if(TAR_EXECUTABLE)
+            execute_process(
+                COMMAND "${TAR_EXECUTABLE}" -xf "${filename}" -C "${temp_dir}"
+                RESULT_VARIABLE extract_result
+                ERROR_VARIABLE extract_stderr
+            )
+        endif()
+    endif()
+
+    if(NOT extract_result EQUAL 0)
+        execute_process(
+            COMMAND "${CMAKE_COMMAND}" -E tar -xf "${filename}"
+            WORKING_DIRECTORY "${temp_dir}"
+            RESULT_VARIABLE extract_result
+            ERROR_VARIABLE extract_stderr
+        )
+    endif()
+
+    if(NOT extract_result EQUAL 0)
+        file(REMOVE_RECURSE "${temp_dir}")
+        message(FATAL_ERROR "Failed to extract ${filename}: ${extract_stderr}")
+    endif()
 
     file(GLOB contents "${temp_dir}/*")
     list(LENGTH contents n)
@@ -47,11 +75,54 @@ function(extract_file filename extract_dir)
         set(contents "${temp_dir}")
     endif()
 
-    get_filename_component(contents ${contents} ABSOLUTE)
+    get_filename_component(contents "${contents}" ABSOLUTE)
 
-    file(INSTALL "${contents}/" DESTINATION ${extract_dir})
+    file(INSTALL "${contents}/" DESTINATION "${extract_dir}")
 
-    file(REMOVE_RECURSE ${temp_dir})
+    file(REMOVE_RECURSE "${temp_dir}")
+endfunction()
+
+function(extract_linux_cef_subset filename extract_dir bundle_root)
+    message(WARNING "${filename} will extract the Linux CEF subset to ${extract_dir} ...")
+
+    set(temp_dir "${CMAKE_BINARY_DIR}/tmp_for_extract.dir")
+    if(EXISTS "${temp_dir}")
+        file(REMOVE_RECURSE "${temp_dir}")
+    endif()
+    file(MAKE_DIRECTORY "${temp_dir}")
+
+    find_program(TAR_EXECUTABLE tar)
+    if(NOT TAR_EXECUTABLE)
+        file(REMOVE_RECURSE "${temp_dir}")
+        message(FATAL_ERROR "system tar is required to extract the Linux CEF bundle")
+    endif()
+
+    execute_process(
+        COMMAND "${TAR_EXECUTABLE}" -xf "${filename}" -C "${temp_dir}"
+            "${bundle_root}/cmake"
+            "${bundle_root}/include"
+            "${bundle_root}/libcef_dll"
+            "${bundle_root}/Release"
+            "${bundle_root}/Resources"
+            "${bundle_root}/CMakeLists.txt"
+        RESULT_VARIABLE extract_result
+        ERROR_VARIABLE extract_stderr
+    )
+
+    if(NOT extract_result EQUAL 0)
+        file(REMOVE_RECURSE "${temp_dir}")
+        message(FATAL_ERROR "Failed to extract Linux CEF subset from ${filename}: ${extract_stderr}")
+    endif()
+
+    file(GLOB contents "${temp_dir}/*")
+    list(LENGTH contents n)
+    if(NOT n EQUAL 1 OR NOT IS_DIRECTORY "${contents}")
+        set(contents "${temp_dir}")
+    endif()
+
+    get_filename_component(contents "${contents}" ABSOLUTE)
+    file(INSTALL "${contents}/" DESTINATION "${extract_dir}")
+    file(REMOVE_RECURSE "${temp_dir}")
 endfunction()
 
 function(download_file url filename)
@@ -61,6 +132,7 @@ endfunction(download_file)
 
 function(prepare_prebuilt_files filepath)
     set(need_download FALSE)
+    string(REPLACE ".tar.bz2" "" cef_bundle_root "${cef_prebuilt_version}")
 
     if(NOT EXISTS ${filepath})
         message(WARNING "No ${filepath} found")
@@ -87,7 +159,15 @@ function(prepare_prebuilt_files filepath)
         file(REMOVE_RECURSE ${filepath}/debug ${filepath}/release ${filepath}/resources)
         download_file(${cef_prebuilt_path} ${CMAKE_CURRENT_SOURCE_DIR}/prebuilt.zip)
         file(MAKE_DIRECTORY ${filepath})
-        extract_file(${CMAKE_CURRENT_SOURCE_DIR}/prebuilt.zip ${filepath})
+        if(CMAKE_SYSTEM_NAME STREQUAL "Linux")
+            extract_linux_cef_subset(${CMAKE_CURRENT_SOURCE_DIR}/prebuilt.zip ${filepath} ${cef_bundle_root})
+        else()
+            extract_file(${CMAKE_CURRENT_SOURCE_DIR}/prebuilt.zip ${filepath})
+        endif()
+
+        if(CMAKE_SYSTEM_NAME STREQUAL "Linux" AND EXISTS "${filepath}/Release" AND NOT EXISTS "${filepath}/Debug")
+            file(CREATE_LINK "${filepath}/Release" "${filepath}/Debug" SYMBOLIC)
+        endif()
 
         ## Needed for making it run on arm64 Linux (makes it check for arm64 or aarch64 instead of just arm64)
         if(CMAKE_SYSTEM_NAME STREQUAL "Linux")
