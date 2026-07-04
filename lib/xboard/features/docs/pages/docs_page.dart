@@ -602,15 +602,15 @@ p{margin:8px 0}
   }
 
   static String _prepareHtmlWidgetContent(String documentHtml) {
-    final styleTags = RegExp(
-      r'<style\b[^>]*>[\s\S]*?<\/style>',
-      caseSensitive: false,
-    ).allMatches(documentHtml).map((match) => match.group(0)!).join('\n');
     final bodyMatch = RegExp(
       r'<body[^>]*>([\s\S]*)</body>',
       caseSensitive: false,
     ).firstMatch(documentHtml);
     var bodyHtml = bodyMatch?.group(1)?.trim() ?? documentHtml;
+    bodyHtml = bodyHtml.replaceAll(
+      RegExp(r'<style\b[^>]*>[\s\S]*?<\/style>', caseSensitive: false),
+      '',
+    );
     bodyHtml = bodyHtml.replaceAllMapped(
       RegExp(r'<button\b(?![^>]*data-fastcat-button)[^>]*>',
           caseSensitive: false),
@@ -629,7 +629,7 @@ p{margin:8px 0}
         return tag.replaceFirst('>', ' data-fastcat-button="true">');
       },
     );
-    return styleTags.isEmpty ? bodyHtml : '$styleTags\n$bodyHtml';
+    return bodyHtml;
   }
 
   @override

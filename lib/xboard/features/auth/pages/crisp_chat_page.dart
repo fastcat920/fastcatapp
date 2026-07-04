@@ -413,8 +413,20 @@ class _DesktopCrispChatPageState extends State<DesktopCrispChatPage> {
           document.body.style.background = theme.background;
           document.body.style.color = theme.foreground;
         }
+        var loading = document.getElementById('loading');
+        if (loading) {
+          loading.style.background = theme.background;
+          loading.style.color = theme.foreground;
+        }
+        var spinner = document.getElementById('spinner');
+        if (spinner) {
+          spinner.style.borderTopColor = theme.accent || '#2563eb';
+        }
         window.\$crisp = window.\$crisp || [];
+        window.\$crisp.push(["config", "locale", [window.__fastcatCustomerServiceLocale || 'en']]);
         window.\$crisp.push(["config", "color:mode", [theme.isDark ? "dark" : "light"]]);
+        window.CRISP_RUNTIME_CONFIG = window.CRISP_RUNTIME_CONFIG || {};
+        window.CRISP_RUNTIME_CONFIG.locale = window.__fastcatCustomerServiceLocale || 'en';
       } catch (_) {}
     };
     try {
@@ -618,6 +630,8 @@ class _DesktopCrispChatPageState extends State<DesktopCrispChatPage> {
     try {
       window.\$crisp = window.\$crisp || [];
       window.\$crisp.push(["config", "locale", [payload.locale]]);
+      window.CRISP_RUNTIME_CONFIG = window.CRISP_RUNTIME_CONFIG || {};
+      window.CRISP_RUNTIME_CONFIG.locale = payload.locale;
     } catch(_) {}
     var loadingText = document.getElementById('loading-text');
     if (loadingText && loadingText.textContent) {
@@ -625,6 +639,14 @@ class _DesktopCrispChatPageState extends State<DesktopCrispChatPage> {
       if (current !== payload.loadingSlow && current !== payload.loadFailed) {
         loadingText.textContent = payload.connecting;
       }
+    }
+    if (typeof window.__fastcatApplyCustomerServiceTheme === 'function') {
+      window.__fastcatApplyCustomerServiceTheme({
+        isDark: ${_isDarkMode ? 'true' : 'false'},
+        background: '${_customerServiceBackgroundColorValue(_isDarkMode)}',
+        foreground: '${_customerServiceForegroundColorValue(_isDarkMode)}',
+        accent: '${_isDarkMode ? '#60a5fa' : '#2563eb'}'
+      });
     }
   } catch(_) {}
 })();''';
@@ -1057,8 +1079,20 @@ class _CrispChatPageState extends State<CrispChatPage> {
           document.body.style.background = theme.background;
           document.body.style.color = theme.foreground;
         }
+        var loading = document.getElementById('loading');
+        if (loading) {
+          loading.style.background = theme.background;
+          loading.style.color = theme.foreground;
+        }
+        var spinner = document.getElementById('spinner');
+        if (spinner) {
+          spinner.style.borderTopColor = theme.accent || '#2563eb';
+        }
         window.\$crisp = window.\$crisp || [];
+        window.\$crisp.push(["config", "locale", [window.__fastcatCustomerServiceLocale || 'en']]);
         window.\$crisp.push(["config", "color:mode", [theme.isDark ? "dark" : "light"]]);
+        window.CRISP_RUNTIME_CONFIG = window.CRISP_RUNTIME_CONFIG || {};
+        window.CRISP_RUNTIME_CONFIG.locale = window.__fastcatCustomerServiceLocale || 'en';
       } catch (_) {}
     };
     try {
@@ -1174,6 +1208,17 @@ class _CrispChatPageState extends State<CrispChatPage> {
           document.body.style.background = theme.background;
           document.body.style.color = theme.foreground;
         }
+        var style = document.getElementById('fastcat-customer-service-theme');
+        if (!style) {
+          style = document.createElement('style');
+          style.id = 'fastcat-customer-service-theme';
+          (document.head || document.documentElement).appendChild(style);
+        }
+        style.textContent = ''
+          + 'html,body{background:' + theme.background + ' !important;color:' + theme.foreground + ' !important;color-scheme:' + (theme.isDark ? 'dark' : 'light') + ' !important;}'
+          + '#loading{background:' + theme.background + ' !important;color:' + theme.foreground + ' !important;}'
+          + '#spinner{border:2px solid rgba(148,163,184,0.35) !important;border-top-color:' + (theme.accent || '#2563eb') + ' !important;}'
+          + 'iframe[src*="crisp"],.crisp-client,[class*="crisp"],[id*="crisp"]{background:' + theme.background + ' !important;color-scheme:' + (theme.isDark ? 'dark' : 'light') + ' !important;}';
         window.\$crisp = window.\$crisp || [];
         window.\$crisp.push(["config", "locale", [window.__fastcatCustomerServiceLocale || 'en']]);
         window.\$crisp.push(["config", "color:mode", [theme.isDark ? "dark" : "light"]]);

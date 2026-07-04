@@ -236,7 +236,8 @@ class PaymentWebViewPage extends ConsumerStatefulWidget {
           document.body.style.width = '100%';
           document.body.style.height = '100%';
           document.body.style.margin = '0';
-          document.body.style.overflow = 'auto';
+          document.body.style.overflowX = 'hidden';
+          document.body.style.overflowY = 'auto';
         }
         var style = document.getElementById('fastcat-payment-theme');
         if (!style) {
@@ -245,10 +246,12 @@ class PaymentWebViewPage extends ConsumerStatefulWidget {
           (document.head || document.documentElement).appendChild(style);
         }
         style.textContent = ''
-          + 'html,body{width:100% !important;height:100% !important;min-width:100% !important;min-height:100% !important;margin:0 !important;background:' + theme.background + ' !important;color-scheme:' + (theme.isDark ? 'dark' : 'light') + ' !important;}'
-          + 'body > *{max-width:100% !important;}'
-          + 'iframe,frame,embed,object{display:block !important;width:100% !important;height:100% !important;max-width:none !important;min-height:100% !important;border:none !important;}'
-          + '.container,.wrapper,.content,.page,#app,#root,#main{width:100% !important;max-width:none !important;}';
+          + 'html,body{box-sizing:border-box !important;width:100% !important;height:100% !important;min-width:0 !important;max-width:100vw !important;min-height:100% !important;margin:0 !important;overflow-x:hidden !important;background:' + theme.background + ' !important;color-scheme:' + (theme.isDark ? 'dark' : 'light') + ' !important;}'
+          + '*,*:before,*:after{box-sizing:border-box !important;}'
+          + 'body > *{max-width:100vw !important;}'
+          + 'iframe,frame,embed,object{display:block !important;width:100vw !important;height:100% !important;max-width:100vw !important;min-height:100% !important;border:none !important;}'
+          + '.container,.wrapper,.content,.page,#app,#root,#main{width:100% !important;max-width:100vw !important;min-width:0 !important;overflow-x:hidden !important;}'
+          + 'img,video,canvas,svg,table{max-width:100% !important;}';
       } catch (_) {}
     };
     window.__fastcatApplyPaymentTheme({
@@ -325,11 +328,18 @@ class PaymentWebViewPage extends ConsumerStatefulWidget {
       function fillViewport() {
         try {
           var selectors = ['iframe', 'frame', 'embed', 'object', '#app', '#root', '#main', '.container', '.wrapper', '.content', '.page'];
+          document.documentElement.style.overflowX = 'hidden';
+          document.documentElement.style.maxWidth = '100vw';
+          if (document.body) {
+            document.body.style.overflowX = 'hidden';
+            document.body.style.maxWidth = '100vw';
+          }
           for (var s = 0; s < selectors.length; s++) {
             var nodes = document.querySelectorAll(selectors[s]);
             for (var i = 0; i < nodes.length; i++) {
               var node = nodes[i];
-              node.style.maxWidth = 'none';
+              node.style.minWidth = '0';
+              node.style.maxWidth = '100vw';
               node.style.width = '100%';
               if (selectors[s] === 'iframe' || selectors[s] === 'frame' || selectors[s] === 'embed' || selectors[s] === 'object') {
                 node.style.height = '100%';

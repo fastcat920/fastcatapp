@@ -906,12 +906,25 @@ if(window===window.top){
   }) async {
     final effectiveUserScript =
         userScript ?? _buildCrispUserScript(context, ipData: ipData);
-    if (Platform.isWindows || Platform.isLinux) {
+    if (Platform.isLinux) {
       await _openCrispInDesktopWebview(
         context,
         websiteId: websiteId,
         crispProxyUrl: crispProxyUrl,
         userScript: effectiveUserScript,
+      );
+      return;
+    }
+    if (Platform.isWindows) {
+      if (!context.mounted) return;
+      await Navigator.of(context).push(
+        MaterialPageRoute(
+          builder: (_) => DesktopCrispChatPage(
+            websiteId: websiteId,
+            crispProxyUrl: crispProxyUrl,
+            userScript: effectiveUserScript,
+          ),
+        ),
       );
       return;
     }
