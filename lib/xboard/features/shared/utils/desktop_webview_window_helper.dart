@@ -53,12 +53,10 @@ class DesktopWebviewWindowHelper {
       try {
         final mainSize = await windowManager.getSize();
         final mainPos = await windowManager.getPosition();
-        final views = WidgetsBinding.instance.platformDispatcher.views;
-        final ratio = views.isNotEmpty ? views.first.devicePixelRatio : 1.0;
-        final mainWidth = (mainSize.width * ratio).round();
-        final mainHeight = (mainSize.height * ratio).round();
-        final mainPosX = (mainPos.dx * ratio).round();
-        final mainPosY = (mainPos.dy * ratio).round();
+        final mainWidth = mainSize.width.round();
+        final mainHeight = mainSize.height.round();
+        final mainPosX = mainPos.dx.round();
+        final mainPosY = mainPos.dy.round();
         if (matchMainWindow) {
           width = mainWidth;
           height = mainHeight;

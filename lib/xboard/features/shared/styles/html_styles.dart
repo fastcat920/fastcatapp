@@ -36,7 +36,62 @@ class NoticeHtmlStyles {
             ),
       customStylesBuilder: (element) {
         if (preserveDocumentStyles) {
+          final classes =
+              element.classes.map((item) => item.toLowerCase()).toSet();
+          final isButtonLike =
+              element.attributes['data-fastcat-button'] == 'true' ||
+                  element.localName == 'button' ||
+                  (element.localName == 'a' &&
+                      classes.any(
+                        (item) =>
+                            item.contains('btn') ||
+                            item.contains('button') ||
+                            item.contains('chip'),
+                      ));
+          if (isButtonLike) {
+            final isPrimary = classes.any(
+              (item) =>
+                  item.contains('primary') ||
+                  item.contains('main') ||
+                  item.contains('filled') ||
+                  item.contains('solid'),
+            );
+            final isOutline = classes.any(
+              (item) =>
+                  item.contains('outline') ||
+                  item.contains('ghost') ||
+                  item.contains('secondary'),
+            );
+            final backgroundColor = isOutline
+                ? 'transparent'
+                : _colorToHex(
+                    isPrimary
+                        ? colorScheme.primary
+                        : colorScheme.surfaceContainerHighest,
+                  );
+            final foregroundColor = isOutline
+                ? _colorToHex(colorScheme.primary)
+                : _colorToHex(
+                    isPrimary ? colorScheme.onPrimary : colorScheme.onSurface,
+                  );
+            return {
+              'display': 'inline-block',
+              'padding': '10px 16px',
+              'border-radius': '999px',
+              'background-color': backgroundColor,
+              'color': foregroundColor,
+              'text-decoration': 'none',
+              'font-weight': '600',
+              'border':
+                  '1px solid ${_colorToHex(isOutline ? colorScheme.primary : Colors.transparent)}',
+            };
+          }
           switch (element.localName) {
+            case 'body':
+              return {
+                'color': _colorToHex(colorScheme.onSurface),
+                'background-color': _colorToHex(colorScheme.surface),
+              };
             case 'img':
               return {
                 'max-width': '100%',
@@ -45,6 +100,10 @@ class NoticeHtmlStyles {
             case 'table':
               return {
                 'max-width': '100%',
+              };
+            case 'a':
+              return {
+                'color': _colorToHex(colorScheme.primary),
               };
             default:
               return null;

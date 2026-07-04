@@ -33,7 +33,8 @@ class Window {
       final top = props.top ?? 0;
       final right = left + initialSize.width;
       final bottom = top + initialSize.height;
-      if (left == 0 && top == 0) {
+      final shouldCenterWindow = left == 0 && top == 0;
+      if (shouldCenterWindow) {
         await windowManager.setAlignment(Alignment.center);
       } else {
         final displays = await screenRetriever.getAllDisplays();
@@ -62,6 +63,11 @@ class Window {
       await windowManager.setMaximumSize(initialSize);
       await windowManager.setSize(initialSize);
       await windowManager.setResizable(false);
+      final left = props.left ?? 0;
+      final top = props.top ?? 0;
+      if (!Platform.isMacOS && left == 0 && top == 0) {
+        await windowManager.setAlignment(Alignment.center);
+      }
     });
   }
 

@@ -229,8 +229,14 @@ class PaymentWebViewPage extends ConsumerStatefulWidget {
       try {
         document.documentElement.style.colorScheme = theme.isDark ? 'dark' : 'light';
         document.documentElement.style.background = theme.background;
+        document.documentElement.style.width = '100%';
+        document.documentElement.style.height = '100%';
         if (document.body) {
           document.body.style.background = theme.background;
+          document.body.style.width = '100%';
+          document.body.style.height = '100%';
+          document.body.style.margin = '0';
+          document.body.style.overflow = 'auto';
         }
         var style = document.getElementById('fastcat-payment-theme');
         if (!style) {
@@ -238,7 +244,11 @@ class PaymentWebViewPage extends ConsumerStatefulWidget {
           style.id = 'fastcat-payment-theme';
           (document.head || document.documentElement).appendChild(style);
         }
-        style.textContent = 'html,body{background:' + theme.background + ' !important;color-scheme:' + (theme.isDark ? 'dark' : 'light') + ' !important;}';
+        style.textContent = ''
+          + 'html,body{width:100% !important;height:100% !important;min-width:100% !important;min-height:100% !important;margin:0 !important;background:' + theme.background + ' !important;color-scheme:' + (theme.isDark ? 'dark' : 'light') + ' !important;}'
+          + 'body > *{max-width:100% !important;}'
+          + 'iframe,frame,embed,object{display:block !important;width:100% !important;height:100% !important;max-width:none !important;min-height:100% !important;border:none !important;}'
+          + '.container,.wrapper,.content,.page,#app,#root,#main{width:100% !important;max-width:none !important;}';
       } catch (_) {}
     };
     window.__fastcatApplyPaymentTheme({
@@ -312,6 +322,31 @@ class PaymentWebViewPage extends ConsumerStatefulWidget {
           return originalReplace(url);
         };
       } catch (_) {}
+      function fillViewport() {
+        try {
+          var selectors = ['iframe', 'frame', 'embed', 'object', '#app', '#root', '#main', '.container', '.wrapper', '.content', '.page'];
+          for (var s = 0; s < selectors.length; s++) {
+            var nodes = document.querySelectorAll(selectors[s]);
+            for (var i = 0; i < nodes.length; i++) {
+              var node = nodes[i];
+              node.style.maxWidth = 'none';
+              node.style.width = '100%';
+              if (selectors[s] === 'iframe' || selectors[s] === 'frame' || selectors[s] === 'embed' || selectors[s] === 'object') {
+                node.style.height = '100%';
+                node.style.minHeight = '100%';
+                node.style.border = 'none';
+                node.style.display = 'block';
+              }
+            }
+          }
+        } catch (_) {}
+      }
+      fillViewport();
+      new MutationObserver(fillViewport).observe(document.documentElement, {
+        childList: true,
+        subtree: true,
+        attributes: true
+      });
     }
   } catch (_) {}
 })();''';

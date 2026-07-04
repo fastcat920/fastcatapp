@@ -906,25 +906,12 @@ if(window===window.top){
   }) async {
     final effectiveUserScript =
         userScript ?? _buildCrispUserScript(context, ipData: ipData);
-    if (Platform.isLinux) {
-      await _openCrispInLinuxDesktopWebview(
+    if (Platform.isWindows || Platform.isLinux) {
+      await _openCrispInDesktopWebview(
         context,
         websiteId: websiteId,
         crispProxyUrl: crispProxyUrl,
         userScript: effectiveUserScript,
-      );
-      return;
-    }
-    if (Platform.isWindows) {
-      if (!context.mounted) return;
-      await Navigator.of(context).push(
-        MaterialPageRoute(
-          builder: (_) => DesktopCrispChatPage(
-            websiteId: websiteId,
-            crispProxyUrl: crispProxyUrl,
-            userScript: effectiveUserScript,
-          ),
-        ),
       );
       return;
     }
@@ -1053,7 +1040,7 @@ if(window===window.top){
     return fallback?.trim() ?? '';
   }
 
-  static Future<void> _openCrispInLinuxDesktopWebview(
+  static Future<void> _openCrispInDesktopWebview(
     BuildContext context, {
     required String websiteId,
     String? crispProxyUrl,
@@ -1067,7 +1054,7 @@ if(window===window.top){
     );
     if (existing != null) return;
 
-    final future = _createLinuxCrispDesktopWebview(
+    final future = _createDesktopCrispWebview(
       websiteId: websiteId,
       crispProxyUrl: crispProxyUrl,
       userScript: userScript,
@@ -1090,7 +1077,7 @@ if(window===window.top){
     }
   }
 
-  static Future<Webview?> _createLinuxCrispDesktopWebview({
+  static Future<Webview?> _createDesktopCrispWebview({
     required String websiteId,
     String? crispProxyUrl,
     required String userScript,

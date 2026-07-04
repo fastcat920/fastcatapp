@@ -610,7 +610,25 @@ p{margin:8px 0}
       r'<body[^>]*>([\s\S]*)</body>',
       caseSensitive: false,
     ).firstMatch(documentHtml);
-    final bodyHtml = bodyMatch?.group(1)?.trim() ?? documentHtml;
+    var bodyHtml = bodyMatch?.group(1)?.trim() ?? documentHtml;
+    bodyHtml = bodyHtml.replaceAllMapped(
+      RegExp(r'<button\b(?![^>]*data-fastcat-button)[^>]*>',
+          caseSensitive: false),
+      (match) {
+        final tag = match.group(0)!;
+        return tag.replaceFirst('>', ' data-fastcat-button="true">');
+      },
+    );
+    bodyHtml = bodyHtml.replaceAllMapped(
+      RegExp(
+        r'<a\b(?=[^>]*class="[^"]*(?:btn|button)[^"]*")(?![^>]*data-fastcat-button)[^>]*>',
+        caseSensitive: false,
+      ),
+      (match) {
+        final tag = match.group(0)!;
+        return tag.replaceFirst('>', ' data-fastcat-button="true">');
+      },
+    );
     return styleTags.isEmpty ? bodyHtml : '$styleTags\n$bodyHtml';
   }
 
