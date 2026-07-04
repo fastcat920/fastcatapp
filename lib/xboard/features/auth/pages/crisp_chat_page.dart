@@ -7,6 +7,7 @@ import 'package:flutter/material.dart';
 import 'package:webview_flutter_android/webview_flutter_android.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 import 'package:fl_clash/xboard/features/auth/utils/crisp_url_helper.dart';
+import 'package:flutter_inappwebview/flutter_inappwebview.dart' as iaw;
 
 const _desktopCrispUserAgent = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) '
     'AppleWebKit/537.36 (KHTML, like Gecko) '
@@ -1563,6 +1564,273 @@ class _CrispChatPageState extends State<CrispChatPage> {
                   child: Text(
                     strings.timeout,
                     style: const TextStyle(fontSize: 14),
+                  ),
+                ),
+              ),
+            ),
+        ],
+      ),
+    );
+  }
+}
+
+
+/// Linux 桌面端 Crisp 客服页 —— 使用 flutter_inappwebview 内嵌。
+class LinuxCrispChatPage extends StatefulWidget {
+  final String websiteId;
+  final String? crispProxyUrl;
+  final String? userScript;
+
+  const LinuxCrispChatPage({
+    super.key,
+    required this.websiteId,
+    this.crispProxyUrl,
+    this.userScript,
+  });
+
+  static bool get isSupported => Platform.isLinux;
+
+  @override
+  State<LinuxCrispChatPage> createState() => _LinuxCrispChatPageState();
+}
+
+class _LinuxCrispChatPageState extends State<LinuxCrispChatPage> {
+  iaw.InAppWebViewController? _controller;
+  bool _isLoading = true;
+  bool _hasTimedOut = false;
+  bool _didFallback = false;
+  String? _localeTag;
+  late bool _isDarkMode;
+
+  static const _fallbackDelay = Duration(seconds: 12);
+
+  @override
+  void initState() {
+    super.initState();
+    _isDarkMode =
+        WidgetsBinding.instance.platformDispatcher.platformBrightness ==
+            Brightness.dark;
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    _localeTag = Localizations.localeOf(context).toLanguageTag();
+  }
+
+  String get _background => _isDarkMode ? '#101010' : '#f5f5f5';
+  String get _foreground => _isDarkMode ? '#f3f4f6' : '#999999';
+
+  String _buildBootstrapHtml() {
+    final websiteIdJson = jsonEncode(widget.websiteId);
+    final localeTag = _localeTag ?? 'en';
+    final crispLocale = _crispLocaleFromTag(localeTag);
+    final userScript = widget.userScript ?? '';
+    final l10n = AppLocalizations.of(context);
+    // ignore: prefer_interpolation_to_compose_strings
+    return '<!DOCTYPE html>\n'
+        '<html>\n'
+        '<head>\n'
+        '  <meta charset="utf-8">\n'
+        '  <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1">\n'
+        '  <title>${l10n.contactSupport}</title>\n'
+        '  <style>\n'
+        '    * { box-sizing: border-box; }\n'
+        '    html, body {\n'
+        '      width: 100%; height: 100%; margin: 0;\n'
+        '      background: $_background; color: $_foreground;\n'
+        '      overflow: hidden;\n'
+        '      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;\n'
+        '    }\n'
+        '    #crisp-chatbox, .crisp-client, iframe[src*="crisp"] {\n'
+        '      width: 100% !important; height: 100% !important;\n'
+        '      min-width: 100% !important; min-height: 100% !important;\n'
+        '      max-width: none !important; max-height: none !important;\n'
+        '      position: fixed !important; top: 0 !important; left: 0 !important;\n'
+        '      margin: 0 !important; padding: 0 !important;\n'
+        '      border: none !important; border-radius: 0 !important;\n'
+        '      transform: none !important;\n'
+        '    }\n'
+        '    #loading {\n'
+        '      position: fixed; inset: 0;\n'
+        '      display: flex; align-items: center; justify-content: center; gap: 12px;\n'
+        '      background: $_background; color: $_foreground;\n'
+        '      font-size: 14px; z-index: 2147483647;\n'
+        '    }\n'
+        '    #spinner {\n'
+        '      width: 18px; height: 18px;\n'
+        '      border: 2px solid rgba(148,163,184,0.35); border-top-color: #2563eb;\n'
+        '      border-radius: 50%; animation: spin 0.8s linear infinite;\n'
+        '    }\n'
+        '    @keyframes spin { to { transform: rotate(360deg); } }\n'
+        '  </style>\n'
+        '</head>\n'
+        '<body>\n'
+        '  <div id="loading"><span id="spinner"></span><span id="loading-text">${l10n.onlineSupportConnecting}</span></div>\n'
+        '  <script>\n'
+        '    window.\$crisp = window.\$crisp || [];\n'
+        '    window.CRISP_WEBSITE_ID = $websiteIdJson;\n'
+        '    window.CRISP_RUNTIME_CONFIG = {\n'
+        "      locale: '$crispLocale',\n"
+        '      lock_full_view: true\n'
+        '    };\n'
+        '    window.__fastcatCrispReady = false;\n'
+        '    try {\n'
+        "      Object.defineProperty(navigator, 'language', { get: function(){ return '$localeTag'; }, configurable: true });\n"
+        "      Object.defineProperty(navigator, 'languages', { get: function(){ return ['$localeTag']; }, configurable: true });\n"
+        '    } catch (_) {}\n'
+        '    $userScript\n'
+        '\n'
+        '    (function(){\n'
+        "      var loading = document.getElementById('loading');\n"
+        '      function openChat(){\n'
+        '        try {\n'
+        '          window.\$crisp = window.\$crisp || [];\n'
+        "          window.\$crisp.push([\"config\", \"locale\", [\"$crispLocale\"]]);\n"
+        '          window.\$crisp.push(["safe", true]);\n'
+        '          window.\$crisp.push(["do", "chat:show"]);\n'
+        '          window.\$crisp.push(["do", "chat:open"]);\n'
+        '        } catch(_) {}\n'
+        '      }\n'
+        '      function markReady(){\n'
+        '        window.__fastcatCrispReady = true;\n'
+        '        openChat();\n'
+        "        if (loading) loading.style.display = 'none';\n"
+        '      }\n'
+        '      function expandFrames(){\n'
+        '        function forceNode(node){\n'
+        '          if (!node || !node.style) return;\n'
+        "          node.style.cssText = 'position:fixed!important;inset:0!important;left:0!important;top:0!important;width:100vw!important;height:100vh!important;max-width:none!important;max-height:none!important;margin:0!important;padding:0!important;border:none!important;border-radius:0!important;transform:none!important;z-index:2147483646!important;background:$_background!important;overflow:hidden!important;';\n"
+        '        }\n'
+        '        try {\n'
+        "          var crispNodes = document.querySelectorAll('#crisp-chatbox,.crisp-client');\n"
+        '          for (var n = 0; n < crispNodes.length; n++) forceNode(crispNodes[n]);\n'
+        '        } catch (_) {}\n'
+        "        var frames = document.querySelectorAll('iframe');\n"
+        '        for (var i = 0; i < frames.length; i++) {\n'
+        "          if ((frames[i].src || '').indexOf('crisp') === -1) continue;\n"
+        '          forceNode(frames[i]);\n'
+        '          markReady();\n'
+        '        }\n'
+        '      }\n'
+        '      var timer = setInterval(function(){ openChat(); expandFrames(); }, 500);\n'
+        '      setTimeout(function(){ clearInterval(timer); openChat(); expandFrames(); }, 15000);\n'
+        '      new MutationObserver(function(){ openChat(); expandFrames(); }).observe(document.documentElement, { childList:true, subtree:true, attributes:true });\n'
+        "      var script = document.createElement('script');\n"
+        "      script.src = 'https://client.crisp.chat/l.js';\n"
+        '      script.async = true;\n'
+        '      document.head.appendChild(script);\n'
+        '    })();\n'
+        '  </script>\n'
+        '</body>\n'
+        '</html>';
+  }
+
+  void _onWebViewCreated(iaw.InAppWebViewController controller) {
+    _controller = controller;
+    Future.delayed(_fallbackDelay, () {
+      if (!mounted || _didFallback) return;
+      _didFallback = true;
+      final uri = crispEmbedUri(
+        websiteId: widget.websiteId,
+        proxyUrl: widget.crispProxyUrl,
+      );
+      controller.loadUrl(
+        urlRequest: iaw.URLRequest(url: iaw.WebUri(uri.toString())),
+      );
+    });
+  }
+
+  void _onLoadStop(iaw.InAppWebViewController controller, Uri? url) {
+    if (!mounted) return;
+    setState(() => _isLoading = false);
+  }
+
+  void _onReceivedError(iaw.InAppWebViewController controller,
+      iaw.WebResourceRequest request, iaw.WebResourceError error) {
+    if (!mounted || _didFallback) return;
+    _didFallback = true;
+    final uri = crispEmbedUri(
+      websiteId: widget.websiteId,
+      proxyUrl: widget.crispProxyUrl,
+    );
+    controller.loadUrl(
+      urlRequest: iaw.URLRequest(url: iaw.WebUri(uri.toString())),
+    );
+  }
+
+  void _handleRetry() {
+    setState(() {
+      _isLoading = true;
+      _hasTimedOut = false;
+      _didFallback = false;
+    });
+    _controller?.loadData(
+      data: _buildBootstrapHtml(),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+    final backgroundColor =
+        _isDarkMode ? const Color(0xFF101010) : const Color(0xFFF5F5F5);
+    return Scaffold(
+      backgroundColor: backgroundColor,
+      appBar: AppBar(
+        centerTitle: true,
+        title: Text(l10n.contactSupport),
+        leading: IconButton(
+          icon: const Icon(Icons.close),
+          tooltip: l10n.close,
+          onPressed: () => Navigator.of(context).pop(),
+        ),
+      ),
+      body: Stack(
+        fit: StackFit.expand,
+        children: [
+          iaw.InAppWebView(
+            initialData: iaw.InAppWebViewInitialData(
+              data: _buildBootstrapHtml(),
+              mimeType: 'text/html',
+              encoding: 'utf-8',
+            ),
+            initialSettings: iaw.InAppWebViewSettings(
+              javaScriptEnabled: true,
+              userAgent: _desktopCrispUserAgent,
+            ),
+            onWebViewCreated: _onWebViewCreated,
+            onLoadStop: _onLoadStop,
+            onReceivedError: _onReceivedError,
+          ),
+          if (_isLoading)
+            ColoredBox(
+              color: backgroundColor,
+              child: const Center(child: CircularProgressIndicator()),
+            ),
+          if (_hasTimedOut)
+            ColoredBox(
+              color: backgroundColor,
+              child: Center(
+                child: Padding(
+                  padding: const EdgeInsets.all(24),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(Icons.support_agent_outlined,
+                          size: 32,
+                          color: Theme.of(context).colorScheme.primary),
+                      const SizedBox(height: 12),
+                      Text(l10n.xboardConnectionTimeout,
+                          textAlign: TextAlign.center,
+                          style: const TextStyle(fontSize: 14)),
+                      const SizedBox(height: 16),
+                      FilledButton.icon(
+                        onPressed: _handleRetry,
+                        icon: const Icon(Icons.refresh),
+                        label: Text(l10n.refresh),
+                      ),
+                    ],
                   ),
                 ),
               ),
