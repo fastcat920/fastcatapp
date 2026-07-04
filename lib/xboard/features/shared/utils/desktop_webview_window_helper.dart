@@ -33,6 +33,7 @@ class DesktopWebviewWindowHelper {
     int windowWidth = 1100,
     int windowHeight = 760,
     bool matchMainWindow = false,
+    bool centerOnMainWindow = false,
     bool resizable = true,
     bool showTitleBarActions = true,
     Brightness? brightness,
@@ -48,17 +49,25 @@ class DesktopWebviewWindowHelper {
     var posY = 0;
     var useWindowPositionAndSize = false;
 
-    if (matchMainWindow) {
+    if (matchMainWindow || centerOnMainWindow) {
       try {
         final mainSize = await windowManager.getSize();
         final mainPos = await windowManager.getPosition();
         final views = WidgetsBinding.instance.platformDispatcher.views;
         final ratio = views.isNotEmpty ? views.first.devicePixelRatio : 1.0;
-        width = (mainSize.width * ratio).round();
-        height = (mainSize.height * ratio).round();
-        posX = (mainPos.dx * ratio).round();
-        posY = (mainPos.dy * ratio).round();
-        useWindowPositionAndSize = true;
+        final mainWidth = (mainSize.width * ratio).round();
+        final mainHeight = (mainSize.height * ratio).round();
+        final mainPosX = (mainPos.dx * ratio).round();
+        final mainPosY = (mainPos.dy * ratio).round();
+        if (matchMainWindow) {
+          width = mainWidth;
+          height = mainHeight;
+        }
+        if (centerOnMainWindow || matchMainWindow) {
+          posX = mainPosX + ((mainWidth - width) / 2).round();
+          posY = mainPosY + ((mainHeight - height) / 2).round();
+          useWindowPositionAndSize = true;
+        }
       } catch (_) {
         useWindowPositionAndSize = false;
       }

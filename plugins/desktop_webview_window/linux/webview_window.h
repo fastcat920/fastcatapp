@@ -19,6 +19,7 @@ class WebviewWindow {
       int64_t window_id,
       std::function<void()> on_close_callback,
       const std::string &title, int width, int height,
+      int window_pos_x, int window_pos_y, bool use_window_position_and_size,
       int title_bar_height,
       bool resizable,
       bool show_title_bar_actions,
@@ -69,6 +70,9 @@ class WebviewWindow {
   GtkBox *box_ = nullptr;
 
   int brightness_ = -1;
+  int window_pos_x_ = 0;
+  int window_pos_y_ = 0;
+  bool use_window_position_and_size_ = false;
   bool destroyed_ = false;
 
 };

@@ -49,6 +49,8 @@ class CustomerServiceHelper {
   static Future<Webview?>? _desktopCustomerServiceOpening;
   static Brightness? _desktopCustomerServiceBrightness;
   static String? _desktopCustomerServiceAccent;
+  static String? _desktopCustomerServiceLocaleTag;
+  static String? _desktopCustomerServiceLoadingText;
 
   /// 是否有任何客服渠道可用（仅远程 Crisp）
   static bool get isAvailable => XBoardConfig.crispWebsiteId.isNotEmpty;
@@ -80,39 +82,66 @@ class CustomerServiceHelper {
   }
 
   static void syncDesktopTheme(Brightness brightness, {Color? accentColor}) {
+    syncDesktopWindowState(
+      brightness,
+      accentColor: accentColor,
+    );
+  }
+
+  static void syncDesktopWindowState(
+    Brightness brightness, {
+    Color? accentColor,
+    String? localeTag,
+    String? loadingText,
+  }) {
     if (!_isDesktopPlatform) return;
     final accent = _customerServiceAccent(
       brightness == Brightness.dark,
       accentColor: accentColor,
     );
+    final normalizedLocaleTag = localeTag?.trim();
+    final normalizedLoadingText = loadingText?.trim();
     if (_desktopCustomerServiceBrightness == brightness &&
-        _desktopCustomerServiceAccent == accent) {
+        _desktopCustomerServiceAccent == accent &&
+        _desktopCustomerServiceLocaleTag == normalizedLocaleTag &&
+        _desktopCustomerServiceLoadingText == normalizedLoadingText) {
       return;
     }
     _desktopCustomerServiceBrightness = brightness;
     _desktopCustomerServiceAccent = accent;
+    _desktopCustomerServiceLocaleTag = normalizedLocaleTag;
+    _desktopCustomerServiceLoadingText = normalizedLoadingText;
     final webview = _desktopCustomerServiceWebview;
     if (webview == null) return;
     unawaited(
-      _applyDesktopCustomerServiceTheme(
+      _applyDesktopCustomerServiceWindowState(
         webview,
         isDarkMode: brightness == Brightness.dark,
         accent: accent,
+        localeTag: normalizedLocaleTag,
+        loadingText: normalizedLoadingText,
       ),
     );
   }
 
-  static Future<void> _applyDesktopCustomerServiceTheme(
+  static Future<void> _applyDesktopCustomerServiceWindowState(
     Webview webview, {
     required bool isDarkMode,
     String? accent,
+    String? localeTag,
+    String? loadingText,
   }) async {
     final brightness = _customerServiceBrightness(isDarkMode);
     final effectiveAccent = accent ??
         _desktopCustomerServiceAccent ??
         _customerServiceAccent(isDarkMode);
+    final effectiveLocaleTag = localeTag ?? _desktopCustomerServiceLocaleTag;
+    final effectiveLoadingText =
+        loadingText ?? _desktopCustomerServiceLoadingText;
     _desktopCustomerServiceBrightness = brightness;
     _desktopCustomerServiceAccent = effectiveAccent;
+    _desktopCustomerServiceLocaleTag = effectiveLocaleTag;
+    _desktopCustomerServiceLoadingText = effectiveLoadingText;
     try {
       webview.setBrightness(brightness);
     } catch (e) {
@@ -123,6 +152,8 @@ class CustomerServiceHelper {
         _buildApplyCustomerServiceThemeScript(
           isDarkMode,
           accent: effectiveAccent,
+          localeTag: effectiveLocaleTag,
+          loadingText: effectiveLoadingText,
         ),
       );
     } catch (e) {
@@ -133,17 +164,36 @@ class CustomerServiceHelper {
   static String _buildApplyCustomerServiceThemeScript(
     bool isDarkMode, {
     required String accent,
+    String? localeTag,
+    String? loadingText,
   }) {
     final payload = jsonEncode({
       'isDark': isDarkMode,
       'background': _customerServiceBackground(isDarkMode),
       'foreground': _customerServiceForeground(isDarkMode),
       'accent': accent,
+      'localeTag': localeTag,
+      'loadingText': loadingText,
     });
     return '''
 (function(){
   try {
     var theme = $payload;
+    if (theme.localeTag) {
+      window.__fastcatCustomerServiceLocale = theme.localeTag;
+      document.documentElement.lang = theme.localeTag;
+      try {
+        Object.defineProperty(navigator, 'language', { get: function(){ return theme.localeTag; }, configurable: true });
+        Object.defineProperty(navigator, 'languages', { get: function(){ return [theme.localeTag]; }, configurable: true });
+      } catch (_) {}
+      try {
+        window.\$crisp = window.\$crisp || [];
+        window.\$crisp.push(["config", "locale", [theme.localeTag]]);
+      } catch (_) {}
+    }
+    if (theme.loadingText) {
+      window.__fastcatCustomerServiceLoadingText = theme.loadingText;
+    }
     if (typeof window.__fastcatApplyCustomerServiceTheme === 'function') {
       window.__fastcatApplyCustomerServiceTheme(theme);
       return 'applied';
@@ -160,7 +210,7 @@ class CustomerServiceHelper {
       style.id = 'fastcat-customer-service-theme';
       (document.head || document.documentElement).appendChild(style);
     }
-    style.textContent = 'html,body,#page,.site-wrapper,.chat-common{background:' + theme.background + '!important;color:' + theme.foreground + '!important;color-scheme:' + (theme.isDark ? 'dark' : 'light') + '!important;}';
+    style.textContent = 'html,body,#page,.site-wrapper,.chat-common,.crisp-client,[class*="crisp"]{background:' + theme.background + '!important;color:' + theme.foreground + '!important;color-scheme:' + (theme.isDark ? 'dark' : 'light') + '!important;}';
     return 'applied';
   } catch (_) {
     return 'failed';
@@ -202,7 +252,10 @@ class CustomerServiceHelper {
   }) async {
     try {
       await webview.setWebviewWindowVisibility(true);
-      await _applyDesktopCustomerServiceTheme(webview, isDarkMode: isDarkMode);
+      await _applyDesktopCustomerServiceWindowState(
+        webview,
+        isDarkMode: isDarkMode,
+      );
       return true;
     } catch (e) {
       _logger.debug('[CustomerService] 激活已有客服窗口失败: $e');
@@ -223,6 +276,9 @@ class CustomerServiceHelper {
     if (webview == null || identical(_desktopCustomerServiceWebview, webview)) {
       _desktopCustomerServiceWebview = null;
       _desktopCustomerServiceBrightness = null;
+      _desktopCustomerServiceAccent = null;
+      _desktopCustomerServiceLocaleTag = null;
+      _desktopCustomerServiceLoadingText = null;
     }
   }
 
@@ -531,7 +587,10 @@ class CustomerServiceHelper {
           brightness: _customerServiceBrightness(isDarkMode),
         ),
       );
-      await _applyDesktopCustomerServiceTheme(webview, isDarkMode: isDarkMode);
+      await _applyDesktopCustomerServiceWindowState(
+        webview,
+        isDarkMode: isDarkMode,
+      );
 
       final scriptUrlEscaped = scriptUrl.replaceAll("'", "\\'");
       final bg = _customerServiceBackground(isDarkMode);
@@ -1014,8 +1073,6 @@ if(window===window.top){
       userScript: userScript,
       title: l10n.contactSupport,
       connecting: l10n.onlineSupportConnecting,
-      loadingSlow: l10n.customerServiceLoadingSlow,
-      loadFailed: l10n.customerServiceLoadFailed,
       timeoutText: l10n.xboardConnectionTimeout,
       localeTag: localeTag,
       isDarkMode: isDarkMode,
@@ -1039,8 +1096,6 @@ if(window===window.top){
     required String userScript,
     required String title,
     required String connecting,
-    required String loadingSlow,
-    required String loadFailed,
     required String timeoutText,
     required String localeTag,
     required bool isDarkMode,
@@ -1053,15 +1108,11 @@ if(window===window.top){
       );
       final officialEmbedUri = officialCrispEmbedUri(websiteId);
       final html = _buildLinuxCrispBootstrapHtml(
-        websiteId: websiteId,
         preferredEmbedUri: preferredEmbedUri,
-        userScript: userScript,
         localeTag: localeTag,
         isDarkMode: isDarkMode,
         title: title,
         connecting: connecting,
-        loadingSlow: loadingSlow,
-        loadFailed: loadFailed,
       );
 
       server = await HttpServer.bind(InternetAddress.loopbackIPv4, 0);
@@ -1071,12 +1122,19 @@ if(window===window.top){
         title: title,
         windowWidth: _desktopCustomerServiceWindowWidth,
         windowHeight: _desktopCustomerServiceWindowHeight,
+        centerOnMainWindow: true,
+        resizable: false,
         brightness: _customerServiceBrightness(isDarkMode),
       );
       await webview.setApplicationNameForUserAgent(
         ' Chrome/125.0.0.0 Safari/537.36 FastCat/3.5.5',
       );
-      await _applyDesktopCustomerServiceTheme(webview, isDarkMode: isDarkMode);
+      await _applyDesktopCustomerServiceWindowState(
+        webview,
+        isDarkMode: isDarkMode,
+        localeTag: localeTag,
+        loadingText: connecting,
+      );
       webview.addScriptToExecuteOnDocumentCreated(
         _buildLinuxCrispDesktopDocumentScript(
           userScript: userScript,
@@ -1085,6 +1143,7 @@ if(window===window.top){
           preferredEmbedUri: preferredEmbedUri,
           officialEmbedUri: officialEmbedUri,
           crispProxyUrl: crispProxyUrl,
+          loadingText: connecting,
           timeoutText: timeoutText,
         ),
       );
@@ -1142,26 +1201,16 @@ if(window===window.top){
   }
 
   static String _buildLinuxCrispBootstrapHtml({
-    required String websiteId,
     required Uri preferredEmbedUri,
-    required String userScript,
     required String localeTag,
     required bool isDarkMode,
     required String title,
     required String connecting,
-    required String loadingSlow,
-    required String loadFailed,
   }) {
-    final websiteIdJson = jsonEncode(websiteId);
     final preferredEmbedJson = jsonEncode(preferredEmbedUri.toString());
     final localeTagJson = jsonEncode(localeTag);
-    final titleJson = jsonEncode(title);
-    final connectingJson = jsonEncode(connecting);
-    final loadingSlowJson = jsonEncode(loadingSlow);
-    final loadFailedJson = jsonEncode(loadFailed);
     final background = _customerServiceBackground(isDarkMode);
     final foreground = _customerServiceForeground(isDarkMode);
-    final colorMode = isDarkMode ? 'dark' : 'light';
     return '''<!DOCTYPE html>
 <html>
 <head>
@@ -1205,107 +1254,16 @@ if(window===window.top){
 <body>
   <div id="loading"><span id="spinner"></span><span id="loading-text">$connecting</span></div>
   <script>
-    window.\$crisp = window.\$crisp || [];
-    window.CRISP_WEBSITE_ID = $websiteIdJson;
-    window.CRISP_RUNTIME_CONFIG = {
-      locale: $localeTagJson,
-      lock_full_view: true
-    };
-    window.__fastcatCrispReady = false;
     window.__fastcatCustomerServiceLocale = $localeTagJson;
-    window.__fastcatApplyCustomerServiceTheme = function(theme){
-      try {
-        document.documentElement.style.background = theme.background;
-        document.documentElement.style.colorScheme = theme.isDark ? 'dark' : 'light';
-        if (document.body) {
-          document.body.style.background = theme.background;
-          document.body.style.color = theme.foreground;
-        }
-        window.\$crisp = window.\$crisp || [];
-        window.\$crisp.push(["config", "locale", [window.__fastcatCustomerServiceLocale || 'en']]);
-        window.\$crisp.push(["config", "color:mode", [theme.isDark ? "dark" : "light"]]);
-      } catch (_) {}
-    };
     try {
       Object.defineProperty(navigator, 'language', { get: function(){ return window.__fastcatCustomerServiceLocale; }, configurable: true });
       Object.defineProperty(navigator, 'languages', { get: function(){ return [window.__fastcatCustomerServiceLocale]; }, configurable: true });
     } catch (_) {}
-    try {
-      $userScript
-    } catch (_) {}
-
     (function(){
-      var ready = false;
-      var loading = document.getElementById('loading');
-      var loadingText = document.getElementById('loading-text');
-      document.title = $titleJson;
       document.documentElement.lang = window.__fastcatCustomerServiceLocale || 'en';
-      window.__fastcatApplyCustomerServiceTheme({
-        isDark: ${isDarkMode ? 'true' : 'false'},
-        background: '$background',
-        foreground: '$foreground'
-      });
-
-      function openChat(){
-        try {
-          window.\$crisp = window.\$crisp || [];
-          window.\$crisp.push(["config", "locale", [window.__fastcatCustomerServiceLocale || 'en']]);
-          window.\$crisp.push(["config", "color:mode", ['$colorMode']]);
-          window.\$crisp.push(["safe", true]);
-          window.\$crisp.push(["do", "chat:show"]);
-          window.\$crisp.push(["do", "chat:open"]);
-        } catch(_) {}
-      }
-
-      function markReady(){
-        if (ready) return;
-        ready = true;
-        window.__fastcatCrispReady = true;
-        openChat();
-        if (loading) loading.style.display = 'none';
-      }
-
-      function expandFrames(){
-        var frames = document.querySelectorAll('iframe');
-        for (var i = 0; i < frames.length; i++) {
-          var src = frames[i].src || '';
-          if (src.indexOf('crisp') === -1) continue;
-          frames[i].style.cssText = 'position:fixed!important;top:0!important;left:0!important;width:100vw!important;height:100vh!important;max-width:none!important;max-height:none!important;border:none!important;border-radius:0!important;z-index:2147483646!important;background:$background!important;';
-          var parent = frames[i].parentElement;
-          if (parent) parent.style.cssText = 'position:fixed!important;top:0!important;left:0!important;width:100vw!important;height:100vh!important;z-index:2147483646!important;background:$background!important;';
-          markReady();
-        }
-      }
-
-      var openTimer = setInterval(function(){
-        openChat();
-        expandFrames();
-      }, 500);
       setTimeout(function(){
-        if (ready) return;
-        clearInterval(openTimer);
-        if (loadingText) loadingText.textContent = $loadingSlowJson;
         location.replace($preferredEmbedJson);
-      }, 15000);
-      setTimeout(function(){
-        if (!ready && loadingText) loadingText.textContent = $loadFailedJson;
-      }, 24000);
-      new MutationObserver(function(){
-        openChat();
-        expandFrames();
-      }).observe(document.documentElement, {
-        childList: true,
-        subtree: true,
-        attributes: true
-      });
-      var script = document.createElement('script');
-      script.src = 'https://client.crisp.chat/l.js';
-      script.async = true;
-      script.onerror = function(){
-        if (loadingText) loadingText.textContent = $loadFailedJson;
-      };
-      document.head.appendChild(script);
-      if (loadingText) loadingText.textContent = $connectingJson;
+      }, 60);
     })();
   </script>
 </body>
@@ -1319,6 +1277,7 @@ if(window===window.top){
     required Uri preferredEmbedUri,
     required Uri officialEmbedUri,
     String? crispProxyUrl,
+    required String loadingText,
     required String timeoutText,
   }) {
     final background = _customerServiceBackground(isDarkMode);
@@ -1326,6 +1285,7 @@ if(window===window.top){
     final preferredEmbedJson = jsonEncode(preferredEmbedUri.toString());
     final officialEmbedJson = jsonEncode(officialEmbedUri.toString());
     final localeTagJson = jsonEncode(localeTag);
+    final loadingTextJson = jsonEncode(loadingText);
     final timeoutTextJson = jsonEncode(timeoutText);
     final proxyBaseJson = jsonEncode(normalizeCrispProxyUrl(crispProxyUrl));
     return '''
@@ -1336,6 +1296,36 @@ if(window===window.top){
       $userScript
     } catch(_) {}
     window.__fastcatCustomerServiceLocale = $localeTagJson;
+    window.__fastcatCustomerServiceLoadingText = $loadingTextJson;
+    function ensureStyleTag() {
+      var style = document.getElementById('fastcat-customer-service-theme');
+      if (!style) {
+        style = document.createElement('style');
+        style.id = 'fastcat-customer-service-theme';
+        (document.head || document.documentElement).appendChild(style);
+      }
+      return style;
+    }
+    function ensureLoading() {
+      var loading = document.getElementById('fastcat-support-loading');
+      if (loading) return loading;
+      loading = document.createElement('div');
+      loading.id = 'fastcat-support-loading';
+      loading.innerHTML = '<span id="fastcat-support-spinner"></span><span id="fastcat-support-loading-text"></span>';
+      loading.style.cssText = 'position:fixed;inset:0;display:flex;align-items:center;justify-content:center;gap:12px;z-index:2147483647;padding:24px;font:14px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;text-align:center;';
+      (document.body || document.documentElement).appendChild(loading);
+      return loading;
+    }
+    function ensureTimeout() {
+      var timeout = document.getElementById('fastcat-support-timeout');
+      if (timeout) return timeout;
+      timeout = document.createElement('div');
+      timeout.id = 'fastcat-support-timeout';
+      timeout.style.cssText = 'position:fixed;inset:0;display:flex;align-items:center;justify-content:center;z-index:2147483647;padding:24px;font:14px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;text-align:center;';
+      timeout.textContent = $timeoutTextJson;
+      (document.body || document.documentElement).appendChild(timeout);
+      return timeout;
+    }
     window.__fastcatApplyCustomerServiceTheme = function(theme){
       try {
         document.documentElement.style.background = theme.background;
@@ -1343,6 +1333,24 @@ if(window===window.top){
         if (document.body) {
           document.body.style.background = theme.background;
           document.body.style.color = theme.foreground;
+        }
+        var style = ensureStyleTag();
+        style.textContent = ''
+          + 'html,body{background:' + theme.background + ' !important;color:' + theme.foreground + ' !important;color-scheme:' + (theme.isDark ? 'dark' : 'light') + ';}'
+          + '#fastcat-support-loading,#fastcat-support-timeout{background:' + theme.background + ' !important;color:' + theme.foreground + ' !important;}'
+          + '#fastcat-support-spinner{width:18px;height:18px;border:2px solid rgba(148,163,184,0.35);border-top-color:' + theme.accent + ';border-radius:50%;display:inline-block;animation:fastcatSupportSpin 0.8s linear infinite;}'
+          + '@keyframes fastcatSupportSpin{to{transform:rotate(360deg);}}'
+          + 'iframe[src*="crisp"],.crisp-client,[class*="crisp"]{color-scheme:' + (theme.isDark ? 'dark' : 'light') + ';}';
+        var loading = ensureLoading();
+        var loadingText = document.getElementById('fastcat-support-loading-text');
+        if (loadingText) {
+          loadingText.textContent = window.__fastcatCustomerServiceLoadingText || theme.loadingText || 'Loading...';
+        }
+        loading.style.display = 'flex';
+        var timeout = document.getElementById('fastcat-support-timeout');
+        if (timeout) {
+          timeout.style.background = theme.background;
+          timeout.style.color = theme.foreground;
         }
         window.\$crisp = window.\$crisp || [];
         window.\$crisp.push(["config", "locale", [window.__fastcatCustomerServiceLocale || 'en']]);
@@ -1359,11 +1367,12 @@ if(window===window.top){
       Object.defineProperty(navigator, 'languages', { get: function(){ return [window.__fastcatCustomerServiceLocale]; }, configurable: true });
     } catch (_) {}
     document.documentElement.lang = window.__fastcatCustomerServiceLocale;
+    ensureLoading();
 
     function markReady(){
       window.__fastcatCrispReady = true;
-      var loading = document.getElementById('loading');
-      if (loading) loading.style.display = 'none';
+      var loading = document.getElementById('fastcat-support-loading');
+      if (loading) loading.remove();
       var timeout = document.getElementById('fastcat-support-timeout');
       if (timeout) timeout.remove();
     }
@@ -1401,14 +1410,7 @@ if(window===window.top){
         location.replace(preferredEmbedUrl);
         return;
       }
-      var timeout = document.getElementById('fastcat-support-timeout');
-      if (!timeout) {
-        timeout = document.createElement('div');
-        timeout.id = 'fastcat-support-timeout';
-        timeout.style.cssText = 'position:fixed;inset:0;display:flex;align-items:center;justify-content:center;background:$background;color:$foreground;font:14px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;z-index:2147483647;padding:24px;text-align:center;';
-        timeout.textContent = timeoutText;
-        document.body.appendChild(timeout);
-      }
+      ensureTimeout().textContent = timeoutText;
     }, 25000);
   } catch(_) {}
 })();''';

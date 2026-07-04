@@ -67,6 +67,9 @@ WebviewWindow::WebviewWindow(
     const std::string &title,
     int width,
     int height,
+    int window_pos_x,
+    int window_pos_y,
+    bool use_window_position_and_size,
     int title_bar_height,
     bool resizable,
     bool show_title_bar_actions,
@@ -75,6 +78,9 @@ WebviewWindow::WebviewWindow(
     window_id_(window_id),
     on_close_callback_(std::move(on_close_callback)),
     default_user_agent_(),
+    window_pos_x_(window_pos_x),
+    window_pos_y_(window_pos_y),
+    use_window_position_and_size_(use_window_position_and_size),
     brightness_(brightness) {
   g_object_ref(method_channel_);
 
@@ -99,7 +105,9 @@ WebviewWindow::WebviewWindow(
                    }), this);
   gtk_window_set_title(GTK_WINDOW(window_), title.c_str());
   gtk_window_set_default_size(GTK_WINDOW(window_), width, height);
-  gtk_window_set_position(GTK_WINDOW(window_), GTK_WIN_POS_CENTER);
+  if (!use_window_position_and_size_) {
+    gtk_window_set_position(GTK_WINDOW(window_), GTK_WIN_POS_CENTER);
+  }
   gtk_window_set_resizable(GTK_WINDOW(window_), resizable ? TRUE : FALSE);
   apply_widget_background(window_, "fastcat-webview-window");
   if (title_bar_height <= 0) {
@@ -163,6 +171,12 @@ WebviewWindow::WebviewWindow(
   SetBrightness(brightness_);
 
   gtk_widget_show_all(GTK_WIDGET(window_));
+  if (use_window_position_and_size_) {
+    gtk_window_move(
+        GTK_WINDOW(window_),
+        window_pos_x_,
+        window_pos_y_);
+  }
   gtk_widget_grab_focus(GTK_WIDGET(webview_));
 
   // FROM: https://github.com/leanflutter/window_manager/pull/343

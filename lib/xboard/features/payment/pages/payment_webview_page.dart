@@ -15,6 +15,8 @@ import 'package:fl_clash/xboard/features/shared/utils/desktop_webview_window_hel
 import 'package:fl_clash/xboard/features/shared/styles/styles.dart';
 
 const _logger = FileLogger('payment_webview_page.dart');
+Webview? _desktopPaymentWebview;
+Brightness? _desktopPaymentBrightness;
 
 /// Desktop Chrome UA used on mobile so payment gateways serve the QR-code
 /// page instead of the H5 cashier that tries (and fails) to invoke Alipay /
@@ -63,6 +65,14 @@ class PaymentWebViewPage extends ConsumerStatefulWidget {
             PaymentWebViewPage(paymentUrl: paymentUrl, tradeNo: tradeNo),
       ),
     );
+  }
+
+  static void syncDesktopTheme(Brightness brightness) {
+    final webview = _desktopPaymentWebview;
+    if (webview == null) return;
+    if (_desktopPaymentBrightness == brightness) return;
+    _desktopPaymentBrightness = brightness;
+    unawaited(_applyDesktopPaymentTheme(webview, brightness: brightness));
   }
 
   static Future<bool?> _openLinuxDesktopPaymentWindow(
@@ -138,12 +148,15 @@ class PaymentWebViewPage extends ConsumerStatefulWidget {
         windowWidth: 1100,
         windowHeight: 760,
         matchMainWindow: true,
+        centerOnMainWindow: true,
+        resizable: false,
         brightness: brightness,
       );
-      await webview.setApplicationNameForUserAgent(
+      final desktopWebview = webview;
+      await desktopWebview.setApplicationNameForUserAgent(
         ' Chrome/125.0.0.0 Safari/537.36 FastCat/3.5.5',
       );
-      webview.addOnUrlRequestCallback((url) {
+      desktopWebview.addOnUrlRequestCallback((url) {
         final uri = Uri.tryParse(url);
         if (uri == null) return;
         final scheme = uri.scheme.toLowerCase();
@@ -151,21 +164,23 @@ class PaymentWebViewPage extends ConsumerStatefulWidget {
         _logger.info('Linux desktop payment custom scheme: $scheme');
         unawaited(_launchExternalPaymentUriStatic(uri));
       });
-      webview.addScriptToExecuteOnDocumentCreated(
+      desktopWebview.addScriptToExecuteOnDocumentCreated(
         _buildLinuxDesktopPaymentDocumentScript(
           languageHeader: languageHeader,
           isDarkMode: brightness == Brightness.dark,
         ),
       );
+      _trackDesktopPaymentWindow(desktopWebview, brightness: brightness);
       unawaited(
-        webview.onClose.whenComplete(() async {
+        desktopWebview.onClose.whenComplete(() async {
           pollTimer?.cancel();
+          _clearDesktopPaymentWindow(desktopWebview);
           if (!closedByApp) {
             await finish(null);
           }
         }),
       );
-      await webview.launch(paymentUrl);
+      await desktopWebview.launch(paymentUrl);
       await scheduleNextPoll(const Duration(seconds: 3));
       return await completer.future;
     } catch (e) {
@@ -203,13 +218,33 @@ class PaymentWebViewPage extends ConsumerStatefulWidget {
       languages.isEmpty ? [primaryLanguage] : languages,
     );
     final primaryLanguageJson = jsonEncode(primaryLanguage);
+    final background = isDarkMode ? '#101010' : '#f5f5f5';
     return '''
 (function(){
   try {
     var language = $primaryLanguageJson;
     var languages = $languagesJson;
     document.documentElement.lang = language;
-    document.documentElement.style.colorScheme = ${isDarkMode ? "'dark'" : "'light'"};
+    window.__fastcatApplyPaymentTheme = function(theme){
+      try {
+        document.documentElement.style.colorScheme = theme.isDark ? 'dark' : 'light';
+        document.documentElement.style.background = theme.background;
+        if (document.body) {
+          document.body.style.background = theme.background;
+        }
+        var style = document.getElementById('fastcat-payment-theme');
+        if (!style) {
+          style = document.createElement('style');
+          style.id = 'fastcat-payment-theme';
+          (document.head || document.documentElement).appendChild(style);
+        }
+        style.textContent = 'html,body{background:' + theme.background + ' !important;color-scheme:' + (theme.isDark ? 'dark' : 'light') + ' !important;}';
+      } catch (_) {}
+    };
+    window.__fastcatApplyPaymentTheme({
+      isDark: ${isDarkMode ? 'true' : 'false'},
+      background: '$background'
+    });
     try {
       Object.defineProperty(navigator, 'language', { get: function(){ return language; }, configurable: true });
       Object.defineProperty(navigator, 'languages', { get: function(){ return languages; }, configurable: true });
@@ -280,6 +315,55 @@ class PaymentWebViewPage extends ConsumerStatefulWidget {
     }
   } catch (_) {}
 })();''';
+  }
+
+  static void _trackDesktopPaymentWindow(
+    Webview webview, {
+    required Brightness brightness,
+  }) {
+    _desktopPaymentWebview = webview;
+    _desktopPaymentBrightness = brightness;
+    unawaited(
+      webview.onClose.whenComplete(() {
+        _clearDesktopPaymentWindow(webview);
+      }),
+    );
+  }
+
+  static void _clearDesktopPaymentWindow(Webview webview) {
+    if (identical(_desktopPaymentWebview, webview)) {
+      _desktopPaymentWebview = null;
+      _desktopPaymentBrightness = null;
+    }
+  }
+
+  static Future<void> _applyDesktopPaymentTheme(
+    Webview webview, {
+    required Brightness brightness,
+  }) async {
+    final isDarkMode = brightness == Brightness.dark;
+    try {
+      webview.setBrightness(brightness);
+    } catch (e) {
+      _logger.debug('Failed to update Linux desktop payment window theme: $e');
+    }
+    try {
+      await webview.evaluateJavaScript('''
+(function(){
+  try {
+    if (typeof window.__fastcatApplyPaymentTheme !== 'function') return 'missing';
+    window.__fastcatApplyPaymentTheme({
+      isDark: ${isDarkMode ? 'true' : 'false'},
+      background: '${isDarkMode ? '#101010' : '#f5f5f5'}'
+    });
+    return 'applied';
+  } catch (_) {
+    return 'failed';
+  }
+})();''');
+    } catch (e) {
+      _logger.debug('Failed to update Linux desktop payment page theme: $e');
+    }
   }
 
   static bool _isStandardWebSchemeStatic(String scheme) {

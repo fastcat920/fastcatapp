@@ -374,13 +374,21 @@ class ApplicationState extends ConsumerState<Application>
               themeProps.themeMode,
               appBrightness,
             );
-            CustomerServiceHelper.syncDesktopTheme(
-              effectiveBrightness,
-              accentColor: _getAppColorScheme(
-                brightness: effectiveBrightness,
-                primaryColor: themeProps.primaryColor,
-              ).primary,
+            final effectiveColorScheme = _getAppColorScheme(
+              brightness: effectiveBrightness,
+              primaryColor: themeProps.primaryColor,
             );
+            final currentContext = globalState.navigatorKey.currentContext;
+            final currentL10n = currentContext == null
+                ? null
+                : AppLocalizations.maybeOf(currentContext);
+            CustomerServiceHelper.syncDesktopWindowState(
+              effectiveBrightness,
+              localeTag: locale,
+              accentColor: effectiveColorScheme.primary,
+              loadingText: currentL10n?.onlineSupportConnecting,
+            );
+            PaymentWebViewPage.syncDesktopTheme(effectiveBrightness);
 
             // 使用 go_router 的路由系统
             return MaterialApp.router(

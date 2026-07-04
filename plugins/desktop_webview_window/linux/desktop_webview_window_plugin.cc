@@ -46,6 +46,15 @@ static void webview_window_plugin_handle_method_call(
     }
     auto width = fl_value_get_int(fl_value_lookup_string(args, "windowWidth"));
     auto height = fl_value_get_int(fl_value_lookup_string(args, "windowHeight"));
+    auto window_pos_x =
+        fl_value_get_int(fl_value_lookup_string(args, "windowPosX"));
+    auto window_pos_y =
+        fl_value_get_int(fl_value_lookup_string(args, "windowPosY"));
+    auto *use_window_position_and_size_value =
+        fl_value_lookup_string(args, "useWindowPositionAndSize");
+    auto use_window_position_and_size = use_window_position_and_size_value
+        ? fl_value_get_bool(use_window_position_and_size_value)
+        : false;
     auto title = fl_value_get_string(fl_value_lookup_string(args, "title"));
     auto title_bar_height = fl_value_get_int(fl_value_lookup_string(args, "titleBarHeight"));
     auto *resizable_value = fl_value_lookup_string(args, "resizable");
@@ -63,7 +72,8 @@ static void webview_window_plugin_handle_method_call(
         [self, window_id]() {
           self->windows->erase(window_id);
           g_object_unref(self);
-        }, title, width, height, title_bar_height, resizable,
+        }, title, width, height, window_pos_x, window_pos_y,
+        use_window_position_and_size, title_bar_height, resizable,
         show_title_bar_actions, brightness);
     self->windows->insert({window_id, std::move(webview)});
     next_window_id_++;
