@@ -675,32 +675,32 @@ p{margin:8px 0}
     required String rawContent,
     required String convertedHtml,
   }) {
-    // If the raw content already contains HTML tags, extract the body portion
-    // and clean it for flutter_widget_from_html rendering.
-    if (_looksLikeHtmlContent(rawContent)) {
-      final bodyMatch = RegExp(
-        r'<body[^>]*>([\s\S]*)</body>',
-        caseSensitive: false,
-      ).firstMatch(rawContent);
-      var bodyHtml = bodyMatch?.group(1)?.trim() ?? rawContent;
-      // Remove <style> blocks (they won't be parsed by flutter_widget_from_html)
-      bodyHtml = bodyHtml.replaceAll(
-        RegExp(r'<style\b[^>]*>[\s\S]*?<\/style>', caseSensitive: false),
-        '',
-      );
-      return _prepareHtmlWidgetContent(bodyHtml);
+    // On Linux we always use the converted HTML from _contentToHtml — it
+    // produces consistent inline-styled HTML regardless of whether the
+    // source is Markdown or raw HTML.
+    final source = convertedHtml;
+    
+    // Extract body content using indexOf/substring instead of regex so
+    // that long / complex nested documents are handled reliably.
+    final lower = source.toLowerCase();
+    final bodyStart = lower.indexOf('<body');
+    final bodyEnd = lower.lastIndexOf('</body>');
+    if (bodyStart != -1 && bodyEnd != -1) {
+      final contentStart = lower.indexOf('>', bodyStart) + 1;
+      if (contentStart > 0 && contentStart < bodyEnd) {
+        var body = source.substring(contentStart, bodyEnd).trim();
+        body = body.replaceAll(
+          RegExp(r'<style\b[^>]*>[\s\S]*?<\/style>', caseSensitive: false),
+          '',
+        );
+        if (body.isNotEmpty) return body;
+      }
     }
-    // For Markdown content, use the converted HTML from _contentToHtml which
-    // already contains inline-compatible styles. Just extract the body so we
-    // don't pass the full <html>/<head> document to flutter_widget_from_html.
-    final bodyMatch = RegExp(
-      r'<body[^>]*>([\s\S]*)</body>',
-      caseSensitive: false,
-    ).firstMatch(convertedHtml);
-    if (bodyMatch != null) {
-      return bodyMatch.group(1)!.trim();
-    }
-    return convertedHtml;
+    
+    // Fallback: strip <html> wrapper and return the rest.
+    return convertedHtml
+        .replaceAll(RegExp(r'<html[^>]*>|</html>', caseSensitive: false), '')
+        .trim();
   }
 
   @override

@@ -9,7 +9,7 @@ import 'package:window_manager/window_manager.dart';
 class Window {
   init(int version) async {
     final props = globalState.config.windowProps;
-    final initialSize = const Size(800, 600);
+    final initialSize = const Size(800, 650);
     final acquire = await singleInstanceLock.acquire();
     if (!acquire) {
       exit(0);

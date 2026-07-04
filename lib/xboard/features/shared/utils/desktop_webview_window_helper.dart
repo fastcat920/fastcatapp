@@ -65,6 +65,12 @@ class DesktopWebviewWindowHelper {
           posX = mainPosX + ((mainWidth - width) / 2).round();
           posY = mainPosY + ((mainHeight - height) / 2).round();
           useWindowPositionAndSize = true;
+          // On some Linux WM / Wayland compositors getPosition() returns (0,0)
+          // even though the window is actually centered.  Negative or zero
+          // coordinates would place the popup at the top-left corner.
+          if (posX <= 0 && posY <= 0) {
+            useWindowPositionAndSize = false;
+          }
         }
       } catch (_) {
         useWindowPositionAndSize = false;
