@@ -441,7 +441,6 @@ class _ArticleDetailPageState extends ConsumerState<_ArticleDetailPage> {
         '${dt.hour.toString().padLeft(2, '0')}:${dt.minute.toString().padLeft(2, '0')}';
   }
 
-
   /// Converts Markdown/HTML mixed content to full HTML page.
   /// Preserves raw HTML blocks (tags, inline styles) and only converts Markdown syntax.
   static String _contentToHtml(String content, {bool isDark = false}) {
@@ -605,69 +604,6 @@ p{margin:8px 0}
 </style></head><body><div>$s</div></body></html>''';
   }
 
-  static bool _looksLikeHtmlContent(String content) {
-    return RegExp(
-      r'<(?:p|div|span|button|a|img|h[1-6]|ul|ol|li|table|thead|tbody|tr|td|th|br)\b',
-      caseSensitive: false,
-    ).hasMatch(content);
-  }
-
-  static String _prepareHtmlWidgetContent(String documentHtml) {
-    final bodyMatch = RegExp(
-      r'<body[^>]*>([\s\S]*)</body>',
-      caseSensitive: false,
-    ).firstMatch(documentHtml);
-    var bodyHtml = bodyMatch?.group(1)?.trim() ?? documentHtml;
-    bodyHtml = bodyHtml.replaceAll(
-      RegExp(r'<style\b[^>]*>[\s\S]*?<\/style>', caseSensitive: false),
-      '',
-    );
-    bodyHtml = bodyHtml.replaceAllMapped(
-      RegExp(r'<img\b[^>]*>', caseSensitive: false),
-      (match) {
-        var tag = match.group(0)!;
-        final lazySource = RegExp(
-          "\\b(?:data-src|data-original|data-lazy-src)=['\\\"]([^'\\\"]+)['\\\"]",
-          caseSensitive: false,
-        ).firstMatch(tag)?.group(1);
-        if (lazySource == null || lazySource.trim().isEmpty) return tag;
-        final srcPattern = RegExp(
-          "\\bsrc=['\\\"]([^'\\\"]*)['\\\"]",
-          caseSensitive: false,
-        );
-        final srcMatch = srcPattern.firstMatch(tag);
-        final currentSrc = srcMatch?.group(1)?.trim() ?? '';
-        if (srcMatch == null) {
-          tag = tag.replaceFirst('>', ' src="$lazySource">');
-        } else if (currentSrc.isEmpty ||
-            currentSrc == '#' ||
-            currentSrc.startsWith('data:image/gif')) {
-          tag = tag.replaceFirst(srcPattern, 'src="$lazySource"');
-        }
-        return tag;
-      },
-    );
-    bodyHtml = bodyHtml.replaceAllMapped(
-      RegExp(r'<button\b(?![^>]*data-fastcat-button)[^>]*>',
-          caseSensitive: false),
-      (match) {
-        final tag = match.group(0)!;
-        return tag.replaceFirst('>', ' data-fastcat-button="true">');
-      },
-    );
-    bodyHtml = bodyHtml.replaceAllMapped(
-      RegExp(
-        r'<a\b(?=[^>]*class="[^"]*(?:btn|button)[^"]*")(?![^>]*data-fastcat-button)[^>]*>',
-        caseSensitive: false,
-      ),
-      (match) {
-        final tag = match.group(0)!;
-        return tag.replaceFirst('>', ' data-fastcat-button="true">');
-      },
-    );
-    return bodyHtml;
-  }
-
   /// Prepares the content for rendering with flutter_widget_from_html.
   ///
   /// Unlike _prepareHtmlWidgetContent, this method preserves the inline-styled
@@ -682,7 +618,7 @@ p{margin:8px 0}
     // produces consistent inline-styled HTML regardless of whether the
     // source is Markdown or raw HTML.
     final source = convertedHtml;
-    
+
     // Extract body content using indexOf/substring instead of regex so
     // that long / complex nested documents are handled reliably.
     final lower = source.toLowerCase();
@@ -692,14 +628,10 @@ p{margin:8px 0}
       final contentStart = lower.indexOf('>', bodyStart) + 1;
       if (contentStart > 0 && contentStart < bodyEnd) {
         var body = source.substring(contentStart, bodyEnd).trim();
-        body = body.replaceAll(
-          RegExp(r'<style\b[^>]*>[\s\S]*?<\/style>', caseSensitive: false),
-          '',
-        );
         if (body.isNotEmpty) return body;
       }
     }
-    
+
     // Fallback: strip <html> wrapper and return the rest.
     return convertedHtml
         .replaceAll(RegExp(r'<html[^>]*>|</html>', caseSensitive: false), '')
@@ -1012,7 +944,7 @@ p{margin:8px 0}
         child: NoticeHtmlStyles.buildNoticeHtml(
           context: context,
           htmlContent: _htmlWidgetHtml!,
-          preserveDocumentStyles: false,
+          preserveDocumentStyles: true,
           onTapUrl: (url) {
             final uri = url == null ? null : Uri.tryParse(url);
             if (uri != null) {

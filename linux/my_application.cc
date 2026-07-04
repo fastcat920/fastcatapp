@@ -15,6 +15,32 @@ struct _MyApplication {
 
 G_DEFINE_TYPE(MyApplication, my_application, GTK_TYPE_APPLICATION)
 
+static void center_window_on_monitor(GtkWindow* window, int width, int height) {
+  GdkDisplay* display = gdk_display_get_default();
+  if (display == nullptr) return;
+
+  GdkMonitor* monitor = nullptr;
+  GdkWindow* gdk_window = gtk_widget_get_window(GTK_WIDGET(window));
+  if (gdk_window != nullptr) {
+    monitor = gdk_display_get_monitor_at_window(display, gdk_window);
+  }
+  if (monitor == nullptr) {
+    monitor = gdk_display_get_primary_monitor(display);
+  }
+  if (monitor == nullptr) {
+    monitor = gdk_display_get_monitor(display, 0);
+  }
+  if (monitor == nullptr) return;
+
+  GdkRectangle geometry;
+  gdk_monitor_get_workarea(monitor, &geometry);
+  int x = geometry.x + (geometry.width - width) / 2;
+  int y = geometry.y + (geometry.height - height) / 2;
+  if (x < geometry.x) x = geometry.x;
+  if (y < geometry.y) y = geometry.y;
+  gtk_window_move(window, x, y);
+}
+
 // Implements GApplication::activate.
 static void my_application_activate(GApplication* application) {
   MyApplication* self = MY_APPLICATION(application);
@@ -57,9 +83,10 @@ static void my_application_activate(GApplication* application) {
     gtk_window_set_title(window, "快猫");
   }
 
-  gtk_window_set_default_size(window, 800, 620);
+  gtk_window_set_default_size(window, 800, 600);
   gtk_window_set_position(window, GTK_WIN_POS_CENTER);
   gtk_widget_show(GTK_WIDGET(window));
+  center_window_on_monitor(window, 800, 600);
 
   g_autoptr(FlDartProject) project = fl_dart_project_new();
   fl_dart_project_set_dart_entrypoint_arguments(project, self->dart_entrypoint_arguments);

@@ -231,11 +231,17 @@ class PaymentWebViewPage extends ConsumerStatefulWidget {
         document.documentElement.style.background = theme.background;
         document.documentElement.style.width = '100%';
         document.documentElement.style.overflowX = 'hidden';
+        document.documentElement.style.overflowY = 'auto';
+        document.documentElement.style.height = 'auto';
+        document.documentElement.style.minHeight = '100%';
         if (document.body) {
           document.body.style.background = theme.background;
           document.body.style.width = '100%';
           document.body.style.margin = '0';
           document.body.style.overflowX = 'hidden';
+          document.body.style.overflowY = 'auto';
+          document.body.style.height = 'auto';
+          document.body.style.minHeight = '100%';
         }
         var style = document.getElementById('fastcat-payment-theme');
         if (!style) {
@@ -244,11 +250,11 @@ class PaymentWebViewPage extends ConsumerStatefulWidget {
           (document.head || document.documentElement).appendChild(style);
         }
         style.textContent = ''
-          + 'html,body{box-sizing:border-box !important;width:100% !important;height:100% !important;min-width:0 !important;max-width:100% !important;margin:0 !important;overflow-x:hidden !important;overflow-y:auto !important;background:' + theme.background + ' !important;color-scheme:' + (theme.isDark ? 'dark' : 'light') + ' !important;}'
+          + 'html,body{box-sizing:border-box !important;width:100% !important;height:auto !important;min-height:100% !important;min-width:0 !important;max-width:100% !important;margin:0 !important;overflow-x:hidden !important;overflow-y:auto !important;background:' + theme.background + ' !important;color-scheme:' + (theme.isDark ? 'dark' : 'light') + ' !important;}'
           + '*,*:before,*:after{box-sizing:border-box !important;}'
-          + 'body > *{max-width:100% !important;}'
-          + 'iframe,frame,embed,object{display:block !important;width:100% !important;max-width:100% !important;border:none !important;overflow-x:hidden !important;overflow-y:auto !important;}'
-          + '.container,.wrapper,.content,.page,#app,#root,#main{width:100% !important;max-width:100% !important;min-width:0 !important;overflow-x:hidden !important;}'
+          + 'body > *{max-width:100% !important;overflow-x:hidden !important;}'
+          + 'iframe,frame,embed,object{display:block !important;width:100% !important;max-width:100% !important;min-height:100vh !important;border:none !important;overflow-x:hidden !important;}'
+          + '.container,.wrapper,.content,.page,#app,#root,#main{width:100% !important;max-width:100% !important;min-width:0 !important;overflow-x:hidden !important;overflow-y:visible !important;}'
           + 'img,video,canvas,svg,table{max-width:100% !important;}';
       } catch (_) {}
     };
@@ -328,10 +334,14 @@ class PaymentWebViewPage extends ConsumerStatefulWidget {
           var selectors = ['iframe', 'frame', 'embed', 'object', '#app', '#root', '#main', '.container', '.wrapper', '.content', '.page'];
           document.documentElement.style.overflowX = 'hidden';
           document.documentElement.style.overflowY = 'auto';
+          document.documentElement.style.height = 'auto';
+          document.documentElement.style.minHeight = '100%';
           document.documentElement.style.maxWidth = '100%';
           if (document.body) {
             document.body.style.overflowX = 'hidden';
             document.body.style.overflowY = 'auto';
+            document.body.style.height = 'auto';
+            document.body.style.minHeight = '100%';
             document.body.style.maxWidth = '100%';
           }
           for (var s = 0; s < selectors.length; s++) {
@@ -345,7 +355,9 @@ class PaymentWebViewPage extends ConsumerStatefulWidget {
                 node.style.border = 'none';
                 node.style.display = 'block';
                 node.style.overflowX = 'hidden';
-                node.style.overflowY = 'auto';
+                node.style.minHeight = '100vh';
+              } else {
+                node.style.overflowY = 'visible';
               }
             }
           }

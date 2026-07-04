@@ -80,7 +80,8 @@ class DesktopCrispChatPage extends StatefulWidget {
     this.onClose,
   });
 
-  static bool get isSupported => Platform.isWindows && WebView2Check.isInstalled();
+  static bool get isSupported =>
+      Platform.isWindows && WebView2Check.isInstalled();
 
   @override
   State<DesktopCrispChatPage> createState() => _DesktopCrispChatPageState();
@@ -117,6 +118,8 @@ class _DesktopCrispChatPageState extends State<DesktopCrispChatPage> {
   late final WebviewController _controller;
   Timer? _sdkFallbackTimer;
   Timer? _embedFallbackTimer;
+  Timer? _readyPollTimer;
+  StreamSubscription<WebErrorStatus>? _loadErrorSubscription;
   bool _usingSdkBootstrap = false;
   bool _usingProxy = false;
   bool _didFallbackToOfficial = false;
@@ -159,6 +162,8 @@ class _DesktopCrispChatPageState extends State<DesktopCrispChatPage> {
   void dispose() {
     _sdkFallbackTimer?.cancel();
     _embedFallbackTimer?.cancel();
+    _readyPollTimer?.cancel();
+    _loadErrorSubscription?.cancel();
     _controller.dispose();
     super.dispose();
   }
@@ -170,6 +175,12 @@ class _DesktopCrispChatPageState extends State<DesktopCrispChatPage> {
         _customerServiceBackgroundColor(_isDarkMode),
       );
       await _controller.setPopupWindowPolicy(WebviewPopupWindowPolicy.deny);
+      _loadErrorSubscription ??= _controller.onLoadError.listen((_) {
+        _handleRouteError();
+      });
+      await _controller.addScriptToExecuteOnDocumentCreated(
+        _buildDesktopDirectEmbedDocumentScript(),
+      );
       unawaited(_loadSdkBootstrap());
     } catch (_) {
       _showStartupFailure();
@@ -188,19 +199,10 @@ class _DesktopCrispChatPageState extends State<DesktopCrispChatPage> {
   Future<void> _loadSdkBootstrap() async {
     _sdkFallbackTimer?.cancel();
     _embedFallbackTimer?.cancel();
-    _usingSdkBootstrap = true;
-    _usingProxy = false;
+    _usingSdkBootstrap = false;
+    _usingProxy = isCrispProxyConfigured(widget.crispProxyUrl);
     _didFallbackToOfficial = false;
-    _setLoading();
-    _sdkFallbackTimer = Timer(
-      crispProxyFallbackDelay,
-      () => unawaited(_fallbackFromSdkToEmbed()),
-    );
-    try {
-      await _controller.loadStringContent(_buildSdkBootstrapHtml());
-    } catch (_) {
-      _showStartupFailure();
-    }
+    _loadEmbed(_preferredEmbedUri(), usingProxy: _usingProxy);
   }
 
   Future<void> _fallbackFromSdkToEmbed() async {
@@ -225,9 +227,30 @@ class _DesktopCrispChatPageState extends State<DesktopCrispChatPage> {
       const Duration(seconds: 25),
       () => unawaited(_handleEmbedTimeout()),
     );
+    _startReadyPolling();
     unawaited(_controller.loadUrl(uri.toString()).catchError((_) {
       _handleRouteError();
     }));
+  }
+
+  void _startReadyPolling() {
+    _readyPollTimer?.cancel();
+    _readyPollTimer = Timer.periodic(const Duration(milliseconds: 600), (_) {
+      unawaited(_markReadyIfCrispLoaded());
+    });
+  }
+
+  Future<void> _markReadyIfCrispLoaded() async {
+    if (!mounted || _hasTimedOut) return;
+    if (!await _isCrispReady()) return;
+    _readyPollTimer?.cancel();
+    _embedFallbackTimer?.cancel();
+    if (!mounted) return;
+    setState(() {
+      _isLoading = false;
+      _hasTimedOut = false;
+      _didFailStartup = false;
+    });
   }
 
   Future<void> _handleEmbedTimeout() async {
@@ -299,6 +322,7 @@ class _DesktopCrispChatPageState extends State<DesktopCrispChatPage> {
   void _showTimeout() {
     _sdkFallbackTimer?.cancel();
     _embedFallbackTimer?.cancel();
+    _readyPollTimer?.cancel();
     if (!mounted) return;
     setState(() {
       _isLoading = false;
@@ -310,6 +334,7 @@ class _DesktopCrispChatPageState extends State<DesktopCrispChatPage> {
   void _showStartupFailure() {
     _sdkFallbackTimer?.cancel();
     _embedFallbackTimer?.cancel();
+    _readyPollTimer?.cancel();
     if (!mounted) return;
     setState(() {
       _isLoading = false;
@@ -321,6 +346,7 @@ class _DesktopCrispChatPageState extends State<DesktopCrispChatPage> {
   void _handleRetry() {
     _sdkFallbackTimer?.cancel();
     _embedFallbackTimer?.cancel();
+    _readyPollTimer?.cancel();
     _didStartLoading = false;
     _usingSdkBootstrap = false;
     _usingProxy = false;
@@ -333,204 +359,88 @@ class _DesktopCrispChatPageState extends State<DesktopCrispChatPage> {
     }
   }
 
-  String _buildSdkBootstrapHtml() {
-    final strings = _strings;
-    final websiteIdJson = jsonEncode(widget.websiteId);
+  String _buildDesktopDirectEmbedDocumentScript() {
+    final userScript = widget.userScript ?? '';
     final localeTag = _localeTag ?? 'en';
+    final crispLocale = _crispLocaleFromTag(localeTag);
     final localeTagJson = jsonEncode(localeTag);
-    final crispLocaleJson = jsonEncode(_crispLocaleFromTag(localeTag));
-    final colorModeJson = jsonEncode(_isDarkMode ? 'dark' : 'light');
+    final crispLocaleJson = jsonEncode(crispLocale);
+    final isDarkJson = _isDarkMode ? 'true' : 'false';
     final background = _customerServiceBackgroundColorValue(_isDarkMode);
     final foreground = _customerServiceForegroundColorValue(_isDarkMode);
-    final userScript = widget.userScript ?? '';
-    final titleJson = jsonEncode(strings.title);
-    final connectingJson = jsonEncode(strings.connecting);
-    final loadingSlowJson = jsonEncode(strings.loadingSlow);
-    final loadFailedJson = jsonEncode(strings.loadFailed);
-    return '''<!DOCTYPE html>
-<html>
-<head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1">
-  <title>${strings.title}</title>
-  <style>
-    * { box-sizing: border-box; }
-    html, body {
-      width: 100%;
-      height: 100%;
-      margin: 0;
-      background: $background;
-      color: $foreground;
-      overflow: hidden;
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-    }
-    #loading {
-      position: fixed;
-      inset: 0;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 12px;
-      background: $background;
-      color: $foreground;
-      font-size: 14px;
-      z-index: 2147483647;
-    }
-    #spinner {
-      width: 18px;
-      height: 18px;
-      border: 2px solid rgba(148, 163, 184, 0.35);
-      border-top-color: #2563eb;
-      border-radius: 50%;
-      animation: spin 0.8s linear infinite;
-    }
-    @keyframes spin { to { transform: rotate(360deg); } }
-  </style>
-</head>
-<body>
-  <div id="loading"><span id="spinner"></span><span id="loading-text">${strings.connecting}</span></div>
-  <script>
+    return '''
+(function(){
+  try {
     window.\$crisp = window.\$crisp || [];
-    window.CRISP_WEBSITE_ID = $websiteIdJson;
-    window.CRISP_RUNTIME_CONFIG = {
-      locale: $crispLocaleJson,
-      lock_full_view: true
-    };
+    try {
+      $userScript
+    } catch(_) {}
     window.__fastcatCrispReady = false;
     window.__fastcatCustomerServiceLocale = $localeTagJson;
     window.__fastcatCustomerServiceCrispLocale = $crispLocaleJson;
-    window.__fastcatApplyCustomerServiceTheme = function(theme){
+    window.CRISP_RUNTIME_CONFIG = window.CRISP_RUNTIME_CONFIG || {};
+    window.CRISP_RUNTIME_CONFIG.locale = window.__fastcatCustomerServiceCrispLocale;
+    window.CRISP_RUNTIME_CONFIG.lock_full_view = true;
+    function syncCrisp(){
       try {
-        document.documentElement.style.background = theme.background;
-        document.documentElement.style.colorScheme = theme.isDark ? 'dark' : 'light';
-        if (document.body) {
-          document.body.style.background = theme.background;
-          document.body.style.color = theme.foreground;
-        }
-        var loading = document.getElementById('loading');
-        if (loading) {
-          loading.style.background = theme.background;
-          loading.style.color = theme.foreground;
-        }
-        var spinner = document.getElementById('spinner');
-        if (spinner) {
-          spinner.style.borderTopColor = theme.accent || '#2563eb';
-        }
         window.\$crisp = window.\$crisp || [];
-        window.\$crisp.push(["config", "locale", [window.__fastcatCustomerServiceCrispLocale || 'en']]);
-        window.\$crisp.push(["config", "color:mode", [theme.isDark ? "dark" : "light"]]);
-        window.CRISP_RUNTIME_CONFIG = window.CRISP_RUNTIME_CONFIG || {};
-        window.CRISP_RUNTIME_CONFIG.locale = window.__fastcatCustomerServiceCrispLocale || 'en';
-      } catch (_) {}
-    };
-    try {
-      Object.defineProperty(navigator, 'language', { get: function(){ return window.__fastcatCustomerServiceLocale; }, configurable: true });
-      Object.defineProperty(navigator, 'languages', { get: function(){ return [window.__fastcatCustomerServiceLocale]; }, configurable: true });
-    } catch (_) {}
-    $userScript
-
-    (function(){
-      var title = $titleJson;
-      var colorMode = $colorModeJson;
-      var connecting = $connectingJson;
-      var loadingSlow = $loadingSlowJson;
-      var loadFailed = $loadFailedJson;
-      var loading = document.getElementById('loading');
-      var loadingText = document.getElementById('loading-text');
-      var ready = false;
-      document.title = title;
-      document.documentElement.lang = window.__fastcatCustomerServiceLocale || 'en';
-      window.__fastcatApplyCustomerServiceTheme({
-        isDark: colorMode === 'dark',
-        background: '$background',
-        foreground: '$foreground'
+        window.\$crisp.push(["safe", true]);
+        window.\$crisp.push(["config", "locale", [window.__fastcatCustomerServiceCrispLocale || "en"]]);
+        window.\$crisp.push(["config", "color:mode", [$isDarkJson ? "dark" : "light"]]);
+        window.\$crisp.push(["do", "chat:show"]);
+        window.\$crisp.push(["do", "chat:open"]);
+      } catch(_) {}
+    }
+    function applyFrameStyle(){
+      try {
+        document.documentElement.lang = window.__fastcatCustomerServiceLocale || "en";
+        document.documentElement.style.background = "$background";
+        document.documentElement.style.colorScheme = $isDarkJson ? "dark" : "light";
+        if (document.body) {
+          document.body.style.background = "$background";
+          document.body.style.color = "$foreground";
+          document.body.style.margin = "0";
+          document.body.style.overflow = "hidden";
+        }
+        var style = document.getElementById("fastcat-desktop-crisp-style");
+        if (!style) {
+          style = document.createElement("style");
+          style.id = "fastcat-desktop-crisp-style";
+          (document.head || document.documentElement).appendChild(style);
+        }
+        style.textContent =
+          "html,body{width:100%!important;height:100%!important;margin:0!important;overflow:hidden!important;background:$background!important;color-scheme:" + ($isDarkJson ? "dark" : "light") + "!important;}" +
+          "iframe[src*=crisp],.crisp-client,[class*=crisp],[id*=crisp]{position:fixed!important;inset:0!important;width:100%!important;height:100%!important;max-width:none!important;max-height:none!important;margin:0!important;padding:0!important;border:0!important;border-radius:0!important;background:$background!important;}";
+      } catch(_) {}
+    }
+    function markReadyIfPossible(){
+      try {
+        syncCrisp();
+        applyFrameStyle();
+        var interactive = document.querySelector("textarea,input,[contenteditable=true],button,a[href^=mailto],iframe[src*=crisp],.crisp-client,[class*=crisp]");
+        if (interactive) {
+          window.__fastcatCrispReady = true;
+        }
+      } catch(_) {}
+    }
+    syncCrisp();
+    if (document.readyState === "loading") {
+      document.addEventListener("DOMContentLoaded", function(){
+        applyFrameStyle();
+        markReadyIfPossible();
       });
-
-      function openChat(){
-        try {
-          window.\$crisp = window.\$crisp || [];
-          window.\$crisp.push(["config", "locale", [window.__fastcatCustomerServiceCrispLocale || 'en']]);
-          window.\$crisp.push(["config", "color:mode", [colorMode]]);
-          window.\$crisp.push(["safe", true]);
-          window.\$crisp.push(["do", "chat:show"]);
-          window.\$crisp.push(["do", "chat:open"]);
-        } catch(_) {}
-      }
-
-      function markReady(){
-        if (ready) return;
-        ready = true;
-        window.__fastcatCrispReady = true;
-        openChat();
-        if (loading) loading.style.display = 'none';
-      }
-
-      function forceNode(node){
-        if (!node || !node.style) return;
-        node.style.cssText = 'position:absolute!important;inset:0!important;left:0!important;top:0!important;width:100%!important;height:100%!important;min-width:100%!important;min-height:100%!important;max-width:none!important;max-height:none!important;margin:0!important;padding:0!important;border:none!important;border-radius:0!important;transform:none!important;z-index:2147483646!important;background:$background!important;overflow:hidden!important;';
-      }
-
-      function expandFrames(){
-        try {
-          document.documentElement.style.overflow = 'hidden';
-          document.documentElement.style.width = '100%';
-          document.documentElement.style.height = '100%';
-          if (document.body) {
-            document.body.style.overflow = 'hidden';
-            document.body.style.width = '100%';
-            document.body.style.height = '100%';
-            document.body.style.margin = '0';
-            document.body.style.background = '$background';
-          }
-          var crispNodes = document.querySelectorAll('#crisp-chatbox,.crisp-client');
-          for (var n = 0; n < crispNodes.length; n++) {
-            forceNode(crispNodes[n]);
-          }
-          var frames = document.querySelectorAll('iframe');
-          for (var i = 0; i < frames.length; i++) {
-            var src = frames[i].src || '';
-            if (src.indexOf('crisp') === -1) continue;
-            forceNode(frames[i]);
-            var parent = frames[i].parentElement;
-            if (parent) forceNode(parent);
-            markReady();
-          }
-        } catch (_) {}
-      }
-
-      window.CRISP_READY_TRIGGER = markReady;
-
-      var openTimer = setInterval(function(){
-        openChat();
-        expandFrames();
-      }, 500);
-      setTimeout(function(){
-        clearInterval(openTimer);
-        openChat();
-        expandFrames();
-        if (!ready && loadingText) loadingText.textContent = loadingSlow;
-      }, 15000);
-
-      new MutationObserver(function(){
-        openChat();
-        expandFrames();
-      }).observe(document.documentElement, {
-        childList: true,
-        subtree: true,
-        attributes: true
-      });
-
-      var script = document.createElement('script');
-      script.src = 'https://client.crisp.chat/l.js';
-      script.async = true;
-      script.onerror = function(){
-        if (loadingText) loadingText.textContent = loadFailed;
-      };
-      document.head.appendChild(script);
-    })();
-  </script>
-</body>
-</html>''';
+    } else {
+      applyFrameStyle();
+      markReadyIfPossible();
+    }
+    setInterval(markReadyIfPossible, 600);
+    new MutationObserver(markReadyIfPossible).observe(document.documentElement, {
+      childList: true,
+      subtree: true,
+      attributes: true
+    });
+  } catch(_) {}
+})();''';
   }
 
   Future<void> _applyTheme() async {

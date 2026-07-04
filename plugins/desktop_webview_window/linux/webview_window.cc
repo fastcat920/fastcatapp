@@ -58,6 +58,31 @@ void apply_widget_background(GtkWidget *widget, const char *css_name) {
   gtk_widget_set_name(widget, css_name);
 }
 
+void center_window_on_monitor(GtkWidget *window, int width, int height) {
+  auto *display = gdk_display_get_default();
+  if (display == nullptr) return;
+
+  GdkMonitor *monitor = nullptr;
+  auto *gdk_window = gtk_widget_get_window(window);
+  if (gdk_window != nullptr) {
+    monitor = gdk_display_get_monitor_at_window(display, gdk_window);
+  }
+  if (monitor == nullptr) {
+    monitor = gdk_display_get_primary_monitor(display);
+  }
+  if (monitor == nullptr) {
+    monitor = gdk_display_get_monitor(display, 0);
+  }
+  if (monitor == nullptr) return;
+
+  GdkRectangle geometry;
+  gdk_monitor_get_workarea(monitor, &geometry);
+  const int x = geometry.x + (geometry.width - width) / 2;
+  const int y = geometry.y + (geometry.height - height) / 2;
+  gtk_window_move(GTK_WINDOW(window), x < geometry.x ? geometry.x : x,
+                  y < geometry.y ? geometry.y : y);
+}
+
 }
 
 WebviewWindow::WebviewWindow(
@@ -181,6 +206,8 @@ WebviewWindow::WebviewWindow(
         GTK_WINDOW(window_),
         window_pos_x_,
         window_pos_y_);
+  } else {
+    center_window_on_monitor(window_, width, height);
   }
   gtk_widget_grab_focus(GTK_WIDGET(webview_));
 

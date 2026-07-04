@@ -68,17 +68,13 @@ class DesktopWebviewWindowHelper {
           // window off-screen on Linux Wayland compositors).
           if (posX < 0) posX = 0;
           if (posY < 0) posY = 0;
-          useWindowPositionAndSize = true;
-          // On some Linux WM / Wayland compositors getPosition() returns (0,0)
-          // even though the window is actually centered.  When both computed
-          // coordinates are zero the visible position is the same with or
-          // without explicit positioning; keep the size constraint enabled.
+          useWindowPositionAndSize =
+              !(Platform.isLinux && mainPosX == 0 && mainPosY == 0);
         }
       } catch (_) {
         useWindowPositionAndSize = false;
       }
     }
-
 
     return WebviewWindow.create(
       configuration: CreateConfiguration(

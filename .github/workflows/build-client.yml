@@ -113,7 +113,7 @@ jobs:
 
   windows:
     name: Windows amd64
-    runs-on: windows-latest
+    runs-on: windows-2022
     if: github.event_name == 'push' || inputs.build_windows || inputs.build_windows_universal
 
     steps:
@@ -592,7 +592,7 @@ jobs:
 
   windows_universal:
     name: Windows universal installer
-    runs-on: windows-latest
+    runs-on: windows-2022
     needs: [windows, windows_arm64]
     if: github.event_name == 'workflow_dispatch' && inputs.build_windows_universal
 
