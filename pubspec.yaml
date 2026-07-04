@@ -81,8 +81,6 @@ dependencies:
     path: lib/sdk/flutter_xboard_sdk
   desktop_webview_window:
     path: plugins/desktop_webview_window
-  webview_cef:
-    path: plugins/webview_cef_linux
   flutter_inappwebview: ^6.1.5
   webview_win_floating:
     path: plugins/webview_win_floating

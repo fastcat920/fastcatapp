@@ -16,6 +16,7 @@ class NoticeHtmlStyles {
     required BuildContext context,
     required String htmlContent,
     required Function(String?)? onTapUrl,
+    bool preserveDocumentStyles = false,
   }) {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
@@ -27,11 +28,28 @@ class NoticeHtmlStyles {
         onTapUrl?.call(url);
         return true; // 返回true表示已处理
       },
-      textStyle: textTheme.bodyMedium?.copyWith(
-        color: colorScheme.onSurface,
-        height: 1.6,
-      ),
+      textStyle: preserveDocumentStyles
+          ? textTheme.bodyMedium?.copyWith(height: 1.6)
+          : textTheme.bodyMedium?.copyWith(
+              color: colorScheme.onSurface,
+              height: 1.6,
+            ),
       customStylesBuilder: (element) {
+        if (preserveDocumentStyles) {
+          switch (element.localName) {
+            case 'img':
+              return {
+                'max-width': '100%',
+                'height': 'auto',
+              };
+            case 'table':
+              return {
+                'max-width': '100%',
+              };
+            default:
+              return null;
+          }
+        }
         // 根据不同的HTML标签返回对应的样式
         switch (element.localName) {
           case 'h1':

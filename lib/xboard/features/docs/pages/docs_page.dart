@@ -368,8 +368,11 @@ class _DocsPageState extends ConsumerState<DocsPage>
       rawList = articles is List
           ? articles
           : nestedData is List
-          ? nestedData
-          : dataField.values.whereType<List>().expand((list) => list).toList();
+              ? nestedData
+              : dataField.values
+                  .whereType<List>()
+                  .expand((list) => list)
+                  .toList();
     } else {
       rawList = [];
     }
@@ -598,12 +601,17 @@ p{margin:8px 0}
 </style></head><body>$s</body></html>''';
   }
 
-  static String _extractBodyHtml(String documentHtml) {
-    final match = RegExp(
+  static String _prepareHtmlWidgetContent(String documentHtml) {
+    final styleTags = RegExp(
+      r'<style\b[^>]*>[\s\S]*?<\/style>',
+      caseSensitive: false,
+    ).allMatches(documentHtml).map((match) => match.group(0)!).join('\n');
+    final bodyMatch = RegExp(
       r'<body[^>]*>([\s\S]*)</body>',
       caseSensitive: false,
     ).firstMatch(documentHtml);
-    return match?.group(1)?.trim() ?? documentHtml;
+    final bodyHtml = bodyMatch?.group(1)?.trim() ?? documentHtml;
+    return styleTags.isEmpty ? bodyHtml : '$styleTags\n$bodyHtml';
   }
 
   @override
@@ -723,11 +731,11 @@ p{margin:8px 0}
   void _initWebView(String content) {
     final isDark =
         WidgetsBinding.instance.platformDispatcher.platformBrightness ==
-        Brightness.dark;
+            Brightness.dark;
     final fullHtml = _contentToHtml(content, isDark: isDark);
 
     if (Platform.isLinux) {
-      _htmlWidgetHtml = _extractBodyHtml(fullHtml);
+      _htmlWidgetHtml = _prepareHtmlWidgetContent(fullHtml);
       _useHtmlWidget = true;
       if (mounted) setState(() => _webLoading = false);
       return;
@@ -909,6 +917,7 @@ p{margin:8px 0}
         child: NoticeHtmlStyles.buildNoticeHtml(
           context: context,
           htmlContent: _htmlWidgetHtml!,
+          preserveDocumentStyles: true,
           onTapUrl: (url) {
             final uri = url == null ? null : Uri.tryParse(url);
             if (uri != null) {

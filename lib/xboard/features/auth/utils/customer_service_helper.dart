@@ -35,8 +35,7 @@ const _crispUserDataResolveTimeout = Duration(milliseconds: 1800);
 /// 统一客服入口：按业务约定仅使用 Crisp（远程优先，本地兜底）
 ///
 /// Android/iOS/macOS → 内嵌 WebView（webview_flutter）
-/// Windows → 内嵌 WebView 页（webview_win_floating）
-/// Linux → 内嵌 CEF WebView 页（webview_cef）
+/// Windows/Linux → 独立 WebView 窗口（desktop_webview_window）
 class CustomerServiceHelper {
   CustomerServiceHelper._();
 
@@ -109,8 +108,7 @@ class CustomerServiceHelper {
     String? accent,
   }) async {
     final brightness = _customerServiceBrightness(isDarkMode);
-    final effectiveAccent =
-        accent ??
+    final effectiveAccent = accent ??
         _desktopCustomerServiceAccent ??
         _customerServiceAccent(isDarkMode);
     _desktopCustomerServiceBrightness = brightness;
@@ -436,12 +434,9 @@ class CustomerServiceHelper {
     if (crispId.isNotEmpty) {
       if (!context.mounted) return;
       final ipDataFuture = _resolveCrispIPDataForInitialInjection(context);
-      final crispProxyUrl = Platform.isLinux
-          ? await _resolveCrispProxyUrl()
-          : await _resolveUsableCrispProxyUrl(crispId);
-      final fallbackWebsiteUrl = Platform.isLinux
-          ? await _resolveFallbackWebsiteUrl()
-          : '';
+      final crispProxyUrl = await _resolveUsableCrispProxyUrl(crispId);
+      final fallbackWebsiteUrl =
+          Platform.isLinux ? await _resolveFallbackWebsiteUrl() : '';
       if (!context.mounted) return;
       final ipData = await ipDataFuture;
       if (!context.mounted) return;
@@ -543,8 +538,7 @@ class CustomerServiceHelper {
       final fg = _customerServiceForeground(isDarkMode);
       // 注入脚本：在 DOMContentLoaded 后用 document.write 重写页面，注入 SDK
       // 使用 ssq.push API（官方文档推荐）
-      final injectJs =
-          '''
+      final injectJs = '''
 if(window===window.top){
   document.addEventListener('DOMContentLoaded',function(){
     document.open();
@@ -781,9 +775,8 @@ if(window===window.top){
       final uri = Uri.tryParse(url.trim());
       if (uri == null || !uri.hasScheme || uri.host.isEmpty) return;
       final origin = _originFromUri(uri);
-      final pathPrefix = uri.path.isNotEmpty && uri.path != '/'
-          ? uri.path
-          : null;
+      final pathPrefix =
+          uri.path.isNotEmpty && uri.path != '/' ? uri.path : null;
       addEndpoint(origin, apiPrefix ?? pathPrefix ?? _configuredApiPrefix());
     }
 
@@ -958,9 +951,8 @@ if(window===window.top){
     final userState = container.read(xboardUserProvider);
     final userInfo = container.read(userInfoProvider);
     final subscriptionInfo = container.read(subscriptionInfoProvider);
-    final profileSubscriptionInfo = container
-        .read(currentProfileProvider)
-        ?.subscriptionInfo;
+    final profileSubscriptionInfo =
+        container.read(currentProfileProvider)?.subscriptionInfo;
 
     final email = (userInfo?.email ?? userState.email ?? '').trim();
     final appVersion = _getAppVersionText();
@@ -968,7 +960,7 @@ if(window===window.top){
     final usedTraffic = profileSubscriptionInfo != null
         ? profileSubscriptionInfo.upload + profileSubscriptionInfo.download
         : (subscriptionInfo?.uploadedBytes ?? 0) +
-              (subscriptionInfo?.downloadedBytes ?? 0);
+            (subscriptionInfo?.downloadedBytes ?? 0);
     final totalTraffic =
         profileSubscriptionInfo?.total ?? subscriptionInfo?.transferLimit ?? 0;
     final expiredAt = subscriptionInfo?.expiredAt;
@@ -1008,16 +1000,25 @@ if(window===window.top){
     String? crispProxyUrl,
     required String userScript,
   }) async {
+    final l10n = AppLocalizations.of(context);
+    final isDarkMode = _isDarkMode(context);
+    final localeTag = Localizations.localeOf(context).toLanguageTag();
     final existing = await _reuseDesktopCustomerServiceWindow(
-      isDarkMode: _isDarkMode(context),
+      isDarkMode: isDarkMode,
     );
     if (existing != null) return;
 
     final future = _createLinuxCrispDesktopWebview(
-      context,
       websiteId: websiteId,
       crispProxyUrl: crispProxyUrl,
       userScript: userScript,
+      title: l10n.contactSupport,
+      connecting: l10n.onlineSupportConnecting,
+      loadingSlow: l10n.customerServiceLoadingSlow,
+      loadFailed: l10n.customerServiceLoadFailed,
+      timeoutText: l10n.xboardConnectionTimeout,
+      localeTag: localeTag,
+      isDarkMode: isDarkMode,
     );
     _desktopCustomerServiceOpening = future;
     try {
@@ -1032,17 +1033,20 @@ if(window===window.top){
     }
   }
 
-  static Future<Webview?> _createLinuxCrispDesktopWebview(
-    BuildContext context, {
+  static Future<Webview?> _createLinuxCrispDesktopWebview({
     required String websiteId,
     String? crispProxyUrl,
     required String userScript,
+    required String title,
+    required String connecting,
+    required String loadingSlow,
+    required String loadFailed,
+    required String timeoutText,
+    required String localeTag,
+    required bool isDarkMode,
   }) async {
     HttpServer? server;
     try {
-      final l10n = AppLocalizations.of(context);
-      final isDarkMode = _isDarkMode(context);
-      final localeTag = Localizations.localeOf(context).toLanguageTag();
       final preferredEmbedUri = crispEmbedUri(
         websiteId: websiteId,
         proxyUrl: crispProxyUrl,
@@ -1054,20 +1058,23 @@ if(window===window.top){
         userScript: userScript,
         localeTag: localeTag,
         isDarkMode: isDarkMode,
-        title: l10n.contactSupport,
-        connecting: l10n.onlineSupportConnecting,
-        loadingSlow: l10n.customerServiceLoadingSlow,
-        loadFailed: l10n.customerServiceLoadFailed,
+        title: title,
+        connecting: connecting,
+        loadingSlow: loadingSlow,
+        loadFailed: loadFailed,
       );
 
       server = await HttpServer.bind(InternetAddress.loopbackIPv4, 0);
       unawaited(_serveLinuxCrispBootstrapRequests(server, html));
 
       final webview = await DesktopWebviewWindowHelper.create(
-        title: l10n.contactSupport,
+        title: title,
         windowWidth: _desktopCustomerServiceWindowWidth,
         windowHeight: _desktopCustomerServiceWindowHeight,
         brightness: _customerServiceBrightness(isDarkMode),
+      );
+      await webview.setApplicationNameForUserAgent(
+        ' Chrome/125.0.0.0 Safari/537.36 FastCat/3.5.5',
       );
       await _applyDesktopCustomerServiceTheme(webview, isDarkMode: isDarkMode);
       webview.addScriptToExecuteOnDocumentCreated(
@@ -1078,7 +1085,7 @@ if(window===window.top){
           preferredEmbedUri: preferredEmbedUri,
           officialEmbedUri: officialEmbedUri,
           crispProxyUrl: crispProxyUrl,
-          timeoutText: l10n.xboardConnectionTimeout,
+          timeoutText: timeoutText,
         ),
       );
       unawaited(
@@ -1455,8 +1462,8 @@ if(window===window.top){
     final precision = size >= 100
         ? 0
         : size >= 10
-        ? 1
-        : 2;
+            ? 1
+            : 2;
     return '${size.toStringAsFixed(precision)} ${units[unitIndex]}';
   }
 }
