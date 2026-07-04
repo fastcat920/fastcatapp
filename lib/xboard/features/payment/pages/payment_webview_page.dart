@@ -21,8 +21,7 @@ const _logger = FileLogger('payment_webview_page.dart');
 /// Desktop Chrome UA used on mobile so payment gateways serve the QR-code
 /// page instead of the H5 cashier that tries (and fails) to invoke Alipay /
 /// WeChat via JSBridge.
-const _desktopUserAgent =
-    'Mozilla/5.0 (Windows NT 10.0; Win64; x64) '
+const _desktopUserAgent = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) '
     'AppleWebKit/537.36 (KHTML, like Gecko) '
     'Chrome/125.0.0.0 Safari/537.36';
 
@@ -94,14 +93,6 @@ class PaymentWebViewPage extends ConsumerStatefulWidget {
       completer.complete(result);
     }
 
-    Future<void> scheduleNextPoll(Duration delay) async {
-      pollTimer?.cancel();
-      if (completer.isCompleted) return;
-      pollTimer = Timer(delay, () {
-        unawaited(checkPaymentStatus());
-      });
-    }
-
     Future<void> checkPaymentStatus() async {
       if (isChecking || completer.isCompleted) return;
       isChecking = true;
@@ -131,6 +122,14 @@ class PaymentWebViewPage extends ConsumerStatefulWidget {
           unawaited(scheduleNextPoll(const Duration(seconds: 5)));
         }
       }
+    }
+
+    Future<void> scheduleNextPoll(Duration delay) async {
+      pollTimer?.cancel();
+      if (completer.isCompleted) return;
+      pollTimer = Timer(delay, () {
+        unawaited(checkPaymentStatus());
+      });
     }
 
     try {
@@ -774,15 +773,15 @@ class _PaymentWebViewPageState extends ConsumerState<PaymentWebViewPage> {
               onRetry: _initLinuxCefWebView,
             )
           : controller != null
-          ? ValueListenableBuilder<bool>(
-              valueListenable: controller,
-              builder: (context, ready, child) {
-                return ready
-                    ? controller.webviewWidget
-                    : const SizedBox.expand();
-              },
-            )
-          : const SizedBox.expand();
+              ? ValueListenableBuilder<bool>(
+                  valueListenable: controller,
+                  builder: (context, ready, child) {
+                    return ready
+                        ? controller.webviewWidget
+                        : const SizedBox.expand();
+                  },
+                )
+              : const SizedBox.expand();
     } else if (_useSystemWebView) {
       webView = _webViewController != null
           ? WebViewWidget(controller: _webViewController!)
