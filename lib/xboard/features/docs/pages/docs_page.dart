@@ -601,6 +601,7 @@ p{margin:8px 0}
 </style></head><body>$s</body></html>''';
   }
 
+  // ignore: unused_element
   static String _prepareHtmlWidgetContent(String documentHtml) {
     final bodyMatch = RegExp(
       r'<body[^>]*>([\s\S]*)</body>',
@@ -752,14 +753,7 @@ p{margin:8px 0}
             Brightness.dark;
     final fullHtml = _contentToHtml(content, isDark: isDark);
 
-    if (Platform.isLinux) {
-      _htmlWidgetHtml = _prepareHtmlWidgetContent(fullHtml);
-      _useHtmlWidget = true;
-      if (mounted) setState(() => _webLoading = false);
-      return;
-    }
-
-    if (Platform.isWindows) {
+    if (Platform.isWindows || Platform.isLinux) {
       _inAppWebViewHtml = fullHtml;
       _useInAppWebView = true;
       if (mounted) setState(() => _webLoading = false);

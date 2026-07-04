@@ -12,6 +12,31 @@ const _desktopCrispUserAgent = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) '
     'AppleWebKit/537.36 (KHTML, like Gecko) '
     'Chrome/125.0.0.0 Safari/537.36';
 
+String _crispLocaleFromTag(String localeTag) {
+  final normalized = localeTag.trim().replaceAll('_', '-').toLowerCase();
+  if (normalized.isEmpty) return 'en';
+  final language = normalized.split('-').first;
+  return switch (language) {
+    'zh' => 'zh',
+    'ja' => 'ja',
+    'ko' => 'ko',
+    'en' => 'en',
+    _ => language,
+  };
+}
+
+Uri _localizedCrispUri(Uri uri, String? localeTag) {
+  final tag =
+      (localeTag == null || localeTag.trim().isEmpty) ? 'en' : localeTag.trim();
+  return uri.replace(
+    queryParameters: {
+      ...uri.queryParameters,
+      'locale': _crispLocaleFromTag(tag),
+      'lang': tag,
+    },
+  );
+}
+
 /// Crisp 客服嵌入页面
 ///
 /// 在应用内通过 WebView 加载 Crisp 聊天窗口，无需跳转外部浏览器。
@@ -182,25 +207,11 @@ class _DesktopCrispChatPageState extends State<DesktopCrispChatPage> {
   }
 
   Future<void> _loadSdkBootstrap() async {
-    _sdkFallbackTimer?.cancel();
-    _embedFallbackTimer?.cancel();
-    _usingSdkBootstrap = true;
-    _usingProxy = false;
     _didFallbackToOfficial = false;
-    _setLoading();
-    _sdkFallbackTimer = Timer(
-      crispProxyFallbackDelay,
-      () => unawaited(_fallbackFromSdkToEmbed()),
+    _loadEmbed(
+      _preferredEmbedUri(),
+      usingProxy: isCrispProxyConfigured(widget.crispProxyUrl),
     );
-    try {
-      debugPrint('[Crisp][Desktop] loadData bootstrap');
-      await _controller.loadHtmlString(
-        _buildSdkBootstrapHtml(),
-        baseUrl: _sdkBootstrapBaseUri().toString(),
-      );
-    } catch (_) {
-      _showStartupFailure();
-    }
   }
 
   Future<void> _fallbackFromSdkToEmbed() async {
@@ -264,7 +275,10 @@ class _DesktopCrispChatPageState extends State<DesktopCrispChatPage> {
     }
     _didFallbackToOfficial = true;
     _usingProxy = false;
-    _loadEmbed(officialCrispEmbedUri(widget.websiteId), usingProxy: false);
+    _loadEmbed(
+      _localizedCrispUri(officialCrispEmbedUri(widget.websiteId), _localeTag),
+      usingProxy: false,
+    );
   }
 
   bool _isProxyUrl(String url) {
@@ -287,12 +301,16 @@ class _DesktopCrispChatPageState extends State<DesktopCrispChatPage> {
   }
 
   Uri _preferredEmbedUri() {
-    return crispEmbedUri(
-      websiteId: widget.websiteId,
-      proxyUrl: widget.crispProxyUrl,
+    return _localizedCrispUri(
+      crispEmbedUri(
+        websiteId: widget.websiteId,
+        proxyUrl: widget.crispProxyUrl,
+      ),
+      _localeTag,
     );
   }
 
+  // ignore: unused_element
   Uri _sdkBootstrapBaseUri() {
     final uri = _preferredEmbedUri();
     return uri.replace(
@@ -331,6 +349,7 @@ class _DesktopCrispChatPageState extends State<DesktopCrispChatPage> {
     });
   }
 
+  // ignore: unused_element
   void _showStartupFailure() {
     _sdkFallbackTimer?.cancel();
     _embedFallbackTimer?.cancel();
@@ -342,10 +361,13 @@ class _DesktopCrispChatPageState extends State<DesktopCrispChatPage> {
     });
   }
 
+  // ignore: unused_element
   String _buildSdkBootstrapHtml() {
     final strings = _strings;
     final websiteIdJson = jsonEncode(widget.websiteId);
-    final localeTagJson = jsonEncode(_localeTag ?? 'en');
+    final localeTag = _localeTag ?? 'en';
+    final localeTagJson = jsonEncode(localeTag);
+    final crispLocaleJson = jsonEncode(_crispLocaleFromTag(localeTag));
     final colorModeJson = jsonEncode(_isDarkMode ? 'dark' : 'light');
     final background = _customerServiceBackgroundColorValue(_isDarkMode);
     final foreground = _customerServiceForegroundColorValue(_isDarkMode);
@@ -400,11 +422,12 @@ class _DesktopCrispChatPageState extends State<DesktopCrispChatPage> {
     window.\$crisp = window.\$crisp || [];
     window.CRISP_WEBSITE_ID = $websiteIdJson;
     window.CRISP_RUNTIME_CONFIG = {
-      locale: $localeTagJson,
+      locale: $crispLocaleJson,
       lock_full_view: true
     };
     window.__fastcatCrispReady = false;
     window.__fastcatCustomerServiceLocale = $localeTagJson;
+    window.__fastcatCustomerServiceCrispLocale = $crispLocaleJson;
     window.__fastcatApplyCustomerServiceTheme = function(theme){
       try {
         document.documentElement.style.background = theme.background;
@@ -423,10 +446,10 @@ class _DesktopCrispChatPageState extends State<DesktopCrispChatPage> {
           spinner.style.borderTopColor = theme.accent || '#2563eb';
         }
         window.\$crisp = window.\$crisp || [];
-        window.\$crisp.push(["config", "locale", [window.__fastcatCustomerServiceLocale || 'en']]);
+        window.\$crisp.push(["config", "locale", [window.__fastcatCustomerServiceCrispLocale || 'en']]);
         window.\$crisp.push(["config", "color:mode", [theme.isDark ? "dark" : "light"]]);
         window.CRISP_RUNTIME_CONFIG = window.CRISP_RUNTIME_CONFIG || {};
-        window.CRISP_RUNTIME_CONFIG.locale = window.__fastcatCustomerServiceLocale || 'en';
+        window.CRISP_RUNTIME_CONFIG.locale = window.__fastcatCustomerServiceCrispLocale || 'en';
       } catch (_) {}
     };
     try {
@@ -455,7 +478,7 @@ class _DesktopCrispChatPageState extends State<DesktopCrispChatPage> {
       function openChat(){
         try {
           window.\$crisp = window.\$crisp || [];
-          window.\$crisp.push(["config", "locale", [window.__fastcatCustomerServiceLocale || 'en']]);
+          window.\$crisp.push(["config", "locale", [window.__fastcatCustomerServiceCrispLocale || 'en']]);
           window.\$crisp.push(["config", "color:mode", [colorMode]]);
           window.\$crisp.push(["safe", true]);
           window.\$crisp.push(["do", "chat:show"]);
@@ -523,6 +546,7 @@ class _DesktopCrispChatPageState extends State<DesktopCrispChatPage> {
     final foreground = _customerServiceForegroundColorValue(_isDarkMode);
     final userScript = widget.userScript ?? '';
     final localeTag = _localeTag ?? 'en';
+    final crispLocale = _crispLocaleFromTag(localeTag);
     final script = '''
 (function(){
   try {
@@ -534,6 +558,9 @@ class _DesktopCrispChatPageState extends State<DesktopCrispChatPage> {
     } catch(_) {}
     window.__fastcatCrispReady = false;
     window.__fastcatCustomerServiceLocale = '${_escapeJsString(localeTag)}';
+    window.__fastcatCustomerServiceCrispLocale = '${_escapeJsString(crispLocale)}';
+    window.CRISP_RUNTIME_CONFIG = window.CRISP_RUNTIME_CONFIG || {};
+    window.CRISP_RUNTIME_CONFIG.locale = window.__fastcatCustomerServiceCrispLocale;
     window.__fastcatApplyCustomerServiceTheme = function(theme){
       try {
         document.documentElement.style.background = theme.background;
@@ -554,8 +581,10 @@ class _DesktopCrispChatPageState extends State<DesktopCrispChatPage> {
           + '#spinner{border:2px solid rgba(148,163,184,0.35) !important;border-top-color:' + (theme.accent || '#2563eb') + ' !important;}'
           + 'iframe[src*="crisp"],.crisp-client,[class*="crisp"],[id*="crisp"]{background:' + theme.background + ' !important;color-scheme:' + (theme.isDark ? 'dark' : 'light') + ' !important;}';
         window.\$crisp = window.\$crisp || [];
-        window.\$crisp.push(["config", "locale", [window.__fastcatCustomerServiceLocale || 'en']]);
+        window.\$crisp.push(["config", "locale", [window.__fastcatCustomerServiceCrispLocale || 'en']]);
         window.\$crisp.push(["config", "color:mode", [theme.isDark ? "dark" : "light"]]);
+        window.CRISP_RUNTIME_CONFIG = window.CRISP_RUNTIME_CONFIG || {};
+        window.CRISP_RUNTIME_CONFIG.locale = window.__fastcatCustomerServiceCrispLocale || 'en';
       } catch (_) {}
     };
     document.documentElement.style.background = '$background';
@@ -575,6 +604,9 @@ class _DesktopCrispChatPageState extends State<DesktopCrispChatPage> {
     }
     function directLooksReady(){
       try {
+        window.\$crisp = window.\$crisp || [];
+        window.\$crisp.push(["config", "locale", [window.__fastcatCustomerServiceCrispLocale || 'en']]);
+        window.\$crisp.push(["config", "color:mode", [${_isDarkMode ? '"dark"' : '"light"'}]]);
         var interactive = document.querySelector('textarea,input,[contenteditable="true"],button,a[href^="mailto:"],iframe[src*="crisp"],.crisp-client,[class*="crisp"]');
         if (interactive) markReady();
       } catch(_) {}
@@ -619,19 +651,21 @@ class _DesktopCrispChatPageState extends State<DesktopCrispChatPage> {
       'loadingSlow': strings.loadingSlow,
       'loadFailed': strings.loadFailed,
       'locale': _localeTag ?? 'en',
+      'crispLocale': _crispLocaleFromTag(_localeTag ?? 'en'),
     });
     final script = '''
 (function(){
   try {
     var payload = $payload;
     window.__fastcatCustomerServiceLocale = payload.locale;
+    window.__fastcatCustomerServiceCrispLocale = payload.crispLocale || payload.locale;
     document.title = payload.title;
     document.documentElement.lang = payload.locale;
     try {
       window.\$crisp = window.\$crisp || [];
-      window.\$crisp.push(["config", "locale", [payload.locale]]);
+      window.\$crisp.push(["config", "locale", [window.__fastcatCustomerServiceCrispLocale]]);
       window.CRISP_RUNTIME_CONFIG = window.CRISP_RUNTIME_CONFIG || {};
-      window.CRISP_RUNTIME_CONFIG.locale = payload.locale;
+      window.CRISP_RUNTIME_CONFIG.locale = window.__fastcatCustomerServiceCrispLocale;
     } catch(_) {}
     var loadingText = document.getElementById('loading-text');
     if (loadingText && loadingText.textContent) {
@@ -942,7 +976,10 @@ class _CrispChatPageState extends State<CrispChatPage> {
     }
     _didFallbackToOfficial = true;
     _usingProxy = false;
-    _loadEmbed(officialCrispEmbedUri(widget.websiteId), usingProxy: false);
+    _loadEmbed(
+      _localizedCrispUri(officialCrispEmbedUri(widget.websiteId), _localeTag),
+      usingProxy: false,
+    );
   }
 
   bool _isProxyUrl(String url) {
@@ -965,9 +1002,12 @@ class _CrispChatPageState extends State<CrispChatPage> {
   }
 
   Uri _preferredEmbedUri() {
-    return crispEmbedUri(
-      websiteId: widget.websiteId,
-      proxyUrl: widget.crispProxyUrl,
+    return _localizedCrispUri(
+      crispEmbedUri(
+        websiteId: widget.websiteId,
+        proxyUrl: widget.crispProxyUrl,
+      ),
+      _localeTag,
     );
   }
 
@@ -1011,7 +1051,9 @@ class _CrispChatPageState extends State<CrispChatPage> {
   String _buildSdkBootstrapHtml() {
     final strings = _strings;
     final websiteIdJson = jsonEncode(widget.websiteId);
-    final localeTagJson = jsonEncode(_localeTag ?? 'en');
+    final localeTag = _localeTag ?? 'en';
+    final localeTagJson = jsonEncode(localeTag);
+    final crispLocaleJson = jsonEncode(_crispLocaleFromTag(localeTag));
     final colorModeJson = jsonEncode(_isDarkMode ? 'dark' : 'light');
     final background = _customerServiceBackgroundColorValue(_isDarkMode);
     final foreground = _customerServiceForegroundColorValue(_isDarkMode);
@@ -1066,11 +1108,12 @@ class _CrispChatPageState extends State<CrispChatPage> {
     window.\$crisp = window.\$crisp || [];
     window.CRISP_WEBSITE_ID = $websiteIdJson;
     window.CRISP_RUNTIME_CONFIG = {
-      locale: $localeTagJson,
+      locale: $crispLocaleJson,
       lock_full_view: true
     };
     window.__fastcatCrispReady = false;
     window.__fastcatCustomerServiceLocale = $localeTagJson;
+    window.__fastcatCustomerServiceCrispLocale = $crispLocaleJson;
     window.__fastcatApplyCustomerServiceTheme = function(theme){
       try {
         document.documentElement.style.background = theme.background;
@@ -1089,10 +1132,10 @@ class _CrispChatPageState extends State<CrispChatPage> {
           spinner.style.borderTopColor = theme.accent || '#2563eb';
         }
         window.\$crisp = window.\$crisp || [];
-        window.\$crisp.push(["config", "locale", [window.__fastcatCustomerServiceLocale || 'en']]);
+        window.\$crisp.push(["config", "locale", [window.__fastcatCustomerServiceCrispLocale || 'en']]);
         window.\$crisp.push(["config", "color:mode", [theme.isDark ? "dark" : "light"]]);
         window.CRISP_RUNTIME_CONFIG = window.CRISP_RUNTIME_CONFIG || {};
-        window.CRISP_RUNTIME_CONFIG.locale = window.__fastcatCustomerServiceLocale || 'en';
+        window.CRISP_RUNTIME_CONFIG.locale = window.__fastcatCustomerServiceCrispLocale || 'en';
       } catch (_) {}
     };
     try {
@@ -1121,7 +1164,7 @@ class _CrispChatPageState extends State<CrispChatPage> {
       function openChat(){
         try {
           window.\$crisp = window.\$crisp || [];
-          window.\$crisp.push(["config", "locale", [window.__fastcatCustomerServiceLocale || 'en']]);
+          window.\$crisp.push(["config", "locale", [window.__fastcatCustomerServiceCrispLocale || 'en']]);
           window.\$crisp.push(["config", "color:mode", [colorMode]]);
           window.\$crisp.push(["safe", true]);
           window.\$crisp.push(["do", "chat:show"]);
@@ -1189,6 +1232,7 @@ class _CrispChatPageState extends State<CrispChatPage> {
     final foreground = _customerServiceForegroundColorValue(_isDarkMode);
     final userScript = widget.userScript ?? '';
     final localeTag = _localeTag ?? 'en';
+    final crispLocale = _crispLocaleFromTag(localeTag);
     final script = '''
 (function(){
   try {
@@ -1200,6 +1244,9 @@ class _CrispChatPageState extends State<CrispChatPage> {
     } catch(_) {}
     window.__fastcatCrispReady = false;
     window.__fastcatCustomerServiceLocale = '${_escapeJsString(localeTag)}';
+    window.__fastcatCustomerServiceCrispLocale = '${_escapeJsString(crispLocale)}';
+    window.CRISP_RUNTIME_CONFIG = window.CRISP_RUNTIME_CONFIG || {};
+    window.CRISP_RUNTIME_CONFIG.locale = window.__fastcatCustomerServiceCrispLocale;
     window.__fastcatApplyCustomerServiceTheme = function(theme){
       try {
         document.documentElement.style.background = theme.background;
@@ -1220,8 +1267,10 @@ class _CrispChatPageState extends State<CrispChatPage> {
           + '#spinner{border:2px solid rgba(148,163,184,0.35) !important;border-top-color:' + (theme.accent || '#2563eb') + ' !important;}'
           + 'iframe[src*="crisp"],.crisp-client,[class*="crisp"],[id*="crisp"]{background:' + theme.background + ' !important;color-scheme:' + (theme.isDark ? 'dark' : 'light') + ' !important;}';
         window.\$crisp = window.\$crisp || [];
-        window.\$crisp.push(["config", "locale", [window.__fastcatCustomerServiceLocale || 'en']]);
+        window.\$crisp.push(["config", "locale", [window.__fastcatCustomerServiceCrispLocale || 'en']]);
         window.\$crisp.push(["config", "color:mode", [theme.isDark ? "dark" : "light"]]);
+        window.CRISP_RUNTIME_CONFIG = window.CRISP_RUNTIME_CONFIG || {};
+        window.CRISP_RUNTIME_CONFIG.locale = window.__fastcatCustomerServiceCrispLocale || 'en';
       } catch (_) {}
     };
     document.documentElement.style.background = '$background';
@@ -1241,6 +1290,9 @@ class _CrispChatPageState extends State<CrispChatPage> {
     }
     function directLooksReady(){
       try {
+        window.\$crisp = window.\$crisp || [];
+        window.\$crisp.push(["config", "locale", [window.__fastcatCustomerServiceCrispLocale || 'en']]);
+        window.\$crisp.push(["config", "color:mode", [${_isDarkMode ? '"dark"' : '"light"'}]]);
         var interactive = document.querySelector('textarea,input,[contenteditable="true"],button,a[href^="mailto:"],iframe[src*="crisp"],.crisp-client,[class*="crisp"]');
         if (interactive) markReady();
       } catch(_) {}
@@ -1306,19 +1358,21 @@ class _CrispChatPageState extends State<CrispChatPage> {
       'loadingSlow': strings.loadingSlow,
       'loadFailed': strings.loadFailed,
       'locale': _localeTag ?? 'en',
+      'crispLocale': _crispLocaleFromTag(_localeTag ?? 'en'),
     });
     final script = '''
 (function(){
   try {
     var payload = $payload;
     window.__fastcatCustomerServiceLocale = payload.locale;
+    window.__fastcatCustomerServiceCrispLocale = payload.crispLocale || payload.locale;
     document.title = payload.title;
     document.documentElement.lang = payload.locale;
     try {
       window.\$crisp = window.\$crisp || [];
-      window.\$crisp.push(["config", "locale", [payload.locale]]);
+      window.\$crisp.push(["config", "locale", [window.__fastcatCustomerServiceCrispLocale]]);
       window.CRISP_RUNTIME_CONFIG = window.CRISP_RUNTIME_CONFIG || {};
-      window.CRISP_RUNTIME_CONFIG.locale = payload.locale;
+      window.CRISP_RUNTIME_CONFIG.locale = window.__fastcatCustomerServiceCrispLocale;
     } catch(_) {}
     var loadingText = document.getElementById('loading-text');
     if (loadingText && loadingText.textContent) {
