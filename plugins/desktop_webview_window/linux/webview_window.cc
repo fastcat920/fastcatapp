@@ -78,10 +78,10 @@ WebviewWindow::WebviewWindow(
     window_id_(window_id),
     on_close_callback_(std::move(on_close_callback)),
     default_user_agent_(),
+    brightness_(brightness),
     window_pos_x_(window_pos_x),
     window_pos_y_(window_pos_y),
-    use_window_position_and_size_(use_window_position_and_size),
-    brightness_(brightness) {
+    use_window_position_and_size_(use_window_position_and_size) {
   g_object_ref(method_channel_);
 
   window_ = gtk_window_new(GTK_WINDOW_TOPLEVEL);
