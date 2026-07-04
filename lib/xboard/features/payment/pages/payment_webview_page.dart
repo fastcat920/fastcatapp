@@ -82,6 +82,8 @@ class PaymentWebViewPage extends ConsumerStatefulWidget {
     var closedByApp = false;
     var isChecking = false;
     final completer = Completer<bool?>();
+    late Future<void> Function(Duration delay) scheduleNextPoll;
+    late Future<void> Function() checkPaymentStatus;
 
     Future<void> finish(bool? result) async {
       if (completer.isCompleted) return;
@@ -93,7 +95,7 @@ class PaymentWebViewPage extends ConsumerStatefulWidget {
       completer.complete(result);
     }
 
-    Future<void> checkPaymentStatus() async {
+    checkPaymentStatus = () async {
       if (isChecking || completer.isCompleted) return;
       isChecking = true;
       var shouldContinuePolling = true;
@@ -122,15 +124,15 @@ class PaymentWebViewPage extends ConsumerStatefulWidget {
           unawaited(scheduleNextPoll(const Duration(seconds: 5)));
         }
       }
-    }
+    };
 
-    Future<void> scheduleNextPoll(Duration delay) async {
+    scheduleNextPoll = (Duration delay) async {
       pollTimer?.cancel();
       if (completer.isCompleted) return;
       pollTimer = Timer(delay, () {
         unawaited(checkPaymentStatus());
       });
-    }
+    };
 
     try {
       webview = await DesktopWebviewWindowHelper.create(
