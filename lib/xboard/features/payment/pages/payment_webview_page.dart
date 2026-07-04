@@ -345,6 +345,7 @@ class PaymentWebViewPage extends ConsumerStatefulWidget {
                 node.style.border = 'none';
                 node.style.display = 'block';
                 node.style.overflowX = 'hidden';
+                node.style.overflowY = 'auto';
               }
             }
           }

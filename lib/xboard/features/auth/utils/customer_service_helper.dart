@@ -25,8 +25,8 @@ import 'package:flutter_xboard_sdk/flutter_xboard_sdk.dart';
 
 const _logger = FileLogger('customer_service_helper.dart');
 const _deviceGatewayApiPrefix = gatewayApiPrefix;
-const _desktopCustomerServiceWindowWidth = 420;
-const _desktopCustomerServiceWindowHeight = 680;
+const _desktopCustomerServiceWindowWidth = 400;
+const _desktopCustomerServiceWindowHeight = 650;
 const _crispProxyProbeTimeout = Duration(seconds: 4);
 const _crispProxyProbePreviewBytes = 4096;
 const _crispProxyUsableCacheTtl = Duration(minutes: 10);

@@ -327,10 +327,10 @@ class _XBoardHomePageState extends ConsumerState<XBoardHomePage>
                         if (showTopInfo)
                           if (isDesktop)
                             Padding(
-                              padding: const EdgeInsets.only(
+                              padding: EdgeInsets.only(
                                   left: horizontalPadding,
                                   right: horizontalPadding,
-                                  top: 0),
+                                  top: topInfoTopGap),
                               child: SizedBox(
                                 height: topInfoSlotHeight,
                                 child: Align(

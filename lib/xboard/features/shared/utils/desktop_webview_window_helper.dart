@@ -64,13 +64,15 @@ class DesktopWebviewWindowHelper {
         if (centerOnMainWindow || matchMainWindow) {
           posX = mainPosX + ((mainWidth - width) / 2).round();
           posY = mainPosY + ((mainHeight - height) / 2).round();
+          // Clamp to screen-visible range (negative positions place the
+          // window off-screen on Linux Wayland compositors).
+          if (posX < 0) posX = 0;
+          if (posY < 0) posY = 0;
           useWindowPositionAndSize = true;
           // On some Linux WM / Wayland compositors getPosition() returns (0,0)
-          // even though the window is actually centered.  Negative or zero
-          // coordinates would place the popup at the top-left corner.
-          if (posX <= 0 && posY <= 0) {
-            useWindowPositionAndSize = false;
-          }
+          // even though the window is actually centered.  When both computed
+          // coordinates are zero the visible position is the same with or
+          // without explicit positioning; keep the size constraint enabled.
         }
       } catch (_) {
         useWindowPositionAndSize = false;
