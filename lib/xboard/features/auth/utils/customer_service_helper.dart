@@ -79,55 +79,6 @@ class CustomerServiceHelper {
     return accentColor?.hex ?? (isDarkMode ? '#60a5fa' : '#2563eb');
   }
 
-  static Future<void> _showWindowsChatPanel(
-    BuildContext context,
-    Widget chatPage,
-  ) {
-    return showGeneralDialog<void>(
-      context: context,
-      barrierDismissible: true,
-      barrierLabel: 'CustomerServicePanel',
-      barrierColor: Colors.black38,
-      transitionDuration: const Duration(milliseconds: 280),
-      pageBuilder: (context, animation, secondaryAnimation) {
-        return Stack(
-          children: [
-            Positioned(
-              left: 96,
-              top: 0,
-              bottom: 0,
-              width: MediaQuery.of(context).size.width - 96,
-              child: SlideTransition(
-                position: Tween<Offset>(
-                  begin: const Offset(1.0, 0.0),
-                  end: Offset.zero,
-                ).animate(CurvedAnimation(
-                  parent: animation,
-                  curve: Curves.easeOutCubic,
-                )),
-                child: Material(
-                  elevation: 0,
-                  borderRadius: BorderRadius.zero,
-                  clipBehavior: Clip.antiAlias,
-                  child: chatPage,
-                ),
-              ),
-            ),
-          ],
-        );
-      },
-      transitionBuilder: (context, animation, secondaryAnimation, child) {
-        return FadeTransition(
-          opacity: CurvedAnimation(
-            parent: animation,
-            curve: const Interval(0.0, 0.3, curve: Curves.easeOut),
-          ),
-          child: child,
-        );
-      },
-    );
-  }
-
   static String _crispLocaleFromTag(String? localeTag) {
     final normalized =
         (localeTag ?? '').trim().replaceAll('_', '-').toLowerCase();
@@ -997,13 +948,14 @@ if(window===window.top){
     }
     if (Platform.isWindows) {
       if (!context.mounted) return;
-      await _showWindowsChatPanel(
-        context,
-        WindowsChatPage(
-          crispWebsiteId: websiteId,
-          crispProxyUrl: crispProxyUrl,
-          userScript: effectiveUserScript,
-          deferredUserScript: deferredUserScript,
+      await Navigator.of(context).push(
+        MaterialPageRoute(
+          builder: (_) => WindowsChatPage(
+            crispWebsiteId: websiteId,
+            crispProxyUrl: crispProxyUrl,
+            userScript: effectiveUserScript,
+            deferredUserScript: deferredUserScript,
+          ),
         ),
       );
       return;
