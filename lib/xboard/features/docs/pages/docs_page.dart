@@ -715,9 +715,7 @@ p{margin:8px 0}
   }
 
   void _initWebView(String content) {
-    final isDark =
-        WidgetsBinding.instance.platformDispatcher.platformBrightness ==
-            Brightness.dark;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     final fullHtml = _contentToHtml(content, isDark: isDark);
 
     if (Platform.isLinux || Platform.isWindows) {
@@ -814,9 +812,7 @@ p{margin:8px 0}
                         vertical: 3,
                       ),
                       decoration: BoxDecoration(
-                        color: theme.brightness == Brightness.dark
-                            ? theme.colorScheme.primaryContainer
-                            : const Color(0xFFE3F2FD),
+                        color: theme.colorScheme.primaryContainer,
                         borderRadius: BorderRadius.circular(6),
                       ),
                       child: Text(
