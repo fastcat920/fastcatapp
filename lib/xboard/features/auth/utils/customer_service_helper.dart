@@ -83,24 +83,46 @@ class CustomerServiceHelper {
     BuildContext context,
     Widget chatPage,
   ) {
-    return showDialog<void>(
+    return showGeneralDialog<void>(
       context: context,
-      barrierColor: Colors.black26,
-      builder: (context) {
-        final screenSize = MediaQuery.of(context).size;
-        final dialogWidth = (screenSize.width * 0.38).clamp(400.0, 520.0);
-        final dialogHeight = (screenSize.height * 0.72).clamp(560.0, 760.0);
-        return Center(
-          child: Material(
-            elevation: 12,
-            borderRadius: BorderRadius.circular(16),
-            clipBehavior: Clip.antiAlias,
-            child: SizedBox(
-              width: dialogWidth,
-              height: dialogHeight,
-              child: chatPage,
+      barrierDismissible: true,
+      barrierLabel: 'CustomerServicePanel',
+      barrierColor: Colors.black38,
+      transitionDuration: const Duration(milliseconds: 280),
+      pageBuilder: (context, animation, secondaryAnimation) {
+        return Stack(
+          children: [
+            Positioned(
+              left: 96,
+              top: 0,
+              bottom: 0,
+              width: MediaQuery.of(context).size.width - 96,
+              child: SlideTransition(
+                position: Tween<Offset>(
+                  begin: const Offset(1.0, 0.0),
+                  end: Offset.zero,
+                ).animate(CurvedAnimation(
+                  parent: animation,
+                  curve: Curves.easeOutCubic,
+                )),
+                child: Material(
+                  elevation: 0,
+                  borderRadius: BorderRadius.zero,
+                  clipBehavior: Clip.antiAlias,
+                  child: chatPage,
+                ),
+              ),
             ),
+          ],
+        );
+      },
+      transitionBuilder: (context, animation, secondaryAnimation, child) {
+        return FadeTransition(
+          opacity: CurvedAnimation(
+            parent: animation,
+            curve: const Interval(0.0, 0.3, curve: Curves.easeOut),
           ),
+          child: child,
         );
       },
     );
@@ -977,7 +999,12 @@ if(window===window.top){
       if (!context.mounted) return;
       await _showWindowsChatPanel(
         context,
-        WindowsChatPage(crispWebsiteId: websiteId),
+        WindowsChatPage(
+          crispWebsiteId: websiteId,
+          crispProxyUrl: crispProxyUrl,
+          userScript: effectiveUserScript,
+          deferredUserScript: deferredUserScript,
+        ),
       );
       return;
     }
