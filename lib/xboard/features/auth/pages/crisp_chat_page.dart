@@ -93,7 +93,6 @@ class _CrispChatPageState extends State<CrispChatPage> {
   bool _usingSdkBootstrap = false;
   bool _usingProxy = false;
   bool _didFallbackToOfficial = false;
-  bool _isLoading = true;
   bool _hasTimedOut = false;
   bool _deferredUserScriptStarted = false;
   late bool _isDarkMode;
@@ -116,7 +115,6 @@ class _CrispChatPageState extends State<CrispChatPage> {
             }
             if (mounted) {
               setState(() {
-                _isLoading = true;
                 _hasTimedOut = false;
               });
             }
@@ -126,7 +124,6 @@ class _CrispChatPageState extends State<CrispChatPage> {
               unawaited(_injectDirectEmbedMonitor());
               unawaited(_runDeferredUserScript());
             }
-            if (mounted) setState(() => _isLoading = false);
           },
           onWebResourceError: (error) {
             if (error.isForMainFrame == false) return;
@@ -180,7 +177,6 @@ class _CrispChatPageState extends State<CrispChatPage> {
     _usingProxy = false;
     _didFallbackToOfficial = false;
     _hasTimedOut = false;
-    if (mounted) setState(() => _isLoading = true);
     _sdkFallbackTimer = Timer(
       crispProxyFallbackDelay,
       () => unawaited(_fallbackFromSdkToEmbed()),
@@ -212,7 +208,6 @@ class _CrispChatPageState extends State<CrispChatPage> {
     }
     if (mounted) {
       setState(() {
-        _isLoading = true;
         _hasTimedOut = false;
       });
     }
@@ -323,7 +318,6 @@ class _CrispChatPageState extends State<CrispChatPage> {
     _embedFallbackTimer?.cancel();
     if (!mounted) return;
     setState(() {
-      _isLoading = false;
       _hasTimedOut = true;
     });
   }
@@ -778,13 +772,6 @@ class _CrispChatPageState extends State<CrispChatPage> {
       body: Stack(
         children: [
           WebViewWidget(controller: _controller),
-          if (_isLoading)
-            Positioned.fill(
-              child: ColoredBox(
-                color: backgroundColor,
-                child: const Center(child: CircularProgressIndicator()),
-              ),
-            ),
           if (_hasTimedOut)
             Positioned.fill(
               child: ColoredBox(
