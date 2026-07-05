@@ -861,9 +861,9 @@ p{margin:8px 0}
         data: (result) {
           if (_resolvedBody == null) {
             final fetchedBody = _parseDetailBody(result);
+            final resolvedBody = _stripLeadingTitle(fetchedBody);
             WidgetsBinding.instance.addPostFrameCallback((_) {
               if (!mounted) return;
-              final resolvedBody = _stripLeadingTitle(fetchedBody);
               setState(() {
                 _resolvedBody = resolvedBody;
               });
@@ -874,7 +874,7 @@ p{margin:8px 0}
                 setState(() => _webLoading = false);
               }
             });
-            return const Center(child: CircularProgressIndicator());
+            return const SizedBox.shrink();
           }
           return _buildContentArea(theme);
         },
