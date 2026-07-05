@@ -981,20 +981,11 @@ if(window===window.top){
       );
       Future<void> openWindowsFallback() async {
         _logger.warning(
-          '[Crisp] Windows embedded WebView2 unavailable, using desktop fallback',
+          '[Crisp] Windows embedded WebView2 unavailable, opening external browser',
         );
-        if (!context.mounted) {
-          await launchUrl(
-            externalCrispUri,
-            mode: LaunchMode.externalApplication,
-          );
-          return;
-        }
-        await _openCrispInDesktopWebview(
-          context,
-          websiteId: websiteId,
-          crispProxyUrl: crispProxyUrl,
-          userScript: effectiveUserScript,
+        await launchUrl(
+          externalCrispUri,
+          mode: LaunchMode.externalApplication,
         );
       }
 
