@@ -4,7 +4,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:fl_clash/l10n/l10n.dart';
 import 'package:fl_clash/xboard/adapter/state/knowledge_state.dart';
-import 'package:fl_clash/xboard/features/shared/styles/html_styles.dart';
 import 'package:fl_clash/xboard/features/shared/widgets/xb_error_state.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:webview_flutter/webview_flutter.dart';
@@ -425,9 +424,7 @@ class _ArticleDetailPageState extends ConsumerState<_ArticleDetailPage> {
   String? _resolvedBody;
   WebViewController? _webController;
   bool _useInAppWebView = false;
-  bool _useHtmlWidget = false;
   String? _inAppWebViewHtml;
-  String? _htmlWidgetHtml;
   bool _webLoading = true;
 
   KnowledgeArticleDetailRequest get _detailRequest =>
@@ -604,85 +601,6 @@ p{margin:8px 0}
 </style></head><body><div>$s</div></body></html>''';
   }
 
-  /// Prepares the content for rendering with flutter_widget_from_html.
-  ///
-  /// Unlike _prepareHtmlWidgetContent, this method preserves the inline-styled
-  /// HTML produced by _contentToHtml so that headings, code blocks, tables,
-  /// and other elements render correctly on Linux where a full WebView is
-  /// unavailable.
-  static bool _looksLikeHtmlDocument(String content) {
-    return RegExp(
-      r'<\s*(?:!doctype|html|head|body)\b',
-      caseSensitive: false,
-    ).hasMatch(content);
-  }
-
-  static String _extractHtmlBody(String html) {
-    final lower = html.toLowerCase();
-    final bodyStart = lower.indexOf('<body');
-    final bodyEnd = lower.lastIndexOf('</body>');
-    if (bodyStart != -1 && bodyEnd != -1) {
-      final contentStart = lower.indexOf('>', bodyStart) + 1;
-      if (contentStart > 0 && contentStart < bodyEnd) {
-        return html.substring(contentStart, bodyEnd).trim();
-      }
-    }
-    return html.trim();
-  }
-
-  static String _stripHtmlDocumentShell(String html) {
-    return html
-        .replaceAll(
-          RegExp(r'<!doctype[^>]*>', caseSensitive: false),
-          '',
-        )
-        .replaceAll(
-          RegExp(r'<head\b[^>]*>[\s\S]*?</head>', caseSensitive: false),
-          '',
-        )
-        .replaceAll(
-          RegExp(r'<script\b[^>]*>[\s\S]*?</script>', caseSensitive: false),
-          '',
-        )
-        .replaceAll(
-          RegExp(r'<meta\b[^>]*>', caseSensitive: false),
-          '',
-        )
-        .replaceAll(
-          RegExp(r'<title\b[^>]*>[\s\S]*?</title>', caseSensitive: false),
-          '',
-        )
-        .replaceAll(
-          RegExp(r'</?(?:html|body)\b[^>]*>', caseSensitive: false),
-          '',
-        )
-        .trim();
-  }
-
-  static String _escapePlainTextForHtml(String text) {
-    return text
-        .replaceAll('&', '&amp;')
-        .replaceAll('<', '&lt;')
-        .replaceAll('>', '&gt;')
-        .replaceAll('\n', '<br>');
-  }
-
-  static String _prepareLinuxHtmlWidgetContent({
-    required String rawContent,
-    required String convertedHtml,
-  }) {
-    final source = _looksLikeHtmlDocument(rawContent)
-        ? _extractHtmlBody(rawContent)
-        : _extractHtmlBody(convertedHtml);
-    final cleaned = _stripHtmlDocumentShell(_extractHtmlBody(source));
-    if (cleaned.isNotEmpty) return cleaned;
-
-    final convertedBody =
-        _stripHtmlDocumentShell(_extractHtmlBody(convertedHtml));
-    if (convertedBody.isNotEmpty) return convertedBody;
-
-    return _escapePlainTextForHtml(rawContent);
-  }
 
   @override
   void initState() {
@@ -782,9 +700,7 @@ p{margin:8px 0}
     _resolvedBody = null;
     _webController = null;
     _useInAppWebView = false;
-    _useHtmlWidget = false;
     _inAppWebViewHtml = null;
-    _htmlWidgetHtml = null;
     _webLoading = true;
   }
 
@@ -804,17 +720,7 @@ p{margin:8px 0}
             Brightness.dark;
     final fullHtml = _contentToHtml(content, isDark: isDark);
 
-    if (Platform.isLinux) {
-      _htmlWidgetHtml = _prepareLinuxHtmlWidgetContent(
-        rawContent: content,
-        convertedHtml: fullHtml,
-      );
-      _useHtmlWidget = true;
-      if (mounted) setState(() => _webLoading = false);
-      return;
-    }
-
-    if (Platform.isWindows) {
+    if (Platform.isLinux || Platform.isWindows) {
       _inAppWebViewHtml = fullHtml;
       _useInAppWebView = true;
       if (mounted) setState(() => _webLoading = false);
@@ -983,23 +889,6 @@ p{margin:8px 0}
           }
           return iaw.NavigationActionPolicy.ALLOW;
         },
-      );
-    }
-
-    if (_useHtmlWidget && _htmlWidgetHtml != null) {
-      return SingleChildScrollView(
-        padding: const EdgeInsets.fromLTRB(16, 12, 16, 16),
-        child: NoticeHtmlStyles.buildNoticeHtml(
-          context: context,
-          htmlContent: _htmlWidgetHtml!,
-          preserveDocumentStyles: false,
-          onTapUrl: (url) {
-            final uri = url == null ? null : Uri.tryParse(url);
-            if (uri != null) {
-              unawaited(launchUrl(uri, mode: LaunchMode.externalApplication));
-            }
-          },
-        ),
       );
     }
 
