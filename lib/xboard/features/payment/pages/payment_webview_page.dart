@@ -239,7 +239,7 @@ class PaymentWebViewPage extends ConsumerStatefulWidget {
           document.body.style.width = '100%';
           document.body.style.margin = '0';
           document.body.style.overflowX = 'hidden';
-          document.body.style.overflowY = 'auto';
+          document.body.style.overflowY = 'visible';
           document.body.style.height = 'auto';
           document.body.style.minHeight = '100%';
         }
@@ -250,11 +250,13 @@ class PaymentWebViewPage extends ConsumerStatefulWidget {
           (document.head || document.documentElement).appendChild(style);
         }
         style.textContent = ''
-          + 'html,body{box-sizing:border-box !important;width:100% !important;height:auto !important;min-height:100% !important;min-width:0 !important;max-width:100% !important;margin:0 !important;overflow-x:hidden !important;overflow-y:auto !important;background:' + theme.background + ' !important;color-scheme:' + (theme.isDark ? 'dark' : 'light') + ' !important;}'
+          + 'html{box-sizing:border-box !important;width:100% !important;height:auto !important;min-height:100% !important;min-width:0 !important;max-width:100% !important;margin:0 !important;overflow-x:hidden !important;overflow-y:auto !important;background:' + theme.background + ' !important;color-scheme:' + (theme.isDark ? 'dark' : 'light') + ' !important;}'
+          + 'body{box-sizing:border-box !important;width:100% !important;height:auto !important;min-height:100% !important;min-width:0 !important;max-width:100% !important;margin:0 !important;overflow-x:hidden !important;overflow-y:visible !important;background:' + theme.background + ' !important;color-scheme:' + (theme.isDark ? 'dark' : 'light') + ' !important;}'
           + '*,*:before,*:after{box-sizing:border-box !important;}'
-          + 'body > *{max-width:100% !important;overflow-x:hidden !important;}'
-          + 'iframe,frame,embed,object{display:block !important;width:100% !important;max-width:100% !important;min-height:100vh !important;border:none !important;overflow-x:hidden !important;}'
-          + '.container,.wrapper,.content,.page,#app,#root,#main{width:100% !important;max-width:100% !important;min-width:0 !important;overflow-x:hidden !important;overflow-y:visible !important;}'
+          + 'body > *{max-width:100% !important;overflow-x:hidden !important;overflow-y:visible !important;}'
+          + 'iframe,frame,embed,object{display:block !important;width:100% !important;max-width:100% !important;min-height:100vh !important;max-height:none !important;border:none !important;overflow:hidden !important;}'
+          + '.container,.wrapper,.content,.page,#app,#root,#main{width:100% !important;max-width:100% !important;min-width:0 !important;height:auto !important;min-height:0 !important;max-height:none !important;overflow-x:hidden !important;overflow-y:visible !important;}'
+          + ':not(html):not(body)[style*="overflow-y"],:not(html):not(body)[style*="overflow: auto"],:not(html):not(body)[style*="overflow:auto"],:not(html):not(body)[style*="height: 100vh"],:not(html):not(body)[style*="height:100vh"]{max-height:none !important;overflow-y:visible !important;}'
           + 'img,video,canvas,svg,table{max-width:100% !important;}';
       } catch (_) {}
     };
@@ -329,23 +331,24 @@ class PaymentWebViewPage extends ConsumerStatefulWidget {
           return originalReplace(url);
         };
       } catch (_) {}
-      function fillViewport() {
+      function fillViewport(rootDocument) {
         try {
+          var doc = rootDocument || document;
           var selectors = ['iframe', 'frame', 'embed', 'object', '#app', '#root', '#main', '.container', '.wrapper', '.content', '.page'];
-          document.documentElement.style.overflowX = 'hidden';
-          document.documentElement.style.overflowY = 'auto';
-          document.documentElement.style.height = 'auto';
-          document.documentElement.style.minHeight = '100%';
-          document.documentElement.style.maxWidth = '100%';
-          if (document.body) {
-            document.body.style.overflowX = 'hidden';
-            document.body.style.overflowY = 'auto';
-            document.body.style.height = 'auto';
-            document.body.style.minHeight = '100%';
-            document.body.style.maxWidth = '100%';
+          doc.documentElement.style.overflowX = 'hidden';
+          doc.documentElement.style.overflowY = 'auto';
+          doc.documentElement.style.height = 'auto';
+          doc.documentElement.style.minHeight = '100%';
+          doc.documentElement.style.maxWidth = '100%';
+          if (doc.body) {
+            doc.body.style.overflowX = 'hidden';
+            doc.body.style.overflowY = 'visible';
+            doc.body.style.height = 'auto';
+            doc.body.style.minHeight = '100%';
+            doc.body.style.maxWidth = '100%';
           }
           for (var s = 0; s < selectors.length; s++) {
-            var nodes = document.querySelectorAll(selectors[s]);
+            var nodes = doc.querySelectorAll(selectors[s]);
             for (var i = 0; i < nodes.length; i++) {
               var node = nodes[i];
               node.style.minWidth = '0';
@@ -356,7 +359,24 @@ class PaymentWebViewPage extends ConsumerStatefulWidget {
                 node.style.display = 'block';
                 node.style.overflowX = 'hidden';
                 node.style.minHeight = '100vh';
+                node.style.maxHeight = 'none';
+                try {
+                  var childDoc = node.contentDocument || (node.contentWindow && node.contentWindow.document);
+                  if (childDoc) {
+                    fillViewport(childDoc);
+                    var childHeight = Math.max(
+                      childDoc.documentElement ? childDoc.documentElement.scrollHeight : 0,
+                      childDoc.body ? childDoc.body.scrollHeight : 0,
+                      window.innerHeight
+                    );
+                    if (childHeight > 0) node.style.height = childHeight + 'px';
+                  }
+                } catch (_) {}
               } else {
+                node.style.height = 'auto';
+                node.style.minHeight = '0';
+                node.style.maxHeight = 'none';
+                node.style.overflowX = 'hidden';
                 node.style.overflowY = 'visible';
               }
             }

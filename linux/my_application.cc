@@ -41,6 +41,42 @@ static void center_window_on_monitor(GtkWindow* window, int width, int height) {
   gtk_window_move(window, x, y);
 }
 
+struct CenterWindowRequest {
+  GtkWindow* window;
+  int width;
+  int height;
+};
+
+static gboolean center_window_later(gpointer user_data) {
+  auto* request = static_cast<CenterWindowRequest*>(user_data);
+  if (GTK_IS_WINDOW(request->window)) {
+    center_window_on_monitor(request->window, request->width, request->height);
+  }
+  g_object_unref(request->window);
+  delete request;
+  return G_SOURCE_REMOVE;
+}
+
+static void schedule_center_window_on_monitor(
+    GtkWindow* window,
+    int width,
+    int height,
+    guint delay_ms) {
+  g_object_ref(window);
+  g_timeout_add(delay_ms, center_window_later,
+                new CenterWindowRequest{window, width, height});
+}
+
+static gboolean on_main_window_map(GtkWidget* widget,
+                                   GdkEvent*,
+                                   gpointer) {
+  auto* window = GTK_WINDOW(widget);
+  center_window_on_monitor(window, 800, 600);
+  schedule_center_window_on_monitor(window, 800, 600, 80);
+  schedule_center_window_on_monitor(window, 800, 600, 240);
+  return FALSE;
+}
+
 // Implements GApplication::activate.
 static void my_application_activate(GApplication* application) {
   MyApplication* self = MY_APPLICATION(application);
@@ -85,8 +121,12 @@ static void my_application_activate(GApplication* application) {
 
   gtk_window_set_default_size(window, 800, 600);
   gtk_window_set_position(window, GTK_WIN_POS_CENTER);
+  g_signal_connect(G_OBJECT(window), "map-event",
+                   G_CALLBACK(on_main_window_map), nullptr);
   gtk_widget_show(GTK_WIDGET(window));
   center_window_on_monitor(window, 800, 600);
+  schedule_center_window_on_monitor(window, 800, 600, 80);
+  schedule_center_window_on_monitor(window, 800, 600, 240);
 
   g_autoptr(FlDartProject) project = fl_dart_project_new();
   fl_dart_project_set_dart_entrypoint_arguments(project, self->dart_entrypoint_arguments);

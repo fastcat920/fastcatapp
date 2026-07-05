@@ -40,6 +40,10 @@ class WebviewWindow {
 
   void SetVisibility(bool visible);
 
+  void CenterOnMonitor();
+
+  void ScheduleCenterOnMonitor();
+
   void OnLoadChanged(WebKitLoadEvent load_event);
 
   void GoBack();
@@ -70,6 +74,8 @@ class WebviewWindow {
   GtkBox *box_ = nullptr;
 
   int brightness_ = -1;
+  int window_width_ = 0;
+  int window_height_ = 0;
   int window_pos_x_ = 0;
   int window_pos_y_ = 0;
   bool use_window_position_and_size_ = false;

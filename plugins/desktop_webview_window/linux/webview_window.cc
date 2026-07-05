@@ -83,6 +83,32 @@ void center_window_on_monitor(GtkWidget *window, int width, int height) {
                   y < geometry.y ? geometry.y : y);
 }
 
+struct CenterWindowRequest {
+  GtkWidget *window;
+  int width;
+  int height;
+};
+
+gboolean center_window_later(gpointer user_data) {
+  auto *request = static_cast<CenterWindowRequest *>(user_data);
+  if (GTK_IS_WINDOW(request->window)) {
+    center_window_on_monitor(request->window, request->width, request->height);
+  }
+  g_object_unref(request->window);
+  delete request;
+  return G_SOURCE_REMOVE;
+}
+
+void schedule_center_window_on_monitor(
+    GtkWidget *window,
+    int width,
+    int height,
+    guint delay_ms) {
+  g_object_ref(window);
+  g_timeout_add(delay_ms, center_window_later,
+                new CenterWindowRequest{window, width, height});
+}
+
 }
 
 WebviewWindow::WebviewWindow(
@@ -108,6 +134,8 @@ WebviewWindow::WebviewWindow(
     window_pos_y_(window_pos_y),
     use_window_position_and_size_(use_window_position_and_size) {
   g_object_ref(method_channel_);
+  window_width_ = width;
+  window_height_ = height;
 
   window_ = gtk_window_new(GTK_WINDOW_TOPLEVEL);
   g_signal_connect(G_OBJECT(window_), "destroy",
@@ -128,6 +156,17 @@ WebviewWindow::WebviewWindow(
                        window->on_close_callback_();
                      }
                    }), this);
+  if (!use_window_position_and_size_) {
+    g_signal_connect(G_OBJECT(window_), "map-event",
+                     G_CALLBACK(+[](GtkWidget *, GdkEvent *, gpointer arg)
+                                    -> gboolean {
+                       auto *window = static_cast<WebviewWindow *>(arg);
+                       window->CenterOnMonitor();
+                       window->ScheduleCenterOnMonitor();
+                       return FALSE;
+                     }),
+                     this);
+  }
   gtk_window_set_title(GTK_WINDOW(window_), title.c_str());
   gtk_window_set_default_size(GTK_WINDOW(window_), width, height);
   if (use_window_position_and_size_) {
@@ -207,7 +246,8 @@ WebviewWindow::WebviewWindow(
         window_pos_x_,
         window_pos_y_);
   } else {
-    center_window_on_monitor(window_, width, height);
+    CenterOnMonitor();
+    ScheduleCenterOnMonitor();
   }
   gtk_widget_grab_focus(GTK_WIDGET(webview_));
 
@@ -225,6 +265,17 @@ WebviewWindow::WebviewWindow(
 WebviewWindow::~WebviewWindow() {
   g_object_unref(method_channel_);
   printf("~WebviewWindow\n");
+}
+
+void WebviewWindow::CenterOnMonitor() {
+  if (window_ == nullptr) return;
+  center_window_on_monitor(window_, window_width_, window_height_);
+}
+
+void WebviewWindow::ScheduleCenterOnMonitor() {
+  if (window_ == nullptr) return;
+  schedule_center_window_on_monitor(window_, window_width_, window_height_, 80);
+  schedule_center_window_on_monitor(window_, window_width_, window_height_, 240);
 }
 
 void WebviewWindow::Navigate(const char *url) {

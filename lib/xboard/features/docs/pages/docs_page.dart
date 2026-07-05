@@ -610,32 +610,78 @@ p{margin:8px 0}
   /// HTML produced by _contentToHtml so that headings, code blocks, tables,
   /// and other elements render correctly on Linux where a full WebView is
   /// unavailable.
-  static String _prepareLinuxHtmlWidgetContent({
-    required String rawContent,
-    required String convertedHtml,
-  }) {
-    // On Linux we always use the converted HTML from _contentToHtml — it
-    // produces consistent inline-styled HTML regardless of whether the
-    // source is Markdown or raw HTML.
-    final source = convertedHtml;
+  static bool _looksLikeHtmlDocument(String content) {
+    return RegExp(
+      r'<\s*(?:!doctype|html|head|body)\b',
+      caseSensitive: false,
+    ).hasMatch(content);
+  }
 
-    // Extract body content using indexOf/substring instead of regex so
-    // that long / complex nested documents are handled reliably.
-    final lower = source.toLowerCase();
+  static String _extractHtmlBody(String html) {
+    final lower = html.toLowerCase();
     final bodyStart = lower.indexOf('<body');
     final bodyEnd = lower.lastIndexOf('</body>');
     if (bodyStart != -1 && bodyEnd != -1) {
       final contentStart = lower.indexOf('>', bodyStart) + 1;
       if (contentStart > 0 && contentStart < bodyEnd) {
-        var body = source.substring(contentStart, bodyEnd).trim();
-        if (body.isNotEmpty) return body;
+        return html.substring(contentStart, bodyEnd).trim();
       }
     }
+    return html.trim();
+  }
 
-    // Fallback: strip <html> wrapper and return the rest.
-    return convertedHtml
-        .replaceAll(RegExp(r'<html[^>]*>|</html>', caseSensitive: false), '')
+  static String _stripHtmlDocumentShell(String html) {
+    return html
+        .replaceAll(
+          RegExp(r'<!doctype[^>]*>', caseSensitive: false),
+          '',
+        )
+        .replaceAll(
+          RegExp(r'<head\b[^>]*>[\s\S]*?</head>', caseSensitive: false),
+          '',
+        )
+        .replaceAll(
+          RegExp(r'<script\b[^>]*>[\s\S]*?</script>', caseSensitive: false),
+          '',
+        )
+        .replaceAll(
+          RegExp(r'<meta\b[^>]*>', caseSensitive: false),
+          '',
+        )
+        .replaceAll(
+          RegExp(r'<title\b[^>]*>[\s\S]*?</title>', caseSensitive: false),
+          '',
+        )
+        .replaceAll(
+          RegExp(r'</?(?:html|body)\b[^>]*>', caseSensitive: false),
+          '',
+        )
         .trim();
+  }
+
+  static String _escapePlainTextForHtml(String text) {
+    return text
+        .replaceAll('&', '&amp;')
+        .replaceAll('<', '&lt;')
+        .replaceAll('>', '&gt;')
+        .replaceAll('\n', '<br>');
+  }
+
+  static String _prepareLinuxHtmlWidgetContent({
+    required String rawContent,
+    required String convertedHtml,
+  }) {
+    final source = _looksLikeHtmlDocument(rawContent)
+        ? _extractHtmlBody(rawContent)
+        : _extractHtmlBody(convertedHtml);
+    final cleaned = _stripHtmlDocumentShell(_extractHtmlBody(source));
+    if (cleaned.isNotEmpty) return cleaned;
+
+    final convertedBody =
+        _stripHtmlDocumentShell(_extractHtmlBody(convertedHtml));
+    if (convertedBody.isNotEmpty) return convertedBody;
+
+    return _escapePlainTextForHtml(rawContent);
   }
 
   @override
@@ -817,14 +863,16 @@ p{margin:8px 0}
             final fetchedBody = _parseDetailBody(result);
             WidgetsBinding.instance.addPostFrameCallback((_) {
               if (!mounted) return;
+              final resolvedBody = _stripLeadingTitle(fetchedBody);
               setState(() {
-                _resolvedBody = _stripLeadingTitle(fetchedBody);
-                if (_resolvedBody!.isNotEmpty) {
-                  _initWebView(_resolvedBody!);
-                } else {
-                  _webLoading = false;
-                }
+                _resolvedBody = resolvedBody;
               });
+              if (!mounted) return;
+              if (resolvedBody.isNotEmpty) {
+                _initWebView(resolvedBody);
+              } else {
+                setState(() => _webLoading = false);
+              }
             });
             return const Center(child: CircularProgressIndicator());
           }

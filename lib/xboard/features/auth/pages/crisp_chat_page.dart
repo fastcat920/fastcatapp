@@ -119,6 +119,7 @@ class _DesktopCrispChatPageState extends State<DesktopCrispChatPage> {
   Timer? _sdkFallbackTimer;
   Timer? _embedFallbackTimer;
   Timer? _readyPollTimer;
+  Timer? _loadErrorFallbackTimer;
   StreamSubscription<WebErrorStatus>? _loadErrorSubscription;
   bool _usingSdkBootstrap = false;
   bool _usingProxy = false;
@@ -163,6 +164,7 @@ class _DesktopCrispChatPageState extends State<DesktopCrispChatPage> {
     _sdkFallbackTimer?.cancel();
     _embedFallbackTimer?.cancel();
     _readyPollTimer?.cancel();
+    _loadErrorFallbackTimer?.cancel();
     _loadErrorSubscription?.cancel();
     _controller.dispose();
     super.dispose();
@@ -175,8 +177,8 @@ class _DesktopCrispChatPageState extends State<DesktopCrispChatPage> {
         _customerServiceBackgroundColor(_isDarkMode),
       );
       await _controller.setPopupWindowPolicy(WebviewPopupWindowPolicy.deny);
-      _loadErrorSubscription ??= _controller.onLoadError.listen((_) {
-        _handleRouteError();
+      _loadErrorSubscription ??= _controller.onLoadError.listen((status) {
+        _handleDesktopLoadError(status);
       });
       await _controller.addScriptToExecuteOnDocumentCreated(
         _buildDesktopDirectEmbedDocumentScript(),
@@ -216,6 +218,7 @@ class _DesktopCrispChatPageState extends State<DesktopCrispChatPage> {
   void _loadEmbed(Uri uri, {required bool usingProxy}) {
     _sdkFallbackTimer?.cancel();
     _embedFallbackTimer?.cancel();
+    _loadErrorFallbackTimer?.cancel();
     _usingSdkBootstrap = false;
     _usingProxy = usingProxy;
     _hasTimedOut = false;
@@ -245,6 +248,7 @@ class _DesktopCrispChatPageState extends State<DesktopCrispChatPage> {
     if (!await _isCrispReady()) return;
     _readyPollTimer?.cancel();
     _embedFallbackTimer?.cancel();
+    _loadErrorFallbackTimer?.cancel();
     if (!mounted) return;
     setState(() {
       _isLoading = false;
@@ -273,6 +277,20 @@ class _DesktopCrispChatPageState extends State<DesktopCrispChatPage> {
       return;
     }
     _showTimeout();
+  }
+
+  void _handleDesktopLoadError(WebErrorStatus status) {
+    if (_isIgnorableDesktopLoadError(status)) return;
+    _loadErrorFallbackTimer?.cancel();
+    _loadErrorFallbackTimer = Timer(const Duration(seconds: 2), () async {
+      if (!mounted) return;
+      if (await _isCrispReady()) return;
+      _handleRouteError();
+    });
+  }
+
+  bool _isIgnorableDesktopLoadError(WebErrorStatus status) {
+    return status == WebErrorStatus.WebErrorStatusOperationCanceled;
   }
 
   void _fallbackToOfficialIfNeeded() {
@@ -323,6 +341,7 @@ class _DesktopCrispChatPageState extends State<DesktopCrispChatPage> {
     _sdkFallbackTimer?.cancel();
     _embedFallbackTimer?.cancel();
     _readyPollTimer?.cancel();
+    _loadErrorFallbackTimer?.cancel();
     if (!mounted) return;
     setState(() {
       _isLoading = false;
@@ -335,6 +354,7 @@ class _DesktopCrispChatPageState extends State<DesktopCrispChatPage> {
     _sdkFallbackTimer?.cancel();
     _embedFallbackTimer?.cancel();
     _readyPollTimer?.cancel();
+    _loadErrorFallbackTimer?.cancel();
     if (!mounted) return;
     setState(() {
       _isLoading = false;
@@ -347,6 +367,7 @@ class _DesktopCrispChatPageState extends State<DesktopCrispChatPage> {
     _sdkFallbackTimer?.cancel();
     _embedFallbackTimer?.cancel();
     _readyPollTimer?.cancel();
+    _loadErrorFallbackTimer?.cancel();
     _didStartLoading = false;
     _usingSdkBootstrap = false;
     _usingProxy = false;
