@@ -6,6 +6,7 @@ import 'package:fl_clash/l10n/l10n.dart';
 import 'package:fl_clash/xboard/core/core.dart';
 import 'package:fl_clash/xboard/features/auth/utils/crisp_url_helper.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:webview_windows/webview_windows.dart';
 
 final _logger = FileLogger('windows_chat_page.dart');
@@ -18,11 +19,13 @@ final _logger = FileLogger('windows_chat_page.dart');
 class WindowsChatPage extends StatefulWidget {
   final String? salesmartlyScriptUrl;
   final String? crispWebsiteId;
+  final Future<void> Function()? onUnavailableFallback;
 
   const WindowsChatPage({
     super.key,
     this.salesmartlyScriptUrl,
     this.crispWebsiteId,
+    this.onUnavailableFallback,
   }) : assert(
           salesmartlyScriptUrl != null || crispWebsiteId != null,
           'salesmartlyScriptUrl or crispWebsiteId is required',
@@ -30,6 +33,31 @@ class WindowsChatPage extends StatefulWidget {
 
   static bool get isSupported =>
       Platform.isWindows && WebView2Check.isInstalled();
+
+  static Future<bool> isRuntimeAvailable() async {
+    if (!isSupported) return false;
+    try {
+      final version = await WebviewController.getWebViewVersion();
+      if (version == null || version.trim().isEmpty) {
+        _logger.warning('[WindowsChat] WebView2 Runtime version is empty');
+        return false;
+      }
+      await WebviewController.initializeEnvironment();
+      return true;
+    } on PlatformException catch (e, stackTrace) {
+      if (e.code == 'environment_already_initialized') return true;
+      _logger.warning(
+        '[WindowsChat] WebView2 runtime probe failed: ${e.code}',
+        e,
+        stackTrace,
+      );
+      return false;
+    } catch (e, stackTrace) {
+      _logger.warning(
+          '[WindowsChat] WebView2 runtime probe failed', e, stackTrace);
+      return false;
+    }
+  }
 
   @override
   State<WindowsChatPage> createState() => _WindowsChatPageState();
@@ -72,6 +100,23 @@ class _WindowsChatPageState extends State<WindowsChatPage> {
       }
     } catch (e, stackTrace) {
       _logger.error('[WindowsChat] WebView2 init failed: $e', e, stackTrace);
+      if (_shouldUseFallbackFor(e) &&
+          widget.onUnavailableFallback != null &&
+          mounted) {
+        try {
+          await widget.onUnavailableFallback!();
+          if (mounted) {
+            Navigator.of(context, rootNavigator: true).pop();
+          }
+          return;
+        } catch (fallbackError, fallbackStackTrace) {
+          _logger.error(
+            '[WindowsChat] fallback after WebView2 init failure failed',
+            fallbackError,
+            fallbackStackTrace,
+          );
+        }
+      }
       if (mounted) {
         setState(() {
           _hasError = true;
@@ -79,6 +124,15 @@ class _WindowsChatPageState extends State<WindowsChatPage> {
         });
       }
     }
+  }
+
+  bool _shouldUseFallbackFor(Object error) {
+    if (error is! PlatformException) return false;
+    return const {
+      'unsupported_platform',
+      'environment_creation_failed',
+      'webview_creation_failed',
+    }.contains(error.code);
   }
 
   Future<void> _initSalesmartly() async {

@@ -974,19 +974,48 @@ if(window===window.top){
     }
     if (Platform.isWindows) {
       if (!context.mounted) return;
+      final localeTag = Localizations.localeOf(context).toLanguageTag();
+      final externalCrispUri = _localizedCrispUri(
+        officialCrispEmbedUri(websiteId),
+        localeTag,
+      );
+      Future<void> openWindowsFallback() async {
+        _logger.warning(
+          '[Crisp] Windows embedded WebView2 unavailable, using desktop fallback',
+        );
+        if (!context.mounted) {
+          await launchUrl(
+            externalCrispUri,
+            mode: LaunchMode.externalApplication,
+          );
+          return;
+        }
+        await _openCrispInDesktopWebview(
+          context,
+          websiteId: websiteId,
+          crispProxyUrl: crispProxyUrl,
+          userScript: effectiveUserScript,
+        );
+      }
+
+      if (!await WindowsChatPage.isRuntimeAvailable()) {
+        await openWindowsFallback();
+        return;
+      }
+      if (!context.mounted) return;
       if (!WindowsChatPage.isSupported) {
         await launchUrl(
-          _localizedCrispUri(
-            officialCrispEmbedUri(websiteId),
-            Localizations.localeOf(context).toLanguageTag(),
-          ),
+          externalCrispUri,
           mode: LaunchMode.externalApplication,
         );
         return;
       }
       await _showWindowsChatPanel(
         context,
-        WindowsChatPage(crispWebsiteId: websiteId),
+        WindowsChatPage(
+          crispWebsiteId: websiteId,
+          onUnavailableFallback: openWindowsFallback,
+        ),
       );
       return;
     }
@@ -1238,7 +1267,7 @@ if(window===window.top){
       );
       return webview;
     } catch (e) {
-      _logger.error('[Crisp] Linux desktop webview 启动失败', e);
+      _logger.error('[Crisp] desktop webview 启动失败', e);
       await server?.close(force: true);
       await launchUrl(
         _localizedCrispUri(
