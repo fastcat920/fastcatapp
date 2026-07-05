@@ -145,8 +145,8 @@ class PaymentWebViewPage extends ConsumerStatefulWidget {
     try {
       webview = await DesktopWebviewWindowHelper.create(
         title: l10n.xboardPaymentGateway,
-        windowWidth: 1100,
-        windowHeight: 760,
+        windowWidth: 800,
+        windowHeight: 600,
         matchMainWindow: true,
         centerOnMainWindow: true,
         resizable: false,
