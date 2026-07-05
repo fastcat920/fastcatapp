@@ -813,7 +813,7 @@ class _WindowsChatPageState extends State<WindowsChatPage> {
           title: Text(AppLocalizations.of(context).onlineSupportTitle),
           leading: IconButton(
             icon: const Icon(Icons.close),
-            onPressed: () => Navigator.of(context, rootNavigator: true).pop(),
+            onPressed: () => Navigator.of(context).pop(),
           ),
         ),
         body: body,
