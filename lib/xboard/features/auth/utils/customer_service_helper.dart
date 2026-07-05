@@ -17,6 +17,7 @@ import 'package:fl_clash/xboard/features/auth/auth.dart';
 import 'package:fl_clash/xboard/domain/domain.dart';
 import 'package:fl_clash/xboard/features/auth/pages/crisp_chat_page.dart';
 import 'package:fl_clash/xboard/features/auth/pages/salesmartly_chat_page.dart';
+import 'package:fl_clash/xboard/features/auth/pages/windows_chat_page.dart';
 import 'package:fl_clash/xboard/features/auth/utils/crisp_url_helper.dart';
 import 'package:fl_clash/xboard/features/shared/utils/desktop_webview_window_helper.dart';
 import 'package:fl_clash/xboard/core/core.dart';
@@ -35,7 +36,8 @@ const _crispUserDataResolveTimeout = Duration(milliseconds: 1800);
 /// 统一客服入口：按业务约定仅使用 Crisp（远程优先，本地兜底）
 ///
 /// Android/iOS/macOS → 内嵌 WebView（webview_flutter）
-/// Windows/Linux → 独立 WebView 窗口（desktop_webview_window）
+/// Windows → 内嵌 WebView2 侧边面板（webview_windows）
+/// Linux → 独立 WebView 窗口（desktop_webview_window）
 class CustomerServiceHelper {
   CustomerServiceHelper._();
 
@@ -75,6 +77,32 @@ class CustomerServiceHelper {
 
   static String _customerServiceAccent(bool isDarkMode, {Color? accentColor}) {
     return accentColor?.hex ?? (isDarkMode ? '#60a5fa' : '#2563eb');
+  }
+
+  static Future<void> _showWindowsChatPanel(
+    BuildContext context,
+    Widget chatPage,
+  ) {
+    return showDialog<void>(
+      context: context,
+      barrierColor: Colors.black26,
+      builder: (context) => Align(
+        alignment: Alignment.centerRight,
+        child: Material(
+          elevation: 16,
+          borderRadius: const BorderRadius.only(
+            topLeft: Radius.circular(16),
+            bottomLeft: Radius.circular(16),
+          ),
+          clipBehavior: Clip.antiAlias,
+          child: SizedBox(
+            width: _desktopCustomerServiceWindowWidth.toDouble(),
+            height: _desktopCustomerServiceWindowHeight.toDouble(),
+            child: chatPage,
+          ),
+        ),
+      ),
+    );
   }
 
   static String _crispLocaleFromTag(String? localeTag) {
@@ -946,24 +974,19 @@ if(window===window.top){
     }
     if (Platform.isWindows) {
       if (!context.mounted) return;
-      if (!DesktopCrispChatPage.isSupported) {
+      if (!WindowsChatPage.isSupported) {
         await launchUrl(
           _localizedCrispUri(
-            crispEmbedUri(websiteId: websiteId, proxyUrl: crispProxyUrl),
+            officialCrispEmbedUri(websiteId),
             Localizations.localeOf(context).toLanguageTag(),
           ),
           mode: LaunchMode.externalApplication,
         );
         return;
       }
-      await Navigator.of(context).push(
-        MaterialPageRoute(
-          builder: (_) => DesktopCrispChatPage(
-            websiteId: websiteId,
-            crispProxyUrl: crispProxyUrl,
-            userScript: effectiveUserScript,
-          ),
-        ),
+      await _showWindowsChatPanel(
+        context,
+        WindowsChatPage(crispWebsiteId: websiteId),
       );
       return;
     }
