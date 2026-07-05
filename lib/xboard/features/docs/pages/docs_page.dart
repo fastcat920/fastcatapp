@@ -992,7 +992,7 @@ p{margin:8px 0}
         child: NoticeHtmlStyles.buildNoticeHtml(
           context: context,
           htmlContent: _htmlWidgetHtml!,
-          preserveDocumentStyles: true,
+          preserveDocumentStyles: false,
           onTapUrl: (url) {
             final uri = url == null ? null : Uri.tryParse(url);
             if (uri != null) {
