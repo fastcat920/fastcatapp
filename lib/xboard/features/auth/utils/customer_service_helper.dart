@@ -86,22 +86,23 @@ class CustomerServiceHelper {
     return showDialog<void>(
       context: context,
       barrierColor: Colors.black26,
-      builder: (context) => Align(
-        alignment: Alignment.centerRight,
-        child: Material(
-          elevation: 16,
-          borderRadius: const BorderRadius.only(
-            topLeft: Radius.circular(16),
-            bottomLeft: Radius.circular(16),
+      builder: (context) {
+        final screenSize = MediaQuery.of(context).size;
+        final dialogWidth = (screenSize.width * 0.38).clamp(400.0, 520.0);
+        final dialogHeight = (screenSize.height * 0.72).clamp(560.0, 760.0);
+        return Center(
+          child: Material(
+            elevation: 12,
+            borderRadius: BorderRadius.circular(16),
+            clipBehavior: Clip.antiAlias,
+            child: SizedBox(
+              width: dialogWidth,
+              height: dialogHeight,
+              child: chatPage,
+            ),
           ),
-          clipBehavior: Clip.antiAlias,
-          child: SizedBox(
-            width: _desktopCustomerServiceWindowWidth.toDouble(),
-            height: _desktopCustomerServiceWindowHeight.toDouble(),
-            child: chatPage,
-          ),
-        ),
-      ),
+        );
+      },
     );
   }
 

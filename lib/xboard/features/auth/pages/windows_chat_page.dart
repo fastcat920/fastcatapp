@@ -294,6 +294,7 @@ class _WindowsChatPageState extends State<WindowsChatPage> {
       canPop: true,
       child: Scaffold(
         appBar: AppBar(
+          centerTitle: true,
           title: Text(AppLocalizations.of(context).onlineSupportTitle),
           leading: IconButton(
             icon: const Icon(Icons.close),
