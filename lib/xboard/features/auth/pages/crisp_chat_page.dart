@@ -120,6 +120,7 @@ class _DesktopCrispChatPageState extends State<DesktopCrispChatPage> {
   Timer? _embedFallbackTimer;
   Timer? _readyPollTimer;
   Timer? _loadErrorFallbackTimer;
+  StreamSubscription<LoadingState>? _loadingStateSubscription;
   StreamSubscription<WebErrorStatus>? _loadErrorSubscription;
   bool _usingSdkBootstrap = false;
   bool _usingProxy = false;
@@ -165,6 +166,7 @@ class _DesktopCrispChatPageState extends State<DesktopCrispChatPage> {
     _embedFallbackTimer?.cancel();
     _readyPollTimer?.cancel();
     _loadErrorFallbackTimer?.cancel();
+    _loadingStateSubscription?.cancel();
     _loadErrorSubscription?.cancel();
     _controller.dispose();
     super.dispose();
@@ -173,20 +175,48 @@ class _DesktopCrispChatPageState extends State<DesktopCrispChatPage> {
   Future<void> _initAndLoad() async {
     try {
       await _controller.initialize();
+    } catch (_) {
+      _showStartupFailure();
+      return;
+    }
+    try {
       await _controller.setBackgroundColor(
         _customerServiceBackgroundColor(_isDarkMode),
       );
+    } catch (_) {}
+    try {
       await _controller.setPopupWindowPolicy(WebviewPopupWindowPolicy.deny);
-      _loadErrorSubscription ??= _controller.onLoadError.listen((status) {
-        _handleDesktopLoadError(status);
-      });
+    } catch (_) {
+      // Popup policy is nice to have, but customer service should still open.
+    }
+    _loadingStateSubscription ??= _controller.loadingState.listen((state) {
+      if (state == LoadingState.navigationCompleted) {
+        unawaited(_injectDesktopScriptAfterNavigation());
+      }
+    });
+    _loadErrorSubscription ??= _controller.onLoadError.listen((status) {
+      _handleDesktopLoadError(status);
+    });
+    await _installDesktopDocumentScript();
+    unawaited(_loadSdkBootstrap());
+  }
+
+  Future<void> _installDesktopDocumentScript() async {
+    try {
       await _controller.addScriptToExecuteOnDocumentCreated(
         _buildDesktopDirectEmbedDocumentScript(),
       );
-      unawaited(_loadSdkBootstrap());
     } catch (_) {
-      _showStartupFailure();
+      // Older or partially installed WebView2 runtimes can fail this API even
+      // when normal navigation works. Keep loading and inject after navigation.
     }
+  }
+
+  Future<void> _injectDesktopScriptAfterNavigation() async {
+    try {
+      await _controller.executeScript(_buildDesktopDirectEmbedDocumentScript());
+    } catch (_) {}
+    unawaited(_markReadyIfCrispLoaded());
   }
 
   void _setLoading() {
@@ -281,6 +311,7 @@ class _DesktopCrispChatPageState extends State<DesktopCrispChatPage> {
 
   void _handleDesktopLoadError(WebErrorStatus status) {
     if (_isIgnorableDesktopLoadError(status)) return;
+    if (!_usingProxy || _didFallbackToOfficial) return;
     _loadErrorFallbackTimer?.cancel();
     _loadErrorFallbackTimer = Timer(const Duration(seconds: 2), () async {
       if (!mounted) return;
@@ -325,13 +356,16 @@ class _DesktopCrispChatPageState extends State<DesktopCrispChatPage> {
       final result = await _controller.executeScript('''
 (function(){
   try {
-    return window.__fastcatCrispReady === true;
+    if (window.__fastcatCrispReady === true) return true;
+    return !!document.querySelector("textarea,input,[contenteditable=true],button,a[href^=mailto],iframe[src*=crisp],iframe[src*='go.crisp.chat'],iframe[src*='client.crisp.chat'],.crisp-client,[class*=crisp]");
   } catch (_) {
     return false;
   }
 })();''');
       if (result == null) return false;
-      return result.contains('true');
+      if (result is bool) return result;
+      if (result is String) return result.contains('true');
+      return false;
     } catch (_) {
       return false;
     }

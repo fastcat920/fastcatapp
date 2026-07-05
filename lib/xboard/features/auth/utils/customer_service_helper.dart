@@ -946,6 +946,16 @@ if(window===window.top){
     }
     if (Platform.isWindows) {
       if (!context.mounted) return;
+      if (!DesktopCrispChatPage.isSupported) {
+        await launchUrl(
+          _localizedCrispUri(
+            crispEmbedUri(websiteId: websiteId, proxyUrl: crispProxyUrl),
+            Localizations.localeOf(context).toLanguageTag(),
+          ),
+          mode: LaunchMode.externalApplication,
+        );
+        return;
+      }
       await Navigator.of(context).push(
         MaterialPageRoute(
           builder: (_) => DesktopCrispChatPage(
