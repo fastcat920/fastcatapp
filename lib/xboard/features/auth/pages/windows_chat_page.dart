@@ -240,7 +240,6 @@ class _WindowsChatPageState extends State<WindowsChatPage> {
     _usingProxy = false;
     _didFallbackToOfficial = false;
     _hasTimedOut = false;
-    if (mounted) setState(() => _isLoading = true);
     _sdkFallbackTimer = Timer(
       _sdkFallbackDelay,
       () => unawaited(_fallbackFromSdkToEmbed()),
@@ -264,7 +263,6 @@ class _WindowsChatPageState extends State<WindowsChatPage> {
     if (!usingProxy) _didFallbackToOfficial = true;
     if (mounted) {
       setState(() {
-        _isLoading = true;
         _hasTimedOut = false;
         _hasError = false;
       });
@@ -694,7 +692,6 @@ class _WindowsChatPageState extends State<WindowsChatPage> {
             }
             if (mounted) {
               setState(() {
-                _isLoading = true;
                 _hasTimedOut = false;
               });
             }
@@ -706,7 +703,6 @@ class _WindowsChatPageState extends State<WindowsChatPage> {
               unawaited(_injectDirectEmbedMonitor());
               unawaited(_runDeferredUserScript());
             }
-            if (mounted) setState(() => _isLoading = false);
           },
           onReceivedError: (_, request, error) {
             if (request.isForMainFrame == false) return;
@@ -723,12 +719,7 @@ class _WindowsChatPageState extends State<WindowsChatPage> {
           },
           onCreateWindow: (_, __) async => false,
         ),
-        if (_isLoading)
-          ColoredBox(
-            color: backgroundColor,
-            child: const Center(child: CircularProgressIndicator()),
-          ),
-        if (_hasTimedOut && !_isLoading)
+        if (_hasTimedOut)
           ColoredBox(
             color: backgroundColor,
             child: Center(
@@ -773,7 +764,6 @@ class _WindowsChatPageState extends State<WindowsChatPage> {
             } catch (e, stackTrace) {
               _logger.warning('[WindowsChat] Salesmartly injection failed', e, stackTrace);
             }
-            if (mounted) setState(() => _isLoading = false);
           },
           onReceivedError: (_, request, error) {
             if (request.isForMainFrame == false) return;
