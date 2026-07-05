@@ -36,7 +36,7 @@ const _crispUserDataResolveTimeout = Duration(milliseconds: 1800);
 /// 统一客服入口：按业务约定仅使用 Crisp（远程优先，本地兜底）
 ///
 /// Android/iOS/macOS → 内嵌 WebView（webview_flutter）
-/// Windows → 内嵌 WebView2 侧边面板（webview_windows）
+/// Windows → 内嵌 WebView2 侧边面板（flutter_inappwebview）
 /// Linux → 独立 WebView 窗口（desktop_webview_window）
 class CustomerServiceHelper {
   CustomerServiceHelper._();
@@ -974,39 +974,9 @@ if(window===window.top){
     }
     if (Platform.isWindows) {
       if (!context.mounted) return;
-      final localeTag = Localizations.localeOf(context).toLanguageTag();
-      final externalCrispUri = _localizedCrispUri(
-        officialCrispEmbedUri(websiteId),
-        localeTag,
-      );
-      Future<void> openWindowsFallback() async {
-        _logger.warning(
-          '[Crisp] Windows embedded WebView2 unavailable, opening external browser',
-        );
-        await launchUrl(
-          externalCrispUri,
-          mode: LaunchMode.externalApplication,
-        );
-      }
-
-      if (!await WindowsChatPage.isRuntimeAvailable()) {
-        await openWindowsFallback();
-        return;
-      }
-      if (!context.mounted) return;
-      if (!WindowsChatPage.isSupported) {
-        await launchUrl(
-          externalCrispUri,
-          mode: LaunchMode.externalApplication,
-        );
-        return;
-      }
       await _showWindowsChatPanel(
         context,
-        WindowsChatPage(
-          crispWebsiteId: websiteId,
-          onUnavailableFallback: openWindowsFallback,
-        ),
+        WindowsChatPage(crispWebsiteId: websiteId),
       );
       return;
     }

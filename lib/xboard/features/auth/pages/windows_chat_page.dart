@@ -6,68 +6,65 @@ import 'package:fl_clash/l10n/l10n.dart';
 import 'package:fl_clash/xboard/core/core.dart';
 import 'package:fl_clash/xboard/features/auth/utils/crisp_url_helper.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
-import 'package:webview_windows/webview_windows.dart';
+import 'package:flutter_inappwebview/flutter_inappwebview.dart' as iaw;
 
 final _logger = FileLogger('windows_chat_page.dart');
 
-/// Windows desktop customer-service page based on Apex's WebView2 panel.
+String _crispLocaleFromTag(String? localeTag) {
+  final normalized =
+      (localeTag ?? '').trim().replaceAll('_', '-').toLowerCase();
+  if (normalized.isEmpty) return 'en';
+  final language = normalized.split('-').first;
+  return switch (language) {
+    'zh' => 'zh',
+    'ja' => 'ja',
+    'ko' => 'ko',
+    'en' => 'en',
+    _ => language,
+  };
+}
+
+Uri _localizedCrispUri(Uri uri, String? localeTag) {
+  final tag =
+      (localeTag == null || localeTag.trim().isEmpty) ? 'en' : localeTag.trim();
+  return uri.replace(
+    queryParameters: {
+      ...uri.queryParameters,
+      'locale': _crispLocaleFromTag(tag),
+      'lang': tag,
+    },
+  );
+}
+
+/// Windows desktop customer-service page using an embedded WebView2 widget.
 ///
-/// Windows uses this lightweight WebView2 page directly instead of the richer
-/// desktop Crisp implementation. Proxy routing and user metadata injection are
-/// intentionally left for a later pass.
+/// The outer 400x600 panel stays aligned with Apex's Windows customer-service
+/// UI, but the renderer uses flutter_inappwebview on Windows to avoid the
+/// webview_windows Graphics Capture path that can return unsupported_platform.
 class WindowsChatPage extends StatefulWidget {
   final String? salesmartlyScriptUrl;
   final String? crispWebsiteId;
-  final Future<void> Function()? onUnavailableFallback;
 
   const WindowsChatPage({
     super.key,
     this.salesmartlyScriptUrl,
     this.crispWebsiteId,
-    this.onUnavailableFallback,
   }) : assert(
           salesmartlyScriptUrl != null || crispWebsiteId != null,
           'salesmartlyScriptUrl or crispWebsiteId is required',
         );
 
-  static bool get isSupported =>
-      Platform.isWindows && WebView2Check.isInstalled();
-
-  static Future<bool> isRuntimeAvailable() async {
-    if (!isSupported) return false;
-    try {
-      final version = await WebviewController.getWebViewVersion();
-      if (version == null || version.trim().isEmpty) {
-        _logger.warning('[WindowsChat] WebView2 Runtime version is empty');
-        return false;
-      }
-      await WebviewController.initializeEnvironment();
-      return true;
-    } on PlatformException catch (e, stackTrace) {
-      if (e.code == 'environment_already_initialized') return true;
-      _logger.warning(
-        '[WindowsChat] WebView2 runtime probe failed: ${e.code}',
-        e,
-        stackTrace,
-      );
-      return false;
-    } catch (e, stackTrace) {
-      _logger.warning(
-          '[WindowsChat] WebView2 runtime probe failed', e, stackTrace);
-      return false;
-    }
-  }
+  static bool get isSupported => Platform.isWindows;
 
   @override
   State<WindowsChatPage> createState() => _WindowsChatPageState();
 }
 
 class _WindowsChatPageState extends State<WindowsChatPage> {
-  final _controller = WebviewController();
-  bool _isInitialized = false;
+  bool _isLoading = true;
   bool _hasError = false;
   String _errorMessage = '';
+  int _reloadToken = 0;
 
   @override
   void initState() {
@@ -77,88 +74,45 @@ class _WindowsChatPageState extends State<WindowsChatPage> {
       'salesmartlyScriptUrl=${widget.salesmartlyScriptUrl != null ? "present(${widget.salesmartlyScriptUrl!.length})" : "empty"}, '
       'crispWebsiteId=${widget.crispWebsiteId != null ? "present(${widget.crispWebsiteId!.length})" : "empty"}',
     );
-    unawaited(_initWebView());
   }
 
-  Future<void> _initWebView() async {
+  Uri _initialUri(BuildContext context) {
+    if (widget.salesmartlyScriptUrl != null) {
+      return Uri.parse('https://www.salesmartly.com/robots.txt');
+    }
+    return _localizedCrispUri(
+      officialCrispEmbedUri(widget.crispWebsiteId!),
+      Localizations.localeOf(context).toLanguageTag(),
+    );
+  }
+
+  bool _hasWebView2Runtime() {
     try {
-      _logger.info('[WindowsChat] Initializing WebviewController...');
-      await _controller.initialize();
-      _logger.info('[WindowsChat] WebviewController initialized');
-
-      await _controller.setBackgroundColor(const Color(0xFFF5F5F5));
-      await _controller.setPopupWindowPolicy(WebviewPopupWindowPolicy.deny);
-
-      if (widget.salesmartlyScriptUrl != null) {
-        await _initSalesmartly();
-      } else if (widget.crispWebsiteId != null) {
-        await _initCrisp();
-      }
-
-      if (mounted) {
-        setState(() => _isInitialized = true);
-      }
+      return WebView2Check.isInstalled();
     } catch (e, stackTrace) {
-      _logger.error('[WindowsChat] WebView2 init failed: $e', e, stackTrace);
-      if (_shouldUseFallbackFor(e) &&
-          widget.onUnavailableFallback != null &&
-          mounted) {
-        try {
-          await widget.onUnavailableFallback!();
-          if (mounted) {
-            Navigator.of(context, rootNavigator: true).pop();
-          }
-          return;
-        } catch (fallbackError, fallbackStackTrace) {
-          _logger.error(
-            '[WindowsChat] fallback after WebView2 init failure failed',
-            fallbackError,
-            fallbackStackTrace,
-          );
-        }
-      }
-      if (mounted) {
-        setState(() {
-          _hasError = true;
-          _errorMessage = e.toString();
-        });
-      }
+      _logger.warning(
+          '[WindowsChat] WebView2 runtime check failed', e, stackTrace);
+      return false;
     }
   }
 
-  bool _shouldUseFallbackFor(Object error) {
-    if (error is! PlatformException) return false;
-    return const {
-      'unsupported_platform',
-      'environment_creation_failed',
-      'webview_creation_failed',
-    }.contains(error.code);
+  Future<void> _injectAfterLoad(iaw.InAppWebViewController controller) async {
+    if (widget.salesmartlyScriptUrl != null) {
+      await _injectSalesmartlySDK(controller);
+      return;
+    }
+    await _injectCrispLayout(controller);
   }
 
-  Future<void> _initSalesmartly() async {
+  Future<void> _injectSalesmartlySDK(
+    iaw.InAppWebViewController controller,
+  ) async {
     final scriptUrl = widget.salesmartlyScriptUrl!;
     final scriptUrlEscaped = scriptUrl.replaceAll('\\', '\\\\').replaceAll(
           "'",
           "\\'",
         );
-
-    _logger.info('[WindowsChat] Salesmartly: waiting navigation completed');
-
-    late final StreamSubscription<LoadingState> subscription;
-    subscription = _controller.loadingState.listen((state) {
-      _logger.info('[WindowsChat] Salesmartly loadingState=$state');
-      if (state == LoadingState.navigationCompleted) {
-        subscription.cancel();
-        _logger.info('[WindowsChat] Salesmartly: injecting SDK');
-        unawaited(_injectSalesmartlySDK(scriptUrlEscaped));
-      }
-    });
-
-    await _controller.loadUrl('https://www.salesmartly.com/robots.txt');
-  }
-
-  Future<void> _injectSalesmartlySDK(String scriptUrl) async {
-    await _controller.executeScript('''
+    await controller.evaluateJavascript(source: '''
       document.open();
       document.write('<html><head><meta charset="utf-8"><style>*{margin:0;padding:0}html,body{width:100%;height:100%;background:#f5f5f5}#ss_loading{display:flex;align-items:center;justify-content:center;height:100%;color:#999;font-family:-apple-system,sans-serif;font-size:14px}</style></head><body><div id="ss_loading">正在连接客服...</div></body></html>');
       document.close();
@@ -167,7 +121,7 @@ class _WindowsChatPageState extends State<WindowsChatPage> {
       window.__ssc.setting = { hideIcon: true };
 
       var s = document.createElement('script');
-      s.src = '$scriptUrl';
+      s.src = '$scriptUrlEscaped';
       s.id = 'ss_chat';
       s.onload = function() {
         (function w() {
@@ -188,50 +142,154 @@ class _WindowsChatPageState extends State<WindowsChatPage> {
         if (e) e.textContent = '加载失败，请检查网络后重试';
       };
       document.head.appendChild(s);
-
-      new MutationObserver(function() {
-        var fs = document.querySelectorAll('iframe');
-        for (var i = 0; i < fs.length; i++) {
-          var src = fs[i].src || '';
-          if (src.indexOf('salesmartly') !== -1 || src.indexOf('ssm') !== -1) {
-            fs[i].style.cssText = 'position:fixed!important;top:0!important;left:0!important;width:100vw!important;height:100vh!important;max-width:none!important;max-height:none!important;border:none!important;border-radius:0!important;z-index:99999!important;';
-            var p = fs[i].parentElement;
-            if (p) p.style.cssText = 'position:fixed!important;top:0!important;left:0!important;width:100vw!important;height:100vh!important;z-index:99999!important;';
-            var e = document.getElementById('ss_loading');
-            if (e) e.style.display = 'none';
-          }
-        }
-      }).observe(document.documentElement, { childList: true, subtree: true, attributes: true });
-
-      setTimeout(function() {
-        var e = document.getElementById('ss_loading');
-        if (e && e.style.display !== 'none') e.textContent = '加载超时，请检查网络后重试';
-      }, 20000);
     ''');
   }
 
-  Future<void> _initCrisp() async {
-    final websiteId = widget.crispWebsiteId!;
-    _logger.info('[WindowsChat] Crisp: loading embed page');
-    await _controller.loadUrl(officialCrispEmbedUri(websiteId).toString());
+  Future<void> _injectCrispLayout(iaw.InAppWebViewController controller) async {
+    await controller.evaluateJavascript(source: '''
+(function(){
+  try {
+    window.\$crisp = window.\$crisp || [];
+    window.\$crisp.push(["do", "chat:show"]);
+    window.\$crisp.push(["do", "chat:open"]);
+    var style = document.getElementById("fastcat-windows-crisp-style");
+    if (!style) {
+      style = document.createElement("style");
+      style.id = "fastcat-windows-crisp-style";
+      (document.head || document.documentElement).appendChild(style);
+    }
+    style.textContent =
+      "html,body{width:100%!important;height:100%!important;margin:0!important;overflow:hidden!important;background:#f5f5f5!important;}" +
+      "iframe[src*=crisp],.crisp-client,[class*=crisp],[id*=crisp]{position:fixed!important;inset:0!important;width:100%!important;height:100%!important;max-width:none!important;max-height:none!important;margin:0!important;padding:0!important;border:0!important;border-radius:0!important;}";
+  } catch (_) {}
+})();''');
+  }
+
+  void _setLoading(bool value) {
+    if (!mounted || _isLoading == value) return;
+    setState(() => _isLoading = value);
+  }
+
+  void _showError(String message) {
+    if (!mounted) return;
+    setState(() {
+      _isLoading = false;
+      _hasError = true;
+      _errorMessage = message;
+    });
   }
 
   void _retry() {
     setState(() {
+      _isLoading = true;
       _hasError = false;
-      _isInitialized = false;
+      _errorMessage = '';
+      _reloadToken++;
     });
-    unawaited(_initWebView());
   }
 
-  @override
-  void dispose() {
-    _controller.dispose();
-    super.dispose();
+  Widget _buildError(BuildContext context, String message) {
+    final l10n = AppLocalizations.of(context);
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.all(24),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(
+              Icons.support_agent_outlined,
+              size: 40,
+              color: Theme.of(context).colorScheme.primary,
+            ),
+            const SizedBox(height: 14),
+            Text(
+              message,
+              textAlign: TextAlign.center,
+              style: const TextStyle(color: Colors.grey),
+            ),
+            const SizedBox(height: 16),
+            FilledButton.icon(
+              onPressed: _retry,
+              icon: const Icon(Icons.refresh),
+              label: Text(l10n.refresh),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildWebView(BuildContext context) {
+    if (!_hasWebView2Runtime()) {
+      return _buildError(
+        context,
+        'WebView2 Runtime 未安装，无法加载内嵌客服。',
+      );
+    }
+    final initialUri = _initialUri(context);
+    return Stack(
+      fit: StackFit.expand,
+      children: [
+        iaw.InAppWebView(
+          key: ValueKey(_reloadToken),
+          initialUrlRequest: iaw.URLRequest(
+            url: iaw.WebUri(initialUri.toString()),
+          ),
+          initialSettings: iaw.InAppWebViewSettings(
+            javaScriptEnabled: true,
+            javaScriptCanOpenWindowsAutomatically: false,
+            mediaPlaybackRequiresUserGesture: false,
+            supportZoom: false,
+            transparentBackground: false,
+            useShouldOverrideUrlLoading: true,
+          ),
+          onLoadStart: (_, __) {
+            _setLoading(true);
+          },
+          onLoadStop: (controller, _) async {
+            try {
+              await _injectAfterLoad(controller);
+            } catch (e, stackTrace) {
+              _logger.warning(
+                '[WindowsChat] post-load script injection failed',
+                e,
+                stackTrace,
+              );
+            }
+            _setLoading(false);
+          },
+          onReceivedError: (_, request, error) {
+            if (request.isForMainFrame == false) return;
+            _logger.warning('[WindowsChat] load error: $error');
+            _showError(error.description);
+          },
+          shouldOverrideUrlLoading: (_, navigationAction) async {
+            final uri = navigationAction.request.url;
+            final scheme = uri?.scheme.toLowerCase();
+            if (scheme == null ||
+                scheme == 'http' ||
+                scheme == 'https' ||
+                scheme == 'about') {
+              return iaw.NavigationActionPolicy.ALLOW;
+            }
+            return iaw.NavigationActionPolicy.CANCEL;
+          },
+          onCreateWindow: (_, __) async => false,
+        ),
+        if (_isLoading)
+          const ColoredBox(
+            color: Color(0xFFF5F5F5),
+            child: Center(child: CircularProgressIndicator()),
+          ),
+      ],
+    );
   }
 
   @override
   Widget build(BuildContext context) {
+    final body = _hasError
+        ? _buildError(context, _errorMessage)
+        : _buildWebView(context);
     return PopScope(
       canPop: true,
       child: Scaffold(
@@ -242,30 +300,7 @@ class _WindowsChatPageState extends State<WindowsChatPage> {
             onPressed: () => Navigator.of(context, rootNavigator: true).pop(),
           ),
         ),
-        body: _hasError
-            ? Center(
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    const Icon(
-                      Icons.error_outline,
-                      size: 48,
-                      color: Colors.grey,
-                    ),
-                    const SizedBox(height: 16),
-                    Text(
-                      'WebView2 加载失败\n$_errorMessage',
-                      textAlign: TextAlign.center,
-                      style: const TextStyle(color: Colors.grey),
-                    ),
-                    const SizedBox(height: 16),
-                    FilledButton(onPressed: _retry, child: const Text('重试')),
-                  ],
-                ),
-              )
-            : !_isInitialized
-                ? const Center(child: CircularProgressIndicator())
-                : Webview(_controller),
+        body: body,
       ),
     );
   }
