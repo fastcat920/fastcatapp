@@ -515,6 +515,26 @@ class _CrispChatPageState extends State<CrispChatPage> {
         if (loadingText) loadingText.textContent = loadFailed;
       };
       document.head.appendChild(script);
+    
+      // DEBUG: Crisp 环境诊断
+      setTimeout(function(){
+        var r = [];
+        r.push("=== SDK-Bootstrap Diagnostics ===");
+        r.push("UA: "+navigator.userAgent);
+        r.push("window===top: "+(window===window.top));
+        r.push("viewport: "+window.innerWidth+"x"+window.innerHeight);
+        var els = document.querySelectorAll("[class*=\"close\"],[class*=\"dismiss\"],[class*=\"minimize\"],[aria-label*=\"close\" i],button");
+        for (var i=0;i<els.length;i++){
+          var e=els[i];
+          var rec=e.getBoundingClientRect();
+          var cs=getComputedStyle(e);
+          if(cs.display==="none"||cs.visibility==="hidden") continue;
+          if(rec.y<120){
+            r.push("  tag:"+e.tagName+" class:"+(e.className||"none").substring(0,60)+" id:"+(e.id||"none")+" pos:"+Math.round(rec.x)+","+Math.round(rec.y)+" "+Math.round(rec.width)+"x"+Math.round(rec.height)+" text:"+(e.textContent||"").trim().substring(0,20));
+          }
+        }
+        console.log(r.join("\n"));
+      }, 3000);
     })();
   </script>
 </body>
