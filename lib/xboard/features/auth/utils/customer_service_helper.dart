@@ -1313,7 +1313,6 @@ if(window===window.top){
     window.__fastcatCustomerServiceCrispLocale = $crispLocaleJson;
     window.CRISP_RUNTIME_CONFIG = {
       locale: $crispLocaleJson,
-      lock_full_view: true
     };
     try {
       Object.defineProperty(navigator, 'language', { get: function(){ return window.__fastcatCustomerServiceLocale; }, configurable: true });

@@ -473,7 +473,6 @@ class _WindowsChatPageState extends State<WindowsChatPage> {
     window.CRISP_WEBSITE_ID = $websiteIdJson;
     window.CRISP_RUNTIME_CONFIG = {
       locale: $crispLocaleJson,
-      lock_full_view: true
     };
     window.__fastcatCrispReady = false;
     window.__fastcatCustomerServiceLocale = $localeTagJson;
