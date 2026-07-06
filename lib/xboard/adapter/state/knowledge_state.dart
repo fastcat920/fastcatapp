@@ -36,11 +36,13 @@ final knowledgeArticlesProvider =
 ///
 /// 用 ?id={id} 参数请求完整文章（含 body、订阅链接占位符替换、访问控制处理）。
 /// V2Board 列表不含 body，必须通过此接口获取内容。
+/// 每次请求添加 _t 时间戳参数，确保不缓存，强制获取最新文章内容。
 final knowledgeArticleDetailProvider =
     FutureProvider.family<dynamic, KnowledgeArticleDetailRequest>(
         (ref, request) async {
   final sdk = await ref.read(xboardSdkProvider.future);
   final language = Uri.encodeQueryComponent(request.language);
+  final cacheBuster = DateTime.now().millisecondsSinceEpoch;
   return await sdk.httpService
-      .getRequest('/user/knowledge/fetch?id=${request.id}&language=$language');
+      .getRequest('/user/knowledge/fetch?id=${request.id}&language=$language&_t=$cacheBuster');
 });

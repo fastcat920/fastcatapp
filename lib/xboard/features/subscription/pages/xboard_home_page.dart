@@ -309,7 +309,7 @@ class _XBoardHomePageState extends ConsumerState<XBoardHomePage>
                 final targetTopGap = availableGap * (compactMode ? 0.28 : 0.36);
                 final adaptiveTopGap = (targetTopGap < minTopGapForLowerHalf
                     ? minTopGapForLowerHalf
-                    : targetTopGap) + (isDesktop ? 10.0 : 0.0);
+                    : targetTopGap) + (isDesktop ? 20.0 : 0.0);
                 final adaptiveBottomGap =
                     minBottomGap + (availableGap - adaptiveTopGap);
 

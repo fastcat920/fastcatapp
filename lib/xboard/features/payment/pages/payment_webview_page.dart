@@ -233,7 +233,7 @@ class PaymentWebViewPage extends ConsumerStatefulWidget {
         document.documentElement.style.overflowX = 'hidden';
         document.documentElement.style.overflowY = 'auto';
         document.documentElement.style.height = 'auto';
-        document.documentElement.style.minHeight = '100%';
+        document.documentElement.style.minHeight = '100vh';
         if (document.body) {
           document.body.style.background = theme.background;
           document.body.style.width = '100%';
@@ -241,7 +241,7 @@ class PaymentWebViewPage extends ConsumerStatefulWidget {
           document.body.style.overflowX = 'hidden';
           document.body.style.overflowY = 'visible';
           document.body.style.height = 'auto';
-          document.body.style.minHeight = '100%';
+          document.body.style.minHeight = '100vh';
         }
         var style = document.getElementById('fastcat-payment-theme');
         if (!style) {
@@ -254,7 +254,7 @@ class PaymentWebViewPage extends ConsumerStatefulWidget {
           + 'body{box-sizing:border-box !important;width:100% !important;height:auto !important;min-height:100% !important;min-width:0 !important;max-width:100% !important;margin:0 !important;overflow-x:hidden !important;overflow-y:visible !important;background:' + theme.background + ' !important;color-scheme:' + (theme.isDark ? 'dark' : 'light') + ' !important;}'
           + '*,*:before,*:after{box-sizing:border-box !important;}'
           + 'body > *{max-width:100% !important;overflow-x:hidden !important;overflow-y:visible !important;}'
-          + 'iframe,frame,embed,object{display:block !important;width:100% !important;max-width:100% !important;min-height:100vh !important;max-height:none !important;border:none !important;overflow:hidden !important;}'
+          + 'iframe,frame,embed,object{display:block !important;width:100% !important;max-width:100% !important;min-height:200px !important;max-height:none !important;border:none !important;overflow:hidden !important;}'
           + '.container,.wrapper,.content,.page,#app,#root,#main{width:100% !important;max-width:100% !important;min-width:0 !important;height:auto !important;min-height:0 !important;max-height:none !important;overflow-x:hidden !important;overflow-y:visible !important;}'
           + ':not(html):not(body)[style*="height:100vh"],:not(html):not(body)[style*="height:100%"],:not(html):not(body)[style*="height: 100vh"],:not(html):not(body)[style*="height: 100%"]{max-height:none !important;min-height:0 !important;height:auto !important;}'\n          + ':not(html):not(body)[style*="overflow:hidden"],:not(html):not(body)[style*="overflow: hidden"]{overflow-y:visible !important;}'
           + 'img,video,canvas,svg,table{max-width:100% !important;}';
@@ -359,7 +359,7 @@ class PaymentWebViewPage extends ConsumerStatefulWidget {
                 node.style.border = 'none';
                 node.style.display = 'block';
                 node.style.overflowX = 'hidden';
-                node.style.minHeight = '100vh';
+                node.style.minHeight = 'auto';
                 node.style.maxHeight = 'none';
                 try {
                   var childDoc = node.contentDocument || (node.contentWindow && node.contentWindow.document);

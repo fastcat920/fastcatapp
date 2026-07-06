@@ -8,7 +8,7 @@ import 'package:fl_clash/xboard/features/shared/widgets/xb_error_state.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 import 'package:flutter_inappwebview/flutter_inappwebview.dart' as iaw;
-import 'package:flutter_widget_from_html/flutter_widget_from_html.dart';
+
 
 /// Build the language tag for knowledge API calls from the current locale.
 ///
@@ -424,9 +424,7 @@ class _ArticleDetailPage extends ConsumerStatefulWidget {
 class _ArticleDetailPageState extends ConsumerState<_ArticleDetailPage> {
   String? _resolvedBody;
   WebViewController? _webController;
-  bool _useHtmlWidget = false;
   bool _useInAppWebView = false;
-  String? _htmlWidgetContent;
   String? _inAppWebViewHtml;
   bool _lastInAppWebViewIsDark = false;
   bool _lastWebViewIsDark = false;
@@ -444,165 +442,7 @@ class _ArticleDetailPageState extends ConsumerState<_ArticleDetailPage> {
   }
 
 
-  /// Extracts style + body from full HTML, remapping body rules to a wrapper
-  /// div so HtmlWidget can apply font, text color, and background correctly.
-  static String _fullHtmlToStyleBody(String fullHtml) {
-    final styleMatch =
-        RegExp(r'<style>(.*?)</style>', dotAll: true).firstMatch(fullHtml);
-    final bodyMatch =
-        RegExp(r'<body>(.*?)</body>', dotAll: true).firstMatch(fullHtml);
-    var styleContent = styleMatch?.group(1) ?? '';
-    final bodyContent = bodyMatch?.group(1) ?? fullHtml;
 
-    // Remap 'body' CSS selector to a wrapper class so HtmlWidget can match it
-    styleContent = styleContent
-        .replaceAll('body{', '.fastcat-doc-body{')
-        .replaceAll('body {', '.fastcat-doc-body {');
-
-    return '<style>$styleContent</style><div class="fastcat-doc-body">$bodyContent</div>';
-  }
-
-  /// Converts Markdown/HTML mixed content to inline-styled body HTML fragment.
-  /// Used by HtmlWidget (Linux) — no dark/light CSS wrapper, inherits theme from Flutter.
-  static String _contentToBodyHtml(String content) {
-    final htmlBlocks = <String, String>{};
-    int blockIndex = 0;
-    String s = content;
-
-    s = s.replaceAllMapped(
-      RegExp(r'<([a-zA-Z][a-zA-Z0-9]*)\b[^>]*>[\s\S]*?</\1>|<([a-zA-Z][a-zA-Z0-9]*)\b[^>]*/?>',
-          multiLine: true),
-      (m) {
-        final key = '\x00HTML_BLOCK_${blockIndex++}\x00';
-        htmlBlocks[key] = m.group(0)!;
-        return key;
-      },
-    );
-
-    // ::: admonition 块
-    s = s.replaceAllMapped(
-      RegExp(r':::(\w+)\s*(.*?)\n([\s\S]*?):::', multiLine: true),
-      (m) {
-        final type = m.group(1)!.toLowerCase();
-        final title = m.group(2)!.trim();
-        final body = m.group(3)!.trim();
-        const colors = <String, List<String>>{
-          'tip':     ['#e8f5e9', '#2e7d32'],
-          'warning': ['#fff8e1', '#f57f17'],
-          'danger':  ['#fce4ec', '#c62828'],
-          'info':    ['#e3f2fd', '#1565c0'],
-        };
-        final pair = colors[type] ?? ['#f5f5f5', '#333'];
-        final label = title.isNotEmpty ? title : type.toUpperCase();
-        return '<div style="background:${pair[0]};border-left:4px solid ${pair[1]};'
-            'border-radius:6px;padding:12px 16px;margin:12px 0">'
-            '<strong style="color:${pair[1]}">$label</strong>'
-            '<br>${body.replaceAll('\n', '<br>')}</div>';
-      },
-    );
-
-    s = s.replaceAllMapped(
-      RegExp(r'```[\w]*\n?([\s\S]*?)```', multiLine: true),
-      (m) {
-        final code = m.group(1)!
-            .replaceAll('&', '&amp;').replaceAll('<', '&lt;').replaceAll('>', '&gt;').trim();
-        return '<pre style="background:#f4f4f4;padding:12px;border-radius:6px;overflow-x:auto">'
-            '<code style="font-family:monospace;font-size:0.9em">$code</code></pre>';
-      },
-    );
-
-    s = s.replaceAll(RegExp(r'^---+$', multiLine: true),
-        '<hr style="border:none;border-top:1px solid #e0e0e0;margin:16px 0">');
-
-    for (int i = 6; i >= 1; i--) {
-      s = s.replaceAllMapped(
-        RegExp('^${'#' * i} (.+)\$', multiLine: true),
-        (m) => '<h$i style="margin-top:20px;margin-bottom:8px">${m.group(1)!}</h$i>',
-      );
-    }
-
-    s = s
-        .replaceAllMapped(RegExp(r'\*\*\*(.*?)\*\*\*'),
-            (m) => '<strong><em>${m.group(1)}</em></strong>')
-        .replaceAllMapped(RegExp(r'\*\*(.*?)\*\*'),
-            (m) => '<strong>${m.group(1)}</strong>')
-        .replaceAllMapped(RegExp(r'\*(.*?)\*'),
-            (m) => '<em>${m.group(1)}</em>');
-
-    s = s.replaceAllMapped(RegExp(r'`([^`]+)`'),
-        (m) => '<code style="background:#f4f4f4;padding:2px 4px;border-radius:3px;font-size:0.9em">${m.group(1)}</code>');
-
-    s = s.replaceAllMapped(RegExp(r'!\[([^\]]*)\]\(([^)]+)\)'),
-        (m) => '<img alt="${m.group(1)}" src="${m.group(2)}" style="max-width:100%;height:auto;border-radius:8px;margin:8px 0">');
-
-    s = s.replaceAllMapped(RegExp(r'\[([^\]]+)\]\(([^)]+)\)'),
-        (m) => '<a href="${m.group(2)}" style="color:#1976D2">${m.group(1)}</a>');
-
-    s = s.replaceAllMapped(RegExp(r'^[-*+] (.+)$', multiLine: true), (m) => '<li>${m.group(1)!}</li>');
-    s = s.replaceAllMapped(RegExp(r'(<li>.*?</li>\n?)+'), (m) => '<ul style="padding-left:24px">${m.group(0)}</ul>');
-
-    s = s.replaceAllMapped(RegExp(r'^\d+\. (.+)$', multiLine: true), (m) => '<li>${m.group(1)!}</li>');
-
-    s = s.replaceAllMapped(
-      RegExp(r'(^> .+(\n> .+)*)', multiLine: true),
-      (m) {
-        final inner = m.group(0)!.replaceAll(RegExp(r'^> ', multiLine: true), '');
-        return '<blockquote style="border-left:4px solid #1976D2;margin:0;padding-left:16px;color:#555">${inner.replaceAll('\n', '<br>')}</blockquote>';
-      },
-    );
-
-    s = s.replaceAllMapped(
-      RegExp(r'(^\|.+\|[ \t]*\n)(^\|[-| :]+\|[ \t]*\n)((?:^\|.+\|[ \t]*\n?)+)', multiLine: true),
-      (m) {
-        final headerLine = m.group(1)!.trim();
-        final bodyLines = m.group(3)!.trim().split('\n');
-        String parseRow(String line, String tag) {
-          final cells = line.split('|').where((c) => c.trim().isNotEmpty).map((c) => c.trim());
-          final style = tag == 'th'
-              ? ' style="border:1px solid #ddd;padding:8px;text-align:left;background:#f4f4f4"'
-              : ' style="border:1px solid #ddd;padding:8px;text-align:left"';
-          return '<tr>${cells.map((c) => '<$tag$style>$c</$tag>').join()}</tr>';
-        }
-        return '<table style="border-collapse:collapse;width:100%"><thead>${parseRow(headerLine, 'th')}</thead>'
-            '<tbody>${bodyLines.map((l) => parseRow(l.trim(), 'td')).join()}</tbody></table>';
-      },
-    );
-
-    s = s.replaceAllMapped(RegExp(r'\n\n+'), (_) => '\n</p><p>\n');
-    s = s.replaceAll(RegExp(r'(?<!</p>)\n(?!<)'), '<br>\n');
-
-    for (final entry in htmlBlocks.entries) {
-      s = s.replaceAll(entry.key, entry.value);
-    }
-
-    // Phase 4: HtmlWidget 兼容性处理
-    // linear-gradient → 提取第一个颜色作为 background-color 回退
-    s = s.replaceAllMapped(
-      RegExp(r'background\s*:\s*linear-gradient\([^)]*?(?:,\s*)(#[0-9a-fA-F]{3,8}|\w+)', caseSensitive: false),
-      (m) => 'background-color:${m.group(1)}',
-    );
-    s = s.replaceAllMapped(
-      RegExp(r'background\s*:\s*(?:linear|radial|conic)-gradient\([^)]+\)', caseSensitive: false),
-      (m) {
-        final colorMatch = RegExp(r'#[0-9a-fA-F]{3,8}').firstMatch(m.group(0)!);
-        return colorMatch != null
-            ? 'background-color:${colorMatch.group(0)}'
-            : 'background-color:#6c63ff';
-      },
-    );
-    s = s.replaceAllMapped(
-      RegExp(r'(<a\b[^>]*style="[^"]*?)(")', caseSensitive: false),
-      (m) {
-        final style = m.group(1)!;
-        if (style.contains('background-color') && !style.contains('display')) {
-          return '${style};display:inline-block${m.group(2)}';
-        }
-        return m.group(0)!;
-      },
-    );
-
-    return '<p>$s</p>';
-  }
   static String _contentToHtml(String content, {bool isDark = false}) {
     final htmlBlocks = <String, String>{};
     int blockIndex = 0;
@@ -746,14 +586,10 @@ class _ArticleDetailPageState extends ConsumerState<_ArticleDetailPage> {
     final bgColor = isDark ? '#1e1e1e' : '#ffffff';
     final codeBg = isDark ? '#2d2d2d' : '#f4f4f4';
     final hrColor = isDark ? '#444' : '#e0e0e0';
-    final scheme = isDark ? 'dark' : 'light';
-
     return '''<!DOCTYPE html><html><head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta name="color-scheme" content="$scheme">
 <style>
-:root{color-scheme:$scheme}
 body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;padding:16px;line-height:1.7;word-wrap:break-word;color:$textColor;background:$bgColor;max-width:100%}
 img{max-width:100%;height:auto;border-radius:8px;margin:8px 0}
 pre{background:$codeBg;padding:12px;border-radius:6px;overflow-x:auto}
@@ -773,13 +609,10 @@ p{margin:8px 0}
     super.initState();
     // Invalidate provider on every open to force fresh API load (no caching)
     ref.invalidate(knowledgeArticleDetailProvider(_detailRequest));
-    if (Platform.isLinux) {
-      _useHtmlWidget = true;
-      _webLoading = false;
-    } else if (Platform.isWindows) {
+    if (Platform.isLinux || Platform.isWindows) {
       _useInAppWebView = true;
-      _webLoading = false;
     }
+    _webLoading = true;
     // Never use article.body from list — always fetch fresh via provider
     _resolvedBody = null;
   }
@@ -793,29 +626,6 @@ p{margin:8px 0}
     final h1Pattern = RegExp(r'^#\s+' + RegExp.escape(title) + r'\s*\n');
     final stripped = body.replaceFirst(h1Pattern, '');
     return stripped;
-  }
-
-  /// Returns true if the URL points to a downloadable file (matches common
-  /// binary/archive extensions that WKWebView cannot render natively).
-  static bool _isDownloadLink(String url) {
-    final lower = url.split('?')[0].toLowerCase();
-    return lower.endsWith('.dmg') ||
-        lower.endsWith('.exe') ||
-        lower.endsWith('.apk') ||
-        lower.endsWith('.zip') ||
-        lower.endsWith('.7z') ||
-        lower.endsWith('.rar') ||
-        lower.endsWith('.tar.gz') ||
-        lower.endsWith('.tar') ||
-        lower.endsWith('.gz') ||
-        lower.endsWith('.bz2') ||
-        lower.endsWith('.deb') ||
-        lower.endsWith('.rpm') ||
-        lower.endsWith('.msi') ||
-        lower.endsWith('.ipa') ||
-        lower.endsWith('.pkg') ||
-        lower.endsWith('.iso') ||
-        lower.endsWith('.bin');
   }
 
   @override
@@ -873,9 +683,7 @@ p{margin:8px 0}
       _resolvedBody = null;
       _webController = null;
       _useInAppWebView = false;
-      _useHtmlWidget = false;
       _inAppWebViewHtml = null;
-      _htmlWidgetContent = null;
       _webLoading = true;
       _lastInAppWebViewIsDark = false;
       _lastWebViewIsDark = false;
@@ -891,16 +699,7 @@ p{margin:8px 0}
   void _initWebView(String content) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
-    if (Platform.isLinux) {
-      final fullHtml = _contentToHtml(content, isDark: isDark);
-      _htmlWidgetContent = _fullHtmlToStyleBody(fullHtml);
-      _useHtmlWidget = true;
-      _lastWebViewIsDark = isDark;
-      if (mounted) setState(() => _webLoading = false);
-      return;
-    }
-
-    if (Platform.isWindows) {
+    if (Platform.isLinux || Platform.isWindows) {
       _inAppWebViewHtml = _contentToHtml(content, isDark: isDark);
       _useInAppWebView = true;
       _lastInAppWebViewIsDark = isDark;
@@ -1046,29 +845,6 @@ p{margin:8px 0}
               color: theme.colorScheme.onSurfaceVariant,
             ),
           ),
-        ),
-      );
-    }
-
-    // Linux: flutter_widget_from_html native rendering — follows app theme
-    if (_useHtmlWidget && _htmlWidgetContent != null) {
-      final currentIsDark = theme.brightness == Brightness.dark;
-      if (_lastWebViewIsDark != currentIsDark) {
-        final fullHtml = _contentToHtml(body, isDark: currentIsDark);
-        _htmlWidgetContent = _fullHtmlToStyleBody(fullHtml);
-        _lastWebViewIsDark = currentIsDark;
-      }
-      return SingleChildScrollView(
-        padding: const EdgeInsets.all(16),
-        child: HtmlWidget(
-          _htmlWidgetContent!,
-          onTapUrl: (url) {
-            final uri = Uri.tryParse(url);
-            if (uri != null) {
-              launchUrl(uri, mode: LaunchMode.externalApplication);
-            }
-            return true;
-          },
         ),
       );
     }
