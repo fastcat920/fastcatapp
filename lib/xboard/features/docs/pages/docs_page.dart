@@ -444,15 +444,22 @@ class _ArticleDetailPageState extends ConsumerState<_ArticleDetailPage> {
   }
 
 
-  /// Extracts <style> and body content from a full HTML page for HtmlWidget.
+  /// Extracts style + body from full HTML, remapping body rules to a wrapper
+  /// div so HtmlWidget can apply font, text color, and background correctly.
   static String _fullHtmlToStyleBody(String fullHtml) {
     final styleMatch =
         RegExp(r'<style>(.*?)</style>', dotAll: true).firstMatch(fullHtml);
     final bodyMatch =
         RegExp(r'<body>(.*?)</body>', dotAll: true).firstMatch(fullHtml);
-    final styleContent = styleMatch?.group(1) ?? '';
+    var styleContent = styleMatch?.group(1) ?? '';
     final bodyContent = bodyMatch?.group(1) ?? fullHtml;
-    return '<style>$styleContent</style>$bodyContent';
+
+    // Remap 'body' CSS selector to a wrapper class so HtmlWidget can match it
+    styleContent = styleContent
+        .replaceAll('body{', '.fastcat-doc-body{')
+        .replaceAll('body {', '.fastcat-doc-body {');
+
+    return '<style>$styleContent</style><div class="fastcat-doc-body">$bodyContent</div>';
   }
 
   /// Converts Markdown/HTML mixed content to inline-styled body HTML fragment.
@@ -739,11 +746,14 @@ class _ArticleDetailPageState extends ConsumerState<_ArticleDetailPage> {
     final bgColor = isDark ? '#1e1e1e' : '#ffffff';
     final codeBg = isDark ? '#2d2d2d' : '#f4f4f4';
     final hrColor = isDark ? '#444' : '#e0e0e0';
+    final scheme = isDark ? 'dark' : 'light';
 
     return '''<!DOCTYPE html><html><head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="color-scheme" content="$scheme">
 <style>
+:root{color-scheme:$scheme}
 body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;padding:16px;line-height:1.7;word-wrap:break-word;color:$textColor;background:$bgColor;max-width:100%}
 img{max-width:100%;height:auto;border-radius:8px;margin:8px 0}
 pre{background:$codeBg;padding:12px;border-radius:6px;overflow-x:auto}
@@ -883,7 +893,7 @@ p{margin:8px 0}
 
     if (Platform.isLinux) {
       final fullHtml = _contentToHtml(content, isDark: isDark);
-      _htmlWidgetContent = fullHtml;
+      _htmlWidgetContent = _fullHtmlToStyleBody(fullHtml);
       _useHtmlWidget = true;
       _lastWebViewIsDark = isDark;
       if (mounted) setState(() => _webLoading = false);
