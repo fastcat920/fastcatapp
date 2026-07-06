@@ -440,11 +440,39 @@ class _XBoardConnectButtonState extends ConsumerState<XBoardConnectButton>
                                             ),
                                           ],
                                         )
-                                      : Icon(
-                                          btnIcon,
+                                      : Column(
                                           key: ValueKey(isStart),
-                                          size: iconSize,
-                                          color: iconColor,
+                                          mainAxisAlignment: MainAxisAlignment.center,
+                                          children: [
+                                            Icon(
+                                              btnIcon,
+                                              size: iconSize * 0.75,
+                                              color: iconColor,
+                                            ),
+                                            SizedBox(height: (outerSize * 0.03).clamp(2.0, 4.0)),
+                                            Consumer(
+                                              builder: (_, ref, __) {
+                                                final runTime = ref.watch(runTimeProvider);
+                                                final l10n = AppLocalizations.of(context);
+                                                final label = isStart
+                                                    ? utils.getTimeText(runTime)
+                                                    : l10n.tapToConnect;
+                                                return Text(
+                                                  label,
+                                                  maxLines: 1,
+                                                  overflow: TextOverflow.ellipsis,
+                                                  textAlign: TextAlign.center,
+                                                  style: Theme.of(context)
+                                                      .textTheme
+                                                      .labelSmall
+                                                      ?.copyWith(
+                                                        color: iconColor,
+                                                        fontSize: (outerSize * 0.07).clamp(9.0, 12.0),
+                                                      ),
+                                                );
+                                              },
+                                            ),
+                                          ],
                                         ),
                                 ),
                               ),
