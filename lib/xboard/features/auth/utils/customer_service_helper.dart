@@ -385,13 +385,14 @@ class CustomerServiceHelper {
     return null;
   }
 
-  /// 获取缓存的 l.js 的 <script> 标签字符串，用于直接嵌入 HTML。
+  /// 获取缓存的 l.js 内容，用于通过 document.createElement + textContent 内嵌。
   /// 返回 null 表示无有效缓存，应走 CDN 加载。
-  static String? getCachedLjsScriptTag() {
+  /// 注意：返回值已经过转义，可直接嵌入 <script> 块中。
+  static String? getCachedLjsContentEscaped() {
     final content = cachedLjsContent;
     if (content == null) return null;
-    final base64 = base64Encode(utf8.encode(content));
-    return '<script src="data:application/javascript;base64,$base64"></script>';
+    // Escape </script> so it doesn't close the outer script block
+    return content.replaceAll(r'</', r'<\/');
   }
 
   /// 获取 WebView2 用户数据目录（可写路径）

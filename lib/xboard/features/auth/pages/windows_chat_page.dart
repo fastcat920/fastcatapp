@@ -437,16 +437,19 @@ class _WindowsChatPageState extends State<WindowsChatPage> {
     final loadingSlowJson = jsonEncode(l10n.customerServiceLoadingSlow);
     final loadFailedJson = jsonEncode(l10n.customerServiceLoadFailed);
     final colorSchemeValue = _isDarkMode ? 'dark' : 'light';
-    final cachedTag = CustomerServiceHelper.getCachedLjsScriptTag();
-    final ljsTag = cachedTag ?? '<script>'
-        r"var _cs=document.createElement('script');"
-        r"_cs.src='https://client.crisp.chat/l.js';"
-        r"_cs.async=true;"
-        r"_cs.onerror=function(){var lt=document.getElementById('loading-text');if(lt)lt.textContent="
-        + '${loadFailedJson}'
-        + r";};"
-        r"document.head.appendChild(_cs);"
-        '</script>';
+    final cachedJs = CustomerServiceHelper.getCachedLjsContentEscaped();
+    final ljsBlock = cachedJs != null
+        ? "var _cs=document.createElement('script');"
+          "_cs.textContent=${jsonEncode(cachedJs)};"
+          "document.head.appendChild(_cs);"
+        : "var _cs=document.createElement('script');"
+          "_cs.src='https://client.crisp.chat/l.js';"
+          "_cs.async=true;"
+          "_cs.onerror=function(){"
+          "var lt=document.getElementById('loading-text');"
+          "if(lt)lt.textContent=${loadFailedJson};"
+          "};"
+          "document.head.appendChild(_cs);";
     return '''<!DOCTYPE html>
 <html>
 <head>
@@ -523,7 +526,7 @@ class _WindowsChatPageState extends State<WindowsChatPage> {
     } catch (_) {}
     $userScript
 
-    \${ljsTag}
+    \${ljsBlock}
 
     (function(){
       var colorMode = $colorModeJson;
