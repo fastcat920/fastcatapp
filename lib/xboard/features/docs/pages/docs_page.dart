@@ -864,15 +864,34 @@ p{margin:8px 0}
           controller.loadData(data: _inAppWebViewHtml!, mimeType: 'text/html', encoding: 'utf-8');
         },
         shouldOverrideUrlLoading: (_, navigationAction) async {
+          // Allow iframes and subresources to load inline (not main-frame nav)
+          if (!navigationAction.isForMainFrame) {
+            return iaw.NavigationActionPolicy.ALLOW;
+          }
           final url = navigationAction.request.url?.toString() ?? '';
           if (url.isNotEmpty) {
             final uri = Uri.tryParse(url);
             if (uri != null && (uri.scheme == 'http' || uri.scheme == 'https')) {
-              await launchUrl(
-                uri,
-                mode: LaunchMode.externalApplication,
-              );
-              return iaw.NavigationActionPolicy.CANCEL;
+              // Open download links in browser; navigate everything else inline
+              final lower = url.split('?')[0].toLowerCase();
+              final isDownload = lower.endsWith('.dmg') ||
+                  lower.endsWith('.exe') || lower.endsWith('.apk') ||
+                  lower.endsWith('.zip') || lower.endsWith('.7z') ||
+                  lower.endsWith('.rar') || lower.endsWith('.tar.gz') ||
+                  lower.endsWith('.tar') || lower.endsWith('.gz') ||
+                  lower.endsWith('.bz2') || lower.endsWith('.deb') ||
+                  lower.endsWith('.rpm') || lower.endsWith('.msi') ||
+                  lower.endsWith('.ipa') || lower.endsWith('.pkg') ||
+                  lower.endsWith('.iso') || lower.endsWith('.bin');
+              if (isDownload) {
+                await launchUrl(
+                  uri,
+                  mode: LaunchMode.externalApplication,
+                );
+                return iaw.NavigationActionPolicy.CANCEL;
+              }
+              // Non-download link: allow navigating within the webview
+              return iaw.NavigationActionPolicy.ALLOW;
             }
           }
           return iaw.NavigationActionPolicy.ALLOW;

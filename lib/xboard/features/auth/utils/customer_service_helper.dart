@@ -1263,6 +1263,10 @@ if(window===window.top){
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1">
+  <link rel="dns-prefetch" href="https://client.crisp.chat">
+  <link rel="dns-prefetch" href="https://settings.crisp.chat">
+  <link rel="preconnect" href="https://client.crisp.chat" crossorigin>
+  <link rel="preconnect" href="https://settings.crisp.chat" crossorigin>
   <title>$title</title>
   <style>
     * { box-sizing: border-box; }
