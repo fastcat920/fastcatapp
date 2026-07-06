@@ -429,6 +429,7 @@ class _ArticleDetailPageState extends ConsumerState<_ArticleDetailPage> {
   String? _htmlWidgetContent;
   String? _inAppWebViewHtml;
   bool _lastInAppWebViewIsDark = false;
+  bool _lastWebViewIsDark = false;
   bool _webLoading = true;
 
   KnowledgeArticleDetailRequest get _detailRequest =>
@@ -440,6 +441,18 @@ class _ArticleDetailPageState extends ConsumerState<_ArticleDetailPage> {
   String _formatDateTime(DateTime dt) {
     return '${dt.year}-${dt.month.toString().padLeft(2, '0')}-${dt.day.toString().padLeft(2, '0')} '
         '${dt.hour.toString().padLeft(2, '0')}:${dt.minute.toString().padLeft(2, '0')}';
+  }
+
+
+  /// Extracts <style> and body content from a full HTML page for HtmlWidget.
+  static String _fullHtmlToStyleBody(String fullHtml) {
+    final styleMatch =
+        RegExp(r'<style>(.*?)</style>', dotAll: true).firstMatch(fullHtml);
+    final bodyMatch =
+        RegExp(r'<body>(.*?)</body>', dotAll: true).firstMatch(fullHtml);
+    final styleContent = styleMatch?.group(1) ?? '';
+    final bodyContent = bodyMatch?.group(1) ?? fullHtml;
+    return '<style>$styleContent</style>$bodyContent';
   }
 
   /// Converts Markdown/HTML mixed content to inline-styled body HTML fragment.
@@ -855,6 +868,7 @@ p{margin:8px 0}
       _htmlWidgetContent = null;
       _webLoading = true;
       _lastInAppWebViewIsDark = false;
+      _lastWebViewIsDark = false;
     });
     ref.invalidate(knowledgeArticleDetailProvider(_detailRequest));
     unawaited(
@@ -868,8 +882,10 @@ p{margin:8px 0}
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
     if (Platform.isLinux) {
-      _htmlWidgetContent = _contentToBodyHtml(content);
+      final fullHtml = _contentToHtml(content, isDark: isDark);
+      _htmlWidgetContent = fullHtml;
       _useHtmlWidget = true;
+      _lastWebViewIsDark = isDark;
       if (mounted) setState(() => _webLoading = false);
       return;
     }
@@ -1024,8 +1040,14 @@ p{margin:8px 0}
       );
     }
 
-    // Linux: flutter_widget_from_html native rendering — follows app theme naturally
+    // Linux: flutter_widget_from_html native rendering — follows app theme
     if (_useHtmlWidget && _htmlWidgetContent != null) {
+      final currentIsDark = theme.brightness == Brightness.dark;
+      if (_lastWebViewIsDark != currentIsDark) {
+        final fullHtml = _contentToHtml(body, isDark: currentIsDark);
+        _htmlWidgetContent = _fullHtmlToStyleBody(fullHtml);
+        _lastWebViewIsDark = currentIsDark;
+      }
       return SingleChildScrollView(
         padding: const EdgeInsets.all(16),
         child: HtmlWidget(
@@ -1074,6 +1096,12 @@ p{margin:8px 0}
 
     if ((Platform.isAndroid || Platform.isIOS || Platform.isMacOS) &&
         _webController != null) {
+      final currentIsDark = theme.brightness == Brightness.dark;
+      if (_lastWebViewIsDark != currentIsDark && _resolvedBody != null && _resolvedBody!.isNotEmpty) {
+        final fullHtml = _contentToHtml(_resolvedBody!, isDark: currentIsDark);
+        _webController!.loadHtmlString(fullHtml);
+        _lastWebViewIsDark = currentIsDark;
+      }
       return Stack(
         children: [
           WebViewWidget(controller: _webController!),
