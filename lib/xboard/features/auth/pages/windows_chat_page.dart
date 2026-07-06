@@ -368,7 +368,6 @@ class _WindowsChatPageState extends State<WindowsChatPage> {
           + 'html,body{background:' + theme.background + ' !important;color:' + theme.foreground + ' !important;color-scheme:' + (theme.isDark ? 'dark' : 'light') + ' !important;}'
           + '#loading{background:' + theme.background + ' !important;color:' + theme.foreground + ' !important;}'
           + 'iframe[src*="crisp"],.crisp-client,[class*="crisp"],[id*="crisp"]{width:100% !important;height:100% !important;max-width:none !important;max-height:none !important;position:fixed !important;top:0 !important;left:0 !important;margin:0 !important;padding:0 !important;border:none !important;border-radius:0 !important;background:' + theme.background + ' !important;color-scheme:' + (theme.isDark ? 'dark' : 'light') + ' !important;}';
-          + '[class*="crisp"] .cc-close,.crisp-client .cc-close,.crisp-client .cc-dismiss,.crisp-client [data-action="close"],.crisp-client [data-action="minimize"],.crisp-client [aria-label*="close" i],.crisp-client button.cc-close,.crisp-client .cc-minimize,[class*="crisp"] [class*="dismiss"]{display:none !important}' +
         window.\$crisp = window.\$crisp || [];
         window.\$crisp.push(["config", "locale", [window.__fastcatCustomerServiceCrispLocale || 'en']]);
         window.\$crisp.push(["config", "color:mode", [theme.isDark ? "dark" : "light"]]);

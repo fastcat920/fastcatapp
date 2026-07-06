@@ -1405,7 +1405,6 @@ if(window===window.top){
           + '#fastcat-support-spinner{width:18px;height:18px;border:2px solid rgba(148,163,184,0.35);border-top-color:' + (theme.accent || '#2563eb') + ';border-radius:50%;display:inline-block;animation:fastcatSupportSpin 0.8s linear infinite;}'
           + '@keyframes fastcatSupportSpin{to{transform:rotate(360deg);}}'
           + 'iframe[src*="crisp"],.crisp-client,[class*="crisp"],[id*="crisp"]{background:' + theme.background + ' !important;color-scheme:' + (theme.isDark ? 'dark' : 'light') + ' !important;}';
-          + '[class*="crisp"] .cc-close,.crisp-client .cc-close,.crisp-client .cc-dismiss,.crisp-client [data-action="close"],.crisp-client [data-action="minimize"],.crisp-client [aria-label*="close" i],.crisp-client button.cc-close,.crisp-client .cc-minimize,[class*="crisp"] [class*="dismiss"]{display:none !important}' +
         if (!window.__fastcatCrispReady) {
           var loading = ensureLoading();
           var loadingText = document.getElementById('fastcat-support-loading-text');
