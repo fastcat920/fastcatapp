@@ -138,7 +138,6 @@ class _CrispChatPageState extends State<CrispChatPage> {
             if (!_usingSdkBootstrap) {
               unawaited(_injectDirectEmbedMonitor());
               unawaited(_runDeferredUserScript());
-              unawaited(_injectDiagnostics());
             }
           },
           onWebResourceError: (error) {
@@ -363,6 +362,7 @@ class _CrispChatPageState extends State<CrispChatPage> {
   <link rel="dns-prefetch" href="https://settings.crisp.chat">
   <link rel="preconnect" href="https://client.crisp.chat" crossorigin>
   <link rel="preconnect" href="https://settings.crisp.chat" crossorigin>
+  <link rel="preload" href="https://client.crisp.chat/l.js" as="script" crossorigin>
   <title>${strings.title}</title>
   <style>
     * { box-sizing: border-box; }
@@ -444,6 +444,16 @@ class _CrispChatPageState extends State<CrispChatPage> {
     } catch (_) {}
     $userScript
 
+    // Start downloading Crisp SDK immediately
+    var _crispScript = document.createElement('script');
+    _crispScript.src = 'https://client.crisp.chat/l.js';
+    _crispScript.async = true;
+    _crispScript.onerror = function(){
+      var lt = document.getElementById('loading-text');
+      if (lt) lt.textContent = $loadFailedJson;
+    };
+    document.head.appendChild(_crispScript);
+
     (function(){
       var title = $titleJson;
       var colorMode = $colorModeJson;
@@ -514,33 +524,6 @@ class _CrispChatPageState extends State<CrispChatPage> {
         attributes: true
       });
 
-      var script = document.createElement('script');
-      script.src = 'https://client.crisp.chat/l.js';
-      script.async = true;
-      script.onerror = function(){
-        if (loadingText) loadingText.textContent = loadFailed;
-      };
-      document.head.appendChild(script);
-    
-      // DEBUG: Crisp 环境诊断
-      setTimeout(function(){
-        var r = [];
-        r.push("=== SDK-Bootstrap Diagnostics ===");
-        r.push("UA: "+navigator.userAgent);
-        r.push("window===top: "+(window===window.top));
-        r.push("viewport: "+window.innerWidth+"x"+window.innerHeight);
-        var els = document.querySelectorAll("[class*=\"close\"],[class*=\"dismiss\"],[class*=\"minimize\"],[aria-label*=\"close\" i],button");
-        for (var i=0;i<els.length;i++){
-          var e=els[i];
-          var rec=e.getBoundingClientRect();
-          var cs=getComputedStyle(e);
-          if(cs.display==="none"||cs.visibility==="hidden") continue;
-          if(rec.y<120){
-            r.push("  tag:"+e.tagName+" class:"+(e.className||"none").substring(0,60)+" id:"+(e.id||"none")+" pos:"+Math.round(rec.x)+","+Math.round(rec.y)+" "+Math.round(rec.width)+"x"+Math.round(rec.height)+" text:"+(e.textContent||"").trim().substring(0,20));
-          }
-        }
-        console.log(r.join("\n"));
-      }, 3000);
     })();
   </script>
 </body>
@@ -799,93 +782,6 @@ class _CrispChatPageState extends State<CrispChatPage> {
         .replaceAll("'", r"\'")
         .replaceAll('\n', r'\n')
         .replaceAll('\r', r'\r');
-  }
-
-
-  /// DEBUG: 诊断 Crisp 页面环境，找出关闭按钮来源
-  Future<void> _injectDiagnostics() async {
-    const delay = Duration(seconds: 3);
-    await Future.delayed(delay);
-    if (!mounted) return;
-    final script = '''
-(function(){
-  try {
-    var report = [];
-    report.push("=== Crisp Diagnostics ===");
-    report.push("UA: " + navigator.userAgent);
-    report.push("window===top: " + (window === window.top));
-    report.push("viewport: " + window.innerWidth + "x" + window.innerHeight);
-    report.push("screen: " + screen.width + "x" + screen.height);
-    report.push("devicePixelRatio: " + window.devicePixelRatio);
-    report.push("platform: " + navigator.platform);
-    report.push("vendor: " + navigator.vendor);
-
-    // Search for close/minimize elements
-    var selectors = [
-      "[class*=\"close\"]",
-      "[class*=\"dismiss\"]",
-      "[class*=\"minimize\"]",
-      "[class*=\"minimise\"]",
-      "[aria-label*=\"close\" i]",
-      "[aria-label*=\"Close\"]",
-      "[aria-label*=\"minimize\" i]",
-      "[data-action=\"close\"]",
-      "[data-action=\"minimize\"]",
-      "button",
-      "[role=\"button\"]",
-    ];
-
-    for (var s = 0; s < selectors.length; s++) {
-      var els = document.querySelectorAll(selectors[s]);
-      for (var i = 0; i < els.length; i++) {
-        var el = els[i];
-        // Only report visible elements near the top-right
-        var rect = el.getBoundingClientRect();
-        var style = getComputedStyle(el);
-        if (style.display === "none" || style.visibility === "hidden") continue;
-        if (rect.width < 10 || rect.height < 10) continue;
-        // Check if near top (y < 100) and right side (x > window.innerWidth/2)
-        if (rect.y < 120) {
-          report.push("  [" + selectors[s] + "] tag:" + el.tagName +
-            " class:" + (el.className || "none").substring(0,60) +
-            " id:" + (el.id || "none") +
-            " rect:" + Math.round(rect.x) + "," + Math.round(rect.y) + " " + Math.round(rect.width) + "x" + Math.round(rect.height) +
-            " text:" + (el.textContent || "").trim().substring(0,20) +
-            " aria:" + (el.getAttribute("aria-label") || "none"));
-        }
-      }
-    }
-
-    // Also check all iframes
-    var iframes = document.querySelectorAll("iframe");
-    for (var f = 0; f < iframes.length; f++) {
-      var src = iframes[f].src || "";
-      report.push("iframe[" + f + "]: " + src.substring(0,120));
-      try {
-        var innerDoc = iframes[f].contentDocument || iframes[f].contentWindow.document;
-        if (innerDoc) {
-          var innerEls = innerDoc.querySelectorAll("[class*=\"close\"],[class*=\"dismiss\"],button,[aria-label*=\"close\" i]");
-          for (var j = 0; j < innerEls.length; j++) {
-            var e = innerEls[j];
-            var r = e.getBoundingClientRect();
-            report.push("  IFRAME-ELEMENT tag:" + e.tagName +
-              " class:" + (e.className || "none").substring(0,60) +
-              " text:" + (e.textContent || "").trim().substring(0,20));
-          }
-        }
-      } catch(_) {
-        report.push("  IFRAME cross-origin, cannot inspect");
-      }
-    }
-
-    console.log(report.join("\n"));
-  } catch(e) {
-    console.log("Diagnostics error: " + e);
-  }
-})();''';
-    try {
-      await _controller.runJavaScript(script);
-    } catch (_) {}
   }
 
   @override

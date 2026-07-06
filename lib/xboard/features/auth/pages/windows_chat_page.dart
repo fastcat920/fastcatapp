@@ -446,6 +446,7 @@ class _WindowsChatPageState extends State<WindowsChatPage> {
   <link rel="dns-prefetch" href="https://settings.crisp.chat">
   <link rel="preconnect" href="https://client.crisp.chat" crossorigin>
   <link rel="preconnect" href="https://settings.crisp.chat" crossorigin>
+  <link rel="preload" href="https://client.crisp.chat/l.js" as="script" crossorigin>
   <title>${l10n.contactSupport}</title>
   <style>
     * { box-sizing: border-box; }
@@ -510,6 +511,16 @@ class _WindowsChatPageState extends State<WindowsChatPage> {
       Object.defineProperty(navigator, 'languages', { get: function(){ return [window.__fastcatCustomerServiceLocale]; }, configurable: true });
     } catch (_) {}
     $userScript
+
+    // Start downloading Crisp SDK immediately
+    var _crispScript = document.createElement('script');
+    _crispScript.src = 'https://client.crisp.chat/l.js';
+    _crispScript.async = true;
+    _crispScript.onerror = function(){
+      var lt = document.getElementById('loading-text');
+      if (lt) lt.textContent = $loadFailedJson;
+    };
+    document.head.appendChild(_crispScript);
 
     (function(){
       var colorMode = $colorModeJson;
@@ -586,11 +597,6 @@ class _WindowsChatPageState extends State<WindowsChatPage> {
       new MutationObserver(function(){ openChat(); expandFrames(); })
         .observe(document.documentElement, { childList: true, subtree: true, attributes: true });
 
-      var script = document.createElement('script');
-      script.src = 'https://client.crisp.chat/l.js';
-      script.async = true;
-      script.onerror = function(){ if (loadingText) loadingText.textContent = loadFailed; };
-      document.head.appendChild(script);
     })();
   </script>
 </body>
