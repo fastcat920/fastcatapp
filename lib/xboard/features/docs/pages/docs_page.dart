@@ -425,6 +425,7 @@ class _ArticleDetailPageState extends ConsumerState<_ArticleDetailPage> {
   WebViewController? _webController;
   bool _useInAppWebView = false;
   String? _inAppWebViewHtml;
+  bool _lastInAppWebViewIsDark = false;
   bool _webLoading = true;
 
   KnowledgeArticleDetailRequest get _detailRequest =>
@@ -605,11 +606,12 @@ p{margin:8px 0}
   @override
   void initState() {
     super.initState();
-    final body = widget.article.body;
-    if (body.isNotEmpty) {
-      _resolvedBody = _stripLeadingTitle(body);
-      _initWebView(_resolvedBody!);
+    if (Platform.isLinux || Platform.isWindows) {
+      _useInAppWebView = true;
+      _webLoading = false;
     }
+    final body = widget.article.body;
+    if (body.isNotEmpty) _resolvedBody = _stripLeadingTitle(body);
   }
 
   /// Strip leading Markdown H1 title from body if it matches the article title.
@@ -702,6 +704,7 @@ p{margin:8px 0}
     _useInAppWebView = false;
     _inAppWebViewHtml = null;
     _webLoading = true;
+    _lastInAppWebViewIsDark = false;
   }
 
   void _retryDetail() {
@@ -866,20 +869,21 @@ p{margin:8px 0}
       );
     }
 
-    if (_useInAppWebView && _inAppWebViewHtml != null) {
+    if (_useInAppWebView) {
+      final isDark = Theme.of(context).brightness == Brightness.dark;
+      if (_inAppWebViewHtml == null || _lastInAppWebViewIsDark != isDark) {
+        _inAppWebViewHtml = _contentToHtml(body, isDark: isDark);
+        _lastInAppWebViewIsDark = isDark;
+      }
       return iaw.InAppWebView(
         initialSettings: iaw.InAppWebViewSettings(
           javaScriptEnabled: true,
           transparentBackground: true,
         ),
         onWebViewCreated: (controller) {
-          controller.loadData(
-            data: _inAppWebViewHtml!,
-            mimeType: 'text/html',
-            encoding: 'utf-8',
-          );
+          controller.loadData(data: _inAppWebViewHtml!, mimeType: 'text/html', encoding: 'utf-8');
         },
-        shouldOverrideUrlLoading: (controller, navigationAction) async {
+        shouldOverrideUrlLoading: (_, navigationAction) async {
           final url = navigationAction.request.url?.toString() ?? '';
           if (!Platform.isWindows && _isDownloadLink(url)) {
             await launchUrl(
