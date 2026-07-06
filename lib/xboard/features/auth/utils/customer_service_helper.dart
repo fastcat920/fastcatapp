@@ -1065,21 +1065,25 @@ if(window===window.top){
     final userIP = _firstNonEmpty(userInfo?.ip, ipData?.ip);
     final userIPRegion = _firstNonEmpty(userInfo?.ipRegion, ipData?.region);
     final userIPISP = _firstNonEmpty(userInfo?.ipIsp, ipData?.isp);
+    final walletBalanceInCents = userInfo?.balanceInCents;
+    final commissionBalanceInCents = userInfo?.commissionBalanceInCents;
 
     return {
       'email': email,
       'nickname': email.isEmpty ? null : email.split('@').first,
       'sessionData': <List<String>>[
+        ['os', osText],
+        ['client_version', appVersion],
         ['plan_name', planName],
         ['plan_expired_at', expiredAt?.toIso8601String() ?? ''],
         ['traffic_used', _formatTraffic(usedTraffic)],
         ['traffic_total', _formatTraffic(totalTraffic)],
         ['traffic_reset_days_left', resetDaysLeft?.toString() ?? 'unknown'],
+        ['wallet_balance', walletBalanceInCents != null ? '¥${(walletBalanceInCents / 100).toStringAsFixed(2)}' : '0.00'],
+        ['commission_balance', commissionBalanceInCents != null ? '¥${(commissionBalanceInCents / 100).toStringAsFixed(2)}' : '0.00'],
         ['user_ip', userIP],
         ['user_ip_region', userIPRegion],
         ['user_ip_isp', userIPISP],
-        ['os', osText],
-        ['client_version', appVersion],
       ],
     };
   }
