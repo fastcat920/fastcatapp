@@ -120,12 +120,21 @@ class _CrispChatPageState extends State<CrispChatPage> {
     _isDarkMode =
         WidgetsBinding.instance.platformDispatcher.platformBrightness ==
             Brightness.dark;
-    _controller = WebViewController()
-      ..setUserAgent(_crispUserAgent)
-      ..setJavaScriptMode(JavaScriptMode.unrestricted)
-      ..setNavigationDelegate(
-        NavigationDelegate(
-          onPageStarted: (url) {
+    // 尝试复用预热的 WebView controller（消除冷启动延迟）
+    final prewarmed = CustomerServiceHelper.consumePrewarmedMacController(
+      brightness: Brightness.light,
+      localeTag: 'en',
+    );
+    if (prewarmed != null) {
+      _controller = prewarmed;
+    } else {
+      _controller = WebViewController()
+        ..setUserAgent(_crispUserAgent)
+        ..setJavaScriptMode(JavaScriptMode.unrestricted);
+    }
+    _controller.setNavigationDelegate(
+      NavigationDelegate(
+        onPageStarted: (url) {
             if (!_usingSdkBootstrap) {
               _usingProxy = _isProxyUrl(url);
             }

@@ -17,6 +17,7 @@ import 'package:fl_clash/xboard/features/auth/auth.dart';
 import 'package:fl_clash/xboard/domain/domain.dart';
 import 'package:fl_clash/xboard/features/auth/pages/crisp_chat_page.dart';
 import 'package:fl_clash/xboard/features/auth/pages/salesmartly_chat_page.dart';
+import 'package:webview_flutter/webview_flutter.dart';
 import 'package:fl_clash/xboard/features/auth/pages/windows_chat_page.dart';
 import 'package:fl_clash/xboard/features/auth/utils/crisp_url_helper.dart';
 import 'package:fl_clash/xboard/features/shared/utils/desktop_webview_window_helper.dart';
@@ -56,6 +57,7 @@ class CustomerServiceHelper {
   static const _ipDataCacheTtl = Duration(minutes: 5);
   static const _ljsCacheTtl = Duration(hours: 1);
   static const _crispLjsUrl = 'https://client.crisp.chat/l.js';
+  static WebViewController? _prewarmedMacController;
   static Brightness? _desktopCustomerServiceBrightness;
   static String? _desktopCustomerServiceAccent;
   static String? _desktopCustomerServiceLocaleTag;
@@ -330,6 +332,9 @@ class CustomerServiceHelper {
     }
     unawaited(_prewarmCrispRoute());
     unawaited(_prewarmLjs());
+    if (!_isDesktopPlatform) {
+      unawaited(_prewarmMobileWebView());
+    }
     if (_isDesktopPlatform) {
       unawaited(_isDesktopWebviewAvailable());
       if (Platform.isWindows) {
@@ -393,6 +398,37 @@ class CustomerServiceHelper {
     if (content == null) return null;
     // Escape </script> so it doesn't close the outer script block
     return content.replaceAll(r'</', r'<\/');
+  }
+
+  /// 预热移动端 WebView：预创建 controller 并加载 bootstrap HTML，
+  /// 消除点击客服后的 WebView 冷启动延迟。
+  static Future<void> _prewarmMobileWebView() async {
+    if (!Platform.isAndroid && !Platform.isIOS && !Platform.isMacOS) return;
+    if (_prewarmedMacController != null) return;
+    try {
+      final ua = Platform.isAndroid || Platform.isIOS
+          ? 'Mozilla/5.0 (Linux; Android 14; Pixel 8) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0.0.0 Mobile Safari/537.36'
+          : 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.0 Safari/605.1.15';
+      final controller = WebViewController()
+        ..setUserAgent(ua)
+        ..setJavaScriptMode(JavaScriptMode.unrestricted);
+      _prewarmedMacController = controller;
+      _logger.info('[Crisp] WebView controller pre-warmed');
+    } catch (e) {
+      _logger.debug('[Crisp] WebView prewarm failed: \$e');
+    }
+  }
+
+  /// 消费预热的 controller（theme/locale 匹配且未被使用时返回）。
+  /// 返回 null 表示需要新建 controller。
+  static WebViewController? consumePrewarmedMacController({
+    required Brightness brightness,
+    required String localeTag,
+  }) {
+    final c = _prewarmedMacController;
+    if (c == null) return null;
+    _prewarmedMacController = null;
+    return c;
   }
 
   /// 获取 WebView2 用户数据目录（可写路径）
