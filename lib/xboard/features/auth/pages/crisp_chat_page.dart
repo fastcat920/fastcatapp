@@ -437,11 +437,10 @@ class _CrispChatPageState extends State<CrispChatPage> {
     } catch (_) {}
     $userScript
 
-
-    (function installCrispHide(){
-      if (window.__fastcatHideInstalled) return;
-      window.__fastcatHideInstalled = true;
-      var HIDE_CSS = [
+    (function hideCrispControls(){
+      if (window.__fastcatHideControlsInstalled) return;
+      window.__fastcatHideControlsInstalled = true;
+      var hideSelectors = [
         '[data-action="close"]',
         '[data-action="menu"]',
         '[data-action="voice-message"]',
@@ -451,54 +450,59 @@ class _CrispChatPageState extends State<CrispChatPage> {
         '[aria-label="Menu"]',
         '[data-testid="chat-header-close"]',
         '[data-testid="chat-header-menu"]',
-        '[data-testid="chat-input-voice"]'
-      ].join(',') + '{display:none!important;visibility:hidden!important;width:0!important;height:0!important;overflow:hidden!important;opacity:0!important;pointer-events:none!important;position:absolute!important;left:-9999px!important;}';
-      function injectStyle(doc) {
-        if (!doc || !doc.head) return;
-        var s = doc.getElementById('fastcat-crisp-hide');
-        if (s) return;
-        s = doc.createElement('style');
-        s.id = 'fastcat-crisp-hide';
-        s.textContent = HIDE_CSS;
-        doc.head.appendChild(s);
+        '[data-testid="chat-input-voice"]',
+        '.crisp-client [role="button"][aria-label*="close" i]',
+        '.crisp-client [role="button"][aria-label*="Close" i]',
+        '.crisp-client [role="button"][aria-label*="menu" i]',
+        '.crisp-client [role="button"][aria-label*="voice" i]',
+        '.crisp-client button[aria-label*="close" i]',
+        '.crisp-client button[aria-label*="Close" i]',
+        '.crisp-client button[aria-label*="menu" i]',
+        '.crisp-client button[aria-label*="voice" i]',
+      ];
+      var cssRules = hideSelectors.join(',') + '{display:none !important;visibility:hidden !important;width:0 !important;height:0 !important;overflow:hidden !important;opacity:0 !important;pointer-events:none !important;}';
+      var style = document.getElementById('fastcat-crisp-hide-controls');
+      if (!style) {
+        style = document.createElement('style');
+        style.id = 'fastcat-crisp-hide-controls';
+        style.textContent = cssRules;
+        (document.head || document.documentElement).appendChild(style);
       }
-      function penetrate(node) {
-        if (!node || node.nodeType !== 1) return;
-        // Try shadow root
-        try { if (node.shadowRoot) injectStyle(node.shadowRoot); } catch(_) {}
-        // Walk children
+      function tryHideInIframe(iframe) {
         try {
-          var kids = node.querySelectorAll ? node.querySelectorAll('*') : [];
-          for (var i = 0; i < kids.length; i++) {
-            try { if (kids[i].shadowRoot) injectStyle(kids[i].shadowRoot); } catch(_) {}
+          var doc = iframe.contentDocument || (iframe.contentWindow && iframe.contentWindow.document);
+          if (!doc) return;
+          var s = doc.getElementById('fastcat-crisp-hide-controls');
+          if (!s) {
+            s = doc.createElement('style');
+            s.id = 'fastcat-crisp-hide-controls';
+            s.textContent = cssRules;
+            (doc.head || doc.documentElement).appendChild(s);
           }
         } catch(_) {}
       }
-      function run() {
-        injectStyle(document);
-        penetrate(document.documentElement);
-        // Walk all iframes too
-        try {
-          var iframes = document.querySelectorAll('iframe');
-          for (var i = 0; i < iframes.length; i++) {
-            try {
-              var idoc = iframes[i].contentDocument || (iframes[i].contentWindow && iframes[i].contentWindow.document);
-              if (idoc) { injectStyle(idoc); penetrate(idoc.documentElement); }
-            } catch(_) {}
-          }
-        } catch(_) {}
-      }
-      // Hook Crisp events to run when chat UI appears
-      window.\$crisp = window.\$crisp || [];
-      \$crisp.push(["on", "chat:opened", function() { setTimeout(run, 600); }]);
-      \$crisp.push(["on", "chat:initiated", function() { setTimeout(run, 1200); }]);
-      // Also run after a delay as fallback
-      setTimeout(run, 2000);
-      setTimeout(run, 4000);
-      // MutationObserver for late-appearing elements
-      new MutationObserver(function() {
-        setTimeout(run, 300);
-      }).observe(document.documentElement, {childList:true, subtree:true, attributes:true});
+      document.querySelectorAll('iframe[src*="crisp"]').forEach(function(f) {
+        f.addEventListener('load', function() { tryHideInIframe(f); });
+        tryHideInIframe(f);
+      });
+      new MutationObserver(function(mutations) {
+        mutations.forEach(function(m) {
+          m.addedNodes.forEach(function(n) {
+            if (n.nodeType === 1) {
+              if (n.tagName === 'IFRAME' && (n.src || '').indexOf('crisp') !== -1) {
+                n.addEventListener('load', function() { tryHideInIframe(n); });
+                tryHideInIframe(n);
+              }
+              if (n.querySelectorAll) {
+                n.querySelectorAll('iframe[src*="crisp"]').forEach(function(f) {
+                  f.addEventListener('load', function() { tryHideInIframe(f); });
+                  tryHideInIframe(f);
+                });
+              }
+            }
+          });
+        });
+      }).observe(document.documentElement, { childList: true, subtree: true });
     })();
 
     (function(){
