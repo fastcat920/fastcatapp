@@ -868,12 +868,17 @@ p{margin:8px 0}
 
     if (_useInAppWebView && _inAppWebViewHtml != null) {
       return iaw.InAppWebView(
-        initialData: iaw.InAppWebViewInitialData(
-          data: _inAppWebViewHtml!,
-          mimeType: 'text/html',
-          encoding: 'utf-8',
+        initialSettings: iaw.InAppWebViewSettings(
+          javaScriptEnabled: true,
+          transparentBackground: true,
         ),
-        initialSettings: iaw.InAppWebViewSettings(javaScriptEnabled: true),
+        onWebViewCreated: (controller) {
+          controller.loadData(
+            data: _inAppWebViewHtml!,
+            mimeType: 'text/html',
+            encoding: 'utf-8',
+          );
+        },
         shouldOverrideUrlLoading: (controller, navigationAction) async {
           final url = navigationAction.request.url?.toString() ?? '';
           if (!Platform.isWindows && _isDownloadLink(url)) {
