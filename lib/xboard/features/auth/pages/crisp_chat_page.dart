@@ -352,11 +352,13 @@ class _CrispChatPageState extends State<CrispChatPage> {
     final connectingJson = jsonEncode(strings.connecting);
     final loadingSlowJson = jsonEncode(strings.loadingSlow);
     final loadFailedJson = jsonEncode(strings.loadFailed);
+    final colorSchemeValue = _isDarkMode ? 'dark' : 'light';
     return '''<!DOCTYPE html>
 <html>
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1">
+  <meta name="color-scheme" content="$colorSchemeValue">
   <link rel="dns-prefetch" href="https://client.crisp.chat">
   <link rel="dns-prefetch" href="https://settings.crisp.chat">
   <link rel="preconnect" href="https://client.crisp.chat" crossorigin>
@@ -394,6 +396,10 @@ class _CrispChatPageState extends State<CrispChatPage> {
       animation: spin 0.8s linear infinite;
     }
     @keyframes spin { to { transform: rotate(360deg); } }
+    /* Prevent white flash when Crisp renders */
+    .crisp-client, .crisp-client * { background: $background !important; }
+    iframe[src*="crisp"] { background: $background !important; }
+    [class*="crisp"] { background: $background !important; }
   </style>
 </head>
 <body>

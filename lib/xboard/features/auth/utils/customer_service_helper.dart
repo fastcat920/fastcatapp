@@ -1262,11 +1262,13 @@ if(window===window.top){
     final crispLocaleJson = jsonEncode(_crispLocaleFromTag(localeTag));
     final background = _customerServiceBackground(isDarkMode);
     final foreground = _customerServiceForeground(isDarkMode);
+    final colorSchemeLinux = isDarkMode ? 'dark' : 'light';
     return '''<!DOCTYPE html>
 <html>
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1">
+  <meta name="color-scheme" content="$colorSchemeLinux">
   <link rel="dns-prefetch" href="https://client.crisp.chat">
   <link rel="dns-prefetch" href="https://settings.crisp.chat">
   <link rel="preconnect" href="https://client.crisp.chat" crossorigin>
@@ -1304,6 +1306,9 @@ if(window===window.top){
       animation: spin 0.8s linear infinite;
     }
     @keyframes spin { to { transform: rotate(360deg); } }
+    .crisp-client, .crisp-client * { background: $background !important; }
+    iframe[src*="crisp"] { background: $background !important; }
+    [class*="crisp"] { background: $background !important; }
   </style>
 </head>
 <body>
