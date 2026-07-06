@@ -540,15 +540,33 @@ class _WindowsChatPageState extends State<WindowsChatPage> {
         if (loading) loading.style.display = 'none';
       }
 
+      var _handledFrames = {};
       function expandFrames(){
         var frames = document.querySelectorAll('iframe');
         for (var i = 0; i < frames.length; i++) {
           var src = frames[i].src || '';
           if (src.indexOf('crisp') === -1) continue;
+          var fid = frames[i].id || frames[i].src;
+          if (_handledFrames[fid]) continue;
+          _handledFrames[fid] = true;
           frames[i].style.cssText = 'position:fixed!important;top:0!important;left:0!important;width:100vw!important;height:100vh!important;max-width:none!important;max-height:none!important;border:none!important;border-radius:0!important;z-index:2147483646!important;background:$background!important;';
           var parent = frames[i].parentElement;
           if (parent) parent.style.cssText = 'position:fixed!important;top:0!important;left:0!important;width:100vw!important;height:100vh!important;z-index:2147483646!important;background:$background!important;';
-          markReady();
+          // Wait for iframe content to actually load before hiding loading overlay
+          var frame = frames[i];
+          function attachLoadListener(f) {
+            var called = false;
+            function tryMark() {
+              if (called || ready) return;
+              try {
+                var doc = f.contentDocument || (f.contentWindow && f.contentWindow.document);
+                if (doc && doc.readyState === 'complete') { called = true; markReady(); return; }
+              } catch(_) {}
+            }
+            f.addEventListener('load', function() { called = true; markReady(); });
+            tryMark();
+          }
+          attachLoadListener(frame);
         }
       }
 

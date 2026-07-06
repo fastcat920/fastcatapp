@@ -38,7 +38,7 @@ final knowledgeArticlesProvider =
 /// V2Board 列表不含 body，必须通过此接口获取内容。
 /// 每次请求添加 _t 时间戳参数，确保不缓存，强制获取最新文章内容。
 final knowledgeArticleDetailProvider =
-    FutureProvider.family<dynamic, KnowledgeArticleDetailRequest>(
+    FutureProvider.autoDispose.family<dynamic, KnowledgeArticleDetailRequest>(
         (ref, request) async {
   final sdk = await ref.read(xboardSdkProvider.future);
   final language = Uri.encodeQueryComponent(request.language);
