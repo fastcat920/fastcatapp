@@ -594,7 +594,7 @@ class _WindowsChatPageState extends State<WindowsChatPage> {
 
       window.CRISP_READY_TRIGGER = markReady;
 
-      var openTimer = setInterval(function(){ openChat(); expandFrames(); }, 500);
+      var openTimer = setInterval(function(){ openChat(); expandFrames(); }, 200);
       setTimeout(function(){
         clearInterval(openTimer); openChat(); expandFrames();
         if (!ready && loadingText) loadingText.textContent = loadingSlow;

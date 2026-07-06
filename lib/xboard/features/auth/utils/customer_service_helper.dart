@@ -1208,7 +1208,7 @@ if(window===window.top){
         clearInterval(window.__kuaimaoCrispApplyTimer);
         window.__kuaimaoCrispApplyTimer = null;
       }
-    }, 500);
+    }, 200);
   } catch(e) {}
 })();''';
   }

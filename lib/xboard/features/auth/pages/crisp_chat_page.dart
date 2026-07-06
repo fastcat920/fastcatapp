@@ -522,7 +522,7 @@ class _CrispChatPageState extends State<CrispChatPage> {
       var openTimer = setInterval(function(){
         openChat();
         expandFrames();
-      }, 500);
+      }, 200);
       setTimeout(function(){
         clearInterval(openTimer);
         openChat();
