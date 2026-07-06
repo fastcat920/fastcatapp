@@ -38,12 +38,19 @@ Uri _localizedCrispUri(Uri uri, String? localeTag) {
 /// 在应用内通过 WebView 加载 Crisp 聊天窗口，无需跳转外部浏览器。
 /// Android/iOS/macOS 使用系统 WebView。
 
-/// Desktop Chrome UA used so Crisp serves the full desktop chat instead of
-/// the mobile-optimised widget that may not render correctly in WebView.
+/// UA getter: mobile UA on Android/iOS so Crisp renders the mobile-optimised chat,
+/// desktop Chrome UA on macOS for the full desktop experience.
+String get _crispUserAgent => Platform.isAndroid || Platform.isIOS
+    ? _mobileCrispUserAgent
+    : _desktopCrispUserAgent;
+
 const _desktopCrispUserAgent = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) '
     'AppleWebKit/537.36 (KHTML, like Gecko) '
     'Chrome/125.0.0.0 Safari/537.36';
 
+const _mobileCrispUserAgent = 'Mozilla/5.0 (Linux; Android 14; Pixel 8) '
+    'AppleWebKit/537.36 (KHTML, like Gecko) '
+    'Chrome/125.0.0.0 Mobile Safari/537.36';
 class CrispChatPage extends StatefulWidget {
   final String websiteId;
   final String? crispProxyUrl;
@@ -113,7 +120,7 @@ class _CrispChatPageState extends State<CrispChatPage> {
         WidgetsBinding.instance.platformDispatcher.platformBrightness ==
             Brightness.dark;
     _controller = WebViewController()
-      ..setUserAgent(_desktopCrispUserAgent)
+      ..setUserAgent(_crispUserAgent)
       ..setJavaScriptMode(JavaScriptMode.unrestricted)
       ..setNavigationDelegate(
         NavigationDelegate(
