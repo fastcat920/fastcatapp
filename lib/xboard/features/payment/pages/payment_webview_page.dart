@@ -250,13 +250,13 @@ class PaymentWebViewPage extends ConsumerStatefulWidget {
           (document.head || document.documentElement).appendChild(style);
         }
         style.textContent = ''
-          + 'html{box-sizing:border-box !important;width:100% !important;height:auto !important;min-height:100% !important;min-width:0 !important;max-width:100% !important;margin:0 !important;overflow-x:hidden !important;overflow-y:auto !important;background:' + theme.background + ' !important;color-scheme:' + (theme.isDark ? 'dark' : 'light') + ' !important;}'
+          + 'html{box-sizing:border-box !important;width:100% !important;height:auto !important;min-height:100% !important;min-width:0 !important;max-width:100% !important;margin:0 !important;overflow-x:hidden !important;overflow-y:auto !important;background:' + theme.background + ' !important;color-scheme:' + (theme.isDark ? 'dark' : 'light') + ' !important;}'\n          
           + 'body{box-sizing:border-box !important;width:100% !important;height:auto !important;min-height:100% !important;min-width:0 !important;max-width:100% !important;margin:0 !important;overflow-x:hidden !important;overflow-y:visible !important;background:' + theme.background + ' !important;color-scheme:' + (theme.isDark ? 'dark' : 'light') + ' !important;}'
           + '*,*:before,*:after{box-sizing:border-box !important;}'
           + 'body > *{max-width:100% !important;overflow-x:hidden !important;overflow-y:visible !important;}'
           + 'iframe,frame,embed,object{display:block !important;width:100% !important;max-width:100% !important;min-height:100vh !important;max-height:none !important;border:none !important;overflow:hidden !important;}'
           + '.container,.wrapper,.content,.page,#app,#root,#main{width:100% !important;max-width:100% !important;min-width:0 !important;height:auto !important;min-height:0 !important;max-height:none !important;overflow-x:hidden !important;overflow-y:visible !important;}'
-          + ':not(html):not(body)[style*="overflow-y"],:not(html):not(body)[style*="overflow: auto"],:not(html):not(body)[style*="overflow:auto"],:not(html):not(body)[style*="height: 100vh"],:not(html):not(body)[style*="height:100vh"]{max-height:none !important;overflow-y:visible !important;}'
+          + ':not(html):not(body)[style*="height:100vh"],:not(html):not(body)[style*="height:100%"],:not(html):not(body)[style*="height: 100vh"],:not(html):not(body)[style*="height: 100%"]{max-height:none !important;min-height:0 !important;height:auto !important;}'\n          + ':not(html):not(body)[style*="overflow:hidden"],:not(html):not(body)[style*="overflow: hidden"]{overflow-y:visible !important;}'
           + 'img,video,canvas,svg,table{max-width:100% !important;}';
       } catch (_) {}
     };

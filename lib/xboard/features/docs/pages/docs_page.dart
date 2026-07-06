@@ -8,6 +8,7 @@ import 'package:fl_clash/xboard/features/shared/widgets/xb_error_state.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 import 'package:flutter_inappwebview/flutter_inappwebview.dart' as iaw;
+import 'package:flutter_widget_from_html/flutter_widget_from_html.dart';
 
 /// Build the language tag for knowledge API calls from the current locale.
 ///
@@ -423,7 +424,9 @@ class _ArticleDetailPage extends ConsumerStatefulWidget {
 class _ArticleDetailPageState extends ConsumerState<_ArticleDetailPage> {
   String? _resolvedBody;
   WebViewController? _webController;
+  bool _useHtmlWidget = false;
   bool _useInAppWebView = false;
+  String? _htmlWidgetContent;
   String? _inAppWebViewHtml;
   bool _lastInAppWebViewIsDark = false;
   bool _webLoading = true;
@@ -438,6 +441,188 @@ class _ArticleDetailPageState extends ConsumerState<_ArticleDetailPage> {
     return '${dt.year}-${dt.month.toString().padLeft(2, '0')}-${dt.day.toString().padLeft(2, '0')} '
         '${dt.hour.toString().padLeft(2, '0')}:${dt.minute.toString().padLeft(2, '0')}';
   }
+
+  /// Converts Markdown/HTML mixed content to inline-styled body HTML fragment.
+  /// Used by HtmlWidget (Linux) — no dark/light CSS wrapper, inherits theme from Flutter.
+  static String _contentToBodyHtml(String content) {
+    final htmlBlocks = <String, String>{};
+    int blockIndex = 0;
+    String s = content;
+
+    s = s.replaceAllMapped(
+      RegExp(
+        r'<([a-zA-Z][a-zA-Z0-9]*)\b[^>]*>[\s\S]*?</\1>|<([a-zA-Z][a-zA-Z0-9]*)\b[^>]*/?>',
+        multiLine: true,
+      ),
+      (m) {
+        final key = '\x00HTML_BLOCK_${blockIndex++}\x00';
+        htmlBlocks[key] = m.group(0)!;
+        return key;
+      },
+    );
+
+    // ::: admonition blocks → styled divs
+    s = s.replaceAllMapped(
+      RegExp(r':::(\w+)\s*(.*?)\n([\s\S]*?):::', multiLine: true),
+      (m) {
+        final type = m.group(1)!.toLowerCase();
+        final title = m.group(2)!.trim();
+        final body = m.group(3)!.trim();
+        const colors = <String, List<String>>{
+          'tip': ['#e8f5e9', '#2e7d32'],
+          'warning': ['#fff8e1', '#f57f17'],
+          'danger': ['#fce4ec', '#c62828'],
+          'info': ['#e3f2fd', '#1565c0'],
+        };
+        final pair = colors[type] ?? ['#f5f5f5', '#333'];
+        final label = title.isNotEmpty ? title : type.toUpperCase();
+        return '<div style="background:\${pair[0]};border-left:4px solid \${pair[1]};'
+            'border-radius:6px;padding:12px 16px;margin:12px 0">'
+            '<strong style="color:\${pair[1]}">\$label</strong>'
+            '<br>\${body.replaceAll('\n', '<br>')}</div>';
+      },
+    );
+
+    // Fenced code blocks
+    s = s.replaceAllMapped(
+      RegExp(r'```[\w]*\n?([\s\S]*?)```', multiLine: true),
+      (m) {
+        final code = m
+            .group(1)!
+            .replaceAll('&', '&amp;')
+            .replaceAll('<', '&lt;')
+            .replaceAll('>', '&gt;')
+            .trim();
+        return '<pre style="background:#f4f4f4;padding:12px;border-radius:6px;overflow-x:auto">'
+            '<code style="font-family:monospace;font-size:0.9em">\$code</code></pre>';
+      },
+    );
+
+    // HR
+    s = s.replaceAll(RegExp(r'^---+\$', multiLine: true),
+        '<hr style="border:none;border-top:1px solid #e0e0e0;margin:16px 0">');
+
+    // Headings
+    for (int i = 6; i >= 1; i--) {
+      s = s.replaceAllMapped(
+        RegExp('^\${'#' * i} (.+)\$', multiLine: true),
+        (m) => '<h\$i style="margin-top:20px;margin-bottom:8px">\${m.group(1)!}</h\$i>',
+      );
+    }
+
+    // Bold / italic
+    s = s
+        .replaceAllMapped(
+          RegExp(r'\*\*\*(.*?)\*\*\*'),
+          (m) => '<strong><em>\${m.group(1)}</em></strong>',
+        )
+        .replaceAllMapped(
+          RegExp(r'\*\*(.*?)\*\*'),
+          (m) => '<strong>\${m.group(1)}</strong>',
+        )
+        .replaceAllMapped(
+          RegExp(r'\*(.*?)\*'),
+          (m) => '<em>\${m.group(1)}</em>',
+        );
+
+    // Inline code
+    s = s.replaceAllMapped(
+      RegExp(r'`([^`]+)`'),
+      (m) => '<code style="background:#f4f4f4;padding:2px 4px;border-radius:3px;font-size:0.9em">\${m.group(1)}</code>',
+    );
+
+    // Images
+    s = s.replaceAllMapped(
+      RegExp(r'!\[([^\]]*)\]\(([^)]+)\)'),
+      (m) => '<img alt="\${m.group(1)}" src="\${m.group(2)}" style="max-width:100%;height:auto;border-radius:8px;margin:8px 0">',
+    );
+
+    // Links
+    s = s.replaceAllMapped(
+      RegExp(r'\[([^\]]+)\]\(([^)]+)\)'),
+      (m) => '<a href="\${m.group(2)}" style="color:#1976D2">\${m.group(1)}</a>',
+    );
+
+    // Unordered lists
+    s = s.replaceAllMapped(
+      RegExp(r'^[-*+] (.+)\$', multiLine: true),
+      (m) => '<li>\${m.group(1)!}</li>',
+    );
+    s = s.replaceAllMapped(
+      RegExp(r'(<li>.*?</li>\n?)+'),
+      (m) => '<ul style="padding-left:24px">\${m.group(0)}</ul>',
+    );
+
+    // Ordered lists
+    s = s.replaceAllMapped(
+      RegExp(r'^\d+\. (.+)\$', multiLine: true),
+      (m) => '<li>\${m.group(1)!}</li>',
+    );
+
+    // Blockquotes
+    s = s.replaceAllMapped(
+      RegExp(r'(^> .+(\n> .+)*)', multiLine: true),
+      (m) {
+        final inner = m.group(0)!.replaceAll(RegExp(r'^> ', multiLine: true), '');
+        return '<blockquote style="border-left:4px solid #1976D2;margin:0;padding-left:16px;color:#555">\${inner.replaceAll('\n', '<br>')}</blockquote>';
+      },
+    );
+
+    // Tables
+    s = s.replaceAllMapped(
+      RegExp(
+        r'(^\|.+\|[ \t]*\n)(^\|[-| :]+\|[ \t]*\n)((?:^\|.+\|[ \t]*\n?)+)',
+        multiLine: true,
+      ),
+      (m) {
+        final headerLine = m.group(1)!.trim();
+        final bodyLines = m.group(3)!.trim().split('\n');
+
+        String parseRow(String line, String tag) {
+          final cells = line
+              .split('|')
+              .where((c) => c.trim().isNotEmpty)
+              .map((c) => c.trim());
+          final style = tag == 'th'
+              ? ' style="border:1px solid #ddd;padding:8px;text-align:left;background:#f4f4f4"'
+              : ' style="border:1px solid #ddd;padding:8px;text-align:left"';
+          return '<tr>\${cells.map((c) => '<\$tag\$style>\$c</\$tag>').join()}</tr>';
+        }
+
+        final thead = '<thead>\${parseRow(headerLine, 'th')}</thead>';
+        final tbody =
+            '<tbody>\${bodyLines.map((l) => parseRow(l.trim(), 'td')).join()}</tbody>';
+        return '<table style="border-collapse:collapse;width:100%">\$thead\$tbody</table>';
+      },
+    );
+
+    // Paragraphs
+    s = s.replaceAllMapped(RegExp(r'\n\n+'), (_) => '\n</p><p>\n');
+    s = s.replaceAll(RegExp(r'(?<!</p>)\n(?!<)'), '<br>\n');
+
+    // Restore protected HTML blocks
+    for (final entry in htmlBlocks.entries) {
+      s = s.replaceAll(entry.key, entry.value);
+    }
+
+    // HtmlWidget compatibility: gradient → background-color fallback
+    s = s.replaceAllMapped(
+      RegExp(r'background\s*:\s*linear-gradient\([^)]*?(?:,\s*)(#[0-9a-fA-F]{3,8}|\w+)', caseSensitive: false),
+      (m) => 'background-color:\${m.group(1)}',
+    );
+    s = s.replaceAllMapped(
+      RegExp(r'background\s*:\s*(?:linear|radial|conic)-gradient\([^)]+\)', caseSensitive: false),
+      (m) {
+        final colorMatch = RegExp(r'#[0-9a-fA-F]{3,8}').firstMatch(m.group(0)!);
+        return colorMatch != null
+            ? 'background-color:\${colorMatch.group(0)}'
+            : 'background-color:#6c63ff';
+      },
+    );
+
+    return '<p>\$s</p>';
+  }
+
 
   /// Converts Markdown/HTML mixed content to full HTML page.
   /// Preserves raw HTML blocks (tags, inline styles) and only converts Markdown syntax.
@@ -606,12 +791,17 @@ p{margin:8px 0}
   @override
   void initState() {
     super.initState();
-    if (Platform.isLinux || Platform.isWindows) {
+    // Invalidate provider on every open to force fresh API load (no caching)
+    ref.invalidate(knowledgeArticleDetailProvider(_detailRequest));
+    if (Platform.isLinux) {
+      _useHtmlWidget = true;
+      _webLoading = false;
+    } else if (Platform.isWindows) {
       _useInAppWebView = true;
       _webLoading = false;
     }
-    final body = widget.article.body;
-    if (body.isNotEmpty) _resolvedBody = _stripLeadingTitle(body);
+    // Never use article.body from list — always fetch fresh via provider
+    _resolvedBody = null;
   }
 
   /// Strip leading Markdown H1 title from body if it matches the article title.
@@ -698,17 +888,17 @@ p{margin:8px 0}
     return findBody(result);
   }
 
-  void _resetDetailContent() {
-    _resolvedBody = null;
-    _webController = null;
-    _useInAppWebView = false;
-    _inAppWebViewHtml = null;
-    _webLoading = true;
-    _lastInAppWebViewIsDark = false;
-  }
-
   void _retryDetail() {
-    setState(_resetDetailContent);
+    setState(() {
+      _resolvedBody = null;
+      _webController = null;
+      _useInAppWebView = false;
+      _useHtmlWidget = false;
+      _inAppWebViewHtml = null;
+      _htmlWidgetContent = null;
+      _webLoading = true;
+      _lastInAppWebViewIsDark = false;
+    });
     ref.invalidate(knowledgeArticleDetailProvider(_detailRequest));
     unawaited(
       ref
@@ -719,11 +909,18 @@ p{margin:8px 0}
 
   void _initWebView(String content) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final fullHtml = _contentToHtml(content, isDark: isDark);
 
-    if (Platform.isLinux || Platform.isWindows) {
-      _inAppWebViewHtml = fullHtml;
+    if (Platform.isLinux) {
+      _htmlWidgetContent = _contentToBodyHtml(content);
+      _useHtmlWidget = true;
+      if (mounted) setState(() => _webLoading = false);
+      return;
+    }
+
+    if (Platform.isWindows) {
+      _inAppWebViewHtml = _contentToHtml(content, isDark: isDark);
       _useInAppWebView = true;
+      _lastInAppWebViewIsDark = isDark;
       if (mounted) setState(() => _webLoading = false);
       return;
     }
@@ -869,6 +1066,23 @@ p{margin:8px 0}
       );
     }
 
+    // Linux: flutter_widget_from_html native rendering — follows app theme naturally
+    if (_useHtmlWidget && _htmlWidgetContent != null) {
+      return SingleChildScrollView(
+        padding: const EdgeInsets.all(16),
+        child: HtmlWidget(
+          _htmlWidgetContent!,
+          onTapUrl: (url) {
+            final uri = Uri.tryParse(url);
+            if (uri != null) {
+              launchUrl(uri, mode: LaunchMode.externalApplication);
+            }
+            return true;
+          },
+        ),
+      );
+    }
+
     if (_useInAppWebView) {
       final isDark = Theme.of(context).brightness == Brightness.dark;
       if (_inAppWebViewHtml == null || _lastInAppWebViewIsDark != isDark) {
@@ -885,12 +1099,15 @@ p{margin:8px 0}
         },
         shouldOverrideUrlLoading: (_, navigationAction) async {
           final url = navigationAction.request.url?.toString() ?? '';
-          if (!Platform.isWindows && _isDownloadLink(url)) {
-            await launchUrl(
-              Uri.parse(url),
-              mode: LaunchMode.externalApplication,
-            );
-            return iaw.NavigationActionPolicy.CANCEL;
+          if (url.isNotEmpty) {
+            final uri = Uri.tryParse(url);
+            if (uri != null && (uri.scheme == 'http' || uri.scheme == 'https')) {
+              await launchUrl(
+                uri,
+                mode: LaunchMode.externalApplication,
+              );
+              return iaw.NavigationActionPolicy.CANCEL;
+            }
           }
           return iaw.NavigationActionPolicy.ALLOW;
         },
