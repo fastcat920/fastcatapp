@@ -426,6 +426,7 @@ class _ArticleDetailPageState extends ConsumerState<_ArticleDetailPage> {
   WebViewController? _webController;
   bool _useInAppWebView = false;
   String? _inAppWebViewHtml;
+  iaw.InAppWebViewController? _inAppController;
   bool _lastInAppWebViewIsDark = false;
   bool _lastWebViewIsDark = false;
   bool _webLoading = true;
@@ -684,6 +685,7 @@ p{margin:8px 0}
       _webController = null;
       _useInAppWebView = false;
       _inAppWebViewHtml = null;
+      _inAppController = null;
       _webLoading = true;
       _lastInAppWebViewIsDark = false;
       _lastWebViewIsDark = false;
@@ -861,7 +863,51 @@ p{margin:8px 0}
           transparentBackground: true,
         ),
         onWebViewCreated: (controller) {
+          _inAppController = controller;
+          controller.addJavaScriptHandler(
+            handlerName: 'openExternal',
+            callback: (args) async {
+              final url = args.isNotEmpty ? args[0].toString() : '';
+              if (url.isNotEmpty) {
+                final uri = Uri.tryParse(url);
+                if (uri != null) {
+                  await launchUrl(uri, mode: LaunchMode.externalApplication);
+                }
+              }
+            },
+          );
           controller.loadData(data: _inAppWebViewHtml!, mimeType: 'text/html', encoding: 'utf-8');
+        },
+        onLoadStop: (_, __) {
+          _inAppController?.evaluateJavascript(source: r'''
+(function(){
+  if (window.__fastcatDocInterceptInstalled) return;
+  window.__fastcatDocInterceptInstalled = true;
+  function isDownloadLike(url) {
+    var lower = (url || "").split("?")[0].toLowerCase();
+    if (/\.(dmg|exe|apk|zip|7z|rar|tar\.gz|tar|gz|bz2|deb|rpm|msi|ipa|pkg|iso|bin)$/.test(lower)) return true;
+    if (/\/(download|file|d|s|share)\//.test(lower)) return true;
+    return false;
+  }
+  document.addEventListener("click", function(e) {
+    var el = e.target;
+    while (el && el !== document) {
+      if (el.tagName === "A" && el.href) {
+        var cls = (el.className && el.className.baseVal !== undefined) ? el.className.baseVal : (el.className || "");
+        var target = (el.getAttribute("target") || "").toLowerCase();
+        if (cls.indexOf("download-btn") !== -1 || target === "_blank" || isDownloadLike(el.href)) {
+          e.preventDefault();
+          e.stopPropagation();
+          window.flutter_inappwebview.callHandler("openExternal", el.href);
+          return false;
+        }
+        break;
+      }
+      el = el.parentElement;
+    }
+  }, true);
+})();
+''');
         },
         shouldOverrideUrlLoading: (_, navigationAction) async {
           // Allow iframes and subresources to load inline (not main-frame nav)
@@ -872,7 +918,7 @@ p{margin:8px 0}
           if (url.isNotEmpty) {
             final uri = Uri.tryParse(url);
             if (uri != null && (uri.scheme == 'http' || uri.scheme == 'https')) {
-              // Open download links in browser; navigate everything else inline
+              // Fallback: open download links in browser
               final lower = url.split('?')[0].toLowerCase();
               final isDownload = lower.endsWith('.dmg') ||
                   lower.endsWith('.exe') || lower.endsWith('.apk') ||
