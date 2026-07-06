@@ -267,6 +267,7 @@ class PaymentWebViewPage extends ConsumerStatefulWidget {
     try {
       Object.defineProperty(navigator, 'language', { get: function(){ return language; }, configurable: true });
       Object.defineProperty(navigator, 'languages', { get: function(){ return languages; }, configurable: true });
+      Object.defineProperty(navigator, 'userAgent', { get: function(){ return 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0.0.0 Safari/537.36'; }, configurable: true });
     } catch (_) {}
     if (!window.__fastcatPaymentExternalBridgeInstalled) {
       window.__fastcatPaymentExternalBridgeInstalled = true;
