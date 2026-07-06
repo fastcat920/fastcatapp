@@ -370,9 +370,8 @@ class _XBoardHomePageState extends ConsumerState<XBoardHomePage>
                             ),
                           ),
                         ),
-                        const SizedBox(height: connectionStatusGap),
-                        // ── 状态文字（独立于按钮，固定高度不被 Flex 压缩）──
-                        _buildConnectionStatusRow(),
+                        // ── 状态文字已移入按钮内部 ──
+                        const SizedBox(height: 8),
                         // ── 模式选择：在状态文字和底部节点选择之间居中 ──
                         SizedBox(height: adaptiveBottomGap / 2),
                         const SizedBox(
@@ -520,88 +519,6 @@ class _XBoardHomePageState extends ConsumerState<XBoardHomePage>
           fixedHeight: isDesktop ? 136 : 148,
         );
       },
-    );
-  }
-
-  Widget _buildConnectionStatusRow() {
-    return SizedBox(
-      height: 40,
-      child: Center(
-        child: _buildStatusText(),
-      ),
-    );
-  }
-
-  Widget _buildStatusText() {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    return SizedBox(
-      height: 38,
-      child: Consumer(
-        builder: (_, ref, __) {
-          final runTime = ref.watch(runTimeProvider);
-          final isRunning = runTime != null;
-
-          if (!isRunning) {
-            return Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Text(
-                  AppLocalizations.of(context).notConnected,
-                  style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                        fontSize: 13,
-                        height: 1,
-                        fontWeight: FontWeight.bold,
-                        color: Theme.of(context).colorScheme.onSurface,
-                      ),
-                ),
-                const SizedBox(height: 1),
-                Text(
-                  AppLocalizations.of(context).tapToConnect,
-                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                        fontSize: 10.5,
-                        height: 1,
-                        color: Theme.of(context)
-                            .colorScheme
-                            .onSurface
-                            .withValues(alpha: 0.5),
-                      ),
-                ),
-              ],
-            );
-          }
-
-          return Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Text(
-                AppLocalizations.of(context).connected,
-                style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                      fontSize: 13,
-                      height: 1,
-                      fontWeight: FontWeight.bold,
-                      color: isDark
-                          ? Colors.green.shade300
-                          : Colors.green.shade700,
-                    ),
-              ),
-              const SizedBox(height: 1),
-              Text(
-                utils.getTimeText(runTime),
-                style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                      fontSize: 10.5,
-                      height: 1,
-                      color: Theme.of(context)
-                          .colorScheme
-                          .onSurface
-                          .withValues(alpha: 0.6),
-                    ),
-              ),
-            ],
-          );
-        },
-      ),
     );
   }
 
