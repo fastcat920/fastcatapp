@@ -438,6 +438,7 @@ class _CrispChatPageState extends State<CrispChatPage> {
     $userScript
 
 
+
     (function installCrispHide(){
       if (window.__fastcatHideInstalled) return;
       window.__fastcatHideInstalled = true;
@@ -464,9 +465,7 @@ class _CrispChatPageState extends State<CrispChatPage> {
       }
       function penetrate(node) {
         if (!node || node.nodeType !== 1) return;
-        // Try shadow root
         try { if (node.shadowRoot) injectStyle(node.shadowRoot); } catch(_) {}
-        // Walk children
         try {
           var kids = node.querySelectorAll ? node.querySelectorAll('*') : [];
           for (var i = 0; i < kids.length; i++) {
@@ -474,10 +473,10 @@ class _CrispChatPageState extends State<CrispChatPage> {
           }
         } catch(_) {}
       }
+      var _scanTimer = null;
       function run() {
         injectStyle(document);
         penetrate(document.documentElement);
-        // Walk all iframes too
         try {
           var iframes = document.querySelectorAll('iframe');
           for (var i = 0; i < iframes.length; i++) {
@@ -488,17 +487,26 @@ class _CrispChatPageState extends State<CrispChatPage> {
           }
         } catch(_) {}
       }
-      // Hook Crisp events to run when chat UI appears
+      function scheduleRun() {
+        if (_scanTimer) return;
+        _scanTimer = setTimeout(function() { _scanTimer = null; run(); }, 600);
+      }
+      // Crisp lifecycle hooks -- only fire once when chat opens
       window.\$crisp = window.\$crisp || [];
-      \$crisp.push(["on", "chat:opened", function() { setTimeout(run, 600); }]);
-      \$crisp.push(["on", "chat:initiated", function() { setTimeout(run, 1200); }]);
-      // Also run after a delay as fallback
-      setTimeout(run, 2000);
-      setTimeout(run, 4000);
-      // MutationObserver for late-appearing elements
-      new MutationObserver(function() {
-        setTimeout(run, 300);
-      }).observe(document.documentElement, {childList:true, subtree:true, attributes:true});
+      \$crisp.push(["on", "chat:opened", function() { run(); setTimeout(run, 800); }]);
+      // Fallback: one delayed scan after initial page render
+      setTimeout(run, 2500);
+      // Lightweight observer: only react to iframe additions, debounced
+      new MutationObserver(function(mutations) {
+        for (var i = 0; i < mutations.length; i++) {
+          var nodes = mutations[i].addedNodes;
+          for (var j = 0; j < nodes.length; j++) {
+            if (nodes[j].nodeType === 1 && nodes[j].tagName === 'IFRAME') {
+              scheduleRun(); return;
+            }
+          }
+        }
+      }).observe(document.documentElement, {childList:true, subtree:true});
     })();
 
     (function(){
