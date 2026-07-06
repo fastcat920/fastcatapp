@@ -49,6 +49,13 @@ class CustomerServiceHelper {
   static _CrispProxyCacheEntry? _usableCrispProxyCache;
   static Webview? _desktopCustomerServiceWebview;
   static Future<Webview?>? _desktopCustomerServiceOpening;
+  static _CrispIPData? _cachedIPData;
+  static DateTime? _cachedIPDataTime;
+  static String? _cachedLjsContent;
+  static DateTime? _cachedLjsTime;
+  static const _ipDataCacheTtl = Duration(minutes: 5);
+  static const _ljsCacheTtl = Duration(hours: 1);
+  static const _crispLjsUrl = 'https://client.crisp.chat/l.js';
   static Brightness? _desktopCustomerServiceBrightness;
   static String? _desktopCustomerServiceAccent;
   static String? _desktopCustomerServiceLocaleTag;
@@ -322,6 +329,7 @@ class CustomerServiceHelper {
       unawaited(_fallbackCrispProxyUrl());
     }
     unawaited(_prewarmCrispRoute());
+    unawaited(_prewarmLjs());
     if (_isDesktopPlatform) {
       unawaited(_isDesktopWebviewAvailable());
       if (Platform.isWindows) {
@@ -338,6 +346,52 @@ class CustomerServiceHelper {
     } catch (e) {
       _logger.debug('[Crisp] 预热客服线路失败: $e');
     }
+  }
+
+  static Future<void> _prewarmLjs() async {
+    if (_cachedLjsContent != null && _cachedLjsTime != null &&
+        DateTime.now().difference(_cachedLjsTime!) < _ljsCacheTtl) {
+      return;
+    }
+    try {
+      final client = HttpClient()..connectionTimeout = const Duration(seconds: 10);
+      try {
+        final uri = Uri.parse(_crispLjsUrl);
+        final request = await client.getUrl(uri);
+        request.headers.set(HttpHeaders.userAgentHeader,
+            'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15');
+        final response = await request.close().timeout(const Duration(seconds: 10));
+        if (response.statusCode == 200) {
+          final bytes = await response.fold<List<int>>(
+            <int>[], (prev, chunk) => prev..addAll(chunk),
+          );
+          _cachedLjsContent = utf8.decode(bytes);
+          _cachedLjsTime = DateTime.now();
+          _logger.info('[Crisp] l.js cached (\${_cachedLjsContent!.length} bytes)');
+        }
+      } finally {
+        client.close(force: true);
+      }
+    } catch (e) {
+      _logger.debug('[Crisp] l.js prewarm failed: \$e');
+    }
+  }
+
+  static String? get cachedLjsContent {
+    if (_cachedLjsContent != null && _cachedLjsTime != null &&
+        DateTime.now().difference(_cachedLjsTime!) < _ljsCacheTtl) {
+      return _cachedLjsContent;
+    }
+    return null;
+  }
+
+  /// 获取缓存的 l.js 的 <script> 标签字符串，用于直接嵌入 HTML。
+  /// 返回 null 表示无有效缓存，应走 CDN 加载。
+  static String? getCachedLjsScriptTag() {
+    final content = cachedLjsContent;
+    if (content == null) return null;
+    final base64 = base64Encode(utf8.encode(content));
+    return '<script src="data:application/javascript;base64,$base64"></script>';
   }
 
   /// 获取 WebView2 用户数据目录（可写路径）
@@ -737,13 +791,30 @@ if(window===window.top){
     }
   }
 
+  static _CrispIPData? _getCachedIPData() {
+    final cached = _cachedIPData;
+    final cachedTime = _cachedIPDataTime;
+    if (cached != null && cachedTime != null &&
+        DateTime.now().difference(cachedTime) < _ipDataCacheTtl) {
+      return cached;
+    }
+    return null;
+  }
+
   static Future<_CrispIPData?> _resolveCrispIPDataForInitialInjection(
     BuildContext context,
   ) async {
+    final cached = _getCachedIPData();
+    if (cached != null) return cached;
     try {
-      return await _resolveCrispIPData(
+      final result = await _resolveCrispIPData(
         context,
       ).timeout(_crispUserDataResolveTimeout, onTimeout: () => null);
+      if (result != null) {
+        _cachedIPData = result;
+        _cachedIPDataTime = DateTime.now();
+      }
+      return result;
     } catch (_) {
       return null;
     }

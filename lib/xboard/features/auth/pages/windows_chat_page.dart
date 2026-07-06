@@ -6,6 +6,7 @@ import 'package:fl_clash/common/webview2_check.dart';
 import 'package:fl_clash/l10n/l10n.dart';
 import 'package:fl_clash/xboard/core/core.dart';
 import 'package:fl_clash/xboard/features/auth/utils/crisp_url_helper.dart';
+import 'package:fl_clash/xboard/features/auth/utils/customer_service_helper.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_inappwebview/flutter_inappwebview.dart' as iaw;
 
@@ -436,6 +437,16 @@ class _WindowsChatPageState extends State<WindowsChatPage> {
     final loadingSlowJson = jsonEncode(l10n.customerServiceLoadingSlow);
     final loadFailedJson = jsonEncode(l10n.customerServiceLoadFailed);
     final colorSchemeValue = _isDarkMode ? 'dark' : 'light';
+    final cachedTag = CustomerServiceHelper.getCachedLjsScriptTag();
+    final ljsTag = cachedTag ?? '<script>'
+        r"var _cs=document.createElement('script');"
+        r"_cs.src='https://client.crisp.chat/l.js';"
+        r"_cs.async=true;"
+        r"_cs.onerror=function(){var lt=document.getElementById('loading-text');if(lt)lt.textContent="
+        + '${loadFailedJson}'
+        + r";};"
+        r"document.head.appendChild(_cs);"
+        '</script>';
     return '''<!DOCTYPE html>
 <html>
 <head>
@@ -512,15 +523,7 @@ class _WindowsChatPageState extends State<WindowsChatPage> {
     } catch (_) {}
     $userScript
 
-    // Start downloading Crisp SDK immediately
-    var _crispScript = document.createElement('script');
-    _crispScript.src = 'https://client.crisp.chat/l.js';
-    _crispScript.async = true;
-    _crispScript.onerror = function(){
-      var lt = document.getElementById('loading-text');
-      if (lt) lt.textContent = $loadFailedJson;
-    };
-    document.head.appendChild(_crispScript);
+    \${ljsTag}
 
     (function(){
       var colorMode = $colorModeJson;
