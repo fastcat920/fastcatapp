@@ -23,6 +23,7 @@ import 'package:fl_clash/xboard/features/auth/utils/crisp_url_helper.dart';
 import 'package:fl_clash/xboard/features/shared/utils/desktop_webview_window_helper.dart';
 import 'package:fl_clash/xboard/core/core.dart';
 import 'package:fl_clash/xboard/utils/xboard_notification.dart';
+import 'package:flutter_inappwebview/flutter_inappwebview.dart' as iaw;
 import 'package:flutter_xboard_sdk/flutter_xboard_sdk.dart';
 
 const _logger = FileLogger('customer_service_helper.dart');
@@ -58,6 +59,7 @@ class CustomerServiceHelper {
   static const _ljsCacheTtl = Duration(hours: 1);
   static const _crispLjsUrl = 'https://client.crisp.chat/l.js';
   static WebViewController? _prewarmedMacController;
+  static iaw.HeadlessInAppWebView? _prewarmedHeadlessWin;
   static Brightness? _desktopCustomerServiceBrightness;
   static String? _desktopCustomerServiceAccent;
   static String? _desktopCustomerServiceLocaleTag;
@@ -339,6 +341,7 @@ class CustomerServiceHelper {
       unawaited(_isDesktopWebviewAvailable());
       if (Platform.isWindows) {
         unawaited(_webview2DataFolder());
+        unawaited(_prewarmWindowsWebView());
       }
     }
   }
@@ -398,6 +401,66 @@ class CustomerServiceHelper {
     if (content == null) return null;
     // Escape </script> so it doesn't close the outer script block
     return content.replaceAll(r'</', r'<\/');
+  }
+
+  /// 预热 Windows WebView2：在后台用 HeadlessInAppWebView 加载 bootstrap HTML，
+  /// 预热 WebView2 runtime + DNS/TLS + l.js HTTP 缓存。
+  static Future<void> _prewarmWindowsWebView() async {
+    if (_prewarmedHeadlessWin != null) return;
+    try {
+      final websiteId = await _resolveCrispWebsiteId();
+      if (websiteId.isEmpty) return;
+      await _resolveUsableCrispProxyUrl(websiteId);
+
+      final headless = iaw.HeadlessInAppWebView(
+        initialData: iaw.InAppWebViewInitialData(
+          data: _buildPrewarmedBootstrapHtml(websiteId: websiteId),
+          mimeType: 'text/html',
+          encoding: 'utf-8',
+          baseUrl: iaw.WebUri('https://go.crisp.chat/chat/embed/'),
+        ),
+        initialSettings: iaw.InAppWebViewSettings(
+          javaScriptEnabled: true,
+        ),
+        onWebViewCreated: (_) {},
+      );
+      await headless.run();
+      _prewarmedHeadlessWin = headless;
+      _logger.info('[Crisp] Windows headless WebView pre-warmed');
+    } catch (e) {
+      _logger.debug('[Crisp] Windows WebView prewarm failed: \$e');
+    }
+  }
+
+  static String _buildPrewarmedBootstrapHtml({
+    required String websiteId,
+  }) {
+    final websiteIdJson = jsonEncode(websiteId);
+    final background = '#101010';
+    final foreground = '#f3f4f6';
+    return '''<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1">
+  <meta name="color-scheme" content="dark">
+  <link rel="dns-prefetch" href="https://client.crisp.chat">
+  <link rel="preconnect" href="https://client.crisp.chat" crossorigin>
+  <link rel="preload" href="https://client.crisp.chat/l.js" as="script" crossorigin>
+  <style>
+    html,body{width:100%;height:100%;margin:0;background:$background;color:$foreground;overflow:hidden}
+    .crisp-client,.crisp-client *{background:$background!important}
+    [class*="crisp"]{background:$background!important}
+  </style>
+</head>
+<body>
+<script>
+window.CRISP_WEBSITE_ID=$websiteIdJson;
+window.CRISP_RUNTIME_CONFIG={locale:"zh",lock_full_view:true};
+</script>
+<script src="https://client.crisp.chat/l.js" async></script>
+</body>
+</html>''';
   }
 
   /// 预热移动端 WebView：预创建 controller 并加载 bootstrap HTML，
@@ -1055,6 +1118,9 @@ if(window===window.top){
       return;
     }
     if (Platform.isWindows) {
+      // Dispose pre-warmed headless WebView (no longer needed)
+      _prewarmedHeadlessWin?.dispose();
+      _prewarmedHeadlessWin = null;
       if (!context.mounted) return;
       await Navigator.of(context).push(
         MaterialPageRoute(
