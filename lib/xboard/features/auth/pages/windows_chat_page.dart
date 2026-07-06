@@ -719,6 +719,7 @@ class _WindowsChatPageState extends State<WindowsChatPage> {
             }
           },
           onLoadStop: (_, __) async {
+            if (mounted) setState(() => _isLoading = false);
             if (_usingSdkBootstrap) {
               unawaited(_runDeferredUserScript());
             } else {
@@ -750,6 +751,11 @@ class _WindowsChatPageState extends State<WindowsChatPage> {
                 style: const TextStyle(fontSize: 14),
               ),
             ),
+          ),
+        if (_isLoading)
+          ColoredBox(
+            color: backgroundColor,
+            child: const Center(child: CircularProgressIndicator()),
           ),
       ],
     );
