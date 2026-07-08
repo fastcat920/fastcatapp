@@ -349,6 +349,7 @@ class _ArticleDetailPageState extends ConsumerState<_ArticleDetailPage> {
   bool _lastInAppWebViewIsDark = false;
   bool _lastWebViewIsDark = false;
   bool _webLoading = true;
+  bool _inAppWebViewLoading = true;
 
   KnowledgeArticleDetailRequest get _detailRequest =>
       KnowledgeArticleDetailRequest(
@@ -614,6 +615,7 @@ p{margin:8px 0}
       _webLoading = true;
       _lastInAppWebViewIsDark = false;
       _lastWebViewIsDark = false;
+      _inAppWebViewLoading = true;
     });
     ref.invalidate(knowledgeArticleDetailProvider(_detailRequest));
     unawaited(
@@ -630,7 +632,8 @@ p{margin:8px 0}
       _inAppWebViewHtml = _contentToHtml(content, isDark: isDark);
       _useInAppWebView = true;
       _lastInAppWebViewIsDark = isDark;
-      if (mounted) setState(() => _webLoading = false);
+      _inAppWebViewLoading = true;
+      if (mounted) setState(() {});
       return;
     }
 
@@ -783,7 +786,10 @@ p{margin:8px 0}
         _inAppWebViewHtml = _contentToHtml(body, isDark: isDark);
         _lastInAppWebViewIsDark = isDark;
       }
-      return iaw.InAppWebView(
+      final currentIsDark = Theme.of(context).brightness == Brightness.dark;
+      return Stack(
+        children: [
+          iaw.InAppWebView(
         initialSettings: iaw.InAppWebViewSettings(
           javaScriptEnabled: true,
           transparentBackground: true,
@@ -805,6 +811,10 @@ p{margin:8px 0}
           controller.loadData(data: _inAppWebViewHtml!, mimeType: 'text/html', encoding: 'utf-8');
         },
         onLoadStop: (_, __) {
+          if (_inAppWebViewLoading) {
+            if (mounted) setState(() => _inAppWebViewLoading = false);
+          }
+
           _inAppController?.evaluateJavascript(source: r'''
 (function(){
   if (window.__fastcatDocInterceptInstalled) return;
@@ -868,6 +878,13 @@ p{margin:8px 0}
           }
           return iaw.NavigationActionPolicy.ALLOW;
         },
+          ),
+          if (_inAppWebViewLoading)
+            Container(
+              color: currentIsDark ? const Color(0xFF1E1E1E) : const Color(0xFFFAFBFD),
+              child: const Center(child: CircularProgressIndicator()),
+            ),
+        ],
       );
     }
 
@@ -881,11 +898,12 @@ p{margin:8px 0}
       }
       return Stack(
         children: [
-          Container(
-            color: currentIsDark ? const Color(0xFF1E1E1E) : Colors.white,
-            child: WebViewWidget(controller: _webController!),
-          ),
-          if (_webLoading) const Center(child: CircularProgressIndicator()),
+          WebViewWidget(controller: _webController!),
+          if (_webLoading)
+            Container(
+              color: currentIsDark ? const Color(0xFF1E1E1E) : Colors.white,
+              child: const Center(child: CircularProgressIndicator()),
+            ),
         ],
       );
     }
