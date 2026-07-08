@@ -166,13 +166,27 @@ class _NodeSelectorBarState extends ConsumerState<NodeSelectorBar> {
         }
       }
     }
+    // rule 模式下无历史选择时，优先展示计算组（URLTest/故障转移）而非 Selector 组
+    // 放在 currentGroup==null 块之外：selectedMap 中可能有 DIRECT 等值导致 for 循环提前设值
+    if (mode == Mode.rule && currentGroup != null && !currentGroup.type.isComputedSelected) {
+      final computedGroup = groups.firstWhere(
+        (g) =>
+            g.hidden != true &&
+            g.name != GroupName.GLOBAL.name &&
+            g.type.isComputedSelected,
+        orElse: () => currentGroup!,
+      );
+      if (computedGroup.type.isComputedSelected) {
+        currentGroup = computedGroup;
+      }
+    }
     if (currentGroup == null || currentGroup.all.isEmpty) {
       return _buildEmptyState(context);
     }
     final selectedProxyName = selectedMap[currentGroup.name] ?? '';
     String realNodeName;
     // 是否选中了 URLTest 组（自动选择）：显示组名，但延迟用实际节点
-    final bool isAutoSelect = currentGroup.type == GroupType.URLTest;
+    final bool isAutoSelect = currentGroup.type.isComputedSelected;
     if (isAutoSelect) {
       realNodeName = currentGroup.now ?? '';
     } else {
@@ -186,6 +200,32 @@ class _NodeSelectorBarState extends ConsumerState<NodeSelectorBar> {
     } else {
       currentProxy = currentGroup.all.first;
     }
+    // 如果当前选中的代理是隐藏的 DIRECT/REJECT，回退到第一个有效代理
+    if (currentProxy.name == UsedProxy.DIRECT.name ||
+        currentProxy.name == UsedProxy.REJECT.name) {
+      final validProxies = currentGroup.all
+          .where((p) =>
+              p.name != UsedProxy.DIRECT.name &&
+              p.name != UsedProxy.REJECT.name)
+          .toList();
+      if (validProxies.isNotEmpty) {
+        currentProxy = validProxies.first;
+      }
+    }
+    // 如果当前选中的代理不是计算组（URLTest/故障转移），且列表中有计算组可选，
+    // 则优先显示计算组，避免显示首条线路节点而非自动选择。
+    // dart flow analysis loses null-safety across closures; currentProxy is
+    // provably non-null here (guarded by early return above).
+    final isCurrentComputed = groups.any(
+        (g) => g.name == currentProxy!.name && g.type.isComputedSelected);
+    if (!isCurrentComputed) {
+      final computedProxies = currentGroup.all.where((p) =>
+          groups.any((g) => g.name == p.name && g.type.isComputedSelected));
+      if (computedProxies.isNotEmpty) {
+        currentProxy = computedProxies.first;
+      }
+    }
+
     _checkNodeChange(currentProxy);
     // 自动选择时显示组名（如"自动选择"），延迟用实际节点的
     final displayName = isAutoSelect ? currentGroup.name : currentProxy.name;

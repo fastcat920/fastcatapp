@@ -1,5 +1,7 @@
+import 'dart:convert';
 import 'package:fl_clash/common/common.dart';
 import 'package:fl_clash/enum/enum.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:fl_clash/models/models.dart';
 import 'package:fl_clash/state.dart';
 import 'package:flutter/material.dart';
@@ -343,6 +345,14 @@ class Groups extends _$Groups with AutoDisposeNotifierMixin {
     globalState.appState = globalState.appState.copyWith(
       groups: value,
     );
+    _cacheGroups(value);
+  }
+
+  void _cacheGroups(List<Group> groups) {
+    SharedPreferences.getInstance().then((prefs) {
+      final json = jsonEncode(groups.map((g) => g.toJson()).toList());
+      prefs.setString('cached_groups', json);
+    });
   }
 }
 

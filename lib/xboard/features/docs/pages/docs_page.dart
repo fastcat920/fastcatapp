@@ -608,14 +608,20 @@ p{margin:8px 0}
   @override
   void initState() {
     super.initState();
-    // Invalidate provider on every open to force fresh API load (no caching)
-    ref.invalidate(knowledgeArticleDetailProvider(_detailRequest));
     if (Platform.isLinux || Platform.isWindows) {
       _useInAppWebView = true;
     }
     _webLoading = true;
     // Never use article.body from list — always fetch fresh via provider
     _resolvedBody = null;
+    // Invalidate provider to force fresh API load on every open (no caching).
+    // Must be deferred via addPostFrameCallback — Riverpod providers cannot be
+    // accessed during initState before the widget is fully initialized.
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) {
+        ref.invalidate(knowledgeArticleDetailProvider(_detailRequest));
+      }
+    });
   }
 
   /// Strip leading Markdown H1 title from body if it matches the article title.

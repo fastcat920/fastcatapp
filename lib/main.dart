@@ -122,6 +122,8 @@ Future<void> main(List<String> args) async {
 
     await system.detectTV();
     await globalState.initApp(version);
+    // 优先加载缓存节点，避免启动时短暂显示"暂无可用节点"
+    _loadCachedGroups(prefs);
     await android?.init();
     await window?.init(version);
   } catch (e, stack) {
@@ -130,6 +132,7 @@ Future<void> main(List<String> args) async {
     // 出错了也继续跑 runApp()，避免原生 splash 永久卡死
     version ??= await system.version;
     await globalState.initApp(version);
+    _loadCachedGroups(prefs);
   }
 
   HttpOverrides.global = FastcatHttpOverrides();
@@ -188,6 +191,20 @@ Future<InitialUserSnapshot> _loadInitialUserSnapshot(
     userInfo: userInfo,
     subscriptionInfo: subscriptionInfo,
   );
+}
+
+/// 从 SharedPreferences 恢复缓存的节点列表
+void _loadCachedGroups(SharedPreferences prefs) {
+  try {
+    final cachedGroups = prefs.getString('cached_groups');
+    if (cachedGroups != null) {
+      final list = jsonDecode(cachedGroups) as List;
+      final groups = list
+          .map((e) => Group.fromJson(e as Map<String, dynamic>))
+          .toList();
+      globalState.appState = globalState.appState.copyWith(groups: groups);
+    }
+  } catch (_) {}
 }
 
 /// Initialize XBoard services using a pre-fetched SharedPreferences instance

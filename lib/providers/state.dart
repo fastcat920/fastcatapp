@@ -61,9 +61,18 @@ GroupsState currentGroupsState(Ref ref) {
 List<Group> _buildRuleModeGroups(List<Group> groups) {
   final mainGroup = _findMainProxyGroup(groups);
   if (mainGroup == null) return [];
+  final allProxies = _prioritizeComputedGroupProxies(mainGroup.all, groups);
+  // 修正 now：若指向 DIRECT/REJECT 等不应显示的代理，fallback 到第一个有效代理
+  String nowValue = mainGroup.now ?? '';
+  if (nowValue.isNotEmpty && allProxies.isNotEmpty) {
+    if (_isHiddenProxy(nowValue) || !allProxies.any((p) => p.name == nowValue)) {
+      nowValue = allProxies.first.name;
+    }
+  }
   return [
     mainGroup.copyWith(
-      all: _prioritizeComputedGroupProxies(mainGroup.all, groups),
+      now: nowValue,
+      all: allProxies,
     ),
   ];
 }
@@ -73,13 +82,22 @@ List<Group> _buildGlobalModeGroups(List<Group> groups) {
   final mainGroup = _findMainProxyGroup(groups);
   final sourceGroup = mainGroup ?? globalGroup;
   if (sourceGroup == null) return [];
+  final allProxies = _prioritizeComputedGroupProxies(sourceGroup.all, groups);
+  // Clash 默认 now 可能是 DIRECT/REJECT 或不在可见列表中的代理。
+  // 此时 fallback 到 all 第一个有效代理（通常是 URLTest 自动选择组）。
+  String nowValue = globalGroup?.now ?? sourceGroup.now ?? '';
+  if (nowValue.isNotEmpty && allProxies.isNotEmpty) {
+    if (_isHiddenProxy(nowValue) || !allProxies.any((p) => p.name == nowValue)) {
+      nowValue = allProxies.first.name;
+    }
+  }
   return [
     sourceGroup.copyWith(
       name: globalGroup?.name ?? sourceGroup.name,
       type: globalGroup?.type ?? sourceGroup.type,
-      now: globalGroup?.now ?? sourceGroup.now,
+      now: nowValue,
       testUrl: globalGroup?.testUrl ?? sourceGroup.testUrl,
-      all: _prioritizeComputedGroupProxies(sourceGroup.all, groups),
+      all: allProxies,
     ),
   ];
 }
@@ -116,6 +134,11 @@ bool _isComputedGroupProxy(Proxy proxy, List<Group> groups) {
   final proxyType = GroupTypeExtension.getGroupType(proxy.type);
   return proxyGroup?.type.isComputedSelected == true ||
       proxyType?.isComputedSelected == true;
+}
+
+/// DIRECT 和 REJECT 是 Clash 内部特殊代理，不应作为默认选中项显示。
+bool _isHiddenProxy(String name) {
+  return name == UsedProxy.DIRECT.name || name == UsedProxy.REJECT.name;
 }
 
 @riverpod

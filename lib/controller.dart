@@ -631,9 +631,30 @@ class AppController {
         ));
       }
 
+      // 修正默认 now：优先选择 URLTest/Fallback 计算组（如自动选择、故障转移）
+      for (var i = 0; i < groups.length; i++) {
+        final group = groups[i];
+        if (group.all.isEmpty) continue;
+        final nowName = group.now ?? '';
+        // 如果当前 now 是 DIRECT/REJECT，或不是计算组引用，尝试切换到第一个计算组
+        final isNowComputed = nowName.isNotEmpty &&
+            groups.any((g) => g.name == nowName && g.type.isComputedSelected);
+        if (!isNowComputed) {
+          final computedProxy = group.all.cast<Proxy?>().firstWhere(
+            (p) => groups.any(
+                (g) => g.name == p!.name && g.type.isComputedSelected),
+            orElse: () => null,
+          );
+          if (computedProxy != null) {
+            groups[i] = group.copyWith(now: computedProxy.name);
+          }
+        }
+      }
+
       final existing = _ref.read(groupsProvider);
       if (groups.isNotEmpty || existing.isEmpty) {
-        _ref.read(groupsProvider.notifier).value = groups;
+        final corrected = _correctGroupNowValues(groups);
+        _ref.read(groupsProvider.notifier).value = corrected;
       }
     } catch (e) {
       commonPrint.log('_applyProfileFromYaml error: $e');
@@ -655,7 +676,11 @@ class AppController {
         delay: const Duration(seconds: 1),
       );
       if (newGroups.isNotEmpty) {
-        _ref.read(groupsProvider.notifier).value = newGroups;
+        final correctedGroups = _correctGroupNowValues(newGroups);
+        _ref.read(groupsProvider.notifier).value = correctedGroups;
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          _correctDirectNodes();
+        });
       }
       // Re-apply saved proxy selections
       final profile = _ref.read(currentProfileProvider);
@@ -673,7 +698,11 @@ class AppController {
         // Refresh groups again to get updated "now" values
         final refreshed = await clashCore.getProxiesGroups();
         if (refreshed.isNotEmpty) {
-          _ref.read(groupsProvider.notifier).value = refreshed;
+          final correctedRefreshed = _correctGroupNowValues(refreshed);
+          _ref.read(groupsProvider.notifier).value = correctedRefreshed;
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            _correctDirectNodes();
+          });
         }
       }
     } catch (e) {
@@ -752,7 +781,13 @@ class AppController {
         await _applyProfileFromYaml();
         return;
       }
-      _ref.read(groupsProvider.notifier).value = newGroups;
+      // 写入前修正 now: 避免 UI 短暂显示 DIRECT
+      final correctedGroups = _correctGroupNowValues(newGroups);
+      _ref.read(groupsProvider.notifier).value = correctedGroups;
+      // 异步通知 Clash 实际切换代理
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        _correctDirectNodes();
+      });
     } catch (e) {
       commonPrint.log('updateGroups error: $e');
       final existing = _ref.read(groupsProvider);
@@ -1191,8 +1226,87 @@ class AppController {
         );
     if (mode == Mode.global) {
       updateCurrentGroupName(GroupName.GLOBAL.name);
+      // 同步修正 GLOBAL 默认节点，避免 UI 先显示错误节点再跳回自动选择。
+      _correctGlobalDefaultNode();
     }
     addCheckIpNumDebounce();
+  }
+
+  /// 切换到全局模式时，如果 GLOBAL 组的当前选中是 DIRECT（已被隐藏），
+  /// 自动切换到第一个有效代理（通常是 URLTest 自动选择组）。
+  void _correctGlobalDefaultNode() {
+    // 读取已排序/修正的显示用分组（URLTest/自动选择排在前面），
+    // 而非原始 Clash 分组（其中线路节点可能排在 URLTest 之前）。
+    final displayGroups = _ref.read(currentGroupsStateProvider).value;
+    final globalGroup = displayGroups.getGroup(GroupName.GLOBAL.name);
+    if (globalGroup == null || globalGroup.all.isEmpty) return;
+    final correctedNow = globalGroup.now ?? '';
+    if (correctedNow.isEmpty) return;
+    // 检查原始 Clash 数据中 GLOBAL 的 now 是否已是修正后的值
+    final rawGroups = _ref.read(groupsProvider);
+    final rawGlobal = rawGroups.getGroup(GroupName.GLOBAL.name);
+    if (rawGlobal == null) return;
+    if (rawGlobal.now == correctedNow) return;
+    // 将修正后的选择（优先 URLTest 自动选择）同步到 Clash
+    changeProxyDebounce(GroupName.GLOBAL.name, correctedNow);
+    updateCurrentSelectedMap(GroupName.GLOBAL.name, correctedNow);
+  }
+
+  /// 在写入 groupsProvider 之前修正所有分组的 now 值，
+  /// 将 DIRECT/REJECT 替换为第一个有效代理，优先 URLTest/Fallback 计算组。
+  List<Group> _correctGroupNowValues(List<Group> groups) {
+    return groups.map((group) {
+      final nowValue = group.now ?? '';
+      if (nowValue.isEmpty) return group;
+      if (nowValue == UsedProxy.DIRECT.name ||
+          nowValue == UsedProxy.REJECT.name) {
+        final validProxies = group.all
+            .where((p) =>
+                p.name != UsedProxy.DIRECT.name &&
+                p.name != UsedProxy.REJECT.name)
+            .toList();
+        if (validProxies.isEmpty) return group;
+        // 优先选择 URLTest/Fallback 计算组（如自动选择、故障转移）
+        final computedProxy = validProxies.cast<Proxy?>().firstWhere(
+          (p) =>
+              groups.any((g) => g.name == p!.name && g.type.isComputedSelected),
+          orElse: () => null,
+        );
+        return group.copyWith(now: (computedProxy ?? validProxies.first).name);
+      }
+      return group;
+    }).toList();
+  }
+
+  /// 修正所有可见分组中 now=DIRECT/REJECT 的情况。
+  /// 注意：GLOBAL 组由 _correctGlobalDefaultNode 单独处理，
+  /// 以使用排序后的代理列表（URLTest 优先）。
+  void _correctDirectNodes() {
+    final groups = _ref.read(groupsProvider);
+    for (final group in groups) {
+      if (group.hidden == true) continue;
+      if (group.name == GroupName.GLOBAL.name) continue;
+      final nowValue = group.now ?? '';
+      if (nowValue.isEmpty) continue;
+      if (nowValue == UsedProxy.DIRECT.name ||
+          nowValue == UsedProxy.REJECT.name) {
+        final validProxies = group.all
+            .where((p) =>
+                p.name != UsedProxy.DIRECT.name &&
+                p.name != UsedProxy.REJECT.name)
+            .toList();
+        if (validProxies.isEmpty) continue;
+        // 优先选择 URLTest/Fallback 计算组（如自动选择、故障转移）
+        final computedProxy = validProxies.cast<Proxy?>().firstWhere(
+          (p) =>
+              groups.any((g) => g.name == p!.name && g.type.isComputedSelected),
+          orElse: () => null,
+        );
+        final proxyName = (computedProxy ?? validProxies.first).name;
+        changeProxyDebounce(group.name, proxyName);
+        updateCurrentSelectedMap(group.name, proxyName);
+      }
+    }
   }
 
   updateAutoLaunch() {
