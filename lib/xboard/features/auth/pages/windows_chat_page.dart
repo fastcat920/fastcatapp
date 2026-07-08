@@ -6,7 +6,6 @@ import 'package:fl_clash/common/webview2_check.dart';
 import 'package:fl_clash/l10n/l10n.dart';
 import 'package:fl_clash/xboard/core/core.dart';
 import 'package:fl_clash/xboard/features/auth/utils/crisp_url_helper.dart';
-import 'package:fl_clash/xboard/features/auth/utils/customer_service_helper.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_inappwebview/flutter_inappwebview.dart' as iaw;
 
@@ -40,11 +39,8 @@ Uri _localizedCrispUri(Uri uri, String? localeTag) {
 
 /// Windows desktop customer-service page using WebView2.
 ///
-/// Matches the Mac CrispChatPage feature set:
-/// - SDK bootstrap → proxy embed → official embed fallback chain
-/// - Proxy domain support with timeout auto-fallback
-/// - User info pre-injection via userScript / deferredUserScript
-/// - Dark mode / locale sync
+/// Loads the Crisp embed URL directly (proxy-first, official fallback).
+/// No longer uses the l.js SDK bootstrap.
 class WindowsChatPage extends StatefulWidget {
   final String? salesmartlyScriptUrl;
   final String? crispWebsiteId;
@@ -72,27 +68,23 @@ class WindowsChatPage extends StatefulWidget {
 
 class _WindowsChatPageState extends State<WindowsChatPage> {
   iaw.InAppWebViewController? _controller;
-  Timer? _sdkFallbackTimer;
   Timer? _embedFallbackTimer;
-  bool _usingSdkBootstrap = true;
   bool _usingProxy = false;
   bool _didFallbackToOfficial = false;
   bool _isLoading = true;
-  bool _hasTimedOut = false;
   bool _hasError = false;
-  String _errorMessage = '';
+  Timer? _readyPollTimer;
   bool _didStartLoading = false;
   bool _deferredUserScriptStarted = false;
   String? _localeTag;
   bool _isDarkMode = false;
 
-  static const _sdkFallbackDelay = Duration(seconds: 5);
   static const _embedTimeoutDelay = Duration(seconds: 25);
 
   @override
   void initState() {
     super.initState();
-    _logger.info('[WindowsChat] initState: crispWebsiteId=${widget.crispWebsiteId != null ? "present" : "empty"}, crispProxyUrl=${widget.crispProxyUrl != null ? "present" : "empty"}, userScript=${widget.userScript != null ? "present" : "empty"}');
+    _logger.info('[WindowsChat] initState: crispWebsiteId=${widget.crispWebsiteId != null ? "present" : "empty"}, crispProxyUrl=${widget.crispProxyUrl != null ? "present" : "empty"}');
   }
 
   @override
@@ -110,14 +102,14 @@ class _WindowsChatPageState extends State<WindowsChatPage> {
     }
     if (!_didStartLoading) {
       _didStartLoading = true;
-      _loadSdkBootstrap();
+      _loadEmbed();
     }
   }
 
   @override
   void dispose() {
-    _sdkFallbackTimer?.cancel();
     _embedFallbackTimer?.cancel();
+    _readyPollTimer?.cancel();
     super.dispose();
   }
 
@@ -209,16 +201,6 @@ class _WindowsChatPageState extends State<WindowsChatPage> {
     );
   }
 
-  Uri _sdkBootstrapBaseUri() {
-    final uri = _preferredEmbedUri();
-    return uri.replace(
-      queryParameters: {
-        ...uri.queryParameters,
-        'fastcat_bootstrap': 'sdk',
-      },
-    );
-  }
-
   Future<bool> _isCrispReady() async {
     try {
       final result = await _controller?.evaluateJavascript(source: '''
@@ -232,42 +214,28 @@ class _WindowsChatPageState extends State<WindowsChatPage> {
     }
   }
 
-  // ── Fallback chain ───────────────────────────────────────────────
+  // ── Embed loading & fallback chain ──────────────────────────────
 
-  void _loadSdkBootstrap() {
-    _sdkFallbackTimer?.cancel();
+  void _loadEmbed({bool useProxy = true}) {
     _embedFallbackTimer?.cancel();
-    _usingSdkBootstrap = true;
-    _usingProxy = false;
-    _didFallbackToOfficial = false;
-    _hasTimedOut = false;
-    _sdkFallbackTimer = Timer(
-      _sdkFallbackDelay,
-      () => unawaited(_fallbackFromSdkToEmbed()),
-    );
-  }
-
-  Future<void> _fallbackFromSdkToEmbed() async {
-    if (!mounted || !_usingSdkBootstrap) return;
-    if (await _isCrispReady()) return;
-    final usingProxy = isCrispProxyConfigured(widget.crispProxyUrl);
-    _loadEmbed(_preferredEmbedUri(), usingProxy: usingProxy);
-  }
-
-  void _loadEmbed(Uri uri, {required bool usingProxy}) {
-    _sdkFallbackTimer?.cancel();
-    _embedFallbackTimer?.cancel();
-    _usingSdkBootstrap = false;
-    _usingProxy = usingProxy;
-    _hasTimedOut = false;
+    _stopReadyPolling();
+    final actualUseProxy = useProxy && isCrispProxyConfigured(widget.crispProxyUrl);
+    _usingProxy = actualUseProxy;
+    _didFallbackToOfficial = !actualUseProxy;
     _hasError = false;
-    if (!usingProxy) _didFallbackToOfficial = true;
+    _isLoading = true;
     if (mounted) {
       setState(() {
-        _hasTimedOut = false;
         _hasError = false;
+        _isLoading = true;
       });
     }
+    final uri = actualUseProxy
+        ? _preferredEmbedUri()
+        : _localizedCrispUri(
+            officialCrispEmbedUri(widget.crispWebsiteId!),
+            _localeTag,
+          );
     _embedFallbackTimer = Timer(
       _embedTimeoutDelay,
       () => unawaited(_handleEmbedTimeout()),
@@ -280,55 +248,60 @@ class _WindowsChatPageState extends State<WindowsChatPage> {
   }
 
   Future<void> _handleEmbedTimeout() async {
-    if (!mounted || _usingSdkBootstrap) return;
+    if (!mounted) return;
     if (await _isCrispReady()) return;
     if (_usingProxy && !_didFallbackToOfficial) {
       _fallbackToOfficialIfNeeded();
       return;
     }
-    _showTimeout();
+    _showError();
   }
 
   void _handleRouteError() {
-    if (_usingSdkBootstrap) {
-      unawaited(_fallbackFromSdkToEmbed());
-      return;
-    }
     if (_usingProxy && !_didFallbackToOfficial) {
       _fallbackToOfficialIfNeeded();
       return;
     }
-    _showTimeout();
+    _showError();
   }
 
   void _fallbackToOfficialIfNeeded() {
-    if (_usingSdkBootstrap) {
-      unawaited(_fallbackFromSdkToEmbed());
-      return;
-    }
     if (!_usingProxy || _didFallbackToOfficial) {
-      _showTimeout();
+      _showError();
       return;
     }
     _didFallbackToOfficial = true;
-    _loadEmbed(
-      _localizedCrispUri(
-        officialCrispEmbedUri(widget.crispWebsiteId!),
-        _localeTag,
-      ),
-      usingProxy: false,
-    );
+    _loadEmbed(useProxy: false);
   }
 
-  void _showTimeout() {
-    _sdkFallbackTimer?.cancel();
+  void _showError() {
     _embedFallbackTimer?.cancel();
+    _stopReadyPolling();
     if (!mounted) return;
     setState(() {
       _isLoading = false;
-      _hasTimedOut = true;
-      _hasError = false;
+      _hasError = true;
     });
+  }
+
+  void _startReadyPolling() {
+    _readyPollTimer?.cancel();
+    _readyPollTimer = Timer.periodic(const Duration(milliseconds: 300), (_) {
+      unawaited(_checkAndHideLoading());
+    });
+  }
+
+  Future<void> _checkAndHideLoading() async {
+    if (!mounted || !_isLoading) return;
+    if (await _isCrispReady()) {
+      _stopReadyPolling();
+      if (mounted) setState(() => _isLoading = false);
+    }
+  }
+
+  void _stopReadyPolling() {
+    _readyPollTimer?.cancel();
+    _readyPollTimer = null;
   }
 
   // ── Post-load injection ──────────────────────────────────────────
@@ -421,203 +394,6 @@ class _WindowsChatPageState extends State<WindowsChatPage> {
     } catch (_) {}
   }
 
-  // ── SDK bootstrap HTML ───────────────────────────────────────────
-
-  String _buildSdkBootstrapHtml() {
-    final l10n = AppLocalizations.of(context);
-    final websiteIdJson = jsonEncode(widget.crispWebsiteId);
-    final localeTag = _localeTag ?? 'en';
-    final localeTagJson = jsonEncode(localeTag);
-    final crispLocaleJson = jsonEncode(_crispLocaleFromTag(localeTag));
-    final colorModeJson = jsonEncode(_isDarkMode ? 'dark' : 'light');
-    final background = _backgroundColorValue();
-    final foreground = _foregroundColorValue();
-    final userScript = widget.userScript ?? '';
-    final connectingJson = jsonEncode(l10n.onlineSupportConnecting);
-    final loadingSlowJson = jsonEncode(l10n.customerServiceLoadingSlow);
-    final loadFailedJson = jsonEncode(l10n.customerServiceLoadFailed);
-    final colorSchemeValue = _isDarkMode ? 'dark' : 'light';
-    final cachedJs = CustomerServiceHelper.getCachedLjsContentEscaped();
-    final ljsBlock = cachedJs != null
-        ? "var _cs=document.createElement('script');"
-          "_cs.textContent=${jsonEncode(cachedJs)};"
-          "document.head.appendChild(_cs);"
-        : "var _cs=document.createElement('script');"
-          "_cs.src='https://client.crisp.chat/l.js';"
-          "_cs.async=true;"
-          "_cs.onerror=function(){"
-          "var lt=document.getElementById('loading-text');"
-          "if(lt)lt.textContent=${loadFailedJson};"
-          "};"
-          "document.head.appendChild(_cs);";
-    return '''<!DOCTYPE html>
-<html>
-<head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,viewport-fit=cover">
-  <meta name="color-scheme" content="$colorSchemeValue">
-  <link rel="dns-prefetch" href="https://client.crisp.chat">
-  <link rel="dns-prefetch" href="https://settings.crisp.chat">
-  <link rel="preconnect" href="https://client.crisp.chat" crossorigin>
-  <link rel="preconnect" href="https://settings.crisp.chat" crossorigin>
-  <link rel="preload" href="https://client.crisp.chat/l.js" as="script" crossorigin>
-  <title>${l10n.contactSupport}</title>
-  <style>
-    * { box-sizing: border-box; }
-    html, body {
-      width: 100%; height: 100%; margin: 0;
-      background: $background; color: $foreground; overflow: hidden;
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-    }
-    #loading {
-      position: fixed; inset: 0; display: flex; align-items: center;
-      justify-content: center; gap: 12px;
-      background: $background; color: $foreground; font-size: 14px; z-index: 2147483647;
-    }
-    #spinner {
-      width: 18px; height: 18px;
-      border: 2px solid rgba(148, 163, 184, 0.35);
-      border-top-color: #2563eb; border-radius: 50%;
-      animation: spin 0.8s linear infinite;
-    }
-    @keyframes spin { to { transform: rotate(360deg); } }
-    .crisp-client, .crisp-client * { background: $background !important; }
-    iframe[src*="crisp"] { background: $background !important; }
-    [class*="crisp"] { background: $background !important; }
-  </style>
-</head>
-<body>
-  <div id="loading"><span id="spinner"></span><span id="loading-text">${l10n.onlineSupportConnecting}</span></div>
-  <script>
-    window.\$crisp = window.\$crisp || [];
-    window.CRISP_WEBSITE_ID = $websiteIdJson;
-    window.CRISP_RUNTIME_CONFIG = {
-      locale: $crispLocaleJson,
-      lock_full_view: true
-    };
-    window.__fastcatCrispReady = false;
-    window.__fastcatCustomerServiceLocale = $localeTagJson;
-    window.__fastcatCustomerServiceCrispLocale = $crispLocaleJson;
-    window.__fastcatApplyCustomerServiceTheme = function(theme){
-      try {
-        document.documentElement.style.background = theme.background;
-        document.documentElement.style.colorScheme = theme.isDark ? 'dark' : 'light';
-        if (document.body) {
-          document.body.style.background = theme.background;
-          document.body.style.color = theme.foreground;
-        }
-        var loading = document.getElementById('loading');
-        if (loading) {
-          loading.style.background = theme.background;
-          loading.style.color = theme.foreground;
-        }
-        var spinner = document.getElementById('spinner');
-        if (spinner) spinner.style.borderTopColor = theme.accent || '#2563eb';
-        window.\$crisp = window.\$crisp || [];
-        window.\$crisp.push(["config", "locale", [window.__fastcatCustomerServiceCrispLocale || 'en']]);
-        window.\$crisp.push(["config", "color:mode", [theme.isDark ? "dark" : "light"]]);
-        window.CRISP_RUNTIME_CONFIG = window.CRISP_RUNTIME_CONFIG || {};
-        window.CRISP_RUNTIME_CONFIG.locale = window.__fastcatCustomerServiceCrispLocale || 'en';
-      } catch (_) {}
-    };
-    try {
-      Object.defineProperty(navigator, 'language', { get: function(){ return window.__fastcatCustomerServiceLocale; }, configurable: true });
-      Object.defineProperty(navigator, 'languages', { get: function(){ return [window.__fastcatCustomerServiceLocale]; }, configurable: true });
-    } catch (_) {}
-    $userScript
-
-    \${ljsBlock}
-
-    (function(){
-      var colorMode = $colorModeJson;
-      var connecting = $connectingJson;
-      var loadingSlow = $loadingSlowJson;
-      var loadFailed = $loadFailedJson;
-      var loading = document.getElementById('loading');
-      var loadingText = document.getElementById('loading-text');
-      var ready = false;
-      document.documentElement.lang = window.__fastcatCustomerServiceLocale || 'en';
-      window.__fastcatApplyCustomerServiceTheme({
-        isDark: colorMode === 'dark',
-        background: '$background',
-        foreground: '$foreground'
-      });
-
-      function openChat(){
-        try {
-          window.\$crisp = window.\$crisp || [];
-          window.\$crisp.push(["config", "locale", [window.__fastcatCustomerServiceCrispLocale || 'en']]);
-          window.\$crisp.push(["config", "color:mode", [colorMode]]);
-          window.\$crisp.push(["safe", true]);
-          window.\$crisp.push(["do", "chat:show"]);
-          window.\$crisp.push(["do", "chat:open"]);
-        } catch(_) {}
-      }
-
-      function markReady(){
-        if (ready) return;
-        ready = true;
-        window.__fastcatCrispReady = true;
-        openChat();
-        if (loading) loading.style.display = 'none';
-      }
-
-      var _handledFrames = {};
-      function expandFrames(){
-        var _vh = window.innerHeight;
-        var frames = document.querySelectorAll('iframe');
-        for (var i = 0; i < frames.length; i++) {
-          var src = frames[i].src || '';
-          if (src.indexOf('crisp') === -1) continue;
-          var fid = frames[i].id || frames[i].src;
-          if (_handledFrames[fid]) continue;
-          _handledFrames[fid] = true;
-          frames[i].style.cssText = 'position:fixed!important;top:0!important;left:0!important;width:100vw!important;height:'+_vh+'px!important;max-width:none!important;max-height:none!important;border:none!important;border-radius:0!important;z-index:2147483646!important;background:$background!important;';
-          var parent = frames[i].parentElement;
-          if (parent) parent.style.cssText = 'position:fixed!important;top:0!important;left:0!important;width:100vw!important;height:'+_vh+'px!important;z-index:2147483646!important;background:$background!important;';
-          // Wait for iframe content to actually load before hiding loading overlay
-          var frame = frames[i];
-          function attachLoadListener(f) {
-            var called = false;
-            function tryMark() {
-              if (called || ready) return;
-              try {
-                var doc = f.contentDocument || (f.contentWindow && f.contentWindow.document);
-                if (doc && doc.readyState === 'complete') { called = true; markReady(); return; }
-              } catch(_) {}
-            }
-            f.addEventListener('load', function() { called = true; markReady(); });
-            tryMark();
-          }
-          attachLoadListener(frame);
-        }
-      }
-
-      window.CRISP_READY_TRIGGER = markReady;
-
-      var openTimer = setInterval(function(){ openChat(); expandFrames(); }, 200);
-      setTimeout(function(){
-        clearInterval(openTimer); openChat(); expandFrames();
-        if (!ready && loadingText) loadingText.textContent = loadingSlow;
-      }, 15000);
-
-      new MutationObserver(function(){ openChat(); expandFrames(); })
-        .observe(document.documentElement, { childList: true, subtree: true, attributes: true });
-
-    })();
-  </script>
-</body>
-</html>''';
-  }
-
-  String _escapeJsString(String value) {
-    return value
-        .replaceAll(r'\', r'\\')
-        .replaceAll("'", r"\'")
-        .replaceAll('\n', r'\n')
-        .replaceAll('\r', r'\r');
-  }
-
   // ── Salesmartly (legacy) ─────────────────────────────────────────
 
   Future<void> _injectSalesmartlySDK(
@@ -665,33 +441,37 @@ class _WindowsChatPageState extends State<WindowsChatPage> {
     }
   }
 
-  Widget _buildError(BuildContext context, String message) {
+  Widget _buildErrorPage(BuildContext context, String message, {bool canRetry = true}) {
     final l10n = AppLocalizations.of(context);
+    final isDark = _isDarkMode;
     return Center(
       child: Padding(
-        padding: const EdgeInsets.all(24),
+        padding: const EdgeInsets.all(32),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(Icons.support_agent_outlined, size: 40,
-                color: Theme.of(context).colorScheme.primary),
-            const SizedBox(height: 14),
-            Text(message, textAlign: TextAlign.center,
-                style: const TextStyle(color: Colors.grey)),
-            const SizedBox(height: 16),
-            FilledButton.icon(
-              onPressed: () {
-                setState(() {
-                  _isLoading = true;
-                  _hasError = false;
-                  _hasTimedOut = false;
-                  _errorMessage = '';
-                  _didStartLoading = false;
-                });
-              },
-              icon: const Icon(Icons.refresh),
-              label: Text(l10n.refresh),
+            Icon(
+              canRetry ? Icons.cloud_off : Icons.warning_amber_rounded,
+              size: 48,
+              color: isDark ? Colors.white38 : Colors.grey,
             ),
+            const SizedBox(height: 16),
+            Text(
+              message,
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                fontSize: 14,
+                color: isDark ? Colors.white54 : Colors.grey,
+              ),
+            ),
+            if (canRetry) ...[
+              const SizedBox(height: 24),
+              FilledButton.icon(
+                onPressed: () => _loadEmbed(),
+                icon: const Icon(Icons.refresh, size: 18),
+                label: Text(l10n.refresh),
+              ),
+            ],
           ],
         ),
       ),
@@ -699,22 +479,18 @@ class _WindowsChatPageState extends State<WindowsChatPage> {
   }
 
   Widget _buildCrispWebView() {
+    final l10n = AppLocalizations.of(context);
     if (!_hasWebView2Runtime()) {
-      return _buildError(context, 'WebView2 Runtime 未安装，无法加载内嵌客服。');
+      return _buildErrorPage(context, 'WebView2 Runtime 未安装，无法加载内嵌客服。', canRetry: false);
     }
-    final baseUri = _sdkBootstrapBaseUri();
+    final preferredUri = _preferredEmbedUri();
     final backgroundColor = _backgroundColor();
     return Stack(
       fit: StackFit.expand,
       children: [
         iaw.InAppWebView(
           key: const ValueKey('windows-chat-webview'),
-          initialData: iaw.InAppWebViewInitialData(
-            data: _buildSdkBootstrapHtml(),
-            mimeType: 'text/html',
-            encoding: 'utf-8',
-            baseUrl: iaw.WebUri(baseUri.toString()),
-          ),
+          initialUrlRequest: iaw.URLRequest(url: iaw.WebUri(preferredUri.toString())),
           initialSettings: iaw.InAppWebViewSettings(
             javaScriptEnabled: true,
             javaScriptCanOpenWindowsAutomatically: false,
@@ -727,23 +503,17 @@ class _WindowsChatPageState extends State<WindowsChatPage> {
             _controller = controller;
           },
           onLoadStart: (_, url) {
-            if (!_usingSdkBootstrap) {
-              _usingProxy = _isProxyUrl(url?.toString() ?? '');
-            }
+            _usingProxy = _isProxyUrl(url?.toString() ?? '');
             if (mounted) {
               setState(() {
-                _hasTimedOut = false;
+                _hasError = false;
               });
             }
           },
           onLoadStop: (_, __) async {
-            if (mounted) setState(() => _isLoading = false);
-            if (_usingSdkBootstrap) {
-              unawaited(_runDeferredUserScript());
-            } else {
-              unawaited(_injectDirectEmbedMonitor());
-              unawaited(_runDeferredUserScript());
-            }
+            unawaited(_injectDirectEmbedMonitor());
+            unawaited(_runDeferredUserScript());
+            _startReadyPolling();
           },
           onReceivedError: (_, request, error) {
             if (request.isForMainFrame == false) return;
@@ -760,20 +530,36 @@ class _WindowsChatPageState extends State<WindowsChatPage> {
           },
           onCreateWindow: (_, __) async => false,
         ),
-        if (_hasTimedOut)
-          ColoredBox(
-            color: backgroundColor,
-            child: Center(
-              child: Text(
-                AppLocalizations.of(context).xboardConnectionTimeout,
-                style: const TextStyle(fontSize: 14),
+        if (_hasError)
+          _buildErrorPage(context, l10n.customerServiceLoadFailed)
+        else if (_isLoading)
+          Positioned.fill(
+            child: ColoredBox(
+              color: backgroundColor,
+              child: Center(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    SizedBox(
+                      width: 32,
+                      height: 32,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2.5,
+                        color: Theme.of(context).colorScheme.primary,
+                      ),
+                    ),
+                    const SizedBox(height: 20),
+                    Text(
+                      l10n.onlineSupportConnecting,
+                      style: TextStyle(
+                        fontSize: 14,
+                        color: _isDarkMode ? Colors.white70 : Colors.grey,
+                      ),
+                    ),
+                  ],
+                ),
               ),
             ),
-          ),
-        if (_isLoading)
-          ColoredBox(
-            color: backgroundColor,
-            child: const Center(child: CircularProgressIndicator()),
           ),
       ],
     );
@@ -781,7 +567,7 @@ class _WindowsChatPageState extends State<WindowsChatPage> {
 
   Widget _buildSalesmartlyWebView() {
     if (!_hasWebView2Runtime()) {
-      return _buildError(context, 'WebView2 Runtime 未安装，无法加载内嵌客服。');
+      return _buildErrorPage(context, 'WebView2 Runtime 未安装，无法加载内嵌客服。', canRetry: false);
     }
     final initialUri = Uri.parse('https://www.salesmartly.com/robots.txt');
     return Stack(
@@ -836,11 +622,9 @@ class _WindowsChatPageState extends State<WindowsChatPage> {
 
   @override
   Widget build(BuildContext context) {
-    final body = _hasError
-        ? _buildError(context, _errorMessage)
-        : widget.salesmartlyScriptUrl != null
-            ? _buildSalesmartlyWebView()
-            : _buildCrispWebView();
+    final body = widget.salesmartlyScriptUrl != null
+        ? _buildSalesmartlyWebView()
+        : _buildCrispWebView();
     return PopScope(
       canPop: true,
       child: Scaffold(
@@ -855,5 +639,13 @@ class _WindowsChatPageState extends State<WindowsChatPage> {
         body: body,
       ),
     );
+  }
+
+  String _escapeJsString(String value) {
+    return value
+        .replaceAll(r'\', r'\\')
+        .replaceAll("'", r"\'")
+        .replaceAll('\n', r'\n')
+        .replaceAll('\r', r'\r');
   }
 }

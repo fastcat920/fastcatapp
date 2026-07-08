@@ -53,11 +53,7 @@ class CustomerServiceHelper {
   static Future<Webview?>? _desktopCustomerServiceOpening;
   static _CrispIPData? _cachedIPData;
   static DateTime? _cachedIPDataTime;
-  static String? _cachedLjsContent;
-  static DateTime? _cachedLjsTime;
   static const _ipDataCacheTtl = Duration(minutes: 5);
-  static const _ljsCacheTtl = Duration(hours: 1);
-  static const _crispLjsUrl = 'https://client.crisp.chat/l.js';
   static WebViewController? _prewarmedMacController;
   static iaw.HeadlessInAppWebView? _prewarmedHeadlessWin;
   static Brightness? _desktopCustomerServiceBrightness;
@@ -333,7 +329,6 @@ class CustomerServiceHelper {
       unawaited(_fallbackCrispProxyUrl());
     }
     unawaited(_prewarmCrispRoute());
-    unawaited(_prewarmLjs());
     if (!_isDesktopPlatform) {
       unawaited(_prewarmMobileWebView());
     }
@@ -356,55 +351,8 @@ class CustomerServiceHelper {
     }
   }
 
-  static Future<void> _prewarmLjs() async {
-    if (_cachedLjsContent != null && _cachedLjsTime != null &&
-        DateTime.now().difference(_cachedLjsTime!) < _ljsCacheTtl) {
-      return;
-    }
-    try {
-      final client = HttpClient()..connectionTimeout = const Duration(seconds: 10);
-      try {
-        final uri = Uri.parse(_crispLjsUrl);
-        final request = await client.getUrl(uri);
-        request.headers.set(HttpHeaders.userAgentHeader,
-            'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15');
-        final response = await request.close().timeout(const Duration(seconds: 10));
-        if (response.statusCode == 200) {
-          final bytes = await response.fold<List<int>>(
-            <int>[], (prev, chunk) => prev..addAll(chunk),
-          );
-          _cachedLjsContent = utf8.decode(bytes);
-          _cachedLjsTime = DateTime.now();
-          _logger.info('[Crisp] l.js cached (\${_cachedLjsContent!.length} bytes)');
-        }
-      } finally {
-        client.close(force: true);
-      }
-    } catch (e) {
-      _logger.debug('[Crisp] l.js prewarm failed: \$e');
-    }
-  }
-
-  static String? get cachedLjsContent {
-    if (_cachedLjsContent != null && _cachedLjsTime != null &&
-        DateTime.now().difference(_cachedLjsTime!) < _ljsCacheTtl) {
-      return _cachedLjsContent;
-    }
-    return null;
-  }
-
-  /// 获取缓存的 l.js 内容，用于通过 document.createElement + textContent 内嵌。
-  /// 返回 null 表示无有效缓存，应走 CDN 加载。
-  /// 注意：返回值已经过转义，可直接嵌入 <script> 块中。
-  static String? getCachedLjsContentEscaped() {
-    final content = cachedLjsContent;
-    if (content == null) return null;
-    // Escape </script> so it doesn't close the outer script block
-    return content.replaceAll(r'</', r'<\/');
-  }
-
-  /// 预热 Windows WebView2：在后台用 HeadlessInAppWebView 加载 bootstrap HTML，
-  /// 预热 WebView2 runtime + DNS/TLS + l.js HTTP 缓存。
+  /// 预热 Windows WebView2：在后台用 HeadlessInAppWebView 加载 embed 页面，
+  /// 预热 WebView2 runtime + DNS/TLS。
   static Future<void> _prewarmWindowsWebView() async {
     if (_prewarmedHeadlessWin != null) return;
     try {
@@ -435,7 +383,6 @@ class CustomerServiceHelper {
   static String _buildPrewarmedBootstrapHtml({
     required String websiteId,
   }) {
-    final websiteIdJson = jsonEncode(websiteId);
     final background = '#101010';
     final foreground = '#f3f4f6';
     return '''<!DOCTYPE html>
@@ -446,20 +393,13 @@ class CustomerServiceHelper {
   <meta name="color-scheme" content="dark">
   <link rel="dns-prefetch" href="https://client.crisp.chat">
   <link rel="preconnect" href="https://client.crisp.chat" crossorigin>
-  <link rel="preload" href="https://client.crisp.chat/l.js" as="script" crossorigin>
   <style>
     html,body{width:100%;height:100%;margin:0;background:$background;color:$foreground;overflow:hidden}
     .crisp-client,.crisp-client *{background:$background!important}
     [class*="crisp"]{background:$background!important}
   </style>
 </head>
-<body>
-<script>
-window.CRISP_WEBSITE_ID=$websiteIdJson;
-window.CRISP_RUNTIME_CONFIG={locale:"zh",lock_full_view:true};
-</script>
-<script src="https://client.crisp.chat/l.js" async></script>
-</body>
+<body></body>
 </html>''';
   }
 

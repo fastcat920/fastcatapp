@@ -1,5 +1,5 @@
-import 'dart:async';
 import 'dart:convert';
+import 'dart:async';
 import 'dart:io';
 import 'package:file_picker/file_picker.dart';
 import 'package:fl_clash/l10n/l10n.dart';
@@ -52,6 +52,7 @@ const _desktopCrispUserAgent = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) '
 const _mobileCrispUserAgent = 'Mozilla/5.0 (Linux; Android 14; Pixel 8) '
     'AppleWebKit/537.36 (KHTML, like Gecko) '
     'Chrome/125.0.0.0 Mobile Safari/537.36';
+
 class CrispChatPage extends StatefulWidget {
   final String websiteId;
   final String? crispProxyUrl;
@@ -103,12 +104,12 @@ class _CustomerServiceStrings {
 
 class _CrispChatPageState extends State<CrispChatPage> {
   late final WebViewController _controller;
-  Timer? _sdkFallbackTimer;
   Timer? _embedFallbackTimer;
-  bool _usingSdkBootstrap = false;
   bool _usingProxy = false;
   bool _didFallbackToOfficial = false;
-  bool _hasTimedOut = false;
+  bool _isLoading = true;
+  bool _hasError = false;
+  Timer? _readyPollTimer;
   bool _deferredUserScriptStarted = false;
   late bool _isDarkMode;
   bool _didStartLoading = false;
@@ -120,7 +121,6 @@ class _CrispChatPageState extends State<CrispChatPage> {
     _isDarkMode =
         WidgetsBinding.instance.platformDispatcher.platformBrightness ==
             Brightness.dark;
-    // 尝试复用预热的 WebView controller（消除冷启动延迟）
     final prewarmed = CustomerServiceHelper.consumePrewarmedMacController(
       brightness: Brightness.light,
       localeTag: 'en',
@@ -135,31 +135,28 @@ class _CrispChatPageState extends State<CrispChatPage> {
     _controller.setNavigationDelegate(
       NavigationDelegate(
         onPageStarted: (url) {
-            if (!_usingSdkBootstrap) {
-              _usingProxy = _isProxyUrl(url);
-            }
-            if (mounted) {
-              setState(() {
-                _hasTimedOut = false;
-              });
-            }
-          },
-          onPageFinished: (_) {
-            if (!_usingSdkBootstrap) {
-              unawaited(_injectDirectEmbedMonitor());
-              unawaited(_runDeferredUserScript());
-            }
-          },
-          onWebResourceError: (error) {
-            if (error.isForMainFrame == false) return;
-            _handleRouteError();
-          },
-          onHttpError: (error) {
-            if (!_isCrispEmbedUri(error.request?.uri)) return;
-            _handleRouteError();
-          },
-        ),
-      );
+          _usingProxy = _isProxyUrl(url);
+          if (mounted) {
+            setState(() {
+              _hasError = false;
+            });
+          }
+        },
+        onPageFinished: (_) {
+          unawaited(_injectDirectEmbedMonitor());
+          unawaited(_runDeferredUserScript());
+          _startReadyPolling();
+        },
+        onWebResourceError: (error) {
+          if (error.isForMainFrame == false) return;
+          _handleRouteError();
+        },
+        onHttpError: (error) {
+          if (!_isCrispEmbedUri(error.request?.uri)) return;
+          _handleRouteError();
+        },
+      ),
+    );
     unawaited(_applySystemWebViewBackgroundColor());
     unawaited(_configureAndroidFileSelection(_controller));
   }
@@ -186,54 +183,29 @@ class _CrispChatPageState extends State<CrispChatPage> {
 
   @override
   void dispose() {
-    _sdkFallbackTimer?.cancel();
     _embedFallbackTimer?.cancel();
+    _readyPollTimer?.cancel();
     super.dispose();
   }
 
+  // ── Embed loading ────────────────────────────────────────────────
+
   void _loadPreferredCrispUrl() {
-    _loadSdkBootstrap();
-  }
-
-  void _loadSdkBootstrap() {
-    _sdkFallbackTimer?.cancel();
-    _embedFallbackTimer?.cancel();
-    _usingSdkBootstrap = true;
-    _usingProxy = false;
-    _didFallbackToOfficial = false;
-    _hasTimedOut = false;
-    _sdkFallbackTimer = Timer(
-      crispProxyFallbackDelay,
-      () => unawaited(_fallbackFromSdkToEmbed()),
-    );
-    unawaited(
-      _controller.loadHtmlString(
-        _buildSdkBootstrapHtml(),
-        baseUrl: _sdkBootstrapBaseUri().toString(),
-      ),
-    );
-  }
-
-  Future<void> _fallbackFromSdkToEmbed() async {
-    if (!mounted || !_usingSdkBootstrap) return;
-    if (await _isCrispReady()) return;
-    final preferred = _preferredEmbedUri();
     final usingProxy = isCrispProxyConfigured(widget.crispProxyUrl);
-    _loadEmbed(preferred, usingProxy: usingProxy);
+    _loadEmbed(_preferredEmbedUri(), usingProxy: usingProxy);
   }
 
   void _loadEmbed(Uri uri, {required bool usingProxy}) {
-    _sdkFallbackTimer?.cancel();
     _embedFallbackTimer?.cancel();
-    _usingSdkBootstrap = false;
+    _stopReadyPolling();
     _usingProxy = usingProxy;
-    _hasTimedOut = false;
-    if (!usingProxy) {
-      _didFallbackToOfficial = true;
-    }
+    _didFallbackToOfficial = !usingProxy;
+    _hasError = false;
+    _isLoading = true;
     if (mounted) {
       setState(() {
-        _hasTimedOut = false;
+        _hasError = false;
+        _isLoading = true;
       });
     }
     _embedFallbackTimer = Timer(
@@ -244,43 +216,66 @@ class _CrispChatPageState extends State<CrispChatPage> {
   }
 
   Future<void> _handleEmbedTimeout() async {
-    if (!mounted || _usingSdkBootstrap) return;
+    if (!mounted) return;
     if (await _isCrispReady()) return;
     if (_usingProxy && !_didFallbackToOfficial) {
       _fallbackToOfficialIfNeeded();
       return;
     }
-    _showTimeout();
+    _showError();
   }
 
   void _handleRouteError() {
-    if (_usingSdkBootstrap) {
-      unawaited(_fallbackFromSdkToEmbed());
-      return;
-    }
     if (_usingProxy && !_didFallbackToOfficial) {
       _fallbackToOfficialIfNeeded();
       return;
     }
-    _showTimeout();
+    _showError();
   }
 
   void _fallbackToOfficialIfNeeded() {
-    if (_usingSdkBootstrap) {
-      unawaited(_fallbackFromSdkToEmbed());
-      return;
-    }
     if (!_usingProxy || _didFallbackToOfficial) {
-      _showTimeout();
+      _showError();
       return;
     }
     _didFallbackToOfficial = true;
-    _usingProxy = false;
     _loadEmbed(
       _localizedCrispUri(officialCrispEmbedUri(widget.websiteId), _localeTag),
       usingProxy: false,
     );
   }
+
+  void _showError() {
+    _embedFallbackTimer?.cancel();
+    _stopReadyPolling();
+    if (!mounted) return;
+    setState(() {
+      _hasError = true;
+      _isLoading = false;
+    });
+  }
+
+  void _startReadyPolling() {
+    _readyPollTimer?.cancel();
+    _readyPollTimer = Timer.periodic(const Duration(milliseconds: 300), (_) {
+      unawaited(_checkAndHideLoading());
+    });
+  }
+
+  Future<void> _checkAndHideLoading() async {
+    if (!mounted || !_isLoading) return;
+    if (await _isCrispReady()) {
+      _stopReadyPolling();
+      if (mounted) setState(() => _isLoading = false);
+    }
+  }
+
+  void _stopReadyPolling() {
+    _readyPollTimer?.cancel();
+    _readyPollTimer = null;
+  }
+
+  // ── URL helpers ──────────────────────────────────────────────────
 
   bool _isProxyUrl(String url) {
     final proxy = normalizeCrispProxyUrl(widget.crispProxyUrl);
@@ -311,25 +306,11 @@ class _CrispChatPageState extends State<CrispChatPage> {
     );
   }
 
-  Uri _sdkBootstrapBaseUri() {
-    final uri = _preferredEmbedUri();
-    return uri.replace(
-      queryParameters: {
-        ...uri.queryParameters,
-        'fastcat_bootstrap': 'sdk',
-      },
-    );
-  }
-
   Future<bool> _isCrispReady() async {
     try {
       final result = await _controller.runJavaScriptReturningResult('''
 (function(){
-  try {
-    return window.__fastcatCrispReady === true;
-  } catch (_) {
-    return false;
-  }
+  try { return window.__fastcatCrispReady === true; } catch (_) { return false; }
 })();''');
       if (result is bool) return result;
       return result.toString().contains('true');
@@ -338,213 +319,7 @@ class _CrispChatPageState extends State<CrispChatPage> {
     }
   }
 
-  void _showTimeout() {
-    _sdkFallbackTimer?.cancel();
-    _embedFallbackTimer?.cancel();
-    if (!mounted) return;
-    setState(() {
-      _hasTimedOut = true;
-    });
-  }
-
-  String _buildSdkBootstrapHtml() {
-    final strings = _strings;
-    final websiteIdJson = jsonEncode(widget.websiteId);
-    final localeTag = _localeTag ?? 'en';
-    final localeTagJson = jsonEncode(localeTag);
-    final crispLocaleJson = jsonEncode(_crispLocaleFromTag(localeTag));
-    final colorModeJson = jsonEncode(_isDarkMode ? 'dark' : 'light');
-    final background = _customerServiceBackgroundColorValue(_isDarkMode);
-    final foreground = _customerServiceForegroundColorValue(_isDarkMode);
-    final userScript = widget.userScript ?? '';
-    final titleJson = jsonEncode(strings.title);
-    final connectingJson = jsonEncode(strings.connecting);
-    final loadingSlowJson = jsonEncode(strings.loadingSlow);
-    final loadFailedJson = jsonEncode(strings.loadFailed);
-    final colorSchemeValue = _isDarkMode ? 'dark' : 'light';
-    final cachedJs = CustomerServiceHelper.getCachedLjsContentEscaped();
-    final ljsBlock = cachedJs != null
-        ? "var _cs=document.createElement('script');"
-          "_cs.textContent=${jsonEncode(cachedJs)};"
-          "document.head.appendChild(_cs);"
-        : "var _cs=document.createElement('script');"
-          "_cs.src='https://client.crisp.chat/l.js';"
-          "_cs.async=true;"
-          "_cs.onerror=function(){"
-          "var lt=document.getElementById('loading-text');"
-          "if(lt)lt.textContent=${loadFailedJson};"
-          "};"
-          "document.head.appendChild(_cs);";
-    return '''<!DOCTYPE html>
-<html>
-<head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,viewport-fit=cover">
-  <meta name="color-scheme" content="$colorSchemeValue">
-  <link rel="dns-prefetch" href="https://client.crisp.chat">
-  <link rel="dns-prefetch" href="https://settings.crisp.chat">
-  <link rel="preconnect" href="https://client.crisp.chat" crossorigin>
-  <link rel="preconnect" href="https://settings.crisp.chat" crossorigin>
-  <link rel="preload" href="https://client.crisp.chat/l.js" as="script" crossorigin>
-  <title>${strings.title}</title>
-  <style>
-    * { box-sizing: border-box; }
-    html, body {
-      width: 100%;
-      height: 100%;
-      margin: 0;
-      background: $background;
-      color: $foreground;
-      overflow: hidden;
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-    }
-    #loading {
-      position: fixed;
-      inset: 0;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 12px;
-      background: $background;
-      color: $foreground;
-      font-size: 14px;
-      z-index: 2147483647;
-    }
-    #spinner {
-      width: 18px;
-      height: 18px;
-      border: 2px solid rgba(148, 163, 184, 0.35);
-      border-top-color: #2563eb;
-      border-radius: 50%;
-      animation: spin 0.8s linear infinite;
-    }
-    @keyframes spin { to { transform: rotate(360deg); } }
-    /* Prevent white flash when Crisp renders */
-    .crisp-client, .crisp-client * { background: $background !important; }
-    iframe[src*="crisp"] { background: $background !important; }
-    [class*="crisp"] { background: $background !important; }
-  </style>
-</head>
-<body>
-  <div id="loading"><span id="spinner"></span><span id="loading-text">${strings.connecting}</span></div>
-  <script>
-    window.\$crisp = window.\$crisp || [];
-    window.CRISP_WEBSITE_ID = $websiteIdJson;
-    window.CRISP_RUNTIME_CONFIG = {
-      locale: $crispLocaleJson,
-      lock_full_view: true
-    };
-    window.__fastcatCrispReady = false;
-    window.__fastcatCustomerServiceLocale = $localeTagJson;
-    window.__fastcatCustomerServiceCrispLocale = $crispLocaleJson;
-    window.__fastcatApplyCustomerServiceTheme = function(theme){
-      try {
-        document.documentElement.style.background = theme.background;
-        document.documentElement.style.colorScheme = theme.isDark ? 'dark' : 'light';
-        if (document.body) {
-          document.body.style.background = theme.background;
-          document.body.style.color = theme.foreground;
-        }
-        var loading = document.getElementById('loading');
-        if (loading) {
-          loading.style.background = theme.background;
-          loading.style.color = theme.foreground;
-        }
-        var spinner = document.getElementById('spinner');
-        if (spinner) {
-          spinner.style.borderTopColor = theme.accent || '#2563eb';
-        }
-        window.\$crisp = window.\$crisp || [];
-        window.\$crisp.push(["config", "locale", [window.__fastcatCustomerServiceCrispLocale || 'en']]);
-        window.\$crisp.push(["config", "color:mode", [theme.isDark ? "dark" : "light"]]);
-        window.CRISP_RUNTIME_CONFIG = window.CRISP_RUNTIME_CONFIG || {};
-        window.CRISP_RUNTIME_CONFIG.locale = window.__fastcatCustomerServiceCrispLocale || 'en';
-      } catch (_) {}
-    };
-    try {
-      Object.defineProperty(navigator, 'language', { get: function(){ return window.__fastcatCustomerServiceLocale; }, configurable: true });
-      Object.defineProperty(navigator, 'languages', { get: function(){ return [window.__fastcatCustomerServiceLocale]; }, configurable: true });
-    } catch (_) {}
-    $userScript
-
-    \${ljsBlock}
-
-    (function(){
-      var title = $titleJson;
-      var colorMode = $colorModeJson;
-      var connecting = $connectingJson;
-      var loadingSlow = $loadingSlowJson;
-      var loadFailed = $loadFailedJson;
-      var loading = document.getElementById('loading');
-      var loadingText = document.getElementById('loading-text');
-      var ready = false;
-      document.title = title;
-      document.documentElement.lang = window.__fastcatCustomerServiceLocale || 'en';
-      window.__fastcatApplyCustomerServiceTheme({
-        isDark: colorMode === 'dark',
-        background: '$background',
-        foreground: '$foreground'
-      });
-
-      function openChat(){
-        try {
-          window.\$crisp = window.\$crisp || [];
-          window.\$crisp.push(["config", "locale", [window.__fastcatCustomerServiceCrispLocale || 'en']]);
-          window.\$crisp.push(["config", "color:mode", [colorMode]]);
-          window.\$crisp.push(["safe", true]);
-          window.\$crisp.push(["do", "chat:show"]);
-          window.\$crisp.push(["do", "chat:open"]);
-        } catch(_) {}
-      }
-
-      function markReady(){
-        if (ready) return;
-        ready = true;
-        window.__fastcatCrispReady = true;
-        openChat();
-        if (loading) loading.style.display = 'none';
-      }
-
-      function expandFrames(){
-        var _vh = window.innerHeight;
-        var frames = document.querySelectorAll('iframe');
-        for (var i = 0; i < frames.length; i++) {
-          var src = frames[i].src || '';
-          if (src.indexOf('crisp') === -1) continue;
-          frames[i].style.cssText = 'position:fixed!important;top:0!important;left:0!important;width:100vw!important;height:'+_vh+'px!important;max-width:none!important;max-height:none!important;border:none!important;border-radius:0!important;z-index:2147483646!important;background:$background!important;';
-          var parent = frames[i].parentElement;
-          if (parent) parent.style.cssText = 'position:fixed!important;top:0!important;left:0!important;width:100vw!important;height:'+_vh+'px!important;z-index:2147483646!important;background:$background!important;';
-          markReady();
-        }
-      }
-
-      window.CRISP_READY_TRIGGER = markReady;
-
-      var openTimer = setInterval(function(){
-        openChat();
-        expandFrames();
-      }, 200);
-      setTimeout(function(){
-        clearInterval(openTimer);
-        openChat();
-        expandFrames();
-        if (!ready && loadingText) loadingText.textContent = loadingSlow;
-      }, 15000);
-
-      new MutationObserver(function(){
-        openChat();
-        expandFrames();
-      }).observe(document.documentElement, {
-        childList: true,
-        subtree: true,
-        attributes: true
-      });
-
-    })();
-  </script>
-</body>
-</html>''';
-  }
+  // ── Post-load injection ──────────────────────────────────────────
 
   Future<void> _injectDirectEmbedMonitor() async {
     final background = _customerServiceBackgroundColorValue(_isDarkMode);
@@ -558,9 +333,7 @@ class _CrispChatPageState extends State<CrispChatPage> {
     if (window.__fastcatCrispDirectMonitorInstalled) return;
     window.__fastcatCrispDirectMonitorInstalled = true;
     window.\$crisp = window.\$crisp || [];
-    try {
-      $userScript
-    } catch(_) {}
+    try { $userScript } catch(_) {}
     window.__fastcatCrispReady = false;
     window.__fastcatCustomerServiceLocale = '${_escapeJsString(localeTag)}';
     window.__fastcatCustomerServiceCrispLocale = '${_escapeJsString(crispLocale)}';
@@ -604,9 +377,7 @@ class _CrispChatPageState extends State<CrispChatPage> {
       background: '$background',
       foreground: '$foreground'
     });
-    function markReady(){
-      window.__fastcatCrispReady = true;
-    }
+    function markReady(){ window.__fastcatCrispReady = true; }
     function directLooksReady(){
       try {
         window.\$crisp = window.\$crisp || [];
@@ -618,9 +389,7 @@ class _CrispChatPageState extends State<CrispChatPage> {
     }
     directLooksReady();
     new MutationObserver(directLooksReady).observe(document.documentElement, {
-      childList: true,
-      subtree: true,
-      attributes: true
+      childList: true, subtree: true, attributes: true
     });
   } catch(_) {}
 })();''';
@@ -640,6 +409,8 @@ class _CrispChatPageState extends State<CrispChatPage> {
       await _controller.runJavaScript(script);
     } catch (_) {}
   }
+
+  // ── Theme & locale sync ──────────────────────────────────────────
 
   Future<void> _applySystemWebViewBackgroundColor() async {
     if (!(Platform.isAndroid || Platform.isIOS)) return;
@@ -693,13 +464,6 @@ class _CrispChatPageState extends State<CrispChatPage> {
       window.CRISP_RUNTIME_CONFIG = window.CRISP_RUNTIME_CONFIG || {};
       window.CRISP_RUNTIME_CONFIG.locale = window.__fastcatCustomerServiceCrispLocale;
     } catch(_) {}
-    var loadingText = document.getElementById('loading-text');
-    if (loadingText && loadingText.textContent) {
-      var current = loadingText.textContent;
-      if (current !== payload.loadingSlow && current !== payload.loadFailed) {
-        loadingText.textContent = payload.connecting;
-      }
-    }
     if (typeof window.__fastcatApplyCustomerServiceTheme === 'function') {
       window.__fastcatApplyCustomerServiceTheme({
         isDark: ${_isDarkMode ? 'true' : 'false'},
@@ -715,10 +479,11 @@ class _CrispChatPageState extends State<CrispChatPage> {
     } catch (_) {}
   }
 
+  // ── File picker (Android) ────────────────────────────────────────
+
   Future<void> _configureAndroidFileSelection(
       WebViewController controller) async {
     if (!Platform.isAndroid) return;
-
     final platformController = controller.platform;
     if (platformController is AndroidWebViewController) {
       await platformController.setOnShowFileSelector(_showAndroidFileSelector);
@@ -733,9 +498,7 @@ class _CrispChatPageState extends State<CrispChatPage> {
       type: _filePickerType(params.acceptTypes),
       withData: false,
     );
-
     if (result == null) return <String>[];
-
     return result.files
         .map(_fileSelectorUriForAndroid)
         .whereType<String>()
@@ -763,11 +526,12 @@ class _CrispChatPageState extends State<CrispChatPage> {
   String? _fileSelectorUriForAndroid(PlatformFile file) {
     final identifier = file.identifier;
     if (identifier != null && identifier.isNotEmpty) return identifier;
-
     final path = file.path;
     if (path == null || path.isEmpty) return null;
     return Uri.file(path).toString();
   }
+
+  // ── Color helpers ────────────────────────────────────────────────
 
   Color _customerServiceBackgroundColor(bool isDarkMode) {
     return isDarkMode ? const Color(0xFF101010) : const Color(0xFFF5F5F5);
@@ -800,6 +564,83 @@ class _CrispChatPageState extends State<CrispChatPage> {
         .replaceAll('\r', r'\r');
   }
 
+  // ── Build ────────────────────────────────────────────────────────
+
+  Widget _buildLoadingOverlay(BuildContext context) {
+    final strings = _strings;
+    final spinnerColor = Theme.of(context).colorScheme.primary;
+    final isDark = _isDarkMode;
+    return Positioned.fill(
+      child: ColoredBox(
+        color: _customerServiceBackgroundColor(isDark),
+        child: Center(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              SizedBox(
+                width: 32,
+                height: 32,
+                child: CircularProgressIndicator(
+                  strokeWidth: 2.5,
+                  color: spinnerColor,
+                ),
+              ),
+              const SizedBox(height: 20),
+              Text(
+                strings.connecting,
+                style: TextStyle(
+                  fontSize: 14,
+                  color: isDark ? Colors.white70 : Colors.grey,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildErrorPage(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+    final strings = _strings;
+    final isDark = _isDarkMode;
+    return Positioned.fill(
+      child: ColoredBox(
+        color: _customerServiceBackgroundColor(isDark),
+        child: Center(
+          child: Padding(
+            padding: const EdgeInsets.all(32),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(
+                  Icons.cloud_off,
+                  size: 48,
+                  color: isDark ? Colors.white38 : Colors.grey,
+                ),
+                const SizedBox(height: 16),
+                Text(
+                  strings.loadFailed,
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    fontSize: 14,
+                    color: isDark ? Colors.white54 : Colors.grey,
+                  ),
+                ),
+                const SizedBox(height: 24),
+                FilledButton.icon(
+                  onPressed: () => _loadPreferredCrispUrl(),
+                  icon: const Icon(Icons.refresh, size: 18),
+                  label: Text(l10n.refresh),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final strings = _strings;
@@ -817,18 +658,10 @@ class _CrispChatPageState extends State<CrispChatPage> {
       body: Stack(
         children: [
           WebViewWidget(controller: _controller),
-          if (_hasTimedOut)
-            Positioned.fill(
-              child: ColoredBox(
-                color: backgroundColor,
-                child: Center(
-                  child: Text(
-                    strings.timeout,
-                    style: const TextStyle(fontSize: 14),
-                  ),
-                ),
-              ),
-            ),
+          if (_hasError)
+            _buildErrorPage(context)
+          else if (_isLoading)
+            _buildLoadingOverlay(context),
         ],
       ),
     );
