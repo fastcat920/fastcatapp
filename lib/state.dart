@@ -139,7 +139,7 @@ class GlobalState {
       this.tasks = tasks;
     }
     await executorUpdateTask();
-    timer = Timer(const Duration(seconds: 2), () async {
+    timer = Timer(const Duration(seconds: 1), () async {
       startUpdateTasks();
     });
   }
