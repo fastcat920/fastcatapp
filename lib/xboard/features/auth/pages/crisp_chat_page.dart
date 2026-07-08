@@ -266,6 +266,8 @@ class _CrispChatPageState extends State<CrispChatPage> {
     if (!mounted || !_isLoading) return;
     if (await _isCrispReady()) {
       _stopReadyPolling();
+      // 延迟 200ms 再移除遮罩，留给 Crisp 内部渲染时间，避免闪现原生加载转圈
+      await Future.delayed(const Duration(milliseconds: 200));
       if (mounted) setState(() => _isLoading = false);
     }
   }
