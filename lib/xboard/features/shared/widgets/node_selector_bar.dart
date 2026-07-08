@@ -168,7 +168,11 @@ class _NodeSelectorBarState extends ConsumerState<NodeSelectorBar> {
     }
     // rule 模式下无历史选择时，优先展示计算组（URLTest/故障转移）而非 Selector 组
     // 放在 currentGroup==null 块之外：selectedMap 中可能有 DIRECT 等值导致 for 循环提前设值
-    if (mode == Mode.rule && currentGroup != null && !currentGroup.type.isComputedSelected) {
+    // 仅当用户没有手动选择时才覆盖，避免用户选的节点被强制切回自动选择
+    final hasUserSelection = currentGroup != null &&
+        (selectedMap[currentGroup.name]?.isNotEmpty == true);
+    if (mode == Mode.rule && currentGroup != null &&
+        !currentGroup.type.isComputedSelected && !hasUserSelection) {
       final computedGroup = groups.firstWhere(
         (g) =>
             g.hidden != true &&
