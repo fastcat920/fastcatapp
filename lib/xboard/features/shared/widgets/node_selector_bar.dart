@@ -218,15 +218,18 @@ class _NodeSelectorBarState extends ConsumerState<NodeSelectorBar> {
     }
     // 如果当前选中的代理不是计算组（URLTest/故障转移），且列表中有计算组可选，
     // 则优先显示计算组，避免显示首条线路节点而非自动选择。
+    // 仅当用户没有手动选择时才生效，避免覆盖用户选的节点。
     // dart flow analysis loses null-safety across closures; currentProxy is
     // provably non-null here (guarded by early return above).
-    final isCurrentComputed = groups.any(
-        (g) => g.name == currentProxy!.name && g.type.isComputedSelected);
-    if (!isCurrentComputed) {
-      final computedProxies = currentGroup.all.where((p) =>
-          groups.any((g) => g.name == p.name && g.type.isComputedSelected));
-      if (computedProxies.isNotEmpty) {
-        currentProxy = computedProxies.first;
+    if (selectedProxyName.isEmpty) {
+      final isCurrentComputed = groups.any(
+          (g) => g.name == currentProxy!.name && g.type.isComputedSelected);
+      if (!isCurrentComputed) {
+        final computedProxies = currentGroup.all.where((p) =>
+            groups.any((g) => g.name == p.name && g.type.isComputedSelected));
+        if (computedProxies.isNotEmpty) {
+          currentProxy = computedProxies.first;
+        }
       }
     }
 
