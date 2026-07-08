@@ -88,7 +88,7 @@ class _WithdrawDialogState extends ConsumerState<WithdrawDialog> {
                     ? Text(
                         appLocalizations.xboardSubmitting,
                         style: const TextStyle(
-                          fontSize: 16,
+                          fontSize: 20,
                           fontWeight: FontWeight.bold,
                         ),
                         key: const ValueKey('loading-text'),
@@ -97,7 +97,7 @@ class _WithdrawDialogState extends ConsumerState<WithdrawDialog> {
                         appLocalizations.withdrawableAmount(
                             '¥${availableAmount.toStringAsFixed(2)}'),
                         style: const TextStyle(
-                          fontSize: 16,
+                          fontSize: 20,
                           fontWeight: FontWeight.bold,
                         ),
                         key: const ValueKey('balance-text'),
@@ -112,29 +112,29 @@ class _WithdrawDialogState extends ConsumerState<WithdrawDialog> {
               decoration: InputDecoration(
                 labelText: appLocalizations.withdrawMethod,
                 border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
+                  borderRadius: BorderRadius.circular(14),
                   borderSide: BorderSide(
                     color: isDark
                         ? theme.colorScheme.outline
-                        : const Color(0xFFEEF0F4),
+                        : XbUiTokens.cardBorderLight,
                   ),
                 ),
                 enabledBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
+                  borderRadius: BorderRadius.circular(14),
                   borderSide: BorderSide(
                     color: isDark
                         ? theme.colorScheme.outline
-                        : const Color(0xFFEEF0F4),
+                        : XbUiTokens.cardBorderLight,
                   ),
                 ),
                 focusedBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
+                  borderRadius: BorderRadius.circular(14),
                   borderSide: BorderSide(
                     color: theme.colorScheme.primary,
                   ),
                 ),
                 filled: true,
-                fillColor: isDark ? null : const Color(0xFFF5F7FA),
+                fillColor: isDark ? null : XbUiTokens.inputFillLight,
                 prefixIcon: const Icon(Icons.payment),
               ),
               items: withdrawMethods.map((String method) {
@@ -152,7 +152,7 @@ class _WithdrawDialogState extends ConsumerState<WithdrawDialog> {
             ),
             const SizedBox(height: 12),
             TVDeferredInput(
-              borderRadius: BorderRadius.circular(12),
+              borderRadius: BorderRadius.circular(14),
               builder:
                   (context, focusNode, readOnly, showCursor, beginEditing) =>
                       TextField(
@@ -165,29 +165,29 @@ class _WithdrawDialogState extends ConsumerState<WithdrawDialog> {
                   labelText: appLocalizations.withdrawAccount,
                   hintText: appLocalizations.pleaseEnterWithdrawAccount,
                   border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
+                    borderRadius: BorderRadius.circular(14),
                     borderSide: BorderSide(
                       color: isDark
                           ? theme.colorScheme.outline
-                          : const Color(0xFFEEF0F4),
+                          : XbUiTokens.cardBorderLight,
                     ),
                   ),
                   enabledBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
+                    borderRadius: BorderRadius.circular(14),
                     borderSide: BorderSide(
                       color: isDark
                           ? theme.colorScheme.outline
-                          : const Color(0xFFEEF0F4),
+                          : XbUiTokens.cardBorderLight,
                     ),
                   ),
                   focusedBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
+                    borderRadius: BorderRadius.circular(14),
                     borderSide: BorderSide(
                       color: theme.colorScheme.primary,
                     ),
                   ),
                   filled: true,
-                  fillColor: isDark ? null : const Color(0xFFF5F7FA),
+                  fillColor: isDark ? null : XbUiTokens.inputFillLight,
                   prefixIcon: const Icon(Icons.account_box),
                 ),
               ),

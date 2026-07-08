@@ -73,7 +73,7 @@ class _AccountInfoPageState extends ConsumerState<AccountInfoPage> {
         borderRadius: BorderRadius.circular(20),
         side: isDark
             ? BorderSide.none
-            : const BorderSide(color: Color(0xFFEEF0F4), width: 1),
+            : const BorderSide(color: XbUiTokens.cardBorderLight, width: 1),
       ),
       child: child,
     );
@@ -91,7 +91,7 @@ class _AccountInfoPageState extends ConsumerState<AccountInfoPage> {
     final isDark = theme.brightness == Brightness.dark;
 
     return Scaffold(
-      backgroundColor: isDark ? null : const Color(0xFFFAFBFD),
+      backgroundColor: isDark ? null : XbUiTokens.pageBackgroundLight,
       appBar: AppBar(
         title: Text(l10n.xboardAccountInfo),
       ),
@@ -129,7 +129,7 @@ class _AccountInfoPageState extends ConsumerState<AccountInfoPage> {
                   height: 1,
                   indent: 56,
                   endIndent: 16,
-                  color: isDark ? null : const Color(0xFFF0F2F5),
+                  color: isDark ? null : XbUiTokens.dividerLight,
                 ),
                 SwitchListTile.adaptive(
                   contentPadding:

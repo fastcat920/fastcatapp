@@ -150,7 +150,7 @@ class _InvitePageState extends ConsumerState<InvitePage>
       decoration: BoxDecoration(
         color: isDark
             ? theme.colorScheme.surfaceContainerHighest.withValues(alpha: 0.4)
-            : const Color(0xFFF0F4F8),
+            : XbUiTokens.tabBarBackgroundLight,
         borderRadius: BorderRadius.circular(12),
       ),
       child: TabBar(
@@ -293,7 +293,7 @@ class _BalanceCard extends StatelessWidget {
           Text(
             value,
             style: TextStyle(
-                color: valueColor, fontSize: 22, fontWeight: FontWeight.bold),
+                color: valueColor, fontSize: 24, fontWeight: FontWeight.bold),
           ),
         ],
       ),

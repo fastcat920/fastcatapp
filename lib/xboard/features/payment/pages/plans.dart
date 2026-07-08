@@ -196,7 +196,7 @@ class _PlansViewState extends ConsumerState<PlansView> {
         border: Border.all(
           color: isDark
               ? theme.colorScheme.outline.withValues(alpha: 0.18)
-              : const Color(0xFFEEF0F4),
+              : XbUiTokens.cardBorderLight,
         ),
         boxShadow: isDark
             ? null
@@ -219,7 +219,7 @@ class _PlansViewState extends ConsumerState<PlansView> {
               Text(
                 plan.name,
                 style: XbUiText.sectionTitle(context).copyWith(
-                  fontSize: isDesktop ? 20 : 22,
+                  fontSize: 18,
                   color: theme.colorScheme.onSurface,
                 ),
               ),
@@ -241,7 +241,7 @@ class _PlansViewState extends ConsumerState<PlansView> {
                     Text(
                       priceText.replaceFirst('¥', ''),
                       style: TextStyle(
-                        fontSize: 32,
+                        fontSize: 28,
                         fontWeight: FontWeight.bold,
                         color: theme.colorScheme.primary,
                         height: 1,
@@ -319,7 +319,7 @@ class _PlansViewState extends ConsumerState<PlansView> {
         decoration: BoxDecoration(
           color: isDark
               ? Theme.of(context).colorScheme.surfaceContainerHigh
-              : const Color(0xFFF5F7FA),
+              : XbUiTokens.inputFillLight,
           borderRadius: BorderRadius.circular(12),
         ),
         child: Column(
@@ -333,7 +333,7 @@ class _PlansViewState extends ConsumerState<PlansView> {
             Text(
               value,
               style: TextStyle(
-                fontSize: 14,
+                fontSize: 13,
                 fontWeight: FontWeight.bold,
                 color: Theme.of(context).colorScheme.onSurface,
               ),

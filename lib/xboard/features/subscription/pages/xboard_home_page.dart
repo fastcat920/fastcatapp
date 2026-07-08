@@ -546,7 +546,7 @@ class _XBoardHomePageState extends ConsumerState<XBoardHomePage>
               child: Text(
                 AppLocalizations.of(context).notConnected,
                 style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                      fontSize: 13,
+                      // fontSize inherited from titleSmall
                       fontWeight: FontWeight.bold,
                       color: Theme.of(context).colorScheme.onSurface,
                     ),
@@ -558,7 +558,7 @@ class _XBoardHomePageState extends ConsumerState<XBoardHomePage>
             child: Text(
               AppLocalizations.of(context).connected,
               style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                    fontSize: 13,
+                    // fontSize inherited from titleSmall
                     fontWeight: FontWeight.bold,
                     color: isDark
                         ? Colors.green.shade300

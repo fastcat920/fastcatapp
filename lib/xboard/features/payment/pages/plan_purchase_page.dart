@@ -407,7 +407,6 @@ class _PlanPurchasePageState extends ConsumerState<PlanPurchasePage> {
               // 提交订单按钮
               SizedBox(
                 width: double.infinity,
-                height: 54,
                 child: Consumer(
                   builder: (context, ref, child) {
                     final paymentState = ref.watch(userUIStateProvider);
@@ -415,10 +414,9 @@ class _PlanPurchasePageState extends ConsumerState<PlanPurchasePage> {
                       onPressed:
                           paymentState.isLoading ? null : _proceedToPurchase,
                       style: XbUiButton.filledPrimary(context).copyWith(
-                        minimumSize: const WidgetStatePropertyAll(Size(0, 54)),
                         shape: WidgetStatePropertyAll(
                           RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(isDark ? 14 : 16),
+                            borderRadius: BorderRadius.circular(14),
                           ),
                         ),
                       ),

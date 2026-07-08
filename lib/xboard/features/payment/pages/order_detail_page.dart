@@ -141,7 +141,7 @@ class _OrderDetailPageState extends ConsumerState<OrderDetailPage>
     final fallbackPlan = widget.plan ?? _resolvedOrderPlan;
 
     return Scaffold(
-      backgroundColor: isDark ? null : const Color(0xFFFAFBFD),
+      backgroundColor: isDark ? null : XbUiTokens.pageBackgroundLight,
       appBar: AppBar(title: Text(l10n.xboardOrderInfo)),
       body: orderAsync.when(
         loading: () => widget.optimistic && widget.plan != null
@@ -1057,13 +1057,13 @@ class _OrderInfoCard extends StatelessWidget {
                 AppLocalizations.of(context).xboardTotal,
                 style: Theme.of(context).textTheme.titleSmall?.copyWith(
                       color: Theme.of(context).colorScheme.onSurfaceVariant,
-                      fontWeight: FontWeight.w600,
+                      fontWeight: FontWeight.w500,
                     ),
               ),
               const Spacer(),
               Text(
                 '¥${pricing.payableAmount.toStringAsFixed(2)}',
-                style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                style: Theme.of(context).textTheme.titleLarge?.copyWith(
                       color: amountColor,
                       fontWeight: FontWeight.w800,
                     ),
@@ -1180,10 +1180,10 @@ class _PaymentMethodTile extends StatelessWidget {
 
     return Material(
       color: Colors.transparent,
-      borderRadius: BorderRadius.circular(12),
+      borderRadius: BorderRadius.circular(14),
       clipBehavior: Clip.antiAlias,
       child: InkWell(
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(14),
         onTap: onTap,
         child: Container(
           padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
@@ -1191,7 +1191,7 @@ class _PaymentMethodTile extends StatelessWidget {
             color: selected
                 ? theme.colorScheme.primary.withValues(alpha: 0.08)
                 : theme.colorScheme.surface,
-            borderRadius: BorderRadius.circular(12),
+            borderRadius: BorderRadius.circular(14),
             border: Border.all(color: borderColor, width: selected ? 1.5 : 1),
           ),
           child: Row(
@@ -1315,7 +1315,6 @@ class _ActionButtons extends StatelessWidget {
       children: [
         SizedBox(
           width: double.infinity,
-          height: 54,
           child: FilledButton.icon(
             onPressed: isSubmitting ? null : onPay,
             icon: isSubmitting
@@ -1331,7 +1330,6 @@ class _ActionButtons extends StatelessWidget {
             label: Text(
                 isSubmitting ? l10n.xboardSubmitting : effectivePayButtonText),
             style: XbUiButton.filledPrimary(context).copyWith(
-              minimumSize: const WidgetStatePropertyAll(Size(0, 54)),
             ),
           ),
         ),
@@ -1416,11 +1414,11 @@ class _InfoCard extends StatelessWidget {
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: isDark ? theme.colorScheme.surfaceContainerLow : Colors.white,
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(14),
         border: Border.all(
           color: isDark
               ? theme.colorScheme.outline.withValues(alpha: 0.18)
-              : const Color(0xFFEEF0F4),
+              : XbUiTokens.cardBorderLight,
         ),
         boxShadow: isDark
             ? null
@@ -1497,7 +1495,7 @@ class _InfoRow extends StatelessWidget {
             label,
             style: theme.textTheme.bodySmall?.copyWith(
               color: theme.colorScheme.onSurfaceVariant,
-              fontWeight: FontWeight.w600,
+              fontWeight: FontWeight.w500,
             ),
           ),
         ),

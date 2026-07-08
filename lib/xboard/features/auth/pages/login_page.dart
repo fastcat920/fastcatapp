@@ -247,21 +247,21 @@ class _LoginPageState extends ConsumerState<LoginPage> {
   Widget _buildLogo(ColorScheme colorScheme) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     return Container(
-      width: 80,
-      height: 80,
+      width: 52,
+      height: 52,
       decoration: BoxDecoration(
         color: isDark
             ? colorScheme.primaryContainer.withAlpha(51)
             : colorScheme.primary.withValues(alpha: 0.10),
         shape: BoxShape.circle,
       ),
-      padding: const EdgeInsets.all(8),
+      padding: const EdgeInsets.all(6),
       child: ClipRRect(
         borderRadius: BorderRadius.circular(14),
         child: Image.asset(
           'assets/images/icon.png',
-          width: 64,
-          height: 64,
+          width: 52,
+          height: 52,
         ),
       ),
     );
@@ -536,7 +536,6 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                       ),
                     ],
                     SizedBox(
-                      height: 50,
                       child: FilledButton(
                         onPressed:
                             (isIniting || userState.isLoading) ? null : _login,
@@ -590,7 +589,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                     const SizedBox(height: 14),
                     // 注册 + 忘记密码 并排
                     Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      mainAxisAlignment: MainAxisAlignment.center,
                       children: [
                         TextButton.icon(
                           onPressed: _navigateToRegister,
@@ -603,6 +602,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                             ),
                           ),
                         ),
+                        const SizedBox(width: 16),
                         TextButton.icon(
                           onPressed: _navigateToForgotPassword,
                           icon: Icon(Icons.help_outline,

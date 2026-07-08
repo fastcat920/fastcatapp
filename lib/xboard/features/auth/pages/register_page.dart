@@ -253,7 +253,7 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
                                     color: colorScheme.onSurfaceVariant,
                                   ),
                         ),
-                        const SizedBox(height: 32),
+                        const SizedBox(height: 24),
                         XBInputField(
                           controller: _emailController,
                           labelText: appLocalizations.emailAddress,
@@ -382,12 +382,12 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
                           prefixIcon: Icons.card_giftcard_outlined,
                           enabled: true,
                         ),
-                        const SizedBox(height: 32),
+                        const SizedBox(height: 24),
                         SizedBox(
                           width: double.infinity,
                           height: 48,
                           child: _isRegistering
-                              ? ElevatedButton(
+                              ? FilledButton(
                                   onPressed: null,
                                   child: const SizedBox(
                                     width: 20,
@@ -397,13 +397,13 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
                                     ),
                                   ),
                                 )
-                              : ElevatedButton(
+                              : FilledButton(
                                   onPressed: _register,
-                                  style: ElevatedButton.styleFrom(
+                                  style: FilledButton.styleFrom(
                                     backgroundColor: colorScheme.primary,
                                     foregroundColor: colorScheme.onPrimary,
                                     shape: RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.circular(12),
+                                      borderRadius: BorderRadius.circular(14),
                                     ),
                                   ),
                                   child: Text(

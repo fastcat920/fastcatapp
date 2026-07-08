@@ -7,8 +7,33 @@ class XbUiTokens {
   static const Color pageBackgroundLight = Color(0xFFFAFBFD);
   static const Color cardBorderLight = Color(0xFFEEF0F4);
 
+  static const Color inputFillLight = Color(0xFFF5F7FA);
+  static const Color dividerLight = Color(0xFFF0F2F5);
+  static const Color tabBarBackgroundLight = Color(0xFFF0F4F8);
+  static const Color chevronLight = Color(0xFFBCC3CE);
+
+  /// Theme-aware page background.
+  static Color pageBackground(BuildContext context) {
+    final theme = Theme.of(context);
+    return theme.brightness == Brightness.dark
+        ? theme.colorScheme.surface
+        : pageBackgroundLight;
+  }
+
+  /// Theme-aware card border.
+  static Color cardBorder(BuildContext context) {
+    final theme = Theme.of(context);
+    return theme.brightness == Brightness.dark
+        ? theme.colorScheme.outline.withValues(alpha: 0.18)
+        : cardBorderLight;
+  }
+
   static const double radiusCard = 20;
   static const double radiusCardCompact = 14;
+
+  static const double radiusSm = 10;
+  static const double radiusMd = 14;
+  static const double radiusXl = 24;
 
   static const EdgeInsets pagePadding = EdgeInsets.fromLTRB(16, 12, 16, 12);
   static const EdgeInsets listCardGapBottom10 = EdgeInsets.only(bottom: 10);
@@ -109,9 +134,9 @@ class XbUiButton {
 
   static ButtonStyle filledPrimary(BuildContext context) {
     return FilledButton.styleFrom(
-      minimumSize: const Size(0, 40),
+      minimumSize: const Size(0, 48),
       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
       backgroundColor: Theme.of(context).colorScheme.primary,
       foregroundColor: Theme.of(context).colorScheme.onPrimary,
     );
@@ -119,19 +144,19 @@ class XbUiButton {
 
   static ButtonStyle filledDanger(BuildContext context) {
     return FilledButton.styleFrom(
-      minimumSize: const Size(0, 40),
+      minimumSize: const Size(0, 48),
       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-      backgroundColor: Colors.red,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+      backgroundColor: const Color(0xFFF44336),
       foregroundColor: Colors.white,
     );
   }
 
   static ButtonStyle outlinedNeutral(BuildContext context) {
     return OutlinedButton.styleFrom(
-      minimumSize: const Size(0, 40),
+      minimumSize: const Size(0, 48),
       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
       side: XbUiDialog.outlinedSide(context),
     );
   }
@@ -153,19 +178,19 @@ class XbUiButton {
 class XbUiStatusColor {
   XbUiStatusColor._();
 
-  static Color pending(BuildContext context) => Colors.orange;
-  static Color pendingByTheme(ThemeData theme) => Colors.orange;
+  static Color pending(BuildContext context) => Theme.of(context).brightness == Brightness.dark ? const Color(0xFFFFB74D) : const Color(0xFFFF9800);
+  static Color pendingByTheme(ThemeData theme) => theme.brightness == Brightness.dark ? const Color(0xFFFFB74D) : const Color(0xFFFF9800);
   static Color processing(BuildContext context) =>
       Theme.of(context).colorScheme.primary;
   static Color processingByTheme(ThemeData theme) => theme.colorScheme.primary;
-  static Color success(BuildContext context) => Colors.green;
-  static Color successByTheme(ThemeData theme) => Colors.green;
-  static Color error(BuildContext context) => Colors.red;
-  static Color errorByTheme(ThemeData theme) => Colors.red;
-  static Color info(BuildContext context) => Colors.blue;
-  static Color infoByTheme(ThemeData theme) => Colors.blue;
-  static Color offset(BuildContext context) => Colors.purple;
-  static Color offsetByTheme(ThemeData theme) => Colors.purple;
+  static Color success(BuildContext context) => Theme.of(context).brightness == Brightness.dark ? const Color(0xFF66BB6A) : const Color(0xFF4CAF50);
+  static Color successByTheme(ThemeData theme) => theme.brightness == Brightness.dark ? const Color(0xFF66BB6A) : const Color(0xFF4CAF50);
+  static Color error(BuildContext context) => Theme.of(context).brightness == Brightness.dark ? const Color(0xFFEF5350) : const Color(0xFFF44336);
+  static Color errorByTheme(ThemeData theme) => theme.brightness == Brightness.dark ? const Color(0xFFEF5350) : const Color(0xFFF44336);
+  static Color info(BuildContext context) => Theme.of(context).brightness == Brightness.dark ? const Color(0xFF42A5F5) : const Color(0xFF2196F3);
+  static Color infoByTheme(ThemeData theme) => theme.brightness == Brightness.dark ? const Color(0xFF42A5F5) : const Color(0xFF2196F3);
+  static Color offset(BuildContext context) => Theme.of(context).brightness == Brightness.dark ? const Color(0xFFAB47BC) : const Color(0xFF9C27B0);
+  static Color offsetByTheme(ThemeData theme) => theme.brightness == Brightness.dark ? const Color(0xFFAB47BC) : const Color(0xFF9C27B0);
   static Color muted(BuildContext context) =>
       Theme.of(context).colorScheme.outline;
   static Color mutedByTheme(ThemeData theme) => theme.colorScheme.outline;

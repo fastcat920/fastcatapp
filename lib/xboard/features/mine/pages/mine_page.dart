@@ -192,7 +192,7 @@ class _MinePageState extends ConsumerState<MinePage>
         trailing: Icon(Icons.chevron_right,
             color: isDark
                 ? theme.colorScheme.onSurfaceVariant
-                : const Color(0xFFBCC3CE)),
+                : XbUiTokens.chevronLight),
         onTap: () => context.push('/mine/account'),
         contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 2),
       ),
@@ -521,7 +521,7 @@ class _MinePageState extends ConsumerState<MinePage>
 
   Widget _buildSectionHeader(String title, ThemeData theme) {
     return Padding(
-      padding: const EdgeInsets.only(left: 4, bottom: 8),
+      padding: const EdgeInsets.only(left: 0, bottom: 10),
       child: Text(
         title,
         style: theme.textTheme.titleSmall?.copyWith(
@@ -588,7 +588,7 @@ class _MinePageState extends ConsumerState<MinePage>
               size: 20,
               color: isDark
                   ? theme.colorScheme.onSurfaceVariant
-                  : const Color(0xFFBCC3CE),
+                  : XbUiTokens.chevronLight,
             ),
         ],
       ),
@@ -603,7 +603,7 @@ class _MinePageState extends ConsumerState<MinePage>
       height: 1,
       indent: 56,
       endIndent: 16,
-      color: isDark ? null : const Color(0xFFF0F2F5),
+      color: isDark ? null : XbUiTokens.dividerLight,
     );
   }
 }

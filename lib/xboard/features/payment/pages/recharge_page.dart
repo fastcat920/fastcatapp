@@ -234,7 +234,7 @@ class _RechargePageState extends ConsumerState<RechargePage> {
         // 当前余额卡片
         Container(
           width: double.infinity,
-          padding: const EdgeInsets.all(20),
+          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
           decoration: BoxDecoration(
             color: theme.colorScheme.primary.withValues(
               alpha: isDark ? 0.24 : 0.12,
@@ -294,7 +294,7 @@ class _RechargePageState extends ConsumerState<RechargePage> {
                   color: isDark
                       ? theme.colorScheme.onSurface
                       : theme.colorScheme.primary.withValues(alpha: 0.96),
-                  fontSize: 32,
+                  fontSize: 28,
                   fontWeight: FontWeight.bold,
                 ),
               ),
@@ -310,7 +310,14 @@ class _RechargePageState extends ConsumerState<RechargePage> {
         LayoutBuilder(
           builder: (context, constraints) {
             const spacing = 12.0;
-            final itemWidth = (constraints.maxWidth - spacing) / 2;
+            final crossAxisCount = constraints.maxWidth >= 700
+                ? 4
+                : constraints.maxWidth >= 400
+                    ? 3
+                    : 2;
+            final itemWidth =
+                (constraints.maxWidth - spacing * (crossAxisCount - 1)) /
+                    crossAxisCount;
             return Wrap(
               spacing: spacing,
               runSpacing: spacing,
@@ -339,7 +346,7 @@ class _RechargePageState extends ConsumerState<RechargePage> {
                             : (isDark
                                 ? theme.colorScheme.outline
                                     .withValues(alpha: 0.3)
-                                : const Color(0xFFEEF0F4)),
+                                : XbUiTokens.cardBorderLight),
                       ),
                       boxShadow: isDark || selected
                           ? null
@@ -389,7 +396,7 @@ class _RechargePageState extends ConsumerState<RechargePage> {
               prefixText: '¥ ',
               hintText: l10n.xboardEnterAmount,
               filled: true,
-              fillColor: isDark ? null : const Color(0xFFF5F7FA),
+              fillColor: isDark ? null : XbUiTokens.inputFillLight,
               border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(14),
                 borderSide: BorderSide.none,
@@ -399,7 +406,7 @@ class _RechargePageState extends ConsumerState<RechargePage> {
                 borderSide: BorderSide(
                     color: isDark
                         ? theme.colorScheme.outline.withValues(alpha: 0.3)
-                        : const Color(0xFFEEF0F4)),
+                        : XbUiTokens.cardBorderLight),
               ),
               focusedBorder: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(14),
@@ -416,11 +423,9 @@ class _RechargePageState extends ConsumerState<RechargePage> {
         // 充值按钮
         SizedBox(
           width: double.infinity,
-          height: 52,
           child: FilledButton(
             onPressed: _isProcessing ? null : _handleRecharge,
             style: XbUiButton.filledPrimary(context).copyWith(
-              minimumSize: const WidgetStatePropertyAll(Size(0, 52)),
               backgroundColor: isDark
                   ? null
                   : WidgetStatePropertyAll(theme.colorScheme.primary),

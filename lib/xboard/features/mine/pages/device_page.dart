@@ -733,7 +733,7 @@ class _DeviceManagementPageState extends ConsumerState<DeviceManagementPage>
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
       decoration: BoxDecoration(
         color: color.withValues(alpha: 0.12),
-        borderRadius: BorderRadius.circular(6),
+        borderRadius: BorderRadius.circular(8),
       ),
       child: Text(
         label,

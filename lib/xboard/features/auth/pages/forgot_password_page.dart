@@ -170,7 +170,7 @@ class _ForgotPasswordPageState extends ConsumerState<ForgotPasswordPage> {
           width: double.infinity,
           height: 48,
           child: _isLoading
-              ? ElevatedButton(
+              ? FilledButton(
                   onPressed: null,
                   child: const SizedBox(
                     width: 20,
@@ -180,13 +180,13 @@ class _ForgotPasswordPageState extends ConsumerState<ForgotPasswordPage> {
                     ),
                   ),
                 )
-              : ElevatedButton(
+              : FilledButton(
                   onPressed: _sendVerificationCode,
-                  style: ElevatedButton.styleFrom(
+                  style: FilledButton.styleFrom(
                     backgroundColor: Theme.of(context).colorScheme.primary,
                     foregroundColor: Theme.of(context).colorScheme.onPrimary,
                     shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
+                      borderRadius: BorderRadius.circular(14),
                     ),
                   ),
                   child: Text(
@@ -297,7 +297,7 @@ class _ForgotPasswordPageState extends ConsumerState<ForgotPasswordPage> {
           width: double.infinity,
           height: 48,
           child: _isLoading
-              ? ElevatedButton(
+              ? FilledButton(
                   onPressed: null,
                   child: const SizedBox(
                     width: 20,
@@ -307,13 +307,13 @@ class _ForgotPasswordPageState extends ConsumerState<ForgotPasswordPage> {
                     ),
                   ),
                 )
-              : ElevatedButton(
+              : FilledButton(
                   onPressed: _resetPassword,
-                  style: ElevatedButton.styleFrom(
+                  style: FilledButton.styleFrom(
                     backgroundColor: Theme.of(context).colorScheme.primary,
                     foregroundColor: Theme.of(context).colorScheme.onPrimary,
                     shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
+                      borderRadius: BorderRadius.circular(14),
                     ),
                   ),
                   child: Text(
@@ -390,10 +390,18 @@ class _ForgotPasswordPageState extends ConsumerState<ForgotPasswordPage> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.stretch,
                       children: [
-                        if (_currentStep == ResetPasswordStep.sendCode)
-                          _buildSendCodeStep()
-                        else
-                          _buildResetPasswordStep(),
+                        AnimatedSwitcher(
+                          duration: const Duration(milliseconds: 300),
+                          child: _currentStep == ResetPasswordStep.sendCode
+                              ? KeyedSubtree(
+                                  key: const ValueKey('send'),
+                                  child: _buildSendCodeStep(),
+                                )
+                              : KeyedSubtree(
+                                  key: const ValueKey('reset'),
+                                  child: _buildResetPasswordStep(),
+                                ),
+                        ),
                         const SizedBox(height: 24),
                         Row(
                           mainAxisAlignment: MainAxisAlignment.center,

@@ -698,6 +698,7 @@ p{margin:8px 0}
     }
 
     return Scaffold(
+      backgroundColor: theme.scaffoldBackgroundColor,
       appBar: AppBar(
         leading: const BackButton(),
         title: Text(
@@ -880,7 +881,10 @@ p{margin:8px 0}
       }
       return Stack(
         children: [
-          WebViewWidget(controller: _webController!),
+          Container(
+            color: currentIsDark ? const Color(0xFF1E1E1E) : Colors.white,
+            child: WebViewWidget(controller: _webController!),
+          ),
           if (_webLoading) const Center(child: CircularProgressIndicator()),
         ],
       );
