@@ -57,8 +57,6 @@ class _PlanPurchasePageState extends ConsumerState<PlanPurchasePage> {
   double? _finalPrice;
 
   // 用户余额
-  double? _userBalance;
-
   @override
   void initState() {
     super.initState();
@@ -79,7 +77,6 @@ class _PlanPurchasePageState extends ConsumerState<PlanPurchasePage> {
           _selectedPeriod = hasInitial ? initial : periods.first['period'];
         });
       }
-      _loadUserBalance();
     });
   }
 
@@ -91,18 +88,6 @@ class _PlanPurchasePageState extends ConsumerState<PlanPurchasePage> {
 
   // ========== 数据加载 ==========
 
-  Future<void> _loadUserBalance() async {
-    try {
-      // 使用 xboardUserProvider 获取用户信息
-      final userInfo = ref.read(xboardUserProvider).userInfo;
-
-      if (mounted) {
-        setState(() => _userBalance = userInfo?.balanceInYuan);
-      }
-    } catch (e) {
-      _logger.debug('[购买] 加载用户余额失败: $e');
-    }
-  }
 
   List<Map<String, dynamic>> _getAvailablePeriods(BuildContext context) {
     final List<Map<String, dynamic>> periods = [];
@@ -279,25 +264,6 @@ class _PlanPurchasePageState extends ConsumerState<PlanPurchasePage> {
     _couponValue = null;
   }
 
-  void _recalculateDiscount() {
-    if (_couponType == null || _couponValue == null) return;
-
-    final currentPrice = _getCurrentPrice();
-    final discountAmount = PriceCalculator.calculateDiscountAmount(
-      currentPrice,
-      _couponType,
-      _couponValue,
-    );
-
-    setState(() {
-      _discountAmount = discountAmount;
-      _finalPrice = PriceCalculator.calculateFinalPrice(
-        currentPrice,
-        _couponType,
-        _couponValue,
-      );
-    });
-  }
 
   // ========== 购买流程 ==========
 
@@ -370,7 +336,6 @@ class _PlanPurchasePageState extends ConsumerState<PlanPurchasePage> {
       ref.read(xboardUserAuthProvider.notifier).refreshUserInfo();
     } catch (_) {}
     // 重新加载优惠券和套餐信息
-    await _loadUserBalance();
     await Future<void>.delayed(const Duration(milliseconds: 250));
   }
 
@@ -406,10 +371,11 @@ class _PlanPurchasePageState extends ConsumerState<PlanPurchasePage> {
                 onPeriodSelected: (period) {
                   setState(() {
                     _selectedPeriod = period;
-                    if (_couponCode != null) {
-                      _recalculateDiscount();
-                    }
                   });
+                  // 切换周期后若有已校验的优惠券，重新向服务端校验
+                  if (_isCouponValid == true && _couponCode != null) {
+                    _validateCoupon();
+                  }
                 },
                 couponType: _couponType,
                 couponValue: _couponValue,
@@ -434,7 +400,7 @@ class _PlanPurchasePageState extends ConsumerState<PlanPurchasePage> {
                   originalPrice: currentPrice,
                   finalPrice: _finalPrice,
                   discountAmount: _discountAmount,
-                  userBalance: _userBalance,
+                  userBalance: ref.watch(userInfoProvider)?.balanceInYuan,
                 ),
               const SizedBox(height: 16),
 

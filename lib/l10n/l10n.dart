@@ -28,9 +28,10 @@ class AppLocalizations {
   static const AppLocalizationDelegate delegate = AppLocalizationDelegate();
 
   static Future<AppLocalizations> load(Locale locale) {
-    final name = (locale.countryCode?.isEmpty ?? false)
-        ? locale.languageCode
-        : locale.toString();
+    final name =
+        (locale.countryCode?.isEmpty ?? false)
+            ? locale.languageCode
+            : locale.toString();
     final localeName = Intl.canonicalizedLocale(name);
     return initializeMessages(localeName).then((_) {
       Intl.defaultLocale = localeName;
@@ -937,16 +938,6 @@ class AppLocalizations {
   /// `Exit`
   String get exit {
     return Intl.message('Exit', name: 'exit', desc: '', args: []);
-  }
-
-  /// `Clear cache and restart`
-  String get clearCacheAndRestart {
-    return Intl.message(
-      'Clear cache and restart',
-      name: 'clearCacheAndRestart',
-      desc: '',
-      args: [],
-    );
   }
 
   /// `System proxy`
@@ -6029,26 +6020,6 @@ class AppLocalizations {
     return Intl.message('Loading...', name: 'loading', desc: '', args: []);
   }
 
-  /// `Loading is taking longer than expected, please wait...`
-  String get customerServiceLoadingSlow {
-    return Intl.message(
-      'Loading is taking longer than expected, please wait...',
-      name: 'customerServiceLoadingSlow',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Support failed to load, please check your network and try again.`
-  String get customerServiceLoadFailed {
-    return Intl.message(
-      'Support failed to load, please check your network and try again.',
-      name: 'customerServiceLoadFailed',
-      desc: '',
-      args: [],
-    );
-  }
-
   /// `Register Account`
   String get registerAccount {
     return Intl.message(
@@ -6827,7 +6798,7 @@ class AppLocalizations {
   /// `Online Support`
   String get onlineSupportTitle {
     return Intl.message(
-      'Support',
+      'Online Support',
       name: 'onlineSupportTitle',
       desc: '',
       args: [],
@@ -9989,6 +9960,46 @@ class AppLocalizations {
     return Intl.message(
       'Subscription import failed',
       name: 'subscriptionImportFailed',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Subscription refresh failed, please refresh manually later`
+  String get xboardRefreshFailedHint {
+    return Intl.message(
+      'Subscription refresh failed, please refresh manually later',
+      name: 'xboardRefreshFailedHint',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Customer service page is loading slowly, please wait...`
+  String get customerServiceLoadingSlow {
+    return Intl.message(
+      'Customer service page is loading slowly, please wait...',
+      name: 'customerServiceLoadingSlow',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Customer service page failed to load, please try again later`
+  String get customerServiceLoadFailed {
+    return Intl.message(
+      'Customer service page failed to load, please try again later',
+      name: 'customerServiceLoadFailed',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Clear cache and restart`
+  String get clearCacheAndRestart {
+    return Intl.message(
+      'Clear cache and restart',
+      name: 'clearCacheAndRestart',
       desc: '',
       args: [],
     );

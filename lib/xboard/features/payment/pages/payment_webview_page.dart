@@ -13,6 +13,7 @@ import 'package:fl_clash/xboard/adapter/state/order_state.dart';
 import 'package:fl_clash/xboard/core/core.dart';
 import 'package:fl_clash/xboard/features/shared/utils/desktop_webview_window_helper.dart';
 import 'package:fl_clash/xboard/features/shared/styles/styles.dart';
+import '../services/payment_status_poller.dart';
 
 const _logger = FileLogger('payment_webview_page.dart');
 Webview? _desktopPaymentWebview;
@@ -470,12 +471,14 @@ class PaymentWebViewPage extends ConsumerStatefulWidget {
 
 class _PaymentWebViewPageState extends ConsumerState<PaymentWebViewPage> {
   WebViewController? _webViewController;
-  Timer? _pollTimer;
   Timer? _loadStateTimer;
   bool _isPageLoading = true;
   bool _showPageLoadingMessage = false;
-  bool _isPolling = false;
-  bool _isChecking = false;
+  late final PaymentStatusPoller _poller = PaymentStatusPoller(
+    tradeNo: widget.tradeNo,
+    ref: ref,
+    onSuccess: _handlePaymentSuccess,
+  );
 
   /// Platforms that use webview_flutter (system WebView)
   bool get _useSystemWebView =>
@@ -490,12 +493,12 @@ class _PaymentWebViewPageState extends ConsumerState<PaymentWebViewPage> {
     if (_useSystemWebView) {
       _initWebView();
     }
-    _startPolling();
+    _poller.start();
   }
 
   @override
   void dispose() {
-    _stopPolling();
+    _poller.dispose();
     _loadStateTimer?.cancel();
     _webViewController = null;
     super.dispose();
@@ -618,68 +621,16 @@ class _PaymentWebViewPageState extends ConsumerState<PaymentWebViewPage> {
     }
   }
 
-  // ── Polling ─────────────────────────────────────────────────────────
+  // ── Polling (delegated to PaymentStatusPoller) ──────────────────────
 
-  void _startPolling() {
-    if (_isPolling) return;
-    _isPolling = true;
-    _pollTimer = Timer(const Duration(seconds: 3), () {
-      _checkPaymentStatus();
-    });
-  }
-
-  void _stopPolling() {
-    _isPolling = false;
-    _pollTimer?.cancel();
-    _pollTimer = null;
-  }
-
-  void _scheduleNextPoll() {
-    if (!_isPolling || !mounted) return;
-    _pollTimer?.cancel();
-    _pollTimer = Timer(const Duration(seconds: 5), () {
-      _checkPaymentStatus();
-    });
-  }
-
-  Future<void> _checkPaymentStatus() async {
-    if (!mounted || _isChecking) return;
-    _isChecking = true;
-
-    try {
-      clearGetOrderCache(widget.tradeNo);
-      ref.invalidate(getOrderProvider(widget.tradeNo));
-      final order = await ref.read(getOrderProvider(widget.tradeNo).future);
-      if (!mounted) return;
-
-      if (order != null) {
-        if (order.status == 3 || order.status == 4) {
-          _stopPolling();
-          _handlePaymentSuccess();
-          return;
-        }
-        if (order.status == 2) {
-          _stopPolling();
-          return;
-        }
-      }
-    } catch (e) {
-      _logger.warning('Order status check failed: $e');
-    } finally {
-      _isChecking = false;
-      if (mounted) _scheduleNextPoll();
-    }
-  }
-
-  void _handlePaymentSuccess() {
-    _stopPolling();
+  Future<void> _handlePaymentSuccess() async {
     if (mounted) {
       Navigator.of(context).pop(true);
     }
   }
 
   void _handleCancel() {
-    _stopPolling();
+    _poller.stop();
     Navigator.of(context).pop(null);
   }
 
@@ -701,7 +652,7 @@ class _PaymentWebViewPageState extends ConsumerState<PaymentWebViewPage> {
       ),
       body: Column(
         children: [
-          _StatusBanner(isPolling: _isPolling),
+          _StatusBanner(isPolling: _poller.isPolling),
           Expanded(child: _buildWebView()),
         ],
       ),

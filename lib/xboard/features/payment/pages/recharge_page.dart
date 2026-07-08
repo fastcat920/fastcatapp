@@ -104,19 +104,27 @@ class _RechargePageState extends ConsumerState<RechargePage> {
       PaymentWaitingManager.updateTradeNo(tradeNo);
 
       // 2. 获取支付方式
-      final paymentMethods = ref.read(xboardAvailablePaymentMethodsProvider);
-      if (paymentMethods.isEmpty) {
-        // 尝试重新加载
-        await paymentNotifier.loadPaymentMethods(forceRefresh: true);
-        final retryMethods = ref.read(xboardAvailablePaymentMethodsProvider);
-        if (retryMethods.isEmpty) {
+      // initState 的后台加载可能因网络问题卡住，这里用 forceRefresh
+      // 发起独立请求并加超时保护，避免无限等待
+      var methods = ref.read(xboardAvailablePaymentMethodsProvider);
+      if (methods.isEmpty) {
+        try {
+          await paymentNotifier
+              .loadPaymentMethods(forceRefresh: true)
+              .timeout(const Duration(seconds: 10));
+        } catch (_) {
+          // 超时或失败：隐藏浮层、提示用户重试
+          PaymentWaitingManager.hide();
+          XBoardNotification.showError(l10n.xboardNoPaymentMethods);
+          return;
+        }
+        methods = ref.read(xboardAvailablePaymentMethodsProvider);
+        if (methods.isEmpty) {
           PaymentWaitingManager.hide();
           XBoardNotification.showError(l10n.xboardNoPaymentMethods);
           return;
         }
       }
-
-      final methods = ref.read(xboardAvailablePaymentMethodsProvider);
 
       // 3. 选择支付方式（和买套餐一样的弹窗）
       DomainPaymentMethod? selectedMethod;
@@ -148,20 +156,9 @@ class _RechargePageState extends ConsumerState<RechargePage> {
         }
       }
 
-      // 4. 提交支付
+      // 4. 提交支付（支付方式已在 initState 及上方校验过，直接使用缓存）
       final selectedPaymentMethod = selectedMethod;
       PaymentWaitingManager.updateStep(PaymentStep.loadingPayment);
-      await paymentNotifier.loadPaymentMethods(forceRefresh: true);
-      final freshMethods = ref.read(xboardAvailablePaymentMethodsProvider);
-      final isMethodStillAvailable = freshMethods.any((method) =>
-          method.id.toString() == selectedPaymentMethod.id.toString());
-      if (!isMethodStillAvailable) {
-        PaymentWaitingManager.hide();
-        XBoardNotification.showError(freshMethods.isEmpty
-            ? l10n.xboardNoPaymentMethods
-            : l10n.xboardSelectPaymentMethod);
-        return;
-      }
       final result = await paymentNotifier.submitPayment(
         tradeNo: tradeNo,
         method: selectedPaymentMethod.id.toString(),

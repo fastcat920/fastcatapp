@@ -9,30 +9,6 @@ import 'package:webview_flutter/webview_flutter.dart';
 import 'package:fl_clash/xboard/features/auth/utils/crisp_url_helper.dart';
 import 'package:fl_clash/xboard/features/auth/utils/customer_service_helper.dart';
 
-String _crispLocaleFromTag(String localeTag) {
-  final normalized = localeTag.trim().replaceAll('_', '-').toLowerCase();
-  if (normalized.isEmpty) return 'en';
-  final language = normalized.split('-').first;
-  return switch (language) {
-    'zh' => 'zh',
-    'ja' => 'ja',
-    'ko' => 'ko',
-    'en' => 'en',
-    _ => language,
-  };
-}
-
-Uri _localizedCrispUri(Uri uri, String? localeTag) {
-  final tag =
-      (localeTag == null || localeTag.trim().isEmpty) ? 'en' : localeTag.trim();
-  return uri.replace(
-    queryParameters: {
-      ...uri.queryParameters,
-      'locale': _crispLocaleFromTag(tag),
-      'lang': tag,
-    },
-  );
-}
 
 /// Crisp 客服嵌入页面
 ///
@@ -240,7 +216,7 @@ class _CrispChatPageState extends State<CrispChatPage> {
     }
     _didFallbackToOfficial = true;
     _loadEmbed(
-      _localizedCrispUri(officialCrispEmbedUri(widget.websiteId), _localeTag),
+      CustomerServiceHelper.localizedCrispUri(officialCrispEmbedUri(widget.websiteId), _localeTag),
       usingProxy: false,
     );
   }
@@ -257,7 +233,7 @@ class _CrispChatPageState extends State<CrispChatPage> {
 
   void _startReadyPolling() {
     _readyPollTimer?.cancel();
-    _readyPollTimer = Timer.periodic(const Duration(milliseconds: 300), (_) {
+    _readyPollTimer = Timer.periodic(const Duration(milliseconds: 150), (_) {
       unawaited(_checkAndHideLoading());
     });
   }
@@ -267,7 +243,7 @@ class _CrispChatPageState extends State<CrispChatPage> {
     if (await _isCrispReady()) {
       _stopReadyPolling();
       // 延迟 200ms 再移除遮罩，留给 Crisp 内部渲染时间，避免闪现原生加载转圈
-      await Future.delayed(const Duration(milliseconds: 200));
+      await Future.delayed(const Duration(milliseconds: 80));
       if (mounted) setState(() => _isLoading = false);
     }
   }
@@ -299,7 +275,7 @@ class _CrispChatPageState extends State<CrispChatPage> {
   }
 
   Uri _preferredEmbedUri() {
-    return _localizedCrispUri(
+    return CustomerServiceHelper.localizedCrispUri(
       crispEmbedUri(
         websiteId: widget.websiteId,
         proxyUrl: widget.crispProxyUrl,
@@ -328,7 +304,7 @@ class _CrispChatPageState extends State<CrispChatPage> {
     final foreground = _customerServiceForegroundColorValue(_isDarkMode);
     final userScript = widget.userScript ?? '';
     final localeTag = _localeTag ?? 'en';
-    final crispLocale = _crispLocaleFromTag(localeTag);
+    final crispLocale = CustomerServiceHelper.crispLocaleFromTag(localeTag);
     final script = '''
 (function(){
   try {
@@ -450,7 +426,7 @@ class _CrispChatPageState extends State<CrispChatPage> {
       'loadingSlow': strings.loadingSlow,
       'loadFailed': strings.loadFailed,
       'locale': _localeTag ?? 'en',
-      'crispLocale': _crispLocaleFromTag(_localeTag ?? 'en'),
+      'crispLocale': CustomerServiceHelper.crispLocaleFromTag(_localeTag ?? 'en'),
     });
     final script = '''
 (function(){

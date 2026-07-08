@@ -1371,5 +1371,9 @@
   "inviteCodeGenerated": "邀请码生成成功",
   "backendErrorInviteLimitReached": "已达到创建数量上限",
   "subscriptionUpdateFailed": "订阅更新失败",
-  "subscriptionImportFailed": "订阅导入失败"
+  "subscriptionImportFailed": "订阅导入失败",
+  "xboardRefreshFailedHint": "订阅配置刷新失败，请稍后手动刷新",
+  "customerServiceLoadingSlow": "客服页面加载较慢，请耐心等待...",
+  "customerServiceLoadFailed": "客服页面加载失败，请稍后重试",
+  "clearCacheAndRestart": "清除缓存并重启"
 }

@@ -86,7 +86,7 @@ class CustomerServiceHelper {
     return accentColor?.hex ?? (isDarkMode ? '#60a5fa' : '#2563eb');
   }
 
-  static String _crispLocaleFromTag(String? localeTag) {
+  static String crispLocaleFromTag(String? localeTag) {
     final normalized =
         (localeTag ?? '').trim().replaceAll('_', '-').toLowerCase();
     if (normalized.isEmpty) return 'en';
@@ -100,14 +100,14 @@ class CustomerServiceHelper {
     };
   }
 
-  static Uri _localizedCrispUri(Uri uri, String? localeTag) {
+  static Uri localizedCrispUri(Uri uri, String? localeTag) {
     final tag = (localeTag == null || localeTag.trim().isEmpty)
         ? 'en'
         : localeTag.trim();
     return uri.replace(
       queryParameters: {
         ...uri.queryParameters,
-        'locale': _crispLocaleFromTag(tag),
+        'locale': crispLocaleFromTag(tag),
         'lang': tag,
       },
     );
@@ -209,7 +209,7 @@ class CustomerServiceHelper {
       'foreground': _customerServiceForeground(isDarkMode),
       'accent': accent,
       'localeTag': localeTag,
-      'crispLocale': _crispLocaleFromTag(localeTag),
+      'crispLocale': crispLocaleFromTag(localeTag),
       'loadingText': loadingText,
     });
     return '''
@@ -609,29 +609,44 @@ class CustomerServiceHelper {
         lower.contains('upstream') && lower.contains('nginx');
   }
 
+  /// 从预热缓存读取代理 URL，不发起网络探测。
+  /// 预热阶段 (_prewarmCrispRoute) 已做过探测并缓存结果。
+  static String _getCachedCrispProxyUrl(String websiteId) {
+    final cached = _usableCrispProxyCache;
+    if (cached != null && cached.websiteId == websiteId) {
+      return cached.usableProxyUrl;
+    }
+    return ''; // 缓存未命中：跳过代理，CrispChatPage 内部有 fallback 逻辑
+  }
+
   /// 打开客服页面
   static Future<void> open(BuildContext context) async {
     final crispId = await _resolveCrispWebsiteId();
-    if (crispId.isNotEmpty) {
-      if (!context.mounted) return;
-      final ipDataFuture = _resolveCrispIPDataForInitialInjection(context);
-      final crispProxyUrl = await _resolveUsableCrispProxyUrl(crispId);
-      final fallbackWebsiteUrl =
-          Platform.isLinux ? await _resolveFallbackWebsiteUrl() : '';
-      if (!context.mounted) return;
-      final ipData = await ipDataFuture;
-      if (!context.mounted) return;
-      final userScript = _buildCrispUserScript(context, ipData: ipData);
-      await _openCrisp(
-        context,
-        crispId,
-        userScript: userScript,
-        crispProxyUrl: crispProxyUrl,
-        fallbackWebsiteUrl: fallbackWebsiteUrl,
-      );
+    if (crispId.isEmpty) {
+      XBoardNotification.showError('未配置在线客服');
       return;
     }
-    XBoardNotification.showError('未配置在线客服');
+    if (!context.mounted) return;
+    // 点击时直接用预热缓存，不阻塞导航发起 HTTP 探测
+    final crispProxyUrl = _getCachedCrispProxyUrl(crispId);
+    final fallbackWebsiteUrl =
+        Platform.isLinux ? await _resolveFallbackWebsiteUrl() : '';
+    if (!context.mounted) return;
+    final userScript = _buildCrispUserScript(context);
+    await _openCrisp(
+      context,
+      crispId,
+      userScript: userScript,
+      crispProxyUrl: crispProxyUrl,
+      fallbackWebsiteUrl: fallbackWebsiteUrl,
+      // IP 归属地数据延后注入，不阻塞页面打开
+      deferredUserScript: () async {
+        final ipData = await _resolveCrispIPDataForInitialInjection(context);
+        return ipData != null
+            ? _buildCrispUserScript(context, ipData: ipData)
+            : null;
+      },
+    );
   }
 
   // ignore: unused_element
@@ -1089,7 +1104,7 @@ if(window===window.top){
       return;
     }
     await launchUrl(
-      _localizedCrispUri(
+      localizedCrispUri(
         crispEmbedUri(websiteId: websiteId, proxyUrl: crispProxyUrl),
         context.mounted
             ? Localizations.localeOf(context).toLanguageTag()
@@ -1144,11 +1159,11 @@ if(window===window.top){
     window.__kuaimaoCrispApplyTimer = setInterval(function(){
       retry++;
       apply();
-      if (retry >= 20) {
+      if (retry >= 10) {
         clearInterval(window.__kuaimaoCrispApplyTimer);
         window.__kuaimaoCrispApplyTimer = null;
       }
-    }, 200);
+    }, 300);
   } catch(e) {}
 })();''';
   }
@@ -1257,14 +1272,14 @@ if(window===window.top){
   }) async {
     HttpServer? server;
     try {
-      final preferredEmbedUri = _localizedCrispUri(
+      final preferredEmbedUri = localizedCrispUri(
         crispEmbedUri(
           websiteId: websiteId,
           proxyUrl: crispProxyUrl,
         ),
         localeTag,
       );
-      final officialEmbedUri = _localizedCrispUri(
+      final officialEmbedUri = localizedCrispUri(
         officialCrispEmbedUri(websiteId),
         localeTag,
       );
@@ -1329,7 +1344,7 @@ if(window===window.top){
       _logger.error('[Crisp] desktop webview 启动失败', e);
       await server?.close(force: true);
       await launchUrl(
-        _localizedCrispUri(
+        localizedCrispUri(
           crispEmbedUri(websiteId: websiteId, proxyUrl: crispProxyUrl),
           localeTag,
         ),
@@ -1373,7 +1388,7 @@ if(window===window.top){
   }) {
     final preferredEmbedJson = jsonEncode(preferredEmbedUri.toString());
     final localeTagJson = jsonEncode(localeTag);
-    final crispLocaleJson = jsonEncode(_crispLocaleFromTag(localeTag));
+    final crispLocaleJson = jsonEncode(crispLocaleFromTag(localeTag));
     final background = _customerServiceBackground(isDarkMode);
     final foreground = _customerServiceForeground(isDarkMode);
     final colorSchemeLinux = isDarkMode ? 'dark' : 'light';
@@ -1464,7 +1479,7 @@ if(window===window.top){
     final preferredEmbedJson = jsonEncode(preferredEmbedUri.toString());
     final officialEmbedJson = jsonEncode(officialEmbedUri.toString());
     final localeTagJson = jsonEncode(localeTag);
-    final crispLocaleJson = jsonEncode(_crispLocaleFromTag(localeTag));
+    final crispLocaleJson = jsonEncode(crispLocaleFromTag(localeTag));
     final loadingTextJson = jsonEncode(loadingText);
     final timeoutTextJson = jsonEncode(timeoutText);
     final proxyBaseJson = jsonEncode(normalizeCrispProxyUrl(crispProxyUrl));

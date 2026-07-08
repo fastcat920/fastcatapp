@@ -2,7 +2,6 @@ import 'dart:io';
 import 'package:fl_clash/common/common.dart';
 import 'package:fl_clash/l10n/l10n.dart';
 import 'package:fl_clash/xboard/domain/domain.dart';
-import 'package:fl_clash/xboard/features/auth/providers/xboard_user_provider.dart';
 import 'package:fl_clash/xboard/features/subscription/providers/xboard_subscription_provider.dart';
 import 'package:fl_clash/xboard/features/shared/styles/styles.dart';
 import 'package:fl_clash/xboard/features/shared/widgets/widgets.dart';
@@ -27,6 +26,7 @@ class _PlansViewState extends ConsumerState<PlansView> {
   DomainPlan? _selectedPlan; // 桌面端选中的套餐
   bool _hasCheckedUrlParams = false; // 标记是否已检查URL参数
   String? _initialPeriod; // URL参数传入的初始周期（如 reset_price）
+  String? _planLoadError; // 套餐列表独立的错误状态
   AppLocalizations get appLocalizations => AppLocalizations.of(context);
 
   @override
@@ -99,8 +99,13 @@ class _PlansViewState extends ConsumerState<PlansView> {
   }
 
   Future<void> _refreshPlans() async {
-    final subscriptionNotifier = ref.read(xboardSubscriptionProvider.notifier);
-    await subscriptionNotifier.refreshPlans();
+    setState(() => _planLoadError = null);
+    try {
+      final subscriptionNotifier = ref.read(xboardSubscriptionProvider.notifier);
+      await subscriptionNotifier.refreshPlans();
+    } catch (e) {
+      if (mounted) setState(() => _planLoadError = e.toString());
+    }
   }
 
   void _backToPlans() {
@@ -434,14 +439,13 @@ class _PlansViewState extends ConsumerState<PlansView> {
                       builder: (context, ref, child) {
                         final allPlans = ref.watch(xboardSubscriptionProvider);
                         final plans = allPlans;
-                        final uiState = ref.watch(userUIStateProvider);
-                        if (uiState.isLoading && allPlans.isEmpty) {
+                        if (allPlans.isEmpty && _planLoadError == null) {
                           return const Center(
                               child: CircularProgressIndicator());
                         }
-                        if (uiState.errorMessage != null) {
+                        if (_planLoadError != null && allPlans.isEmpty) {
                           return XbErrorState(
-                            message: uiState.errorMessage!,
+                            message: _planLoadError!,
                             onRetry: _refreshPlans,
                           );
                         }

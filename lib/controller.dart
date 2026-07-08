@@ -496,8 +496,7 @@ class AppController {
     }
     await clashCore.requestGc();
     await _setupClashConfig();
-    await updateGroups();
-    await updateProviders();
+    await Future.wait<void>([updateGroups(), updateProviders()]);
   }
 
   /// iOS/fallback: parse profile YAML directly in Dart to build Groups.
@@ -664,23 +663,24 @@ class AppController {
   /// After VPN connects on iOS, mihomo is now running in PacketTunnel.
   /// Fetch live groups from the core and re-apply the user's proxy selections.
   Future<void> _refreshGroupsAfterConnect() async {
-    // Wait briefly for mihomo to fully initialize inside the extension
-    await Future.delayed(const Duration(milliseconds: 500));
     try {
-      final newGroups = await retry(
-        task: () async {
-          return await clashCore.getProxiesGroups();
-        },
-        retryIf: (res) => res.isEmpty,
-        maxAttempts: 5,
-        delay: const Duration(seconds: 1),
-      );
+      // 立即尝试一次，未就绪则等待后快速重试
+      var newGroups = await clashCore.getProxiesGroups();
+      if (newGroups.isEmpty) {
+        await Future.delayed(const Duration(milliseconds: 250));
+        newGroups = await retry(
+          task: () async {
+            return await clashCore.getProxiesGroups();
+          },
+          retryIf: (res) => res.isEmpty,
+          maxAttempts: 6,
+          delay: const Duration(milliseconds: 300),
+        );
+      }
       if (newGroups.isNotEmpty) {
         final correctedGroups = _correctGroupNowValues(newGroups);
         _ref.read(groupsProvider.notifier).value = correctedGroups;
-        WidgetsBinding.instance.addPostFrameCallback((_) {
-          _correctDirectNodes();
-        });
+        _correctDirectNodes();
       }
       // Re-apply saved proxy selections
       final profile = _ref.read(currentProfileProvider);
@@ -700,9 +700,7 @@ class AppController {
         if (refreshed.isNotEmpty) {
           final correctedRefreshed = _correctGroupNowValues(refreshed);
           _ref.read(groupsProvider.notifier).value = correctedRefreshed;
-          WidgetsBinding.instance.addPostFrameCallback((_) {
-            _correctDirectNodes();
-          });
+          _correctDirectNodes();
         }
       }
     } catch (e) {
@@ -784,10 +782,7 @@ class AppController {
       // 写入前修正 now: 避免 UI 短暂显示 DIRECT
       final correctedGroups = _correctGroupNowValues(newGroups);
       _ref.read(groupsProvider.notifier).value = correctedGroups;
-      // 异步通知 Clash 实际切换代理
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        _correctDirectNodes();
-      });
+      _correctDirectNodes();
     } catch (e) {
       commonPrint.log('updateGroups error: $e');
       final existing = _ref.read(groupsProvider);

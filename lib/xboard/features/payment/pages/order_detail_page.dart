@@ -1,3 +1,4 @@
+
 import 'dart:async';
 
 import 'package:cached_network_image/cached_network_image.dart';
@@ -16,6 +17,7 @@ import 'package:fl_clash/xboard/features/subscription/providers/xboard_subscript
 import 'package:fl_clash/xboard/utils/xboard_notification.dart';
 import 'package:fl_clash/l10n/l10n.dart';
 import 'package:fl_clash/xboard/utils/backend_message_mapper.dart';
+import '../services/payment_status_poller.dart';
 
 const _logger = FileLogger('order_detail_page.dart');
 
@@ -61,8 +63,12 @@ class _OrderDetailPageState extends ConsumerState<OrderDetailPage>
   DomainPlan? _resolvedOrderPlan;
   int? _resolvedOrderPlanId;
   int? _resolvingPlanId;
-  Timer? _paymentStatusTimer;
-  bool _isAutoChecking = false;
+  late final PaymentStatusPoller _poller = PaymentStatusPoller(
+    tradeNo: widget.tradeNo,
+    ref: ref,
+    onSuccess: _handlePaymentSuccess,
+  );
+  bool _isPaymentCompleted = false;
 
   @override
   void initState() {
@@ -107,15 +113,15 @@ class _OrderDetailPageState extends ConsumerState<OrderDetailPage>
   @override
   void dispose() {
     WidgetsBinding.instance.removeObserver(this);
-    _stopAutoCheckPaymentStatus();
+    _poller.dispose();
     super.dispose();
   }
 
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
     super.didChangeAppLifecycleState(state);
-    if (state == AppLifecycleState.resumed) {
-      _refreshPaymentStatusAfterResume();
+    if (state == AppLifecycleState.resumed && !_isPaymentCompleted) {
+      _poller.checkNow();
     }
   }
 
@@ -140,6 +146,7 @@ class _OrderDetailPageState extends ConsumerState<OrderDetailPage>
       body: orderAsync.when(
         loading: () => widget.optimistic && widget.plan != null
             ? _OrderDetailContent(
+                isPaymentCompleted: _isPaymentCompleted,
                 tradeNo: widget.tradeNo,
                 order: null,
                 widgetPlan: fallbackPlan,
@@ -177,7 +184,7 @@ class _OrderDetailPageState extends ConsumerState<OrderDetailPage>
           onRetry: _retryOrder,
         ),
         data: (order) {
-          _syncAutoCheckPaymentStatus(order);
+          // Polling starts only after payment submission (see _submitPayment)
           if (order == null) {
             return _OrderErrorView(
               message: l10n.xboardOrderNotFound,
@@ -201,6 +208,7 @@ class _OrderDetailPageState extends ConsumerState<OrderDetailPage>
             return const Center(child: CircularProgressIndicator());
           }
           return _OrderDetailContent(
+            isPaymentCompleted: _isPaymentCompleted,
             tradeNo: widget.tradeNo,
             order: order,
             widgetPlan: fallbackPlan,
@@ -266,73 +274,8 @@ class _OrderDetailPageState extends ConsumerState<OrderDetailPage>
     ref.invalidate(getOrderProvider(widget.tradeNo));
   }
 
-  void _syncAutoCheckPaymentStatus(OrderModel? order) {
-    final isPending = order?.status == 0;
-    if (isPending) {
-      _startAutoCheckPaymentStatus();
-    } else {
-      _stopAutoCheckPaymentStatus();
-    }
-  }
+  // Polling handled by PaymentStatusPoller — see _poller field
 
-  void _startAutoCheckPaymentStatus() {
-    if (_paymentStatusTimer?.isActive == true) return;
-    _paymentStatusTimer = Timer.periodic(const Duration(seconds: 3), (_) async {
-      if (!mounted ||
-          _isChecking ||
-          _isSubmitting ||
-          _isCanceling ||
-          _isAutoChecking) {
-        return;
-      }
-      _isAutoChecking = true;
-      try {
-        clearGetOrderCache(widget.tradeNo);
-        ref.invalidate(getOrderProvider(widget.tradeNo));
-        final order = await ref.read(getOrderProvider(widget.tradeNo).future);
-        if (!mounted) return;
-        final status = order?.status;
-        if (status == 3 || status == 4) {
-          _stopAutoCheckPaymentStatus();
-          await _handlePaymentSuccess();
-          return;
-        }
-        if (status != 0) {
-          _stopAutoCheckPaymentStatus();
-        }
-      } catch (e) {
-        _logger.warning('自动检查支付状态失败: $e');
-      } finally {
-        _isAutoChecking = false;
-      }
-    });
-  }
-
-  void _stopAutoCheckPaymentStatus() {
-    _paymentStatusTimer?.cancel();
-    _paymentStatusTimer = null;
-  }
-
-  Future<void> _refreshPaymentStatusAfterResume() async {
-    if (!mounted || _isChecking || _isSubmitting || _isCanceling) return;
-    try {
-      clearGetOrderCache(widget.tradeNo);
-      clearGetOrderPaymentMethodsCache(widget.tradeNo);
-      ref.invalidate(getOrderProvider(widget.tradeNo));
-      ref.invalidate(getOrderPaymentMethodsProvider(widget.tradeNo));
-      final order = await ref.read(getOrderProvider(widget.tradeNo).future);
-      if (!mounted) return;
-      if (order?.status == 3 || order?.status == 4) {
-        await _handlePaymentSuccess();
-      } else if (order?.status == 0) {
-        _startAutoCheckPaymentStatus();
-      } else {
-        _stopAutoCheckPaymentStatus();
-      }
-    } catch (e) {
-      _logger.warning('返回应用后刷新支付状态失败: $e');
-    }
-  }
 
   void _resolveOrderPlanIfNeeded({
     required int? planId,
@@ -377,9 +320,14 @@ class _OrderDetailPageState extends ConsumerState<OrderDetailPage>
     final l10n = AppLocalizations.of(context);
     setState(() => _isSubmitting = true);
     try {
-      final freshMethods = await _loadFreshPaymentOptions();
-      if (freshMethods.isEmpty) {
-        _clearUnavailableSelection(freshMethods);
+      // 优先使用已缓存的支付方式，只在缓存为空时才拉取
+      var methods = _globalPaymentOptions(
+          ref.read(xboardAvailablePaymentMethodsProvider));
+      if (methods.isEmpty) {
+        methods = await _loadFreshPaymentOptions();
+      }
+
+      if (methods.isEmpty) {
         XBoardNotification.showError(l10n.xboardNoPaymentMethods);
         return;
       }
@@ -387,14 +335,14 @@ class _OrderDetailPageState extends ConsumerState<OrderDetailPage>
       final selectedMethodId = _selectedMethodId;
       String methodId;
       if (selectedMethodId == null) {
-        methodId = freshMethods.first.id;
+        methodId = methods.first.id;
         if (mounted) {
           setState(() => _selectedMethodId = methodId);
         }
-      } else if (freshMethods.any((method) => method.id == selectedMethodId)) {
+      } else if (methods.any((method) => method.id == selectedMethodId)) {
         methodId = selectedMethodId;
       } else {
-        _clearUnavailableSelection(freshMethods);
+        _clearUnavailableSelection(methods);
         XBoardNotification.showError(l10n.xboardSelectPaymentMethod);
         return;
       }
@@ -422,6 +370,9 @@ class _OrderDetailPageState extends ConsumerState<OrderDetailPage>
         await _handlePaymentSuccess();
         return;
       }
+
+      // 支付已提交，启动轮询监控状态
+      if (!_isPaymentCompleted) _poller.start();
 
       if (data is String && data.isNotEmpty) {
         if (!mounted) return;
@@ -535,30 +486,40 @@ class _OrderDetailPageState extends ConsumerState<OrderDetailPage>
   }
 
   Future<void> _handlePaymentSuccess() async {
-    _stopAutoCheckPaymentStatus();
+    _poller.stop();
     if (_isHandlingPaymentSuccess) return;
     _isHandlingPaymentSuccess = true;
     try {
+      if (mounted) setState(() => _isPaymentCompleted = true);
       final l10n = AppLocalizations.of(context);
-      try {
-        await ref
-            .read(xboardUserProvider.notifier)
-            .refreshSubscriptionInfoAfterPayment();
-      } catch (e) {
-        _logger.info('刷新订阅信息失败: $e');
-      }
+
+      // 立即显示成功 toast 并返回，刷新操作放到后台异步执行
       clearGetOrderCache(widget.tradeNo);
       clearGetOrdersCache();
       ref.invalidate(getOrderProvider(widget.tradeNo));
       ref.invalidate(getOrdersProvider);
       XBoardNotification.showSuccess(l10n.xboardPaymentSuccess);
+
+      // 后台异步刷新订阅信息，不阻塞 toast 和页面返回
+      unawaited(_refreshSubscriptionInBackground());
     } finally {
       _isHandlingPaymentSuccess = false;
+    }
+  }
+
+  Future<void> _refreshSubscriptionInBackground() async {
+    try {
+      await ref
+          .read(xboardUserProvider.notifier)
+          .refreshSubscriptionInfoAfterPayment();
+    } catch (e) {
+      _logger.warning('后台刷新订阅信息失败: $e');
     }
   }
 }
 
 class _OrderDetailContent extends StatelessWidget {
+  final bool isPaymentCompleted;
   final String tradeNo;
   final OrderModel? order;
   final DomainPlan? widgetPlan;
@@ -589,6 +550,7 @@ class _OrderDetailContent extends StatelessWidget {
   final Future<void> Function() onRefresh;
 
   const _OrderDetailContent({
+    this.isPaymentCompleted = false,
     required this.tradeNo,
     required this.order,
     required this.widgetPlan,

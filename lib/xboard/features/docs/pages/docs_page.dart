@@ -20,58 +20,6 @@ String _localeToDocsLanguage(Locale locale) {
   return lang;
 }
 
-/// 知识库文章模型
-class KnowledgeArticle {
-  final int id;
-  final String category;
-  final String title;
-  final String body;
-  final int createdAt;
-
-  KnowledgeArticle({
-    required this.id,
-    required this.category,
-    required this.title,
-    required this.body,
-    required this.createdAt,
-  });
-
-  factory KnowledgeArticle.fromJson(Map<String, dynamic> json) {
-    return KnowledgeArticle(
-      id: _pickInt(json, ['id', 'article_id', 'knowledge_id']),
-      category: _pickString(json, ['category', 'group', 'type']).isNotEmpty
-          ? _pickString(json, ['category', 'group', 'type'])
-          : '其他',
-      title: _pickString(json, ['title', 'question']),
-      body: _pickString(json, ['body', 'content', 'answer']),
-      createdAt: _pickInt(json, ['updated_at', 'created_at']),
-    );
-  }
-
-  static String _pickString(Map<String, dynamic> json, List<String> keys) {
-    for (final k in keys) {
-      final v = json[k];
-      if (v is String && v.isNotEmpty) return v;
-    }
-    return '';
-  }
-
-  static int _pickInt(Map<String, dynamic> json, List<String> keys) {
-    for (final k in keys) {
-      final v = json[k];
-      if (v is int) return v;
-      if (v is num) return v.toInt();
-      if (v is String) {
-        final parsed = int.tryParse(v);
-        if (parsed != null) return parsed;
-      }
-    }
-    return 0;
-  }
-
-  DateTime get createdDate =>
-      DateTime.fromMillisecondsSinceEpoch(createdAt * 1000);
-}
 
 /// 文档中心页面 — 数据由 knowledgeArticlesProvider 提供（keepAlive 缓存）
 class DocsPage extends ConsumerStatefulWidget {
@@ -107,7 +55,7 @@ class _DocsPageState extends ConsumerState<DocsPage>
     final theme = Theme.of(context);
     final language = _localeToDocsLanguage(Localizations.localeOf(context));
 
-    ref.listen<AsyncValue<dynamic>>(knowledgeArticlesProvider(language), (
+    ref.listen<AsyncValue<List<KnowledgeArticle>>>(knowledgeArticlesProvider(language), (
       _,
       next,
     ) {
@@ -160,7 +108,7 @@ class _DocsPageState extends ConsumerState<DocsPage>
   /// PC 端布局：SafeArea + 顶栏标题+刷新按钮 + 内容区
   Widget _buildDesktopBody(
     ThemeData theme,
-    AsyncValue<dynamic> asyncArticles,
+    AsyncValue<List<KnowledgeArticle>> asyncArticles,
     String language,
   ) {
     return SafeArea(
@@ -184,7 +132,7 @@ class _DocsPageState extends ConsumerState<DocsPage>
           ],
         ),
         data: (result) {
-          final articles = _parseArticles(result);
+          final articles = result;
           if (articles.isEmpty) {
             return Column(
               children: [
@@ -302,7 +250,7 @@ class _DocsPageState extends ConsumerState<DocsPage>
   Widget _buildBody(
     ThemeData theme,
     bool isDesktop,
-    AsyncValue<dynamic> asyncArticles,
+    AsyncValue<List<KnowledgeArticle>> asyncArticles,
     String language,
   ) {
     return asyncArticles.when(
@@ -312,7 +260,7 @@ class _DocsPageState extends ConsumerState<DocsPage>
         onRetry: () => ref.invalidate(knowledgeArticlesProvider(language)),
       ),
       data: (result) {
-        final articles = _parseArticles(result);
+        final articles = result;
         if (articles.isEmpty) {
           return Center(
             child: Column(
@@ -356,35 +304,6 @@ class _DocsPageState extends ConsumerState<DocsPage>
     );
   }
 
-  List<KnowledgeArticle> _parseArticles(dynamic result) {
-    if (result is! Map) return [];
-    final dataField = result['data'];
-    List<dynamic> rawList;
-    if (dataField is List) {
-      rawList = dataField;
-    } else if (dataField is Map) {
-      final articles = dataField['articles'];
-      final nestedData = dataField['data'];
-      rawList = articles is List
-          ? articles
-          : nestedData is List
-              ? nestedData
-              : dataField.values
-                  .whereType<List>()
-                  .expand((list) => list)
-                  .toList();
-    } else {
-      rawList = [];
-    }
-    return rawList
-        .whereType<Map>()
-        .map(
-          (e) => KnowledgeArticle.fromJson(
-            e.map((key, value) => MapEntry(key.toString(), value)),
-          ),
-        )
-        .toList();
-  }
 
   Map<String, List<KnowledgeArticle>> _groupArticles(
     List<KnowledgeArticle> articles,
@@ -646,7 +565,7 @@ p{margin:8px 0}
         final normalized = value.map(
           (key, value) => MapEntry(key.toString(), value),
         );
-        final direct = KnowledgeArticle._pickString(normalized, [
+        final direct = KnowledgeArticle.pickString(normalized, [
           'body',
           'content',
           'answer',

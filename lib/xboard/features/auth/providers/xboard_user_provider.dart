@@ -1091,24 +1091,38 @@ class XBoardUserAuthNotifier extends Notifier<UserAuthState> {
       ref.invalidate(getUserInfoProvider);
       ref.invalidate(getSubscriptionProvider);
 
-      try {
-        final userModel = await ref.read(getUserInfoProvider.future);
-        userInfo = _mapUser(userModel);
-        await _storageService.saveDomainUser(userInfo);
-        ref.read(userInfoProvider.notifier).state = userInfo;
-      } catch (e) {
-        _logger.info('获取用户详细信息失败: $e');
-      }
+      // 两个 API 互不依赖，并行拉取缩短等待时间
+      DomainUser? fetchedUser;
+      DomainSubscription? fetchedSub;
+      await Future.wait([
+        () async {
+          try {
+            final userModel = await ref.read(getUserInfoProvider.future);
+            fetchedUser = _mapUser(userModel);
+          } catch (e) {
+            _logger.info('获取用户详细信息失败: $e');
+          }
+        }(),
+        () async {
+          try {
+            final subscriptionModel =
+                await ref.read(getSubscriptionProvider.future);
+            fetchedSub = _mapSubscription(subscriptionModel);
+          } catch (e) {
+            _logger.info('获取订阅信息失败: $e');
+          }
+        }(),
+      ]);
 
-      try {
-        final subscriptionModel =
-            await ref.read(getSubscriptionProvider.future);
-        subscriptionData =
-            _mergeSubscriptionWithCache(_mapSubscription(subscriptionModel));
+      if (fetchedUser != null) {
+        userInfo = fetchedUser;
+        await _storageService.saveDomainUser(userInfo!);
+        ref.read(userInfoProvider.notifier).state = userInfo;
+      }
+      if (fetchedSub != null) {
+        subscriptionData = _mergeSubscriptionWithCache(fetchedSub!);
         await _storageService.saveDomainSubscription(subscriptionData);
         ref.read(subscriptionInfoProvider.notifier).state = subscriptionData;
-      } catch (e) {
-        _logger.info('获取订阅信息失败: $e');
       }
 
       state = state.copyWith(
@@ -1158,24 +1172,38 @@ class XBoardUserAuthNotifier extends Notifier<UserAuthState> {
       ref.invalidate(getUserInfoProvider);
       ref.invalidate(getSubscriptionProvider);
 
-      try {
-        final userModel = await ref.read(getUserInfoProvider.future);
-        userInfo = _mapUser(userModel);
-        await _storageService.saveDomainUser(userInfo);
-        ref.read(userInfoProvider.notifier).state = userInfo;
-      } catch (e) {
-        _logger.info('获取用户详细信息失败: $e');
-      }
+      // 两个 API 互不依赖，并行拉取缩短等待时间
+      DomainUser? fetchedUser;
+      DomainSubscription? fetchedSub;
+      await Future.wait([
+        () async {
+          try {
+            final userModel = await ref.read(getUserInfoProvider.future);
+            fetchedUser = _mapUser(userModel);
+          } catch (e) {
+            _logger.info('获取用户详细信息失败: $e');
+          }
+        }(),
+        () async {
+          try {
+            final subscriptionModel =
+                await ref.read(getSubscriptionProvider.future);
+            fetchedSub = _mapSubscription(subscriptionModel);
+          } catch (e) {
+            _logger.info('获取订阅信息失败: $e');
+          }
+        }(),
+      ]);
 
-      try {
-        final subscriptionModel =
-            await ref.read(getSubscriptionProvider.future);
-        subscriptionData =
-            _mergeSubscriptionWithCache(_mapSubscription(subscriptionModel));
+      if (fetchedUser != null) {
+        userInfo = fetchedUser;
+        await _storageService.saveDomainUser(userInfo!);
+        ref.read(userInfoProvider.notifier).state = userInfo;
+      }
+      if (fetchedSub != null) {
+        subscriptionData = _mergeSubscriptionWithCache(fetchedSub!);
         await _storageService.saveDomainSubscription(subscriptionData);
         ref.read(subscriptionInfoProvider.notifier).state = subscriptionData;
-      } catch (e) {
-        _logger.info('获取订阅信息失败: $e');
       }
 
       state = state.copyWith(

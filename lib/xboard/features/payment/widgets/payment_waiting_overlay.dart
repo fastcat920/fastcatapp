@@ -443,23 +443,23 @@ class _PaymentWaitingOverlayState extends ConsumerState<PaymentWaitingOverlay>
                     child: Text(AppLocalizations.of(context).xboardConfirm),
                   ),
                 ];
-              } else if (_currentStep == PaymentStep.waitingPayment) {
-                return [
-                  OutlinedButton(
-                    onPressed: () => _confirmCancelOrder(context),
-                    style: XbUiButton.outlinedNeutral(context),
-                    child: const Text('取消支付'),
-                  ),
-                  FilledButton(
-                    onPressed: _isManualCheck
-                        ? null
-                        : () => _checkPaymentStatus(manual: true),
-                    style: XbUiButton.filledPrimary(context),
-                    child: const Text('我已支付'),
-                  ),
-                ];
               }
-              return null;
+              // 只有等待支付步骤显示操作按钮
+              if (_currentStep != PaymentStep.waitingPayment) return null;
+              return [
+                OutlinedButton(
+                  onPressed: () => _confirmCancelOrder(context),
+                  style: XbUiButton.outlinedNeutral(context),
+                  child: const Text('取消支付'),
+                ),
+                FilledButton(
+                  onPressed: _isManualCheck
+                      ? null
+                      : () => _checkPaymentStatus(manual: true),
+                  style: XbUiButton.filledPrimary(context),
+                  child: const Text('我已支付'),
+                ),
+              ];
             }(),
           ),
         ),

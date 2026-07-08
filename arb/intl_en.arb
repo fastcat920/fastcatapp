@@ -1371,5 +1371,9 @@
   "inviteCodeGenerated": "Invite code generated",
   "backendErrorInviteLimitReached": "Maximum number of invites reached",
   "subscriptionUpdateFailed": "Subscription update failed",
-  "subscriptionImportFailed": "Subscription import failed"
+  "subscriptionImportFailed": "Subscription import failed",
+  "xboardRefreshFailedHint": "Subscription refresh failed, please refresh manually later",
+  "customerServiceLoadingSlow": "Customer service page is loading slowly, please wait...",
+  "customerServiceLoadFailed": "Customer service page failed to load, please try again later",
+  "clearCacheAndRestart": "Clear cache and restart"
 }
