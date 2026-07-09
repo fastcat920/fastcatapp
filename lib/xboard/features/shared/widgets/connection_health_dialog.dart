@@ -71,11 +71,18 @@ class ConnectionHealthDialog extends ConnectionHealthView {
   }
 }
 
-class ConnectionHealthView extends ConsumerWidget {
+class ConnectionHealthView extends ConsumerStatefulWidget {
   const ConnectionHealthView({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<ConnectionHealthView> createState() => _ConnectionHealthViewState();
+}
+
+class _ConnectionHealthViewState extends ConsumerState<ConnectionHealthView> {
+  bool _isRefreshing = false;
+
+  @override
+  Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
     final theme = Theme.of(context);
     final initState = ref.watch(initializationProvider);
@@ -261,21 +268,35 @@ class ConnectionHealthView extends ConsumerWidget {
         ),
         const SizedBox(height: 8),
         OutlinedButton.icon(
-          onPressed: () async {
-            await ref.read(initializationProvider.notifier).refresh();
-            await ref
-                .read(xboardUserProvider.notifier)
-                .refreshSubscriptionInfo();
-            ref.invalidate(_windowsHelperStatusProvider);
-          },
-          icon: const Icon(Icons.refresh),
+          onPressed: _isRefreshing
+              ? null
+              : () async {
+                  setState(() => _isRefreshing = true);
+                  try {
+                    await ref.read(initializationProvider.notifier).refresh();
+                    await ref
+                        .read(xboardUserProvider.notifier)
+                        .refreshSubscriptionInfo();
+                    ref.invalidate(_windowsHelperStatusProvider);
+                  } finally {
+                    if (mounted) setState(() => _isRefreshing = false);
+                  }
+                },
+          icon: _isRefreshing
+              ? const SizedBox(
+                  width: 18,
+                  height: 18,
+                  child: CircularProgressIndicator(strokeWidth: 2),
+                )
+              : const Icon(Icons.refresh),
           label: Text(l10n.xboardRefreshStatus),
         ),
       ],
     );
   }
+}
 
-  static Future<void> _repairConnection(
+Future<void> _repairConnection(
     BuildContext context,
     WidgetRef ref,
   ) async {
@@ -318,7 +339,7 @@ class ConnectionHealthView extends ConsumerWidget {
     }
   }
 
-  static int _countNodes(List<Group> groups) {
+int _countNodes(List<Group> groups) {
     final names = <String>{};
     for (final group in groups) {
       for (final proxy in group.all) {
@@ -328,7 +349,7 @@ class ConnectionHealthView extends ConsumerWidget {
     return names.length;
   }
 
-  static String _resolveBusinessApiLabel(GatewayEndpointConfig? fallback) {
+String _resolveBusinessApiLabel(GatewayEndpointConfig? fallback) {
     final sdk = XBoardSDK.instance;
     if (sdk.isInitialized) {
       final baseUrl = sdk.httpService.baseUrl.trim();
@@ -340,7 +361,7 @@ class ConnectionHealthView extends ConsumerWidget {
     return gatewayDisplayLabel(fallback.baseUrl);
   }
 
-  static Proxy? _resolveCurrentProxy(WidgetRef ref) {
+Proxy? _resolveCurrentProxy(WidgetRef ref) {
     final groups = ref.watch(groupsProvider);
     if (groups.isEmpty) return null;
     final selectedMap = ref.watch(selectedMapProvider);
@@ -368,7 +389,6 @@ class ConnectionHealthView extends ConsumerWidget {
       orElse: () => group.all.first,
     );
   }
-}
 
 class _DeviceHealthRow extends ConsumerWidget {
   const _DeviceHealthRow({this.fallbackDeviceLimit});

@@ -5,6 +5,7 @@ import 'package:fl_clash/providers/config.dart';
 import 'package:fl_clash/state.dart';
 import 'package:fl_clash/xboard/features/update_check/providers/update_check_provider.dart';
 import 'package:fl_clash/xboard/features/update_check/widgets/update_dialog.dart';
+import 'package:fl_clash/xboard/utils/xboard_notification.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -88,9 +89,7 @@ class AboutView extends ConsumerWidget {
         }
       } else {
         // 已是最新版本
-        if (context.mounted) {
-          context.showSnackBar('已是最新版本');
-        }
+        XBoardNotification.showSuccess(appLocalizations.checkUpdateError);
       }
     } catch (e) {
       if (context.mounted) {

@@ -762,6 +762,10 @@ class _InviteCodesTab extends StatelessWidget {
                   child: Text(appLocalizations.generateInviteCode),
                 ),
                 style: XbUiButton.filledPrimary(context).copyWith(
+                  minimumSize: const WidgetStatePropertyAll(Size(0, 36)),
+                  padding: const WidgetStatePropertyAll(
+                    EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+                  ),
                   backgroundColor: btnIsDark
                       ? null
                       : WidgetStatePropertyAll(theme.colorScheme.primary),
