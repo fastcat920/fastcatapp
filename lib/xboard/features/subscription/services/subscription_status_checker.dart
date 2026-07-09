@@ -8,6 +8,11 @@ import 'package:fl_clash/xboard/domain/domain.dart';
 import 'package:fl_clash/xboard/features/subscription/widgets/subscription_status_dialog.dart';
 import 'package:fl_clash/xboard/features/auth/providers/xboard_user_provider.dart';
 import 'package:fl_clash/xboard/features/subscription/providers/xboard_subscription_provider.dart';
+import 'package:fl_clash/xboard/features/payment/pages/plan_purchase_page.dart';
+import 'package:fl_clash/xboard/features/payment/pages/plans.dart' show pendingPurchasePlanProvider;
+import 'package:fl_clash/xboard/features/subscription/services/reset_traffic_order_flow.dart';
+import 'package:fl_clash/xboard/utils/xboard_notification.dart';
+import 'package:fl_clash/l10n/l10n.dart';
 import 'package:fl_clash/xboard/core/core.dart';
 
 import 'subscription_status_service.dart';
@@ -104,62 +109,95 @@ class SubscriptionStatusChecker {
     }
   }
 
-  Future<void> _handleRenewFromDialog(
-      BuildContext context, WidgetRef ref) async {
+  /// 续费/购买套餐的通用逻辑（供弹窗、个人中心等复用）
+  static Future<void> handleRenewAction(
+    BuildContext context,
+    WidgetRef ref, {
+    bool isResetTraffic = false,
+    DomainSubscription? subscriptionInfo,
+    DomainUser? userInfo,
+  }) async {
     final isDesktop = Platform.isLinux ||
         Platform.isWindows ||
         Platform.isMacOS ||
         system.isTV;
+    final router = GoRouter.of(context);
+    final navigator = Navigator.of(context);
 
-    // 尝试获取用户当前订阅的套餐ID
+    int? normalizePlanId(int? planId) =>
+        planId != null && planId > 0 ? planId : null;
+
     final userState = ref.read(xboardUserProvider);
-    final currentPlanId = userState.subscriptionInfo?.planId;
+    final currentPlanId = normalizePlanId(subscriptionInfo?.planId) ??
+        normalizePlanId(userInfo?.planId) ??
+        normalizePlanId(ref.read(subscriptionInfoProvider)?.planId) ??
+        normalizePlanId(userState.subscriptionInfo?.planId);
 
     if (currentPlanId != null) {
-      _logger.info('[套餐续费] 查找套餐ID: $currentPlanId');
-
-      // 确保套餐列表已加载
+      final planNotifier = ref.read(xboardSubscriptionProvider.notifier);
       var plans = ref.read(xboardSubscriptionProvider);
       if (plans.isEmpty) {
-        _logger.info('[套餐续费] 套餐列表为空，先加载套餐列表');
-        await ref.read(xboardSubscriptionProvider.notifier).loadPlans();
+        await planNotifier.loadPlans();
         plans = ref.read(xboardSubscriptionProvider);
       }
 
-      DomainPlan? currentPlan;
-      try {
-        currentPlan = plans.firstWhere((plan) => plan.id == currentPlanId);
-      } catch (e) {
-        currentPlan = null;
-      }
-      currentPlan ??= await ref
-          .read(xboardSubscriptionProvider.notifier)
-          .loadPlanById(currentPlanId);
+      DomainPlan? currentPlan =
+          plans.where((plan) => plan.id == currentPlanId).firstOrNull;
+      currentPlan ??= await planNotifier.loadPlanById(currentPlanId);
 
       if (!context.mounted) return;
 
       if (currentPlan != null) {
-        _logger.info('[套餐续费] 找到当前套餐，跳转到购买页面: ${currentPlan.name}');
-        // 统一通过 planId 参数进入，Plans 页面内部会处理隐藏套餐直拉与跳转。
+        if (isResetTraffic) {
+          await showResetTrafficOrderDialog(
+            context: context,
+            ref: ref,
+            planId: currentPlan.id,
+            plan: currentPlan,
+          );
+          return;
+        }
+
         if (isDesktop) {
-          context.go('/plans?planId=$currentPlanId');
+          ref.read(pendingPurchasePlanProvider.notifier).state = currentPlan;
+          router.go('/plans');
         } else {
-          context.push('/plans?planId=$currentPlanId');
+          navigator.push(MaterialPageRoute(
+            builder: (_) => PlanPurchasePage(plan: currentPlan!),
+          ));
         }
         return;
-      } else {
-        _logger.warning('[套餐续费] 未找到ID为 $currentPlanId 的套餐');
+      }
+
+      if (!context.mounted) return;
+      if (isResetTraffic) {
+        await showResetTrafficOrderDialog(
+          context: context,
+          ref: ref,
+          planId: currentPlanId,
+        );
+        return;
       }
     }
 
-    // 没找到套餐：跳转到套餐列表页面
-    _logger.info('[套餐续费] 跳转到套餐列表页面');
+    if (isResetTraffic) {
+      XBoardNotification.showError(
+        AppLocalizations.of(context).xboardPlanNotFound,
+      );
+      return;
+    }
+
     if (!context.mounted) return;
     if (isDesktop) {
-      context.go('/plans');
+      router.go('/plans');
     } else {
-      context.push('/plans');
+      router.push('/plans');
     }
+  }
+
+  Future<void> _handleRenewFromDialog(
+      BuildContext context, WidgetRef ref) async {
+    await handleRenewAction(context, ref);
   }
 
   Future<void> manualCheckSubscriptionStatus(

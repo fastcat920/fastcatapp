@@ -5493,7 +5493,7 @@ class AppLocalizations {
   /// `Plan traffic has been used up, please purchase more traffic or upgrade plan`
   String get subscriptionTrafficExhaustedDetail {
     return Intl.message(
-      'Plan traffic has been used up, please purchase more traffic or upgrade plan',
+      'Plan traffic has been used up, please reset traffic or change plan',
       name: 'subscriptionTrafficExhaustedDetail',
       desc: '',
       args: [],

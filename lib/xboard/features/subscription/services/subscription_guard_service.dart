@@ -3,6 +3,7 @@ import 'package:fl_clash/models/models.dart' as fl_models;
 import 'package:fl_clash/providers/providers.dart';
 import 'package:fl_clash/state.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:fl_clash/xboard/domain/models/subscription.dart';
 import 'package:fl_clash/xboard/features/auth/providers/xboard_user_provider.dart';
 import 'package:fl_clash/xboard/features/subscription/services/subscription_status_service.dart';
 import 'package:fl_clash/xboard/core/core.dart';
@@ -39,18 +40,28 @@ class SubscriptionGuardService {
     _ref = ref;
   }
 
-  /// 连接前校验：返回 true 表示可以连接，false 表示订阅无效
+  /// 连接前校验：返回 null 表示允许连接，非 null 表示需拦截
   SubscriptionStatusResult? checkBeforeConnect() {
     final ref = _ref;
-    if (ref == null) return null;
+    if (ref == null) {
+      _logger.warning('[checkBeforeConnect] _ref 为 null，跳过校验');
+      return null;
+    }
 
     final userState = ref.read(xboardUserProvider);
     if (!userState.isAuthenticated) return null;
 
     final effectiveSubInfo = _getEffectiveSubscriptionInfo();
+
     final status = subscriptionStatusService.checkSubscriptionStatus(
       userState: userState,
       profileSubscriptionInfo: effectiveSubInfo,
+    );
+
+    _logger.info(
+      '[checkBeforeConnect] 结果: type=${status.type}, '
+      'effectiveSubInfo total=${effectiveSubInfo?.total}, '
+      'upload=${effectiveSubInfo?.upload}, download=${effectiveSubInfo?.download}',
     );
 
     if (status.type == SubscriptionStatusType.expired ||
@@ -59,6 +70,32 @@ class SubscriptionGuardService {
         status.type == SubscriptionStatusType.banned) {
       return status;
     }
+
+    // 兜底：直接用 DomainSubscription.usagePercentage 判断流量是否用完
+    final domainSub =
+        ref.read(subscriptionInfoProvider) ?? userState.subscriptionInfo;
+    if (domainSub != null && domainSub.usagePercentage >= 100) {
+      _logger.info(
+        '[checkBeforeConnect] 兜底命中: usagePercentage=${domainSub.usagePercentage}%, '
+        'transferLimit=${domainSub.transferLimit}, '
+        'totalUsed=${domainSub.totalUsedBytes}',
+      );
+      final fallbackStatus = subscriptionStatusService.checkSubscriptionStatus(
+        userState: userState,
+        profileSubscriptionInfo: fl_models.SubscriptionInfo(
+          upload: domainSub.uploadedBytes,
+          download: domainSub.downloadedBytes,
+          total: domainSub.transferLimit,
+          expire: domainSub.expiredAt != null
+              ? domainSub.expiredAt!.millisecondsSinceEpoch ~/ 1000
+              : 0,
+        ),
+      );
+      if (fallbackStatus.type == SubscriptionStatusType.exhausted) {
+        return fallbackStatus;
+      }
+    }
+
     return null;
   }
 
@@ -185,7 +222,18 @@ class SubscriptionGuardService {
     final subscriptionInfo =
         ref.read(subscriptionInfoProvider) ?? authState.subscriptionInfo;
 
-    if (subscriptionInfo != null && subscriptionInfo.planId > 0) {
+    _logger.info(
+      '[getEffectiveSubInfo] planId=${subscriptionInfo?.planId}, '
+      'transferLimit=${subscriptionInfo?.transferLimit}, '
+      'uploaded=${subscriptionInfo?.uploadedBytes}, '
+      'downloaded=${subscriptionInfo?.downloadedBytes}, '
+      'profileSubInfo total=${profileSubInfo?.total}, '
+      'expire=${profileSubInfo?.expire}',
+    );
+
+    if (subscriptionInfo != null &&
+        (subscriptionInfo.planId > 0 ||
+            subscriptionInfo.transferLimit > 0)) {
       final subscriptionExpire = subscriptionInfo.expiredAt != null
           ? subscriptionInfo.expiredAt!.millisecondsSinceEpoch ~/ 1000
           : 0;

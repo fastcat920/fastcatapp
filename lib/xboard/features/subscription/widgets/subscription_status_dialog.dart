@@ -266,20 +266,13 @@ class SubscriptionStatusDialog extends StatelessWidget {
       actions.add(
         SizedBox(
           width: double.infinity,
-          child: TextButton(
+          child: OutlinedButton(
             onPressed: () {
               Navigator.of(context).pop('refresh');
               onRefresh?.call();
             },
-            child: Text(
-              AppLocalizations.of(context).xboardRefreshStatus,
-              style: TextStyle(
-                color: Theme.of(context)
-                    .colorScheme
-                    .onSurface
-                    .withValues(alpha: 0.6),
-              ),
-            ),
+            style: XbUiButton.outlinedNeutral(context),
+            child: Text(AppLocalizations.of(context).xboardRefreshStatus),
           ),
         ),
       );

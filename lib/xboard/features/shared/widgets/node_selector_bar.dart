@@ -12,11 +12,11 @@ import 'package:fl_clash/xboard/features/latency/services/auto_latency_service.d
 import 'package:fl_clash/xboard/features/profile/providers/profile_import_provider.dart';
 import 'package:fl_clash/xboard/features/subscription/services/reset_traffic_order_flow.dart';
 import 'package:fl_clash/xboard/features/subscription/services/subscription_guard_service.dart';
+import 'package:fl_clash/xboard/features/subscription/services/subscription_status_checker.dart';
 import 'package:fl_clash/xboard/features/subscription/services/subscription_status_service.dart';
 import 'package:fl_clash/xboard/features/subscription/widgets/subscription_status_dialog.dart';
 import 'package:fl_clash/xboard/features/shared/styles/styles.dart';
 import 'package:fl_clash/l10n/l10n.dart';
-import 'package:go_router/go_router.dart';
 
 class NodeSelectorBar extends ConsumerStatefulWidget {
   const NodeSelectorBar({super.key});
@@ -519,7 +519,9 @@ class _NodeSelectorBarState extends ConsumerState<NodeSelectorBar> {
       await SubscriptionStatusDialog.show(
         context,
         blockStatus,
-        onPurchase: () => GoRouter.of(context).go('/plans'),
+        onPurchase: () {
+          SubscriptionStatusChecker.handleRenewAction(context, ref);
+        },
         onResetTraffic: blockStatus.type == SubscriptionStatusType.exhausted
             ? () => showResetTrafficOrderDialog(context: context, ref: ref)
             : null,

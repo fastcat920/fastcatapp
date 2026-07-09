@@ -867,7 +867,7 @@ class MessageLookup extends MessageLookupByLibrary {
       "流量已用完",
     ),
     "subscriptionTrafficExhaustedDetail": MessageLookupByLibrary.simpleMessage(
-      "套餐流量已用完，请购买更多流量或升级套餐",
+      "套餐流量已用完，请重置流量或更换套餐",
     ),
     "subscriptionUpdateFailed": MessageLookupByLibrary.simpleMessage("订阅更新失败"),
     "subscriptionUpdateSuccess": MessageLookupByLibrary.simpleMessage("订阅更新成功"),

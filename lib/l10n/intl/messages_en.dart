@@ -1233,7 +1233,7 @@ class MessageLookup extends MessageLookupByLibrary {
       "Traffic exhausted",
     ),
     "subscriptionTrafficExhaustedDetail": MessageLookupByLibrary.simpleMessage(
-      "Plan traffic has been used up, please purchase more traffic or upgrade plan",
+      "Plan traffic has been used up, please reset traffic or change plan",
     ),
     "subscriptionUpdateFailed": MessageLookupByLibrary.simpleMessage(
       "Subscription update failed",

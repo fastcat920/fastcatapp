@@ -682,7 +682,7 @@
     }
   },
   "subscriptionTrafficExhausted": "Traffic exhausted",
-  "subscriptionTrafficExhaustedDetail": "Plan traffic has been used up, please purchase more traffic or upgrade plan",
+  "subscriptionTrafficExhaustedDetail": "Plan traffic has been used up, please reset traffic or change plan",
   "subscriptionValid": "Subscription valid",
   "subscriptionValidDetail": "Subscription will expire in {days} days",
   "@subscriptionValidDetail": {

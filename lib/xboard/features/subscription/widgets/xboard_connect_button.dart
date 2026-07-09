@@ -6,11 +6,11 @@ import 'package:fl_clash/state.dart';
 import 'package:fl_clash/widgets/widgets.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
 import 'package:fl_clash/xboard/features/auth/providers/xboard_user_provider.dart';
 import 'package:fl_clash/xboard/features/latency/services/auto_latency_service.dart';
 import 'package:fl_clash/xboard/features/subscription/services/reset_traffic_order_flow.dart';
 import 'package:fl_clash/xboard/features/subscription/services/subscription_guard_service.dart';
+import 'package:fl_clash/xboard/features/subscription/services/subscription_status_checker.dart';
 import 'package:fl_clash/xboard/features/subscription/services/subscription_status_service.dart';
 import 'package:fl_clash/xboard/features/subscription/widgets/subscription_status_dialog.dart';
 import 'package:fl_clash/xboard/utils/xboard_notification.dart';
@@ -122,7 +122,9 @@ class _XBoardConnectButtonState extends ConsumerState<XBoardConnectButton>
     }
     if (!mounted) return;
 
+    debugPrint('[handleSwitchStart] refreshSubscriptionInfo 完成，开始 checkBeforeConnect');
     final blockStatus = subscriptionGuardService.checkBeforeConnect();
+    debugPrint('[handleSwitchStart] blockStatus=${blockStatus?.type}');
     if (blockStatus != null) {
       if (blockStatus.type == SubscriptionStatusType.noSubscription ||
           blockStatus.type == SubscriptionStatusType.expired ||
@@ -172,9 +174,9 @@ class _XBoardConnectButtonState extends ConsumerState<XBoardConnectButton>
     return isStart ? l10n.xboardDisconnecting : l10n.xboardConnecting;
   }
 
-  void _openPlans() {
+  Future<void> _openPlans() async {
     if (!mounted) return;
-    GoRouter.of(context).go('/plans');
+    await SubscriptionStatusChecker.handleRenewAction(context, ref);
   }
 
   Future<void> _openResetTrafficOrder() async {
@@ -190,7 +192,9 @@ class _XBoardConnectButtonState extends ConsumerState<XBoardConnectButton>
         .refreshSubscriptionInfo(importProfile: false);
     if (!mounted) return;
 
+    debugPrint('[handleSwitchStart] refreshSubscriptionInfo 完成，开始 checkBeforeConnect');
     final blockStatus = subscriptionGuardService.checkBeforeConnect();
+    debugPrint('[handleSwitchStart] blockStatus=${blockStatus?.type}');
     if (blockStatus == null) {
       XBoardNotification.showSuccess(
         AppLocalizations.of(context).subscriptionValid,

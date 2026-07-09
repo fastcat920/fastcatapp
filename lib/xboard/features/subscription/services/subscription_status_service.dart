@@ -94,9 +94,10 @@ class SubscriptionStatusService {
 
     // 检查过期时间
     final expiredAt = _getExpiredAt(profileSubscriptionInfo);
+    int? remainingDaysCache;
     if (expiredAt != null) {
-      final remainingDays = _naturalDaysUntil(expiredAt);
-      if (remainingDays < 0) {
+      remainingDaysCache = _naturalDaysUntil(expiredAt);
+      if (remainingDaysCache < 0) {
         return SubscriptionStatusResult(
           type: SubscriptionStatusType.expired,
           messageBuilder: (context) =>
@@ -104,10 +105,21 @@ class SubscriptionStatusService {
           detailMessageBuilder: (context) =>
               AppLocalizations.of(context).xboardRenewToContinue,
           expiredAt: expiredAt,
-          remainingDays: remainingDays,
+          remainingDays: remainingDaysCache,
           needsDialog: true,
         );
       }
+    }
+
+    // 检查流量状态（必须在到期提示之前，否则即将到期的套餐会跳过流量检查）
+    final trafficStatus = _checkTrafficStatus(profileSubscriptionInfo);
+    if (trafficStatus != null) {
+      return trafficStatus;
+    }
+
+    // 到期提示（不阻断连接）
+    if (expiredAt != null) {
+      final remainingDays = remainingDaysCache!;
       if (remainingDays == 0) {
         return SubscriptionStatusResult(
           type: SubscriptionStatusType.valid,
@@ -117,7 +129,7 @@ class SubscriptionStatusService {
               AppLocalizations.of(context).subscriptionExpiresTodayDetail,
           expiredAt: expiredAt,
           remainingDays: remainingDays,
-          needsDialog: false, // 当天到期仍允许连接，不阻断
+          needsDialog: false,
         );
       }
       if (remainingDays <= 3) {
@@ -129,15 +141,9 @@ class SubscriptionStatusService {
               .subscriptionExpiringInDaysDetail(remainingDays),
           expiredAt: expiredAt,
           remainingDays: remainingDays,
-          needsDialog: false, // 即将过期不强制弹窗
+          needsDialog: false,
         );
       }
-    }
-
-    // 检查流量状态
-    final trafficStatus = _checkTrafficStatus(profileSubscriptionInfo);
-    if (trafficStatus != null) {
-      return trafficStatus;
     }
 
     final remainingDays =

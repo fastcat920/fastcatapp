@@ -686,7 +686,7 @@
     }
   },
   "subscriptionTrafficExhausted": "流量已用完",
-  "subscriptionTrafficExhaustedDetail": "套餐流量已用完，请购买更多流量或升级套餐",
+  "subscriptionTrafficExhaustedDetail": "套餐流量已用完，请重置流量或更换套餐",
   "subscriptionValid": "订阅有效",
   "subscriptionValidDetail": "订阅将在 {days} 天后过期",
   "@subscriptionValidDetail": {
