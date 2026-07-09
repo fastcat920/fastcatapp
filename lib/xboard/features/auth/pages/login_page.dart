@@ -247,8 +247,8 @@ class _LoginPageState extends ConsumerState<LoginPage> {
   Widget _buildLogo(ColorScheme colorScheme) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     return Container(
-      width: 52,
-      height: 52,
+      width: 80,
+      height: 80,
       decoration: BoxDecoration(
         color: isDark
             ? colorScheme.primaryContainer.withAlpha(51)
@@ -260,8 +260,8 @@ class _LoginPageState extends ConsumerState<LoginPage> {
         borderRadius: BorderRadius.circular(14),
         child: Image.asset(
           'assets/images/icon.png',
-          width: 52,
-          height: 52,
+          width: 64,
+          height: 64,
         ),
       ),
     );
