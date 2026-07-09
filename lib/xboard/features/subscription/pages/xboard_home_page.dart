@@ -35,7 +35,7 @@ class _XBoardHomePageState extends ConsumerState<XBoardHomePage>
     with AutomaticKeepAliveClientMixin {
   bool _hasInitialized = false;
   bool _hasCheckedSubscriptionStatus = false;
-  bool _hasRequestedStartupLatencyTest = false;
+  bool _hasTriggeredLatencyTest = false;
   bool _isTokenExpiredDialogVisible = false;
   bool _isCheckingWebsite = false;
 
@@ -54,7 +54,6 @@ class _XBoardHomePageState extends ConsumerState<XBoardHomePage>
         _waitForSubscriptionImportThenCheck();
       }
       autoLatencyService.initialize(ref);
-      _scheduleStartupLatencyTest();
       // 主动拉取公告，保证铃铛和 Banner 都能显示数据
       ref.read(noticeProvider.notifier).fetchNotices();
     });
@@ -79,15 +78,16 @@ class _XBoardHomePageState extends ConsumerState<XBoardHomePage>
           if (mounted) {
             subscriptionStatusChecker.checkSubscriptionStatusOnStartup(
                 context, ref);
-            _scheduleStartupLatencyTest();
           }
         });
       }
     });
 
     ref.listenManual(groupsProvider, (previous, next) {
-      if (next.isNotEmpty) {
-        _scheduleStartupLatencyTest();
+      if (next.isNotEmpty && !_hasTriggeredLatencyTest) {
+        _hasTriggeredLatencyTest = true;
+        autoLatencyService.initialize(ref);
+        autoLatencyService.testCurrentGroupNodes(maxNodes: 999);
       }
     });
 
@@ -585,18 +585,6 @@ class _XBoardHomePageState extends ConsumerState<XBoardHomePage>
     if (mounted) {
       subscriptionStatusChecker.checkSubscriptionStatusOnStartup(context, ref);
     }
-  }
-
-  void _scheduleStartupLatencyTest() {
-    if (_hasRequestedStartupLatencyTest) return;
-    if (ref.read(groupsProvider).isEmpty) return;
-
-    _hasRequestedStartupLatencyTest = true;
-    Future.delayed(const Duration(milliseconds: 800), () {
-      if (!mounted) return;
-      autoLatencyService.initialize(ref);
-      autoLatencyService.testCurrentGroupNodes(maxNodes: 999);
-    });
   }
 
   void _showTokenExpiredDialog() {
