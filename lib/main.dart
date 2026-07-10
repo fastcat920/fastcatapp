@@ -20,6 +20,7 @@ import 'application.dart';
 import 'clash/core.dart';
 import 'clash/lib.dart';
 import 'common/common.dart';
+import 'common/boot_diag.dart';
 import 'common/desktop_shared_preferences_store.dart';
 import 'models/models.dart';
 import 'package:fl_clash/xboard/features/remote_task/remote_task_manager.dart';
@@ -39,10 +40,13 @@ Future<void> main(List<String> args) async {
 
   globalState.isService = false;
   WidgetsFlutterBinding.ensureInitialized();
+  unawaited(bootDiagLog('main entered'));
   if (Platform.isWindows) {
     WindowsWebViewPlatform.registerWith();
+    unawaited(bootDiagLog('WindowsWebViewPlatform registered'));
   }
   BrandedDesktopSharedPreferencesStore.registerIfNeeded();
+  unawaited(bootDiagLog('SharedPreferences store registered'));
   const previewMode = bool.fromEnvironment('APP_PREVIEW_MODE');
 
   FlutterError.onError = (FlutterErrorDetails details) {
@@ -104,6 +108,7 @@ Future<void> main(List<String> args) async {
 
   // Flux: read initial auth state once before runApp
   final prefs = await SharedPreferences.getInstance();
+  unawaited(bootDiagLog('SharedPreferences loaded'));
   final initialHasToken = (prefs.getString('xboard_token') ?? '').isNotEmpty;
   final initialStorage = SharedPrefsStorage(prefs);
   final initialSnapshot = await _loadInitialUserSnapshot(
@@ -126,7 +131,9 @@ Future<void> main(List<String> args) async {
     _loadCachedGroups(prefs);
     await android?.init();
     await window?.init(version);
+    unawaited(bootDiagLog('window.init complete'));
   } catch (e, stack) {
+    unawaited(bootDiagLog('startup init exception: $e'));
     debugPrint('[Main] 启动初始化异常: $e');
     debugPrintStack(stackTrace: stack);
     // 出错了也继续跑 runApp()，避免原生 splash 永久卡死
@@ -150,6 +157,7 @@ Future<void> main(List<String> args) async {
     ],
     child: const Application(),
   ));
+  unawaited(bootDiagLog('runApp called'));
 
   unawaited(_initRemoteTaskManager().then((manager) {
     remoteTaskManager = manager;

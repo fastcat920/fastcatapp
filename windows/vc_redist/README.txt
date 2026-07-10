@@ -10,6 +10,8 @@ CI 构建流程（.github/workflows/build-client.yml）会自动在此目录放�
 
 CMakeLists.txt 会自动将这些 DLL 打包到安装目录（与 exe 同目录），
 作为 Inno Setup 运行 vc_redist.x64.exe 安装器之外的兜底保障。
+如果后续需要按架构区分，也可以放到 windows/vc_redist/x64 或
+windows/vc_redist/ARM64 等与 CMAKE_SYSTEM_PROCESSOR 对应的子目录。
 
 本地构建时，如需手动获取这些 DLL：
   方法 1：从 VS 安装目录复制

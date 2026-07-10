@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:fl_clash/common/boot_diag.dart';
 import 'package:fl_clash/common/common.dart';
 import 'package:fl_clash/state.dart';
 import 'package:flutter/material.dart';
@@ -8,10 +9,12 @@ import 'package:window_manager/window_manager.dart';
 
 class Window {
   init(int version) async {
+    await bootDiagLog('window.init begin');
     final props = globalState.config.windowProps;
     final initialSize = const Size(800, 600);
     final acquire = await singleInstanceLock.acquire();
     if (!acquire) {
+      await bootDiagLog('singleInstanceLock denied, exiting');
       exit(0);
     }
     if (Platform.isWindows) {
@@ -20,6 +23,7 @@ class Window {
       protocol.register("flclash");
     }
     await windowManager.ensureInitialized();
+    await bootDiagLog('windowManager.ensureInitialized complete');
     final windowOptions = WindowOptions(
       size: initialSize,
       minimumSize: initialSize,
@@ -58,6 +62,7 @@ class Window {
       }
     }
     await windowManager.waitUntilReadyToShow(windowOptions, () async {
+      await bootDiagLog('waitUntilReadyToShow callback begin');
       await windowManager.setPreventClose(true);
       await windowManager.setMinimumSize(initialSize);
       await windowManager.setMaximumSize(initialSize);
@@ -68,14 +73,18 @@ class Window {
       if (!Platform.isMacOS && left == 0 && top == 0) {
         await windowManager.setAlignment(Alignment.center);
       }
+      await bootDiagLog('waitUntilReadyToShow callback complete');
     });
+    await bootDiagLog('window.init end');
   }
 
   show() async {
+    await bootDiagLog('window.show begin');
     render?.resume();
     await windowManager.show();
     await windowManager.focus();
     await windowManager.setSkipTaskbar(false);
+    await bootDiagLog('window.show complete');
   }
 
   Future<bool> get isVisible async {

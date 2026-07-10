@@ -7,6 +7,13 @@
 
 #include <iostream>
 
+namespace {
+
+using SetProcessDpiAwarenessContextPtr = BOOL(WINAPI*)(DPI_AWARENESS_CONTEXT);
+using SetProcessDpiAwarenessPtr = HRESULT(WINAPI*)(int);
+
+}  // namespace
+
 void CreateAndAttachConsole() {
   if (::AllocConsole()) {
     FILE *unused;
@@ -62,4 +69,33 @@ std::string Utf8FromUtf16(const wchar_t* utf16_string) {
     return std::string();
   }
   return utf8_string;
+}
+
+void ConfigureDpiAwareness() {
+  HMODULE user32_module = LoadLibraryA("User32.dll");
+  if (user32_module != nullptr) {
+    auto set_process_dpi_awareness_context =
+        reinterpret_cast<SetProcessDpiAwarenessContextPtr>(GetProcAddress(
+            user32_module, "SetProcessDpiAwarenessContext"));
+    if (set_process_dpi_awareness_context != nullptr &&
+        set_process_dpi_awareness_context(
+            DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE_V2)) {
+      FreeLibrary(user32_module);
+      return;
+    }
+    FreeLibrary(user32_module);
+  }
+
+  HMODULE shcore_module = LoadLibraryA("Shcore.dll");
+  if (shcore_module != nullptr) {
+    auto set_process_dpi_awareness =
+        reinterpret_cast<SetProcessDpiAwarenessPtr>(
+            GetProcAddress(shcore_module, "SetProcessDpiAwareness"));
+    if (set_process_dpi_awareness != nullptr) {
+      // PROCESS_PER_MONITOR_DPI_AWARE = 2. Keep the numeric value here to avoid
+      // requiring newer SDK headers on older build hosts.
+      set_process_dpi_awareness(2);
+    }
+    FreeLibrary(shcore_module);
+  }
 }

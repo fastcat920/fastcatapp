@@ -88,7 +88,10 @@ install(FILES "${FLUTTER_LIBRARY}" DESTINATION "${INSTALL_BUNDLE_LIB_DIR}"
 #   msvcp140.dll  vcruntime140.dll  vcruntime140_1.dll
 # (found under VC/Redist/MSVC/<version>/x64/Microsoft.VC143.CRT/)
 if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/vc_redist")
-  file(GLOB VC_REDIST_DLLS "${CMAKE_CURRENT_SOURCE_DIR}/vc_redist/*.dll")
+  file(GLOB VC_REDIST_DLLS
+    "${CMAKE_CURRENT_SOURCE_DIR}/vc_redist/*.dll"
+    "${CMAKE_CURRENT_SOURCE_DIR}/vc_redist/${CMAKE_SYSTEM_PROCESSOR}/*.dll"
+  )
   if(VC_REDIST_DLLS)
     install(FILES ${VC_REDIST_DLLS} DESTINATION "${INSTALL_BUNDLE_LIB_DIR}"
       COMPONENT Runtime)

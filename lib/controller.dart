@@ -22,6 +22,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:path/path.dart';
 
 import 'common/common.dart';
+import 'common/boot_diag.dart';
 import 'models/models.dart';
 import 'views/profiles/override_profile.dart';
 
@@ -897,13 +898,17 @@ class AppController {
   }
 
   init() async {
+    await bootDiagLog('AppController.init begin');
     FlutterError.onError = (details) {
       commonPrint.log(details.stack.toString());
     };
     updateTray(true);
     await _syncLaunchWindowVisibility();
+    await bootDiagLog('launch window visibility synced');
     await _initCore();
+    await bootDiagLog('core init complete');
     await _initStatus();
+    await bootDiagLog('status init complete');
     autoLaunch?.updateStatus(
       _ref.read(appSettingProvider).autoLaunch,
     );
@@ -916,6 +921,7 @@ class AppController {
     await _handlePreference();
     await _handlerDisclaimer();
     _ref.read(initProvider.notifier).value = true;
+    await bootDiagLog('AppController.init complete');
   }
 
   Future<void> _syncLaunchWindowVisibility() async {
