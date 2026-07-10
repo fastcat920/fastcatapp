@@ -1,5 +1,6 @@
 import 'package:fl_clash/common/common.dart';
 import 'package:fl_clash/providers/config.dart';
+import 'package:fl_clash/xboard/features/auth/utils/customer_service_helper.dart';
 import 'package:fl_clash/xboard/widgets/navigation/desktop_navigation_rail.dart';
 import 'package:fl_clash/xboard/widgets/navigation/mobile_navigation_bar.dart';
 import 'package:flutter/material.dart';
@@ -146,6 +147,9 @@ class _AdaptiveShellLayoutState extends ConsumerState<AdaptiveShellLayout> {
         canPop: false,
         onPopInvokedWithResult: (didPop, result) async {
           if (didPop) return;
+          if (CustomerServiceHelper.hideEmbeddedCustomerServiceIfVisible()) {
+            return;
+          }
           final router = GoRouter.of(context);
           if (router.canPop()) {
             router.pop();

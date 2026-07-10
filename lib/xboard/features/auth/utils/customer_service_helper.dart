@@ -122,6 +122,16 @@ class CustomerServiceHelper {
   /// 是否有任何客服渠道可用（仅远程 Crisp）
   static bool get isAvailable => XBoardConfig.crispWebsiteId.isNotEmpty;
 
+  static bool get isEmbeddedCustomerServiceVisible {
+    return _embeddedCustomerServiceState?.value.isVisible ?? false;
+  }
+
+  static bool hideEmbeddedCustomerServiceIfVisible() {
+    if (!isEmbeddedCustomerServiceVisible) return false;
+    _hideEmbeddedCustomerService();
+    return true;
+  }
+
   static bool get _isDesktopPlatform =>
       Platform.isWindows || Platform.isMacOS || Platform.isLinux;
 
