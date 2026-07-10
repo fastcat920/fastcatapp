@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:desktop_webview_window/desktop_webview_window.dart';
+import 'package:fl_clash/common/common.dart' show system;
 import 'package:fl_clash/common/color.dart';
 import 'package:fl_clash/common/path.dart';
 import 'package:fl_clash/l10n/l10n.dart';
@@ -17,6 +18,7 @@ import 'package:fl_clash/xboard/features/auth/auth.dart';
 import 'package:fl_clash/xboard/domain/domain.dart';
 import 'package:fl_clash/xboard/features/auth/pages/crisp_chat_page.dart';
 import 'package:fl_clash/xboard/features/auth/pages/salesmartly_chat_page.dart';
+import 'package:flutter/foundation.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 import 'package:fl_clash/xboard/features/auth/pages/windows_chat_page.dart';
 import 'package:fl_clash/xboard/features/auth/utils/crisp_url_helper.dart';
@@ -25,6 +27,7 @@ import 'package:fl_clash/xboard/core/core.dart';
 import 'package:fl_clash/xboard/utils/xboard_notification.dart';
 import 'package:flutter_inappwebview/flutter_inappwebview.dart' as iaw;
 import 'package:flutter_xboard_sdk/flutter_xboard_sdk.dart';
+import 'package:go_router/go_router.dart';
 
 const _logger = FileLogger('customer_service_helper.dart');
 const _deviceGatewayApiPrefix = gatewayApiPrefix;
@@ -34,6 +37,9 @@ const _crispProxyProbeTimeout = Duration(seconds: 4);
 const _crispProxyProbePreviewBytes = 4096;
 const _crispProxyUsableCacheTtl = Duration(minutes: 10);
 const _crispUserDataResolveTimeout = Duration(milliseconds: 1800);
+const _customerServiceHiddenTtl = Duration(minutes: 20);
+const _desktopRootMenuWidth = 96.0;
+const _mobileRootMenuHeight = 68.0;
 
 /// 统一客服入口：按业务约定仅使用 Crisp（远程优先，本地兜底）
 ///
@@ -60,6 +66,11 @@ class CustomerServiceHelper {
   static String? _desktopCustomerServiceAccent;
   static String? _desktopCustomerServiceLocaleTag;
   static String? _desktopCustomerServiceLoadingText;
+  static OverlayEntry? _embeddedCustomerServiceEntry;
+  static ValueNotifier<bool>? _embeddedCustomerServiceVisible;
+  static Timer? _embeddedCustomerServiceCloseTimer;
+  static String? _embeddedCustomerServiceSignature;
+  static DateTime? _embeddedCustomerServiceHiddenAt;
 
   /// 是否有任何客服渠道可用（仅远程 Crisp）
   static bool get isAvailable => XBoardConfig.crispWebsiteId.isNotEmpty;
@@ -619,6 +630,130 @@ class CustomerServiceHelper {
     return ''; // 缓存未命中：跳过代理，CrispChatPage 内部有 fallback 逻辑
   }
 
+  static String _embeddedCustomerServiceSessionSignature({
+    required String channel,
+    required String websiteId,
+    String? crispProxyUrl,
+    String? userScript,
+  }) {
+    return [
+      Platform.operatingSystem,
+      channel,
+      websiteId.trim(),
+      normalizeCrispProxyUrl(crispProxyUrl),
+      userScript.hashCode.toString(),
+    ].join('|');
+  }
+
+  static bool _showExistingEmbeddedCustomerService(String signature) {
+    final entry = _embeddedCustomerServiceEntry;
+    final visible = _embeddedCustomerServiceVisible;
+    if (entry == null ||
+        visible == null ||
+        _embeddedCustomerServiceSignature != signature) {
+      return false;
+    }
+
+    final hiddenAt = _embeddedCustomerServiceHiddenAt;
+    if (hiddenAt != null &&
+        DateTime.now().difference(hiddenAt) >= _customerServiceHiddenTtl) {
+      _closeEmbeddedCustomerService();
+      return false;
+    }
+
+    _embeddedCustomerServiceCloseTimer?.cancel();
+    _embeddedCustomerServiceCloseTimer = null;
+    _embeddedCustomerServiceHiddenAt = null;
+    visible.value = true;
+    return true;
+  }
+
+  static Future<void> _openEmbeddedCustomerService(
+    BuildContext context, {
+    required String signature,
+    required Widget Function(
+      VoidCallback hide,
+      ValueListenable<bool> visibility,
+    ) builder,
+  }) async {
+    if (_showExistingEmbeddedCustomerService(signature)) return;
+    _closeEmbeddedCustomerService();
+
+    final overlay = Overlay.of(context, rootOverlay: true);
+    final visible = ValueNotifier<bool>(true);
+    final showRootMenu = _shouldKeepRootMenuVisible(context);
+    late final OverlayEntry entry;
+
+    entry = OverlayEntry(
+      builder: (_) => _EmbeddedCustomerServiceFrame(
+        showRootMenu: showRootMenu,
+        child: ValueListenableBuilder<bool>(
+          valueListenable: visible,
+          builder: (_, isVisible, child) {
+            return Offstage(
+              offstage: !isVisible,
+              child: IgnorePointer(
+                ignoring: !isVisible,
+                child: child,
+              ),
+            );
+          },
+          child: Material(
+            type: MaterialType.transparency,
+            child: builder(_hideEmbeddedCustomerService, visible),
+          ),
+        ),
+      ),
+    );
+
+    _embeddedCustomerServiceEntry = entry;
+    _embeddedCustomerServiceVisible = visible;
+    _embeddedCustomerServiceSignature = signature;
+    _embeddedCustomerServiceHiddenAt = null;
+    _embeddedCustomerServiceCloseTimer?.cancel();
+    _embeddedCustomerServiceCloseTimer = null;
+    overlay.insert(entry);
+  }
+
+  static bool _shouldKeepRootMenuVisible(BuildContext context) {
+    try {
+      final path = GoRouterState.of(context).uri.path;
+      return path == '/' ||
+          path.startsWith('/plans') ||
+          path.startsWith('/invite') ||
+          path.startsWith('/mine') ||
+          path.startsWith('/logs');
+    } catch (_) {
+      return false;
+    }
+  }
+
+  static void _hideEmbeddedCustomerService() {
+    final visible = _embeddedCustomerServiceVisible;
+    if (visible == null) return;
+    visible.value = false;
+    _embeddedCustomerServiceHiddenAt = DateTime.now();
+    _embeddedCustomerServiceCloseTimer?.cancel();
+    _embeddedCustomerServiceCloseTimer = Timer(_customerServiceHiddenTtl, () {
+      final hiddenAt = _embeddedCustomerServiceHiddenAt;
+      if (hiddenAt == null) return;
+      if (DateTime.now().difference(hiddenAt) >= _customerServiceHiddenTtl) {
+        _closeEmbeddedCustomerService();
+      }
+    });
+  }
+
+  static void _closeEmbeddedCustomerService() {
+    _embeddedCustomerServiceCloseTimer?.cancel();
+    _embeddedCustomerServiceCloseTimer = null;
+    _embeddedCustomerServiceHiddenAt = null;
+    _embeddedCustomerServiceSignature = null;
+    _embeddedCustomerServiceVisible?.dispose();
+    _embeddedCustomerServiceVisible = null;
+    _embeddedCustomerServiceEntry?.remove();
+    _embeddedCustomerServiceEntry = null;
+  }
+
   /// 打开客服页面
   static Future<void> open(BuildContext context) async {
     final crispId = await _resolveCrispWebsiteId();
@@ -641,10 +776,10 @@ class CustomerServiceHelper {
       fallbackWebsiteUrl: fallbackWebsiteUrl,
       // IP 归属地数据延后注入，不阻塞页面打开
       deferredUserScript: () async {
+        if (!context.mounted) return null;
         final ipData = await _resolveCrispIPDataForInitialInjection(context);
-        return ipData != null
-            ? _buildCrispUserScript(context, ipData: ipData)
-            : null;
+        if (!context.mounted || ipData == null) return null;
+        return _buildCrispUserScript(context, ipData: ipData);
       },
     );
   }
@@ -660,9 +795,19 @@ class CustomerServiceHelper {
       return;
     } else if (SalesmarylyChatPage.isSupported) {
       // Android/iOS：内嵌 WebView 全屏
-      Navigator.of(context, rootNavigator: true).push(
-        MaterialPageRoute(
-          builder: (_) => SalesmarylyChatPage(scriptUrl: scriptUrl),
+      final signature = _embeddedCustomerServiceSessionSignature(
+        channel: 'salesmartly',
+        websiteId: scriptUrl,
+      );
+      unawaited(
+        _openEmbeddedCustomerService(
+          context,
+          signature: signature,
+          builder: (hide, visibility) => SalesmarylyChatPage(
+            scriptUrl: scriptUrl,
+            onBackPressed: hide,
+            visibilityListenable: visibility,
+          ),
         ),
       );
     } else {
@@ -849,7 +994,8 @@ if(window===window.top){
   static _CrispIPData? _getCachedIPData() {
     final cached = _cachedIPData;
     final cachedTime = _cachedIPDataTime;
-    if (cached != null && cachedTime != null &&
+    if (cached != null &&
+        cachedTime != null &&
         DateTime.now().difference(cachedTime) < _ipDataCacheTtl) {
       return cached;
     }
@@ -1077,28 +1223,44 @@ if(window===window.top){
       _prewarmedHeadlessWin?.dispose();
       _prewarmedHeadlessWin = null;
       if (!context.mounted) return;
-      await Navigator.of(context).push(
-        MaterialPageRoute(
-          builder: (_) => WindowsChatPage(
-            crispWebsiteId: websiteId,
-            crispProxyUrl: crispProxyUrl,
-            userScript: effectiveUserScript,
-            deferredUserScript: deferredUserScript,
-          ),
+      final signature = _embeddedCustomerServiceSessionSignature(
+        channel: 'crisp-windows',
+        websiteId: websiteId,
+        crispProxyUrl: crispProxyUrl,
+        userScript: effectiveUserScript,
+      );
+      await _openEmbeddedCustomerService(
+        context,
+        signature: signature,
+        builder: (hide, visibility) => WindowsChatPage(
+          crispWebsiteId: websiteId,
+          crispProxyUrl: crispProxyUrl,
+          userScript: effectiveUserScript,
+          deferredUserScript: deferredUserScript,
+          onBackPressed: hide,
+          visibilityListenable: visibility,
         ),
       );
       return;
     }
     if (CrispChatPage.isSupported) {
       if (!context.mounted) return;
-      await Navigator.of(context).push(
-        MaterialPageRoute(
-          builder: (_) => CrispChatPage(
-            websiteId: websiteId,
-            crispProxyUrl: crispProxyUrl,
-            userScript: effectiveUserScript,
-            deferredUserScript: deferredUserScript,
-          ),
+      final signature = _embeddedCustomerServiceSessionSignature(
+        channel: 'crisp-system-webview',
+        websiteId: websiteId,
+        crispProxyUrl: crispProxyUrl,
+        userScript: effectiveUserScript,
+      );
+      await _openEmbeddedCustomerService(
+        context,
+        signature: signature,
+        builder: (hide, visibility) => CrispChatPage(
+          websiteId: websiteId,
+          crispProxyUrl: crispProxyUrl,
+          userScript: effectiveUserScript,
+          deferredUserScript: deferredUserScript,
+          onBackPressed: hide,
+          visibilityListenable: visibility,
         ),
       );
       return;
@@ -1208,8 +1370,18 @@ if(window===window.top){
         ['traffic_used', _formatTraffic(usedTraffic)],
         ['traffic_total', _formatTraffic(totalTraffic)],
         ['traffic_reset_days_left', resetDaysLeft?.toString() ?? 'unknown'],
-        ['wallet_balance', walletBalanceInCents != null ? '¥${(walletBalanceInCents / 100).toStringAsFixed(2)}' : '0.00'],
-        ['commission_balance', commissionBalanceInCents != null ? '¥${(commissionBalanceInCents / 100).toStringAsFixed(2)}' : '0.00'],
+        [
+          'wallet_balance',
+          walletBalanceInCents != null
+              ? '¥${(walletBalanceInCents / 100).toStringAsFixed(2)}'
+              : '0.00'
+        ],
+        [
+          'commission_balance',
+          commissionBalanceInCents != null
+              ? '¥${(commissionBalanceInCents / 100).toStringAsFixed(2)}'
+              : '0.00'
+        ],
         ['user_ip', userIP],
         ['user_ip_region', userIPRegion],
         ['user_ip_isp', userIPISP],
@@ -1692,6 +1864,45 @@ if(window===window.top){
             ? 1
             : 2;
     return '${size.toStringAsFixed(precision)} ${units[unitIndex]}';
+  }
+}
+
+class _EmbeddedCustomerServiceFrame extends StatelessWidget {
+  const _EmbeddedCustomerServiceFrame({
+    required this.showRootMenu,
+    required this.child,
+  });
+
+  final bool showRootMenu;
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) {
+    if (!showRootMenu) {
+      return Positioned.fill(child: child);
+    }
+
+    final mediaQuery = MediaQuery.of(context);
+    final size = mediaQuery.size;
+    final useSideNavigation = size.width > size.height || system.isTV;
+
+    if (useSideNavigation) {
+      return Positioned(
+        left: _desktopRootMenuWidth,
+        top: 0,
+        right: 0,
+        bottom: 0,
+        child: child,
+      );
+    }
+
+    return Positioned(
+      left: 0,
+      top: 0,
+      right: 0,
+      bottom: _mobileRootMenuHeight + mediaQuery.padding.bottom,
+      child: child,
+    );
   }
 }
 

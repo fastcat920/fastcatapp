@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:io';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 
@@ -12,8 +13,15 @@ import 'package:webview_flutter/webview_flutter.dart';
 ///        改为启动本地 HTTP 服务器提供 HTML，WebView 加载 localhost URL
 class SalesmarylyChatPage extends StatefulWidget {
   final String scriptUrl;
+  final VoidCallback? onBackPressed;
+  final ValueListenable<bool>? visibilityListenable;
 
-  const SalesmarylyChatPage({super.key, required this.scriptUrl});
+  const SalesmarylyChatPage({
+    super.key,
+    required this.scriptUrl,
+    this.onBackPressed,
+    this.visibilityListenable,
+  });
 
   static bool get isSupported =>
       Platform.isAndroid || Platform.isIOS || Platform.isMacOS;
@@ -201,45 +209,57 @@ class _SalesmarylyChatPageState extends State<SalesmarylyChatPage> {
   @override
   Widget build(BuildContext context) {
     final backgroundColor = _webViewBackgroundColor(_isDarkMode);
-    return PopScope(
-      canPop: true,
-      child: Scaffold(
-        backgroundColor: backgroundColor,
-        appBar: AppBar(
-          title: const Text('在线客服'),
-          leading: IconButton(
-            icon: const Icon(Icons.close),
-            onPressed: () => Navigator.of(context, rootNavigator: true).pop(),
+    Widget buildScaffold(bool isVisible) {
+      return PopScope(
+        canPop: widget.onBackPressed == null || !isVisible,
+        onPopInvokedWithResult: (didPop, _) {
+          if (!didPop) widget.onBackPressed?.call();
+        },
+        child: Scaffold(
+          backgroundColor: backgroundColor,
+          appBar: AppBar(
+            title: const Text('在线客服'),
+            leading: BackButton(
+              onPressed: widget.onBackPressed ??
+                  () => Navigator.of(context, rootNavigator: true).pop(),
+            ),
+          ),
+          body: Stack(
+            children: [
+              WebViewWidget(controller: _controller),
+              if (_isLoading)
+                Positioned.fill(
+                  child: ColoredBox(
+                    color: backgroundColor,
+                    child: const Center(child: CircularProgressIndicator()),
+                  ),
+                ),
+              if (_hasError)
+                Center(
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const Icon(Icons.error_outline,
+                          size: 48, color: Colors.grey),
+                      const SizedBox(height: 16),
+                      const Text('加载失败，请检查网络',
+                          style: TextStyle(color: Colors.grey)),
+                      const SizedBox(height: 16),
+                      FilledButton(onPressed: _retry, child: const Text('重试')),
+                    ],
+                  ),
+                ),
+            ],
           ),
         ),
-        body: Stack(
-          children: [
-            WebViewWidget(controller: _controller),
-            if (_isLoading)
-              Positioned.fill(
-                child: ColoredBox(
-                  color: backgroundColor,
-                  child: const Center(child: CircularProgressIndicator()),
-                ),
-              ),
-            if (_hasError)
-              Center(
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    const Icon(Icons.error_outline,
-                        size: 48, color: Colors.grey),
-                    const SizedBox(height: 16),
-                    const Text('加载失败，请检查网络',
-                        style: TextStyle(color: Colors.grey)),
-                    const SizedBox(height: 16),
-                    FilledButton(onPressed: _retry, child: const Text('重试')),
-                  ],
-                ),
-              ),
-          ],
-        ),
-      ),
+      );
+    }
+
+    final visibility = widget.visibilityListenable;
+    if (visibility == null) return buildScaffold(true);
+    return ValueListenableBuilder<bool>(
+      valueListenable: visibility,
+      builder: (_, isVisible, __) => buildScaffold(isVisible),
     );
   }
 }

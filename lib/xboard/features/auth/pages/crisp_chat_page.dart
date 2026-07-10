@@ -3,12 +3,12 @@ import 'dart:async';
 import 'dart:io';
 import 'package:file_picker/file_picker.dart';
 import 'package:fl_clash/l10n/l10n.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:webview_flutter_android/webview_flutter_android.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 import 'package:fl_clash/xboard/features/auth/utils/crisp_url_helper.dart';
 import 'package:fl_clash/xboard/features/auth/utils/customer_service_helper.dart';
-
 
 /// Crisp 客服嵌入页面
 ///
@@ -34,6 +34,8 @@ class CrispChatPage extends StatefulWidget {
   final String? crispProxyUrl;
   final String? userScript;
   final Future<String?> Function()? deferredUserScript;
+  final VoidCallback? onBackPressed;
+  final ValueListenable<bool>? visibilityListenable;
 
   const CrispChatPage({
     super.key,
@@ -41,6 +43,8 @@ class CrispChatPage extends StatefulWidget {
     this.crispProxyUrl,
     this.userScript,
     this.deferredUserScript,
+    this.onBackPressed,
+    this.visibilityListenable,
   });
 
   /// 是否支持系统内嵌 WebView
@@ -216,7 +220,8 @@ class _CrispChatPageState extends State<CrispChatPage> {
     }
     _didFallbackToOfficial = true;
     _loadEmbed(
-      CustomerServiceHelper.localizedCrispUri(officialCrispEmbedUri(widget.websiteId), _localeTag),
+      CustomerServiceHelper.localizedCrispUri(
+          officialCrispEmbedUri(widget.websiteId), _localeTag),
       usingProxy: false,
     );
   }
@@ -426,7 +431,8 @@ class _CrispChatPageState extends State<CrispChatPage> {
       'loadingSlow': strings.loadingSlow,
       'loadFailed': strings.loadFailed,
       'locale': _localeTag ?? 'en',
-      'crispLocale': CustomerServiceHelper.crispLocaleFromTag(_localeTag ?? 'en'),
+      'crispLocale':
+          CustomerServiceHelper.crispLocaleFromTag(_localeTag ?? 'en'),
     });
     final script = '''
 (function(){
@@ -623,25 +629,39 @@ class _CrispChatPageState extends State<CrispChatPage> {
   Widget build(BuildContext context) {
     final strings = _strings;
     final backgroundColor = _customerServiceBackgroundColor(_isDarkMode);
-    return Scaffold(
-      backgroundColor: backgroundColor,
-      appBar: AppBar(
-        centerTitle: true,
-        title: Text(strings.title),
-        leading: IconButton(
-          icon: const Icon(Icons.close),
-          onPressed: () => Navigator.of(context).pop(),
+    Widget buildScaffold(bool isVisible) {
+      return PopScope(
+        canPop: widget.onBackPressed == null || !isVisible,
+        onPopInvokedWithResult: (didPop, _) {
+          if (!didPop) widget.onBackPressed?.call();
+        },
+        child: Scaffold(
+          backgroundColor: backgroundColor,
+          appBar: AppBar(
+            title: Text(strings.title),
+            leading: BackButton(
+              onPressed:
+                  widget.onBackPressed ?? () => Navigator.of(context).pop(),
+            ),
+          ),
+          body: Stack(
+            children: [
+              WebViewWidget(controller: _controller),
+              if (_hasError)
+                _buildErrorPage(context)
+              else if (_isLoading)
+                _buildLoadingOverlay(context),
+            ],
+          ),
         ),
-      ),
-      body: Stack(
-        children: [
-          WebViewWidget(controller: _controller),
-          if (_hasError)
-            _buildErrorPage(context)
-          else if (_isLoading)
-            _buildLoadingOverlay(context),
-        ],
-      ),
+      );
+    }
+
+    final visibility = widget.visibilityListenable;
+    if (visibility == null) return buildScaffold(true);
+    return ValueListenableBuilder<bool>(
+      valueListenable: visibility,
+      builder: (_, isVisible, __) => buildScaffold(isVisible),
     );
   }
 }

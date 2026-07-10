@@ -6,6 +6,7 @@ import 'package:fl_clash/common/webview2_check.dart';
 import 'package:fl_clash/l10n/l10n.dart';
 import 'package:fl_clash/xboard/core/core.dart';
 import 'package:fl_clash/xboard/features/auth/utils/crisp_url_helper.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_inappwebview/flutter_inappwebview.dart' as iaw;
 
@@ -47,6 +48,8 @@ class WindowsChatPage extends StatefulWidget {
   final String? crispProxyUrl;
   final String? userScript;
   final Future<String?> Function()? deferredUserScript;
+  final VoidCallback? onBackPressed;
+  final ValueListenable<bool>? visibilityListenable;
 
   const WindowsChatPage({
     super.key,
@@ -55,6 +58,8 @@ class WindowsChatPage extends StatefulWidget {
     this.crispProxyUrl,
     this.userScript,
     this.deferredUserScript,
+    this.onBackPressed,
+    this.visibilityListenable,
   }) : assert(
           salesmartlyScriptUrl != null || crispWebsiteId != null,
           'salesmartlyScriptUrl or crispWebsiteId is required',
@@ -84,7 +89,8 @@ class _WindowsChatPageState extends State<WindowsChatPage> {
   @override
   void initState() {
     super.initState();
-    _logger.info('[WindowsChat] initState: crispWebsiteId=${widget.crispWebsiteId != null ? "present" : "empty"}, crispProxyUrl=${widget.crispProxyUrl != null ? "present" : "empty"}');
+    _logger.info(
+        '[WindowsChat] initState: crispWebsiteId=${widget.crispWebsiteId != null ? "present" : "empty"}, crispProxyUrl=${widget.crispProxyUrl != null ? "present" : "empty"}');
   }
 
   @override
@@ -219,7 +225,8 @@ class _WindowsChatPageState extends State<WindowsChatPage> {
   void _loadEmbed({bool useProxy = true}) {
     _embedFallbackTimer?.cancel();
     _stopReadyPolling();
-    final actualUseProxy = useProxy && isCrispProxyConfigured(widget.crispProxyUrl);
+    final actualUseProxy =
+        useProxy && isCrispProxyConfigured(widget.crispProxyUrl);
     _usingProxy = actualUseProxy;
     _didFallbackToOfficial = !actualUseProxy;
     _hasError = false;
@@ -400,7 +407,8 @@ class _WindowsChatPageState extends State<WindowsChatPage> {
     iaw.InAppWebViewController controller,
   ) async {
     final scriptUrl = widget.salesmartlyScriptUrl!;
-    final scriptUrlEscaped = scriptUrl.replaceAll('\\', '\\\\').replaceAll("'", "\\'");
+    final scriptUrlEscaped =
+        scriptUrl.replaceAll('\\', '\\\\').replaceAll("'", "\\'");
     await controller.evaluateJavascript(source: '''
       document.open();
       document.write('<html><head><meta charset="utf-8"><style>*{margin:0;padding:0}html,body{width:100%;height:100%;background:#f5f5f5}#ss_loading{display:flex;align-items:center;justify-content:center;height:100%;color:#999;font-family:-apple-system,sans-serif;font-size:14px}</style></head><body><div id="ss_loading">正在连接客服...</div></body></html>');
@@ -436,12 +444,14 @@ class _WindowsChatPageState extends State<WindowsChatPage> {
     try {
       return WebView2Check.isInstalled();
     } catch (e, stackTrace) {
-      _logger.warning('[WindowsChat] WebView2 runtime check failed', e, stackTrace);
+      _logger.warning(
+          '[WindowsChat] WebView2 runtime check failed', e, stackTrace);
       return false;
     }
   }
 
-  Widget _buildErrorPage(BuildContext context, String message, {bool canRetry = true}) {
+  Widget _buildErrorPage(BuildContext context, String message,
+      {bool canRetry = true}) {
     final l10n = AppLocalizations.of(context);
     final isDark = _isDarkMode;
     return Center(
@@ -481,7 +491,8 @@ class _WindowsChatPageState extends State<WindowsChatPage> {
   Widget _buildCrispWebView() {
     final l10n = AppLocalizations.of(context);
     if (!_hasWebView2Runtime()) {
-      return _buildErrorPage(context, 'WebView2 Runtime 未安装，无法加载内嵌客服。', canRetry: false);
+      return _buildErrorPage(context, 'WebView2 Runtime 未安装，无法加载内嵌客服。',
+          canRetry: false);
     }
     final preferredUri = _preferredEmbedUri();
     final backgroundColor = _backgroundColor();
@@ -490,7 +501,8 @@ class _WindowsChatPageState extends State<WindowsChatPage> {
       children: [
         iaw.InAppWebView(
           key: const ValueKey('windows-chat-webview'),
-          initialUrlRequest: iaw.URLRequest(url: iaw.WebUri(preferredUri.toString())),
+          initialUrlRequest:
+              iaw.URLRequest(url: iaw.WebUri(preferredUri.toString())),
           initialSettings: iaw.InAppWebViewSettings(
             javaScriptEnabled: true,
             javaScriptCanOpenWindowsAutomatically: false,
@@ -523,7 +535,10 @@ class _WindowsChatPageState extends State<WindowsChatPage> {
           shouldOverrideUrlLoading: (_, navigationAction) async {
             final uri = navigationAction.request.url;
             final scheme = uri?.scheme.toLowerCase();
-            if (scheme == null || scheme == 'http' || scheme == 'https' || scheme == 'about') {
+            if (scheme == null ||
+                scheme == 'http' ||
+                scheme == 'https' ||
+                scheme == 'about') {
               return iaw.NavigationActionPolicy.ALLOW;
             }
             return iaw.NavigationActionPolicy.CANCEL;
@@ -567,7 +582,8 @@ class _WindowsChatPageState extends State<WindowsChatPage> {
 
   Widget _buildSalesmartlyWebView() {
     if (!_hasWebView2Runtime()) {
-      return _buildErrorPage(context, 'WebView2 Runtime 未安装，无法加载内嵌客服。', canRetry: false);
+      return _buildErrorPage(context, 'WebView2 Runtime 未安装，无法加载内嵌客服。',
+          canRetry: false);
     }
     final initialUri = Uri.parse('https://www.salesmartly.com/robots.txt');
     return Stack(
@@ -575,7 +591,8 @@ class _WindowsChatPageState extends State<WindowsChatPage> {
       children: [
         iaw.InAppWebView(
           key: const ValueKey('windows-chat-salesmartly'),
-          initialUrlRequest: iaw.URLRequest(url: iaw.WebUri(initialUri.toString())),
+          initialUrlRequest:
+              iaw.URLRequest(url: iaw.WebUri(initialUri.toString())),
           initialSettings: iaw.InAppWebViewSettings(
             javaScriptEnabled: true,
             javaScriptCanOpenWindowsAutomatically: false,
@@ -594,7 +611,8 @@ class _WindowsChatPageState extends State<WindowsChatPage> {
             try {
               await _injectSalesmartlySDK(controller);
             } catch (e, stackTrace) {
-              _logger.warning('[WindowsChat] Salesmartly injection failed', e, stackTrace);
+              _logger.warning(
+                  '[WindowsChat] Salesmartly injection failed', e, stackTrace);
             }
           },
           onReceivedError: (_, request, error) {
@@ -604,7 +622,10 @@ class _WindowsChatPageState extends State<WindowsChatPage> {
           shouldOverrideUrlLoading: (_, navigationAction) async {
             final uri = navigationAction.request.url;
             final scheme = uri?.scheme.toLowerCase();
-            if (scheme == null || scheme == 'http' || scheme == 'https' || scheme == 'about') {
+            if (scheme == null ||
+                scheme == 'http' ||
+                scheme == 'https' ||
+                scheme == 'about') {
               return iaw.NavigationActionPolicy.ALLOW;
             }
             return iaw.NavigationActionPolicy.CANCEL;
@@ -625,19 +646,30 @@ class _WindowsChatPageState extends State<WindowsChatPage> {
     final body = widget.salesmartlyScriptUrl != null
         ? _buildSalesmartlyWebView()
         : _buildCrispWebView();
-    return PopScope(
-      canPop: true,
-      child: Scaffold(
-        appBar: AppBar(
-          centerTitle: true,
-          title: Text(AppLocalizations.of(context).onlineSupportTitle),
-          leading: IconButton(
-            icon: const Icon(Icons.close),
-            onPressed: () => Navigator.of(context).pop(),
+    Widget buildScaffold(bool isVisible) {
+      return PopScope(
+        canPop: widget.onBackPressed == null || !isVisible,
+        onPopInvokedWithResult: (didPop, _) {
+          if (!didPop) widget.onBackPressed?.call();
+        },
+        child: Scaffold(
+          appBar: AppBar(
+            title: Text(AppLocalizations.of(context).onlineSupportTitle),
+            leading: BackButton(
+              onPressed:
+                  widget.onBackPressed ?? () => Navigator.of(context).pop(),
+            ),
           ),
+          body: body,
         ),
-        body: body,
-      ),
+      );
+    }
+
+    final visibility = widget.visibilityListenable;
+    if (visibility == null) return buildScaffold(true);
+    return ValueListenableBuilder<bool>(
+      valueListenable: visibility,
+      builder: (_, isVisible, __) => buildScaffold(isVisible),
     );
   }
 
