@@ -6,6 +6,7 @@ import 'package:fl_clash/common/webview2_check.dart';
 import 'package:fl_clash/l10n/l10n.dart';
 import 'package:fl_clash/xboard/core/core.dart';
 import 'package:fl_clash/xboard/features/auth/utils/crisp_url_helper.dart';
+import 'package:fl_clash/xboard/features/auth/utils/customer_service_helper.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_inappwebview/flutter_inappwebview.dart' as iaw;
@@ -49,7 +50,7 @@ class WindowsChatPage extends StatefulWidget {
   final String? userScript;
   final Future<String?> Function()? deferredUserScript;
   final VoidCallback? onBackPressed;
-  final ValueListenable<bool>? visibilityListenable;
+  final ValueListenable<CustomerServiceSessionState>? sessionListenable;
 
   const WindowsChatPage({
     super.key,
@@ -59,7 +60,7 @@ class WindowsChatPage extends StatefulWidget {
     this.userScript,
     this.deferredUserScript,
     this.onBackPressed,
-    this.visibilityListenable,
+    this.sessionListenable,
   }) : assert(
           salesmartlyScriptUrl != null || crispWebsiteId != null,
           'salesmartlyScriptUrl or crispWebsiteId is required',
@@ -83,6 +84,7 @@ class _WindowsChatPageState extends State<WindowsChatPage> {
   bool _deferredUserScriptStarted = false;
   String? _localeTag;
   bool _isDarkMode = false;
+  int _lastAppliedRestoreToken = -1;
 
   static const _embedTimeoutDelay = Duration(seconds: 25);
 
@@ -137,14 +139,20 @@ class _WindowsChatPageState extends State<WindowsChatPage> {
     final script = '''
 (function(){
   try {
+    var theme = {
+      isDark: ${_isDarkMode ? 'true' : 'false'},
+      background: '${_backgroundColorValue()}',
+      foreground: '${_foregroundColorValue()}',
+      accent: '${_isDarkMode ? '#60a5fa' : '#2563eb'}'
+    };
+    window.__fastcatCustomerServiceTheme = theme;
     if (typeof window.__fastcatApplyCustomerServiceTheme === 'function') {
-      window.__fastcatApplyCustomerServiceTheme({
-        isDark: ${_isDarkMode ? 'true' : 'false'},
-        background: '${_backgroundColorValue()}',
-        foreground: '${_foregroundColorValue()}',
-        accent: '${_isDarkMode ? '#60a5fa' : '#2563eb'}'
-      });
+      window.__fastcatApplyCustomerServiceTheme(theme);
     }
+    try {
+      window.\$crisp = window.\$crisp || [];
+      window.\$crisp.push(["config", "color:mode", [theme.isDark ? "dark" : "light"]]);
+    } catch(_) {}
   } catch(_) {}
 })();''';
     try {
@@ -188,6 +196,27 @@ class _WindowsChatPageState extends State<WindowsChatPage> {
     try {
       await _controller?.evaluateJavascript(source: script);
     } catch (_) {}
+  }
+
+  void _syncSessionState(CustomerServiceSessionState session) {
+    final nextIsDarkMode = session.brightness == Brightness.dark;
+    final nextLocaleTag = session.localeTag;
+    final themeChanged = _isDarkMode != nextIsDarkMode;
+    final localeChanged = _localeTag != nextLocaleTag;
+
+    if (themeChanged) {
+      _isDarkMode = nextIsDarkMode;
+      unawaited(_applySystemTheme());
+    }
+    if (localeChanged) {
+      _localeTag = nextLocaleTag;
+      unawaited(_applySystemLocale());
+    }
+    if (session.isVisible && _lastAppliedRestoreToken != session.restoreToken) {
+      _lastAppliedRestoreToken = session.restoreToken;
+      unawaited(_applySystemTheme());
+      unawaited(_applySystemLocale());
+    }
   }
 
   // ── URL helpers ──────────────────────────────────────────────────
@@ -333,6 +362,7 @@ class _WindowsChatPageState extends State<WindowsChatPage> {
     window.CRISP_RUNTIME_CONFIG.locale = window.__fastcatCustomerServiceCrispLocale;
     window.__fastcatApplyCustomerServiceTheme = function(theme){
       try {
+        window.__fastcatCustomerServiceTheme = theme;
         document.documentElement.style.background = theme.background;
         document.documentElement.style.colorScheme = theme.isDark ? 'dark' : 'light';
         if (document.body) {
@@ -373,7 +403,8 @@ class _WindowsChatPageState extends State<WindowsChatPage> {
       try {
         window.\$crisp = window.\$crisp || [];
         window.\$crisp.push(["config", "locale", [window.__fastcatCustomerServiceCrispLocale || 'en']]);
-        window.\$crisp.push(["config", "color:mode", [${_isDarkMode ? '"dark"' : '"light"'}]]);
+        var theme = window.__fastcatCustomerServiceTheme || { isDark: ${_isDarkMode ? 'true' : 'false'} };
+        window.\$crisp.push(["config", "color:mode", [theme.isDark ? "dark" : "light"]]);
         var interactive = document.querySelector('textarea,input,[contenteditable="true"],button,a[href^="mailto:"],iframe[src*="crisp"],.crisp-client,[class*="crisp"]');
         if (interactive) markReady();
       } catch(_) {}
@@ -646,13 +677,18 @@ class _WindowsChatPageState extends State<WindowsChatPage> {
     final body = widget.salesmartlyScriptUrl != null
         ? _buildSalesmartlyWebView()
         : _buildCrispWebView();
-    Widget buildScaffold(bool isVisible) {
+    Widget buildScaffold(CustomerServiceSessionState? session) {
+      if (session != null) {
+        _syncSessionState(session);
+      }
+      final isVisible = session?.isVisible ?? true;
       return PopScope(
         canPop: widget.onBackPressed == null || !isVisible,
         onPopInvokedWithResult: (didPop, _) {
           if (!didPop) widget.onBackPressed?.call();
         },
         child: Scaffold(
+          backgroundColor: _backgroundColor(),
           appBar: AppBar(
             title: Text(AppLocalizations.of(context).onlineSupportTitle),
             leading: BackButton(
@@ -665,11 +701,11 @@ class _WindowsChatPageState extends State<WindowsChatPage> {
       );
     }
 
-    final visibility = widget.visibilityListenable;
-    if (visibility == null) return buildScaffold(true);
-    return ValueListenableBuilder<bool>(
-      valueListenable: visibility,
-      builder: (_, isVisible, __) => buildScaffold(isVisible),
+    final session = widget.sessionListenable;
+    if (session == null) return buildScaffold(null);
+    return ValueListenableBuilder<CustomerServiceSessionState>(
+      valueListenable: session,
+      builder: (_, currentSession, __) => buildScaffold(currentSession),
     );
   }
 

@@ -41,6 +41,52 @@ const _customerServiceHiddenTtl = Duration(minutes: 20);
 const _desktopRootMenuWidth = 96.0;
 const _mobileRootMenuHeight = 68.0;
 
+@immutable
+class CustomerServiceSessionState {
+  const CustomerServiceSessionState({
+    required this.isVisible,
+    required this.restoreToken,
+    required this.brightness,
+    required this.localeTag,
+  });
+
+  final bool isVisible;
+  final int restoreToken;
+  final Brightness brightness;
+  final String localeTag;
+
+  CustomerServiceSessionState copyWith({
+    bool? isVisible,
+    int? restoreToken,
+    Brightness? brightness,
+    String? localeTag,
+  }) {
+    return CustomerServiceSessionState(
+      isVisible: isVisible ?? this.isVisible,
+      restoreToken: restoreToken ?? this.restoreToken,
+      brightness: brightness ?? this.brightness,
+      localeTag: localeTag ?? this.localeTag,
+    );
+  }
+
+  @override
+  bool operator ==(Object other) {
+    return other is CustomerServiceSessionState &&
+        other.isVisible == isVisible &&
+        other.restoreToken == restoreToken &&
+        other.brightness == brightness &&
+        other.localeTag == localeTag;
+  }
+
+  @override
+  int get hashCode => Object.hash(
+        isVisible,
+        restoreToken,
+        brightness,
+        localeTag,
+      );
+}
+
 /// 统一客服入口：按业务约定仅使用 Crisp（远程优先，本地兜底）
 ///
 /// Android/iOS/macOS → 内嵌 WebView（webview_flutter）
@@ -67,7 +113,8 @@ class CustomerServiceHelper {
   static String? _desktopCustomerServiceLocaleTag;
   static String? _desktopCustomerServiceLoadingText;
   static OverlayEntry? _embeddedCustomerServiceEntry;
-  static ValueNotifier<bool>? _embeddedCustomerServiceVisible;
+  static ValueNotifier<CustomerServiceSessionState>?
+      _embeddedCustomerServiceState;
   static Timer? _embeddedCustomerServiceCloseTimer;
   static String? _embeddedCustomerServiceSignature;
   static DateTime? _embeddedCustomerServiceHiddenAt;
@@ -645,11 +692,48 @@ class CustomerServiceHelper {
     ].join('|');
   }
 
-  static bool _showExistingEmbeddedCustomerService(String signature) {
+  static CustomerServiceSessionState _embeddedCustomerServiceStateFor(
+    BuildContext context, {
+    required bool isVisible,
+    required int restoreToken,
+  }) {
+    Brightness brightness;
+    String localeTag;
+    try {
+      brightness = Theme.of(context).brightness;
+    } catch (_) {
+      brightness =
+          WidgetsBinding.instance.platformDispatcher.platformBrightness;
+    }
+    try {
+      localeTag = Localizations.localeOf(context).toLanguageTag();
+    } catch (_) {
+      localeTag = 'en';
+    }
+    return CustomerServiceSessionState(
+      isVisible: isVisible,
+      restoreToken: restoreToken,
+      brightness: brightness,
+      localeTag: localeTag,
+    );
+  }
+
+  static String? _currentRoutePath(BuildContext context) {
+    try {
+      return GoRouterState.of(context).uri.path;
+    } catch (_) {
+      return null;
+    }
+  }
+
+  static bool _showExistingEmbeddedCustomerService(
+    BuildContext context,
+    String signature,
+  ) {
     final entry = _embeddedCustomerServiceEntry;
-    final visible = _embeddedCustomerServiceVisible;
+    final state = _embeddedCustomerServiceState;
     if (entry == null ||
-        visible == null ||
+        state == null ||
         _embeddedCustomerServiceSignature != signature) {
       return false;
     }
@@ -664,7 +748,11 @@ class CustomerServiceHelper {
     _embeddedCustomerServiceCloseTimer?.cancel();
     _embeddedCustomerServiceCloseTimer = null;
     _embeddedCustomerServiceHiddenAt = null;
-    visible.value = true;
+    state.value = _embeddedCustomerServiceStateFor(
+      context,
+      isVisible: true,
+      restoreToken: state.value.restoreToken + 1,
+    );
     return true;
   }
 
@@ -673,41 +761,49 @@ class CustomerServiceHelper {
     required String signature,
     required Widget Function(
       VoidCallback hide,
-      ValueListenable<bool> visibility,
+      ValueListenable<CustomerServiceSessionState> session,
     ) builder,
   }) async {
-    if (_showExistingEmbeddedCustomerService(signature)) return;
+    if (_showExistingEmbeddedCustomerService(context, signature)) return;
     _closeEmbeddedCustomerService();
 
     final overlay = Overlay.of(context, rootOverlay: true);
-    final visible = ValueNotifier<bool>(true);
+    final session = ValueNotifier<CustomerServiceSessionState>(
+      _embeddedCustomerServiceStateFor(
+        context,
+        isVisible: true,
+        restoreToken: 0,
+      ),
+    );
     final showRootMenu = _shouldKeepRootMenuVisible(context);
+    final initialRoutePath = _currentRoutePath(context);
     late final OverlayEntry entry;
 
     entry = OverlayEntry(
       builder: (_) => _EmbeddedCustomerServiceFrame(
         showRootMenu: showRootMenu,
-        child: ValueListenableBuilder<bool>(
-          valueListenable: visible,
-          builder: (_, isVisible, child) {
+        initialRoutePath: initialRoutePath,
+        child: ValueListenableBuilder<CustomerServiceSessionState>(
+          valueListenable: session,
+          builder: (_, currentSession, child) {
             return Offstage(
-              offstage: !isVisible,
+              offstage: !currentSession.isVisible,
               child: IgnorePointer(
-                ignoring: !isVisible,
+                ignoring: !currentSession.isVisible,
                 child: child,
               ),
             );
           },
           child: Material(
             type: MaterialType.transparency,
-            child: builder(_hideEmbeddedCustomerService, visible),
+            child: builder(_hideEmbeddedCustomerService, session),
           ),
         ),
       ),
     );
 
     _embeddedCustomerServiceEntry = entry;
-    _embeddedCustomerServiceVisible = visible;
+    _embeddedCustomerServiceState = session;
     _embeddedCustomerServiceSignature = signature;
     _embeddedCustomerServiceHiddenAt = null;
     _embeddedCustomerServiceCloseTimer?.cancel();
@@ -729,9 +825,10 @@ class CustomerServiceHelper {
   }
 
   static void _hideEmbeddedCustomerService() {
-    final visible = _embeddedCustomerServiceVisible;
-    if (visible == null) return;
-    visible.value = false;
+    final state = _embeddedCustomerServiceState;
+    if (state == null) return;
+    if (!state.value.isVisible) return;
+    state.value = state.value.copyWith(isVisible: false);
     _embeddedCustomerServiceHiddenAt = DateTime.now();
     _embeddedCustomerServiceCloseTimer?.cancel();
     _embeddedCustomerServiceCloseTimer = Timer(_customerServiceHiddenTtl, () {
@@ -748,8 +845,8 @@ class CustomerServiceHelper {
     _embeddedCustomerServiceCloseTimer = null;
     _embeddedCustomerServiceHiddenAt = null;
     _embeddedCustomerServiceSignature = null;
-    _embeddedCustomerServiceVisible?.dispose();
-    _embeddedCustomerServiceVisible = null;
+    _embeddedCustomerServiceState?.dispose();
+    _embeddedCustomerServiceState = null;
     _embeddedCustomerServiceEntry?.remove();
     _embeddedCustomerServiceEntry = null;
   }
@@ -803,10 +900,10 @@ class CustomerServiceHelper {
         _openEmbeddedCustomerService(
           context,
           signature: signature,
-          builder: (hide, visibility) => SalesmarylyChatPage(
+          builder: (hide, session) => SalesmarylyChatPage(
             scriptUrl: scriptUrl,
             onBackPressed: hide,
-            visibilityListenable: visibility,
+            sessionListenable: session,
           ),
         ),
       );
@@ -1232,13 +1329,13 @@ if(window===window.top){
       await _openEmbeddedCustomerService(
         context,
         signature: signature,
-        builder: (hide, visibility) => WindowsChatPage(
+        builder: (hide, session) => WindowsChatPage(
           crispWebsiteId: websiteId,
           crispProxyUrl: crispProxyUrl,
           userScript: effectiveUserScript,
           deferredUserScript: deferredUserScript,
           onBackPressed: hide,
-          visibilityListenable: visibility,
+          sessionListenable: session,
         ),
       );
       return;
@@ -1254,13 +1351,13 @@ if(window===window.top){
       await _openEmbeddedCustomerService(
         context,
         signature: signature,
-        builder: (hide, visibility) => CrispChatPage(
+        builder: (hide, session) => CrispChatPage(
           websiteId: websiteId,
           crispProxyUrl: crispProxyUrl,
           userScript: effectiveUserScript,
           deferredUserScript: deferredUserScript,
           onBackPressed: hide,
-          visibilityListenable: visibility,
+          sessionListenable: session,
         ),
       );
       return;
@@ -1867,21 +1964,106 @@ if(window===window.top){
   }
 }
 
-class _EmbeddedCustomerServiceFrame extends StatelessWidget {
+class _EmbeddedCustomerServiceFrame extends StatefulWidget {
   const _EmbeddedCustomerServiceFrame({
     required this.showRootMenu,
+    required this.initialRoutePath,
     required this.child,
   });
 
   final bool showRootMenu;
+  final String? initialRoutePath;
   final Widget child;
 
   @override
+  State<_EmbeddedCustomerServiceFrame> createState() =>
+      _EmbeddedCustomerServiceFrameState();
+}
+
+class _EmbeddedCustomerServiceFrameState
+    extends State<_EmbeddedCustomerServiceFrame> {
+  GoRouter? _router;
+  String? _currentRoutePath;
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    final nextRouter = _readRouter(context);
+    if (!identical(_router, nextRouter)) {
+      _router?.routerDelegate.removeListener(_handleRouteChanged);
+      _router = nextRouter;
+      _router?.routerDelegate.addListener(_handleRouteChanged);
+      _currentRoutePath ??=
+          widget.initialRoutePath ?? _readRoutePath(nextRouter);
+    }
+  }
+
+  @override
+  void dispose() {
+    _router?.routerDelegate.removeListener(_handleRouteChanged);
+    super.dispose();
+  }
+
+  GoRouter? _readRouter(BuildContext context) {
+    try {
+      return GoRouter.of(context);
+    } catch (_) {
+      return null;
+    }
+  }
+
+  String? _readRoutePath(GoRouter? router) {
+    try {
+      return router?.routeInformationProvider.value.uri.path;
+    } catch (_) {
+      return null;
+    }
+  }
+
+  void _handleRouteChanged() {
+    if (!mounted || !widget.showRootMenu) return;
+    final nextRoutePath = _readRoutePath(_router) ?? widget.initialRoutePath;
+    if (nextRoutePath != _currentRoutePath) {
+      setState(() {
+        _currentRoutePath = nextRoutePath;
+      });
+    }
+  }
+
+  String? _rootRouteKey(String? routePath) {
+    if (routePath == null || routePath.isEmpty) return null;
+    if (routePath == '/') return '/';
+    final segments = routePath.split('/').where((part) => part.isNotEmpty);
+    final first = segments.isEmpty ? '' : segments.first;
+    return switch (first) {
+      'plans' => '/plans',
+      'invite' => '/invite',
+      'mine' => '/mine',
+      'logs' => '/logs',
+      _ => '/',
+    };
+  }
+
+  bool get _isCurrentRootRoute {
+    if (!widget.showRootMenu) return true;
+    final initialKey = _rootRouteKey(widget.initialRoutePath);
+    final currentKey = _rootRouteKey(_currentRoutePath);
+    return initialKey == null || currentKey == null || initialKey == currentKey;
+  }
+
+  @override
   Widget build(BuildContext context) {
-    if (!showRootMenu) {
-      return Positioned.fill(child: child);
+    if (!widget.showRootMenu) {
+      return Positioned.fill(child: widget.child);
     }
 
+    final framedChild = Offstage(
+      offstage: !_isCurrentRootRoute,
+      child: IgnorePointer(
+        ignoring: !_isCurrentRootRoute,
+        child: widget.child,
+      ),
+    );
     final mediaQuery = MediaQuery.of(context);
     final size = mediaQuery.size;
     final useSideNavigation = size.width > size.height || system.isTV;
@@ -1892,7 +2074,7 @@ class _EmbeddedCustomerServiceFrame extends StatelessWidget {
         top: 0,
         right: 0,
         bottom: 0,
-        child: child,
+        child: framedChild,
       );
     }
 
@@ -1901,7 +2083,7 @@ class _EmbeddedCustomerServiceFrame extends StatelessWidget {
       top: 0,
       right: 0,
       bottom: _mobileRootMenuHeight + mediaQuery.padding.bottom,
-      child: child,
+      child: framedChild,
     );
   }
 }

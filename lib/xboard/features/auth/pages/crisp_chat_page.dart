@@ -35,7 +35,7 @@ class CrispChatPage extends StatefulWidget {
   final String? userScript;
   final Future<String?> Function()? deferredUserScript;
   final VoidCallback? onBackPressed;
-  final ValueListenable<bool>? visibilityListenable;
+  final ValueListenable<CustomerServiceSessionState>? sessionListenable;
 
   const CrispChatPage({
     super.key,
@@ -44,7 +44,7 @@ class CrispChatPage extends StatefulWidget {
     this.userScript,
     this.deferredUserScript,
     this.onBackPressed,
-    this.visibilityListenable,
+    this.sessionListenable,
   });
 
   /// 是否支持系统内嵌 WebView
@@ -94,6 +94,7 @@ class _CrispChatPageState extends State<CrispChatPage> {
   late bool _isDarkMode;
   bool _didStartLoading = false;
   String? _localeTag;
+  int _lastAppliedRestoreToken = -1;
 
   @override
   void initState() {
@@ -324,6 +325,7 @@ class _CrispChatPageState extends State<CrispChatPage> {
     window.CRISP_RUNTIME_CONFIG.locale = window.__fastcatCustomerServiceCrispLocale;
     window.__fastcatApplyCustomerServiceTheme = function(theme){
       try {
+        window.__fastcatCustomerServiceTheme = theme;
         document.documentElement.style.background = theme.background;
         document.documentElement.style.colorScheme = theme.isDark ? 'dark' : 'light';
         if (document.body) {
@@ -365,7 +367,8 @@ class _CrispChatPageState extends State<CrispChatPage> {
       try {
         window.\$crisp = window.\$crisp || [];
         window.\$crisp.push(["config", "locale", [window.__fastcatCustomerServiceCrispLocale || 'en']]);
-        window.\$crisp.push(["config", "color:mode", [${_isDarkMode ? '"dark"' : '"light"'}]]);
+        var theme = window.__fastcatCustomerServiceTheme || { isDark: ${_isDarkMode ? 'true' : 'false'} };
+        window.\$crisp.push(["config", "color:mode", [theme.isDark ? "dark" : "light"]]);
         var interactive = document.querySelector('textarea,input,[contenteditable="true"],button,a[href^="mailto:"],iframe[src*="crisp"],.crisp-client,[class*="crisp"]');
         if (interactive) markReady();
       } catch(_) {}
@@ -408,13 +411,20 @@ class _CrispChatPageState extends State<CrispChatPage> {
     final script = '''
 (function(){
   try {
-    if (typeof window.__fastcatApplyCustomerServiceTheme !== 'function') return;
-    window.__fastcatApplyCustomerServiceTheme({
+    var theme = {
       isDark: ${_isDarkMode ? 'true' : 'false'},
       background: '${_customerServiceBackgroundColorValue(_isDarkMode)}',
       foreground: '${_customerServiceForegroundColorValue(_isDarkMode)}',
       accent: '${_isDarkMode ? '#60a5fa' : '#2563eb'}'
-    });
+    };
+    window.__fastcatCustomerServiceTheme = theme;
+    if (typeof window.__fastcatApplyCustomerServiceTheme === 'function') {
+      window.__fastcatApplyCustomerServiceTheme(theme);
+    }
+    try {
+      window.\$crisp = window.\$crisp || [];
+      window.\$crisp.push(["config", "color:mode", [theme.isDark ? "dark" : "light"]]);
+    } catch(_) {}
   } catch(_) {}
 })();''';
     try {
@@ -461,6 +471,29 @@ class _CrispChatPageState extends State<CrispChatPage> {
     try {
       await _controller.runJavaScript(script);
     } catch (_) {}
+  }
+
+  void _syncSessionState(CustomerServiceSessionState session) {
+    final nextIsDarkMode = session.brightness == Brightness.dark;
+    final nextLocaleTag = session.localeTag;
+    final themeChanged = _isDarkMode != nextIsDarkMode;
+    final localeChanged = _localeTag != nextLocaleTag;
+
+    if (themeChanged) {
+      _isDarkMode = nextIsDarkMode;
+      unawaited(_applySystemWebViewBackgroundColor());
+      unawaited(_applySystemTheme());
+    }
+    if (localeChanged) {
+      _localeTag = nextLocaleTag;
+      unawaited(_applySystemLocale());
+    }
+    if (session.isVisible && _lastAppliedRestoreToken != session.restoreToken) {
+      _lastAppliedRestoreToken = session.restoreToken;
+      unawaited(_applySystemWebViewBackgroundColor());
+      unawaited(_applySystemTheme());
+      unawaited(_applySystemLocale());
+    }
   }
 
   // ── File picker (Android) ────────────────────────────────────────
@@ -627,9 +660,13 @@ class _CrispChatPageState extends State<CrispChatPage> {
 
   @override
   Widget build(BuildContext context) {
-    final strings = _strings;
-    final backgroundColor = _customerServiceBackgroundColor(_isDarkMode);
-    Widget buildScaffold(bool isVisible) {
+    Widget buildScaffold(CustomerServiceSessionState? session) {
+      if (session != null) {
+        _syncSessionState(session);
+      }
+      final strings = _strings;
+      final backgroundColor = _customerServiceBackgroundColor(_isDarkMode);
+      final isVisible = session?.isVisible ?? true;
       return PopScope(
         canPop: widget.onBackPressed == null || !isVisible,
         onPopInvokedWithResult: (didPop, _) {
@@ -657,11 +694,11 @@ class _CrispChatPageState extends State<CrispChatPage> {
       );
     }
 
-    final visibility = widget.visibilityListenable;
-    if (visibility == null) return buildScaffold(true);
-    return ValueListenableBuilder<bool>(
-      valueListenable: visibility,
-      builder: (_, isVisible, __) => buildScaffold(isVisible),
+    final session = widget.sessionListenable;
+    if (session == null) return buildScaffold(null);
+    return ValueListenableBuilder<CustomerServiceSessionState>(
+      valueListenable: session,
+      builder: (_, currentSession, __) => buildScaffold(currentSession),
     );
   }
 }

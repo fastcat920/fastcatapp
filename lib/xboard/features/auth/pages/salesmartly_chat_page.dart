@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:io';
+import 'package:fl_clash/xboard/features/auth/utils/customer_service_helper.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:webview_flutter/webview_flutter.dart';
@@ -14,13 +15,13 @@ import 'package:webview_flutter/webview_flutter.dart';
 class SalesmarylyChatPage extends StatefulWidget {
   final String scriptUrl;
   final VoidCallback? onBackPressed;
-  final ValueListenable<bool>? visibilityListenable;
+  final ValueListenable<CustomerServiceSessionState>? sessionListenable;
 
   const SalesmarylyChatPage({
     super.key,
     required this.scriptUrl,
     this.onBackPressed,
-    this.visibilityListenable,
+    this.sessionListenable,
   });
 
   static bool get isSupported =>
@@ -37,6 +38,7 @@ class _SalesmarylyChatPageState extends State<SalesmarylyChatPage> {
   late bool _isDarkMode;
   bool _didStartLoading = false;
   HttpServer? _localServer;
+  int _lastAppliedRestoreToken = -1;
 
   String _buildHtml() {
     final escaped =
@@ -158,9 +160,7 @@ class _SalesmarylyChatPageState extends State<SalesmarylyChatPage> {
     final nextIsDarkMode = Theme.of(context).brightness == Brightness.dark;
     if (_isDarkMode != nextIsDarkMode) {
       _isDarkMode = nextIsDarkMode;
-      unawaited(
-        _controller.setBackgroundColor(_webViewBackgroundColor(_isDarkMode)),
-      );
+      unawaited(_applySystemTheme());
     }
     if (!_didStartLoading) {
       _didStartLoading = true;
@@ -206,10 +206,55 @@ class _SalesmarylyChatPageState extends State<SalesmarylyChatPage> {
     return isDarkMode ? '#d1d5db' : '#999999';
   }
 
+  Future<void> _applySystemTheme() async {
+    final background = _customerServiceBackgroundColor(_isDarkMode);
+    final foreground = _customerServiceForegroundColor(_isDarkMode);
+    try {
+      await _controller
+          .setBackgroundColor(_webViewBackgroundColor(_isDarkMode));
+      await _controller.runJavaScript('''
+(function(){
+  try {
+    document.documentElement.style.background = '$background';
+    document.documentElement.style.colorScheme = '${_isDarkMode ? 'dark' : 'light'}';
+    if (document.body) {
+      document.body.style.background = '$background';
+      document.body.style.color = '$foreground';
+    }
+    var loading = document.getElementById('ss_loading');
+    if (loading) {
+      loading.style.background = '$background';
+      loading.style.color = '$foreground';
+    }
+    var frames = document.querySelectorAll('iframe');
+    for (var i = 0; i < frames.length; i++) {
+      frames[i].style.background = '$background';
+    }
+  } catch (_) {}
+})();''');
+    } catch (_) {}
+  }
+
+  void _syncSessionState(CustomerServiceSessionState session) {
+    final nextIsDarkMode = session.brightness == Brightness.dark;
+    if (_isDarkMode != nextIsDarkMode) {
+      _isDarkMode = nextIsDarkMode;
+      unawaited(_applySystemTheme());
+    }
+    if (session.isVisible && _lastAppliedRestoreToken != session.restoreToken) {
+      _lastAppliedRestoreToken = session.restoreToken;
+      unawaited(_applySystemTheme());
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
-    final backgroundColor = _webViewBackgroundColor(_isDarkMode);
-    Widget buildScaffold(bool isVisible) {
+    Widget buildScaffold(CustomerServiceSessionState? session) {
+      if (session != null) {
+        _syncSessionState(session);
+      }
+      final backgroundColor = _webViewBackgroundColor(_isDarkMode);
+      final isVisible = session?.isVisible ?? true;
       return PopScope(
         canPop: widget.onBackPressed == null || !isVisible,
         onPopInvokedWithResult: (didPop, _) {
@@ -255,11 +300,11 @@ class _SalesmarylyChatPageState extends State<SalesmarylyChatPage> {
       );
     }
 
-    final visibility = widget.visibilityListenable;
-    if (visibility == null) return buildScaffold(true);
-    return ValueListenableBuilder<bool>(
-      valueListenable: visibility,
-      builder: (_, isVisible, __) => buildScaffold(isVisible),
+    final session = widget.sessionListenable;
+    if (session == null) return buildScaffold(null);
+    return ValueListenableBuilder<CustomerServiceSessionState>(
+      valueListenable: session,
+      builder: (_, currentSession, __) => buildScaffold(currentSession),
     );
   }
 }
