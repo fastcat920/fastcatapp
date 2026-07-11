@@ -199,7 +199,7 @@ _$DnsImpl _$$DnsImplFromJson(Map<String, dynamic> json) => _$DnsImpl(
       defaultNameserver: (json['default-nameserver'] as List<dynamic>?)
               ?.map((e) => e as String)
               .toList() ??
-          const ["223.5.5.5"],
+          const ["223.5.5.5", "119.29.29.29"],
       enhancedMode:
           $enumDecodeNullable(_$DnsModeEnumMap, json['enhanced-mode']) ??
               DnsMode.fakeIp,
@@ -231,7 +231,10 @@ _$DnsImpl _$$DnsImplFromJson(Map<String, dynamic> json) => _$DnsImpl(
       proxyServerNameserver: (json['proxy-server-nameserver'] as List<dynamic>?)
               ?.map((e) => e as String)
               .toList() ??
-          const ["https://doh.pub/dns-query"],
+          const [
+            "https://dns.alidns.com/dns-query",
+            "https://doh.pub/dns-query"
+          ],
       fallbackFilter: json['fallback-filter'] == null
           ? const FallbackFilter()
           : FallbackFilter.fromJson(

@@ -247,7 +247,10 @@ class Dns with _$Dns {
     @Default(true) @JsonKey(name: "use-system-hosts") bool useSystemHosts,
     @Default(false) @JsonKey(name: "respect-rules") bool respectRules,
     @Default(true) bool ipv6,
-    @Default(["223.5.5.5"])
+    @Default([
+      "223.5.5.5",
+      "119.29.29.29",
+    ])
     @JsonKey(name: "default-nameserver")
     List<String> defaultNameserver,
     @Default(DnsMode.fakeIp)
@@ -280,6 +283,7 @@ class Dns with _$Dns {
     ])
     List<String> fallback,
     @Default([
+      "https://dns.alidns.com/dns-query",
       "https://doh.pub/dns-query",
     ])
     @JsonKey(name: "proxy-server-nameserver")

@@ -41,6 +41,7 @@ class Preferences {
     }
     final configMap = json.decode(configString) as Map<String, dynamic>;
     await _migrateCloseConnectionsDefault(preferences, configMap);
+    await _migrateDnsDefaults(preferences, configMap);
     return Config.compatibleFromJson(configMap);
   }
 
@@ -57,6 +58,37 @@ class Preferences {
       appSetting['closeConnections'] = false;
     }
     await preferences.setBool(closeConnectionsDefaultMigratedKey, true);
+    await preferences.setString(configKey, json.encode(configMap));
+  }
+
+  Future<void> _migrateDnsDefaults(
+    SharedPreferences? preferences,
+    Map<String, dynamic> configMap,
+  ) async {
+    if (preferences == null ||
+        preferences.getBool(dnsDefaultsMigratedKey) == true) {
+      return;
+    }
+
+    final patchConfig = configMap['patchClashConfig'];
+    final dns = patchConfig is Map ? patchConfig['dns'] : null;
+    if (dns is Map) {
+      final defaultNameserver = dns['default-nameserver'];
+      if (defaultNameserver is List &&
+          defaultNameserver.length == 1 &&
+          defaultNameserver.first == '223.5.5.5') {
+        defaultNameserver.add('119.29.29.29');
+      }
+
+      final proxyNameserver = dns['proxy-server-nameserver'];
+      if (proxyNameserver is List &&
+          proxyNameserver.length == 1 &&
+          proxyNameserver.first == 'https://doh.pub/dns-query') {
+        proxyNameserver.insert(0, 'https://dns.alidns.com/dns-query');
+      }
+    }
+
+    await preferences.setBool(dnsDefaultsMigratedKey, true);
     await preferences.setString(configKey, json.encode(configMap));
   }
 
