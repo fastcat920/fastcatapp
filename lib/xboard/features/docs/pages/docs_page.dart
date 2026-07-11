@@ -9,17 +9,18 @@ import 'package:url_launcher/url_launcher.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 import 'package:flutter_inappwebview/flutter_inappwebview.dart' as iaw;
 
-
-/// Build the language tag for knowledge API calls from the current locale.
+/// Build the language tag expected by the V2Board knowledge API.
 ///
-/// Maps [Locale] to the API format (e.g. zh_CN → zh-CN, en → en).
+/// The backend stores English docs as `en-US` while Flutter's English locale is
+/// just `en`, so this must not use [Locale.toLanguageTag] directly.
 String _localeToDocsLanguage(Locale locale) {
   final lang = locale.languageCode;
   final country = locale.countryCode;
+  if (lang == 'en') return 'en-US';
+  if (lang == 'zh') return 'zh-CN';
   if (country != null && country.isNotEmpty) return '$lang-$country';
   return lang;
 }
-
 
 /// 文档中心页面 — 数据由 knowledgeArticlesProvider 提供（keepAlive 缓存）
 class DocsPage extends ConsumerStatefulWidget {

@@ -114,20 +114,28 @@ final knowledgeArticlesProvider =
     FutureProvider.family<List<KnowledgeArticle>, String>(
         (ref, language) async {
   final sdk = await ref.read(xboardSdkProvider.future);
-  final raw = await sdk.httpService
-      .getRequest('/user/knowledge/fetch?language=$language');
+  final uri = Uri(
+    path: '/user/knowledge/fetch',
+    queryParameters: {'language': language},
+  );
+  final raw = await sdk.httpService.getRequest(uri.toString());
   return parseKnowledgeArticles(raw);
 });
 
 /// 单篇文章详情 Provider
-final knowledgeArticleDetailProvider =
-    FutureProvider.autoDispose.family<Map<String, dynamic>?,
-        KnowledgeArticleDetailRequest>((ref, request) async {
+final knowledgeArticleDetailProvider = FutureProvider.autoDispose
+    .family<Map<String, dynamic>?, KnowledgeArticleDetailRequest>(
+        (ref, request) async {
   final sdk = await ref.read(xboardSdkProvider.future);
-  final language = Uri.encodeQueryComponent(request.language);
   final cacheBuster = DateTime.now().millisecondsSinceEpoch;
-  final raw = await sdk.httpService.getRequest(
-    '/user/knowledge/fetch?id=${request.id}&language=$language&_t=$cacheBuster',
+  final uri = Uri(
+    path: '/user/knowledge/fetch',
+    queryParameters: {
+      'id': request.id.toString(),
+      'language': request.language,
+      '_t': cacheBuster.toString(),
+    },
   );
-  return raw is Map<String, dynamic> ? raw : null;
+  final raw = await sdk.httpService.getRequest(uri.toString());
+  return raw;
 });
