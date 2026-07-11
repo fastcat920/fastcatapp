@@ -26,6 +26,7 @@ import 'package:fl_clash/xboard/features/shared/utils/desktop_webview_window_hel
 import 'package:fl_clash/xboard/core/core.dart';
 import 'package:fl_clash/xboard/utils/xboard_notification.dart';
 import 'package:flutter_inappwebview/flutter_inappwebview.dart' as iaw;
+import 'package:flutter/services.dart';
 import 'package:flutter_xboard_sdk/flutter_xboard_sdk.dart';
 import 'package:go_router/go_router.dart';
 
@@ -95,6 +96,10 @@ class CustomerServiceSessionState {
 class CustomerServiceHelper {
   CustomerServiceHelper._();
 
+  static const MethodChannel _androidBackChannel =
+      MethodChannel('fastcat/customer_service_back');
+
+  static bool _androidBackHandlerRegistered = false;
   static Future<String>? _webview2DataFolderFuture;
   static Future<bool>? _desktopWebviewAvailableFuture;
   static Future<String>? _fallbackCrispWebsiteIdFuture;
@@ -124,6 +129,17 @@ class CustomerServiceHelper {
 
   static bool get isEmbeddedCustomerServiceVisible {
     return _embeddedCustomerServiceState?.value.isVisible ?? false;
+  }
+
+  static void ensureAndroidBackHandlerRegistered() {
+    if (!Platform.isAndroid || _androidBackHandlerRegistered) return;
+    _androidBackChannel.setMethodCallHandler((call) async {
+      if (call.method == 'hideIfVisible') {
+        return hideEmbeddedCustomerServiceIfVisible();
+      }
+      throw MissingPluginException('No method ${call.method}');
+    });
+    _androidBackHandlerRegistered = true;
   }
 
   static bool hideEmbeddedCustomerServiceIfVisible() {
@@ -804,9 +820,16 @@ class CustomerServiceHelper {
               ),
             );
           },
-          child: Material(
-            type: MaterialType.transparency,
-            child: builder(_hideEmbeddedCustomerService, session),
+          child: BackButtonListener(
+            onBackButtonPressed: () async {
+              if (!isEmbeddedCustomerServiceVisible) return false;
+              _hideEmbeddedCustomerService();
+              return true;
+            },
+            child: Material(
+              type: MaterialType.transparency,
+              child: builder(_hideEmbeddedCustomerService, session),
+            ),
           ),
         ),
       ),

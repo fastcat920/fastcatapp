@@ -85,6 +85,7 @@ class ApplicationState extends ConsumerState<Application>
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
+    CustomerServiceHelper.ensureAndroidBackHandlerRegistered();
     _autoUpdateProfilesTask();
     globalState.appController = AppController(context, ref);
     unawaited(

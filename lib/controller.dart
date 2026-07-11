@@ -16,6 +16,7 @@ import 'package:fl_clash/services/core_switch_status.dart';
 import 'package:fl_clash/state.dart';
 import 'package:fl_clash/widgets/dialog.dart';
 import 'package:fl_clash/xboard/features/auth/services/device_heartbeat_service.dart';
+import 'package:fl_clash/xboard/features/auth/utils/customer_service_helper.dart';
 import 'package:flutter/material.dart';
 import 'package:yaml/yaml.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -822,6 +823,9 @@ class AppController {
 
   handleBackOrExit() async {
     if (_ref.read(backBlockProvider)) {
+      return;
+    }
+    if (CustomerServiceHelper.hideEmbeddedCustomerServiceIfVisible()) {
       return;
     }
     if (_ref.read(appSettingProvider).minimizeOnExit) {
