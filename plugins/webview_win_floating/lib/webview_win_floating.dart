@@ -2,7 +2,6 @@ export 'webview_plugin.dart';
 
 import 'dart:async';
 import 'dart:developer';
-import 'dart:io';
 import 'dart:typed_data';
 
 import 'package:flutter/widgets.dart';
@@ -160,7 +159,6 @@ class _WinWebViewWidgetState extends State<WinWebViewWidget> {
   @override
   void activate() {
     super.activate();
-    if (Platform.isLinux) return;
     if (widget.controller.params.suspendDuringDeactive) {
       widget.controller._resume();
     } else {
@@ -171,7 +169,6 @@ class _WinWebViewWidgetState extends State<WinWebViewWidget> {
   @override
   void deactivate() {
     super.deactivate();
-    if (Platform.isLinux) return;
     if (widget.controller.params.suspendDuringDeactive) {
       widget.controller._suspend();
     } else {

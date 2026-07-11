@@ -8,6 +8,7 @@ import 'package:fl_clash/xboard/features/shared/widgets/xb_error_state.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 import 'package:flutter_inappwebview/flutter_inappwebview.dart' as iaw;
+import 'package:flutter_widget_from_html/flutter_widget_from_html.dart';
 
 /// Build the language tag expected by the V2Board knowledge API.
 ///
@@ -56,7 +57,8 @@ class _DocsPageState extends ConsumerState<DocsPage>
     final theme = Theme.of(context);
     final language = _localeToDocsLanguage(Localizations.localeOf(context));
 
-    ref.listen<AsyncValue<List<KnowledgeArticle>>>(knowledgeArticlesProvider(language), (
+    ref.listen<AsyncValue<List<KnowledgeArticle>>>(
+        knowledgeArticlesProvider(language), (
       _,
       next,
     ) {
@@ -305,7 +307,6 @@ class _DocsPageState extends ConsumerState<DocsPage>
     );
   }
 
-
   Map<String, List<KnowledgeArticle>> _groupArticles(
     List<KnowledgeArticle> articles,
   ) {
@@ -344,6 +345,8 @@ class _ArticleDetailPage extends ConsumerStatefulWidget {
 class _ArticleDetailPageState extends ConsumerState<_ArticleDetailPage> {
   String? _resolvedBody;
   WebViewController? _webController;
+  bool _useHtmlWidget = false;
+  String? _htmlWidgetContent;
   bool _useInAppWebView = false;
   String? _inAppWebViewHtml;
   iaw.InAppWebViewController? _inAppController;
@@ -362,8 +365,6 @@ class _ArticleDetailPageState extends ConsumerState<_ArticleDetailPage> {
     return '${dt.year}-${dt.month.toString().padLeft(2, '0')}-${dt.day.toString().padLeft(2, '0')} '
         '${dt.hour.toString().padLeft(2, '0')}:${dt.minute.toString().padLeft(2, '0')}';
   }
-
-
 
   static String _contentToHtml(String content, {bool isDark = false}) {
     final htmlBlocks = <String, String>{};
@@ -525,11 +526,26 @@ p{margin:8px 0}
 </style></head><body><div>$s</div></body></html>''';
   }
 
+  /// Linux does not have a flutter_inappwebview backend. Reuse the same
+  /// Markdown/HTML conversion, but pass only the body fragment to HtmlWidget.
+  static String _contentToBodyHtml(String content) {
+    final html = _contentToHtml(content);
+    final bodyMatch = RegExp(
+      r'<body[^>]*>([\s\S]*?)</body>',
+      caseSensitive: false,
+    ).firstMatch(html);
+    return (bodyMatch?.group(1) ?? html)
+        .replaceAll(
+          RegExp(r'<script\b[^>]*>[\s\S]*?</script>', caseSensitive: false),
+          '',
+        )
+        .trim();
+  }
 
   @override
   void initState() {
     super.initState();
-    if (Platform.isLinux || Platform.isWindows) {
+    if (Platform.isWindows) {
       _useInAppWebView = true;
     }
     _webLoading = true;
@@ -610,6 +626,8 @@ p{margin:8px 0}
     setState(() {
       _resolvedBody = null;
       _webController = null;
+      _useHtmlWidget = false;
+      _htmlWidgetContent = null;
       _useInAppWebView = false;
       _inAppWebViewHtml = null;
       _inAppController = null;
@@ -629,7 +647,15 @@ p{margin:8px 0}
   void _initWebView(String content) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
-    if (Platform.isLinux || Platform.isWindows) {
+    if (Platform.isLinux) {
+      _htmlWidgetContent = _contentToBodyHtml(content);
+      _useHtmlWidget = true;
+      _webLoading = false;
+      if (mounted) setState(() {});
+      return;
+    }
+
+    if (Platform.isWindows) {
       _inAppWebViewHtml = _contentToHtml(content, isDark: isDark);
       _useInAppWebView = true;
       _lastInAppWebViewIsDark = isDark;
@@ -781,6 +807,24 @@ p{margin:8px 0}
       );
     }
 
+    if (_useHtmlWidget && _htmlWidgetContent != null) {
+      return SingleChildScrollView(
+        padding: const EdgeInsets.all(16),
+        child: HtmlWidget(
+          _htmlWidgetContent!,
+          onTapUrl: (url) {
+            final uri = Uri.tryParse(url);
+            if (uri != null) {
+              unawaited(
+                launchUrl(uri, mode: LaunchMode.externalApplication),
+              );
+            }
+            return true;
+          },
+        ),
+      );
+    }
+
     if (_useInAppWebView) {
       final isDark = Theme.of(context).brightness == Brightness.dark;
       if (_inAppWebViewHtml == null || _lastInAppWebViewIsDark != isDark) {
@@ -791,32 +835,36 @@ p{margin:8px 0}
       return Stack(
         children: [
           iaw.InAppWebView(
-        initialSettings: iaw.InAppWebViewSettings(
-          javaScriptEnabled: true,
-          transparentBackground: true,
-        ),
-        onWebViewCreated: (controller) {
-          _inAppController = controller;
-          controller.addJavaScriptHandler(
-            handlerName: 'openExternal',
-            callback: (args) async {
-              final url = args.isNotEmpty ? args[0].toString() : '';
-              if (url.isNotEmpty) {
-                final uri = Uri.tryParse(url);
-                if (uri != null) {
-                  await launchUrl(uri, mode: LaunchMode.externalApplication);
-                }
-              }
+            initialSettings: iaw.InAppWebViewSettings(
+              javaScriptEnabled: true,
+              transparentBackground: true,
+            ),
+            onWebViewCreated: (controller) {
+              _inAppController = controller;
+              controller.addJavaScriptHandler(
+                handlerName: 'openExternal',
+                callback: (args) async {
+                  final url = args.isNotEmpty ? args[0].toString() : '';
+                  if (url.isNotEmpty) {
+                    final uri = Uri.tryParse(url);
+                    if (uri != null) {
+                      await launchUrl(uri,
+                          mode: LaunchMode.externalApplication);
+                    }
+                  }
+                },
+              );
+              controller.loadData(
+                  data: _inAppWebViewHtml!,
+                  mimeType: 'text/html',
+                  encoding: 'utf-8');
             },
-          );
-          controller.loadData(data: _inAppWebViewHtml!, mimeType: 'text/html', encoding: 'utf-8');
-        },
-        onLoadStop: (_, __) {
-          if (_inAppWebViewLoading) {
-            if (mounted) setState(() => _inAppWebViewLoading = false);
-          }
+            onLoadStop: (_, __) {
+              if (_inAppWebViewLoading) {
+                if (mounted) setState(() => _inAppWebViewLoading = false);
+              }
 
-          _inAppController?.evaluateJavascript(source: r'''
+              _inAppController?.evaluateJavascript(source: r'''
 (function(){
   if (window.__fastcatDocInterceptInstalled) return;
   window.__fastcatDocInterceptInstalled = true;
@@ -845,44 +893,55 @@ p{margin:8px 0}
   }, true);
 })();
 ''');
-        },
-        shouldOverrideUrlLoading: (_, navigationAction) async {
-          // Allow iframes and subresources to load inline (not main-frame nav)
-          if (!navigationAction.isForMainFrame) {
-            return iaw.NavigationActionPolicy.ALLOW;
-          }
-          final url = navigationAction.request.url?.toString() ?? '';
-          if (url.isNotEmpty) {
-            final uri = Uri.tryParse(url);
-            if (uri != null && (uri.scheme == 'http' || uri.scheme == 'https')) {
-              // Fallback: open download links in browser
-              final lower = url.split('?')[0].toLowerCase();
-              final isDownload = lower.endsWith('.dmg') ||
-                  lower.endsWith('.exe') || lower.endsWith('.apk') ||
-                  lower.endsWith('.zip') || lower.endsWith('.7z') ||
-                  lower.endsWith('.rar') || lower.endsWith('.tar.gz') ||
-                  lower.endsWith('.tar') || lower.endsWith('.gz') ||
-                  lower.endsWith('.bz2') || lower.endsWith('.deb') ||
-                  lower.endsWith('.rpm') || lower.endsWith('.msi') ||
-                  lower.endsWith('.ipa') || lower.endsWith('.pkg') ||
-                  lower.endsWith('.iso') || lower.endsWith('.bin');
-              if (isDownload) {
-                await launchUrl(
-                  uri,
-                  mode: LaunchMode.externalApplication,
-                );
-                return iaw.NavigationActionPolicy.CANCEL;
+            },
+            shouldOverrideUrlLoading: (_, navigationAction) async {
+              // Allow iframes and subresources to load inline (not main-frame nav)
+              if (!navigationAction.isForMainFrame) {
+                return iaw.NavigationActionPolicy.ALLOW;
               }
-              // Non-download link: allow navigating within the webview
+              final url = navigationAction.request.url?.toString() ?? '';
+              if (url.isNotEmpty) {
+                final uri = Uri.tryParse(url);
+                if (uri != null &&
+                    (uri.scheme == 'http' || uri.scheme == 'https')) {
+                  // Fallback: open download links in browser
+                  final lower = url.split('?')[0].toLowerCase();
+                  final isDownload = lower.endsWith('.dmg') ||
+                      lower.endsWith('.exe') ||
+                      lower.endsWith('.apk') ||
+                      lower.endsWith('.zip') ||
+                      lower.endsWith('.7z') ||
+                      lower.endsWith('.rar') ||
+                      lower.endsWith('.tar.gz') ||
+                      lower.endsWith('.tar') ||
+                      lower.endsWith('.gz') ||
+                      lower.endsWith('.bz2') ||
+                      lower.endsWith('.deb') ||
+                      lower.endsWith('.rpm') ||
+                      lower.endsWith('.msi') ||
+                      lower.endsWith('.ipa') ||
+                      lower.endsWith('.pkg') ||
+                      lower.endsWith('.iso') ||
+                      lower.endsWith('.bin');
+                  if (isDownload) {
+                    await launchUrl(
+                      uri,
+                      mode: LaunchMode.externalApplication,
+                    );
+                    return iaw.NavigationActionPolicy.CANCEL;
+                  }
+                  // Non-download link: allow navigating within the webview
+                  return iaw.NavigationActionPolicy.ALLOW;
+                }
+              }
               return iaw.NavigationActionPolicy.ALLOW;
-            }
-          }
-          return iaw.NavigationActionPolicy.ALLOW;
-        },
+            },
           ),
           if (_inAppWebViewLoading)
             Container(
-              color: currentIsDark ? const Color(0xFF1E1E1E) : const Color(0xFFFAFBFD),
+              color: currentIsDark
+                  ? const Color(0xFF1E1E1E)
+                  : const Color(0xFFFAFBFD),
               child: const Center(child: CircularProgressIndicator()),
             ),
         ],
@@ -892,7 +951,9 @@ p{margin:8px 0}
     if ((Platform.isAndroid || Platform.isIOS || Platform.isMacOS) &&
         _webController != null) {
       final currentIsDark = theme.brightness == Brightness.dark;
-      if (_lastWebViewIsDark != currentIsDark && _resolvedBody != null && _resolvedBody!.isNotEmpty) {
+      if (_lastWebViewIsDark != currentIsDark &&
+          _resolvedBody != null &&
+          _resolvedBody!.isNotEmpty) {
         final fullHtml = _contentToHtml(_resolvedBody!, isDark: currentIsDark);
         _webController!.loadHtmlString(fullHtml);
         _lastWebViewIsDark = currentIsDark;

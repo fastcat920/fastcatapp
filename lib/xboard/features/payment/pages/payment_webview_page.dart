@@ -6,6 +6,7 @@ import 'package:desktop_webview_window/desktop_webview_window.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:webview_flutter/webview_flutter.dart';
+import 'package:webview_win_floating/webview_plugin.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import 'package:fl_clash/l10n/l10n.dart';
@@ -53,13 +54,6 @@ class PaymentWebViewPage extends ConsumerStatefulWidget {
     required String paymentUrl,
     required String tradeNo,
   }) {
-    if (Platform.isLinux) {
-      return _openLinuxDesktopPaymentWindow(
-        context,
-        paymentUrl: paymentUrl,
-        tradeNo: tradeNo,
-      );
-    }
     return Navigator.of(context).push<bool>(
       MaterialPageRoute(
         builder: (_) =>
@@ -76,6 +70,9 @@ class PaymentWebViewPage extends ConsumerStatefulWidget {
     unawaited(_applyDesktopPaymentTheme(webview, brightness: brightness));
   }
 
+  // Kept as an emergency fallback for distributions where the embedded GTK
+  // overlay cannot be initialized.
+  // ignore: unused_element
   static Future<bool?> _openLinuxDesktopPaymentWindow(
     BuildContext context, {
     required String paymentUrl,
@@ -485,6 +482,7 @@ class _PaymentWebViewPageState extends ConsumerState<PaymentWebViewPage> {
       Platform.isAndroid ||
       Platform.isIOS ||
       Platform.isMacOS ||
+      Platform.isLinux ||
       Platform.isWindows;
 
   @override
@@ -500,6 +498,10 @@ class _PaymentWebViewPageState extends ConsumerState<PaymentWebViewPage> {
   void dispose() {
     _poller.dispose();
     _loadStateTimer?.cancel();
+    final platformController = _webViewController?.platform;
+    if (platformController is WindowsPlatformWebViewController) {
+      unawaited(platformController.controller.dispose());
+    }
     _webViewController = null;
     super.dispose();
   }

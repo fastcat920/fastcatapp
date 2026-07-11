@@ -41,9 +41,9 @@ Future<void> main(List<String> args) async {
   globalState.isService = false;
   WidgetsFlutterBinding.ensureInitialized();
   unawaited(bootDiagLog('main entered'));
-  if (Platform.isWindows) {
+  if (Platform.isWindows || Platform.isLinux) {
     WindowsWebViewPlatform.registerWith();
-    unawaited(bootDiagLog('WindowsWebViewPlatform registered'));
+    unawaited(bootDiagLog('Desktop floating WebViewPlatform registered'));
   }
   BrandedDesktopSharedPreferencesStore.registerIfNeeded();
   unawaited(bootDiagLog('SharedPreferences store registered'));
@@ -207,9 +207,8 @@ void _loadCachedGroups(SharedPreferences prefs) {
     final cachedGroups = prefs.getString('cached_groups');
     if (cachedGroups != null) {
       final list = jsonDecode(cachedGroups) as List;
-      final groups = list
-          .map((e) => Group.fromJson(e as Map<String, dynamic>))
-          .toList();
+      final groups =
+          list.map((e) => Group.fromJson(e as Map<String, dynamic>)).toList();
       globalState.appState = globalState.appState.copyWith(groups: groups);
     }
   } catch (_) {}

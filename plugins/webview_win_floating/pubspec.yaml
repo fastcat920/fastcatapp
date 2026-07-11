@@ -44,6 +44,9 @@ flutter:
   plugin:
     implements: webview_flutter #Jacky
     platforms:
+      linux:
+        dartPluginClass: WindowsWebViewPlatform
+        pluginClass: WebviewWinFloatingPlugin
       windows:
         dartPluginClass: WindowsWebViewPlatform #Jacky
         pluginClass: WebviewWinFloatingPluginCApi
