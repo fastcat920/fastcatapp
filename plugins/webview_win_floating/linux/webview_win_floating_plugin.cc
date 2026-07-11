@@ -171,10 +171,18 @@ bool initWidgetContainer(WebviewWinFloatingPlugin* self) {
     return false;
   }
 
-  self->flView = gtk_bin_get_child(GTK_BIN(window));
+  self->flView = GTK_WIDGET(fl_plugin_registrar_get_view(self->registrar));
   if (self->flView == nullptr) {
     g_warning("[webview_win_floating] initWidgetContainer(): Flutter view is not ready");
     return false;
+  }
+
+  auto *existing_parent = gtk_widget_get_parent(self->flView);
+  if (existing_parent != nullptr && GTK_IS_FIXED(existing_parent)) {
+    // The runner prepares the fixed overlay container before Flutter starts.
+    // Reusing it avoids removing and reparenting a live FlView, which can
+    // terminate the Linux process when the first embedded WebView is opened.
+    self->webviewContainer = existing_parent;
   }
 
   // NOTE: my_fixed_get_type() is a custom GtkFixedWidget. It support:
@@ -182,22 +190,19 @@ bool initWidgetContainer(WebviewWinFloatingPlugin* self) {
   //   - make natural size as zero in get_preferred_width() and get_preferred_height()
   //     so it won't ask parent to enlarge size even if its child out of bounds
 
-  // create webviewContainer
-  self->webviewContainer = GTK_WIDGET(g_object_new(my_fixed_get_type(), NULL));
-  ((MyFixed*)self->webviewContainer)->main_widget = self->flView;
-  //self->webviewContainer = gtk_fixed_new();
+  if (self->webviewContainer == nullptr) {
+    // Compatibility fallback for runners that have not prepared an overlay.
+    self->webviewContainer = GTK_WIDGET(g_object_new(my_fixed_get_type(), NULL));
+    ((MyFixed*)self->webviewContainer)->main_widget = self->flView;
 
+    g_object_ref(self->flView);
+    gtk_container_remove(GTK_CONTAINER(window), self->flView);
+    gtk_fixed_put(GTK_FIXED(self->webviewContainer), self->flView, 0, 0);
+    gtk_widget_set_size_request(self->flView, 800, 500);
+    g_object_unref(self->flView);
 
-  // remove FLView from GtkWindow
-  g_object_ref(self->flView);
-  gtk_container_remove(GTK_CONTAINER(window), self->flView);
-
-  // put FLView into webviewContainer (FixedWidget)
-  //gtk_container_add(GTK_CONTAINER(self->webviewContainer), self->flView); 
-  gtk_fixed_put(GTK_FIXED(self->webviewContainer), self->flView, 0, 0);
-  gtk_widget_set_size_request(self->flView, 800, 500); // width-height
-  g_object_unref(self->flView);
-  //gtk_fixed_move(GTK_FIXED(self->webviewContainer), self->flView, 0, 0); // left-top
+    gtk_container_add(GTK_CONTAINER(window), self->webviewContainer);
+  }
 
 
               
@@ -211,8 +216,6 @@ bool initWidgetContainer(WebviewWinFloatingPlugin* self) {
   //g_signal_connect(self->event_controller, "motion", G_CALLBACK(on_flutter_view_motion), self);
 
 
-  // put webviewContainer into window
-  gtk_container_add(GTK_CONTAINER(window), self->webviewContainer);
   gtk_widget_show_all(GTK_WIDGET(window));
 
   gtk_widget_set_can_focus(self->flView, TRUE);

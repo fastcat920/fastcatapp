@@ -77,6 +77,14 @@ static gboolean on_main_window_map(GtkWidget* widget,
   return FALSE;
 }
 
+static void on_flutter_container_size_allocate(GtkWidget* container,
+                                               GtkAllocation* allocation,
+                                               gpointer user_data) {
+  auto* view = GTK_WIDGET(user_data);
+  gtk_widget_set_size_request(view, allocation->width, allocation->height);
+  gtk_fixed_move(GTK_FIXED(container), view, 0, 0);
+}
+
 // Implements GApplication::activate.
 static void my_application_activate(GApplication* application) {
   MyApplication* self = MY_APPLICATION(application);
@@ -132,8 +140,15 @@ static void my_application_activate(GApplication* application) {
   fl_dart_project_set_dart_entrypoint_arguments(project, self->dart_entrypoint_arguments);
 
   FlView* view = fl_view_new(project);
+  GtkWidget* flutter_container = gtk_fixed_new();
+  gtk_widget_set_hexpand(flutter_container, TRUE);
+  gtk_widget_set_vexpand(flutter_container, TRUE);
+  gtk_container_add(GTK_CONTAINER(window), flutter_container);
+  gtk_fixed_put(GTK_FIXED(flutter_container), GTK_WIDGET(view), 0, 0);
+  g_signal_connect(flutter_container, "size-allocate",
+                   G_CALLBACK(on_flutter_container_size_allocate), view);
   gtk_widget_show(GTK_WIDGET(view));
-  gtk_container_add(GTK_CONTAINER(window), GTK_WIDGET(view));
+  gtk_widget_show(flutter_container);
 
   fl_register_plugins(FL_PLUGIN_REGISTRY(view));
 

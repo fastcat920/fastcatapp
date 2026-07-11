@@ -5,10 +5,10 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:fl_clash/l10n/l10n.dart';
 import 'package:fl_clash/xboard/adapter/state/knowledge_state.dart';
 import 'package:fl_clash/xboard/features/shared/widgets/xb_error_state.dart';
+import 'package:fl_clash/xboard/features/shared/styles/html_styles.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 import 'package:flutter_inappwebview/flutter_inappwebview.dart' as iaw;
-import 'package:flutter_widget_from_html/flutter_widget_from_html.dart';
 
 /// Build the language tag expected by the V2Board knowledge API.
 ///
@@ -810,16 +810,18 @@ p{margin:8px 0}
     if (_useHtmlWidget && _htmlWidgetContent != null) {
       return SingleChildScrollView(
         padding: const EdgeInsets.all(16),
-        child: HtmlWidget(
-          _htmlWidgetContent!,
+        child: NoticeHtmlStyles.buildNoticeHtml(
+          context: context,
+          htmlContent: _htmlWidgetContent!,
+          preserveDocumentStyles: true,
           onTapUrl: (url) {
+            if (url == null) return;
             final uri = Uri.tryParse(url);
             if (uri != null) {
               unawaited(
                 launchUrl(uri, mode: LaunchMode.externalApplication),
               );
             }
-            return true;
           },
         ),
       );
