@@ -263,7 +263,8 @@ MyWebView::MyWebView(GtkWidget* container, MyWebViewCreateParams params, const g
     gtk_widget_set_vexpand(m_webview, TRUE);
     gtk_widget_set_size_request(m_webview, 1, 1);
     gtk_fixed_put(GTK_FIXED(m_container), m_webview, 0, 0); // left-top
-    gtk_widget_show_all(m_container);
+    gtk_widget_show(m_container);
+    if (m_isVisible) gtk_widget_show(m_webview);
 
     // listen webview events
     g_signal_connect(m_webview, "decide-policy", G_CALLBACK(::on_decide_policy), this);
@@ -298,7 +299,7 @@ void MyWebView::updateBounds(RECT& bounds) {
     int height = std::max(1, bounds.bottom - bounds.top);
     gtk_fixed_move(GTK_FIXED(m_container), m_webview, bounds.left, bounds.top); // left-top
     gtk_widget_set_size_request(m_webview, width, height); // width-height
-    gtk_widget_show(m_webview);
+    if (m_isVisible) gtk_widget_show(m_webview);
 }
 
 void MyWebView::enableJavascript(bool bEnable) {
@@ -458,6 +459,7 @@ void MyWebView::removeScriptChannelByName(gchar* channelName) {
 }
 
 void MyWebView::setVisible(bool isVisible) {
+    m_isVisible = isVisible;
     if (isVisible) {
         gtk_widget_show(m_webview);
     } else {

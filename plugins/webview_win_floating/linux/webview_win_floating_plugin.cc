@@ -216,7 +216,7 @@ bool initWidgetContainer(WebviewWinFloatingPlugin* self) {
   //g_signal_connect(self->event_controller, "motion", G_CALLBACK(on_flutter_view_motion), self);
 
 
-  gtk_widget_show_all(GTK_WIDGET(window));
+  gtk_widget_show(self->webviewContainer);
 
   gtk_widget_set_can_focus(self->flView, TRUE);
   gtk_widget_set_focus_on_click(self->flView, TRUE);

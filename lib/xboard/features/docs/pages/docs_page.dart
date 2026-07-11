@@ -4,11 +4,14 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:fl_clash/l10n/l10n.dart';
 import 'package:fl_clash/xboard/adapter/state/knowledge_state.dart';
+import 'package:fl_clash/xboard/config/gateway_config.dart';
+import 'package:fl_clash/xboard/config/xboard_config.dart';
 import 'package:fl_clash/xboard/features/shared/widgets/xb_error_state.dart';
 import 'package:fl_clash/xboard/features/shared/styles/html_styles.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 import 'package:flutter_inappwebview/flutter_inappwebview.dart' as iaw;
+import 'package:webview_win_floating/webview_plugin.dart';
 
 /// Build the language tag expected by the V2Board knowledge API.
 ///
@@ -361,6 +364,8 @@ class _ArticleDetailPageState extends ConsumerState<_ArticleDetailPage> {
         language: widget.language,
       );
 
+  String get _documentBaseUrl => XBoardConfig.panelUrl ?? gatewayBaseUrl;
+
   String _formatDateTime(DateTime dt) {
     return '${dt.year}-${dt.month.toString().padLeft(2, '0')}-${dt.day.toString().padLeft(2, '0')} '
         '${dt.hour.toString().padLeft(2, '0')}:${dt.minute.toString().padLeft(2, '0')}';
@@ -574,6 +579,11 @@ p{margin:8px 0}
 
   @override
   void dispose() {
+    final platformController = _webController?.platform;
+    if (platformController is WindowsPlatformWebViewController) {
+      unawaited(platformController.controller.dispose());
+    }
+    _webController = null;
     super.dispose();
   }
 
@@ -623,6 +633,10 @@ p{margin:8px 0}
   }
 
   void _retryDetail() {
+    final platformController = _webController?.platform;
+    if (platformController is WindowsPlatformWebViewController) {
+      unawaited(platformController.controller.dispose());
+    }
     setState(() {
       _resolvedBody = null;
       _webController = null;
@@ -647,14 +661,6 @@ p{margin:8px 0}
   void _initWebView(String content) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
-    if (Platform.isLinux) {
-      _htmlWidgetContent = _contentToBodyHtml(content);
-      _useHtmlWidget = true;
-      _webLoading = false;
-      if (mounted) setState(() {});
-      return;
-    }
-
     if (Platform.isWindows) {
       _inAppWebViewHtml = _contentToHtml(content, isDark: isDark);
       _useInAppWebView = true;
@@ -664,14 +670,34 @@ p{margin:8px 0}
       return;
     }
 
-    if (!(Platform.isAndroid || Platform.isIOS || Platform.isMacOS)) return;
+    if (!(Platform.isAndroid ||
+        Platform.isIOS ||
+        Platform.isMacOS ||
+        Platform.isLinux)) {
+      return;
+    }
     final fullHtml = _contentToHtml(content, isDark: isDark);
+    _htmlWidgetContent = _contentToBodyHtml(content);
     _webController = WebViewController()
       ..setJavaScriptMode(JavaScriptMode.unrestricted)
       ..setNavigationDelegate(
         NavigationDelegate(
           onPageFinished: (_) {
             if (mounted) setState(() => _webLoading = false);
+          },
+          onWebResourceError: (error) {
+            if (!Platform.isLinux || error.isForMainFrame != true || !mounted) {
+              return;
+            }
+            final platformController = _webController?.platform;
+            if (platformController is WindowsPlatformWebViewController) {
+              unawaited(platformController.controller.dispose());
+            }
+            setState(() {
+              _webController = null;
+              _useHtmlWidget = true;
+              _webLoading = false;
+            });
           },
           onNavigationRequest: (request) {
             if (!request.isMainFrame) return NavigationDecision.navigate;
@@ -685,7 +711,7 @@ p{margin:8px 0}
           },
         ),
       )
-      ..loadHtmlString(fullHtml);
+      ..loadHtmlString(fullHtml, baseUrl: _documentBaseUrl);
   }
 
   @override
@@ -950,14 +976,20 @@ p{margin:8px 0}
       );
     }
 
-    if ((Platform.isAndroid || Platform.isIOS || Platform.isMacOS) &&
+    if ((Platform.isAndroid ||
+            Platform.isIOS ||
+            Platform.isMacOS ||
+            Platform.isLinux) &&
         _webController != null) {
       final currentIsDark = theme.brightness == Brightness.dark;
       if (_lastWebViewIsDark != currentIsDark &&
           _resolvedBody != null &&
           _resolvedBody!.isNotEmpty) {
         final fullHtml = _contentToHtml(_resolvedBody!, isDark: currentIsDark);
-        _webController!.loadHtmlString(fullHtml);
+        _webController!.loadHtmlString(
+          fullHtml,
+          baseUrl: _documentBaseUrl,
+        );
         _lastWebViewIsDark = currentIsDark;
       }
       return Stack(

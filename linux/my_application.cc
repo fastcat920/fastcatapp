@@ -77,12 +77,50 @@ static gboolean on_main_window_map(GtkWidget* widget,
   return FALSE;
 }
 
-static void on_flutter_container_size_allocate(GtkWidget* container,
-                                               GtkAllocation* allocation,
-                                               gpointer user_data) {
-  auto* view = GTK_WIDGET(user_data);
-  gtk_widget_set_size_request(view, allocation->width, allocation->height);
-  gtk_fixed_move(GTK_FIXED(container), view, 0, 0);
+typedef struct {
+  GtkFixed parent_instance;
+  GtkWidget* flutter_view;
+} FastcatOverlay;
+
+typedef struct {
+  GtkFixedClass parent_class;
+} FastcatOverlayClass;
+
+G_DEFINE_TYPE(FastcatOverlay, fastcat_overlay, GTK_TYPE_FIXED)
+
+static void fastcat_overlay_size_allocate(GtkWidget* widget,
+                                          GtkAllocation* allocation) {
+  auto* overlay = reinterpret_cast<FastcatOverlay*>(widget);
+  if (overlay->flutter_view != nullptr) {
+    gtk_widget_set_size_request(overlay->flutter_view, allocation->width,
+                                allocation->height);
+    gtk_fixed_move(GTK_FIXED(widget), overlay->flutter_view, 0, 0);
+  }
+  GTK_WIDGET_CLASS(fastcat_overlay_parent_class)->size_allocate(widget,
+                                                                allocation);
+}
+
+static void fastcat_overlay_get_preferred_width(GtkWidget*, gint* minimum,
+                                                gint* natural) {
+  *minimum = 0;
+  *natural = 0;
+}
+
+static void fastcat_overlay_get_preferred_height(GtkWidget*, gint* minimum,
+                                                 gint* natural) {
+  *minimum = 0;
+  *natural = 0;
+}
+
+static void fastcat_overlay_class_init(FastcatOverlayClass* klass) {
+  auto* widget_class = GTK_WIDGET_CLASS(klass);
+  widget_class->size_allocate = fastcat_overlay_size_allocate;
+  widget_class->get_preferred_width = fastcat_overlay_get_preferred_width;
+  widget_class->get_preferred_height = fastcat_overlay_get_preferred_height;
+}
+
+static void fastcat_overlay_init(FastcatOverlay* overlay) {
+  overlay->flutter_view = nullptr;
 }
 
 // Implements GApplication::activate.
@@ -140,13 +178,14 @@ static void my_application_activate(GApplication* application) {
   fl_dart_project_set_dart_entrypoint_arguments(project, self->dart_entrypoint_arguments);
 
   FlView* view = fl_view_new(project);
-  GtkWidget* flutter_container = gtk_fixed_new();
+  GtkWidget* flutter_container =
+      GTK_WIDGET(g_object_new(fastcat_overlay_get_type(), nullptr));
+  reinterpret_cast<FastcatOverlay*>(flutter_container)->flutter_view =
+      GTK_WIDGET(view);
   gtk_widget_set_hexpand(flutter_container, TRUE);
   gtk_widget_set_vexpand(flutter_container, TRUE);
   gtk_container_add(GTK_CONTAINER(window), flutter_container);
   gtk_fixed_put(GTK_FIXED(flutter_container), GTK_WIDGET(view), 0, 0);
-  g_signal_connect(flutter_container, "size-allocate",
-                   G_CALLBACK(on_flutter_container_size_allocate), view);
   gtk_widget_show(GTK_WIDGET(view));
   gtk_widget_show(flutter_container);
 

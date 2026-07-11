@@ -95,6 +95,7 @@ private:
     std::map<std::string, _JsChannelInfo*> m_jsChannels;
     std::map<int, WebKitPolicyDecision*> m_navigationRequestMap;
 	bool m_hasNavigationDecision = false;
+	bool m_isVisible = true;
 
     GtkWidget* m_container; // GtkFixed
     GtkWidget* m_webview;
