@@ -511,6 +511,14 @@ class WinWebViewController {
     );
   }
 
+  Future<void> addUserScriptAtDocumentStart(String javaScriptString) async {
+    await _initFuture;
+    await WebviewWinFloatingPlatform.instance.addUserScriptAtDocumentStart(
+      _webviewId,
+      javaScriptString,
+    );
+  }
+
   Future<Object> runJavaScriptReturningResult(String javaScriptString) async {
     await _initFuture;
     return await WebviewWinFloatingPlatform.instance

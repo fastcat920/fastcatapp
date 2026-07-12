@@ -367,6 +367,17 @@ class MethodChannelWebviewWinFloating extends WebviewWinFloatingPlatform {
   }
 
   @override
+  Future<void> addUserScriptAtDocumentStart(
+    int webviewId,
+    String javaScriptString,
+  ) {
+    return methodChannel.invokeMethod<void>('addUserScriptAtDocumentStart', {
+      'webviewId': webviewId,
+      'javaScriptString': javaScriptString,
+    });
+  }
+
+  @override
   Future<void> suspend(int webviewId) async {
     await methodChannel.invokeMethod<bool>('suspend', {"webviewId": webviewId});
   }

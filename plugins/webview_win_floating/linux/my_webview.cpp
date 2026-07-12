@@ -446,6 +446,19 @@ void MyWebView::addScriptChannelByName(gchar* channelName) {
     webkit_user_script_unref(info->initScript);
 }
 
+void MyWebView::addUserScriptAtDocumentStart(gchar* script) {
+    if (!script || script[0] == '\0') return;
+    WebKitUserScript *user_script = webkit_user_script_new(
+        script,
+        WEBKIT_USER_CONTENT_INJECT_TOP_FRAME,
+        WEBKIT_USER_SCRIPT_INJECT_AT_DOCUMENT_START,
+        NULL,
+        NULL
+    );
+    webkit_user_content_manager_add_script(m_user_content_manager, user_script);
+    webkit_user_script_unref(user_script);
+}
+
 void MyWebView::removeScriptChannelByName(gchar* channelName) {
     _JsChannelInfo *info = m_jsChannels[channelName];
     if (!info) return; // not exists

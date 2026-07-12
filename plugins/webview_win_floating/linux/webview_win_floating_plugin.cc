@@ -463,6 +463,11 @@ static void webview_win_floating_plugin_handle_method_call(
     auto channelName = (gchar*) fl_value_get_string(fl_value_lookup_string(args, "channelName"));
     webview->addScriptChannelByName(channelName);
     setVoidResult(method_call);
+  } else if (strcmp(method, "addUserScriptAtDocumentStart") == 0) {
+    auto script = (gchar*) fl_value_get_string(
+        fl_value_lookup_string(args, "javaScriptString"));
+    webview->addUserScriptAtDocumentStart(script);
+    setVoidResult(method_call);
   } else if (strcmp(method, "removeScriptChannelByName") == 0) {
     auto channelName = (gchar*) fl_value_get_string(fl_value_lookup_string(args, "channelName"));
     webview->removeScriptChannelByName(channelName);

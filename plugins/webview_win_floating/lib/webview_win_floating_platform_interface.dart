@@ -80,6 +80,13 @@ abstract class WebviewWinFloatingPlatform extends PlatformInterface {
     throw UnimplementedError();
   }
 
+  Future<void> addUserScriptAtDocumentStart(
+    int webviewId,
+    String javaScriptString,
+  ) {
+    throw UnimplementedError();
+  }
+
   Future<Object> runJavaScriptReturningResult(
     int webviewId,
     String javaScriptString,

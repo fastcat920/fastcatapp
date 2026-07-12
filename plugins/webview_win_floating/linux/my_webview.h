@@ -52,7 +52,8 @@ public:
 	void loadHtmlString(gchar* html, gchar* baseUrl);
 	
     void runJavascript(gchar* script);
-    void runJavascript(gchar* script, std::function<void(bool, gchar*)> resultCallback);
+	void runJavascript(gchar* script, std::function<void(bool, gchar*)> resultCallback);
+	void addUserScriptAtDocumentStart(gchar* script);
 
 	void addScriptChannelByName(gchar* channelName);
 	void removeScriptChannelByName(gchar* channelName);

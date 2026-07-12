@@ -100,6 +100,7 @@ class _CrispChatPageState extends State<CrispChatPage> {
   String? _localeTag;
   int _lastAppliedRestoreToken = -1;
   bool? _lastLinuxVisibility;
+  bool _linuxLoadingMaskRegistered = false;
 
   @override
   void initState() {
@@ -122,6 +123,7 @@ class _CrispChatPageState extends State<CrispChatPage> {
       NavigationDelegate(
         onPageStarted: (url) {
           _usingProxy = _isProxyUrl(url);
+          unawaited(_setLinuxWebViewVisibility(true));
           if (mounted) {
             setState(() {
               _hasError = false;
@@ -143,6 +145,7 @@ class _CrispChatPageState extends State<CrispChatPage> {
         },
       ),
     );
+    unawaited(_setLinuxWebViewVisibility(false));
     unawaited(_applySystemWebViewBackgroundColor());
     unawaited(_configureAndroidFileSelection(_controller));
   }
@@ -163,7 +166,7 @@ class _CrispChatPageState extends State<CrispChatPage> {
     }
     if (!_didStartLoading) {
       _didStartLoading = true;
-      _loadPreferredCrispUrl();
+      unawaited(_loadPreferredCrispUrl());
     }
   }
 
@@ -204,7 +207,9 @@ class _CrispChatPageState extends State<CrispChatPage> {
 
   // ── Embed loading ────────────────────────────────────────────────
 
-  void _loadPreferredCrispUrl() {
+  Future<void> _loadPreferredCrispUrl() async {
+    await _ensureLinuxLoadingMaskRegistered();
+    if (!mounted) return;
     final usingProxy = isCrispProxyConfigured(widget.crispProxyUrl);
     _loadEmbed(_preferredEmbedUri(), usingProxy: usingProxy);
   }
@@ -264,6 +269,7 @@ class _CrispChatPageState extends State<CrispChatPage> {
     _embedFallbackTimer?.cancel();
     _stopReadyPolling();
     if (!mounted) return;
+    unawaited(_setLinuxWebViewVisibility(false));
     setState(() {
       _hasError = true;
       _isLoading = false;
@@ -283,8 +289,64 @@ class _CrispChatPageState extends State<CrispChatPage> {
       _stopReadyPolling();
       // 延迟 200ms 再移除遮罩，留给 Crisp 内部渲染时间，避免闪现原生加载转圈
       await Future.delayed(const Duration(milliseconds: 80));
+      await _hideLinuxLoadingMask();
       if (mounted) setState(() => _isLoading = false);
     }
+  }
+
+  Future<void> _ensureLinuxLoadingMaskRegistered() async {
+    if (!Platform.isLinux || _linuxLoadingMaskRegistered) return;
+    final platformController = _controller.platform;
+    if (platformController is! WindowsPlatformWebViewController) return;
+    final background = _customerServiceBackgroundColorValue(_isDarkMode);
+    final foreground = _customerServiceForegroundColorValue(_isDarkMode);
+    final accent = _isDarkMode ? '#60a5fa' : '#2563eb';
+    final connecting = jsonEncode(_strings.connecting);
+    final script = '''
+(function(){
+  window.__fastcatInstallLoadingMask = function(){
+    try {
+      if (document.getElementById('fastcat-linux-support-mask')) return;
+      var style = document.createElement('style');
+      style.id = 'fastcat-linux-support-mask-style';
+      style.textContent = '@keyframes fastcat-spin{to{transform:rotate(360deg)}}'
+        + '#fastcat-linux-support-mask{position:fixed;inset:0;z-index:2147483647;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;background:$background;color:$foreground;font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;opacity:1;transition:opacity .16s ease}'
+        + '#fastcat-linux-support-mask.fastcat-hide{opacity:0;pointer-events:none}'
+        + '#fastcat-linux-support-mask .fastcat-spinner{width:30px;height:30px;border:3px solid rgba(148,163,184,.28);border-top-color:$accent;border-radius:50%;animation:fastcat-spin .8s linear infinite}'
+        + '#fastcat-linux-support-mask .fastcat-label{font-size:14px;line-height:20px}';
+      (document.head || document.documentElement).appendChild(style);
+      var mask = document.createElement('div');
+      mask.id = 'fastcat-linux-support-mask';
+      mask.innerHTML = '<div class="fastcat-spinner"></div><div class="fastcat-label"></div>';
+      mask.querySelector('.fastcat-label').textContent = $connecting;
+      (document.body || document.documentElement).appendChild(mask);
+      window.__fastcatHideLoadingMask = function(){
+        var current = document.getElementById('fastcat-linux-support-mask');
+        if (!current) return;
+        current.classList.add('fastcat-hide');
+        setTimeout(function(){ current.remove(); }, 180);
+      };
+    } catch (_) {}
+  };
+  window.__fastcatInstallLoadingMask();
+  if (!document.getElementById('fastcat-linux-support-mask')) {
+    document.addEventListener('DOMContentLoaded', window.__fastcatInstallLoadingMask, {once:true});
+  }
+})();''';
+    try {
+      await platformController.controller.addUserScriptAtDocumentStart(script);
+      _linuxLoadingMaskRegistered = true;
+    } catch (_) {}
+  }
+
+  Future<void> _hideLinuxLoadingMask() async {
+    if (!Platform.isLinux) return;
+    try {
+      await _controller.runJavaScript('''
+if (typeof window.__fastcatHideLoadingMask === 'function') {
+  window.__fastcatHideLoadingMask();
+}''');
+    } catch (_) {}
   }
 
   void _stopReadyPolling() {
@@ -402,7 +464,7 @@ class _CrispChatPageState extends State<CrispChatPage> {
         window.\$crisp.push(["config", "locale", [window.__fastcatCustomerServiceCrispLocale || 'en']]);
         var theme = window.__fastcatCustomerServiceTheme || { isDark: ${_isDarkMode ? 'true' : 'false'} };
         window.\$crisp.push(["config", "color:mode", [theme.isDark ? "dark" : "light"]]);
-        var interactive = document.querySelector('textarea,input,[contenteditable="true"],button,a[href^="mailto:"],iframe[src*="crisp"],.crisp-client,[class*="crisp"]');
+        var interactive = document.querySelector('textarea,input,[contenteditable="true"],button,[role="button"],a[href^="mailto:"],iframe[src*="crisp"]');
         if (interactive) markReady();
       } catch(_) {}
     }

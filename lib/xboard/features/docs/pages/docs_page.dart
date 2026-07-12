@@ -417,7 +417,7 @@ class _ArticleDetailPageState extends ConsumerState<_ArticleDetailPage> {
     final baseTag = baseUrl == null || baseUrl.isEmpty
         ? ''
         : '<base href="${const HtmlEscape(HtmlEscapeMode.attribute).convert(baseUrl)}">';
-    return '''<!DOCTYPE html><html><head>
+    return '''<!DOCTYPE html><html data-fastcat-document="true"><head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="color-scheme" content="$colorScheme">
@@ -633,7 +633,7 @@ p{margin:8px 0}
       ..setJavaScriptMode(JavaScriptMode.unrestricted)
       ..setNavigationDelegate(
         NavigationDelegate(
-          onPageFinished: (_) => _finishWebViewLoading(),
+          onPageFinished: (_) => _finishStandardWebViewLoading(),
           onWebResourceError: (error) {
             if (!Platform.isLinux || error.isForMainFrame != true || !mounted) {
               return;
@@ -684,23 +684,37 @@ p{margin:8px 0}
       _isPreparingDocument = false;
     });
     unawaited(controller.loadHtmlString(fullHtml));
-    _scheduleWebViewLoadingFallback();
+    _scheduleWebViewLoadingFallback(inAppWebView: false);
   }
 
-  void _finishWebViewLoading() {
+  void _finishStandardWebViewLoading() {
     _webViewLoadingFallback?.cancel();
-    if (!mounted || (!_webViewLoading && !_inAppWebViewLoading)) return;
+    if (!mounted || !_webViewLoading) return;
     setState(() {
       _webViewLoading = false;
-      _inAppWebViewLoading = false;
     });
   }
 
-  void _scheduleWebViewLoadingFallback() {
+  Future<void> _finishInAppWebViewLoading() async {
+    if (!mounted || !_inAppWebViewLoading) return;
+
+    // The JavaScript callback means the document has completed two browser
+    // paint cycles. Wait for Flutter's current frame as well so the loading
+    // overlay is not removed between the native surface and Flutter frames.
+    await WidgetsBinding.instance.endOfFrame;
+    if (!mounted || !_inAppWebViewLoading) return;
+
+    _webViewLoadingFallback?.cancel();
+    setState(() => _inAppWebViewLoading = false);
+  }
+
+  void _scheduleWebViewLoadingFallback({required bool inAppWebView}) {
     _webViewLoadingFallback?.cancel();
     _webViewLoadingFallback = Timer(
       const Duration(seconds: 8),
-      _finishWebViewLoading,
+      inAppWebView
+          ? () => unawaited(_finishInAppWebViewLoading())
+          : _finishStandardWebViewLoading,
     );
   }
 
@@ -891,7 +905,13 @@ p{margin:8px 0}
             ),
             onWebViewCreated: (controller) {
               _inAppController = controller;
-              _scheduleWebViewLoadingFallback();
+              _scheduleWebViewLoadingFallback(inAppWebView: true);
+              controller.addJavaScriptHandler(
+                handlerName: 'documentRendered',
+                callback: (_) {
+                  unawaited(_finishInAppWebViewLoading());
+                },
+              );
               controller.addJavaScriptHandler(
                 handlerName: 'openExternal',
                 callback: (args) async {
@@ -911,9 +931,11 @@ p{margin:8px 0}
                   encoding: 'utf-8');
             },
             onLoadStop: (_, __) {
-              _finishWebViewLoading();
               _inAppController?.evaluateJavascript(source: r'''
 (function(){
+  // Ignore the WebView's initial blank document. Some desktop backends emit
+  // onLoadStop for it before loadData() commits the actual article.
+  if (document.documentElement.getAttribute("data-fastcat-document") !== "true") return;
   if (window.__fastcatDocInterceptInstalled) return;
   window.__fastcatDocInterceptInstalled = true;
   function isDownloadLike(url) {
@@ -939,6 +961,19 @@ p{margin:8px 0}
       el = el.parentElement;
     }
   }, true);
+
+  // onLoadStop can fire before the native WebView has submitted its first
+  // painted frame. Two animation frames ensure text/layout has been painted
+  // before Flutter removes the cover. Images are intentionally not awaited,
+  // so slow images can appear progressively after the text is visible.
+  if (!window.__fastcatDocRenderReported) {
+    window.__fastcatDocRenderReported = true;
+    requestAnimationFrame(function() {
+      requestAnimationFrame(function() {
+        window.flutter_inappwebview.callHandler("documentRendered");
+      });
+    });
+  }
 })();
 ''');
             },
