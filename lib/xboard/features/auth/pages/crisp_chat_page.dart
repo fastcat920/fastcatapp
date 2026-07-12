@@ -7,6 +7,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:webview_flutter_android/webview_flutter_android.dart';
 import 'package:webview_flutter/webview_flutter.dart';
+import 'package:webview_win_floating/webview_plugin.dart';
 import 'package:fl_clash/xboard/features/auth/utils/crisp_url_helper.dart';
 import 'package:fl_clash/xboard/features/auth/utils/customer_service_helper.dart';
 
@@ -49,7 +50,10 @@ class CrispChatPage extends StatefulWidget {
 
   /// 是否支持系统内嵌 WebView
   static bool get isSupported =>
-      Platform.isAndroid || Platform.isIOS || Platform.isMacOS;
+      Platform.isAndroid ||
+      Platform.isIOS ||
+      Platform.isMacOS ||
+      Platform.isLinux;
 
   @override
   State<CrispChatPage> createState() => _CrispChatPageState();
@@ -95,6 +99,7 @@ class _CrispChatPageState extends State<CrispChatPage> {
   bool _didStartLoading = false;
   String? _localeTag;
   int _lastAppliedRestoreToken = -1;
+  bool? _lastLinuxVisibility;
 
   @override
   void initState() {
@@ -166,7 +171,35 @@ class _CrispChatPageState extends State<CrispChatPage> {
   void dispose() {
     _embedFallbackTimer?.cancel();
     _readyPollTimer?.cancel();
+    final platformController = _controller.platform;
+    if (Platform.isLinux &&
+        platformController is WindowsPlatformWebViewController) {
+      unawaited(platformController.controller.dispose());
+    }
     super.dispose();
+  }
+
+  Future<void> _setLinuxWebViewVisibility(bool visible) async {
+    if (!Platform.isLinux || _lastLinuxVisibility == visible) return;
+    _lastLinuxVisibility = visible;
+    final platformController = _controller.platform;
+    if (platformController is! WindowsPlatformWebViewController) return;
+    try {
+      await platformController.controller.setVisibility(visible);
+    } catch (_) {
+      // The native WebView may still be initializing or already disposed.
+    }
+  }
+
+  Future<void> _handleBackPressed() async {
+    await _setLinuxWebViewVisibility(false);
+    if (!mounted) return;
+    final callback = widget.onBackPressed;
+    if (callback != null) {
+      callback();
+    } else {
+      Navigator.of(context).pop();
+    }
   }
 
   // ── Embed loading ────────────────────────────────────────────────
@@ -478,6 +511,7 @@ class _CrispChatPageState extends State<CrispChatPage> {
     final nextLocaleTag = session.localeTag;
     final themeChanged = _isDarkMode != nextIsDarkMode;
     final localeChanged = _localeTag != nextLocaleTag;
+    unawaited(_setLinuxWebViewVisibility(session.isVisible));
 
     if (themeChanged) {
       _isDarkMode = nextIsDarkMode;
@@ -670,15 +704,14 @@ class _CrispChatPageState extends State<CrispChatPage> {
       return PopScope(
         canPop: widget.onBackPressed == null || !isVisible,
         onPopInvokedWithResult: (didPop, _) {
-          if (!didPop) widget.onBackPressed?.call();
+          if (!didPop) unawaited(_handleBackPressed());
         },
         child: Scaffold(
           backgroundColor: backgroundColor,
           appBar: AppBar(
             title: Text(strings.title),
             leading: BackButton(
-              onPressed:
-                  widget.onBackPressed ?? () => Navigator.of(context).pop(),
+              onPressed: () => unawaited(_handleBackPressed()),
             ),
           ),
           body: Stack(

@@ -8,7 +8,6 @@ import 'package:desktop_webview_window/desktop_webview_window.dart';
 import 'package:fl_clash/common/common.dart' show system;
 import 'package:fl_clash/common/color.dart';
 import 'package:fl_clash/common/path.dart';
-import 'package:fl_clash/l10n/l10n.dart';
 import 'package:fl_clash/providers/providers.dart';
 import 'package:fl_clash/state.dart';
 import 'package:fl_clash/xboard/adapter/initialization/sdk_provider.dart';
@@ -22,7 +21,6 @@ import 'package:flutter/foundation.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 import 'package:fl_clash/xboard/features/auth/pages/windows_chat_page.dart';
 import 'package:fl_clash/xboard/features/auth/utils/crisp_url_helper.dart';
-import 'package:fl_clash/xboard/features/shared/utils/desktop_webview_window_helper.dart';
 import 'package:fl_clash/xboard/core/core.dart';
 import 'package:fl_clash/xboard/utils/xboard_notification.dart';
 import 'package:flutter_inappwebview/flutter_inappwebview.dart' as iaw;
@@ -90,9 +88,8 @@ class CustomerServiceSessionState {
 
 /// 统一客服入口：按业务约定仅使用 Crisp（远程优先，本地兜底）
 ///
-/// Android/iOS/macOS → 内嵌 WebView（webview_flutter）
+/// Android/iOS/macOS/Linux → 内嵌 WebView（webview_flutter）
 /// Windows → 内嵌 WebView2 侧边面板（flutter_inappwebview）
-/// Linux → 独立 WebView 窗口（desktop_webview_window）
 class CustomerServiceHelper {
   CustomerServiceHelper._();
 
@@ -575,19 +572,6 @@ class CustomerServiceHelper {
     return _fallbackCrispProxyUrl();
   }
 
-  static Future<String> _resolveFallbackWebsiteUrl() async {
-    for (final url in XBoardConfig.websiteUrls) {
-      final trimmed = url.trim();
-      if (trimmed.isNotEmpty) return trimmed;
-    }
-    try {
-      return (await ConfigFileLoaderHelper.getFallbackWebsiteUrl()).trim();
-    } catch (e) {
-      _logger.debug('[Crisp] 读取本地官网兜底配置失败: $e');
-      return '';
-    }
-  }
-
   static Future<String> _resolveUsableCrispProxyUrl(String websiteId) async {
     final proxyUrl = await _resolveCrispProxyUrl();
     if (!isCrispProxyConfigured(proxyUrl)) return '';
@@ -894,16 +878,12 @@ class CustomerServiceHelper {
     if (!context.mounted) return;
     // 点击时直接用预热缓存，不阻塞导航发起 HTTP 探测
     final crispProxyUrl = _getCachedCrispProxyUrl(crispId);
-    final fallbackWebsiteUrl =
-        Platform.isLinux ? await _resolveFallbackWebsiteUrl() : '';
-    if (!context.mounted) return;
     final userScript = _buildCrispUserScript(context);
     await _openCrisp(
       context,
       crispId,
       userScript: userScript,
       crispProxyUrl: crispProxyUrl,
-      fallbackWebsiteUrl: fallbackWebsiteUrl,
       // IP 归属地数据延后注入，不阻塞页面打开
       deferredUserScript: () async {
         if (!context.mounted) return null;
@@ -1333,21 +1313,11 @@ if(window===window.top){
     String websiteId, {
     String? userScript,
     String? crispProxyUrl,
-    String? fallbackWebsiteUrl,
     _CrispIPData? ipData,
     Future<String?> Function()? deferredUserScript,
   }) async {
     final effectiveUserScript =
         userScript ?? _buildCrispUserScript(context, ipData: ipData);
-    if (Platform.isLinux) {
-      await _openCrispInDesktopWebview(
-        context,
-        websiteId: websiteId,
-        crispProxyUrl: crispProxyUrl,
-        userScript: effectiveUserScript,
-      );
-      return;
-    }
     if (Platform.isWindows) {
       // Dispose pre-warmed headless WebView (no longer needed)
       _prewarmedHeadlessWin?.dispose();
@@ -1523,424 +1493,6 @@ if(window===window.top){
     final first = primary?.trim() ?? '';
     if (first.isNotEmpty) return first;
     return fallback?.trim() ?? '';
-  }
-
-  static Future<void> _openCrispInDesktopWebview(
-    BuildContext context, {
-    required String websiteId,
-    String? crispProxyUrl,
-    required String userScript,
-  }) async {
-    final l10n = AppLocalizations.of(context);
-    final isDarkMode = _isDarkMode(context);
-    final localeTag = Localizations.localeOf(context).toLanguageTag();
-    final existing = await _reuseDesktopCustomerServiceWindow(
-      isDarkMode: isDarkMode,
-    );
-    if (existing != null) return;
-
-    final future = _createDesktopCrispWebview(
-      websiteId: websiteId,
-      crispProxyUrl: crispProxyUrl,
-      userScript: userScript,
-      title: l10n.contactSupport,
-      connecting: l10n.onlineSupportConnecting,
-      timeoutText: l10n.xboardConnectionTimeout,
-      localeTag: localeTag,
-      isDarkMode: isDarkMode,
-    );
-    _desktopCustomerServiceOpening = future;
-    try {
-      final webview = await future;
-      if (webview != null) {
-        _trackDesktopCustomerServiceWindow(webview);
-      }
-    } finally {
-      if (identical(_desktopCustomerServiceOpening, future)) {
-        _desktopCustomerServiceOpening = null;
-      }
-    }
-  }
-
-  static Future<Webview?> _createDesktopCrispWebview({
-    required String websiteId,
-    String? crispProxyUrl,
-    required String userScript,
-    required String title,
-    required String connecting,
-    required String timeoutText,
-    required String localeTag,
-    required bool isDarkMode,
-  }) async {
-    HttpServer? server;
-    try {
-      final preferredEmbedUri = localizedCrispUri(
-        crispEmbedUri(
-          websiteId: websiteId,
-          proxyUrl: crispProxyUrl,
-        ),
-        localeTag,
-      );
-      final officialEmbedUri = localizedCrispUri(
-        officialCrispEmbedUri(websiteId),
-        localeTag,
-      );
-      final html = _buildLinuxCrispBootstrapHtml(
-        preferredEmbedUri: preferredEmbedUri,
-        localeTag: localeTag,
-        isDarkMode: isDarkMode,
-        title: title,
-        connecting: connecting,
-      );
-
-      server = await HttpServer.bind(InternetAddress.loopbackIPv4, 0);
-      unawaited(_serveLinuxCrispBootstrapRequests(server, html));
-
-      final webview = await DesktopWebviewWindowHelper.create(
-        title: title,
-        windowWidth: _desktopCustomerServiceWindowWidth,
-        windowHeight: _desktopCustomerServiceWindowHeight,
-        centerOnMainWindow: true,
-        resizable: false,
-        brightness: _customerServiceBrightness(isDarkMode),
-      );
-      await webview.setApplicationNameForUserAgent(
-        ' Chrome/125.0.0.0 Safari/537.36 FastCat/${globalState.packageInfo.version}',
-      );
-      await _applyDesktopCustomerServiceWindowState(
-        webview,
-        isDarkMode: isDarkMode,
-        localeTag: localeTag,
-        loadingText: connecting,
-      );
-      webview.addScriptToExecuteOnDocumentCreated(
-        _buildLinuxCrispDesktopDocumentScript(
-          userScript: userScript,
-          localeTag: localeTag,
-          isDarkMode: isDarkMode,
-          preferredEmbedUri: preferredEmbedUri,
-          officialEmbedUri: officialEmbedUri,
-          crispProxyUrl: crispProxyUrl,
-          loadingText: connecting,
-          timeoutText: timeoutText,
-        ),
-      );
-      unawaited(
-        webview.onClose.whenComplete(() {
-          final localServer = server;
-          if (localServer != null) {
-            unawaited(localServer.close(force: true));
-          }
-        }),
-      );
-      await webview.launch(
-        Uri(
-          scheme: 'http',
-          host: InternetAddress.loopbackIPv4.address,
-          port: server.port,
-          path: '/crisp',
-        ).toString(),
-      );
-      return webview;
-    } catch (e) {
-      _logger.error('[Crisp] desktop webview 启动失败', e);
-      await server?.close(force: true);
-      await launchUrl(
-        localizedCrispUri(
-          crispEmbedUri(websiteId: websiteId, proxyUrl: crispProxyUrl),
-          localeTag,
-        ),
-        mode: LaunchMode.externalApplication,
-      );
-      return null;
-    }
-  }
-
-  static Future<void> _serveLinuxCrispBootstrapRequests(
-    HttpServer server,
-    String html,
-  ) async {
-    try {
-      await for (final request in server) {
-        try {
-          if (request.uri.path == '/favicon.ico') {
-            request.response.statusCode = HttpStatus.noContent;
-            await request.response.close();
-            continue;
-          }
-          request.response
-            ..statusCode = HttpStatus.ok
-            ..headers.contentType = ContentType.html
-            ..headers.set('Cache-Control', 'no-cache')
-            ..write(html);
-          await request.response.close();
-        } catch (_) {
-          await request.response.close().catchError((_) {});
-        }
-      }
-    } catch (_) {}
-  }
-
-  static String _buildLinuxCrispBootstrapHtml({
-    required Uri preferredEmbedUri,
-    required String localeTag,
-    required bool isDarkMode,
-    required String title,
-    required String connecting,
-  }) {
-    final preferredEmbedJson = jsonEncode(preferredEmbedUri.toString());
-    final localeTagJson = jsonEncode(localeTag);
-    final crispLocaleJson = jsonEncode(crispLocaleFromTag(localeTag));
-    final background = _customerServiceBackground(isDarkMode);
-    final foreground = _customerServiceForeground(isDarkMode);
-    final colorSchemeLinux = isDarkMode ? 'dark' : 'light';
-    return '''<!DOCTYPE html>
-<html>
-<head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,viewport-fit=cover">
-  <meta name="color-scheme" content="$colorSchemeLinux">
-  <link rel="dns-prefetch" href="https://client.crisp.chat">
-  <link rel="dns-prefetch" href="https://settings.crisp.chat">
-  <link rel="preconnect" href="https://client.crisp.chat" crossorigin>
-  <link rel="preconnect" href="https://settings.crisp.chat" crossorigin>
-  <title>$title</title>
-  <style>
-    * { box-sizing: border-box; }
-    html, body {
-      width: 100%;
-      height: 100%;
-      margin: 0;
-      background: $background;
-      color: $foreground;
-      overflow: hidden;
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-    }
-    #loading {
-      position: fixed;
-      inset: 0;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 12px;
-      background: $background;
-      color: $foreground;
-      font-size: 14px;
-      z-index: 2147483647;
-    }
-    #spinner {
-      width: 18px;
-      height: 18px;
-      border: 2px solid rgba(148, 163, 184, 0.35);
-      border-top-color: #2563eb;
-      border-radius: 50%;
-      animation: spin 0.8s linear infinite;
-    }
-    @keyframes spin { to { transform: rotate(360deg); } }
-    .crisp-client, .crisp-client * { background: $background !important; }
-    iframe[src*="crisp"] { background: $background !important; }
-    [class*="crisp"] { background: $background !important; }
-  </style>
-</head>
-<body>
-  <div id="loading"><span id="spinner"></span><span id="loading-text">$connecting</span></div>
-  <script>
-    window.__fastcatCustomerServiceLocale = $localeTagJson;
-    window.__fastcatCustomerServiceCrispLocale = $crispLocaleJson;
-    window.CRISP_RUNTIME_CONFIG = {
-      locale: $crispLocaleJson,
-      lock_full_view: true
-    };
-    try {
-      Object.defineProperty(navigator, 'language', { get: function(){ return window.__fastcatCustomerServiceLocale; }, configurable: true });
-      Object.defineProperty(navigator, 'languages', { get: function(){ return [window.__fastcatCustomerServiceLocale]; }, configurable: true });
-    } catch (_) {}
-    (function(){
-      document.documentElement.lang = window.__fastcatCustomerServiceLocale || 'en';
-      setTimeout(function(){
-        location.replace($preferredEmbedJson);
-      }, 60);
-    })();
-  </script>
-</body>
-</html>''';
-  }
-
-  static String _buildLinuxCrispDesktopDocumentScript({
-    required String userScript,
-    required String localeTag,
-    required bool isDarkMode,
-    required Uri preferredEmbedUri,
-    required Uri officialEmbedUri,
-    String? crispProxyUrl,
-    required String loadingText,
-    required String timeoutText,
-  }) {
-    final background = _customerServiceBackground(isDarkMode);
-    final foreground = _customerServiceForeground(isDarkMode);
-    final preferredEmbedJson = jsonEncode(preferredEmbedUri.toString());
-    final officialEmbedJson = jsonEncode(officialEmbedUri.toString());
-    final localeTagJson = jsonEncode(localeTag);
-    final crispLocaleJson = jsonEncode(crispLocaleFromTag(localeTag));
-    final loadingTextJson = jsonEncode(loadingText);
-    final timeoutTextJson = jsonEncode(timeoutText);
-    final proxyBaseJson = jsonEncode(normalizeCrispProxyUrl(crispProxyUrl));
-    return '''
-(function(){
-  try {
-    window.\$crisp = window.\$crisp || [];
-    try {
-      $userScript
-    } catch(_) {}
-    window.__fastcatCustomerServiceLocale = $localeTagJson;
-    window.__fastcatCustomerServiceCrispLocale = $crispLocaleJson;
-    window.__fastcatCustomerServiceLoadingText = $loadingTextJson;
-    window.CRISP_RUNTIME_CONFIG = window.CRISP_RUNTIME_CONFIG || {};
-    window.CRISP_RUNTIME_CONFIG.locale = window.__fastcatCustomerServiceCrispLocale;
-    function ensureStyleTag() {
-      var style = document.getElementById('fastcat-customer-service-theme');
-      if (!style) {
-        style = document.createElement('style');
-        style.id = 'fastcat-customer-service-theme';
-        (document.head || document.documentElement).appendChild(style);
-      }
-      return style;
-    }
-    function ensureLoading() {
-      var loading = document.getElementById('fastcat-support-loading');
-      if (loading) return loading;
-      loading = document.createElement('div');
-      loading.id = 'fastcat-support-loading';
-      loading.innerHTML = '<span id="fastcat-support-spinner"></span><span id="fastcat-support-loading-text"></span>';
-      loading.style.cssText = 'position:fixed;inset:0;display:flex;align-items:center;justify-content:center;gap:12px;z-index:2147483647;padding:24px;font:14px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;text-align:center;';
-      (document.body || document.documentElement).appendChild(loading);
-      return loading;
-    }
-    function ensureTimeout() {
-      var timeout = document.getElementById('fastcat-support-timeout');
-      if (timeout) return timeout;
-      timeout = document.createElement('div');
-      timeout.id = 'fastcat-support-timeout';
-      timeout.style.cssText = 'position:fixed;inset:0;display:flex;align-items:center;justify-content:center;z-index:2147483647;padding:24px;font:14px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;text-align:center;';
-      timeout.textContent = $timeoutTextJson;
-      (document.body || document.documentElement).appendChild(timeout);
-      return timeout;
-    }
-    window.__fastcatApplyCustomerServiceTheme = function(theme){
-      try {
-        window.__fastcatCustomerServiceTheme = theme;
-        document.documentElement.style.background = theme.background;
-        document.documentElement.style.colorScheme = theme.isDark ? 'dark' : 'light';
-        if (document.body) {
-          document.body.style.background = theme.background;
-          document.body.style.color = theme.foreground;
-        }
-        var style = ensureStyleTag();
-        style.textContent = ''
-          + 'html,body{background:' + theme.background + ' !important;color:' + theme.foreground + ' !important;color-scheme:' + (theme.isDark ? 'dark' : 'light') + ';}'
-          + '#fastcat-support-loading,#fastcat-support-timeout{background:' + theme.background + ' !important;color:' + theme.foreground + ' !important;}'
-          + '#fastcat-support-spinner{width:18px;height:18px;border:2px solid rgba(148,163,184,0.35);border-top-color:' + (theme.accent || '#2563eb') + ';border-radius:50%;display:inline-block;animation:fastcatSupportSpin 0.8s linear infinite;}'
-          + '@keyframes fastcatSupportSpin{to{transform:rotate(360deg);}}'
-          + 'iframe[src*="crisp"],.crisp-client,[class*="crisp"],[id*="crisp"]{background:' + theme.background + ' !important;color-scheme:' + (theme.isDark ? 'dark' : 'light') + ' !important;}';
-        if (!window.__fastcatCrispReady) {
-          var loading = ensureLoading();
-          var loadingText = document.getElementById('fastcat-support-loading-text');
-          if (loadingText) {
-            loadingText.textContent = window.__fastcatCustomerServiceLoadingText || theme.loadingText || 'Loading...';
-          }
-          loading.style.display = 'flex';
-        }
-        var timeout = document.getElementById('fastcat-support-timeout');
-        if (timeout) {
-          timeout.style.background = theme.background;
-          timeout.style.color = theme.foreground;
-        }
-        window.\$crisp = window.\$crisp || [];
-        window.\$crisp.push(["config", "locale", [window.__fastcatCustomerServiceCrispLocale || 'en']]);
-        window.\$crisp.push(["config", "color:mode", [theme.isDark ? "dark" : "light"]]);
-        window.CRISP_RUNTIME_CONFIG = window.CRISP_RUNTIME_CONFIG || {};
-        window.CRISP_RUNTIME_CONFIG.locale = window.__fastcatCustomerServiceCrispLocale || 'en';
-      } catch (_) {}
-    };
-    window.__fastcatApplyCustomerServiceTheme({
-      isDark: ${isDarkMode ? 'true' : 'false'},
-      background: '$background',
-      foreground: '$foreground'
-    });
-    try {
-      Object.defineProperty(navigator, 'language', { get: function(){ return window.__fastcatCustomerServiceLocale; }, configurable: true });
-      Object.defineProperty(navigator, 'languages', { get: function(){ return [window.__fastcatCustomerServiceLocale]; }, configurable: true });
-    } catch (_) {}
-    document.documentElement.lang = window.__fastcatCustomerServiceLocale;
-    ensureLoading();
-
-    function syncCrispState(){
-      try {
-        var theme = window.__fastcatCustomerServiceTheme;
-        if (!theme) return;
-        window.\$crisp = window.\$crisp || [];
-        window.\$crisp.push(["config", "locale", [window.__fastcatCustomerServiceCrispLocale || 'en']]);
-        window.\$crisp.push(["config", "color:mode", [theme.isDark ? "dark" : "light"]]);
-        window.CRISP_RUNTIME_CONFIG = window.CRISP_RUNTIME_CONFIG || {};
-        window.CRISP_RUNTIME_CONFIG.locale = window.__fastcatCustomerServiceCrispLocale || 'en';
-        document.documentElement.style.background = theme.background;
-        document.documentElement.style.colorScheme = theme.isDark ? 'dark' : 'light';
-        if (document.body) {
-          document.body.style.background = theme.background;
-          document.body.style.color = theme.foreground;
-        }
-      } catch(_) {}
-    }
-
-    function markReady(){
-      window.__fastcatCrispReady = true;
-      syncCrispState();
-      var loading = document.getElementById('fastcat-support-loading');
-      if (loading) loading.remove();
-      var timeout = document.getElementById('fastcat-support-timeout');
-      if (timeout) timeout.remove();
-    }
-
-    function looksReady(){
-      try {
-        var interactive = document.querySelector('textarea,input,[contenteditable="true"],button,a[href^="mailto:"],iframe[src*="crisp"],.crisp-client,[class*="crisp"]');
-        if (interactive) markReady();
-      } catch(_) {}
-    }
-
-    looksReady();
-    new MutationObserver(function(){
-      syncCrispState();
-      looksReady();
-    }).observe(document.documentElement, {
-      childList: true,
-      subtree: true,
-      attributes: true
-    });
-
-    if (window.__fastcatCrispDesktopFallbackInstalled) return;
-    window.__fastcatCrispDesktopFallbackInstalled = true;
-    var preferredEmbedUrl = $preferredEmbedJson;
-    var officialEmbedUrl = $officialEmbedJson;
-    var proxyBaseUrl = $proxyBaseJson;
-    var timeoutText = $timeoutTextJson;
-    setTimeout(function(){
-      if (window.__fastcatCrispReady) return;
-      var url = String(location.href || '');
-      var isEmbed = url.indexOf('/chat/embed/') !== -1;
-      var isProxyEmbed = proxyBaseUrl && url.indexOf(proxyBaseUrl) === 0 && isEmbed;
-      if (isProxyEmbed) {
-        location.replace(officialEmbedUrl);
-        return;
-      }
-      if (!isEmbed) {
-        location.replace(preferredEmbedUrl);
-        return;
-      }
-      ensureTimeout().textContent = timeoutText;
-    }, 25000);
-  } catch(_) {}
-})();''';
   }
 
   static int? _resolveResetDaysLeft(DomainSubscription? subscriptionInfo) {
