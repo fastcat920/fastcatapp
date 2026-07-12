@@ -404,9 +404,13 @@ class _ArticleDetailPageState extends ConsumerState<_ArticleDetailPage> {
 
     final textColor = isDark ? '#e0e0e0' : '#1a1a1a';
     final fallbackBackground = isDark ? '#1e1e1e' : '#ffffff';
-    final bgColor = backgroundColor == null
+    // `Color.toARGB32()` was added after the Flutter 3.27 toolchain used by
+    // release CI. Keep the older value getter until the build image upgrades.
+    // ignore: deprecated_member_use
+    final backgroundArgb = backgroundColor?.value;
+    final bgColor = backgroundArgb == null
         ? fallbackBackground
-        : '#${(backgroundColor.toARGB32() & 0xFFFFFF).toRadixString(16).padLeft(6, '0')}';
+        : '#${(backgroundArgb & 0xFFFFFF).toRadixString(16).padLeft(6, '0')}';
     final colorScheme = isDark ? 'dark' : 'light';
     final codeBg = isDark ? '#2d2d2d' : '#f4f4f4';
     final hrColor = isDark ? '#444' : '#e0e0e0';
