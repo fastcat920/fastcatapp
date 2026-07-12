@@ -357,6 +357,8 @@ class _ArticleDetailPageState extends ConsumerState<_ArticleDetailPage> {
   bool _lastWebViewIsDark = false;
   bool _webLoading = true;
   bool _inAppWebViewLoading = true;
+  bool _isClosing = false;
+  bool _allowPop = false;
 
   KnowledgeArticleDetailRequest get _detailRequest =>
       KnowledgeArticleDetailRequest(
@@ -577,6 +579,27 @@ p{margin:8px 0}
     return stripped;
   }
 
+  Future<void> _closeDetailPage() async {
+    if (_isClosing) return;
+    _isClosing = true;
+
+    if (Platform.isLinux) {
+      final platformController = _webController?.platform;
+      if (platformController is WindowsPlatformWebViewController) {
+        try {
+          await platformController.controller.setVisibility(false);
+        } catch (_) {
+          // The WebView may already be disposed after a load failure.
+        }
+      }
+    }
+
+    if (!mounted) return;
+    setState(() => _allowPop = true);
+    await WidgetsBinding.instance.endOfFrame;
+    if (mounted) Navigator.of(context).pop();
+  }
+
   @override
   void dispose() {
     final platformController = _webController?.platform;
@@ -753,66 +776,75 @@ p{margin:8px 0}
       contentArea = _buildContentArea(theme);
     }
 
-    return Scaffold(
-      backgroundColor: theme.scaffoldBackgroundColor,
-      appBar: AppBar(
-        leading: const BackButton(),
-        title: Text(
-          article.title,
-          maxLines: 1,
-          overflow: TextOverflow.ellipsis,
+    return PopScope(
+      canPop: !Platform.isLinux || _allowPop,
+      onPopInvokedWithResult: (didPop, _) {
+        if (!didPop) unawaited(_closeDetailPage());
+      },
+      child: Scaffold(
+        backgroundColor: theme.scaffoldBackgroundColor,
+        appBar: AppBar(
+          leading: IconButton(
+            icon: const Icon(Icons.arrow_back),
+            onPressed: _isClosing ? null : _closeDetailPage,
+          ),
+          title: Text(
+            article.title,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+          ),
         ),
-      ),
-      body: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Padding(
-            padding: const EdgeInsets.fromLTRB(16, 12, 16, 0),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  children: [
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 8,
-                        vertical: 3,
-                      ),
-                      decoration: BoxDecoration(
-                        color: theme.colorScheme.primaryContainer,
-                        borderRadius: BorderRadius.circular(6),
-                      ),
-                      child: Text(
-                        article.category,
-                        style: TextStyle(
-                          color: theme.colorScheme.onPrimaryContainer,
-                          fontSize: 12,
-                          fontWeight: FontWeight.w500,
+        body: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Padding(
+              padding: const EdgeInsets.fromLTRB(16, 12, 16, 0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 8,
+                          vertical: 3,
+                        ),
+                        decoration: BoxDecoration(
+                          color: theme.colorScheme.primaryContainer,
+                          borderRadius: BorderRadius.circular(6),
+                        ),
+                        child: Text(
+                          article.category,
+                          style: TextStyle(
+                            color: theme.colorScheme.onPrimaryContainer,
+                            fontSize: 12,
+                            fontWeight: FontWeight.w500,
+                          ),
                         ),
                       ),
-                    ),
-                    const SizedBox(width: 12),
-                    Icon(
-                      Icons.access_time,
-                      size: 13,
-                      color: theme.colorScheme.onSurfaceVariant,
-                    ),
-                    const SizedBox(width: 4),
-                    Text(
-                      _formatDateTime(article.createdDate),
-                      style: theme.textTheme.bodySmall?.copyWith(
+                      const SizedBox(width: 12),
+                      Icon(
+                        Icons.access_time,
+                        size: 13,
                         color: theme.colorScheme.onSurfaceVariant,
                       ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 12),
-              ],
+                      const SizedBox(width: 4),
+                      Text(
+                        _formatDateTime(article.createdDate),
+                        style: theme.textTheme.bodySmall?.copyWith(
+                          color: theme.colorScheme.onSurfaceVariant,
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 12),
+                ],
+              ),
             ),
-          ),
-          const Divider(height: 1),
-          Expanded(child: contentArea),
-        ],
+            const Divider(height: 1),
+            Expanded(child: contentArea),
+          ],
+        ),
       ),
     );
   }

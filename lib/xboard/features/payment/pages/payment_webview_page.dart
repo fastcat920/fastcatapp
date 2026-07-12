@@ -471,6 +471,8 @@ class _PaymentWebViewPageState extends ConsumerState<PaymentWebViewPage> {
   Timer? _loadStateTimer;
   bool _isPageLoading = true;
   bool _showPageLoadingMessage = false;
+  bool _isClosing = false;
+  bool _allowPop = false;
   late final PaymentStatusPoller _poller = PaymentStatusPoller(
     tradeNo: widget.tradeNo,
     ref: ref,
@@ -626,14 +628,33 @@ class _PaymentWebViewPageState extends ConsumerState<PaymentWebViewPage> {
   // ── Polling (delegated to PaymentStatusPoller) ──────────────────────
 
   Future<void> _handlePaymentSuccess() async {
-    if (mounted) {
-      Navigator.of(context).pop(true);
-    }
+    await _closePaymentPage(true);
   }
 
-  void _handleCancel() {
+  Future<void> _handleCancel() async {
     _poller.stop();
-    Navigator.of(context).pop(null);
+    await _closePaymentPage(null);
+  }
+
+  Future<void> _closePaymentPage(bool? result) async {
+    if (_isClosing) return;
+    _isClosing = true;
+
+    if (Platform.isLinux) {
+      final platformController = _webViewController?.platform;
+      if (platformController is WindowsPlatformWebViewController) {
+        try {
+          await platformController.controller.setVisibility(false);
+        } catch (_) {
+          // The native WebView may already be disposed after a load failure.
+        }
+      }
+    }
+
+    if (!mounted) return;
+    setState(() => _allowPop = true);
+    await WidgetsBinding.instance.endOfFrame;
+    if (mounted) Navigator.of(context).pop(result);
   }
 
   // ── Build ───────────────────────────────────────────────────────────
@@ -642,21 +663,27 @@ class _PaymentWebViewPageState extends ConsumerState<PaymentWebViewPage> {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
 
-    return Scaffold(
-      appBar: AppBar(
-        title: Text(l10n.xboardPaymentGateway),
-        leading: IconButton(
-          icon: const Icon(Icons.close),
-          tooltip: l10n.xboardCancelPayment,
-          onPressed: _handleCancel,
+    return PopScope<bool?>(
+      canPop: !Platform.isLinux || _allowPop,
+      onPopInvokedWithResult: (didPop, _) {
+        if (!didPop) unawaited(_handleCancel());
+      },
+      child: Scaffold(
+        appBar: AppBar(
+          title: Text(l10n.xboardPaymentGateway),
+          leading: IconButton(
+            icon: const Icon(Icons.close),
+            tooltip: l10n.xboardCancelPayment,
+            onPressed: _isClosing ? null : _handleCancel,
+          ),
+          actions: const [],
         ),
-        actions: const [],
-      ),
-      body: Column(
-        children: [
-          _StatusBanner(isPolling: _poller.isPolling),
-          Expanded(child: _buildWebView()),
-        ],
+        body: Column(
+          children: [
+            _StatusBanner(isPolling: _poller.isPolling),
+            Expanded(child: _buildWebView()),
+          ],
+        ),
       ),
     );
   }
