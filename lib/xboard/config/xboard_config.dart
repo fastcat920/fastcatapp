@@ -645,6 +645,9 @@ class XBoardConfig {
   /// 是否显示余额充值（来自远程配置 features.balance_enabled，默认 true）
   static bool get isBalanceEnabled => _instance?.balanceEnabled ?? true;
 
+  /// 节点延迟显示折扣百分比（0–90）；仅影响 UI，不影响内核选路。
+  static int get delayDiscountPercent => _instance?.delayDiscountPercent ?? 0;
+
   /// 刷新配置
   static Future<void> refresh() async {
     await _accessor.refreshConfiguration();

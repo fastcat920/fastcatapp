@@ -2162,7 +2162,9 @@ class _$DnsImpl implements _Dns {
       @JsonKey(name: "default-nameserver")
       final List<String> defaultNameserver = const [
         "223.5.5.5",
-        "119.29.29.29"
+        "119.29.29.29",
+        "180.76.76.76",
+        "1.1.1.1"
       ],
       @JsonKey(name: "enhanced-mode") this.enhancedMode = DnsMode.fakeIp,
       @JsonKey(name: "fake-ip-range") this.fakeIpRange = "198.18.0.1/16",

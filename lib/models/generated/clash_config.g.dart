@@ -199,7 +199,12 @@ _$DnsImpl _$$DnsImplFromJson(Map<String, dynamic> json) => _$DnsImpl(
       defaultNameserver: (json['default-nameserver'] as List<dynamic>?)
               ?.map((e) => e as String)
               .toList() ??
-          const ["223.5.5.5", "119.29.29.29"],
+          const [
+            "223.5.5.5",
+            "119.29.29.29",
+            "180.76.76.76",
+            "1.1.1.1"
+          ],
       enhancedMode:
           $enumDecodeNullable(_$DnsModeEnumMap, json['enhanced-mode']) ??
               DnsMode.fakeIp,

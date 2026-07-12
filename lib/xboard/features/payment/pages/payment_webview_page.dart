@@ -10,6 +10,7 @@ import 'package:webview_win_floating/webview_plugin.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import 'package:fl_clash/l10n/l10n.dart';
+import 'package:fl_clash/state.dart';
 import 'package:fl_clash/xboard/adapter/state/order_state.dart';
 import 'package:fl_clash/xboard/core/core.dart';
 import 'package:fl_clash/xboard/features/shared/utils/desktop_webview_window_helper.dart';
@@ -152,7 +153,7 @@ class PaymentWebViewPage extends ConsumerStatefulWidget {
       );
       final desktopWebview = webview;
       await desktopWebview.setApplicationNameForUserAgent(
-        ' Chrome/125.0.0.0 Safari/537.36 FastCat/3.5.6',
+        ' Chrome/125.0.0.0 Safari/537.36 FastCat/${globalState.packageInfo.version}',
       );
       desktopWebview.addOnUrlRequestCallback((url) {
         final uri = Uri.tryParse(url);

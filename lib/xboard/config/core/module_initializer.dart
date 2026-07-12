@@ -10,7 +10,7 @@ import '../../core/core.dart';
 final _logger = FileLogger('module_initializer.dart');
 
 /// 模块初始化器（内部类）
-/// 
+///
 /// 负责初始化所有模块和依赖注入
 /// 注意：这个类不应该被外部直接使用，请使用XBoardConfig
 class ModuleInitializer {
@@ -24,7 +24,7 @@ class ModuleInitializer {
     }
 
     final config = settings ?? const ConfigSettings();
-    
+
     try {
       // 验证配置
       if (!config.validate()) {
@@ -87,7 +87,8 @@ class ModuleInitializer {
 
     // 注册远程配置管理器
     ServiceLocator.registerLazySingleton<RemoteConfigManager>(() {
-      _logger.info('Creating RemoteConfigManager with ${config.remoteConfig.sources.length} sources');
+      _logger.info(
+          'Creating RemoteConfigManager with ${config.remoteConfig.sources.length} sources');
       return RemoteConfigManager.fromSettings(config.remoteConfig);
     });
 
@@ -102,6 +103,8 @@ class ModuleInitializer {
 
     // 加载本地 features 配置作为兜底默认值
     final localFeatures = await ConfigFileLoader.loadFeatures();
+    final localDelayDiscountPercent =
+        await ConfigFileLoader.loadDelayDiscountPercent();
 
     // 注册配置访问器
     ServiceLocator.registerLazySingleton<XBoardConfigAccessor>(() {
@@ -111,6 +114,7 @@ class ModuleInitializer {
         currentProvider: config.currentProvider,
         apiPrefix: config.apiPrefix,
         localFeatures: localFeatures,
+        localDelayDiscountPercent: localDelayDiscountPercent,
       );
     });
 
@@ -143,13 +147,13 @@ class ModuleInitializer {
     bool autoWarmUp = true,
   }) async {
     await initialize(settings: settings);
-    
+
     final accessor = ServiceLocator.get<XBoardConfigAccessor>();
-    
+
     if (autoWarmUp) {
       await accessor.refreshConfiguration();
     }
-    
+
     return accessor;
   }
 }

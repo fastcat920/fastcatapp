@@ -2,6 +2,7 @@
 
 // Providers
 export 'providers/latency_provider.dart';
+export 'providers/latency_display_config_provider.dart';
 
 // Services
 export 'services/latency_service.dart';

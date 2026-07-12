@@ -250,6 +250,8 @@ class Dns with _$Dns {
     @Default([
       "223.5.5.5",
       "119.29.29.29",
+      "180.76.76.76",
+      "1.1.1.1",
     ])
     @JsonKey(name: "default-nameserver")
     List<String> defaultNameserver,

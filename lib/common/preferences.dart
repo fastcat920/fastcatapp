@@ -75,9 +75,19 @@ class Preferences {
     if (dns is Map) {
       final defaultNameserver = dns['default-nameserver'];
       if (defaultNameserver is List &&
-          defaultNameserver.length == 1 &&
-          defaultNameserver.first == '223.5.5.5') {
-        defaultNameserver.add('119.29.29.29');
+          (defaultNameserver.length == 1 || defaultNameserver.length == 2) &&
+          defaultNameserver.first == '223.5.5.5' &&
+          (defaultNameserver.length == 1 ||
+              defaultNameserver[1] == '119.29.29.29')) {
+        for (final server in const [
+          '119.29.29.29',
+          '180.76.76.76',
+          '1.1.1.1',
+        ]) {
+          if (!defaultNameserver.contains(server)) {
+            defaultNameserver.add(server);
+          }
+        }
       }
 
       final proxyNameserver = dns['proxy-server-nameserver'];

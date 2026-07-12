@@ -24,6 +24,11 @@ features:
   tickets_enabled: false
   balance_enabled: true
 
+# 节点延迟显示折扣（本地兜底，远程 latency 同名字段优先）
+# 0 表示显示真实延迟；有效范围 0–90。
+latency:
+  display_discount_percent: 30
+
 # 远程配置源
 # 支持多个源，按顺序尝试，第一个成功的生效
 # 所有源均使用相同的 XOR+Base64 加密（密钥硬编码在客户端）

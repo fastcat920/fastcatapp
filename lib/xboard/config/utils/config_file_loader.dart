@@ -281,6 +281,7 @@ class ConfigFileLoader {
       return {};
     }
   }
+
   /// 从 config.yaml 读取 features 配置作为本地兜底值
   static Future<Map<String, bool>> loadFeatures() async {
     try {
@@ -298,6 +299,28 @@ class ConfigFileLoader {
       _logger.warning('读取 features 配置失败: $e');
     }
     return {};
+  }
+
+  /// 从 config.yaml 读取节点延迟显示折扣，作为远程配置缺失时的本地兜底。
+  static Future<int> loadDelayDiscountPercent() async {
+    try {
+      final yamlString = await rootBundle.loadString(configPath);
+      final yamlDoc = loadYaml(yamlString);
+      final configMap = _yamlToMap(yamlDoc);
+      final latency = configMap['latency'];
+      if (latency is Map) {
+        final raw = latency['display_discount_percent'];
+        final parsed = switch (raw) {
+          num value => value.toInt(),
+          String value => int.tryParse(value.trim()),
+          _ => null,
+        };
+        return (parsed ?? 0).clamp(0, 90).toInt();
+      }
+    } catch (e) {
+      _logger.warning('读取 latency.display_discount_percent 失败: $e');
+    }
+    return 0;
   }
 }
 
@@ -414,6 +437,7 @@ extension ConfigFileLoaderHelper on ConfigFileLoader {
     final contact = await getContactFallbackConfig();
     return contact['crisp_proxy_url'] as String? ?? '';
   }
+
   /// 启动缓存开关（startup_cache.enabled），默认 true
   static Future<bool> getStartupCacheEnabled() async {
     try {

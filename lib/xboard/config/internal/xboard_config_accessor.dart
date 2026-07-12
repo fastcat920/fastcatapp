@@ -73,6 +73,10 @@ class XBoardConfigAccessor {
   bool _ticketsEnabled = true;
   bool _balanceEnabled = true;
 
+  // 延迟显示折扣百分比：远程配置优先，本地 config.yaml 兜底。
+  final int _localDelayDiscountPercent;
+  int _delayDiscountPercent;
+
   /// 应用本地 features 配置作为默认值
   void _applyLocalFeatures(Map<String, bool> f) {
     _trafficDetailsEnabled = f['traffic_details_enabled'] ?? true;
@@ -97,10 +101,14 @@ class XBoardConfigAccessor {
     required ConfigurationParser parser,
     required String currentProvider,
     String apiPrefix = '/api/v1',
+    int localDelayDiscountPercent = 0,
   })  : _remoteManager = remoteManager,
         _parser = parser,
         _currentProvider = currentProvider,
-        _apiPrefix = apiPrefix {
+        _apiPrefix = apiPrefix,
+        _localDelayDiscountPercent =
+            localDelayDiscountPercent.clamp(0, 90).toInt(),
+        _delayDiscountPercent = localDelayDiscountPercent.clamp(0, 90).toInt() {
     _applyLocalFeatures(localFeatures);
   }
 
@@ -389,6 +397,9 @@ class XBoardConfigAccessor {
   /// 余额充值菜单开关
   bool get balanceEnabled => _balanceEnabled;
 
+  /// 延迟显示折扣百分比；0 表示显示真实延迟。
+  int get delayDiscountPercent => _delayDiscountPercent;
+
   // ========== 统计信息 ==========
 
   /// 获取配置统计信息
@@ -400,6 +411,7 @@ class XBoardConfigAccessor {
         'webSockets': 0,
         'updates': 0,
         'subscriptionUrls': 0,
+        'delayDiscountPercent': _delayDiscountPercent,
       };
     }
 
@@ -409,6 +421,7 @@ class XBoardConfigAccessor {
       'webSockets': _currentConfig!.webSockets.length,
       'updates': _currentConfig!.updateConfig?.isNotEmpty == true ? 1 : 0,
       'subscriptionUrls': _currentConfig!.subscription?.urls.length ?? 0,
+      'delayDiscountPercent': _delayDiscountPercent,
       'subscriptionEncryptUrls':
           _currentConfig!.subscription?.encryptUrls.length ?? 0,
       'currentProvider': _currentProvider,
@@ -520,6 +533,21 @@ class XBoardConfigAccessor {
             remoteFeatures['tickets_enabled'] as bool? ?? _ticketsEnabled;
         _balanceEnabled =
             remoteFeatures['balance_enabled'] as bool? ?? _balanceEnabled;
+      }
+
+      // 每次加载先恢复本地兜底，确保远程删除字段后不会沿用旧值。
+      _delayDiscountPercent = _localDelayDiscountPercent;
+      final latency = configData['latency'];
+      if (latency is Map) {
+        final rawDiscount = latency['display_discount_percent'];
+        final parsedDiscount = switch (rawDiscount) {
+          num value => value.toInt(),
+          String value => int.tryParse(value.trim()),
+          _ => null,
+        };
+        if (parsedDiscount != null) {
+          _delayDiscountPercent = parsedDiscount.clamp(0, 90).toInt();
+        }
       }
 
       await _updateState(ConfigAccessorState.ready);

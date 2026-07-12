@@ -401,7 +401,7 @@ class ConfigurationParser {
       };
 
       // 保留其他字段（announcement、contact、features 等）供将来使用
-      for (final key in ['announcement', 'maintenance', 'update', 'contact', 'features', 'config_version', 'gateway_urls', 'gateway_url', 'ticket', 'subscription', 'api_prefix']) {
+      for (final key in ['announcement', 'maintenance', 'update', 'contact', 'features', 'latency', 'config_version', 'gateway_urls', 'gateway_url', 'ticket', 'subscription', 'api_prefix']) {
         if (remoteResult.containsKey(key)) {
           normalized[key] = remoteResult[key];
         }

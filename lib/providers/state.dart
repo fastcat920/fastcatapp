@@ -3,6 +3,7 @@ import 'package:fl_clash/common/common.dart';
 import 'package:fl_clash/enum/enum.dart';
 import 'package:fl_clash/models/models.dart';
 import 'package:fl_clash/state.dart';
+import 'package:fl_clash/xboard/features/latency/providers/latency_display_config_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
@@ -65,7 +66,8 @@ List<Group> _buildRuleModeGroups(List<Group> groups) {
   // 修正 now：若指向 DIRECT/REJECT 等不应显示的代理，fallback 到第一个有效代理
   String nowValue = mainGroup.now ?? '';
   if (nowValue.isNotEmpty && allProxies.isNotEmpty) {
-    if (_isHiddenProxy(nowValue) || !allProxies.any((p) => p.name == nowValue)) {
+    if (_isHiddenProxy(nowValue) ||
+        !allProxies.any((p) => p.name == nowValue)) {
       nowValue = allProxies.first.name;
     }
   }
@@ -87,7 +89,8 @@ List<Group> _buildGlobalModeGroups(List<Group> groups) {
   // 此时 fallback 到 all 第一个有效代理（通常是 URLTest 自动选择组）。
   String nowValue = globalGroup?.now ?? sourceGroup.now ?? '';
   if (nowValue.isNotEmpty && allProxies.isNotEmpty) {
-    if (_isHiddenProxy(nowValue) || !allProxies.any((p) => p.name == nowValue)) {
+    if (_isHiddenProxy(nowValue) ||
+        !allProxies.any((p) => p.name == nowValue)) {
       nowValue = allProxies.first.name;
     }
   }
@@ -505,7 +508,8 @@ int? getDelay(
       },
     ),
   );
-  return delay;
+  final discount = ref.watch(delayDiscountPercentProvider).valueOrNull ?? 0;
+  return applyDelayDisplayDiscount(delay, discount);
 }
 
 @riverpod
