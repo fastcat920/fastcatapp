@@ -1,7 +1,9 @@
 import 'dart:async';
+import 'dart:convert';
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:markdown/markdown.dart' as md;
 import 'package:fl_clash/l10n/l10n.dart';
 import 'package:fl_clash/xboard/adapter/state/knowledge_state.dart';
 import 'package:fl_clash/xboard/config/gateway_config.dart';
@@ -355,8 +357,10 @@ class _ArticleDetailPageState extends ConsumerState<_ArticleDetailPage> {
   iaw.InAppWebViewController? _inAppController;
   bool _lastInAppWebViewIsDark = false;
   bool _lastWebViewIsDark = false;
-  bool _webLoading = true;
+  bool _isPreparingDocument = false;
+  bool _webViewLoading = true;
   bool _inAppWebViewLoading = true;
+  Timer? _webViewLoadingFallback;
   bool _isClosing = false;
   bool _allowPop = false;
 
@@ -368,160 +372,56 @@ class _ArticleDetailPageState extends ConsumerState<_ArticleDetailPage> {
 
   String get _documentBaseUrl => XBoardConfig.panelUrl ?? gatewayBaseUrl;
 
+  String get _documentBaseHref {
+    final rawUrl = _documentBaseUrl.trim();
+    final uri = Uri.tryParse(rawUrl);
+    if (uri == null || !uri.hasScheme) {
+      return rawUrl.endsWith('/') ? rawUrl : '$rawUrl/';
+    }
+    final path = uri.path.endsWith('/') ? uri.path : '${uri.path}/';
+    return uri.replace(path: path, query: null, fragment: null).toString();
+  }
+
   String _formatDateTime(DateTime dt) {
     return '${dt.year}-${dt.month.toString().padLeft(2, '0')}-${dt.day.toString().padLeft(2, '0')} '
         '${dt.hour.toString().padLeft(2, '0')}:${dt.minute.toString().padLeft(2, '0')}';
   }
 
-  static String _contentToHtml(String content, {bool isDark = false}) {
-    final htmlBlocks = <String, String>{};
-    int blockIndex = 0;
-    String s = content;
-
-    s = s.replaceAllMapped(
-      RegExp(
-        r'<([a-zA-Z][a-zA-Z0-9]*)\b[^>]*>[\s\S]*?</\1>|<([a-zA-Z][a-zA-Z0-9]*)\b[^>]*/?>',
-        multiLine: true,
-      ),
-      (m) {
-        final key = '\x00HTML_BLOCK_${blockIndex++}\x00';
-        htmlBlocks[key] = m.group(0)!;
-        return key;
-      },
+  static String _contentToHtml(
+    String content, {
+    bool isDark = false,
+    String? baseUrl,
+    Color? backgroundColor,
+  }) {
+    // V2Board renders knowledge content with markdown-it's `html: true` option:
+    // Markdown is converted, while embedded HTML and document-owned <style>
+    // blocks pass through untouched. Keep the client on the same contract.
+    final renderedContent = md.markdownToHtml(
+      content,
+      extensionSet: md.ExtensionSet.gitHubFlavored,
+      encodeHtml: false,
     );
-
-    s = s.replaceAllMapped(
-      RegExp(r':::(\w+)\s*(.*?)\n([\s\S]*?):::', multiLine: true),
-      (m) {
-        final type = m.group(1)!.toLowerCase();
-        final title = m.group(2)!.trim();
-        final body = m.group(3)!.trim();
-        const colors = <String, List<String>>{
-          'tip': ['#e8f5e9', '#2e7d32'],
-          'warning': ['#fff8e1', '#f57f17'],
-          'danger': ['#fce4ec', '#c62828'],
-          'info': ['#e3f2fd', '#1565c0'],
-        };
-        final pair = colors[type] ?? ['#f5f5f5', '#333'];
-        final label = title.isNotEmpty ? title : type.toUpperCase();
-        return '<div style="background:${pair[0]};border-left:4px solid ${pair[1]};'
-            'border-radius:6px;padding:12px 16px;margin:12px 0">'
-            '<strong style="color:${pair[1]}">$label</strong>'
-            '<br>${body.replaceAll('\n', '<br>')}</div>';
-      },
-    );
-
-    s = s.replaceAllMapped(
-      RegExp(r'```[\w]*\n?([\s\S]*?)```', multiLine: true),
-      (m) {
-        final code = m
-            .group(1)!
-            .replaceAll('&', '&amp;')
-            .replaceAll('<', '&lt;')
-            .replaceAll('>', '&gt;')
-            .trim();
-        return '<pre><code>$code</code></pre>';
-      },
-    );
-
-    s = s.replaceAll(RegExp(r'^---+$', multiLine: true), '<hr>');
-
-    for (int i = 6; i >= 1; i--) {
-      s = s.replaceAllMapped(
-        RegExp('^${'#' * i} (.+)\$', multiLine: true),
-        (m) => '<h$i>${m.group(1)!}</h$i>',
-      );
-    }
-
-    s = s
-        .replaceAllMapped(
-          RegExp(r'\*\*\*(.*?)\*\*\*'),
-          (m) => '<strong><em>${m.group(1)}</em></strong>',
-        )
-        .replaceAllMapped(
-          RegExp(r'\*\*(.*?)\*\*'),
-          (m) => '<strong>${m.group(1)}</strong>',
-        )
-        .replaceAllMapped(
-          RegExp(r'\*(.*?)\*'),
-          (m) => '<em>${m.group(1)}</em>',
-        );
-
-    s = s.replaceAllMapped(
-      RegExp(r'`([^`]+)`'),
-      (m) => '<code>${m.group(1)}</code>',
-    );
-
-    s = s.replaceAllMapped(
-      RegExp(r'!\[([^\]]*)\]\(([^)]+)\)'),
-      (m) => '<img alt="${m.group(1)}" src="${m.group(2)}">',
-    );
-
-    s = s.replaceAllMapped(
-      RegExp(r'\[([^\]]+)\]\(([^)]+)\)'),
-      (m) => '<a href="${m.group(2)}">${m.group(1)}</a>',
-    );
-
-    s = s.replaceAllMapped(
-      RegExp(r'^[-*+] (.+)$', multiLine: true),
-      (m) => '<li>${m.group(1)!}</li>',
-    );
-    s = s.replaceAllMapped(
-      RegExp(r'(<li>.*?</li>\n?)+'),
-      (m) => '<ul>${m.group(0)}</ul>',
-    );
-
-    s = s.replaceAllMapped(
-      RegExp(r'^\d+\. (.+)$', multiLine: true),
-      (m) => '<li>${m.group(1)!}</li>',
-    );
-
-    s = s.replaceAllMapped(RegExp(r'(^> .+(\n> .+)*)', multiLine: true), (m) {
-      final inner = m.group(0)!.replaceAll(RegExp(r'^> ', multiLine: true), '');
-      return '<blockquote>${inner.replaceAll('\n', '<br>')}</blockquote>';
-    });
-
-    s = s.replaceAllMapped(
-      RegExp(
-        r'(^\|.+\|[ \t]*\n)(^\|[-| :]+\|[ \t]*\n)((?:^\|.+\|[ \t]*\n?)+)',
-        multiLine: true,
-      ),
-      (m) {
-        final headerLine = m.group(1)!.trim();
-        final bodyLines = m.group(3)!.trim().split('\n');
-
-        String parseRow(String line, String tag) {
-          final cells = line
-              .split('|')
-              .where((c) => c.trim().isNotEmpty)
-              .map((c) => c.trim());
-          return '<tr>${cells.map((c) => '<$tag>$c</$tag>').join()}</tr>';
-        }
-
-        final thead = '<thead>${parseRow(headerLine, 'th')}</thead>';
-        final tbody =
-            '<tbody>${bodyLines.map((l) => parseRow(l.trim(), 'td')).join()}</tbody>';
-        return '<table>$thead$tbody</table>';
-      },
-    );
-
-    s = s.replaceAllMapped(RegExp(r'\n\n+'), (_) => '\n</p><p>\n');
-    s = s.replaceAll(RegExp(r'(?<!</p>)\n(?!<)'), '<br>\n');
-
-    for (final entry in htmlBlocks.entries) {
-      s = s.replaceAll(entry.key, entry.value);
-    }
 
     final textColor = isDark ? '#e0e0e0' : '#1a1a1a';
-    final bgColor = isDark ? '#1e1e1e' : '#ffffff';
+    final fallbackBackground = isDark ? '#1e1e1e' : '#ffffff';
+    final bgColor = backgroundColor == null
+        ? fallbackBackground
+        : '#${(backgroundColor.toARGB32() & 0xFFFFFF).toRadixString(16).padLeft(6, '0')}';
+    final colorScheme = isDark ? 'dark' : 'light';
     final codeBg = isDark ? '#2d2d2d' : '#f4f4f4';
     final hrColor = isDark ? '#444' : '#e0e0e0';
+    final baseTag = baseUrl == null || baseUrl.isEmpty
+        ? ''
+        : '<base href="${const HtmlEscape(HtmlEscapeMode.attribute).convert(baseUrl)}">';
     return '''<!DOCTYPE html><html><head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="color-scheme" content="$colorScheme">
+$baseTag
 <style>
-body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;padding:16px;line-height:1.7;word-wrap:break-word;color:$textColor;background:$bgColor;max-width:100%}
-img{max-width:100%;height:auto;border-radius:8px;margin:8px 0}
+html,body{margin:0;max-width:100%;background:$bgColor;color-scheme:$colorScheme}
+body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;padding:16px;line-height:1.7;word-wrap:break-word;color:$textColor;background:$bgColor;box-sizing:border-box}
+img{max-width:100%;height:auto}
 pre{background:$codeBg;padding:12px;border-radius:6px;overflow-x:auto}
 code{background:$codeBg;padding:2px 4px;border-radius:3px;font-size:.9em;font-family:monospace}
 a{color:#1976D2}blockquote{border-left:4px solid #1976D2;margin:0;padding-left:16px;color:#555}
@@ -530,7 +430,7 @@ hr{border:none;border-top:1px solid $hrColor;margin:16px 0}
 ul,ol{padding-left:24px}table{border-collapse:collapse;width:100%}
 th,td{border:1px solid #ddd;padding:8px;text-align:left}th{background:$codeBg}
 p{margin:8px 0}
-</style></head><body><div>$s</div></body></html>''';
+</style></head><body>$renderedContent</body></html>''';
   }
 
   /// Linux does not have a flutter_inappwebview backend. Reuse the same
@@ -555,7 +455,6 @@ p{margin:8px 0}
     if (Platform.isWindows) {
       _useInAppWebView = true;
     }
-    _webLoading = true;
     // Never use article.body from list — always fetch fresh via provider
     _resolvedBody = null;
     // Invalidate provider to force fresh API load on every open (no caching).
@@ -602,6 +501,7 @@ p{margin:8px 0}
 
   @override
   void dispose() {
+    _webViewLoadingFallback?.cancel();
     final platformController = _webController?.platform;
     if (platformController is WindowsPlatformWebViewController) {
       unawaited(platformController.controller.dispose());
@@ -668,10 +568,11 @@ p{margin:8px 0}
       _useInAppWebView = false;
       _inAppWebViewHtml = null;
       _inAppController = null;
-      _webLoading = true;
+      _isPreparingDocument = false;
+      _webViewLoading = true;
+      _inAppWebViewLoading = true;
       _lastInAppWebViewIsDark = false;
       _lastWebViewIsDark = false;
-      _inAppWebViewLoading = true;
     });
     ref.invalidate(knowledgeArticleDetailProvider(_detailRequest));
     unawaited(
@@ -681,15 +582,27 @@ p{margin:8px 0}
     );
   }
 
-  void _initWebView(String content) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
+  Future<void> _initWebView(String content) async {
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+    final backgroundColor = theme.scaffoldBackgroundColor;
 
     if (Platform.isWindows) {
-      _inAppWebViewHtml = _contentToHtml(content, isDark: isDark);
+      _inAppWebViewLoading = true;
+      _inAppWebViewHtml = _contentToHtml(
+        content,
+        isDark: isDark,
+        baseUrl: _documentBaseHref,
+        backgroundColor: backgroundColor,
+      );
       _useInAppWebView = true;
       _lastInAppWebViewIsDark = isDark;
-      _inAppWebViewLoading = true;
-      if (mounted) setState(() {});
+      if (mounted) {
+        setState(() {
+          _resolvedBody = content;
+          _isPreparingDocument = false;
+        });
+      }
       return;
     }
 
@@ -697,17 +610,26 @@ p{margin:8px 0}
         Platform.isIOS ||
         Platform.isMacOS ||
         Platform.isLinux)) {
+      if (mounted) {
+        setState(() {
+          _resolvedBody = content;
+          _isPreparingDocument = false;
+        });
+      }
       return;
     }
-    final fullHtml = _contentToHtml(content, isDark: isDark);
+    final fullHtml = _contentToHtml(
+      content,
+      isDark: isDark,
+      baseUrl: _documentBaseHref,
+      backgroundColor: backgroundColor,
+    );
     _htmlWidgetContent = _contentToBodyHtml(content);
-    _webController = WebViewController()
+    final controller = WebViewController()
       ..setJavaScriptMode(JavaScriptMode.unrestricted)
       ..setNavigationDelegate(
         NavigationDelegate(
-          onPageFinished: (_) {
-            if (mounted) setState(() => _webLoading = false);
-          },
+          onPageFinished: (_) => _finishWebViewLoading(),
           onWebResourceError: (error) {
             if (!Platform.isLinux || error.isForMainFrame != true || !mounted) {
               return;
@@ -719,7 +641,7 @@ p{margin:8px 0}
             setState(() {
               _webController = null;
               _useHtmlWidget = true;
-              _webLoading = false;
+              _webViewLoading = false;
             });
           },
           onNavigationRequest: (request) {
@@ -733,8 +655,63 @@ p{margin:8px 0}
             return NavigationDecision.navigate;
           },
         ),
-      )
-      ..loadHtmlString(fullHtml, baseUrl: _documentBaseUrl);
+      );
+
+    // Set the native surface before the WebView is attached. Otherwise its
+    // first frame follows the operating-system theme until HTML is painted.
+    try {
+      await controller.setBackgroundColor(backgroundColor);
+    } catch (_) {
+      // Background styling is best-effort; never block document loading when
+      // an older platform WebView does not implement this operation.
+    }
+    if (!mounted) {
+      final platformController = controller.platform;
+      if (platformController is WindowsPlatformWebViewController) {
+        unawaited(platformController.controller.dispose());
+      }
+      return;
+    }
+    _webController = controller;
+    _lastWebViewIsDark = isDark;
+    _webViewLoading = true;
+    setState(() {
+      _resolvedBody = content;
+      _isPreparingDocument = false;
+    });
+    unawaited(controller.loadHtmlString(fullHtml));
+    _scheduleWebViewLoadingFallback();
+  }
+
+  void _finishWebViewLoading() {
+    _webViewLoadingFallback?.cancel();
+    if (!mounted || (!_webViewLoading && !_inAppWebViewLoading)) return;
+    setState(() {
+      _webViewLoading = false;
+      _inAppWebViewLoading = false;
+    });
+  }
+
+  void _scheduleWebViewLoadingFallback() {
+    _webViewLoadingFallback?.cancel();
+    _webViewLoadingFallback = Timer(
+      const Duration(seconds: 8),
+      _finishWebViewLoading,
+    );
+  }
+
+  Future<void> _reloadWebViewForTheme({
+    required WebViewController controller,
+    required String html,
+    required Color backgroundColor,
+  }) async {
+    try {
+      await controller.setBackgroundColor(backgroundColor);
+    } catch (_) {
+      // Keep the current document usable on platforms without this operation.
+    }
+    if (!mounted || !identical(_webController, controller)) return;
+    await controller.loadHtmlString(html);
   }
 
   @override
@@ -755,19 +732,21 @@ p{margin:8px 0}
           if (_resolvedBody == null) {
             final fetchedBody = _parseDetailBody(result);
             final resolvedBody = _stripLeadingTitle(fetchedBody);
-            WidgetsBinding.instance.addPostFrameCallback((_) {
-              if (!mounted) return;
-              setState(() {
-                _resolvedBody = resolvedBody;
+            if (!_isPreparingDocument) {
+              _isPreparingDocument = true;
+              WidgetsBinding.instance.addPostFrameCallback((_) {
+                if (!mounted) return;
+                if (resolvedBody.isEmpty) {
+                  setState(() {
+                    _resolvedBody = resolvedBody;
+                    _isPreparingDocument = false;
+                  });
+                  return;
+                }
+                unawaited(_initWebView(resolvedBody));
               });
-              if (!mounted) return;
-              if (resolvedBody.isNotEmpty) {
-                _initWebView(resolvedBody);
-              } else {
-                setState(() => _webLoading = false);
-              }
-            });
-            return const SizedBox.shrink();
+            }
+            return const Center(child: CircularProgressIndicator());
           }
           return _buildContentArea(theme);
         },
@@ -888,19 +867,27 @@ p{margin:8px 0}
     if (_useInAppWebView) {
       final isDark = Theme.of(context).brightness == Brightness.dark;
       if (_inAppWebViewHtml == null || _lastInAppWebViewIsDark != isDark) {
-        _inAppWebViewHtml = _contentToHtml(body, isDark: isDark);
+        _inAppWebViewHtml = _contentToHtml(
+          body,
+          isDark: isDark,
+          baseUrl: _documentBaseHref,
+          backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+        );
         _lastInAppWebViewIsDark = isDark;
       }
-      final currentIsDark = Theme.of(context).brightness == Brightness.dark;
       return Stack(
         children: [
           iaw.InAppWebView(
+            key: ValueKey(isDark),
             initialSettings: iaw.InAppWebViewSettings(
               javaScriptEnabled: true,
-              transparentBackground: true,
+              transparentBackground: false,
+              underPageBackgroundColor:
+                  Theme.of(context).scaffoldBackgroundColor,
             ),
             onWebViewCreated: (controller) {
               _inAppController = controller;
+              _scheduleWebViewLoadingFallback();
               controller.addJavaScriptHandler(
                 handlerName: 'openExternal',
                 callback: (args) async {
@@ -920,10 +907,7 @@ p{margin:8px 0}
                   encoding: 'utf-8');
             },
             onLoadStop: (_, __) {
-              if (_inAppWebViewLoading) {
-                if (mounted) setState(() => _inAppWebViewLoading = false);
-              }
-
+              _finishWebViewLoading();
               _inAppController?.evaluateJavascript(source: r'''
 (function(){
   if (window.__fastcatDocInterceptInstalled) return;
@@ -998,11 +982,11 @@ p{margin:8px 0}
             },
           ),
           if (_inAppWebViewLoading)
-            Container(
-              color: currentIsDark
-                  ? const Color(0xFF1E1E1E)
-                  : const Color(0xFFFAFBFD),
-              child: const Center(child: CircularProgressIndicator()),
+            Positioned.fill(
+              child: ColoredBox(
+                color: theme.scaffoldBackgroundColor,
+                child: const Center(child: CircularProgressIndicator()),
+              ),
             ),
         ],
       );
@@ -1017,32 +1001,36 @@ p{margin:8px 0}
       if (_lastWebViewIsDark != currentIsDark &&
           _resolvedBody != null &&
           _resolvedBody!.isNotEmpty) {
-        final fullHtml = _contentToHtml(_resolvedBody!, isDark: currentIsDark);
-        _webController!.loadHtmlString(
-          fullHtml,
-          baseUrl: _documentBaseUrl,
+        final fullHtml = _contentToHtml(
+          _resolvedBody!,
+          isDark: currentIsDark,
+          baseUrl: _documentBaseHref,
+          backgroundColor: theme.scaffoldBackgroundColor,
         );
+        final controller = _webController!;
         _lastWebViewIsDark = currentIsDark;
+        unawaited(
+          _reloadWebViewForTheme(
+            controller: controller,
+            html: fullHtml,
+            backgroundColor: theme.scaffoldBackgroundColor,
+          ),
+        );
       }
       return Stack(
         children: [
           WebViewWidget(controller: _webController!),
-          if (_webLoading)
-            Container(
-              color: currentIsDark ? const Color(0xFF1E1E1E) : Colors.white,
-              child: const Center(child: CircularProgressIndicator()),
+          if (_webViewLoading)
+            Positioned.fill(
+              child: ColoredBox(
+                color: theme.scaffoldBackgroundColor,
+                child: const Center(child: CircularProgressIndicator()),
+              ),
             ),
         ],
       );
     }
 
-    if (_webLoading) {
-      return const Center(child: CircularProgressIndicator());
-    }
-
-    return SingleChildScrollView(
-      padding: const EdgeInsets.all(16),
-      child: SelectableText(body),
-    );
+    return ColoredBox(color: theme.scaffoldBackgroundColor);
   }
 }

@@ -1605,7 +1605,7 @@ if(window===window.top){
         brightness: _customerServiceBrightness(isDarkMode),
       );
       await webview.setApplicationNameForUserAgent(
-        ' Chrome/125.0.0.0 Safari/537.36 FastCat/3.5.5',
+        ' Chrome/125.0.0.0 Safari/537.36 FastCat/3.5.6',
       );
       await _applyDesktopCustomerServiceWindowState(
         webview,

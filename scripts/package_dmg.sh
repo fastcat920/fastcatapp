@@ -27,7 +27,7 @@ if [ -f "$PUBSPEC" ]; then
   VERSION="${RAW_VERSION%%+*}"
 fi
 
-# DMG 文件名用英文名 + 版本号：FastCat-3.5.5.dmg
+# DMG 文件名用英文名 + 版本号：FastCat-3.5.6.dmg
 if [ -n "$VERSION" ]; then
   DMG_NAME="${APP_NAME_EN}-${VERSION}.dmg"
 else
