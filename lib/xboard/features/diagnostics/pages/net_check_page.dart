@@ -35,6 +35,7 @@ class _NetCheckPageState extends ConsumerState<NetCheckPage> {
 
   final _domainController = TextEditingController(text: _defaultDomain);
   bool _running = false;
+  bool _copyingReport = false;
   bool? _vpnConnected;
   String? _vpnStatus;
   List<_StepResult> _dnsResults = [];
@@ -590,12 +591,27 @@ class _NetCheckPageState extends ConsumerState<NetCheckPage> {
   }
 
   Future<void> _copyReport() async {
+    if (_copyingReport) return;
     final l10n = AppLocalizations.of(context);
     final snapshot = _reportSnapshot;
     if (snapshot == null) return;
-    final report = DiagnosticBundleService.buildNetworkReport(snapshot, l10n);
-    await Clipboard.setData(ClipboardData(text: report));
-    XBoardNotification.showSuccess(l10n.xboardNetworkDiagnosticsCopied);
+    setState(() => _copyingReport = true);
+    try {
+      final networkReport =
+          DiagnosticBundleService.buildNetworkReport(snapshot, l10n);
+      final serviceReport = await DiagnosticBundleService.buildReport(
+        context,
+        ref,
+        l10n,
+        includeNetworkDiagnostics: false,
+        includeMetadata: false,
+      );
+      final report = '$networkReport\n$serviceReport';
+      await Clipboard.setData(ClipboardData(text: report));
+      XBoardNotification.showSuccess(l10n.xboardNetworkDiagnosticsCopied);
+    } finally {
+      if (mounted) setState(() => _copyingReport = false);
+    }
   }
 
   String _maskDetail(String value) {
@@ -663,8 +679,15 @@ class _NetCheckPageState extends ConsumerState<NetCheckPage> {
                     ),
                     OutlinedButton.icon(
                       onPressed:
-                          _running || _vpnStatus == null ? null : _copyReport,
-                      icon: const Icon(Icons.copy_outlined),
+                          _running || _copyingReport || _vpnStatus == null
+                              ? null
+                              : _copyReport,
+                      icon: _copyingReport
+                          ? const SizedBox.square(
+                              dimension: 18,
+                              child: CircularProgressIndicator(strokeWidth: 2),
+                            )
+                          : const Icon(Icons.copy_outlined),
                       label: Text(l10n.xboardNetworkDiagnosticsCopyReport),
                     ),
                   ],

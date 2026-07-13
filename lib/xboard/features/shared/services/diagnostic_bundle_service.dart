@@ -70,8 +70,10 @@ class DiagnosticBundleService {
   static Future<String> buildReport(
     BuildContext context,
     WidgetRef ref,
-    AppLocalizations l10n,
-  ) async {
+    AppLocalizations l10n, {
+    bool includeNetworkDiagnostics = true,
+    bool includeMetadata = true,
+  }) async {
     final initState = ref.read(initializationProvider);
     final userState = ref.read(xboardUserProvider);
     final subscription =
@@ -131,8 +133,9 @@ class DiagnosticBundleService {
     final helperStatus =
         Platform.isWindows ? await request.getHelperRuntimeStatus() : null;
     final snapshot = NetworkDiagnosticSnapshotStore.latest;
-    final networkType =
-        snapshot?.networkType ?? await _resolveNetworkType(l10n);
+    final networkType = includeMetadata
+        ? snapshot?.networkType ?? await _resolveNetworkType(l10n)
+        : null;
 
     final problems = <String>[
       if (!coreRunning) l10n.xboardDiagnosticIssueCore,
@@ -150,14 +153,22 @@ class DiagnosticBundleService {
                 : l10n.xboardDiagnosticOverallHealthy;
 
     final buffer = StringBuffer()
-      ..writeln('=== ${l10n.xboardDiagnosticSummaryTitle} ===')
-      ..writeln('${l10n.xboardNetworkDiagnosticsTime}: ${_fmt(DateTime.now())}')
-      ..writeln('${l10n.xboardDiagnosticPlatform}: ${_platformLabel()}')
-      ..writeln('${l10n.xboardNetworkDiagnosticsNetworkType}: $networkType')
       ..writeln(
-        '${l10n.xboardNetworkDiagnosticsVpnStatus}: '
-        '${vpnConnected ? l10n.xboardNetworkDiagnosticsConnected : l10n.xboardNetworkDiagnosticsDisconnected}',
-      )
+        '=== ${includeMetadata ? l10n.xboardDiagnosticSummaryTitle : l10n.xboardDiagnosticServiceStatus} ===',
+      );
+    if (includeMetadata) {
+      buffer
+        ..writeln(
+          '${l10n.xboardNetworkDiagnosticsTime}: ${_fmt(DateTime.now())}',
+        )
+        ..writeln('${l10n.xboardDiagnosticPlatform}: ${_platformLabel()}')
+        ..writeln('${l10n.xboardNetworkDiagnosticsNetworkType}: $networkType')
+        ..writeln(
+          '${l10n.xboardNetworkDiagnosticsVpnStatus}: '
+          '${vpnConnected ? l10n.xboardNetworkDiagnosticsConnected : l10n.xboardNetworkDiagnosticsDisconnected}',
+        );
+    }
+    buffer
       ..writeln()
       ..writeln('${l10n.xboardDiagnosticOverall}: $overall');
 
@@ -297,13 +308,15 @@ class DiagnosticBundleService {
         ),
     ]);
 
-    buffer
-      ..writeln()
-      ..writeln('[${l10n.xboardDiagnosticLatestNetwork}]');
-    if (snapshot == null) {
-      buffer.writeln('- ${l10n.xboardDiagnosticNetworkNotRun}');
-    } else {
-      _writeNetworkSummary(buffer, snapshot, l10n);
+    if (includeNetworkDiagnostics) {
+      buffer
+        ..writeln()
+        ..writeln('[${l10n.xboardDiagnosticLatestNetwork}]');
+      if (snapshot == null) {
+        buffer.writeln('- ${l10n.xboardDiagnosticNetworkNotRun}');
+      } else {
+        _writeNetworkSummary(buffer, snapshot, l10n);
+      }
     }
 
     buffer

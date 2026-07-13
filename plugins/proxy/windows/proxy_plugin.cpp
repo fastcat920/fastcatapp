@@ -32,6 +32,37 @@ struct ProxyStatusData {
   int port = 0;
 };
 
+bool wideStringToUtf8(const std::wstring& value, std::string& output)
+{
+  if (value.empty()) {
+    output.clear();
+    return true;
+  }
+  const auto length = static_cast<int>(value.size());
+  const auto required = WideCharToMultiByte(
+      CP_UTF8,
+      WC_ERR_INVALID_CHARS,
+      value.data(),
+      length,
+      nullptr,
+      0,
+      nullptr,
+      nullptr);
+  if (required <= 0) {
+    return false;
+  }
+  output.resize(required);
+  return WideCharToMultiByte(
+             CP_UTF8,
+             WC_ERR_INVALID_CHARS,
+             value.data(),
+             length,
+             output.data(),
+             required,
+             nullptr,
+             nullptr) == required;
+}
+
 bool parseProxyEndpoint(const std::wstring& raw, std::string& host, int& port)
 {
   auto value = raw;
@@ -44,7 +75,9 @@ bool parseProxyEndpoint(const std::wstring& raw, std::string& host, int& port)
     return false;
   }
   try {
-    host = std::string(value.begin(), value.begin() + separator);
+    if (!wideStringToUtf8(value.substr(0, separator), host)) {
+      return false;
+    }
     port = std::stoi(value.substr(separator + 1));
     return !host.empty() && port > 0;
   } catch (...) {
