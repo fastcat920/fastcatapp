@@ -24,6 +24,8 @@ mixin ClashInterface {
 
   Future<String> asyncTestDelay(String url, String proxyName);
 
+  Future<String> diagnoseProxy(String url, String proxyName);
+
   FutureOr<String> updateConfig(UpdateParams updateParams);
 
   FutureOr<String> setupConfig(SetupParams setupParams);
@@ -401,6 +403,31 @@ abstract class ClashHandlerInterface with ClashInterface {
           ),
         );
       },
+    );
+  }
+
+  @override
+  Future<String> diagnoseProxy(String url, String proxyName) {
+    const stageTimeout = Duration(seconds: 5);
+    final params = {
+      "proxy-name": proxyName,
+      "timeout": stageTimeout.inMilliseconds,
+      "test-url": url,
+    };
+    return invoke<String>(
+      method: ActionMethod.diagnoseProxy,
+      data: json.encode(params),
+      timeout: Duration(
+        milliseconds: stageTimeout.inMilliseconds * 3 + 1000,
+      ),
+      onTimeout: () => json.encode({
+        'diagnostic-status': 'unavailable',
+        'dns-status': 'unavailable',
+        'tcp-status': 'unavailable',
+        'proxy-status': 'failed',
+        'failure-stage': 'diagnostic',
+        'error': 'diagnostic request timed out',
+      }),
     );
   }
 

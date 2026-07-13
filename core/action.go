@@ -88,6 +88,10 @@ func handleAction(action *Action, result ActionResult) {
 			result.success(value)
 		})
 		return
+	case diagnoseProxyMethod:
+		data := action.Data.(string)
+		result.success(handleDiagnoseProxy(data))
+		return
 	case getConnectionsMethod:
 		result.success(handleGetConnections())
 		return

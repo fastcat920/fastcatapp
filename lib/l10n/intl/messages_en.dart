@@ -1711,6 +1711,114 @@ class MessageLookup extends MessageLookupByLibrary {
     "xboardDiagnosticBundleCopied": MessageLookupByLibrary.simpleMessage(
       "Diagnostics copied",
     ),
+    "xboardDiagnosticBusinessServices": MessageLookupByLibrary.simpleMessage(
+      "Business services",
+    ),
+    "xboardDiagnosticHealthyAccount": MessageLookupByLibrary.simpleMessage(
+      "Account and subscription are available",
+    ),
+    "xboardDiagnosticHealthyCore": MessageLookupByLibrary.simpleMessage(
+      "Proxy core is running",
+    ),
+    "xboardDiagnosticHealthyGateway": MessageLookupByLibrary.simpleMessage(
+      "Current business gateway is available",
+    ),
+    "xboardDiagnosticHealthyHeartbeat": MessageLookupByLibrary.simpleMessage(
+      "Device heartbeat succeeded",
+    ),
+    "xboardDiagnosticHealthyItems": MessageLookupByLibrary.simpleMessage(
+      "Healthy items",
+    ),
+    "xboardDiagnosticHealthyNodes": MessageLookupByLibrary.simpleMessage(
+      "Available proxy nodes",
+    ),
+    "xboardDiagnosticHealthyProxy": MessageLookupByLibrary.simpleMessage(
+      "System proxy is running on port",
+    ),
+    "xboardDiagnosticIssueCore": MessageLookupByLibrary.simpleMessage(
+      "Proxy core is not running",
+    ),
+    "xboardDiagnosticIssueGateway": MessageLookupByLibrary.simpleMessage(
+      "No available business gateway",
+    ),
+    "xboardDiagnosticIssueNodes": MessageLookupByLibrary.simpleMessage(
+      "No available proxy nodes",
+    ),
+    "xboardDiagnosticIssueProxy": MessageLookupByLibrary.simpleMessage(
+      "System proxy is enabled but not running",
+    ),
+    "xboardDiagnosticLatestNetwork": MessageLookupByLibrary.simpleMessage(
+      "Latest network connectivity check",
+    ),
+    "xboardDiagnosticNetworkConnectivity": MessageLookupByLibrary.simpleMessage(
+      "Network connectivity",
+    ),
+    "xboardDiagnosticNetworkNotRun": MessageLookupByLibrary.simpleMessage(
+      "Network connectivity diagnostics have not been run",
+    ),
+    "xboardDiagnosticNetworkSnapshotTime": MessageLookupByLibrary.simpleMessage(
+      "Checked at",
+    ),
+    "xboardDiagnosticNoticeGateways": MessageLookupByLibrary.simpleMessage(
+      "Unverified backup gateways",
+    ),
+    "xboardDiagnosticNoticeTun": MessageLookupByLibrary.simpleMessage(
+      "TUN is configured but is not currently active; traffic is using another proxy mode",
+    ),
+    "xboardDiagnosticNotices": MessageLookupByLibrary.simpleMessage(
+      "Items requiring attention",
+    ),
+    "xboardDiagnosticOverall": MessageLookupByLibrary.simpleMessage(
+      "Overall status",
+    ),
+    "xboardDiagnosticOverallAbnormal": MessageLookupByLibrary.simpleMessage(
+      "Issues detected",
+    ),
+    "xboardDiagnosticOverallAttention": MessageLookupByLibrary.simpleMessage(
+      "Generally healthy, with items requiring attention",
+    ),
+    "xboardDiagnosticOverallHealthy": MessageLookupByLibrary.simpleMessage(
+      "Healthy",
+    ),
+    "xboardDiagnosticOverallServiceHealthy": MessageLookupByLibrary.simpleMessage(
+      "Services and system proxy are healthy; network connectivity has not been verified",
+    ),
+    "xboardDiagnosticPlatform": MessageLookupByLibrary.simpleMessage(
+      "Platform",
+    ),
+    "xboardDiagnosticProblems": MessageLookupByLibrary.simpleMessage(
+      "Problems",
+    ),
+    "xboardDiagnosticProxyAndSystem": MessageLookupByLibrary.simpleMessage(
+      "Proxy and system",
+    ),
+    "xboardDiagnosticServiceStatus": MessageLookupByLibrary.simpleMessage(
+      "Service status",
+    ),
+    "xboardDiagnosticSuggestion": MessageLookupByLibrary.simpleMessage(
+      "Suggestion",
+    ),
+    "xboardDiagnosticSuggestionNone": MessageLookupByLibrary.simpleMessage(
+      "The current connection is working normally; no action is required.",
+    ),
+    "xboardDiagnosticSuggestionRepair": MessageLookupByLibrary.simpleMessage(
+      "Refresh status or use one-click repair, then rerun network diagnostics and copy the report.",
+    ),
+    "xboardDiagnosticSuggestionRunNetwork": MessageLookupByLibrary.simpleMessage(
+      "Services and system proxy settings are healthy. Run network diagnostics to verify the node endpoint, TLS, and proxy route.",
+    ),
+    "xboardDiagnosticSuggestionTun": MessageLookupByLibrary.simpleMessage(
+      "The connection is usable. Enable TUN only if some apps cannot use the system proxy.",
+    ),
+    "xboardDiagnosticSummaryTitle": MessageLookupByLibrary.simpleMessage(
+      "FastCat diagnostic report",
+    ),
+    "xboardDiagnosticsCenter": MessageLookupByLibrary.simpleMessage(
+      "Diagnostics center",
+    ),
+    "xboardDiagnosticsCenterSubtitle": MessageLookupByLibrary.simpleMessage(
+      "Check service status, proxy configuration, and network connectivity",
+    ),
     "xboardDisconnecting": MessageLookupByLibrary.simpleMessage(
       "Disconnecting",
     ),
@@ -1943,6 +2051,226 @@ class MessageLookup extends MessageLookupByLibrary {
     "xboardNetworkConnectionFailed": MessageLookupByLibrary.simpleMessage(
       "Network connection failed, please check network settings",
     ),
+    "xboardNetworkDiagnostics": MessageLookupByLibrary.simpleMessage(
+      "Network diagnostics",
+    ),
+    "xboardNetworkDiagnosticsConclusion": MessageLookupByLibrary.simpleMessage(
+      "Diagnostic conclusion",
+    ),
+    "xboardNetworkDiagnosticsConclusionDisconnectedDns":
+        MessageLookupByLibrary.simpleMessage(
+          "VPN is not connected, and the basic network DNS result is abnormal. Fix the local network or DNS before diagnosing the node route.",
+        ),
+    "xboardNetworkDiagnosticsConclusionDisconnectedHealthy":
+        MessageLookupByLibrary.simpleMessage(
+          "VPN is not connected. The basic network is working normally; connect VPN to diagnose the node route.",
+        ),
+    "xboardNetworkDiagnosticsConclusionDisconnectedNetwork":
+        MessageLookupByLibrary.simpleMessage(
+          "VPN is not connected, and the basic network appears abnormal or unreachable.",
+        ),
+    "xboardNetworkDiagnosticsConclusionDns":
+        MessageLookupByLibrary.simpleMessage(
+          "DNS results are abnormal. Check DNS settings or the current network.",
+        ),
+    "xboardNetworkDiagnosticsConclusionHealthy":
+        MessageLookupByLibrary.simpleMessage(
+          "DNS and network routes are working normally.",
+        ),
+    "xboardNetworkDiagnosticsConclusionNetwork":
+        MessageLookupByLibrary.simpleMessage(
+          "The local network appears abnormal or unreachable.",
+        ),
+    "xboardNetworkDiagnosticsConclusionNodeDns":
+        MessageLookupByLibrary.simpleMessage(
+          "The selected node domain could not be resolved on the current network.",
+        ),
+    "xboardNetworkDiagnosticsConclusionNodeUnknown":
+        MessageLookupByLibrary.simpleMessage(
+          "VPN is connected, but the current node could not be identified.",
+        ),
+    "xboardNetworkDiagnosticsConclusionProtocol":
+        MessageLookupByLibrary.simpleMessage(
+          "The node endpoint is reachable, but the proxy protocol handshake failed. Check transport and authentication parameters.",
+        ),
+    "xboardNetworkDiagnosticsConclusionProxy":
+        MessageLookupByLibrary.simpleMessage(
+          "The proxy node or proxy route is unavailable.",
+        ),
+    "xboardNetworkDiagnosticsConclusionProxyWorking":
+        MessageLookupByLibrary.simpleMessage(
+          "The proxy route is working normally. Some direct targets are restricted on the current network, which does not affect proxy use.",
+        ),
+    "xboardNetworkDiagnosticsConclusionTcp": MessageLookupByLibrary.simpleMessage(
+      "Direct internet access works, but the selected node TCP endpoint timed out. The endpoint may be unreachable or restricted by the current network.",
+    ),
+    "xboardNetworkDiagnosticsConclusionTcpRefused":
+        MessageLookupByLibrary.simpleMessage(
+          "The selected node endpoint refused the TCP connection. Check the server process and listening port.",
+        ),
+    "xboardNetworkDiagnosticsConclusionTls": MessageLookupByLibrary.simpleMessage(
+      "TCP connectivity succeeded, but the node TLS handshake failed. Check SNI, certificates, or network TLS filtering.",
+    ),
+    "xboardNetworkDiagnosticsConclusionUdp": MessageLookupByLibrary.simpleMessage(
+      "The UDP-based node timed out while direct internet access works. UDP may be unavailable or restricted on the current network.",
+    ),
+    "xboardNetworkDiagnosticsConnected": MessageLookupByLibrary.simpleMessage(
+      "Connected",
+    ),
+    "xboardNetworkDiagnosticsCopied": MessageLookupByLibrary.simpleMessage(
+      "Diagnostics report copied",
+    ),
+    "xboardNetworkDiagnosticsCopyReport": MessageLookupByLibrary.simpleMessage(
+      "Copy report",
+    ),
+    "xboardNetworkDiagnosticsCoreUnavailable": MessageLookupByLibrary.simpleMessage(
+      "Layered diagnostics are unavailable in the current core. Update or fully restart the client; the HTTPS results below remain valid.",
+    ),
+    "xboardNetworkDiagnosticsDescription": MessageLookupByLibrary.simpleMessage(
+      "DNS checks use the system resolver. Node diagnostics then check the actual endpoint DNS, TCP or UDP transport, proxy handshake, and HTTP reachability.",
+    ),
+    "xboardNetworkDiagnosticsDirectHttps": MessageLookupByLibrary.simpleMessage(
+      "Direct HTTPS",
+    ),
+    "xboardNetworkDiagnosticsDisconnected":
+        MessageLookupByLibrary.simpleMessage("Disconnected"),
+    "xboardNetworkDiagnosticsDns": MessageLookupByLibrary.simpleMessage(
+      "DNS resolution",
+    ),
+    "xboardNetworkDiagnosticsDomain": MessageLookupByLibrary.simpleMessage(
+      "Domain",
+    ),
+    "xboardNetworkDiagnosticsEmptyResult": MessageLookupByLibrary.simpleMessage(
+      "Empty result",
+    ),
+    "xboardNetworkDiagnosticsEndpointUnavailable":
+        MessageLookupByLibrary.simpleMessage(
+          "Node endpoint information is unavailable",
+        ),
+    "xboardNetworkDiagnosticsExpectedFakeIp":
+        MessageLookupByLibrary.simpleMessage("Expected fake-IP result"),
+    "xboardNetworkDiagnosticsHttpFailed": MessageLookupByLibrary.simpleMessage(
+      "The proxy connected, but the HTTP test failed",
+    ),
+    "xboardNetworkDiagnosticsHttps": MessageLookupByLibrary.simpleMessage(
+      "HTTPS reachability",
+    ),
+    "xboardNetworkDiagnosticsIpConnectivity":
+        MessageLookupByLibrary.simpleMessage("IPv4 / IPv6 connectivity"),
+    "xboardNetworkDiagnosticsNetworkEthernet":
+        MessageLookupByLibrary.simpleMessage("Ethernet"),
+    "xboardNetworkDiagnosticsNetworkMobile":
+        MessageLookupByLibrary.simpleMessage("Mobile network"),
+    "xboardNetworkDiagnosticsNetworkNone": MessageLookupByLibrary.simpleMessage(
+      "No network",
+    ),
+    "xboardNetworkDiagnosticsNetworkOther":
+        MessageLookupByLibrary.simpleMessage("Other network"),
+    "xboardNetworkDiagnosticsNetworkType": MessageLookupByLibrary.simpleMessage(
+      "Network type",
+    ),
+    "xboardNetworkDiagnosticsNode": MessageLookupByLibrary.simpleMessage(
+      "Current node",
+    ),
+    "xboardNetworkDiagnosticsNodeDns": MessageLookupByLibrary.simpleMessage(
+      "Node DNS",
+    ),
+    "xboardNetworkDiagnosticsNodeDnsFailed":
+        MessageLookupByLibrary.simpleMessage("Node domain resolution failed"),
+    "xboardNetworkDiagnosticsNodeDnsSuccess":
+        MessageLookupByLibrary.simpleMessage(
+          "Node domain resolved successfully",
+        ),
+    "xboardNetworkDiagnosticsNodeEndpoint":
+        MessageLookupByLibrary.simpleMessage("Node endpoint"),
+    "xboardNetworkDiagnosticsNodeHandshake":
+        MessageLookupByLibrary.simpleMessage("TLS / proxy handshake / HTTP"),
+    "xboardNetworkDiagnosticsNodeHttpSuccess":
+        MessageLookupByLibrary.simpleMessage(
+          "Node handshake and HTTP test succeeded",
+        ),
+    "xboardNetworkDiagnosticsNodeLayers": MessageLookupByLibrary.simpleMessage(
+      "Node connection layers",
+    ),
+    "xboardNetworkDiagnosticsNodeTcp": MessageLookupByLibrary.simpleMessage(
+      "TCP port",
+    ),
+    "xboardNetworkDiagnosticsNodeTls": MessageLookupByLibrary.simpleMessage(
+      "TLS handshake",
+    ),
+    "xboardNetworkDiagnosticsProtocolFailed": MessageLookupByLibrary.simpleMessage(
+      "The node endpoint is reachable, but the proxy protocol handshake failed",
+    ),
+    "xboardNetworkDiagnosticsProxyHttps": MessageLookupByLibrary.simpleMessage(
+      "Proxy HTTPS",
+    ),
+    "xboardNetworkDiagnosticsReachable": MessageLookupByLibrary.simpleMessage(
+      "Reachable",
+    ),
+    "xboardNetworkDiagnosticsReportTitle": MessageLookupByLibrary.simpleMessage(
+      "FastCat network diagnostics report",
+    ),
+    "xboardNetworkDiagnosticsRunning": MessageLookupByLibrary.simpleMessage(
+      "Diagnosing...",
+    ),
+    "xboardNetworkDiagnosticsRunningTime": MessageLookupByLibrary.simpleMessage(
+      "Running time",
+    ),
+    "xboardNetworkDiagnosticsStart": MessageLookupByLibrary.simpleMessage(
+      "Start diagnostics",
+    ),
+    "xboardNetworkDiagnosticsSubtitle": MessageLookupByLibrary.simpleMessage(
+      "Check VPN status, DNS resolution, and HTTPS reachability",
+    ),
+    "xboardNetworkDiagnosticsSuspiciousAddress":
+        MessageLookupByLibrary.simpleMessage(
+          "Possible DNS pollution: private or reserved address",
+        ),
+    "xboardNetworkDiagnosticsTcpRefused": MessageLookupByLibrary.simpleMessage(
+      "TCP connection was refused; the server port may not be listening",
+    ),
+    "xboardNetworkDiagnosticsTcpSkippedUdp":
+        MessageLookupByLibrary.simpleMessage(
+          "UDP-based node; TCP port check is not applicable",
+        ),
+    "xboardNetworkDiagnosticsTcpSuccess": MessageLookupByLibrary.simpleMessage(
+      "TCP connection succeeded",
+    ),
+    "xboardNetworkDiagnosticsTcpTimeout": MessageLookupByLibrary.simpleMessage(
+      "TCP connection timed out; the endpoint may be unreachable or restricted by this network",
+    ),
+    "xboardNetworkDiagnosticsTcpUnreachable":
+        MessageLookupByLibrary.simpleMessage("No route to the node endpoint"),
+    "xboardNetworkDiagnosticsTestDomain": MessageLookupByLibrary.simpleMessage(
+      "Test domain",
+    ),
+    "xboardNetworkDiagnosticsTime": MessageLookupByLibrary.simpleMessage(
+      "Time",
+    ),
+    "xboardNetworkDiagnosticsTimeout": MessageLookupByLibrary.simpleMessage(
+      "Timed out",
+    ),
+    "xboardNetworkDiagnosticsTlsFailed": MessageLookupByLibrary.simpleMessage(
+      "TCP succeeded, but the TLS handshake failed",
+    ),
+    "xboardNetworkDiagnosticsUdpFailed": MessageLookupByLibrary.simpleMessage(
+      "The UDP node test timed out; UDP may be unavailable or restricted on this network",
+    ),
+    "xboardNetworkDiagnosticsUnavailable": MessageLookupByLibrary.simpleMessage(
+      "Not available",
+    ),
+    "xboardNetworkDiagnosticsUnreachable": MessageLookupByLibrary.simpleMessage(
+      "Unreachable",
+    ),
+    "xboardNetworkDiagnosticsViaNode": MessageLookupByLibrary.simpleMessage(
+      "Via current node",
+    ),
+    "xboardNetworkDiagnosticsVpnRequired": MessageLookupByLibrary.simpleMessage(
+      "VPN is not connected. Node DNS, port, TLS, and proxy-route diagnostics were skipped.",
+    ),
+    "xboardNetworkDiagnosticsVpnStatus": MessageLookupByLibrary.simpleMessage(
+      "VPN status",
+    ),
     "xboardNewVersionFound": MessageLookupByLibrary.simpleMessage(
       "New version found",
     ),
@@ -2147,6 +2475,17 @@ class MessageLookup extends MessageLookupByLibrary {
       "Protect your network privacy",
     ),
     "xboardProxy": MessageLookupByLibrary.simpleMessage("Proxy"),
+    "xboardProxyActualAddress": MessageLookupByLibrary.simpleMessage(
+      "System address",
+    ),
+    "xboardProxyClientSetting": MessageLookupByLibrary.simpleMessage(
+      "Client setting",
+    ),
+    "xboardProxyExpectedAddress": MessageLookupByLibrary.simpleMessage(
+      "Expected address",
+    ),
+    "xboardProxyListening": MessageLookupByLibrary.simpleMessage("Listening"),
+    "xboardProxyLocalPort": MessageLookupByLibrary.simpleMessage("Local port"),
     "xboardProxyMode": MessageLookupByLibrary.simpleMessage("Proxy Mode"),
     "xboardProxyModeDirectDescription": MessageLookupByLibrary.simpleMessage(
       "All traffic connects directly without proxy",
@@ -2156,6 +2495,45 @@ class MessageLookup extends MessageLookupByLibrary {
     ),
     "xboardProxyModeRuleDescription": MessageLookupByLibrary.simpleMessage(
       "Automatically select direct or proxy based on rules",
+    ),
+    "xboardProxyNotListening": MessageLookupByLibrary.simpleMessage(
+      "Not listening",
+    ),
+    "xboardProxyRepairCoreNotRunning": MessageLookupByLibrary.simpleMessage(
+      "The proxy core is not running. Connect first, then run one-click repair.",
+    ),
+    "xboardProxyRepairPortUnavailable": MessageLookupByLibrary.simpleMessage(
+      "The local proxy port is not listening; system proxy was not enabled.",
+    ),
+    "xboardProxyRepairVerifyFailed": MessageLookupByLibrary.simpleMessage(
+      "System proxy verification failed after repair; the IP or port still does not match.",
+    ),
+    "xboardProxyRepairWriteFailed": MessageLookupByLibrary.simpleMessage(
+      "Failed to write the device system proxy settings.",
+    ),
+    "xboardProxyStatusClientDisabled": MessageLookupByLibrary.simpleMessage(
+      "The client system proxy setting is not enabled",
+    ),
+    "xboardProxyStatusMismatch": MessageLookupByLibrary.simpleMessage(
+      "The system proxy IP or port does not match the client",
+    ),
+    "xboardProxyStatusPortUnavailable": MessageLookupByLibrary.simpleMessage(
+      "The local proxy port is not listening",
+    ),
+    "xboardProxyStatusReadFailed": MessageLookupByLibrary.simpleMessage(
+      "Unable to read the system proxy status",
+    ),
+    "xboardProxyStatusSource": MessageLookupByLibrary.simpleMessage(
+      "System source",
+    ),
+    "xboardProxyStatusStale": MessageLookupByLibrary.simpleMessage(
+      "The core is stopped, but a stale system proxy is still enabled",
+    ),
+    "xboardProxyStatusSystemDisabled": MessageLookupByLibrary.simpleMessage(
+      "The device system proxy is not enabled",
+    ),
+    "xboardProxyStatusTunActive": MessageLookupByLibrary.simpleMessage(
+      "TUN is active; system proxy is not required",
     ),
     "xboardPurchasePlan": MessageLookupByLibrary.simpleMessage("Purchase plan"),
     "xboardPurchaseSubscription": MessageLookupByLibrary.simpleMessage(

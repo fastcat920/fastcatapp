@@ -9,6 +9,7 @@ import (
 	"github.com/metacubex/mihomo/adapter/outboundgroup"
 	"github.com/metacubex/mihomo/common/observable"
 	"github.com/metacubex/mihomo/common/utils"
+	"github.com/metacubex/mihomo/component/dialer"
 	"github.com/metacubex/mihomo/component/mmdb"
 	"github.com/metacubex/mihomo/component/resolver"
 	"github.com/metacubex/mihomo/component/updater"
@@ -24,6 +25,7 @@ import (
 	"runtime"
 	"sort"
 	"strconv"
+	"strings"
 	"time"
 )
 
@@ -220,6 +222,166 @@ func handleAsyncTestDelay(paramsString string, fn func(string)) {
 		fn(string(data))
 		return false, nil
 	})
+}
+
+func handleDiagnoseProxy(paramsString string) string {
+	params := &DiagnoseProxyParams{}
+	if err := json.Unmarshal([]byte(paramsString), params); err != nil {
+		return marshalProxyDiagnostic(&ProxyDiagnosticResult{
+			DiagnosticStatus: "complete",
+			DNSStatus:        "unavailable", TCPStatus: "unavailable",
+			ProxyStatus: "failed", FailureStage: "configuration", Error: err.Error(),
+		})
+	}
+
+	timeout := time.Duration(params.Timeout) * time.Millisecond
+	if timeout <= 0 {
+		timeout = 8 * time.Second
+	}
+	result := &ProxyDiagnosticResult{
+		DiagnosticStatus: "complete",
+		DNSStatus:        "unavailable", TCPStatus: "skipped", ProxyStatus: "failed",
+	}
+	proxy := tunnel.ProxiesWithProviders()[params.ProxyName]
+	if proxy == nil {
+		result.FailureStage = "configuration"
+		result.Error = "proxy not found"
+		return marshalProxyDiagnostic(result)
+	}
+
+	proxyAdapter := proxy.Adapter()
+	result.ProxyType = proxyAdapter.Type().String()
+	result.Network = proxyDiagnosticNetwork(proxyAdapter.Type())
+	address := proxyAdapter.Addr()
+	host, port, err := net.SplitHostPort(address)
+	if err != nil {
+		result.FailureStage = "configuration"
+		result.Error = "node endpoint unavailable"
+		return marshalProxyDiagnostic(result)
+	}
+	result.Host = host
+	result.Port = port
+
+	dnsStarted := time.Now()
+	dnsCtx, dnsCancel := context.WithTimeout(context.Background(), timeout)
+	ips, dnsErr := resolver.LookupIP(dnsCtx, host)
+	dnsCancel()
+	result.DNSElapsedMs = time.Since(dnsStarted).Milliseconds()
+	if dnsErr != nil {
+		result.DNSStatus = "failed"
+		result.FailureStage = "dns"
+		result.Error = dnsErr.Error()
+		return marshalProxyDiagnostic(result)
+	}
+	result.DNSStatus = "success"
+	for _, ip := range ips {
+		result.ResolvedIPs = append(result.ResolvedIPs, ip.String())
+	}
+
+	if result.Network == "tcp" {
+		tcpStarted := time.Now()
+		tcpCtx, tcpCancel := context.WithTimeout(context.Background(), timeout)
+		conn, tcpErr := dialer.DialContext(tcpCtx, "tcp", address)
+		tcpCancel()
+		result.TCPElapsedMs = time.Since(tcpStarted).Milliseconds()
+		if tcpErr != nil {
+			result.TCPStatus = classifyTCPError(tcpErr)
+			result.FailureStage = "tcp"
+			result.Error = tcpErr.Error()
+			return marshalProxyDiagnostic(result)
+		}
+		result.TCPStatus = "success"
+		_ = conn.Close()
+	}
+
+	testURL := params.TestUrl
+	if testURL == "" {
+		testURL = constant.DefaultTestURL
+	}
+	expectedStatus, _ := utils.NewUnsignedRanges[uint16]("")
+	httpStarted := time.Now()
+	httpCtx, httpCancel := context.WithTimeout(context.Background(), timeout)
+	delay, proxyErr := proxy.URLTest(httpCtx, testURL, expectedStatus)
+	httpCancel()
+	result.HTTPElapsedMs = time.Since(httpStarted).Milliseconds()
+	if proxyErr != nil || delay == 0 {
+		result.ProxyStatus = "failed"
+		result.FailureStage = classifyProxyFailure(proxyErr, result.TCPStatus)
+		if result.Network == "udp" && proxyErr != nil && isTimeoutError(proxyErr) {
+			result.FailureStage = "udp"
+		}
+		if proxyErr != nil {
+			result.Error = proxyErr.Error()
+		} else {
+			result.Error = "proxy test returned zero delay"
+		}
+		return marshalProxyDiagnostic(result)
+	}
+	result.ProxyStatus = "success"
+	result.HTTPElapsedMs = int64(delay)
+	return marshalProxyDiagnostic(result)
+}
+
+func isTimeoutError(err error) bool {
+	if err == nil {
+		return false
+	}
+	lower := strings.ToLower(err.Error())
+	return strings.Contains(lower, "timeout") || strings.Contains(lower, "deadline exceeded")
+}
+
+func marshalProxyDiagnostic(result *ProxyDiagnosticResult) string {
+	data, _ := json.Marshal(result)
+	return string(data)
+}
+
+func proxyDiagnosticNetwork(adapterType constant.AdapterType) string {
+	switch adapterType {
+	case constant.Hysteria, constant.Hysteria2, constant.Tuic, constant.WireGuard:
+		return "udp"
+	default:
+		return "tcp"
+	}
+}
+
+func classifyTCPError(err error) string {
+	if err == nil {
+		return "success"
+	}
+	lower := strings.ToLower(err.Error())
+	if strings.Contains(lower, "refused") {
+		return "refused"
+	}
+	if strings.Contains(lower, "unreachable") || strings.Contains(lower, "no route") {
+		return "unreachable"
+	}
+	if strings.Contains(lower, "timeout") || strings.Contains(lower, "deadline exceeded") {
+		return "timeout"
+	}
+	return "failed"
+}
+
+func classifyProxyFailure(err error, tcpStatus string) string {
+	if err == nil {
+		return "http"
+	}
+	lower := strings.ToLower(err.Error())
+	if strings.Contains(lower, "no such host") || strings.Contains(lower, "lookup ") || strings.Contains(lower, "dns") {
+		return "dns"
+	}
+	if strings.Contains(lower, "tls") || strings.Contains(lower, "x509") || strings.Contains(lower, "certificate") {
+		return "tls"
+	}
+	if strings.Contains(lower, "websocket") || strings.Contains(lower, "grpc") || strings.Contains(lower, "authentication") || strings.Contains(lower, "handshake") {
+		return "protocol"
+	}
+	if tcpStatus != "success" && tcpStatus != "skipped" {
+		return "tcp"
+	}
+	if strings.Contains(lower, "http") || strings.Contains(lower, "status") {
+		return "http"
+	}
+	return "protocol"
 }
 
 func handleGetConnections() string {

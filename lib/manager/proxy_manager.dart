@@ -29,12 +29,20 @@ class _ProxyManagerState extends ConsumerState<ProxyManager> {
           "[ProxyManager] >>> Calling startProxy(port=$port, bypass=${proxyState.bassDomain.length} domains)");
       final result = await proxy?.startProxy(port, proxyState.bassDomain);
       commonPrint.log("[ProxyManager] <<< startProxy result: $result");
+      final actualStatus = await proxy?.getSystemProxyStatus();
+      final verified =
+          result == true && actualStatus?.matches('127.0.0.1', port) == true;
+      commonPrint.log(
+        "[ProxyManager] system proxy verify: available=${actualStatus?.available}, "
+        "enabled=${actualStatus?.enabled}, actual=${actualStatus?.host}:${actualStatus?.port}, "
+        "verified=$verified",
+      );
       if (!mounted || updateId != _proxyUpdateId) {
         commonPrint.log(
             "[ProxyManager] ignore stale startProxy result: updateId=$updateId, current=$_proxyUpdateId");
         return;
       }
-      if (result == false) {
+      if (!verified) {
         globalState.showNotifier(
           "${appLocalizations.systemProxy} ${appLocalizations.xboardOperationFailed}",
         );

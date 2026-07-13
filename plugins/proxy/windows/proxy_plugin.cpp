@@ -20,8 +20,93 @@
 #include <flutter/standard_method_codec.h>
 
 #include <memory>
+#include <cwchar>
 #include <sstream>
 #include <string>
+
+struct ProxyStatusData {
+  bool available = false;
+  bool enabled = false;
+  bool consistent = false;
+  std::string host;
+  int port = 0;
+};
+
+bool parseProxyEndpoint(const std::wstring& raw, std::string& host, int& port)
+{
+  auto value = raw;
+  const auto equals = value.find(L'=');
+  if (equals != std::wstring::npos) {
+    value = value.substr(equals + 1);
+  }
+  const auto separator = value.rfind(L':');
+  if (separator == std::wstring::npos) {
+    return false;
+  }
+  try {
+    host = std::string(value.begin(), value.begin() + separator);
+    port = std::stoi(value.substr(separator + 1));
+    return !host.empty() && port > 0;
+  } catch (...) {
+    return false;
+  }
+}
+
+ProxyStatusData getProxyStatus()
+{
+  ProxyStatusData status;
+  INTERNET_PER_CONN_OPTION_LIST list{};
+  INTERNET_PER_CONN_OPTION options[2]{};
+  DWORD size = sizeof(list);
+  list.dwSize = sizeof(list);
+  list.pszConnection = nullptr;
+  list.dwOptionCount = 2;
+  list.pOptions = options;
+  options[0].dwOption = INTERNET_PER_CONN_FLAGS;
+  options[1].dwOption = INTERNET_PER_CONN_PROXY_SERVER;
+
+  if (!InternetQueryOption(
+          nullptr,
+          INTERNET_OPTION_PER_CONNECTION_OPTION,
+          &list,
+          &size)) {
+    return status;
+  }
+
+  status.available = true;
+  status.enabled =
+      (options[0].Value.dwValue & PROXY_TYPE_PROXY) == PROXY_TYPE_PROXY;
+  const auto proxyValue = options[1].Value.pszValue;
+  if (proxyValue == nullptr || wcslen(proxyValue) == 0) {
+    status.consistent = !status.enabled;
+    if (proxyValue != nullptr) GlobalFree(proxyValue);
+    return status;
+  }
+
+  const std::wstring raw(proxyValue);
+  GlobalFree(proxyValue);
+  std::wstringstream stream(raw);
+  std::wstring segment;
+  bool first = true;
+  status.consistent = true;
+  while (std::getline(stream, segment, L';')) {
+    std::string host;
+    int port = 0;
+    if (!parseProxyEndpoint(segment, host, port)) {
+      status.consistent = false;
+      continue;
+    }
+    if (first) {
+      status.host = host;
+      status.port = port;
+      first = false;
+    } else if (status.host != host || status.port != port) {
+      status.consistent = false;
+    }
+  }
+  if (first) status.consistent = false;
+  return status;
+}
 
 bool startProxy(const int port, const flutter::EncodableList& bypassDomain)
 {
@@ -173,6 +258,24 @@ namespace proxy
       auto port = std::get<int>(arguments->at(flutter::EncodableValue("port")));
       auto bypassDomain = std::get<flutter::EncodableList>(arguments->at(flutter::EncodableValue("bypassDomain")));
       result->Success(startProxy(port, bypassDomain));
+    }
+    else if (method_call.method_name().compare("GetProxyStatus") == 0)
+    {
+      const auto status = getProxyStatus();
+      flutter::EncodableMap data;
+      data[flutter::EncodableValue("available")] =
+          flutter::EncodableValue(status.available);
+      data[flutter::EncodableValue("enabled")] =
+          flutter::EncodableValue(status.enabled);
+      data[flutter::EncodableValue("consistent")] =
+          flutter::EncodableValue(status.consistent);
+      data[flutter::EncodableValue("host")] =
+          flutter::EncodableValue(status.host);
+      data[flutter::EncodableValue("port")] =
+          flutter::EncodableValue(status.port);
+      data[flutter::EncodableValue("source")] =
+          flutter::EncodableValue("wininet");
+      result->Success(flutter::EncodableValue(data));
     }
     else
     {

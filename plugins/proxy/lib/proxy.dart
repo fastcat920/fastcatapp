@@ -7,6 +7,52 @@ import 'proxy_platform_interface.dart';
 
 enum ProxyTypes { http, https, socks }
 
+class SystemProxyStatus {
+  const SystemProxyStatus({
+    required this.available,
+    required this.enabled,
+    required this.consistent,
+    this.host,
+    this.port,
+    this.source,
+  });
+
+  const SystemProxyStatus.unavailable()
+      : available = false,
+        enabled = false,
+        consistent = false,
+        host = null,
+        port = null,
+        source = null;
+
+  factory SystemProxyStatus.fromMap(Map<String, dynamic>? map) {
+    if (map == null) return const SystemProxyStatus.unavailable();
+    return SystemProxyStatus(
+      available: map['available'] == true,
+      enabled: map['enabled'] == true,
+      consistent: map['consistent'] != false,
+      host: map['host']?.toString(),
+      port: map['port'] is num ? (map['port'] as num).toInt() : null,
+      source: map['source']?.toString(),
+    );
+  }
+
+  final bool available;
+  final bool enabled;
+  final bool consistent;
+  final String? host;
+  final int? port;
+  final String? source;
+
+  bool matches(String expectedHost, int expectedPort) {
+    return available &&
+        enabled &&
+        consistent &&
+        host == expectedHost &&
+        port == expectedPort;
+  }
+}
+
 class Proxy extends ProxyPlatform {
   static String url = "127.0.0.1";
 
@@ -31,6 +77,130 @@ class Proxy extends ProxyPlatform {
       "windows" => await ProxyPlatform.instance.stopProxy(),
       String() => false,
     };
+  }
+
+  Future<SystemProxyStatus> getSystemProxyStatus() async {
+    try {
+      final data = switch (Platform.operatingSystem) {
+        "macos" => await _getMacosProxyStatus(),
+        "linux" => await _getLinuxProxyStatus(),
+        "windows" => await ProxyPlatform.instance.getProxyStatus(),
+        String() => null,
+      };
+      return SystemProxyStatus.fromMap(data);
+    } catch (error) {
+      debugPrint("[Proxy] read status failed: $error");
+      return const SystemProxyStatus.unavailable();
+    }
+  }
+
+  Future<Map<String, dynamic>> _getLinuxProxyStatus() async {
+    final desktop = Platform.environment['XDG_CURRENT_DESKTOP'];
+    final isKDE = desktop?.toLowerCase().contains("kde") == true;
+    if (isKDE) {
+      final homeDir = Platform.environment['HOME'];
+      if (homeDir == null) return _unavailableStatus("kde");
+      final configDir = join(homeDir, ".config");
+      final readCommand = await _resolveLinuxCommand(
+        ["kreadconfig6", "kreadconfig5"],
+      );
+      final proxyType =
+          await _readKdeProxyValue(configDir, readCommand, "ProxyType");
+      if (proxyType == null) return _unavailableStatus("kde");
+      final raw = await _readKdeProxyValue(
+        configDir,
+        readCommand,
+        "httpProxy",
+      );
+      final endpoint = _parseProxyEndpoint(raw);
+      return {
+        'available': true,
+        'enabled': proxyType == "1",
+        'consistent': endpoint != null || proxyType != "1",
+        'host': endpoint?.$1,
+        'port': endpoint?.$2,
+        'source': 'kde',
+      };
+    }
+
+    final mode = await _readGSettingsValue([
+      "gsettings",
+      "get",
+      "org.gnome.system.proxy",
+      "mode",
+    ]);
+    if (mode == null) return _unavailableStatus("gnome");
+    final states = <(String?, int?)>[];
+    for (final type in ProxyTypes.values) {
+      final schema = "org.gnome.system.proxy.${type.name}";
+      final host = await _readGSettingsValue(
+        ["gsettings", "get", schema, "host"],
+      );
+      final port = int.tryParse(
+        await _readGSettingsValue(
+              ["gsettings", "get", schema, "port"],
+            ) ??
+            "",
+      );
+      states.add((host, port));
+    }
+    final first = states.first;
+    return {
+      'available': true,
+      'enabled': mode == "manual",
+      'consistent': states.every((item) => item == first),
+      'host': first.$1,
+      'port': first.$2,
+      'source': 'gnome',
+    };
+  }
+
+  Future<Map<String, dynamic>> _getMacosProxyStatus() async {
+    final services = await _getNetworkDeviceListWithMacos();
+    if (services.isEmpty) return _unavailableStatus("macos");
+    final primaryService = await _getMacosPrimaryNetworkService(services);
+    final service = primaryService ?? services.first;
+    final states = await Future.wait([
+      _getMacosProxyState("-getwebproxy", service),
+      _getMacosProxyState("-getsecurewebproxy", service),
+      _getMacosProxyState("-getsocksfirewallproxy", service),
+    ]);
+    if (states.any((state) => !state.available)) {
+      return _unavailableStatus("macos:$service");
+    }
+    final selected = states.firstWhere(
+      (state) => state.enabled,
+      orElse: () => states.first,
+    );
+    final consistent = states.every(
+      (state) =>
+          state.enabled == selected.enabled &&
+          (!state.enabled ||
+              (state.server == selected.server && state.port == selected.port)),
+    );
+    return {
+      'available': true,
+      'enabled': states.any((state) => state.enabled),
+      'consistent': consistent,
+      'host': selected.server,
+      'port': selected.port,
+      'source': 'macos:$service',
+    };
+  }
+
+  Map<String, dynamic> _unavailableStatus(String source) => {
+        'available': false,
+        'enabled': false,
+        'consistent': false,
+        'source': source,
+      };
+
+  (String, int)? _parseProxyEndpoint(String? raw) {
+    if (raw == null || raw.trim().isEmpty) return null;
+    final value = raw.trim();
+    final uri = Uri.tryParse(value.contains('://') ? value : 'http://$value');
+    if (uri == null || uri.host.isEmpty || !uri.hasPort) return null;
+    return (uri.host, uri.port);
   }
 
   Future<bool> _startProxyWithLinux(int port, List<String> bypassDomain) async {
@@ -639,11 +809,13 @@ class Proxy extends ProxyPlatform {
 }
 
 class _MacosProxyState {
+  final bool available;
   final bool enabled;
   final String? server;
   final int? port;
 
   const _MacosProxyState({
+    this.available = false,
     this.enabled = false,
     this.server,
     this.port,
@@ -661,6 +833,7 @@ class _MacosProxyState {
     }
     final enabledValue = values["enabled"]?.toLowerCase();
     return _MacosProxyState(
+      available: values.isNotEmpty,
       enabled:
           enabledValue == "yes" || enabledValue == "on" || enabledValue == "1",
       server: values["server"],

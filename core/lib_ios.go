@@ -207,6 +207,8 @@ func ClashCore_invoke(method *C.char, data *C.char) *C.char {
 			handleAsyncTestDelay(dataStr, func(value string) {
 				ch <- value
 			})
+		case diagnoseProxyMethod:
+			ch <- handleDiagnoseProxy(dataStr)
 		case getConnectionsMethod:
 			ch <- handleGetConnections()
 		case closeConnectionsMethod:

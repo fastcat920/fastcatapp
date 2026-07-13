@@ -1,29 +1,82 @@
 import 'dart:io';
 
+import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:fl_clash/common/common.dart';
+import 'package:fl_clash/enum/enum.dart';
+import 'package:fl_clash/l10n/l10n.dart';
 import 'package:fl_clash/models/models.dart';
 import 'package:fl_clash/providers/providers.dart';
 import 'package:fl_clash/state.dart';
+import 'package:fl_clash/xboard/adapter/initialization/sdk_provider.dart';
 import 'package:fl_clash/xboard/config/gateway_config.dart';
-import 'package:fl_clash/xboard/config/xboard_config.dart';
-import 'package:fl_clash/xboard/domain/domain.dart';
 import 'package:fl_clash/xboard/features/auth/providers/xboard_user_provider.dart';
-import 'package:fl_clash/xboard/features/auth/services/device_heartbeat_service.dart';
+import 'package:fl_clash/xboard/features/diagnostics/services/network_diagnostic_snapshot.dart';
 import 'package:fl_clash/xboard/features/initialization/initialization.dart';
 import 'package:fl_clash/xboard/features/profile/providers/profile_import_provider.dart';
+import 'package:fl_clash/xboard/features/subscription/services/subscription_status_service.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_xboard_sdk/flutter_xboard_sdk.dart';
+
+final deviceHealthSummaryProvider =
+    FutureProvider.autoDispose<DeviceHealthSummary>((ref) async {
+  final sdk = await ref.read(xboardSdkProvider.future);
+  final token = await sdk.getToken();
+  if (token == null || token.isEmpty || !token.contains('dg_')) {
+    throw Exception('device gateway session unavailable');
+  }
+  final headers = <String, String>{'Authorization': token};
+
+  try {
+    await sdk.httpService.postRequest(
+      '/user/devices/heartbeat',
+      <String, dynamic>{},
+      headers: headers,
+    );
+  } catch (_) {}
+
+  final response = await sdk.httpService.getRequest(
+    '/user/devices',
+    headers: headers,
+  );
+  final data = _mapOf(response['data']);
+  return DeviceHealthSummary(
+    activeCount: _intFromAny(data?['active_count']),
+    deviceLimit: _intFromAnyOrNull(data?['device_limit']),
+  );
+});
+
+class DeviceHealthSummary {
+  const DeviceHealthSummary({
+    required this.activeCount,
+    required this.deviceLimit,
+  });
+
+  final int activeCount;
+  final int? deviceLimit;
+
+  String deviceLimitText(AppLocalizations l10n) {
+    if (deviceLimit == null || deviceLimit == 0) {
+      return l10n.xboardDeviceUnlimited;
+    }
+    return '$deviceLimit';
+  }
+}
 
 class DiagnosticBundleService {
   const DiagnosticBundleService._();
 
-  static Future<String> build(WidgetRef ref) async {
-    final buffer = StringBuffer();
-    final packageInfo = globalState.packageInfo;
+  static Future<String> buildReport(
+    BuildContext context,
+    WidgetRef ref,
+    AppLocalizations l10n,
+  ) async {
     final initState = ref.read(initializationProvider);
     final userState = ref.read(xboardUserProvider);
     final subscription =
         ref.read(subscriptionInfoProvider) ?? userState.subscriptionInfo;
+    final profileInfo = ref.read(currentProfileProvider)?.subscriptionInfo;
     final importState = ref.read(profileImportProvider);
     final groups = ref.read(groupsProvider);
     final patchConfig = ref.read(patchClashConfigProvider);
@@ -31,131 +84,466 @@ class DiagnosticBundleService {
     final overrideDns = ref.read(overrideDnsProvider);
     final realTunEnable = ref.read(realTunEnableProvider);
     final proxyState = ref.read(proxyStateProvider);
-    final mode = ref.read(
-      patchClashConfigProvider.select((state) => state.mode),
-    );
+    final gatewayRuntime = GatewayRuntimeService.instance
+      ..syncFromCurrentConfig();
+    final activeGateway = gatewayRuntime.activeConfig;
+    final currentProxy = _resolveCurrentProxy(ref);
+    final latestGatewayEvent = gatewayRuntime.recentEvents.isNotEmpty
+        ? gatewayRuntime.recentEvents.last.message
+        : null;
+    final businessApiLabel = _resolveBusinessApiLabel(activeGateway);
+    final coreRunning = globalState.appState.runTime != null;
+    final vpnConnected = globalState.isStart;
+    final gatewayOk = activeGateway != null && initState.isReady;
+    final nodeCount = _countNodes(groups);
+    final nodesOk = currentProxy != null && !importState.isImporting;
+    final subscriptionStatus = userState.isAuthenticated
+        ? subscriptionStatusService.checkSubscriptionStatus(
+            userState: userState,
+            profileSubscriptionInfo: profileInfo,
+          )
+        : null;
+    final subscriptionOk = subscriptionStatus == null
+        ? subscription != null
+        : subscriptionStatus.type == SubscriptionStatusType.valid;
+    final subscriptionValue = subscriptionStatus?.getMessage(context) ??
+        (subscription == null
+            ? l10n.xboardNoAvailableSubscription
+            : l10n.xboardHealthy);
+    final subscriptionDetail = subscriptionStatus?.getDetailMessage(context);
+    final tunPending = patchConfig.tun.enable && !realTunEnable;
+    final actualProxy = system.isDesktop && proxy != null
+        ? await proxy!.getSystemProxyStatus()
+        : null;
+    final localProxyListening = coreRunning && system.isDesktop
+        ? await _probeLocalProxy(proxyState.port)
+        : false;
+    final systemProxyRequired =
+        system.isDesktop && coreRunning && !realTunEnable;
+    final actualProxyOk = !systemProxyRequired ||
+        (networkProps.systemProxy &&
+            localProxyListening &&
+            actualProxy?.matches('127.0.0.1', proxyState.port) == true);
+    DeviceHealthSummary? deviceSummary;
+    try {
+      deviceSummary = await ref.read(deviceHealthSummaryProvider.future);
+    } catch (_) {}
     final helperStatus =
         Platform.isWindows ? await request.getHelperRuntimeStatus() : null;
-    final gatewayRuntime = GatewayRuntimeService.instance;
-    gatewayRuntime.syncFromCurrentConfig();
-    final activeGateway = gatewayRuntime.activeConfig;
-    final logs = globalState.appState.logs.list.reversed.take(30).toList();
+    final snapshot = NetworkDiagnosticSnapshotStore.latest;
+    final networkType =
+        snapshot?.networkType ?? await _resolveNetworkType(l10n);
+
+    final problems = <String>[
+      if (!coreRunning) l10n.xboardDiagnosticIssueCore,
+      if (!gatewayOk) l10n.xboardDiagnosticIssueGateway,
+      if (!subscriptionOk) l10n.xboardSubscriptionHealth,
+      if (!nodesOk) l10n.xboardDiagnosticIssueNodes,
+      if (!actualProxyOk) l10n.xboardDiagnosticIssueProxy,
+    ];
+    final overall = problems.isNotEmpty
+        ? l10n.xboardDiagnosticOverallAbnormal
+        : tunPending
+            ? l10n.xboardDiagnosticOverallAttention
+            : snapshot == null
+                ? l10n.xboardDiagnosticOverallServiceHealthy
+                : l10n.xboardDiagnosticOverallHealthy;
+
+    final buffer = StringBuffer()
+      ..writeln('=== ${l10n.xboardDiagnosticSummaryTitle} ===')
+      ..writeln('${l10n.xboardNetworkDiagnosticsTime}: ${_fmt(DateTime.now())}')
+      ..writeln('${l10n.xboardDiagnosticPlatform}: ${_platformLabel()}')
+      ..writeln('${l10n.xboardNetworkDiagnosticsNetworkType}: $networkType')
+      ..writeln(
+        '${l10n.xboardNetworkDiagnosticsVpnStatus}: '
+        '${vpnConnected ? l10n.xboardNetworkDiagnosticsConnected : l10n.xboardNetworkDiagnosticsDisconnected}',
+      )
+      ..writeln()
+      ..writeln('${l10n.xboardDiagnosticOverall}: $overall');
+
+    _writeSection(buffer, l10n.xboardDiagnosticBusinessServices, [
+      _ReportItem(
+        initState.isReady,
+        l10n.xboardServerStatus,
+        initState.isReady
+            ? l10n.xboardHealthy
+            : initState.currentStepDescription ??
+                initState.errorMessage ??
+                l10n.xboardNeedsAttention,
+        details: [
+          if (businessApiLabel.isNotEmpty)
+            '${l10n.xboardCurrentBusinessApi}: $businessApiLabel',
+        ],
+      ),
+      _ReportItem(
+        gatewayOk,
+        l10n.xboardGatewayStatus,
+        activeGateway == null
+            ? l10n.xboardNoGatewayActive
+            : '${l10n.xboardCurrentGateway}: '
+                '${gatewayDisplayLabel(activeGateway.baseUrl)}',
+        details: [
+          l10n.xboardGatewayCandidateCount(gatewayRuntime.candidates.length),
+          if (latestGatewayEvent != null)
+            '${l10n.xboardHealthLastEvent}: '
+                '${SensitiveMasker.maskText(latestGatewayEvent)}',
+        ],
+      ),
+      _ReportItem(
+        subscriptionOk,
+        l10n.xboardSubscriptionHealth,
+        subscriptionValue,
+        details: [
+          if (subscriptionDetail != null) subscriptionDetail,
+          if (importState.message?.trim().isNotEmpty == true)
+            l10n.xboardHealthSubscriptionImport(importState.message!),
+        ],
+      ),
+      _ReportItem(
+        deviceSummary != null,
+        l10n.xboardDeviceHealth,
+        l10n.xboardDeviceSummary(
+          deviceSummary?.activeCount ?? '-',
+          deviceSummary?.deviceLimitText(l10n) ??
+              _deviceLimitText(subscription?.deviceLimit, l10n),
+        ),
+      ),
+    ]);
+
+    _writeSection(buffer, l10n.xboardDiagnosticProxyAndSystem, [
+      _ReportItem(
+        nodesOk,
+        l10n.xboardNodeHealth,
+        importState.isImporting
+            ? l10n.xboardImportingSubscription
+            : currentProxy == null
+                ? l10n.xboardNoAvailableNodes
+                : '${l10n.xboardCurrentNode}: ${currentProxy.name}',
+        details: [l10n.xboardNodeCount(nodeCount)],
+      ),
+      if (Platform.isWindows)
+        _ReportItem(
+          helperStatus?.tokenMatches == true,
+          l10n.xboardHealthHelper,
+          helperStatus?.tokenMatches == true
+              ? l10n.xboardHealthHelperAvailable
+              : l10n.xboardHealthHelperUnavailable,
+          details: [
+            if (helperStatus?.version != null)
+              'Version: ${helperStatus?.version}',
+          ],
+        ),
+      _ReportItem(
+        coreRunning,
+        l10n.core,
+        coreRunning ? l10n.xboardHealthCoreRunning : l10n.notConnected,
+        details: [
+          globalState.coreSwitchStatusNotifier.value.localizedLabel(l10n),
+        ],
+      ),
+      _ReportItem(
+        !tunPending,
+        l10n.action_tun,
+        realTunEnable
+            ? l10n.xboardHealthTunApplied
+            : patchConfig.tun.enable
+                ? l10n.xboardHealthTunPending
+                : l10n.xboardHealthDisabled,
+        warning: tunPending,
+        details: [
+          'stack=${patchConfig.tun.stack.name}, '
+              'route=${networkProps.routeMode.name}',
+        ],
+      ),
+      _ReportItem(
+        true,
+        l10n.xboardHealthDns,
+        overrideDns ? l10n.xboardHealthDnsCustom : l10n.xboardHealthDnsDefault,
+        details: [
+          'autoSetSystemDns=${networkProps.autoSetSystemDns}',
+        ],
+      ),
+      if (system.isDesktop)
+        _ReportItem(
+          localProxyListening,
+          l10n.xboardProxyLocalPort,
+          '127.0.0.1:${proxyState.port} · '
+          '${localProxyListening ? l10n.xboardProxyListening : l10n.xboardProxyNotListening}',
+          details: [
+            '${l10n.xboardProxyExpectedAddress}: '
+                '127.0.0.1:${proxyState.port}',
+          ],
+        ),
+      if (system.isDesktop)
+        _ReportItem(
+          actualProxyOk,
+          l10n.xboardProxyActualAddress,
+          actualProxy?.available == true
+              ? '${actualProxy?.host ?? '-'}:${actualProxy?.port ?? '-'} · '
+                  '${actualProxy?.enabled == true ? l10n.xboardHealthEnabled : l10n.xboardHealthDisabled}'
+              : l10n.xboardProxyStatusReadFailed,
+          details: [
+            if (actualProxy?.source?.isNotEmpty == true)
+              '${l10n.xboardProxyStatusSource}: ${actualProxy?.source}',
+          ],
+        ),
+      if (system.isDesktop)
+        _ReportItem(
+          !systemProxyRequired || networkProps.systemProxy,
+          l10n.xboardProxyClientSetting,
+          networkProps.systemProxy
+              ? l10n.xboardHealthEnabled
+              : l10n.xboardHealthDisabled,
+        ),
+    ]);
 
     buffer
-      ..writeln('Fastcat Diagnostic Bundle')
-      ..writeln('Generated: ${_fmt(DateTime.now())}')
-      ..writeln('')
-      ..writeln('[App]')
-      ..writeln('Name: ${packageInfo.appName}')
-      ..writeln('Package: ${packageInfo.packageName}')
-      ..writeln('Version: ${packageInfo.version}+${packageInfo.buildNumber}')
-      ..writeln(
-          'Platform: ${Platform.operatingSystem} ${Platform.operatingSystemVersion}')
-      ..writeln('UA: ${globalState.ua}')
-      ..writeln('')
-      ..writeln('[Runtime]')
-      ..writeln('Mode: ${mode.name}')
-      ..writeln('Connected: ${globalState.appState.runTime != null}')
-      ..writeln('Groups: ${groups.length}')
-      ..writeln('Nodes: ${_countNodes(groups)}')
-      ..writeln('Importing subscription: ${importState.isImporting}')
-      ..writeln(
-          'Switch stage: ${globalState.coreSwitchStatusNotifier.value.label}')
-      ..writeln('')
-      ..writeln('[Core/TUN]')
-      ..writeln('Core connected: ${globalState.appState.runTime != null}')
-      ..writeln('Configured TUN: ${patchConfig.tun.enable}')
-      ..writeln('Real TUN: $realTunEnable')
-      ..writeln('TUN stack: ${patchConfig.tun.stack.name}')
-      ..writeln('Route mode: ${networkProps.routeMode.name}')
-      ..writeln('')
-      ..writeln('[DNS/System Proxy]')
-      ..writeln('Override DNS: $overrideDns')
-      ..writeln('Auto set system DNS: ${networkProps.autoSetSystemDns}')
-      ..writeln('System proxy enabled: ${networkProps.systemProxy}')
-      ..writeln('System proxy running: ${proxyState.isStart}')
-      ..writeln('System proxy port: ${proxyState.port}')
-      ..writeln('')
-      ..writeln('[Windows Helper]')
-      ..writeln('Available: ${helperStatus?.tokenMatches == true}')
-      ..writeln('Version: ${helperStatus?.version ?? '-'}')
-      ..writeln(
-          'Helper path: ${SensitiveMasker.maskText(helperStatus?.helperPath ?? '-')}')
-      ..writeln(
-          'Service path matches: ${helperStatus?.servicePathMatches ?? '-'}')
-      ..writeln('Core running: ${helperStatus?.coreRunning ?? '-'}')
-      ..writeln('Core pid: ${helperStatus?.corePid ?? '-'}')
-      ..writeln(
-          'Recent stderr: ${helperStatus?.recentLogs.take(3).join(' | ') ?? '-'}')
-      ..writeln('')
-      ..writeln('[Initialization]')
-      ..writeln('Status: ${initState.status.name}')
-      ..writeln('Domain: ${_maskEndpoint(initState.currentDomain)}')
-      ..writeln('Step: ${initState.currentStepDescription ?? '-'}')
-      ..writeln(
-          'Error: ${SensitiveMasker.maskText(initState.errorMessage ?? '-')}')
-      ..writeln('')
-      ..writeln('[Gateway]')
-      ..writeln(
-          'Active: ${activeGateway == null ? '-' : '${gatewayDisplayLabel(activeGateway.baseUrl)}${activeGateway.apiPrefix}'}')
-      ..writeln(
-          'Config version: ${XBoardConfig.configVersion.isEmpty ? '-' : XBoardConfig.configVersion}')
-      ..writeln('Candidates: ${gatewayRuntime.candidates.length}');
+      ..writeln()
+      ..writeln('[${l10n.xboardDiagnosticLatestNetwork}]');
+    if (snapshot == null) {
+      buffer.writeln('- ${l10n.xboardDiagnosticNetworkNotRun}');
+    } else {
+      _writeNetworkSummary(buffer, snapshot, l10n);
+    }
 
-    for (final candidate in gatewayRuntime.candidates.take(8)) {
-      buffer.writeln(
-        '- ${gatewayDisplayLabel(candidate.baseUrl)}${candidate.apiPrefix} '
-        '| ${candidate.verificationStatus.name} '
-        '| source=${candidate.source} '
-        '| http=${candidate.lastVerificationStatusCode ?? '-'} '
-        '| failures=${candidate.failureCount}',
+    buffer
+      ..writeln()
+      ..writeln('[${l10n.xboardDiagnosticSuggestion}]')
+      ..writeln(
+        problems.isNotEmpty
+            ? l10n.xboardDiagnosticSuggestionRepair
+            : tunPending
+                ? l10n.xboardDiagnosticSuggestionTun
+                : snapshot == null
+                    ? l10n.xboardDiagnosticSuggestionRunNetwork
+                    : l10n.xboardDiagnosticSuggestionNone,
       );
-    }
-
-    buffer
-      ..writeln('')
-      ..writeln('[Account]')
-      ..writeln('Authenticated: ${userState.isAuthenticated}')
-      ..writeln(
-          'Email: ${_maskEmail(userState.email ?? subscription?.email ?? '')}')
-      ..writeln('Plan ID: ${subscription?.planId ?? '-'}')
-      ..writeln(
-          'Expire: ${subscription?.expiredAt == null ? '-' : _fmt(subscription!.expiredAt!)}')
-      ..writeln(
-          'Transfer: ${subscription == null ? '-' : '${subscription.totalUsedBytes}/${subscription.transferLimit}'}')
-      ..writeln('Device limit: ${subscription?.deviceLimit ?? '-'}')
-      ..writeln('')
-      ..writeln('[Device Session]')
-      ..writeln(
-          'Heartbeat in flight: ${XBoardDeviceHeartbeatService.isInFlight}')
-      ..writeln(
-          'Last attempt: ${_fmtNullable(XBoardDeviceHeartbeatService.lastAttemptAt)}')
-      ..writeln(
-          'Last success: ${_fmtNullable(XBoardDeviceHeartbeatService.lastSuccessAt)}')
-      ..writeln(
-          'Last reason: ${XBoardDeviceHeartbeatService.lastReason ?? '-'}')
-      ..writeln('')
-      ..writeln('[Recent Gateway Events]');
-
-    for (final event in gatewayRuntime.recentEvents.reversed.take(12)) {
-      buffer.writeln(
-          '- ${_fmt(event.timestamp)} | ${event.type.name} | ${event.message}');
-    }
-
-    buffer
-      ..writeln('')
-      ..writeln('[Recent Logs]');
-    for (final log in logs) {
-      buffer.writeln(
-          '- ${log.dateTime} | ${log.logLevel.name} | ${SensitiveMasker.maskText(log.payload)}');
-    }
-
     return buffer.toString();
   }
 
-  static Future<void> copy(WidgetRef ref) async {
-    final text = await build(ref);
+  static String buildNetworkReport(
+    NetworkDiagnosticSnapshot snapshot,
+    AppLocalizations l10n,
+  ) {
+    final buffer = StringBuffer()
+      ..writeln('=== ${l10n.xboardNetworkDiagnosticsReportTitle} ===')
+      ..writeln(
+        '${l10n.xboardNetworkDiagnosticsTime}: '
+        '${snapshot.generatedAt.toIso8601String()}',
+      )
+      ..writeln('${l10n.xboardNetworkDiagnosticsDomain}: [redacted-domain]')
+      ..writeln(
+        '${l10n.xboardNetworkDiagnosticsNetworkType}: ${snapshot.networkType}',
+      )
+      ..writeln('vpn_connected: ${snapshot.vpnConnected}')
+      ..writeln();
+    _writeNetworkSummary(
+      buffer,
+      snapshot,
+      l10n,
+      includeSnapshotTime: false,
+    );
+    return buffer.toString();
+  }
+
+  static Future<void> copyReport(
+    BuildContext context,
+    WidgetRef ref,
+    AppLocalizations l10n,
+  ) async {
+    final text = await buildReport(context, ref, l10n);
     await Clipboard.setData(ClipboardData(text: text));
+  }
+
+  static void _writeNetworkSummary(
+    StringBuffer buffer,
+    NetworkDiagnosticSnapshot snapshot,
+    AppLocalizations l10n, {
+    bool includeSnapshotTime = true,
+  }) {
+    if (includeSnapshotTime) {
+      buffer.writeln(
+        '${l10n.xboardDiagnosticNetworkSnapshotTime}: '
+        '${_fmt(snapshot.generatedAt)}',
+      );
+    }
+    buffer
+      ..writeln(
+        '${l10n.xboardNetworkDiagnosticsVpnStatus}: ${snapshot.vpnStatus}',
+      )
+      ..writeln(
+        '${l10n.xboardNetworkDiagnosticsNode}: '
+        '${snapshot.nodeAvailable ? '[redacted-node]' : '-'}',
+      )
+      ..writeln(
+        '${l10n.xboardNetworkDiagnosticsConclusion}: ${snapshot.conclusion}',
+      );
+    _writeNetworkItems(
+      buffer,
+      l10n.xboardNetworkDiagnosticsDns,
+      snapshot.dnsResults,
+    );
+    _writeNetworkItems(
+      buffer,
+      l10n.xboardNetworkDiagnosticsIpConnectivity,
+      snapshot.ipResults,
+    );
+    if (snapshot.nodeResult.isNotEmpty) {
+      _writeNetworkItems(
+        buffer,
+        l10n.xboardNetworkDiagnosticsNodeLayers,
+        snapshot.nodeLayerResults,
+      );
+      buffer
+        ..writeln(
+          '  diagnostic_status: '
+          '${snapshot.nodeResult['diagnostic-status'] ?? 'legacy'}',
+        )
+        ..writeln('  target_port: ${snapshot.nodeResult['port'] ?? '-'}')
+        ..writeln('  transport: ${snapshot.nodeResult['network'] ?? '-'}')
+        ..writeln('  proxy_type: ${snapshot.nodeResult['proxy-type'] ?? '-'}')
+        ..writeln(
+          '  failure_stage: ${snapshot.nodeResult['failure-stage'] ?? '-'}',
+        )
+        ..writeln('  tcp_status: ${snapshot.nodeResult['tcp-status'] ?? '-'}')
+        ..writeln(
+          '  error: ${_maskNetworkValue(snapshot.nodeResult['error']?.toString() ?? '-')}',
+        );
+    }
+    _writeNetworkItems(
+      buffer,
+      l10n.xboardNetworkDiagnosticsDirectHttps,
+      snapshot.directResults,
+    );
+    _writeNetworkItems(
+      buffer,
+      l10n.xboardNetworkDiagnosticsProxyHttps,
+      snapshot.proxyResults,
+    );
+  }
+
+  static void _writeSection(
+    StringBuffer buffer,
+    String title,
+    List<_ReportItem> items,
+  ) {
+    buffer
+      ..writeln()
+      ..writeln('[$title]');
+    for (final item in items) {
+      final marker = item.warning
+          ? '⚠'
+          : item.ok
+              ? '✓'
+              : '✗';
+      buffer.writeln('$marker ${item.label}: ${item.value}');
+      for (final detail in item.details.where((item) => item.isNotEmpty)) {
+        buffer.writeln('  $detail');
+      }
+    }
+  }
+
+  static void _writeNetworkItems(
+    StringBuffer buffer,
+    String title,
+    List<NetworkDiagnosticItem> items,
+  ) {
+    buffer
+      ..writeln()
+      ..writeln('$title:');
+    if (items.isEmpty) {
+      buffer.writeln('  -');
+      return;
+    }
+    for (final item in items) {
+      buffer.writeln(
+        '  ${item.marker} ${item.label}: '
+        '${_maskNetworkValue(item.detail)} (${item.elapsedMs}ms)',
+      );
+    }
+  }
+
+  static String _maskNetworkValue(String value) {
+    final ipv4Masked = value.replaceAll(
+      RegExp(r'\b(?:\d{1,3}\.){3}\d{1,3}\b'),
+      '[redacted-ip]',
+    );
+    return ipv4Masked.replaceAllMapped(
+      RegExp(r'[0-9a-fA-F:]{2,}'),
+      (match) {
+        final candidate = match.group(0)!;
+        final address = InternetAddress.tryParse(candidate);
+        return address?.type == InternetAddressType.IPv6
+            ? '[redacted-ipv6]'
+            : candidate;
+      },
+    );
+  }
+
+  static Future<String> _resolveNetworkType(AppLocalizations l10n) async {
+    try {
+      final results = await Connectivity().checkConnectivity();
+      if (results.isEmpty || results.contains(ConnectivityResult.none)) {
+        return l10n.xboardNetworkDiagnosticsNetworkNone;
+      }
+      return results.map((result) {
+        switch (result) {
+          case ConnectivityResult.wifi:
+            return 'Wi-Fi';
+          case ConnectivityResult.mobile:
+            return l10n.xboardNetworkDiagnosticsNetworkMobile;
+          case ConnectivityResult.ethernet:
+            return l10n.xboardNetworkDiagnosticsNetworkEthernet;
+          case ConnectivityResult.vpn:
+            return 'VPN';
+          case ConnectivityResult.bluetooth:
+            return 'Bluetooth';
+          case ConnectivityResult.other:
+          case ConnectivityResult.satellite:
+            return l10n.xboardNetworkDiagnosticsNetworkOther;
+          case ConnectivityResult.none:
+            return l10n.xboardNetworkDiagnosticsNetworkNone;
+        }
+      }).join(' + ');
+    } catch (_) {
+      return l10n.xboardNetworkDiagnosticsUnavailable;
+    }
+  }
+
+  static Proxy? _resolveCurrentProxy(WidgetRef ref) {
+    final groups = ref.read(groupsProvider);
+    if (groups.isEmpty) return null;
+    final selectedMap = ref.read(selectedMapProvider);
+    final mode = ref.read(
+      patchClashConfigProvider.select((state) => state.mode),
+    );
+
+    final group = mode == Mode.global
+        ? groups.firstWhere(
+            (item) => item.name == GroupName.GLOBAL.name,
+            orElse: () => groups.first,
+          )
+        : groups.firstWhere(
+            (item) => item.hidden != true && item.name != GroupName.GLOBAL.name,
+            orElse: () => groups.first,
+          );
+    if (group.all.isEmpty) return null;
+    final selectedName = selectedMap[group.name] ?? group.now ?? '';
+    if (selectedName.isEmpty) return group.all.first;
+    return group.all.firstWhere(
+      (proxy) => proxy.name == selectedName,
+      orElse: () => group.all.first,
+    );
+  }
+
+  static String _resolveBusinessApiLabel(GatewayEndpointConfig? fallback) {
+    final sdk = XBoardSDK.instance;
+    if (sdk.isInitialized) {
+      final baseUrl = sdk.httpService.baseUrl.trim();
+      if (baseUrl.isNotEmpty) return gatewayDisplayLabel(baseUrl);
+    }
+    if (fallback == null) return '';
+    return gatewayDisplayLabel(fallback.baseUrl);
   }
 
   static int _countNodes(List<Group> groups) {
@@ -168,13 +556,39 @@ class DiagnosticBundleService {
     return names.length;
   }
 
-  static String _fmtNullable(DateTime? value) =>
-      value == null ? '-' : _fmt(value);
+  static String _deviceLimitText(
+    int? deviceLimit,
+    AppLocalizations l10n,
+  ) {
+    if (deviceLimit == null || deviceLimit == 0) {
+      return l10n.xboardDeviceUnlimited;
+    }
+    return '$deviceLimit';
+  }
 
-  static String _maskEndpoint(String? value) {
-    final endpoint = value?.trim();
-    if (endpoint == null || endpoint.isEmpty) return '-';
-    return gatewayDisplayLabel(endpoint);
+  static String _platformLabel() {
+    if (Platform.isMacOS) return 'macOS';
+    if (Platform.isWindows) return 'Windows';
+    if (Platform.isLinux) return 'Linux';
+    if (Platform.isAndroid) return 'Android';
+    if (Platform.isIOS) return 'iOS';
+    return Platform.operatingSystem;
+  }
+
+  static Future<bool> _probeLocalProxy(int port) async {
+    Socket? socket;
+    try {
+      socket = await Socket.connect(
+        InternetAddress.loopbackIPv4,
+        port,
+        timeout: const Duration(milliseconds: 800),
+      );
+      return true;
+    } catch (_) {
+      return false;
+    } finally {
+      socket?.destroy();
+    }
   }
 
   static String _fmt(DateTime value) {
@@ -183,15 +597,43 @@ class DiagnosticBundleService {
     return '${local.year}-${two(local.month)}-${two(local.day)} '
         '${two(local.hour)}:${two(local.minute)}:${two(local.second)}';
   }
+}
 
-  static String _maskEmail(String email) {
-    if (email.isEmpty || !email.contains('@')) return '-';
-    final parts = email.split('@');
-    final name = parts.first;
-    final domain = parts.skip(1).join('@');
-    final masked = name.length <= 2
-        ? '${name[0]}*'
-        : '${name[0]}***${name[name.length - 1]}';
-    return '$masked@$domain';
+class _ReportItem {
+  const _ReportItem(
+    this.ok,
+    this.label,
+    this.value, {
+    this.warning = false,
+    this.details = const [],
+  });
+
+  final bool ok;
+  final String label;
+  final String value;
+  final bool warning;
+  final List<String> details;
+}
+
+Map<String, dynamic>? _mapOf(dynamic value) {
+  if (value is Map<String, dynamic>) return value;
+  if (value is Map) {
+    return value.map((key, value) => MapEntry(key.toString(), value));
   }
+  return null;
+}
+
+int _intFromAny(dynamic value) {
+  if (value is int) return value;
+  if (value is num) return value.toInt();
+  if (value is String) return int.tryParse(value) ?? 0;
+  return 0;
+}
+
+int? _intFromAnyOrNull(dynamic value) {
+  if (value == null) return null;
+  if (value is int) return value;
+  if (value is num) return value.toInt();
+  if (value is String) return int.tryParse(value);
+  return null;
 }

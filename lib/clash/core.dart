@@ -140,6 +140,14 @@ class ClashCore {
         .toList();
   }
 
+  Future<Map<String, dynamic>> diagnoseProxy(
+    String url,
+    String proxyName,
+  ) async {
+    final data = await clashInterface.diagnoseProxy(url, proxyName);
+    return Map<String, dynamic>.from(json.decode(data) as Map);
+  }
+
   FutureOr<String> changeProxy(ChangeProxyParams changeProxyParams) async {
     return await clashInterface.changeProxy(changeProxyParams);
   }

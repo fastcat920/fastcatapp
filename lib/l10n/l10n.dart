@@ -5490,7 +5490,7 @@ class AppLocalizations {
     );
   }
 
-  /// `Plan traffic has been used up, please purchase more traffic or upgrade plan`
+  /// `Plan traffic has been used up, please reset traffic or change plan`
   String get subscriptionTrafficExhaustedDetail {
     return Intl.message(
       'Plan traffic has been used up, please reset traffic or change plan',
@@ -10000,6 +10000,1256 @@ class AppLocalizations {
     return Intl.message(
       'Clear cache and restart',
       name: 'clearCacheAndRestart',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Diagnostics center`
+  String get xboardDiagnosticsCenter {
+    return Intl.message(
+      'Diagnostics center',
+      name: 'xboardDiagnosticsCenter',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Check service status, proxy configuration, and network connectivity`
+  String get xboardDiagnosticsCenterSubtitle {
+    return Intl.message(
+      'Check service status, proxy configuration, and network connectivity',
+      name: 'xboardDiagnosticsCenterSubtitle',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Service status`
+  String get xboardDiagnosticServiceStatus {
+    return Intl.message(
+      'Service status',
+      name: 'xboardDiagnosticServiceStatus',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Network connectivity`
+  String get xboardDiagnosticNetworkConnectivity {
+    return Intl.message(
+      'Network connectivity',
+      name: 'xboardDiagnosticNetworkConnectivity',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Business services`
+  String get xboardDiagnosticBusinessServices {
+    return Intl.message(
+      'Business services',
+      name: 'xboardDiagnosticBusinessServices',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Proxy and system`
+  String get xboardDiagnosticProxyAndSystem {
+    return Intl.message(
+      'Proxy and system',
+      name: 'xboardDiagnosticProxyAndSystem',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Network diagnostics`
+  String get xboardNetworkDiagnostics {
+    return Intl.message(
+      'Network diagnostics',
+      name: 'xboardNetworkDiagnostics',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Check VPN status, DNS resolution, and HTTPS reachability`
+  String get xboardNetworkDiagnosticsSubtitle {
+    return Intl.message(
+      'Check VPN status, DNS resolution, and HTTPS reachability',
+      name: 'xboardNetworkDiagnosticsSubtitle',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Test domain`
+  String get xboardNetworkDiagnosticsTestDomain {
+    return Intl.message(
+      'Test domain',
+      name: 'xboardNetworkDiagnosticsTestDomain',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Start diagnostics`
+  String get xboardNetworkDiagnosticsStart {
+    return Intl.message(
+      'Start diagnostics',
+      name: 'xboardNetworkDiagnosticsStart',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Diagnosing...`
+  String get xboardNetworkDiagnosticsRunning {
+    return Intl.message(
+      'Diagnosing...',
+      name: 'xboardNetworkDiagnosticsRunning',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Copy report`
+  String get xboardNetworkDiagnosticsCopyReport {
+    return Intl.message(
+      'Copy report',
+      name: 'xboardNetworkDiagnosticsCopyReport',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `VPN status`
+  String get xboardNetworkDiagnosticsVpnStatus {
+    return Intl.message(
+      'VPN status',
+      name: 'xboardNetworkDiagnosticsVpnStatus',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Connected`
+  String get xboardNetworkDiagnosticsConnected {
+    return Intl.message(
+      'Connected',
+      name: 'xboardNetworkDiagnosticsConnected',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Disconnected`
+  String get xboardNetworkDiagnosticsDisconnected {
+    return Intl.message(
+      'Disconnected',
+      name: 'xboardNetworkDiagnosticsDisconnected',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Running time`
+  String get xboardNetworkDiagnosticsRunningTime {
+    return Intl.message(
+      'Running time',
+      name: 'xboardNetworkDiagnosticsRunningTime',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `DNS resolution`
+  String get xboardNetworkDiagnosticsDns {
+    return Intl.message(
+      'DNS resolution',
+      name: 'xboardNetworkDiagnosticsDns',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `HTTPS reachability`
+  String get xboardNetworkDiagnosticsHttps {
+    return Intl.message(
+      'HTTPS reachability',
+      name: 'xboardNetworkDiagnosticsHttps',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Empty result`
+  String get xboardNetworkDiagnosticsEmptyResult {
+    return Intl.message(
+      'Empty result',
+      name: 'xboardNetworkDiagnosticsEmptyResult',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Possible DNS pollution: private or reserved address`
+  String get xboardNetworkDiagnosticsSuspiciousAddress {
+    return Intl.message(
+      'Possible DNS pollution: private or reserved address',
+      name: 'xboardNetworkDiagnosticsSuspiciousAddress',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Timed out`
+  String get xboardNetworkDiagnosticsTimeout {
+    return Intl.message(
+      'Timed out',
+      name: 'xboardNetworkDiagnosticsTimeout',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `FastCat network diagnostics report`
+  String get xboardNetworkDiagnosticsReportTitle {
+    return Intl.message(
+      'FastCat network diagnostics report',
+      name: 'xboardNetworkDiagnosticsReportTitle',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Time`
+  String get xboardNetworkDiagnosticsTime {
+    return Intl.message(
+      'Time',
+      name: 'xboardNetworkDiagnosticsTime',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Domain`
+  String get xboardNetworkDiagnosticsDomain {
+    return Intl.message(
+      'Domain',
+      name: 'xboardNetworkDiagnosticsDomain',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Diagnostics report copied`
+  String get xboardNetworkDiagnosticsCopied {
+    return Intl.message(
+      'Diagnostics report copied',
+      name: 'xboardNetworkDiagnosticsCopied',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `DNS checks use the system resolver. Node diagnostics then check the actual endpoint DNS, TCP or UDP transport, proxy handshake, and HTTP reachability.`
+  String get xboardNetworkDiagnosticsDescription {
+    return Intl.message(
+      'DNS checks use the system resolver. Node diagnostics then check the actual endpoint DNS, TCP or UDP transport, proxy handshake, and HTTP reachability.',
+      name: 'xboardNetworkDiagnosticsDescription',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Expected fake-IP result`
+  String get xboardNetworkDiagnosticsExpectedFakeIp {
+    return Intl.message(
+      'Expected fake-IP result',
+      name: 'xboardNetworkDiagnosticsExpectedFakeIp',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Via current node`
+  String get xboardNetworkDiagnosticsViaNode {
+    return Intl.message(
+      'Via current node',
+      name: 'xboardNetworkDiagnosticsViaNode',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Not available`
+  String get xboardNetworkDiagnosticsUnavailable {
+    return Intl.message(
+      'Not available',
+      name: 'xboardNetworkDiagnosticsUnavailable',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Reachable`
+  String get xboardNetworkDiagnosticsReachable {
+    return Intl.message(
+      'Reachable',
+      name: 'xboardNetworkDiagnosticsReachable',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Unreachable`
+  String get xboardNetworkDiagnosticsUnreachable {
+    return Intl.message(
+      'Unreachable',
+      name: 'xboardNetworkDiagnosticsUnreachable',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Current node`
+  String get xboardNetworkDiagnosticsNode {
+    return Intl.message(
+      'Current node',
+      name: 'xboardNetworkDiagnosticsNode',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Diagnostic conclusion`
+  String get xboardNetworkDiagnosticsConclusion {
+    return Intl.message(
+      'Diagnostic conclusion',
+      name: 'xboardNetworkDiagnosticsConclusion',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `IPv4 / IPv6 connectivity`
+  String get xboardNetworkDiagnosticsIpConnectivity {
+    return Intl.message(
+      'IPv4 / IPv6 connectivity',
+      name: 'xboardNetworkDiagnosticsIpConnectivity',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Direct HTTPS`
+  String get xboardNetworkDiagnosticsDirectHttps {
+    return Intl.message(
+      'Direct HTTPS',
+      name: 'xboardNetworkDiagnosticsDirectHttps',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Proxy HTTPS`
+  String get xboardNetworkDiagnosticsProxyHttps {
+    return Intl.message(
+      'Proxy HTTPS',
+      name: 'xboardNetworkDiagnosticsProxyHttps',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `DNS results are abnormal. Check DNS settings or the current network.`
+  String get xboardNetworkDiagnosticsConclusionDns {
+    return Intl.message(
+      'DNS results are abnormal. Check DNS settings or the current network.',
+      name: 'xboardNetworkDiagnosticsConclusionDns',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `The local network appears abnormal or unreachable.`
+  String get xboardNetworkDiagnosticsConclusionNetwork {
+    return Intl.message(
+      'The local network appears abnormal or unreachable.',
+      name: 'xboardNetworkDiagnosticsConclusionNetwork',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `VPN is connected, but the current node could not be identified.`
+  String get xboardNetworkDiagnosticsConclusionNodeUnknown {
+    return Intl.message(
+      'VPN is connected, but the current node could not be identified.',
+      name: 'xboardNetworkDiagnosticsConclusionNodeUnknown',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `The proxy node or proxy route is unavailable.`
+  String get xboardNetworkDiagnosticsConclusionProxy {
+    return Intl.message(
+      'The proxy node or proxy route is unavailable.',
+      name: 'xboardNetworkDiagnosticsConclusionProxy',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `The proxy route is working normally. Some direct targets are restricted on the current network, which does not affect proxy use.`
+  String get xboardNetworkDiagnosticsConclusionProxyWorking {
+    return Intl.message(
+      'The proxy route is working normally. Some direct targets are restricted on the current network, which does not affect proxy use.',
+      name: 'xboardNetworkDiagnosticsConclusionProxyWorking',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `DNS and network routes are working normally.`
+  String get xboardNetworkDiagnosticsConclusionHealthy {
+    return Intl.message(
+      'DNS and network routes are working normally.',
+      name: 'xboardNetworkDiagnosticsConclusionHealthy',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Network type`
+  String get xboardNetworkDiagnosticsNetworkType {
+    return Intl.message(
+      'Network type',
+      name: 'xboardNetworkDiagnosticsNetworkType',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Mobile network`
+  String get xboardNetworkDiagnosticsNetworkMobile {
+    return Intl.message(
+      'Mobile network',
+      name: 'xboardNetworkDiagnosticsNetworkMobile',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Ethernet`
+  String get xboardNetworkDiagnosticsNetworkEthernet {
+    return Intl.message(
+      'Ethernet',
+      name: 'xboardNetworkDiagnosticsNetworkEthernet',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Other network`
+  String get xboardNetworkDiagnosticsNetworkOther {
+    return Intl.message(
+      'Other network',
+      name: 'xboardNetworkDiagnosticsNetworkOther',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `No network`
+  String get xboardNetworkDiagnosticsNetworkNone {
+    return Intl.message(
+      'No network',
+      name: 'xboardNetworkDiagnosticsNetworkNone',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Node connection layers`
+  String get xboardNetworkDiagnosticsNodeLayers {
+    return Intl.message(
+      'Node connection layers',
+      name: 'xboardNetworkDiagnosticsNodeLayers',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Node endpoint`
+  String get xboardNetworkDiagnosticsNodeEndpoint {
+    return Intl.message(
+      'Node endpoint',
+      name: 'xboardNetworkDiagnosticsNodeEndpoint',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Node DNS`
+  String get xboardNetworkDiagnosticsNodeDns {
+    return Intl.message(
+      'Node DNS',
+      name: 'xboardNetworkDiagnosticsNodeDns',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `TCP port`
+  String get xboardNetworkDiagnosticsNodeTcp {
+    return Intl.message(
+      'TCP port',
+      name: 'xboardNetworkDiagnosticsNodeTcp',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `TLS handshake`
+  String get xboardNetworkDiagnosticsNodeTls {
+    return Intl.message(
+      'TLS handshake',
+      name: 'xboardNetworkDiagnosticsNodeTls',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `TLS / proxy handshake / HTTP`
+  String get xboardNetworkDiagnosticsNodeHandshake {
+    return Intl.message(
+      'TLS / proxy handshake / HTTP',
+      name: 'xboardNetworkDiagnosticsNodeHandshake',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Node domain resolved successfully`
+  String get xboardNetworkDiagnosticsNodeDnsSuccess {
+    return Intl.message(
+      'Node domain resolved successfully',
+      name: 'xboardNetworkDiagnosticsNodeDnsSuccess',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Node domain resolution failed`
+  String get xboardNetworkDiagnosticsNodeDnsFailed {
+    return Intl.message(
+      'Node domain resolution failed',
+      name: 'xboardNetworkDiagnosticsNodeDnsFailed',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `TCP connection succeeded`
+  String get xboardNetworkDiagnosticsTcpSuccess {
+    return Intl.message(
+      'TCP connection succeeded',
+      name: 'xboardNetworkDiagnosticsTcpSuccess',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `TCP connection timed out; the endpoint may be unreachable or restricted by this network`
+  String get xboardNetworkDiagnosticsTcpTimeout {
+    return Intl.message(
+      'TCP connection timed out; the endpoint may be unreachable or restricted by this network',
+      name: 'xboardNetworkDiagnosticsTcpTimeout',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `TCP connection was refused; the server port may not be listening`
+  String get xboardNetworkDiagnosticsTcpRefused {
+    return Intl.message(
+      'TCP connection was refused; the server port may not be listening',
+      name: 'xboardNetworkDiagnosticsTcpRefused',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `No route to the node endpoint`
+  String get xboardNetworkDiagnosticsTcpUnreachable {
+    return Intl.message(
+      'No route to the node endpoint',
+      name: 'xboardNetworkDiagnosticsTcpUnreachable',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `UDP-based node; TCP port check is not applicable`
+  String get xboardNetworkDiagnosticsTcpSkippedUdp {
+    return Intl.message(
+      'UDP-based node; TCP port check is not applicable',
+      name: 'xboardNetworkDiagnosticsTcpSkippedUdp',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `TCP succeeded, but the TLS handshake failed`
+  String get xboardNetworkDiagnosticsTlsFailed {
+    return Intl.message(
+      'TCP succeeded, but the TLS handshake failed',
+      name: 'xboardNetworkDiagnosticsTlsFailed',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `The node endpoint is reachable, but the proxy protocol handshake failed`
+  String get xboardNetworkDiagnosticsProtocolFailed {
+    return Intl.message(
+      'The node endpoint is reachable, but the proxy protocol handshake failed',
+      name: 'xboardNetworkDiagnosticsProtocolFailed',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `The UDP node test timed out; UDP may be unavailable or restricted on this network`
+  String get xboardNetworkDiagnosticsUdpFailed {
+    return Intl.message(
+      'The UDP node test timed out; UDP may be unavailable or restricted on this network',
+      name: 'xboardNetworkDiagnosticsUdpFailed',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `The proxy connected, but the HTTP test failed`
+  String get xboardNetworkDiagnosticsHttpFailed {
+    return Intl.message(
+      'The proxy connected, but the HTTP test failed',
+      name: 'xboardNetworkDiagnosticsHttpFailed',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Node handshake and HTTP test succeeded`
+  String get xboardNetworkDiagnosticsNodeHttpSuccess {
+    return Intl.message(
+      'Node handshake and HTTP test succeeded',
+      name: 'xboardNetworkDiagnosticsNodeHttpSuccess',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Node endpoint information is unavailable`
+  String get xboardNetworkDiagnosticsEndpointUnavailable {
+    return Intl.message(
+      'Node endpoint information is unavailable',
+      name: 'xboardNetworkDiagnosticsEndpointUnavailable',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Layered diagnostics are unavailable in the current core. Update or fully restart the client; the HTTPS results below remain valid.`
+  String get xboardNetworkDiagnosticsCoreUnavailable {
+    return Intl.message(
+      'Layered diagnostics are unavailable in the current core. Update or fully restart the client; the HTTPS results below remain valid.',
+      name: 'xboardNetworkDiagnosticsCoreUnavailable',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `VPN is not connected. Node DNS, port, TLS, and proxy-route diagnostics were skipped.`
+  String get xboardNetworkDiagnosticsVpnRequired {
+    return Intl.message(
+      'VPN is not connected. Node DNS, port, TLS, and proxy-route diagnostics were skipped.',
+      name: 'xboardNetworkDiagnosticsVpnRequired',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `VPN is not connected. The basic network is working normally; connect VPN to diagnose the node route.`
+  String get xboardNetworkDiagnosticsConclusionDisconnectedHealthy {
+    return Intl.message(
+      'VPN is not connected. The basic network is working normally; connect VPN to diagnose the node route.',
+      name: 'xboardNetworkDiagnosticsConclusionDisconnectedHealthy',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `VPN is not connected, and the basic network DNS result is abnormal. Fix the local network or DNS before diagnosing the node route.`
+  String get xboardNetworkDiagnosticsConclusionDisconnectedDns {
+    return Intl.message(
+      'VPN is not connected, and the basic network DNS result is abnormal. Fix the local network or DNS before diagnosing the node route.',
+      name: 'xboardNetworkDiagnosticsConclusionDisconnectedDns',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `VPN is not connected, and the basic network appears abnormal or unreachable.`
+  String get xboardNetworkDiagnosticsConclusionDisconnectedNetwork {
+    return Intl.message(
+      'VPN is not connected, and the basic network appears abnormal or unreachable.',
+      name: 'xboardNetworkDiagnosticsConclusionDisconnectedNetwork',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `The selected node domain could not be resolved on the current network.`
+  String get xboardNetworkDiagnosticsConclusionNodeDns {
+    return Intl.message(
+      'The selected node domain could not be resolved on the current network.',
+      name: 'xboardNetworkDiagnosticsConclusionNodeDns',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Direct internet access works, but the selected node TCP endpoint timed out. The endpoint may be unreachable or restricted by the current network.`
+  String get xboardNetworkDiagnosticsConclusionTcp {
+    return Intl.message(
+      'Direct internet access works, but the selected node TCP endpoint timed out. The endpoint may be unreachable or restricted by the current network.',
+      name: 'xboardNetworkDiagnosticsConclusionTcp',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `The selected node endpoint refused the TCP connection. Check the server process and listening port.`
+  String get xboardNetworkDiagnosticsConclusionTcpRefused {
+    return Intl.message(
+      'The selected node endpoint refused the TCP connection. Check the server process and listening port.',
+      name: 'xboardNetworkDiagnosticsConclusionTcpRefused',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `TCP connectivity succeeded, but the node TLS handshake failed. Check SNI, certificates, or network TLS filtering.`
+  String get xboardNetworkDiagnosticsConclusionTls {
+    return Intl.message(
+      'TCP connectivity succeeded, but the node TLS handshake failed. Check SNI, certificates, or network TLS filtering.',
+      name: 'xboardNetworkDiagnosticsConclusionTls',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `The node endpoint is reachable, but the proxy protocol handshake failed. Check transport and authentication parameters.`
+  String get xboardNetworkDiagnosticsConclusionProtocol {
+    return Intl.message(
+      'The node endpoint is reachable, but the proxy protocol handshake failed. Check transport and authentication parameters.',
+      name: 'xboardNetworkDiagnosticsConclusionProtocol',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `The UDP-based node timed out while direct internet access works. UDP may be unavailable or restricted on the current network.`
+  String get xboardNetworkDiagnosticsConclusionUdp {
+    return Intl.message(
+      'The UDP-based node timed out while direct internet access works. UDP may be unavailable or restricted on the current network.',
+      name: 'xboardNetworkDiagnosticsConclusionUdp',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `FastCat diagnostic report`
+  String get xboardDiagnosticSummaryTitle {
+    return Intl.message(
+      'FastCat diagnostic report',
+      name: 'xboardDiagnosticSummaryTitle',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Overall status`
+  String get xboardDiagnosticOverall {
+    return Intl.message(
+      'Overall status',
+      name: 'xboardDiagnosticOverall',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Healthy`
+  String get xboardDiagnosticOverallHealthy {
+    return Intl.message(
+      'Healthy',
+      name: 'xboardDiagnosticOverallHealthy',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Services and system proxy are healthy; network connectivity has not been verified`
+  String get xboardDiagnosticOverallServiceHealthy {
+    return Intl.message(
+      'Services and system proxy are healthy; network connectivity has not been verified',
+      name: 'xboardDiagnosticOverallServiceHealthy',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Generally healthy, with items requiring attention`
+  String get xboardDiagnosticOverallAttention {
+    return Intl.message(
+      'Generally healthy, with items requiring attention',
+      name: 'xboardDiagnosticOverallAttention',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Issues detected`
+  String get xboardDiagnosticOverallAbnormal {
+    return Intl.message(
+      'Issues detected',
+      name: 'xboardDiagnosticOverallAbnormal',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Problems`
+  String get xboardDiagnosticProblems {
+    return Intl.message(
+      'Problems',
+      name: 'xboardDiagnosticProblems',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Items requiring attention`
+  String get xboardDiagnosticNotices {
+    return Intl.message(
+      'Items requiring attention',
+      name: 'xboardDiagnosticNotices',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Healthy items`
+  String get xboardDiagnosticHealthyItems {
+    return Intl.message(
+      'Healthy items',
+      name: 'xboardDiagnosticHealthyItems',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Suggestion`
+  String get xboardDiagnosticSuggestion {
+    return Intl.message(
+      'Suggestion',
+      name: 'xboardDiagnosticSuggestion',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Proxy core is not running`
+  String get xboardDiagnosticIssueCore {
+    return Intl.message(
+      'Proxy core is not running',
+      name: 'xboardDiagnosticIssueCore',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `No available business gateway`
+  String get xboardDiagnosticIssueGateway {
+    return Intl.message(
+      'No available business gateway',
+      name: 'xboardDiagnosticIssueGateway',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `No available proxy nodes`
+  String get xboardDiagnosticIssueNodes {
+    return Intl.message(
+      'No available proxy nodes',
+      name: 'xboardDiagnosticIssueNodes',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `System proxy is enabled but not running`
+  String get xboardDiagnosticIssueProxy {
+    return Intl.message(
+      'System proxy is enabled but not running',
+      name: 'xboardDiagnosticIssueProxy',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `TUN is configured but is not currently active; traffic is using another proxy mode`
+  String get xboardDiagnosticNoticeTun {
+    return Intl.message(
+      'TUN is configured but is not currently active; traffic is using another proxy mode',
+      name: 'xboardDiagnosticNoticeTun',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Unverified backup gateways`
+  String get xboardDiagnosticNoticeGateways {
+    return Intl.message(
+      'Unverified backup gateways',
+      name: 'xboardDiagnosticNoticeGateways',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Proxy core is running`
+  String get xboardDiagnosticHealthyCore {
+    return Intl.message(
+      'Proxy core is running',
+      name: 'xboardDiagnosticHealthyCore',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Current business gateway is available`
+  String get xboardDiagnosticHealthyGateway {
+    return Intl.message(
+      'Current business gateway is available',
+      name: 'xboardDiagnosticHealthyGateway',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Available proxy nodes`
+  String get xboardDiagnosticHealthyNodes {
+    return Intl.message(
+      'Available proxy nodes',
+      name: 'xboardDiagnosticHealthyNodes',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `System proxy is running on port`
+  String get xboardDiagnosticHealthyProxy {
+    return Intl.message(
+      'System proxy is running on port',
+      name: 'xboardDiagnosticHealthyProxy',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Account and subscription are available`
+  String get xboardDiagnosticHealthyAccount {
+    return Intl.message(
+      'Account and subscription are available',
+      name: 'xboardDiagnosticHealthyAccount',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Device heartbeat succeeded`
+  String get xboardDiagnosticHealthyHeartbeat {
+    return Intl.message(
+      'Device heartbeat succeeded',
+      name: 'xboardDiagnosticHealthyHeartbeat',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Refresh status or use one-click repair, then rerun network diagnostics and copy the report.`
+  String get xboardDiagnosticSuggestionRepair {
+    return Intl.message(
+      'Refresh status or use one-click repair, then rerun network diagnostics and copy the report.',
+      name: 'xboardDiagnosticSuggestionRepair',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `The connection is usable. Enable TUN only if some apps cannot use the system proxy.`
+  String get xboardDiagnosticSuggestionTun {
+    return Intl.message(
+      'The connection is usable. Enable TUN only if some apps cannot use the system proxy.',
+      name: 'xboardDiagnosticSuggestionTun',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `The current connection is working normally; no action is required.`
+  String get xboardDiagnosticSuggestionNone {
+    return Intl.message(
+      'The current connection is working normally; no action is required.',
+      name: 'xboardDiagnosticSuggestionNone',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Services and system proxy settings are healthy. Run network diagnostics to verify the node endpoint, TLS, and proxy route.`
+  String get xboardDiagnosticSuggestionRunNetwork {
+    return Intl.message(
+      'Services and system proxy settings are healthy. Run network diagnostics to verify the node endpoint, TLS, and proxy route.',
+      name: 'xboardDiagnosticSuggestionRunNetwork',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Latest network connectivity check`
+  String get xboardDiagnosticLatestNetwork {
+    return Intl.message(
+      'Latest network connectivity check',
+      name: 'xboardDiagnosticLatestNetwork',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Network connectivity diagnostics have not been run`
+  String get xboardDiagnosticNetworkNotRun {
+    return Intl.message(
+      'Network connectivity diagnostics have not been run',
+      name: 'xboardDiagnosticNetworkNotRun',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Checked at`
+  String get xboardDiagnosticNetworkSnapshotTime {
+    return Intl.message(
+      'Checked at',
+      name: 'xboardDiagnosticNetworkSnapshotTime',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Platform`
+  String get xboardDiagnosticPlatform {
+    return Intl.message(
+      'Platform',
+      name: 'xboardDiagnosticPlatform',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Expected address`
+  String get xboardProxyExpectedAddress {
+    return Intl.message(
+      'Expected address',
+      name: 'xboardProxyExpectedAddress',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `System address`
+  String get xboardProxyActualAddress {
+    return Intl.message(
+      'System address',
+      name: 'xboardProxyActualAddress',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Local port`
+  String get xboardProxyLocalPort {
+    return Intl.message(
+      'Local port',
+      name: 'xboardProxyLocalPort',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Listening`
+  String get xboardProxyListening {
+    return Intl.message(
+      'Listening',
+      name: 'xboardProxyListening',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Not listening`
+  String get xboardProxyNotListening {
+    return Intl.message(
+      'Not listening',
+      name: 'xboardProxyNotListening',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Client setting`
+  String get xboardProxyClientSetting {
+    return Intl.message(
+      'Client setting',
+      name: 'xboardProxyClientSetting',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `System source`
+  String get xboardProxyStatusSource {
+    return Intl.message(
+      'System source',
+      name: 'xboardProxyStatusSource',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `TUN is active; system proxy is not required`
+  String get xboardProxyStatusTunActive {
+    return Intl.message(
+      'TUN is active; system proxy is not required',
+      name: 'xboardProxyStatusTunActive',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `The core is stopped, but a stale system proxy is still enabled`
+  String get xboardProxyStatusStale {
+    return Intl.message(
+      'The core is stopped, but a stale system proxy is still enabled',
+      name: 'xboardProxyStatusStale',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `The local proxy port is not listening`
+  String get xboardProxyStatusPortUnavailable {
+    return Intl.message(
+      'The local proxy port is not listening',
+      name: 'xboardProxyStatusPortUnavailable',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Unable to read the system proxy status`
+  String get xboardProxyStatusReadFailed {
+    return Intl.message(
+      'Unable to read the system proxy status',
+      name: 'xboardProxyStatusReadFailed',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `The device system proxy is not enabled`
+  String get xboardProxyStatusSystemDisabled {
+    return Intl.message(
+      'The device system proxy is not enabled',
+      name: 'xboardProxyStatusSystemDisabled',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `The client system proxy setting is not enabled`
+  String get xboardProxyStatusClientDisabled {
+    return Intl.message(
+      'The client system proxy setting is not enabled',
+      name: 'xboardProxyStatusClientDisabled',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `The system proxy IP or port does not match the client`
+  String get xboardProxyStatusMismatch {
+    return Intl.message(
+      'The system proxy IP or port does not match the client',
+      name: 'xboardProxyStatusMismatch',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `The proxy core is not running. Connect first, then run one-click repair.`
+  String get xboardProxyRepairCoreNotRunning {
+    return Intl.message(
+      'The proxy core is not running. Connect first, then run one-click repair.',
+      name: 'xboardProxyRepairCoreNotRunning',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `The local proxy port is not listening; system proxy was not enabled.`
+  String get xboardProxyRepairPortUnavailable {
+    return Intl.message(
+      'The local proxy port is not listening; system proxy was not enabled.',
+      name: 'xboardProxyRepairPortUnavailable',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Failed to write the device system proxy settings.`
+  String get xboardProxyRepairWriteFailed {
+    return Intl.message(
+      'Failed to write the device system proxy settings.',
+      name: 'xboardProxyRepairWriteFailed',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `System proxy verification failed after repair; the IP or port still does not match.`
+  String get xboardProxyRepairVerifyFailed {
+    return Intl.message(
+      'System proxy verification failed after repair; the IP or port still does not match.',
+      name: 'xboardProxyRepairVerifyFailed',
       desc: '',
       args: [],
     );

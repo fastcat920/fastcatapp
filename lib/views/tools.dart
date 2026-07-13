@@ -7,7 +7,7 @@ import 'package:fl_clash/views/about.dart';
 import 'package:fl_clash/views/application_setting.dart';
 import 'package:fl_clash/views/config/config.dart';
 import 'package:fl_clash/widgets/widgets.dart';
-import 'package:fl_clash/xboard/features/shared/widgets/connection_health_dialog.dart';
+import 'package:fl_clash/xboard/features/diagnostics/pages/diagnostics_center_page.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
@@ -87,7 +87,7 @@ class _ToolboxViewState extends ConsumerState<ToolsView> {
       items: [
         if (logCapture) const _LogsItem(),
         if (enableDeveloperMode) const _DeveloperItem(),
-        const _ConnectionHealthItem(),
+        const _DiagnosticsCenterItem(),
         const _InfoItem(),
       ],
     );
@@ -231,19 +231,19 @@ class _SettingItem extends StatelessWidget {
   }
 }
 
-class _ConnectionHealthItem extends StatelessWidget {
-  const _ConnectionHealthItem();
+class _DiagnosticsCenterItem extends StatelessWidget {
+  const _DiagnosticsCenterItem();
 
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
     return ListItem.open(
-      leading: const Icon(Icons.health_and_safety_outlined),
-      title: Text(l10n.xboardConnectionHealth),
-      subtitle: Text(l10n.xboardConnectionHealthSubtitle),
+      leading: const Icon(Icons.monitor_heart_outlined),
+      title: Text(l10n.xboardDiagnosticsCenter),
+      subtitle: Text(l10n.xboardDiagnosticsCenterSubtitle),
       delegate: OpenDelegate(
-        title: l10n.xboardConnectionHealth,
-        widget: const ConnectionHealthView(),
+        title: l10n.xboardDiagnosticsCenter,
+        widget: const DiagnosticsCenterPage(),
       ),
     );
   }

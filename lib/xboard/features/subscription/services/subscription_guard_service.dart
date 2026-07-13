@@ -30,8 +30,8 @@ class SubscriptionGuardService {
   /// 定期刷新订阅信息的定时器
   Timer? _refreshTimer;
 
-  /// 定期刷新间隔（5 分钟）
-  static const Duration _refreshInterval = Duration(minutes: 5);
+  /// 定期刷新间隔（60 分钟）
+  static const Duration _refreshInterval = Duration(minutes: 60);
 
   /// 是否正在守护中
   bool _isGuarding = false;

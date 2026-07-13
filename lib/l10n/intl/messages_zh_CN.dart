@@ -1193,6 +1193,102 @@ class MessageLookup extends MessageLookupByLibrary {
     "xboardDiagnosticBundleCopied": MessageLookupByLibrary.simpleMessage(
       "诊断包已复制",
     ),
+    "xboardDiagnosticBusinessServices": MessageLookupByLibrary.simpleMessage(
+      "业务服务",
+    ),
+    "xboardDiagnosticHealthyAccount": MessageLookupByLibrary.simpleMessage(
+      "账户与订阅可用",
+    ),
+    "xboardDiagnosticHealthyCore": MessageLookupByLibrary.simpleMessage(
+      "代理核心运行正常",
+    ),
+    "xboardDiagnosticHealthyGateway": MessageLookupByLibrary.simpleMessage(
+      "当前业务网关可用",
+    ),
+    "xboardDiagnosticHealthyHeartbeat": MessageLookupByLibrary.simpleMessage(
+      "设备心跳成功",
+    ),
+    "xboardDiagnosticHealthyItems": MessageLookupByLibrary.simpleMessage(
+      "正常项目",
+    ),
+    "xboardDiagnosticHealthyNodes": MessageLookupByLibrary.simpleMessage(
+      "可用代理节点",
+    ),
+    "xboardDiagnosticHealthyProxy": MessageLookupByLibrary.simpleMessage(
+      "系统代理运行端口",
+    ),
+    "xboardDiagnosticIssueCore": MessageLookupByLibrary.simpleMessage(
+      "代理核心未运行",
+    ),
+    "xboardDiagnosticIssueGateway": MessageLookupByLibrary.simpleMessage(
+      "没有可用的业务网关",
+    ),
+    "xboardDiagnosticIssueNodes": MessageLookupByLibrary.simpleMessage(
+      "没有可用的代理节点",
+    ),
+    "xboardDiagnosticIssueProxy": MessageLookupByLibrary.simpleMessage(
+      "系统代理已开启但没有运行",
+    ),
+    "xboardDiagnosticLatestNetwork": MessageLookupByLibrary.simpleMessage(
+      "最近一次网络连通性检测",
+    ),
+    "xboardDiagnosticNetworkConnectivity": MessageLookupByLibrary.simpleMessage(
+      "网络连通性",
+    ),
+    "xboardDiagnosticNetworkNotRun": MessageLookupByLibrary.simpleMessage(
+      "尚未执行网络连通性检测",
+    ),
+    "xboardDiagnosticNetworkSnapshotTime": MessageLookupByLibrary.simpleMessage(
+      "检测时间",
+    ),
+    "xboardDiagnosticNoticeGateways": MessageLookupByLibrary.simpleMessage(
+      "尚未验证的备用网关",
+    ),
+    "xboardDiagnosticNoticeTun": MessageLookupByLibrary.simpleMessage(
+      "TUN 已配置但当前未生效，流量正在使用其他代理模式",
+    ),
+    "xboardDiagnosticNotices": MessageLookupByLibrary.simpleMessage("注意项目"),
+    "xboardDiagnosticOverall": MessageLookupByLibrary.simpleMessage("总体状态"),
+    "xboardDiagnosticOverallAbnormal": MessageLookupByLibrary.simpleMessage(
+      "发现异常",
+    ),
+    "xboardDiagnosticOverallAttention": MessageLookupByLibrary.simpleMessage(
+      "基本正常，但有需要注意的项目",
+    ),
+    "xboardDiagnosticOverallHealthy": MessageLookupByLibrary.simpleMessage(
+      "正常",
+    ),
+    "xboardDiagnosticOverallServiceHealthy":
+        MessageLookupByLibrary.simpleMessage("服务与系统代理状态正常，网络连通性尚未验证"),
+    "xboardDiagnosticPlatform": MessageLookupByLibrary.simpleMessage("平台"),
+    "xboardDiagnosticProblems": MessageLookupByLibrary.simpleMessage("异常项目"),
+    "xboardDiagnosticProxyAndSystem": MessageLookupByLibrary.simpleMessage(
+      "代理与系统",
+    ),
+    "xboardDiagnosticServiceStatus": MessageLookupByLibrary.simpleMessage(
+      "服务状态",
+    ),
+    "xboardDiagnosticSuggestion": MessageLookupByLibrary.simpleMessage("建议"),
+    "xboardDiagnosticSuggestionNone": MessageLookupByLibrary.simpleMessage(
+      "当前连接工作正常，无需处理。",
+    ),
+    "xboardDiagnosticSuggestionRepair": MessageLookupByLibrary.simpleMessage(
+      "请先刷新状态或使用一键修复，然后重新检测网络并复制报告。",
+    ),
+    "xboardDiagnosticSuggestionRunNetwork":
+        MessageLookupByLibrary.simpleMessage(
+          "服务和系统代理配置正常；如需确认节点入口、TLS 和代理链路，请执行网络连通性检测。",
+        ),
+    "xboardDiagnosticSuggestionTun": MessageLookupByLibrary.simpleMessage(
+      "当前连接可以使用；只有部分应用无法使用系统代理时才需要启用 TUN。",
+    ),
+    "xboardDiagnosticSummaryTitle": MessageLookupByLibrary.simpleMessage(
+      "FastCat 诊断报告",
+    ),
+    "xboardDiagnosticsCenter": MessageLookupByLibrary.simpleMessage("诊断中心"),
+    "xboardDiagnosticsCenterSubtitle": MessageLookupByLibrary.simpleMessage(
+      "检查服务状态、代理配置和网络连通性",
+    ),
     "xboardDisconnecting": MessageLookupByLibrary.simpleMessage("正在断开"),
     "xboardDiscountAmount": MessageLookupByLibrary.simpleMessage("优惠金额"),
     "xboardDiscounted": MessageLookupByLibrary.simpleMessage("已优惠"),
@@ -1364,6 +1460,195 @@ class MessageLookup extends MessageLookupByLibrary {
     "xboardNetworkConnectionFailed": MessageLookupByLibrary.simpleMessage(
       "网络连接失败，请检查网络设置",
     ),
+    "xboardNetworkDiagnostics": MessageLookupByLibrary.simpleMessage("网络诊断"),
+    "xboardNetworkDiagnosticsConclusion": MessageLookupByLibrary.simpleMessage(
+      "诊断结论",
+    ),
+    "xboardNetworkDiagnosticsConclusionDisconnectedDns":
+        MessageLookupByLibrary.simpleMessage(
+          "VPN 尚未连接，且基础网络 DNS 结果异常；请先修复本地网络或 DNS，再诊断节点链路。",
+        ),
+    "xboardNetworkDiagnosticsConclusionDisconnectedHealthy":
+        MessageLookupByLibrary.simpleMessage(
+          "VPN 尚未连接；基础网络工作正常，连接 VPN 后可继续诊断节点链路。",
+        ),
+    "xboardNetworkDiagnosticsConclusionDisconnectedNetwork":
+        MessageLookupByLibrary.simpleMessage("VPN 尚未连接，且基础网络可能异常或无法连接外网。"),
+    "xboardNetworkDiagnosticsConclusionDns":
+        MessageLookupByLibrary.simpleMessage("DNS 解析结果异常，请检查 DNS 设置或当前网络。"),
+    "xboardNetworkDiagnosticsConclusionHealthy":
+        MessageLookupByLibrary.simpleMessage("DNS 与网络链路工作正常。"),
+    "xboardNetworkDiagnosticsConclusionNetwork":
+        MessageLookupByLibrary.simpleMessage("本地网络可能异常或无法连接外网。"),
+    "xboardNetworkDiagnosticsConclusionNodeDns":
+        MessageLookupByLibrary.simpleMessage("当前网络无法解析所选节点的入口域名。"),
+    "xboardNetworkDiagnosticsConclusionNodeUnknown":
+        MessageLookupByLibrary.simpleMessage("VPN 已连接，但无法识别当前使用的节点。"),
+    "xboardNetworkDiagnosticsConclusionProtocol":
+        MessageLookupByLibrary.simpleMessage("节点入口可达，但代理协议握手失败，请检查传输方式和鉴权参数。"),
+    "xboardNetworkDiagnosticsConclusionProxy":
+        MessageLookupByLibrary.simpleMessage("当前代理节点或代理链路不可用。"),
+    "xboardNetworkDiagnosticsConclusionProxyWorking":
+        MessageLookupByLibrary.simpleMessage("代理链路正常，当前网络部分直连目标受限，不影响代理使用。"),
+    "xboardNetworkDiagnosticsConclusionTcp":
+        MessageLookupByLibrary.simpleMessage(
+          "公网直连正常，但所选节点的 TCP 入口连接超时；该入口可能不可达或受到当前网络限制。",
+        ),
+    "xboardNetworkDiagnosticsConclusionTcpRefused":
+        MessageLookupByLibrary.simpleMessage("所选节点拒绝 TCP 连接，请检查服务器进程和监听端口。"),
+    "xboardNetworkDiagnosticsConclusionTls":
+        MessageLookupByLibrary.simpleMessage(
+          "TCP 连接成功，但节点 TLS 握手失败，请检查 SNI、证书或当前网络的 TLS 过滤。",
+        ),
+    "xboardNetworkDiagnosticsConclusionUdp":
+        MessageLookupByLibrary.simpleMessage(
+          "公网直连正常，但 UDP 节点测试超时；当前网络可能不支持或限制 UDP。",
+        ),
+    "xboardNetworkDiagnosticsConnected": MessageLookupByLibrary.simpleMessage(
+      "已连接",
+    ),
+    "xboardNetworkDiagnosticsCopied": MessageLookupByLibrary.simpleMessage(
+      "诊断报告已复制",
+    ),
+    "xboardNetworkDiagnosticsCopyReport": MessageLookupByLibrary.simpleMessage(
+      "复制报告",
+    ),
+    "xboardNetworkDiagnosticsCoreUnavailable":
+        MessageLookupByLibrary.simpleMessage(
+          "当前核心不支持分层诊断，请更新或完全重启客户端；下方 HTTPS 检测结果仍然有效。",
+        ),
+    "xboardNetworkDiagnosticsDescription": MessageLookupByLibrary.simpleMessage(
+      "DNS 检测使用系统解析器；节点诊断会继续检测实际入口 DNS、TCP 或 UDP 传输、代理握手及 HTTP 连通性。",
+    ),
+    "xboardNetworkDiagnosticsDirectHttps": MessageLookupByLibrary.simpleMessage(
+      "直连 HTTPS",
+    ),
+    "xboardNetworkDiagnosticsDisconnected":
+        MessageLookupByLibrary.simpleMessage("未连接"),
+    "xboardNetworkDiagnosticsDns": MessageLookupByLibrary.simpleMessage(
+      "DNS 解析",
+    ),
+    "xboardNetworkDiagnosticsDomain": MessageLookupByLibrary.simpleMessage(
+      "域名",
+    ),
+    "xboardNetworkDiagnosticsEmptyResult": MessageLookupByLibrary.simpleMessage(
+      "返回结果为空",
+    ),
+    "xboardNetworkDiagnosticsEndpointUnavailable":
+        MessageLookupByLibrary.simpleMessage("无法获取节点入口信息"),
+    "xboardNetworkDiagnosticsExpectedFakeIp":
+        MessageLookupByLibrary.simpleMessage("当前 fake-ip 模式的正常结果"),
+    "xboardNetworkDiagnosticsHttpFailed": MessageLookupByLibrary.simpleMessage(
+      "代理已连接，但 HTTP 测试失败",
+    ),
+    "xboardNetworkDiagnosticsHttps": MessageLookupByLibrary.simpleMessage(
+      "HTTPS 连通性",
+    ),
+    "xboardNetworkDiagnosticsIpConnectivity":
+        MessageLookupByLibrary.simpleMessage("IPv4 / IPv6 连通性"),
+    "xboardNetworkDiagnosticsNetworkEthernet":
+        MessageLookupByLibrary.simpleMessage("有线网络"),
+    "xboardNetworkDiagnosticsNetworkMobile":
+        MessageLookupByLibrary.simpleMessage("移动网络"),
+    "xboardNetworkDiagnosticsNetworkNone": MessageLookupByLibrary.simpleMessage(
+      "无网络连接",
+    ),
+    "xboardNetworkDiagnosticsNetworkOther":
+        MessageLookupByLibrary.simpleMessage("其他网络"),
+    "xboardNetworkDiagnosticsNetworkType": MessageLookupByLibrary.simpleMessage(
+      "网络类型",
+    ),
+    "xboardNetworkDiagnosticsNode": MessageLookupByLibrary.simpleMessage(
+      "当前节点",
+    ),
+    "xboardNetworkDiagnosticsNodeDns": MessageLookupByLibrary.simpleMessage(
+      "节点 DNS",
+    ),
+    "xboardNetworkDiagnosticsNodeDnsFailed":
+        MessageLookupByLibrary.simpleMessage("节点域名解析失败"),
+    "xboardNetworkDiagnosticsNodeDnsSuccess":
+        MessageLookupByLibrary.simpleMessage("节点域名解析成功"),
+    "xboardNetworkDiagnosticsNodeEndpoint":
+        MessageLookupByLibrary.simpleMessage("节点入口"),
+    "xboardNetworkDiagnosticsNodeHandshake":
+        MessageLookupByLibrary.simpleMessage("TLS / 代理握手 / HTTP"),
+    "xboardNetworkDiagnosticsNodeHttpSuccess":
+        MessageLookupByLibrary.simpleMessage("节点握手与 HTTP 测试成功"),
+    "xboardNetworkDiagnosticsNodeLayers": MessageLookupByLibrary.simpleMessage(
+      "节点分层检测",
+    ),
+    "xboardNetworkDiagnosticsNodeTcp": MessageLookupByLibrary.simpleMessage(
+      "TCP 端口",
+    ),
+    "xboardNetworkDiagnosticsNodeTls": MessageLookupByLibrary.simpleMessage(
+      "TLS 握手",
+    ),
+    "xboardNetworkDiagnosticsProtocolFailed":
+        MessageLookupByLibrary.simpleMessage("节点入口可达，但代理协议握手失败"),
+    "xboardNetworkDiagnosticsProxyHttps": MessageLookupByLibrary.simpleMessage(
+      "代理 HTTPS",
+    ),
+    "xboardNetworkDiagnosticsReachable": MessageLookupByLibrary.simpleMessage(
+      "可连接",
+    ),
+    "xboardNetworkDiagnosticsReportTitle": MessageLookupByLibrary.simpleMessage(
+      "FastCat 网络诊断报告",
+    ),
+    "xboardNetworkDiagnosticsRunning": MessageLookupByLibrary.simpleMessage(
+      "诊断中…",
+    ),
+    "xboardNetworkDiagnosticsRunningTime": MessageLookupByLibrary.simpleMessage(
+      "运行时间",
+    ),
+    "xboardNetworkDiagnosticsStart": MessageLookupByLibrary.simpleMessage(
+      "开始诊断",
+    ),
+    "xboardNetworkDiagnosticsSubtitle": MessageLookupByLibrary.simpleMessage(
+      "检查 VPN 状态、DNS 解析和 HTTPS 连通性",
+    ),
+    "xboardNetworkDiagnosticsSuspiciousAddress":
+        MessageLookupByLibrary.simpleMessage("疑似 DNS 污染：私网或保留地址"),
+    "xboardNetworkDiagnosticsTcpRefused": MessageLookupByLibrary.simpleMessage(
+      "TCP 连接被拒绝，服务器端口可能未监听",
+    ),
+    "xboardNetworkDiagnosticsTcpSkippedUdp":
+        MessageLookupByLibrary.simpleMessage("当前节点基于 UDP，不适用 TCP 端口检测"),
+    "xboardNetworkDiagnosticsTcpSuccess": MessageLookupByLibrary.simpleMessage(
+      "TCP 连接成功",
+    ),
+    "xboardNetworkDiagnosticsTcpTimeout": MessageLookupByLibrary.simpleMessage(
+      "TCP 连接超时，节点入口可能不可达或受到当前网络限制",
+    ),
+    "xboardNetworkDiagnosticsTcpUnreachable":
+        MessageLookupByLibrary.simpleMessage("没有到节点入口的可用路由"),
+    "xboardNetworkDiagnosticsTestDomain": MessageLookupByLibrary.simpleMessage(
+      "测试域名",
+    ),
+    "xboardNetworkDiagnosticsTime": MessageLookupByLibrary.simpleMessage("时间"),
+    "xboardNetworkDiagnosticsTimeout": MessageLookupByLibrary.simpleMessage(
+      "请求超时",
+    ),
+    "xboardNetworkDiagnosticsTlsFailed": MessageLookupByLibrary.simpleMessage(
+      "TCP 已连接，但 TLS 握手失败",
+    ),
+    "xboardNetworkDiagnosticsUdpFailed": MessageLookupByLibrary.simpleMessage(
+      "UDP 节点测试超时，当前网络可能不支持或限制 UDP",
+    ),
+    "xboardNetworkDiagnosticsUnavailable": MessageLookupByLibrary.simpleMessage(
+      "不可用",
+    ),
+    "xboardNetworkDiagnosticsUnreachable": MessageLookupByLibrary.simpleMessage(
+      "无法连接",
+    ),
+    "xboardNetworkDiagnosticsViaNode": MessageLookupByLibrary.simpleMessage(
+      "经当前节点",
+    ),
+    "xboardNetworkDiagnosticsVpnRequired": MessageLookupByLibrary.simpleMessage(
+      "VPN 尚未连接，已跳过节点 DNS、端口、TLS 和代理链路检测。",
+    ),
+    "xboardNetworkDiagnosticsVpnStatus": MessageLookupByLibrary.simpleMessage(
+      "VPN 状态",
+    ),
     "xboardNewVersionFound": MessageLookupByLibrary.simpleMessage("发现新版本"),
     "xboardNext": MessageLookupByLibrary.simpleMessage("下一条"),
     "xboardNoAvailableNodes": MessageLookupByLibrary.simpleMessage("暂无可用节点"),
@@ -1486,6 +1771,11 @@ class MessageLookup extends MessageLookupByLibrary {
       "保护您的网络隐私",
     ),
     "xboardProxy": MessageLookupByLibrary.simpleMessage("代理"),
+    "xboardProxyActualAddress": MessageLookupByLibrary.simpleMessage("系统实际地址"),
+    "xboardProxyClientSetting": MessageLookupByLibrary.simpleMessage("客户端设置"),
+    "xboardProxyExpectedAddress": MessageLookupByLibrary.simpleMessage("期望地址"),
+    "xboardProxyListening": MessageLookupByLibrary.simpleMessage("监听正常"),
+    "xboardProxyLocalPort": MessageLookupByLibrary.simpleMessage("本地端口"),
     "xboardProxyMode": MessageLookupByLibrary.simpleMessage("代理模式"),
     "xboardProxyModeDirectDescription": MessageLookupByLibrary.simpleMessage(
       "所有流量都直接连接，不使用代理",
@@ -1495,6 +1785,41 @@ class MessageLookup extends MessageLookupByLibrary {
     ),
     "xboardProxyModeRuleDescription": MessageLookupByLibrary.simpleMessage(
       "根据规则自动选择直连或代理",
+    ),
+    "xboardProxyNotListening": MessageLookupByLibrary.simpleMessage("未监听"),
+    "xboardProxyRepairCoreNotRunning": MessageLookupByLibrary.simpleMessage(
+      "代理核心未运行，请先连接后再执行一键修复。",
+    ),
+    "xboardProxyRepairPortUnavailable": MessageLookupByLibrary.simpleMessage(
+      "本地代理端口未监听，未开启系统代理。",
+    ),
+    "xboardProxyRepairVerifyFailed": MessageLookupByLibrary.simpleMessage(
+      "修复后回读验证失败，系统代理 IP 或端口仍不匹配。",
+    ),
+    "xboardProxyRepairWriteFailed": MessageLookupByLibrary.simpleMessage(
+      "写入设备系统代理设置失败。",
+    ),
+    "xboardProxyStatusClientDisabled": MessageLookupByLibrary.simpleMessage(
+      "客户端系统代理设置未开启",
+    ),
+    "xboardProxyStatusMismatch": MessageLookupByLibrary.simpleMessage(
+      "系统代理 IP 或端口与客户端不一致",
+    ),
+    "xboardProxyStatusPortUnavailable": MessageLookupByLibrary.simpleMessage(
+      "本地代理端口未监听",
+    ),
+    "xboardProxyStatusReadFailed": MessageLookupByLibrary.simpleMessage(
+      "无法读取系统代理状态",
+    ),
+    "xboardProxyStatusSource": MessageLookupByLibrary.simpleMessage("系统来源"),
+    "xboardProxyStatusStale": MessageLookupByLibrary.simpleMessage(
+      "代理核心已停止，但系统仍残留代理设置",
+    ),
+    "xboardProxyStatusSystemDisabled": MessageLookupByLibrary.simpleMessage(
+      "设备系统代理未开启",
+    ),
+    "xboardProxyStatusTunActive": MessageLookupByLibrary.simpleMessage(
+      "TUN 已生效，无需开启系统代理",
     ),
     "xboardPurchasePlan": MessageLookupByLibrary.simpleMessage("购买套餐"),
     "xboardPurchaseSubscription": MessageLookupByLibrary.simpleMessage("购买套餐"),

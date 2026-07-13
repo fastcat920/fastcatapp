@@ -58,6 +58,29 @@ type TestDelayParams struct {
 	Timeout   int64  `json:"timeout"`
 }
 
+type DiagnoseProxyParams struct {
+	ProxyName string `json:"proxy-name"`
+	TestUrl   string `json:"test-url"`
+	Timeout   int64  `json:"timeout"`
+}
+
+type ProxyDiagnosticResult struct {
+	DiagnosticStatus string   `json:"diagnostic-status"`
+	ProxyType        string   `json:"proxy-type"`
+	Network          string   `json:"network"`
+	Host             string   `json:"host,omitempty"`
+	Port             string   `json:"port,omitempty"`
+	ResolvedIPs      []string `json:"resolved-ips,omitempty"`
+	DNSStatus        string   `json:"dns-status"`
+	DNSElapsedMs     int64    `json:"dns-elapsed-ms"`
+	TCPStatus        string   `json:"tcp-status"`
+	TCPElapsedMs     int64    `json:"tcp-elapsed-ms"`
+	ProxyStatus      string   `json:"proxy-status"`
+	FailureStage     string   `json:"failure-stage,omitempty"`
+	HTTPElapsedMs    int64    `json:"http-elapsed-ms"`
+	Error            string   `json:"error,omitempty"`
+}
+
 type ExternalProvider struct {
 	Name             string                     `json:"name"`
 	Type             string                     `json:"type"`
@@ -82,6 +105,7 @@ const (
 	getTotalTrafficMethod          Method = "getTotalTraffic"
 	resetTrafficMethod             Method = "resetTraffic"
 	asyncTestDelayMethod           Method = "asyncTestDelay"
+	diagnoseProxyMethod            Method = "diagnoseProxy"
 	getConnectionsMethod           Method = "getConnections"
 	closeConnectionsMethod         Method = "closeConnections"
 	resetConnectionsMethod         Method = "resetConnectionsMethod"
