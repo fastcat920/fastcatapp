@@ -56,8 +56,8 @@ class PeriodSelector extends StatelessWidget {
     final useSideNavigation = mediaSize.width > mediaSize.height || system.isTV;
     final crossAxisCount = useSideNavigation ? 4 : 2;
 
-    // 根据屏幕大小动态调整间距
-    final spacing = (6 * scaleFactor).clamp(4.0, 12.0);
+    // 与余额充值金额卡片保持一致的横向、纵向间距。
+    const spacing = 12.0;
 
     // 根据屏幕大小动态调整宽高比
     final aspectRatio = (3.0 * scaleFactor).clamp(2.5, 3.5);

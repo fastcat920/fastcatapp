@@ -341,24 +341,30 @@ class _RechargePageState extends ConsumerState<RechargePage> {
                               ),
                             ),
                             const SizedBox(width: 8),
-                            AnimatedSwitcher(
-                              duration: const Duration(milliseconds: 180),
-                              child: _isAutoRenewalUpdating
-                                  ? const SizedBox(
-                                      key: ValueKey('loading'),
-                                      width: 28,
-                                      height: 28,
-                                      child: CircularProgressIndicator(
-                                        strokeWidth: 2.5,
-                                      ),
-                                    )
-                                  : Switch(
-                                      key: const ValueKey('switch'),
+                            Stack(
+                              alignment: Alignment.center,
+                              children: [
+                                IgnorePointer(
+                                  ignoring: _isAutoRenewalUpdating,
+                                  child: Opacity(
+                                    opacity: _isAutoRenewalUpdating ? 0.0 : 1.0,
+                                    child: Switch(
                                       value: user?.autoRenewal ?? false,
                                       onChanged: canChangeAutoRenewal
                                           ? _updateAutoRenewal
                                           : null,
                                     ),
+                                  ),
+                                ),
+                                if (_isAutoRenewalUpdating)
+                                  const SizedBox(
+                                    width: 24,
+                                    height: 24,
+                                    child: CircularProgressIndicator(
+                                      strokeWidth: 2.5,
+                                    ),
+                                  ),
+                              ],
                             ),
                           ],
                         ),
