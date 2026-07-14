@@ -5,6 +5,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_xboard_sdk/flutter_xboard_sdk.dart';
+import 'package:fl_clash/common/common.dart';
 import 'package:fl_clash/xboard/adapter/state/order_state.dart';
 import 'package:fl_clash/xboard/core/core.dart';
 import 'package:fl_clash/xboard/domain/domain.dart';
@@ -624,9 +625,11 @@ class _OrderDetailContent extends StatelessWidget {
 
     return LayoutBuilder(
       builder: (context, constraints) {
-        final isWide = constraints.maxWidth >= 900;
+        final mediaSize = MediaQuery.sizeOf(context);
+        final useSideNavigation =
+            mediaSize.width > mediaSize.height || system.isTV;
         final contentPadding = EdgeInsets.symmetric(
-          horizontal: isWide ? 32 : 16,
+          horizontal: useSideNavigation ? 32 : 16,
           vertical: 12,
         );
         final leftColumn = Column(
@@ -685,7 +688,7 @@ class _OrderDetailContent extends StatelessWidget {
               alignment: Alignment.topCenter,
               child: ConstrainedBox(
                 constraints: const BoxConstraints(maxWidth: 1180),
-                child: isWide
+                child: useSideNavigation
                     ? Row(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [

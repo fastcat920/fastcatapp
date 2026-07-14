@@ -772,7 +772,9 @@ if (typeof window.__fastcatHideLoadingMask === 'function') {
           backgroundColor: backgroundColor,
           appBar: AppBar(
             title: Text(strings.title),
-            leading: BackButton(
+            leading: IconButton(
+              icon: const Icon(Icons.arrow_back_ios_new_rounded),
+              tooltip: MaterialLocalizations.of(context).backButtonTooltip,
               onPressed: () => unawaited(_handleBackPressed()),
             ),
           ),

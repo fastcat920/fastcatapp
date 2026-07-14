@@ -480,7 +480,7 @@ class _RechargePageState extends ConsumerState<RechargePage> {
                                 ),
                               ),
                               child: Text(
-                                '+${option.bonusLabel}',
+                                '+$_currencySymbol${option.bonusLabel}',
                                 style: const TextStyle(
                                   color: Colors.white,
                                   fontSize: 11,
