@@ -8,7 +8,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:fl_clash/xboard/features/auth/providers/xboard_user_provider.dart';
 import 'package:fl_clash/xboard/features/latency/services/auto_latency_service.dart';
-import 'package:fl_clash/xboard/features/subscription/services/reset_traffic_order_flow.dart';
+import 'package:fl_clash/xboard/features/subscription/services/traffic_recovery_service.dart';
 import 'package:fl_clash/xboard/features/subscription/services/subscription_guard_service.dart';
 import 'package:fl_clash/xboard/features/subscription/services/subscription_status_checker.dart';
 import 'package:fl_clash/xboard/features/subscription/services/subscription_status_service.dart';
@@ -133,9 +133,11 @@ class _XBoardConnectButtonState extends ConsumerState<XBoardConnectButton>
           context,
           blockStatus,
           onPurchase: _openPlans,
-          onResetTraffic: blockStatus.type == SubscriptionStatusType.exhausted
-              ? _openResetTrafficOrder
-              : null,
+          onTrafficRecovery:
+              blockStatus.type == SubscriptionStatusType.exhausted
+                  ? _openTrafficRecovery
+                  : null,
+          useNewPeriod: isNewPeriodEnabled(ref),
           onRefresh: _refreshSubscriptionStatus,
         );
       } else {
@@ -179,8 +181,8 @@ class _XBoardConnectButtonState extends ConsumerState<XBoardConnectButton>
     await SubscriptionStatusChecker.handleRenewAction(context, ref);
   }
 
-  Future<void> _openResetTrafficOrder() async {
-    await showResetTrafficOrderDialog(
+  Future<void> _openTrafficRecovery() async {
+    await showTrafficRecoveryDialog(
       context: context,
       ref: ref,
     );
@@ -209,9 +211,10 @@ class _XBoardConnectButtonState extends ConsumerState<XBoardConnectButton>
         context,
         blockStatus,
         onPurchase: _openPlans,
-        onResetTraffic: blockStatus.type == SubscriptionStatusType.exhausted
-            ? _openResetTrafficOrder
+        onTrafficRecovery: blockStatus.type == SubscriptionStatusType.exhausted
+            ? _openTrafficRecovery
             : null,
+        useNewPeriod: isNewPeriodEnabled(ref),
         onRefresh: _refreshSubscriptionStatus,
       );
       return;
@@ -405,8 +408,7 @@ class _XBoardConnectButtonState extends ConsumerState<XBoardConnectButton>
                                   child: _isBusy
                                       ? Column(
                                           key: const ValueKey('switching'),
-                                          mainAxisAlignment:
-                                              MainAxisAlignment.center,
+                                          mainAxisAlignment: MainAxisAlignment.center,
                                           children: [
                                             SizedBox(
                                               width: iconSize * 0.58,
@@ -446,7 +448,8 @@ class _XBoardConnectButtonState extends ConsumerState<XBoardConnectButton>
                                         )
                                       : Column(
                                           key: ValueKey(isStart),
-                                          mainAxisAlignment: MainAxisAlignment.center,
+                                          mainAxisAlignment:
+                                              MainAxisAlignment.center,
                                           children: [
                                             Icon(
                                               btnIcon,

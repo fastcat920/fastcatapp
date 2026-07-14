@@ -11,7 +11,7 @@ import '../services/subscription_status_service.dart';
 import 'package:fl_clash/l10n/l10n.dart';
 import 'package:fl_clash/xboard/features/payment/pages/plan_purchase_page.dart';
 import 'package:fl_clash/xboard/features/payment/pages/plans.dart' show pendingPurchasePlanProvider;
-import 'package:fl_clash/xboard/features/subscription/services/reset_traffic_order_flow.dart';
+import 'package:fl_clash/xboard/features/subscription/services/traffic_recovery_service.dart';
 import 'package:fl_clash/xboard/features/shared/styles/styles.dart';
 import 'package:fl_clash/xboard/utils/xboard_notification.dart';
 
@@ -189,8 +189,10 @@ class SubscriptionUsageCard extends ConsumerWidget {
         statusIcon = Icons.data_usage;
         statusColor = XbUiStatusColor.pending(context);
         statusText = AppLocalizations.of(context).xboardTrafficExhausted;
-        statusDetail = statusResult.getDetailMessage(context) ??
-            AppLocalizations.of(context).xboardBuyMoreTrafficOrUpgrade;
+        statusDetail = subscriptionInfo?.allowNewPeriod == true
+            ? AppLocalizations.of(context).xboardNewPeriodTrafficExhaustedDetail
+            : statusResult.getDetailMessage(context) ??
+                AppLocalizations.of(context).xboardBuyMoreTrafficOrUpgrade;
         break;
       case SubscriptionStatusType.banned:
         statusIcon = Icons.block;
@@ -309,22 +311,35 @@ class SubscriptionUsageCard extends ConsumerWidget {
             const SizedBox(height: 12),
             Consumer(
               builder: (context, ref, child) {
+                final useNewPeriod = isNewPeriodEnabled(
+                  ref,
+                  subscriptionInfo: subscriptionInfo,
+                );
+                final isTrafficRecovery =
+                    statusResult.type == SubscriptionStatusType.exhausted;
                 return SizedBox(
                   width: double.infinity,
                   child: FilledButton.icon(
                     onPressed: () async {
                       await _handleRenewAction(context, ref,
-                          isResetTraffic: statusResult.type ==
-                              SubscriptionStatusType.exhausted);
+                          isResetTraffic: isTrafficRecovery);
                     },
                     style: FilledButton.styleFrom(
                       backgroundColor: statusColor,
                       foregroundColor: Theme.of(context).colorScheme.onPrimary,
                       padding: const EdgeInsets.symmetric(vertical: 12),
                     ),
-                    icon: const Icon(Icons.shopping_bag, size: 18),
-                    label:
-                        Text(_getRenewButtonText(statusResult.type, context)),
+                    icon: Icon(
+                      isTrafficRecovery
+                          ? Icons.restart_alt
+                          : Icons.shopping_bag,
+                      size: 18,
+                    ),
+                    label: Text(
+                      isTrafficRecovery && useNewPeriod
+                          ? AppLocalizations.of(context).xboardStartNewPeriod
+                          : _getRenewButtonText(statusResult.type, context),
+                    ),
                   ),
                 );
               },
@@ -351,6 +366,15 @@ class SubscriptionUsageCard extends ConsumerWidget {
 
   Future<void> _handleRenewAction(BuildContext context, WidgetRef ref,
       {bool isResetTraffic = false}) async {
+    if (isResetTraffic &&
+        isNewPeriodEnabled(ref, subscriptionInfo: subscriptionInfo)) {
+      await showTrafficRecoveryDialog(
+        context: context,
+        ref: ref,
+        subscriptionInfo: subscriptionInfo,
+      );
+      return;
+    }
     final isDesktop = _isDesktop;
     final router = GoRouter.of(context);
     final navigator = Navigator.of(context);
@@ -397,11 +421,12 @@ class SubscriptionUsageCard extends ConsumerWidget {
       if (currentPlan != null) {
         final planForPurchase = currentPlan;
         if (isResetTraffic) {
-          await showResetTrafficOrderDialog(
+          await showTrafficRecoveryDialog(
             context: context,
             ref: ref,
             planId: planForPurchase.id,
             plan: planForPurchase,
+            subscriptionInfo: subscriptionInfo,
           );
           return;
         }
@@ -434,10 +459,11 @@ class SubscriptionUsageCard extends ConsumerWidget {
 
       if (!context.mounted) return;
       if (isResetTraffic) {
-        await showResetTrafficOrderDialog(
+        await showTrafficRecoveryDialog(
           context: context,
           ref: ref,
           planId: currentPlanId,
+          subscriptionInfo: subscriptionInfo,
         );
         return;
       }
@@ -499,7 +525,10 @@ class SubscriptionUsageCard extends ConsumerWidget {
     final expiryColor = _getExpiryColor(expiryState, theme);
     final isExpired = expiryState == _ExpiryState.expired;
     final shouldShowResetText = !isExpired;
-    final shouldShowResetAction = progress >= 0.9 && !isExpired;
+    final useNewPeriod =
+        isNewPeriodEnabled(ref, subscriptionInfo: subscriptionInfo);
+    final shouldShowTrafficRecoveryAction =
+        !isExpired && (useNewPeriod ? progress >= 1.0 : progress >= 0.9);
 
     final isDark = theme.brightness == Brightness.dark;
     final card = Container(
@@ -610,7 +639,8 @@ class SubscriptionUsageCard extends ConsumerWidget {
                     child: FilledButton.icon(
                       onPressed: () => _handleRenewAction(context, ref),
                       icon: const Icon(Icons.refresh, size: 16),
-                      label: Text(AppLocalizations.of(context).xboardRenewPlan),
+                      label:
+                          Text(AppLocalizations.of(context).xboardRenewPlan),
                       style: FilledButton.styleFrom(
                         backgroundColor:
                             _getRenewButtonColor(expiryState, theme),
@@ -620,15 +650,16 @@ class SubscriptionUsageCard extends ConsumerWidget {
                       ),
                     ),
                   ),
-                  if (shouldShowResetAction) ...[
+                  if (shouldShowTrafficRecoveryAction) ...[
                     const SizedBox(width: 10),
                     Expanded(
                       child: FilledButton.icon(
                         onPressed: () => _handleRenewAction(context, ref,
                             isResetTraffic: true),
                         icon: const Icon(Icons.restart_alt, size: 16),
-                        label: Text(
-                            AppLocalizations.of(context).xboardResetTraffic),
+                        label: Text(useNewPeriod
+                            ? AppLocalizations.of(context).xboardStartNewPeriod
+                            : AppLocalizations.of(context).xboardResetTraffic),
                         style: FilledButton.styleFrom(
                           backgroundColor:
                               _getResetButtonColor(progress, theme),
@@ -670,7 +701,10 @@ class SubscriptionUsageCard extends ConsumerWidget {
     final expiryColor = _getExpiryColor(expiryState, theme);
     final isExpired = expiryState == _ExpiryState.expired;
     final shouldShowResetText = !isExpired;
-    final shouldShowResetAction = progress >= 0.9 && !isExpired;
+    final useNewPeriod =
+        isNewPeriodEnabled(ref, subscriptionInfo: subscriptionInfo);
+    final shouldShowTrafficRecoveryAction =
+        !isExpired && (useNewPeriod ? progress >= 1.0 : progress >= 0.9);
     final colorScheme = theme.colorScheme;
     final isDark = theme.brightness == Brightness.dark;
     final plainTextColor = theme.colorScheme.onSurface;
@@ -822,8 +856,7 @@ class SubscriptionUsageCard extends ConsumerWidget {
                     child: FilledButton.icon(
                       onPressed: () => _handleRenewAction(context, ref),
                       icon: const Icon(Icons.refresh, size: 16),
-                      label:
-                          Text(AppLocalizations.of(context).xboardRenewPlan),
+                      label: Text(AppLocalizations.of(context).xboardRenewPlan),
                       style: usePlainBackground
                           ? FilledButton.styleFrom(
                               backgroundColor:
@@ -846,15 +879,16 @@ class SubscriptionUsageCard extends ConsumerWidget {
                             ),
                     ),
                   ),
-                  if (shouldShowResetAction) ...[
+                  if (shouldShowTrafficRecoveryAction) ...[
                     const SizedBox(width: 10),
                     Expanded(
                       child: FilledButton.icon(
                         onPressed: () => _handleRenewAction(context, ref,
                             isResetTraffic: true),
                         icon: const Icon(Icons.restart_alt, size: 16),
-                        label: Text(AppLocalizations.of(context)
-                            .xboardResetTraffic),
+                        label: Text(useNewPeriod
+                            ? AppLocalizations.of(context).xboardStartNewPeriod
+                            : AppLocalizations.of(context).xboardResetTraffic),
                         style: usePlainBackground
                             ? FilledButton.styleFrom(
                                 backgroundColor:

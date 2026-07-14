@@ -36,6 +36,7 @@ class XBoardSubscriptionAdapter implements SubscriptionApi {
       speedLimit: info.speedLimit,
       nextResetAt: info.nextResetAt,
       resetDay: info.resetDay,
+      allowNewPeriod: info.allowNewPeriod,
     );
   }
 

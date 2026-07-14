@@ -10,7 +10,7 @@ import 'package:fl_clash/xboard/features/auth/providers/xboard_user_provider.dar
 import 'package:fl_clash/xboard/features/subscription/providers/xboard_subscription_provider.dart';
 import 'package:fl_clash/xboard/features/payment/pages/plan_purchase_page.dart';
 import 'package:fl_clash/xboard/features/payment/pages/plans.dart' show pendingPurchasePlanProvider;
-import 'package:fl_clash/xboard/features/subscription/services/reset_traffic_order_flow.dart';
+import 'package:fl_clash/xboard/features/subscription/services/traffic_recovery_service.dart';
 import 'package:fl_clash/xboard/utils/xboard_notification.dart';
 import 'package:fl_clash/l10n/l10n.dart';
 import 'package:fl_clash/xboard/core/core.dart';
@@ -94,6 +94,10 @@ class SubscriptionStatusChecker {
       onPurchase: () async {
         await _handleRenewFromDialog(context, ref);
       },
+      onTrafficRecovery: statusResult.type == SubscriptionStatusType.exhausted
+          ? () => showTrafficRecoveryDialog(context: context, ref: ref)
+          : null,
+      useNewPeriod: isNewPeriodEnabled(ref),
       onRefresh: () async {
         _logger.info('[订阅状态弹窗] 刷新订阅状态...');
         await ref.read(xboardUserProvider.notifier).refreshSubscriptionInfo();
@@ -117,6 +121,15 @@ class SubscriptionStatusChecker {
     DomainSubscription? subscriptionInfo,
     DomainUser? userInfo,
   }) async {
+    if (isResetTraffic &&
+        isNewPeriodEnabled(ref, subscriptionInfo: subscriptionInfo)) {
+      await showTrafficRecoveryDialog(
+        context: context,
+        ref: ref,
+        subscriptionInfo: subscriptionInfo,
+      );
+      return;
+    }
     final isDesktop = Platform.isLinux ||
         Platform.isWindows ||
         Platform.isMacOS ||
@@ -149,11 +162,12 @@ class SubscriptionStatusChecker {
 
       if (currentPlan != null) {
         if (isResetTraffic) {
-          await showResetTrafficOrderDialog(
+          await showTrafficRecoveryDialog(
             context: context,
             ref: ref,
             planId: currentPlan.id,
             plan: currentPlan,
+            subscriptionInfo: subscriptionInfo,
           );
           return;
         }
@@ -171,10 +185,11 @@ class SubscriptionStatusChecker {
 
       if (!context.mounted) return;
       if (isResetTraffic) {
-        await showResetTrafficOrderDialog(
+        await showTrafficRecoveryDialog(
           context: context,
           ref: ref,
           planId: currentPlanId,
+          subscriptionInfo: subscriptionInfo,
         );
         return;
       }

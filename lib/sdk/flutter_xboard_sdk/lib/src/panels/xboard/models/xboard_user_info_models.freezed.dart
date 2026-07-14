@@ -39,6 +39,8 @@ mixin _$UserInfo {
   bool get remindExpire => throw _privateConstructorUsedError;
   @JsonKey(name: 'remind_traffic', fromJson: _intToBool, toJson: _boolToInt)
   bool get remindTraffic => throw _privateConstructorUsedError;
+  @JsonKey(name: 'auto_renewal', fromJson: _intToBool, toJson: _boolToInt)
+  bool get autoRenewal => throw _privateConstructorUsedError;
   @JsonKey(
       name: 'expired_at',
       fromJson: _fromUnixTimestamp,
@@ -100,6 +102,8 @@ abstract class $UserInfoCopyWith<$Res> {
       bool remindExpire,
       @JsonKey(name: 'remind_traffic', fromJson: _intToBool, toJson: _boolToInt)
       bool remindTraffic,
+      @JsonKey(name: 'auto_renewal', fromJson: _intToBool, toJson: _boolToInt)
+      bool autoRenewal,
       @JsonKey(
           name: 'expired_at',
           fromJson: _fromUnixTimestamp,
@@ -144,6 +148,7 @@ class _$UserInfoCopyWithImpl<$Res, $Val extends UserInfo>
     Object? banned = null,
     Object? remindExpire = null,
     Object? remindTraffic = null,
+    Object? autoRenewal = null,
     Object? expiredAt = freezed,
     Object? balance = null,
     Object? commissionBalance = null,
@@ -185,6 +190,10 @@ class _$UserInfoCopyWithImpl<$Res, $Val extends UserInfo>
       remindTraffic: null == remindTraffic
           ? _value.remindTraffic
           : remindTraffic // ignore: cast_nullable_to_non_nullable
+              as bool,
+      autoRenewal: null == autoRenewal
+          ? _value.autoRenewal
+          : autoRenewal // ignore: cast_nullable_to_non_nullable
               as bool,
       expiredAt: freezed == expiredAt
           ? _value.expiredAt
@@ -264,6 +273,8 @@ abstract class _$$UserInfoImplCopyWith<$Res>
       bool remindExpire,
       @JsonKey(name: 'remind_traffic', fromJson: _intToBool, toJson: _boolToInt)
       bool remindTraffic,
+      @JsonKey(name: 'auto_renewal', fromJson: _intToBool, toJson: _boolToInt)
+      bool autoRenewal,
       @JsonKey(
           name: 'expired_at',
           fromJson: _fromUnixTimestamp,
@@ -306,6 +317,7 @@ class __$$UserInfoImplCopyWithImpl<$Res>
     Object? banned = null,
     Object? remindExpire = null,
     Object? remindTraffic = null,
+    Object? autoRenewal = null,
     Object? expiredAt = freezed,
     Object? balance = null,
     Object? commissionBalance = null,
@@ -347,6 +359,10 @@ class __$$UserInfoImplCopyWithImpl<$Res>
       remindTraffic: null == remindTraffic
           ? _value.remindTraffic
           : remindTraffic // ignore: cast_nullable_to_non_nullable
+              as bool,
+      autoRenewal: null == autoRenewal
+          ? _value.autoRenewal
+          : autoRenewal // ignore: cast_nullable_to_non_nullable
               as bool,
       expiredAt: freezed == expiredAt
           ? _value.expiredAt
@@ -421,6 +437,8 @@ class _$UserInfoImpl extends _UserInfo {
       this.remindExpire = true,
       @JsonKey(name: 'remind_traffic', fromJson: _intToBool, toJson: _boolToInt)
       this.remindTraffic = true,
+      @JsonKey(name: 'auto_renewal', fromJson: _intToBool, toJson: _boolToInt)
+      this.autoRenewal = false,
       @JsonKey(
           name: 'expired_at',
           fromJson: _fromUnixTimestamp,
@@ -474,6 +492,9 @@ class _$UserInfoImpl extends _UserInfo {
   @JsonKey(name: 'remind_traffic', fromJson: _intToBool, toJson: _boolToInt)
   final bool remindTraffic;
   @override
+  @JsonKey(name: 'auto_renewal', fromJson: _intToBool, toJson: _boolToInt)
+  final bool autoRenewal;
+  @override
   @JsonKey(
       name: 'expired_at',
       fromJson: _fromUnixTimestamp,
@@ -517,7 +538,7 @@ class _$UserInfoImpl extends _UserInfo {
 
   @override
   String toString() {
-    return 'UserInfo(email: $email, transferEnable: $transferEnable, lastLoginAt: $lastLoginAt, createdAt: $createdAt, banned: $banned, remindExpire: $remindExpire, remindTraffic: $remindTraffic, expiredAt: $expiredAt, balance: $balance, commissionBalance: $commissionBalance, planId: $planId, discount: $discount, commissionRate: $commissionRate, telegramId: $telegramId, uuid: $uuid, avatarUrl: $avatarUrl, ip: $ip, ipRegion: $ipRegion, ipIsp: $ipIsp)';
+    return 'UserInfo(email: $email, transferEnable: $transferEnable, lastLoginAt: $lastLoginAt, createdAt: $createdAt, banned: $banned, remindExpire: $remindExpire, remindTraffic: $remindTraffic, autoRenewal: $autoRenewal, expiredAt: $expiredAt, balance: $balance, commissionBalance: $commissionBalance, planId: $planId, discount: $discount, commissionRate: $commissionRate, telegramId: $telegramId, uuid: $uuid, avatarUrl: $avatarUrl, ip: $ip, ipRegion: $ipRegion, ipIsp: $ipIsp)';
   }
 
   @override
@@ -537,6 +558,8 @@ class _$UserInfoImpl extends _UserInfo {
                 other.remindExpire == remindExpire) &&
             (identical(other.remindTraffic, remindTraffic) ||
                 other.remindTraffic == remindTraffic) &&
+            (identical(other.autoRenewal, autoRenewal) ||
+                other.autoRenewal == autoRenewal) &&
             (identical(other.expiredAt, expiredAt) ||
                 other.expiredAt == expiredAt) &&
             (identical(other.balance, balance) || other.balance == balance) &&
@@ -569,6 +592,7 @@ class _$UserInfoImpl extends _UserInfo {
         banned,
         remindExpire,
         remindTraffic,
+        autoRenewal,
         expiredAt,
         balance,
         commissionBalance,
@@ -618,6 +642,8 @@ abstract class _UserInfo extends UserInfo {
       final bool remindExpire,
       @JsonKey(name: 'remind_traffic', fromJson: _intToBool, toJson: _boolToInt)
       final bool remindTraffic,
+      @JsonKey(name: 'auto_renewal', fromJson: _intToBool, toJson: _boolToInt)
+      final bool autoRenewal,
       @JsonKey(
           name: 'expired_at',
           fromJson: _fromUnixTimestamp,
@@ -671,6 +697,9 @@ abstract class _UserInfo extends UserInfo {
   @override
   @JsonKey(name: 'remind_traffic', fromJson: _intToBool, toJson: _boolToInt)
   bool get remindTraffic;
+  @override
+  @JsonKey(name: 'auto_renewal', fromJson: _intToBool, toJson: _boolToInt)
+  bool get autoRenewal;
   @override
   @JsonKey(
       name: 'expired_at',

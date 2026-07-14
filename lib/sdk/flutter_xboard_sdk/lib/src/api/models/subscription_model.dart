@@ -66,6 +66,8 @@ bool? _intToBool(dynamic value) {
   return null;
 }
 
+bool _intToRequiredBool(dynamic value) => _intToBool(value) ?? false;
+
 int? _boolToInt(bool? value) => value == null ? null : (value ? 1 : 0);
 
 @freezed
@@ -98,6 +100,9 @@ class SubscriptionModel with _$SubscriptionModel {
         toJson: _toUnixTimestamp)
     DateTime? nextResetAt,
     @JsonKey(name: 'reset_day', fromJson: _parseResetDay) int? resetDay,
+    @JsonKey(name: 'allow_new_period', fromJson: _intToRequiredBool)
+    @Default(false)
+    bool allowNewPeriod,
   }) = _SubscriptionModel;
 
   const SubscriptionModel._();

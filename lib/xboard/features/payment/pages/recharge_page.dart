@@ -16,6 +16,13 @@ import '../widgets/payment_method_selector_dialog.dart';
 import '../models/payment_step.dart';
 import 'package:fl_clash/xboard/utils/backend_message_mapper.dart';
 
+String _preferPunctuationBreaks(String value) {
+  return value.replaceAllMapped(
+    RegExp(r'[，。！？；：、,.!?;:]'),
+    (match) => '${match.group(0)}\u200B',
+  );
+}
+
 /// 余额充值页面（仅 v2board 面板支持）
 class RechargePage extends ConsumerStatefulWidget {
   const RechargePage({super.key});
@@ -29,6 +36,7 @@ class _RechargePageState extends ConsumerState<RechargePage> {
   final _presetAmounts = [10, 50, 100, 200, 500, 1000];
   int? _selectedPreset;
   bool _isProcessing = false;
+  bool _isAutoRenewalUpdating = false;
 
   @override
   void initState() {
@@ -221,12 +229,34 @@ class _RechargePageState extends ConsumerState<RechargePage> {
     await Future<void>.delayed(const Duration(milliseconds: 250));
   }
 
+  Future<void> _updateAutoRenewal(bool enabled) async {
+    if (_isAutoRenewalUpdating) return;
+    setState(() => _isAutoRenewalUpdating = true);
+    final l10n = AppLocalizations.of(context);
+    final success =
+        await ref.read(xboardUserProvider.notifier).updateAutoRenewal(enabled);
+    if (!mounted) return;
+    setState(() => _isAutoRenewalUpdating = false);
+    if (success) {
+      XBoardNotification.showSuccess(
+        enabled
+            ? l10n.xboardAutoRenewalEnabled
+            : l10n.xboardAutoRenewalDisabled,
+      );
+    } else {
+      XBoardNotification.showError(l10n.xboardAutoRenewalUpdateFailed);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final l10n = AppLocalizations.of(context);
     final isDark = theme.brightness == Brightness.dark;
-    final balance = _currentBalance;
+    final user = ref.watch(userInfoProvider);
+    final balance = user?.balanceInYuan ?? _currentBalance;
+    final hasPlan = user?.planId != null && user!.planId! > 0;
+    final canChangeAutoRenewal = hasPlan || (user?.autoRenewal ?? false);
 
     final content = Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -254,51 +284,132 @@ class _RechargePageState extends ConsumerState<RechargePage> {
                     ),
                   ],
           ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
+          child: LayoutBuilder(
+            builder: (context, constraints) {
+              final rightWidth = constraints.maxWidth * 0.5;
+              final description = _preferPunctuationBreaks(
+                hasPlan
+                    ? l10n.xboardAutoRenewalDescription
+                    : l10n.xboardAutoRenewalNoPlan,
+              );
+              return Row(
+                crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
-                  Container(
-                    padding: const EdgeInsets.all(5),
-                    decoration: BoxDecoration(
-                      color: theme.colorScheme.primary.withValues(
-                        alpha: isDark ? 0.32 : 0.18,
-                      ),
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    child: Icon(
-                      Icons.account_balance_wallet_outlined,
-                      size: 14,
-                      color: isDark
-                          ? theme.colorScheme.onSurface
-                          : theme.colorScheme.primary,
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Row(
+                          children: [
+                            Container(
+                              padding: const EdgeInsets.all(5),
+                              decoration: BoxDecoration(
+                                color: theme.colorScheme.primary.withValues(
+                                  alpha: isDark ? 0.32 : 0.18,
+                                ),
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                              child: Icon(
+                                Icons.account_balance_wallet_outlined,
+                                size: 14,
+                                color: isDark
+                                    ? theme.colorScheme.onSurface
+                                    : theme.colorScheme.primary,
+                              ),
+                            ),
+                            const SizedBox(width: 8),
+                            Flexible(
+                              child: Text(
+                                l10n.xboardCurrentBalance,
+                                style: TextStyle(
+                                  color: isDark
+                                      ? theme.colorScheme.onSurface
+                                          .withValues(alpha: 0.78)
+                                      : theme.colorScheme.primary
+                                          .withValues(alpha: 0.88),
+                                  fontSize: 14,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 8),
+                        FittedBox(
+                          fit: BoxFit.scaleDown,
+                          alignment: Alignment.centerLeft,
+                          child: Text(
+                            '¥${balance.toStringAsFixed(2)}',
+                            style: TextStyle(
+                              color: isDark
+                                  ? theme.colorScheme.onSurface
+                                  : theme.colorScheme.primary
+                                      .withValues(alpha: 0.96),
+                              fontSize: 28,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ),
+                      ],
                     ),
                   ),
-                  const SizedBox(width: 8),
-                  Text(
-                    l10n.xboardCurrentBalance,
-                    style: TextStyle(
-                      color: isDark
-                          ? theme.colorScheme.onSurface.withValues(alpha: 0.78)
-                          : theme.colorScheme.primary.withValues(alpha: 0.88),
-                      fontSize: 14,
+                  const SizedBox(width: 16),
+                  SizedBox(
+                    width: rightWidth,
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      crossAxisAlignment: CrossAxisAlignment.end,
+                      children: [
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.end,
+                          children: [
+                            Flexible(
+                              child: Text(
+                                l10n.xboardAutoRenewal,
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                style: theme.textTheme.titleSmall?.copyWith(
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                            ),
+                            const SizedBox(width: 8),
+                            AnimatedSwitcher(
+                              duration: const Duration(milliseconds: 180),
+                              child: _isAutoRenewalUpdating
+                                  ? const SizedBox(
+                                      key: ValueKey('loading'),
+                                      width: 28,
+                                      height: 28,
+                                      child: CircularProgressIndicator(
+                                        strokeWidth: 2.5,
+                                      ),
+                                    )
+                                  : Switch(
+                                      key: const ValueKey('switch'),
+                                      value: user?.autoRenewal ?? false,
+                                      onChanged: canChangeAutoRenewal
+                                          ? _updateAutoRenewal
+                                          : null,
+                                    ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 2),
+                        Text(
+                          description,
+                          textAlign: TextAlign.right,
+                          softWrap: true,
+                          style: theme.textTheme.bodySmall?.copyWith(
+                            color: theme.colorScheme.onSurfaceVariant,
+                          ),
+                        ),
+                      ],
                     ),
                   ),
                 ],
-              ),
-              const SizedBox(height: 8),
-              Text(
-                '¥${balance.toStringAsFixed(2)}',
-                style: TextStyle(
-                  color: isDark
-                      ? theme.colorScheme.onSurface
-                      : theme.colorScheme.primary.withValues(alpha: 0.96),
-                  fontSize: 28,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-            ],
+              );
+            },
           ),
         ),
         const SizedBox(height: 24),

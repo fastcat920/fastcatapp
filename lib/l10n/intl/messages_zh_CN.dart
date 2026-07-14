@@ -1026,6 +1026,20 @@ class MessageLookup extends MessageLookupByLibrary {
     "xboardAutoOpeningPaymentPage": MessageLookupByLibrary.simpleMessage(
       "正在自动打开支付页面，完成支付后请返回应用",
     ),
+    "xboardAutoRenewal": MessageLookupByLibrary.simpleMessage("自动续费"),
+    "xboardAutoRenewalDescription": MessageLookupByLibrary.simpleMessage(
+      "套餐到期前将使用账户余额自动续费，请确保余额充足。",
+    ),
+    "xboardAutoRenewalDisabled": MessageLookupByLibrary.simpleMessage(
+      "自动续费已关闭",
+    ),
+    "xboardAutoRenewalEnabled": MessageLookupByLibrary.simpleMessage("自动续费已开启"),
+    "xboardAutoRenewalNoPlan": MessageLookupByLibrary.simpleMessage(
+      "购买套餐后可开启自动续费。",
+    ),
+    "xboardAutoRenewalUpdateFailed": MessageLookupByLibrary.simpleMessage(
+      "自动续费设置更新失败，请稍后重试",
+    ),
     "xboardAutoTesting": MessageLookupByLibrary.simpleMessage("自动测试中"),
     "xboardBack": MessageLookupByLibrary.simpleMessage("返回"),
     "xboardBalancePay": MessageLookupByLibrary.simpleMessage("余额支付"),
@@ -1077,6 +1091,9 @@ class MessageLookup extends MessageLookupByLibrary {
     "xboardConfirm": MessageLookupByLibrary.simpleMessage("确定"),
     "xboardConfirmAction": MessageLookupByLibrary.simpleMessage("确定"),
     "xboardConfirmChange": MessageLookupByLibrary.simpleMessage("确认修改"),
+    "xboardConfirmNewPeriod": MessageLookupByLibrary.simpleMessage(
+      "确认开启下一个流量周期？",
+    ),
     "xboardConfirmPassword": MessageLookupByLibrary.simpleMessage("确认密码"),
     "xboardConfirmPurchase": MessageLookupByLibrary.simpleMessage("确认购买"),
     "xboardConfirmRenewPlan": MessageLookupByLibrary.simpleMessage("确认续费套餐"),
@@ -1649,6 +1666,15 @@ class MessageLookup extends MessageLookupByLibrary {
     "xboardNetworkDiagnosticsVpnStatus": MessageLookupByLibrary.simpleMessage(
       "VPN 状态",
     ),
+    "xboardNewPeriodConfirmContent": MessageLookupByLibrary.simpleMessage(
+      "开启后将重置已使用流量，并扣除当前流量周期剩余的套餐时长。此操作无法撤销，是否继续？",
+    ),
+    "xboardNewPeriodFailed": MessageLookupByLibrary.simpleMessage(
+      "开启新的流量周期失败，请稍后重试",
+    ),
+    "xboardNewPeriodSuccess": MessageLookupByLibrary.simpleMessage("新的流量周期已开启"),
+    "xboardNewPeriodTrafficExhaustedDetail":
+        MessageLookupByLibrary.simpleMessage("套餐流量已用完，可以提前开启下一个流量周期。"),
     "xboardNewVersionFound": MessageLookupByLibrary.simpleMessage("发现新版本"),
     "xboardNext": MessageLookupByLibrary.simpleMessage("下一条"),
     "xboardNoAvailableNodes": MessageLookupByLibrary.simpleMessage("暂无可用节点"),
@@ -1909,6 +1935,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "xboardSmartRouting": MessageLookupByLibrary.simpleMessage("智能分流"),
     "xboardSoftwareSettings": MessageLookupByLibrary.simpleMessage("软件设置"),
     "xboardSpeedLimit": MessageLookupByLibrary.simpleMessage("限速"),
+    "xboardStartNewPeriod": MessageLookupByLibrary.simpleMessage("提前开启流量周期"),
     "xboardStartProxy": MessageLookupByLibrary.simpleMessage("启动代理"),
     "xboardStop": MessageLookupByLibrary.simpleMessage("停止"),
     "xboardStopProxy": MessageLookupByLibrary.simpleMessage("停止代理"),

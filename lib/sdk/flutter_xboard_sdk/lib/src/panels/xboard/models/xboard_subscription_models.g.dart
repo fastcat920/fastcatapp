@@ -79,6 +79,9 @@ _$SubscriptionInfoImpl _$$SubscriptionInfoImplFromJson(
       speedLimit: _intFromJson(json['speed_limit']),
       nextResetAt: _fromUnixTimestamp(json['next_reset_at']),
       resetDay: _parseResetDay(json['reset_day']),
+      allowNewPeriod: json['allow_new_period'] == null
+          ? false
+          : _intToRequiredBool(json['allow_new_period']),
     );
 
 Map<String, dynamic> _$$SubscriptionInfoImplToJson(
@@ -98,6 +101,7 @@ Map<String, dynamic> _$$SubscriptionInfoImplToJson(
       'speed_limit': _intToJson(instance.speedLimit),
       'next_reset_at': _toUnixTimestamp(instance.nextResetAt),
       'reset_day': instance.resetDay,
+      'allow_new_period': _boolToInt(instance.allowNewPeriod),
     };
 
 _$SubscriptionResponseImpl _$$SubscriptionResponseImplFromJson(

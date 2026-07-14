@@ -1302,6 +1302,35 @@ class XBoardUserAuthNotifier extends Notifier<UserAuthState> {
     }
   }
 
+  Future<bool> updateAutoRenewal(bool enabled) async {
+    if (!state.isAuthenticated) return false;
+
+    try {
+      final success = await XBoardSDK.instance.user.updateUserInfo({
+        'auto_renewal': enabled ? 1 : 0,
+      });
+      if (success) {
+        final current = ref.read(userInfoProvider) ?? state.userInfo;
+        if (current != null) {
+          final updated = current.copyWith(
+            metadata: {
+              ...current.metadata,
+              'autoRenewal': enabled,
+            },
+          );
+          ref.read(userInfoProvider.notifier).state = updated;
+          state = state.copyWith(userInfo: updated);
+          await _storageService.saveDomainUser(updated);
+        }
+        await refreshUserInfo();
+      }
+      return success;
+    } catch (e) {
+      _logger.info('更新自动续费设置失败: $e');
+      return false;
+    }
+  }
+
   DomainSubscription _mergeSubscriptionWithCache(DomainSubscription current) {
     final cached = ref.read(subscriptionInfoProvider);
     final planId = current.planId > 0 ? current.planId : (cached?.planId ?? 0);
@@ -1517,6 +1546,7 @@ DomainUser _mapUser(UserModel user) {
     ip: user.ip,
     ipRegion: user.ipRegion,
     ipIsp: user.ipIsp,
+    metadata: {'autoRenewal': user.autoRenewal},
   );
 }
 
@@ -1539,6 +1569,7 @@ DomainSubscription _mapSubscription(SubscriptionModel sub) {
     nextResetAt: sub.nextResetAt,
     metadata: {
       if (sub.resetDay != null) 'resetDay': sub.resetDay,
+      'allowNewPeriod': sub.allowNewPeriod,
     },
   );
 }

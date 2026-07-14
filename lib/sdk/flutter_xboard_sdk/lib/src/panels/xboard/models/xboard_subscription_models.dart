@@ -67,6 +67,8 @@ bool? _intToBool(dynamic value) {
   return null;
 }
 
+bool _intToRequiredBool(dynamic value) => _intToBool(value) ?? false;
+
 int? _boolToInt(bool? value) => value == null ? null : (value ? 1 : 0);
 
 /// 计划详情模型
@@ -160,6 +162,12 @@ class SubscriptionInfo with _$SubscriptionInfo {
     DateTime? nextResetAt, // 下次重置时间
     @JsonKey(name: 'reset_day', fromJson: _parseResetDay)
     int? resetDay, // 距下次重置天数
+    @JsonKey(
+        name: 'allow_new_period',
+        fromJson: _intToRequiredBool,
+        toJson: _boolToInt)
+    @Default(false)
+    bool allowNewPeriod,
   }) = _SubscriptionInfo;
 
   const SubscriptionInfo._(); // Add this line

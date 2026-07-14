@@ -78,6 +78,14 @@ extension DomainSubscriptionX on DomainSubscription {
   /// 是否流量耗尽
   bool get isTrafficExhausted => remainingBytes == 0;
 
+  /// 后端是否允许在流量耗尽后提前开启下一个流量周期。
+  bool get allowNewPeriod {
+    final value = metadata['allowNewPeriod'];
+    if (value is bool) return value;
+    if (value is num) return value.toInt() == 1;
+    return value?.toString() == '1';
+  }
+
   /// 是否已过期（到期日当天仍视为有效）
   bool get isExpired {
     if (expiredAt == null) return false;

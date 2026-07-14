@@ -80,6 +80,9 @@ class UserInfo with _$UserInfo {
     @JsonKey(name: 'remind_traffic', fromJson: _intToBool, toJson: _boolToInt)
     @Default(true)
     bool remindTraffic,
+    @JsonKey(name: 'auto_renewal', fromJson: _intToBool, toJson: _boolToInt)
+    @Default(false)
+    bool autoRenewal,
     @JsonKey(
         name: 'expired_at',
         fromJson: _fromUnixTimestamp,
