@@ -4,17 +4,14 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:fl_clash/xboard/features/payment/providers/xboard_payment_provider.dart';
 import 'package:fl_clash/l10n/l10n.dart';
+import 'package:fl_clash/xboard/adapter/initialization/sdk_provider.dart';
 import 'package:fl_clash/xboard/features/auth/providers/xboard_user_provider.dart';
 import 'package:fl_clash/xboard/utils/xboard_notification.dart';
-import 'package:fl_clash/xboard/domain/domain.dart';
 import 'package:fl_clash/xboard/features/shared/styles/styles.dart';
 import 'package:fl_clash/common/common.dart';
 import 'package:fl_clash/xboard/features/shared/widgets/tv_deferred_input.dart';
-import 'payment_webview_page.dart';
-import '../widgets/payment_waiting_overlay.dart';
-import '../widgets/payment_method_selector_dialog.dart';
-import '../models/payment_step.dart';
 import 'package:fl_clash/xboard/utils/backend_message_mapper.dart';
+import 'order_detail_page.dart';
 
 String _preferPunctuationBreaks(String value) {
   return value.replaceAllMapped(
@@ -33,8 +30,11 @@ class RechargePage extends ConsumerStatefulWidget {
 
 class _RechargePageState extends ConsumerState<RechargePage> {
   final _amountController = TextEditingController();
-  final _presetAmounts = [10, 50, 100, 200, 500, 1000];
-  int? _selectedPreset;
+  List<DepositBonusOption> _depositBonusOptions = const [];
+  int? _selectedPresetAmountInCents;
+  String _currencySymbol = '¥';
+  bool _isLoadingDepositBonusOptions = true;
+  bool _depositBonusOptionsLoadFailed = false;
   bool _isProcessing = false;
   bool _isAutoRenewalUpdating = false;
 
@@ -42,12 +42,12 @@ class _RechargePageState extends ConsumerState<RechargePage> {
   void initState() {
     super.initState();
     // 先初始化支付 provider，再后台强刷可用支付方式，避免后台开关变化滞后。
-    ref.read(xboardPaymentProvider);
+    final paymentNotifier = ref.read(xboardPaymentProvider.notifier);
     unawaited(
-      ref
-          .read(xboardPaymentProvider.notifier)
-          .loadPaymentMethods(forceRefresh: true),
+      paymentNotifier.loadPaymentMethods(forceRefresh: true),
     );
+    unawaited(paymentNotifier.loadPendingOrders(updateUiState: false));
+    unawaited(_loadDepositBonusOptions());
   }
 
   @override
@@ -69,6 +69,59 @@ class _RechargePageState extends ConsumerState<RechargePage> {
     return (value * 100).round();
   }
 
+  Future<void> _loadDepositBonusOptions() async {
+    if (mounted) {
+      setState(() {
+        _isLoadingDepositBonusOptions = true;
+        _depositBonusOptionsLoadFailed = false;
+      });
+    }
+
+    try {
+      final sdk = await ref.read(xboardSdkProvider.future);
+      final result = await sdk.httpService.getRequest('/user/comm/config');
+      final rawData = result['data'];
+      final data = rawData is Map
+          ? rawData.map((key, value) => MapEntry(key.toString(), value))
+          : const <String, dynamic>{};
+      final options = <DepositBonusOption>[];
+      final seenAmounts = <int>{};
+      final rawOptions = data['deposit_bounus'];
+      if (rawOptions is List) {
+        for (final rawOption in rawOptions) {
+          final option = DepositBonusOption.tryParse(rawOption);
+          if (option == null || !seenAmounts.add(option.amountInCents)) {
+            continue;
+          }
+          options.add(option);
+        }
+      }
+
+      if (!mounted) return;
+      final configuredCurrency = data['currency_symbol']?.toString().trim();
+      setState(() {
+        _depositBonusOptions = options;
+        _currencySymbol =
+            configuredCurrency?.isNotEmpty == true ? configuredCurrency! : '¥';
+        _isLoadingDepositBonusOptions = false;
+        _depositBonusOptionsLoadFailed = false;
+        if (_selectedPresetAmountInCents != null &&
+            !options.any((option) =>
+                option.amountInCents == _selectedPresetAmountInCents)) {
+          _selectedPresetAmountInCents = null;
+        }
+      });
+    } catch (_) {
+      if (!mounted) return;
+      setState(() {
+        _depositBonusOptions = const [];
+        _selectedPresetAmountInCents = null;
+        _isLoadingDepositBonusOptions = false;
+        _depositBonusOptionsLoadFailed = true;
+      });
+    }
+  }
+
   Future<void> _handleRecharge() async {
     final l10n = AppLocalizations.of(context);
     final amountCents = _amountInCents;
@@ -80,136 +133,41 @@ class _RechargePageState extends ConsumerState<RechargePage> {
     setState(() => _isProcessing = true);
     try {
       final paymentNotifier = ref.read(xboardPaymentProvider.notifier);
-
-      // 显示支付等待浮层
-      if (mounted) {
-        PaymentWaitingManager.show(
-          context,
-          onClose: () {
-            if (mounted) Navigator.of(context).pop();
-          },
-          onPaymentSuccess: () {
-            _refreshUserInfo();
-            if (mounted) {
-              XBoardNotification.showSuccess(l10n.xboardPaymentSuccess);
-              Navigator.of(context).pop(true);
-            }
-          },
-        );
-        PaymentWaitingManager.updateStep(PaymentStep.createOrder);
-      }
-
-      // 1. 创建充值订单
+      // createDepositOrder 与购买套餐共用 createOrder：
+      // 先清理待支付订单，后端仍提示冲突时再全量清理并重试。
       final tradeNo = await paymentNotifier.createDepositOrder(
         amountInCents: amountCents,
       );
       if (tradeNo == null || tradeNo.isEmpty) {
-        PaymentWaitingManager.hide();
-        XBoardNotification.showError(l10n.xboardOrderCreationFailed);
-        return;
-      }
-
-      PaymentWaitingManager.updateTradeNo(tradeNo);
-
-      // 2. 获取支付方式
-      // initState 的后台加载可能因网络问题卡住，这里用 forceRefresh
-      // 发起独立请求并加超时保护，避免无限等待
-      var methods = ref.read(xboardAvailablePaymentMethodsProvider);
-      if (methods.isEmpty) {
-        try {
-          await paymentNotifier
-              .loadPaymentMethods(forceRefresh: true)
-              .timeout(const Duration(seconds: 10));
-        } catch (_) {
-          // 超时或失败：隐藏浮层、提示用户重试
-          PaymentWaitingManager.hide();
-          XBoardNotification.showError(l10n.xboardNoPaymentMethods);
-          return;
-        }
-        methods = ref.read(xboardAvailablePaymentMethodsProvider);
-        if (methods.isEmpty) {
-          PaymentWaitingManager.hide();
-          XBoardNotification.showError(l10n.xboardNoPaymentMethods);
-          return;
-        }
-      }
-
-      // 3. 选择支付方式（和买套餐一样的弹窗）
-      DomainPaymentMethod? selectedMethod;
-      if (methods.length == 1) {
-        selectedMethod = methods.first;
-      } else {
-        PaymentWaitingManager.hide();
+        final errorMessage = ref.read(userUIStateProvider).errorMessage;
         if (!mounted) return;
-        selectedMethod = await PaymentMethodSelectorDialog.show(
-          context,
-          paymentMethods: methods,
-        );
-        if (selectedMethod == null) return;
-        if (mounted) {
-          PaymentWaitingManager.show(
-            context,
-            onClose: () {
-              if (mounted) Navigator.of(context).pop();
-            },
-            onPaymentSuccess: () {
-              _refreshUserInfo();
-              if (mounted) {
-                XBoardNotification.showSuccess(l10n.xboardPaymentSuccess);
-                Navigator.of(context).pop(true);
-              }
-            },
+        throw Exception(errorMessage ?? l10n.xboardOrderCreationFailed);
+      }
+
+      if (!mounted) return;
+      await Navigator.of(context).push(
+        MaterialPageRoute(
+          builder: (_) => OrderDetailPage(
             tradeNo: tradeNo,
-          );
-        }
-      }
-
-      // 4. 提交支付（支付方式已在 initState 及上方校验过，直接使用缓存）
-      final selectedPaymentMethod = selectedMethod;
-      PaymentWaitingManager.updateStep(PaymentStep.loadingPayment);
-      final result = await paymentNotifier.submitPayment(
-        tradeNo: tradeNo,
-        method: selectedPaymentMethod.id.toString(),
+            period: 'deposit',
+            originalPrice: amountCents / 100,
+            finalPrice: amountCents / 100,
+            balanceUsed: 0,
+          ),
+        ),
       );
-      if (result == null) {
-        PaymentWaitingManager.hide();
-        XBoardNotification.showError(l10n.xboardPaymentFailed);
-        return;
-      }
-
-      final type = result['type'] as int? ?? 0;
-      final paymentData = result['data'];
-
-      if (type == -1) {
-        // 余额支付成功
-        PaymentWaitingManager.hide();
-        XBoardNotification.showSuccess(l10n.xboardPaymentSuccess);
+      if (mounted) {
         _refreshUserInfo();
-        if (mounted) Navigator.of(context).pop(true);
-      } else if (paymentData != null &&
-          paymentData is String &&
-          paymentData.isNotEmpty) {
-        // 统一支付页
-        PaymentWaitingManager.hide();
-        if (!mounted) return;
-        final success = await PaymentWebViewPage.open(
-          context,
-          paymentUrl: paymentData,
-          tradeNo: tradeNo,
-        );
-        if (success == true && mounted) {
-          XBoardNotification.showSuccess(l10n.xboardPaymentSuccess);
-          _refreshUserInfo();
-          Navigator.of(context).pop(true);
-        }
-      } else {
-        PaymentWaitingManager.hide();
-        XBoardNotification.showError(l10n.xboardOpenPaymentLinkFailed);
       }
     } catch (e) {
-      PaymentWaitingManager.hide();
-      XBoardNotification.showError(
-          '${l10n.xboardPaymentFailed}: ${BackendMessageMapper.mapError(e, context: BackendMessageContext.order)}');
+      if (mounted) {
+        XBoardNotification.showError(
+          '${l10n.xboardOperationFailed}: ${BackendMessageMapper.mapError(
+            e,
+            context: BackendMessageContext.order,
+          )}',
+        );
+      }
     } finally {
       if (mounted) setState(() => _isProcessing = false);
     }
@@ -223,9 +181,12 @@ class _RechargePageState extends ConsumerState<RechargePage> {
 
   Future<void> _refreshPage() async {
     _refreshUserInfo();
-    await ref
-        .read(xboardPaymentProvider.notifier)
-        .loadPaymentMethods(forceRefresh: true);
+    await Future.wait([
+      ref
+          .read(xboardPaymentProvider.notifier)
+          .loadPaymentMethods(forceRefresh: true),
+      _loadDepositBonusOptions(),
+    ]);
     await Future<void>.delayed(const Duration(milliseconds: 250));
   }
 
@@ -253,6 +214,8 @@ class _RechargePageState extends ConsumerState<RechargePage> {
     final theme = Theme.of(context);
     final l10n = AppLocalizations.of(context);
     final isDark = theme.brightness == Brightness.dark;
+    final mediaSize = MediaQuery.sizeOf(context);
+    final useSideNavigation = mediaSize.width > mediaSize.height || system.isTV;
     final user = ref.watch(userInfoProvider);
     final balance = user?.balanceInYuan ?? _currentBalance;
     final hasPlan = user?.planId != null && user!.planId! > 0;
@@ -339,7 +302,7 @@ class _RechargePageState extends ConsumerState<RechargePage> {
                           fit: BoxFit.scaleDown,
                           alignment: Alignment.centerLeft,
                           child: Text(
-                            '¥${balance.toStringAsFixed(2)}',
+                            '$_currencySymbol${balance.toStringAsFixed(2)}',
                             style: TextStyle(
                               color: isDark
                                   ? theme.colorScheme.onSurface
@@ -418,75 +381,121 @@ class _RechargePageState extends ConsumerState<RechargePage> {
             style: theme.textTheme.titleMedium
                 ?.copyWith(fontWeight: FontWeight.bold)),
         const SizedBox(height: 12),
-        LayoutBuilder(
-          builder: (context, constraints) {
-            const spacing = 12.0;
-            final crossAxisCount = constraints.maxWidth >= 700
-                ? 4
-                : constraints.maxWidth >= 400
-                    ? 3
-                    : 2;
-            final itemWidth =
-                (constraints.maxWidth - spacing * (crossAxisCount - 1)) /
-                    crossAxisCount;
-            return Wrap(
-              spacing: spacing,
-              runSpacing: spacing,
-              children: _presetAmounts.map((amount) {
-                final selected = _selectedPreset == amount;
-                return GestureDetector(
-                  onTap: () {
-                    setState(() {
-                      _selectedPreset = amount;
-                      _amountController.text = amount.toString();
-                    });
-                  },
-                  child: Container(
-                    width: itemWidth,
-                    padding: const EdgeInsets.symmetric(vertical: 16),
-                    decoration: BoxDecoration(
-                      color: selected
-                          ? theme.colorScheme.primary
-                          : (isDark
-                              ? theme.colorScheme.surfaceContainerHighest
-                              : Colors.white),
-                      borderRadius: BorderRadius.circular(14),
-                      border: Border.all(
-                        color: selected
-                            ? Colors.transparent
-                            : (isDark
-                                ? theme.colorScheme.outline
-                                    .withValues(alpha: 0.3)
-                                : XbUiTokens.cardBorderLight),
-                      ),
-                      boxShadow: isDark || selected
-                          ? null
-                          : [
-                              BoxShadow(
-                                color: Colors.black.withValues(alpha: 0.04),
-                                blurRadius: 8,
-                                offset: const Offset(0, 2),
+        if (_isLoadingDepositBonusOptions)
+          const SizedBox(
+            height: 76,
+            child: Center(child: CircularProgressIndicator(strokeWidth: 2)),
+          )
+        else if (_depositBonusOptionsLoadFailed)
+          Center(
+            child: TextButton.icon(
+              onPressed: _loadDepositBonusOptions,
+              icon: const Icon(Icons.refresh, size: 18),
+              label: Text(l10n.xboardRetry),
+            ),
+          )
+        else if (_depositBonusOptions.isNotEmpty)
+          LayoutBuilder(
+            builder: (context, constraints) {
+              const spacing = 12.0;
+              final crossAxisCount = useSideNavigation ? 4 : 2;
+              final itemWidth =
+                  (constraints.maxWidth - spacing * (crossAxisCount - 1)) /
+                      crossAxisCount;
+              return Wrap(
+                spacing: spacing,
+                runSpacing: spacing,
+                children: _depositBonusOptions.map((option) {
+                  final selected =
+                      _selectedPresetAmountInCents == option.amountInCents;
+                  return GestureDetector(
+                    onTap: () {
+                      setState(() {
+                        _selectedPresetAmountInCents = option.amountInCents;
+                        _amountController.text = option.amountInputText;
+                      });
+                    },
+                    child: Stack(
+                      clipBehavior: Clip.none,
+                      children: [
+                        Container(
+                          width: itemWidth,
+                          padding: const EdgeInsets.symmetric(vertical: 16),
+                          decoration: BoxDecoration(
+                            color: selected
+                                ? theme.colorScheme.primary
+                                : (isDark
+                                    ? theme.colorScheme.surfaceContainerHighest
+                                    : Colors.white),
+                            borderRadius: BorderRadius.circular(14),
+                            border: Border.all(
+                              color: selected
+                                  ? Colors.transparent
+                                  : (isDark
+                                      ? theme.colorScheme.outline
+                                          .withValues(alpha: 0.3)
+                                      : XbUiTokens.cardBorderLight),
+                            ),
+                            boxShadow: isDark || selected
+                                ? null
+                                : [
+                                    BoxShadow(
+                                      color:
+                                          Colors.black.withValues(alpha: 0.04),
+                                      blurRadius: 8,
+                                      offset: const Offset(0, 2),
+                                    ),
+                                  ],
+                          ),
+                          child: Center(
+                            child: Text(
+                              '$_currencySymbol${option.amountLabel}',
+                              style: TextStyle(
+                                fontSize: 18,
+                                fontWeight: FontWeight.w600,
+                                color: selected
+                                    ? Colors.white
+                                    : theme.colorScheme.onSurface,
                               ),
-                            ],
-                    ),
-                    child: Center(
-                      child: Text(
-                        '¥$amount',
-                        style: TextStyle(
-                          fontSize: 18,
-                          fontWeight: FontWeight.w600,
-                          color: selected
-                              ? Colors.white
-                              : theme.colorScheme.onSurface,
+                            ),
+                          ),
                         ),
-                      ),
+                        if (option.hasBonus)
+                          Positioned(
+                            top: -7,
+                            right: -5,
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 7,
+                                vertical: 3,
+                              ),
+                              decoration: BoxDecoration(
+                                color: theme.colorScheme.error,
+                                borderRadius: BorderRadius.circular(999),
+                                border: Border.all(
+                                  color: isDark
+                                      ? theme.colorScheme.surface
+                                      : Colors.white,
+                                  width: 1.5,
+                                ),
+                              ),
+                              child: Text(
+                                '+${option.bonusLabel}',
+                                style: const TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 11,
+                                  fontWeight: FontWeight.w700,
+                                ),
+                              ),
+                            ),
+                          ),
+                      ],
                     ),
-                  ),
-                );
-              }).toList(),
-            );
-          },
-        ),
+                  );
+                }).toList(),
+              );
+            },
+          ),
         const SizedBox(height: 20),
         // 自定义金额输入
         Text(l10n.xboardCustomRechargeAmount,
@@ -504,7 +513,7 @@ class _RechargePageState extends ConsumerState<RechargePage> {
             controller: _amountController,
             keyboardType: const TextInputType.numberWithOptions(decimal: true),
             decoration: InputDecoration(
-              prefixText: '¥ ',
+              prefixText: '$_currencySymbol ',
               hintText: l10n.xboardEnterAmount,
               filled: true,
               fillColor: isDark ? null : XbUiTokens.inputFillLight,
@@ -526,7 +535,7 @@ class _RechargePageState extends ConsumerState<RechargePage> {
               ),
             ),
             onChanged: (_) {
-              setState(() => _selectedPreset = null);
+              setState(() => _selectedPresetAmountInCents = null);
             },
           ),
         ),
@@ -592,5 +601,39 @@ class _RechargePageState extends ConsumerState<RechargePage> {
         ),
       ),
     );
+  }
+}
+
+class DepositBonusOption {
+  final int amountInCents;
+  final int bonusInCents;
+
+  const DepositBonusOption({
+    required this.amountInCents,
+    required this.bonusInCents,
+  });
+
+  bool get hasBonus => bonusInCents > 0;
+  String get amountLabel => _formatCents(amountInCents);
+  String get bonusLabel => _formatCents(bonusInCents);
+  String get amountInputText => _formatCents(amountInCents);
+
+  static DepositBonusOption? tryParse(Object? raw) {
+    final parts = raw?.toString().trim().split(':');
+    if (parts == null || parts.length != 2) return null;
+    final amount = double.tryParse(parts[0].trim());
+    final bonus = double.tryParse(parts[1].trim());
+    if (amount == null || bonus == null || amount <= 0 || bonus < 0) {
+      return null;
+    }
+    return DepositBonusOption(
+      amountInCents: (amount * 100).round(),
+      bonusInCents: (bonus * 100).round(),
+    );
+  }
+
+  static String _formatCents(int cents) {
+    if (cents % 100 == 0) return (cents ~/ 100).toString();
+    return (cents / 100).toStringAsFixed(2).replaceFirst(RegExp(r'0+$'), '');
   }
 }

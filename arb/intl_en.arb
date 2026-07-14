@@ -1081,6 +1081,8 @@
   "xboardOrderStatusOpening": "Activating",
   "xboardPackageAmount": "Package amount",
   "xboardRechargeAmount": "Recharge amount",
+  "xboardRechargeBonus": "Recharge bonus",
+  "xboardCreditedAmount": "Amount credited",
   "xboardOriginalPrice": "Original price",
   "xboardDiscountedPrice": "Discounted price",
   "xboardPayNow": "Pay now",

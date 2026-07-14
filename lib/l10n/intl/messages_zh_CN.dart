@@ -1153,6 +1153,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "xboardCreatingOrderPleaseWait": MessageLookupByLibrary.simpleMessage(
       "我们正在为您创建新订单，请稍候",
     ),
+    "xboardCreditedAmount": MessageLookupByLibrary.simpleMessage("到账金额"),
     "xboardCurrentBalance": MessageLookupByLibrary.simpleMessage("当前余额"),
     "xboardCurrentBusinessApi": MessageLookupByLibrary.simpleMessage("当前业务API"),
     "xboardCurrentDomain": MessageLookupByLibrary.simpleMessage("当前域名"),
@@ -1860,6 +1861,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "xboardRechargeBalanceTip": MessageLookupByLibrary.simpleMessage(
       "充值金额将进入账户余额，可用于购买套餐或支付订单。",
     ),
+    "xboardRechargeBonus": MessageLookupByLibrary.simpleMessage("充值奖励"),
     "xboardRechargeNow": MessageLookupByLibrary.simpleMessage("立即充值"),
     "xboardRedeemFailed": MessageLookupByLibrary.simpleMessage("兑换失败"),
     "xboardRedeemFailedWithError": m46,

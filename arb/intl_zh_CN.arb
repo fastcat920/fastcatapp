@@ -1081,6 +1081,8 @@
   "xboardOrderStatusOpening": "开通中",
   "xboardPackageAmount": "套餐金额",
   "xboardRechargeAmount": "充值金额",
+  "xboardRechargeBonus": "充值奖励",
+  "xboardCreditedAmount": "到账金额",
   "xboardOriginalPrice": "原价",
   "xboardDiscountedPrice": "优惠后价格",
   "xboardPayNow": "立即支付",

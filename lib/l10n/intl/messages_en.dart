@@ -1637,6 +1637,9 @@ class MessageLookup extends MessageLookupByLibrary {
     "xboardCreatingOrderPleaseWait": MessageLookupByLibrary.simpleMessage(
       "We are creating a new order for you, please wait",
     ),
+    "xboardCreditedAmount": MessageLookupByLibrary.simpleMessage(
+      "Amount credited",
+    ),
     "xboardCurrentBalance": MessageLookupByLibrary.simpleMessage(
       "Current balance",
     ),
@@ -2586,6 +2589,9 @@ class MessageLookup extends MessageLookupByLibrary {
     ),
     "xboardRechargeBalanceTip": MessageLookupByLibrary.simpleMessage(
       "The recharge amount will be added to your account balance.",
+    ),
+    "xboardRechargeBonus": MessageLookupByLibrary.simpleMessage(
+      "Recharge bonus",
     ),
     "xboardRechargeNow": MessageLookupByLibrary.simpleMessage("Recharge now"),
     "xboardRedeemFailed": MessageLookupByLibrary.simpleMessage("Redeem failed"),

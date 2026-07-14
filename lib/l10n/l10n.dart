@@ -7725,6 +7725,26 @@ class AppLocalizations {
     );
   }
 
+  /// `Recharge bonus`
+  String get xboardRechargeBonus {
+    return Intl.message(
+      'Recharge bonus',
+      name: 'xboardRechargeBonus',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Amount credited`
+  String get xboardCreditedAmount {
+    return Intl.message(
+      'Amount credited',
+      name: 'xboardCreditedAmount',
+      desc: '',
+      args: [],
+    );
+  }
+
   /// `Original price`
   String get xboardOriginalPrice {
     return Intl.message(

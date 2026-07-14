@@ -71,7 +71,8 @@ class _OrderPageState extends ConsumerState<OrderPage> {
     } catch (e) {
       if (!mounted) return;
       setState(() {
-        _error = BackendMessageMapper.mapError(e, context: BackendMessageContext.order);
+        _error = BackendMessageMapper.mapError(e,
+            context: BackendMessageContext.order);
         _isLoading = false;
       });
     }
@@ -290,73 +291,103 @@ class _OrderCard extends StatelessWidget {
         onTap: onTap,
         child: Padding(
           padding: const EdgeInsets.all(14),
-          child: Column(
+          child: Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Row(
-                children: [
-                  Expanded(
-                    child: Text(planName, style: XbUiText.cardTitle(context)),
-                  ),
-                  Container(
-                    padding:
-                        const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-                    decoration: BoxDecoration(
-                      color: statusColor.withValues(alpha: 0.12),
-                      borderRadius: BorderRadius.circular(8),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      planName,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: XbUiText.cardTitle(context),
                     ),
-                    child: Text(
-                      statusLabel,
-                      style: theme.textTheme.labelSmall?.copyWith(
-                        color: statusColor,
-                        fontWeight: FontWeight.w600,
+                    const SizedBox(height: 8),
+                    Row(
+                      children: [
+                        Icon(Icons.access_time_outlined,
+                            size: 14,
+                            color: theme.colorScheme.onSurfaceVariant),
+                        const SizedBox(width: 4),
+                        Flexible(
+                          child: Text(
+                            period,
+                            style: theme.textTheme.bodySmall?.copyWith(
+                                color: theme.colorScheme.onSurfaceVariant),
+                          ),
+                        ),
+                      ],
+                    ),
+                    if (order.createdAt != null) ...[
+                      const SizedBox(height: 6),
+                      Text(
+                        _formatDate(order.createdAt!),
+                        style: theme.textTheme.bodySmall?.copyWith(
+                            color: theme.colorScheme.onSurface
+                                .withValues(alpha: 0.45)),
                       ),
-                    ),
+                    ],
+                    if (order.tradeNo != null) ...[
+                      const SizedBox(height: 4),
+                      Text(
+                        '${AppLocalizations.of(context).xboardOrderNumber}: ${order.tradeNo}',
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: theme.textTheme.bodySmall?.copyWith(
+                            color: theme.colorScheme.onSurface
+                                .withValues(alpha: 0.4),
+                            fontSize: 11),
+                      ),
+                    ],
+                  ],
+                ),
+              ),
+              const SizedBox(width: 12),
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.end,
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 8, vertical: 3),
+                        decoration: BoxDecoration(
+                          color: statusColor.withValues(alpha: 0.12),
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: Text(
+                          statusLabel,
+                          style: theme.textTheme.labelSmall?.copyWith(
+                            color: statusColor,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 5),
+                      Text(
+                        '¥${amount.toStringAsFixed(2)}',
+                        style: theme.textTheme.titleSmall?.copyWith(
+                          fontWeight: FontWeight.bold,
+                          color: theme.colorScheme.primary,
+                        ),
+                      ),
+                    ],
                   ),
                   if (onTap != null) ...[
                     const SizedBox(width: 4),
-                    Icon(Icons.chevron_right,
-                        size: 20, color: theme.colorScheme.onSurfaceVariant),
+                    Icon(
+                      Icons.chevron_right,
+                      size: 20,
+                      color: theme.colorScheme.onSurfaceVariant,
+                    ),
                   ],
                 ],
               ),
-              const SizedBox(height: 8),
-              Row(
-                children: [
-                  Icon(Icons.access_time_outlined,
-                      size: 14, color: theme.colorScheme.onSurfaceVariant),
-                  const SizedBox(width: 4),
-                  Text(period,
-                      style: theme.textTheme.bodySmall?.copyWith(
-                          color: theme.colorScheme.onSurfaceVariant)),
-                  const Spacer(),
-                  Text(
-                    '¥ ${amount.toStringAsFixed(2)}',
-                    style: theme.textTheme.titleSmall?.copyWith(
-                      fontWeight: FontWeight.bold,
-                      color: theme.colorScheme.primary,
-                    ),
-                  ),
-                ],
-              ),
-              if (order.createdAt != null) ...[
-                const SizedBox(height: 6),
-                Text(
-                  _formatDate(order.createdAt!),
-                  style: theme.textTheme.bodySmall?.copyWith(
-                      color:
-                          theme.colorScheme.onSurface.withValues(alpha: 0.45)),
-                ),
-              ],
-              if (order.tradeNo != null) ...[
-                const SizedBox(height: 4),
-                Text(
-                  '${AppLocalizations.of(context).xboardOrderNumber}: ${order.tradeNo}',
-                  style: theme.textTheme.bodySmall?.copyWith(
-                      color: theme.colorScheme.onSurface.withValues(alpha: 0.4),
-                      fontSize: 11),
-                ),
-              ],
             ],
           ),
         ),
