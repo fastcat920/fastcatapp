@@ -10,6 +10,7 @@ import 'package:fl_clash/state.dart';
 import 'package:fl_clash/xboard/utils/xboard_notification.dart';
 import 'package:fl_clash/xboard/features/diagnostics/services/network_diagnostic_snapshot.dart';
 import 'package:fl_clash/xboard/features/shared/services/diagnostic_bundle_service.dart';
+import 'package:fl_clash/xboard/features/shared/styles/styles.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -636,10 +637,9 @@ class _NetCheckPageState extends ConsumerState<NetCheckPage> {
     final l10n = AppLocalizations.of(context);
     final theme = Theme.of(context);
     return ListView(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
       children: [
-        Card(
-          margin: EdgeInsets.zero,
+        _DiagnosticPanel(
           child: Padding(
             padding: const EdgeInsets.all(16),
             child: Column(
@@ -698,35 +698,27 @@ class _NetCheckPageState extends ConsumerState<NetCheckPage> {
         ),
         if (widget.showVpnStatus && _vpnStatus != null) ...[
           _SectionHeader(l10n.xboardNetworkDiagnosticsVpnStatus),
-          Card(
-            margin: EdgeInsets.zero,
-            child: ListTile(
-              leading: Icon(
-                _vpnConnected == true ? Icons.shield : Icons.shield_outlined,
-                color: _vpnConnected == true ? Colors.green : Colors.grey,
-              ),
-              title: Text(_vpnStatus!),
-            ),
+          _DiagnosticStatusRow(
+            icon: _vpnConnected == true ? Icons.shield : Icons.shield_outlined,
+            title: l10n.xboardNetworkDiagnosticsVpnStatus,
+            detail: _vpnStatus!,
+            healthy: _vpnConnected,
           ),
         ],
         if (_conclusion != null) ...[
           _SectionHeader(l10n.xboardNetworkDiagnosticsConclusion),
-          Card(
-            margin: EdgeInsets.zero,
-            child: ListTile(
-              leading: const Icon(Icons.analytics_outlined),
-              title: Text(_conclusion!),
-            ),
+          _DiagnosticStatusRow(
+            icon: Icons.analytics_outlined,
+            title: l10n.xboardNetworkDiagnosticsConclusion,
+            detail: _conclusion!,
           ),
         ],
         if (_networkType != null) ...[
           _SectionHeader(l10n.xboardNetworkDiagnosticsNetworkType),
-          Card(
-            margin: EdgeInsets.zero,
-            child: ListTile(
-              leading: const Icon(Icons.lan_outlined),
-              title: Text(_networkType!),
-            ),
+          _DiagnosticStatusRow(
+            icon: Icons.lan_outlined,
+            title: l10n.xboardNetworkDiagnosticsNetworkType,
+            detail: _networkType!,
           ),
         ],
         if (_dnsResults.isNotEmpty) ...[
@@ -784,11 +776,12 @@ class _SectionHeader extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.fromLTRB(4, 16, 4, 8),
+      padding: const EdgeInsets.fromLTRB(4, 8, 4, 10),
       child: Text(
         text,
         style: Theme.of(context).textTheme.titleSmall?.copyWith(
               color: Theme.of(context).colorScheme.onSurfaceVariant,
+              fontWeight: FontWeight.w700,
             ),
       ),
     );
@@ -802,33 +795,132 @@ class _ResultList extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Card(
-      margin: EdgeInsets.zero,
-      child: Column(
+    return Column(
+      children: [
+        for (final result in results)
+          _DiagnosticStatusRow(
+            icon: result.skipped
+                ? Icons.remove_circle_outline
+                : result.ok
+                    ? Icons.check_circle_outline
+                    : Icons.error_outline,
+            title: result.label,
+            detail: result.detail,
+            trailing: result.elapsedMs > 0 ? '${result.elapsedMs}ms' : null,
+            healthy: result.skipped ? null : result.ok,
+          ),
+      ],
+    );
+  }
+}
+
+class _DiagnosticPanel extends StatelessWidget {
+  const _DiagnosticPanel({required this.child});
+
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return Container(
+      margin: const EdgeInsets.only(bottom: 10),
+      decoration: BoxDecoration(
+        color: theme.colorScheme.surfaceContainerHighest.withValues(alpha: 0.4),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(
+          color: theme.colorScheme.outline.withValues(alpha: 0.12),
+        ),
+      ),
+      child: child,
+    );
+  }
+}
+
+class _DiagnosticStatusRow extends StatelessWidget {
+  const _DiagnosticStatusRow({
+    required this.icon,
+    required this.title,
+    required this.detail,
+    this.trailing,
+    this.healthy,
+  });
+
+  final IconData icon;
+  final String title;
+  final String detail;
+  final String? trailing;
+  final bool? healthy;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final statusColor = healthy == true
+        ? XbUiStatusColor.success(context)
+        : healthy == false
+            ? XbUiStatusColor.error(context)
+            : XbUiStatusColor.pending(context);
+    return Container(
+      margin: const EdgeInsets.only(bottom: 10),
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: theme.colorScheme.surfaceContainerHighest.withValues(alpha: 0.4),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(
+          color: theme.colorScheme.outline.withValues(alpha: 0.12),
+        ),
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          for (var index = 0; index < results.length; index++) ...[
-            ListTile(
-              dense: true,
-              leading: Icon(
-                results[index].skipped
-                    ? Icons.remove_circle_outline
-                    : results[index].ok
-                        ? Icons.check_circle_outline
-                        : Icons.error_outline,
-                color: results[index].skipped
-                    ? Theme.of(context).colorScheme.onSurfaceVariant
-                    : results[index].ok
-                        ? Colors.green
-                        : Colors.red,
-              ),
-              title: Text(results[index].label),
-              subtitle: Text(results[index].detail),
-              trailing: results[index].elapsedMs > 0
-                  ? Text('${results[index].elapsedMs}ms')
-                  : null,
+          Container(
+            width: 34,
+            height: 34,
+            decoration: BoxDecoration(
+              color: statusColor.withValues(alpha: 0.12),
+              shape: BoxShape.circle,
             ),
-            if (index != results.length - 1) const Divider(height: 0),
-          ],
+            child: Icon(icon, color: statusColor, size: 18),
+          ),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  title,
+                  style: theme.textTheme.labelLarge?.copyWith(
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+                const SizedBox(height: 3),
+                Text(
+                  detail,
+                  style: theme.textTheme.bodySmall?.copyWith(
+                    color: theme.colorScheme.onSurfaceVariant,
+                    height: 1.25,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(width: 8),
+          if (trailing != null)
+            Padding(
+              padding: const EdgeInsets.only(right: 8),
+              child: Text(
+                trailing!,
+                style: theme.textTheme.bodySmall?.copyWith(color: statusColor),
+              ),
+            ),
+          Icon(
+            healthy == true
+                ? Icons.check_circle
+                : healthy == false
+                    ? Icons.error
+                    : Icons.info,
+            color: statusColor,
+            size: 18,
+          ),
         ],
       ),
     );

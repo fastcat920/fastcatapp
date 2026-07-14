@@ -116,7 +116,7 @@ class _DiscountBadge extends StatelessWidget {
   }
 }
 
-class _CouponTextField extends StatelessWidget {
+class _CouponTextField extends StatefulWidget {
   final TextEditingController controller;
   final bool? isValid;
   final VoidCallback onChanged;
@@ -128,79 +128,115 @@ class _CouponTextField extends StatelessWidget {
   });
 
   @override
+  State<_CouponTextField> createState() => _CouponTextFieldState();
+}
+
+class _CouponTextFieldState extends State<_CouponTextField> {
+  bool _hasFocus = false;
+
+  @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
     final isDark = theme.brightness == Brightness.dark;
-    return Container(
-      height: 48,
-      decoration: BoxDecoration(
-        color:
-            isDark ? colorScheme.surfaceContainerLow : const Color(0xFFF5F7FA),
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(
-          color: _getBorderColor(colorScheme, isDark),
-          width: 1.5,
+    return Focus(
+      onFocusChange: (hasFocus) {
+        if (_hasFocus != hasFocus) {
+          setState(() => _hasFocus = hasFocus);
+        }
+      },
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 140),
+        height: 48,
+        clipBehavior: Clip.antiAlias,
+        decoration: BoxDecoration(
+          color: isDark
+              ? colorScheme.surfaceContainerLow
+              : const Color(0xFFF5F7FA),
+          borderRadius: BorderRadius.circular(12),
         ),
-      ),
-      child: TVDeferredInput(
-        borderRadius: BorderRadius.circular(12),
-        builder: (context, focusNode, readOnly, showCursor, beginEditing) =>
-            TextField(
-          focusNode: focusNode,
-          readOnly: readOnly,
-          showCursor: showCursor,
-          onTap: beginEditing,
-          controller: controller,
-          style: TextStyle(
-            color: colorScheme.onSurface,
-            fontSize: 15,
-            fontWeight: FontWeight.w600,
-            letterSpacing: 0.5,
+        foregroundDecoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(
+            color: _getBorderColor(colorScheme, isDark),
+            width: 1.5,
           ),
-          decoration: InputDecoration(
-            border: InputBorder.none,
-            hintText: AppLocalizations.of(context).xboardEnterCouponCode,
-            hintStyle: TextStyle(
-              color: colorScheme.onSurfaceVariant.withValues(alpha: 0.62),
-              fontSize: 14,
-              fontWeight: FontWeight.normal,
+        ),
+        child: TVDeferredInput(
+          borderRadius: BorderRadius.circular(12),
+          builder: (context, focusNode, readOnly, showCursor, beginEditing) =>
+              TextField(
+            focusNode: focusNode,
+            readOnly: readOnly,
+            showCursor: showCursor,
+            onTap: beginEditing,
+            controller: widget.controller,
+            cursorColor: colorScheme.primary,
+            style: TextStyle(
+              color: colorScheme.onSurface,
+              fontSize: 15,
+              fontWeight: FontWeight.w600,
+              letterSpacing: 0.5,
             ),
-            prefixIcon: Icon(
-              Icons.confirmation_number_outlined,
-              color: _getIconColor(colorScheme),
-              size: 20,
+            decoration: InputDecoration(
+              border: InputBorder.none,
+              enabledBorder: InputBorder.none,
+              focusedBorder: InputBorder.none,
+              hintText: AppLocalizations.of(context).xboardEnterCouponCode,
+              hintStyle: TextStyle(
+                color: colorScheme.onSurfaceVariant.withValues(alpha: 0.62),
+                fontSize: 14,
+                fontWeight: FontWeight.normal,
+              ),
+              prefixIcon: Icon(
+                Icons.confirmation_number_outlined,
+                color: _getIconColor(colorScheme),
+                size: 20,
+              ),
+              suffixIcon: widget.isValid == null
+                  ? null
+                  : widget.isValid!
+                      ? Icon(
+                          Icons.check_circle,
+                          color: Colors.green.shade600,
+                          size: 20,
+                        )
+                      : IconButton(
+                          onPressed: () {
+                            widget.controller.clear();
+                            widget.onChanged();
+                          },
+                          icon: Icon(
+                            Icons.cancel,
+                            color: Colors.red.shade600,
+                            size: 20,
+                          ),
+                        ),
+              contentPadding: const EdgeInsets.symmetric(
+                horizontal: 16,
+                vertical: 14,
+              ),
             ),
-            suffixIcon: isValid != null
-                ? Icon(
-                    isValid! ? Icons.check_circle : Icons.cancel,
-                    color:
-                        isValid! ? Colors.green.shade600 : Colors.red.shade600,
-                    size: 20,
-                  )
-                : null,
-            contentPadding: const EdgeInsets.symmetric(
-              horizontal: 16,
-              vertical: 14,
-            ),
+            onChanged: (_) => widget.onChanged(),
           ),
-          onChanged: (_) => onChanged(),
         ),
       ),
     );
   }
 
   Color _getBorderColor(ColorScheme colorScheme, bool isDark) {
-    if (isValid == false) return Colors.red.shade300;
-    if (isValid == true) return Colors.green.shade400;
+    if (widget.isValid == false) return Colors.red.shade300;
+    if (widget.isValid == true) return Colors.green.shade400;
+    if (_hasFocus) return colorScheme.primary;
     return isDark
         ? colorScheme.outline.withValues(alpha: 0.28)
         : const Color(0xFFEEF0F4);
   }
 
   Color _getIconColor(ColorScheme colorScheme) {
-    if (isValid == false) return Colors.red.shade400;
-    if (isValid == true) return Colors.green.shade400;
+    if (widget.isValid == false) return Colors.red.shade400;
+    if (widget.isValid == true) return Colors.green.shade400;
+    if (_hasFocus) return colorScheme.primary;
     return colorScheme.onSurfaceVariant.withValues(alpha: 0.72);
   }
 }

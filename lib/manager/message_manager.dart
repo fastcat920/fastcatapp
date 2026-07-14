@@ -8,10 +8,12 @@ import 'package:flutter/material.dart' hide RoundedSuperellipseBorder;
 
 class MessageManager extends StatefulWidget {
   final Widget child;
+  final bool rootNavigationVisible;
 
   const MessageManager({
     super.key,
     required this.child,
+    required this.rootNavigationVisible,
   });
 
   @override
@@ -140,11 +142,14 @@ class MessageManagerState extends State<MessageManager> {
               mediaQuery.viewPadding.bottom,
               mediaQuery.viewInsets.bottom,
             );
-            final isNarrow = mediaQuery.size.width < 600;
-            // 窄屏越过底部导航栏(68dp)
-            final bottomOffset = isNarrow ? 68.0 : 40.0;
-            // 桌面端侧边导航栏 96dp，左边距补 96dp 使卡片在内容区居中
-            final leftOffset = isNarrow ? 12.0 : 108.0;
+            final sideNavigationVisible = widget.rootNavigationVisible &&
+                (mediaQuery.size.width > mediaQuery.size.height || system.isTV);
+            final bottomNavigationVisible =
+                widget.rootNavigationVisible && !sideNavigationVisible;
+            // 只在底部根菜单真实显示时越过导航栏。
+            final bottomOffset = bottomNavigationVisible ? 68.0 : 40.0;
+            // 侧边根菜单宽 96dp；左右再保留 12dp，让提示在剩余内容区居中。
+            final leftOffset = sideNavigationVisible ? 108.0 : 12.0;
             return EdgeInsets.only(
               bottom: viewBottom + bottomOffset,
               left: leftOffset,

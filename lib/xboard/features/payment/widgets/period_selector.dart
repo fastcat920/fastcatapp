@@ -59,8 +59,8 @@ class PeriodSelector extends StatelessWidget {
     // 与余额充值金额卡片保持一致的横向、纵向间距。
     const spacing = 12.0;
 
-    // 根据屏幕大小动态调整宽高比
-    final aspectRatio = (3.0 * scaleFactor).clamp(2.5, 3.5);
+    // 参考充值金额卡片增加上下留白，仅小幅增高周期卡片。
+    final aspectRatio = (2.7 * scaleFactor).clamp(2.25, 3.2);
 
     return GridView.builder(
       shrinkWrap: true,

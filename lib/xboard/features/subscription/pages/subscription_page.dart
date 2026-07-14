@@ -88,8 +88,8 @@ class _SubscriptionPageState extends State<SubscriptionPage>
         _scrollController.position.maxScrollExtent - 200) {
       if (_displayCount < _logs.length) {
         setState(() {
-          _displayCount = (_displayCount + _pageIncrement)
-              .clamp(0, _logs.length);
+          _displayCount =
+              (_displayCount + _pageIncrement).clamp(0, _logs.length);
         });
       }
     }
@@ -165,7 +165,10 @@ class _SubscriptionPageState extends State<SubscriptionPage>
       appBar: AppBar(
         title: Text(AppLocalizations.of(context).xboardTrafficDetails),
         actions: [
-          if (Platform.isLinux || Platform.isWindows || Platform.isMacOS || system.isTV)
+          if (Platform.isLinux ||
+              Platform.isWindows ||
+              Platform.isMacOS ||
+              system.isTV)
             Padding(
               padding: const EdgeInsets.only(right: 12),
               child: IconButton(
@@ -207,33 +210,32 @@ class _SubscriptionPageState extends State<SubscriptionPage>
       );
     }
 
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Expanded(
-          child: RefreshIndicator(
-            onRefresh: _doRefresh,
-            child: ListView.builder(
-              controller: _scrollController,
-              padding: XbUiTokens.pagePadding,
-              itemCount: _displayCount.clamp(0, _logs.length),
-              itemBuilder: (context, index) =>
-                  _TrafficLogCard(entry: _logs[index]),
-            ),
-          ),
-        ),
-        Padding(
-          padding: const EdgeInsets.only(left: 16, right: 16, bottom: 10),
-          child: Center(
-            child: Text(
-              AppLocalizations.of(context).xboardTrafficLogHint,
-              style: XbUiText.bodySmall(context).copyWith(
-                color: theme.colorScheme.onSurfaceVariant.withValues(alpha: 0.5),
+    final visibleCount = _displayCount.clamp(0, _logs.length);
+    final showListHint = visibleCount == _logs.length;
+    return RefreshIndicator(
+      onRefresh: _doRefresh,
+      child: ListView.builder(
+        controller: _scrollController,
+        padding: XbUiTokens.pagePadding,
+        itemCount: visibleCount + (showListHint ? 1 : 0),
+        itemBuilder: (context, index) {
+          if (index < visibleCount) {
+            return _TrafficLogCard(entry: _logs[index]);
+          }
+          return Padding(
+            padding: const EdgeInsets.only(top: 6, bottom: 10),
+            child: Center(
+              child: Text(
+                AppLocalizations.of(context).xboardTrafficLogHint,
+                style: XbUiText.bodySmall(context).copyWith(
+                  color:
+                      theme.colorScheme.onSurfaceVariant.withValues(alpha: 0.5),
+                ),
               ),
             ),
-          ),
-        ),
-      ],
+          );
+        },
+      ),
     );
   }
 }

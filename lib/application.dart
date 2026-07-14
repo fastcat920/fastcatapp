@@ -354,11 +354,29 @@ class ApplicationState extends ConsumerState<Application>
   }
 
   _buildApp(Widget child) {
-    return MessageManager(
-      child: ThemeManager(
-        child: child,
-      ),
+    return Consumer(
+      builder: (context, ref, _) {
+        final isAuthenticated = ref.watch(
+          xboardUserProvider.select((state) => state.isAuthenticated),
+        );
+        return ValueListenableBuilder<RouteInformation>(
+          valueListenable: _router.routeInformationProvider,
+          builder: (context, routeInformation, _) => MessageManager(
+            rootNavigationVisible: isAuthenticated &&
+                _isRootNavigationRoute(routeInformation.uri.path),
+            child: ThemeManager(
+              child: child,
+            ),
+          ),
+        );
+      },
     );
+  }
+
+  bool _isRootNavigationRoute(String path) {
+    if (path == '/') return true;
+    final firstSegment = Uri.tryParse(path)?.pathSegments.firstOrNull;
+    return const {'plans', 'invite', 'mine', 'logs'}.contains(firstSegment);
   }
 
   @override
