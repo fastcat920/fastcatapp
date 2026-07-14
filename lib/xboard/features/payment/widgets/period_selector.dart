@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:fl_clash/common/common.dart';
 import 'package:fl_clash/l10n/l10n.dart';
 import '../utils/price_calculator.dart';
 
@@ -40,50 +41,23 @@ class PeriodSelector extends StatelessWidget {
             ),
           ),
         ),
-        if (periods.length <= 2)
-          _buildRowLayout(context)
-        else
-          _buildGridLayout(context),
+        _buildGridLayout(context),
       ],
     );
   }
 
-  Widget _buildRowLayout(BuildContext context) {
-    final screenWidth = MediaQuery.of(context).size.width;
-    final baseWidth = 800.0; // 统一基准宽度
-    final scaleFactor = (screenWidth / baseWidth).clamp(0.8, 1.5);
-    final horizontalPadding = (3 * scaleFactor).clamp(2.0, 6.0);
-
-    return Row(
-      children: periods.map((period) {
-        final isSelected = selectedPeriod == period['period'];
-        return Expanded(
-          child: Padding(
-            padding: EdgeInsets.symmetric(horizontal: horizontalPadding),
-            child: _PeriodCard(
-              period: period,
-              isSelected: isSelected,
-              onTap: () => onPeriodSelected(period['period']),
-              couponType: couponType,
-              couponValue: couponValue,
-              scaleFactor: scaleFactor,
-            ),
-          ),
-        );
-      }).toList(),
-    );
-  }
-
   Widget _buildGridLayout(BuildContext context) {
-    final screenWidth = MediaQuery.of(context).size.width;
+    final mediaSize = MediaQuery.sizeOf(context);
+    final screenWidth = mediaSize.width;
     final baseWidth = 800.0; // 统一基准宽度
     final scaleFactor = (screenWidth / baseWidth).clamp(0.8, 1.5);
 
-    // 根据屏幕宽度动态调整列数
-    final crossAxisCount = screenWidth > 600 ? 3 : 2;
+    // 与根菜单使用相同判断：左侧根菜单 4 列，底部根菜单 2 列。
+    final useSideNavigation = mediaSize.width > mediaSize.height || system.isTV;
+    final crossAxisCount = useSideNavigation ? 4 : 2;
 
-    // 根据屏幕大小动态调整间距
-    final spacing = (6 * scaleFactor).clamp(4.0, 12.0);
+    // 与余额充值金额卡片保持一致的横向、纵向间距。
+    const spacing = 12.0;
 
     // 根据屏幕大小动态调整宽高比
     final aspectRatio = (3.0 * scaleFactor).clamp(2.5, 3.5);

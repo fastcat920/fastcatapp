@@ -885,7 +885,12 @@ mixin _$SubscriptionInfo {
       toJson: _toUnixTimestamp)
   DateTime? get nextResetAt => throw _privateConstructorUsedError; // 下次重置时间
   @JsonKey(name: 'reset_day', fromJson: _parseResetDay)
-  int? get resetDay => throw _privateConstructorUsedError;
+  int? get resetDay => throw _privateConstructorUsedError; // 距下次重置天数
+  @JsonKey(
+      name: 'allow_new_period',
+      fromJson: _intToRequiredBool,
+      toJson: _boolToInt)
+  bool get allowNewPeriod => throw _privateConstructorUsedError;
 
   /// Serializes this SubscriptionInfo to a JSON map.
   Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
@@ -930,7 +935,12 @@ abstract class $SubscriptionInfoCopyWith<$Res> {
           fromJson: _fromUnixTimestamp,
           toJson: _toUnixTimestamp)
       DateTime? nextResetAt,
-      @JsonKey(name: 'reset_day', fromJson: _parseResetDay) int? resetDay});
+      @JsonKey(name: 'reset_day', fromJson: _parseResetDay) int? resetDay,
+      @JsonKey(
+          name: 'allow_new_period',
+          fromJson: _intToRequiredBool,
+          toJson: _boolToInt)
+      bool allowNewPeriod});
 
   $PlanDetailsCopyWith<$Res>? get plan;
 }
@@ -964,6 +974,7 @@ class _$SubscriptionInfoCopyWithImpl<$Res, $Val extends SubscriptionInfo>
     Object? speedLimit = freezed,
     Object? nextResetAt = freezed,
     Object? resetDay = freezed,
+    Object? allowNewPeriod = null,
   }) {
     return _then(_value.copyWith(
       subscribeUrl: freezed == subscribeUrl
@@ -1022,6 +1033,10 @@ class _$SubscriptionInfoCopyWithImpl<$Res, $Val extends SubscriptionInfo>
           ? _value.resetDay
           : resetDay // ignore: cast_nullable_to_non_nullable
               as int?,
+      allowNewPeriod: null == allowNewPeriod
+          ? _value.allowNewPeriod
+          : allowNewPeriod // ignore: cast_nullable_to_non_nullable
+              as bool,
     ) as $Val);
   }
 
@@ -1075,7 +1090,12 @@ abstract class _$$SubscriptionInfoImplCopyWith<$Res>
           fromJson: _fromUnixTimestamp,
           toJson: _toUnixTimestamp)
       DateTime? nextResetAt,
-      @JsonKey(name: 'reset_day', fromJson: _parseResetDay) int? resetDay});
+      @JsonKey(name: 'reset_day', fromJson: _parseResetDay) int? resetDay,
+      @JsonKey(
+          name: 'allow_new_period',
+          fromJson: _intToRequiredBool,
+          toJson: _boolToInt)
+      bool allowNewPeriod});
 
   @override
   $PlanDetailsCopyWith<$Res>? get plan;
@@ -1108,6 +1128,7 @@ class __$$SubscriptionInfoImplCopyWithImpl<$Res>
     Object? speedLimit = freezed,
     Object? nextResetAt = freezed,
     Object? resetDay = freezed,
+    Object? allowNewPeriod = null,
   }) {
     return _then(_$SubscriptionInfoImpl(
       subscribeUrl: freezed == subscribeUrl
@@ -1166,6 +1187,10 @@ class __$$SubscriptionInfoImplCopyWithImpl<$Res>
           ? _value.resetDay
           : resetDay // ignore: cast_nullable_to_non_nullable
               as int?,
+      allowNewPeriod: null == allowNewPeriod
+          ? _value.allowNewPeriod
+          : allowNewPeriod // ignore: cast_nullable_to_non_nullable
+              as bool,
     ));
   }
 }
@@ -1200,7 +1225,12 @@ class _$SubscriptionInfoImpl extends _SubscriptionInfo {
           fromJson: _fromUnixTimestamp,
           toJson: _toUnixTimestamp)
       this.nextResetAt,
-      @JsonKey(name: 'reset_day', fromJson: _parseResetDay) this.resetDay})
+      @JsonKey(name: 'reset_day', fromJson: _parseResetDay) this.resetDay,
+      @JsonKey(
+          name: 'allow_new_period',
+          fromJson: _intToRequiredBool,
+          toJson: _boolToInt)
+      this.allowNewPeriod = false})
       : super._();
 
   factory _$SubscriptionInfoImpl.fromJson(Map<String, dynamic> json) =>
@@ -1259,10 +1289,17 @@ class _$SubscriptionInfoImpl extends _SubscriptionInfo {
   @override
   @JsonKey(name: 'reset_day', fromJson: _parseResetDay)
   final int? resetDay;
+// 距下次重置天数
+  @override
+  @JsonKey(
+      name: 'allow_new_period',
+      fromJson: _intToRequiredBool,
+      toJson: _boolToInt)
+  final bool allowNewPeriod;
 
   @override
   String toString() {
-    return 'SubscriptionInfo(subscribeUrl: $subscribeUrl, plan: $plan, token: $token, expiredAt: $expiredAt, u: $u, d: $d, transferEnable: $transferEnable, planId: $planId, email: $email, uuid: $uuid, deviceLimit: $deviceLimit, speedLimit: $speedLimit, nextResetAt: $nextResetAt, resetDay: $resetDay)';
+    return 'SubscriptionInfo(subscribeUrl: $subscribeUrl, plan: $plan, token: $token, expiredAt: $expiredAt, u: $u, d: $d, transferEnable: $transferEnable, planId: $planId, email: $email, uuid: $uuid, deviceLimit: $deviceLimit, speedLimit: $speedLimit, nextResetAt: $nextResetAt, resetDay: $resetDay, allowNewPeriod: $allowNewPeriod)';
   }
 
   @override
@@ -1290,7 +1327,9 @@ class _$SubscriptionInfoImpl extends _SubscriptionInfo {
             (identical(other.nextResetAt, nextResetAt) ||
                 other.nextResetAt == nextResetAt) &&
             (identical(other.resetDay, resetDay) ||
-                other.resetDay == resetDay));
+                other.resetDay == resetDay) &&
+            (identical(other.allowNewPeriod, allowNewPeriod) ||
+                other.allowNewPeriod == allowNewPeriod));
   }
 
   @JsonKey(includeFromJson: false, includeToJson: false)
@@ -1310,7 +1349,8 @@ class _$SubscriptionInfoImpl extends _SubscriptionInfo {
       deviceLimit,
       speedLimit,
       nextResetAt,
-      resetDay);
+      resetDay,
+      allowNewPeriod);
 
   /// Create a copy of SubscriptionInfo
   /// with the given fields replaced by the non-null parameter values.
@@ -1357,8 +1397,12 @@ abstract class _SubscriptionInfo extends SubscriptionInfo {
           fromJson: _fromUnixTimestamp,
           toJson: _toUnixTimestamp)
       final DateTime? nextResetAt,
-      @JsonKey(name: 'reset_day', fromJson: _parseResetDay)
-      final int? resetDay}) = _$SubscriptionInfoImpl;
+      @JsonKey(name: 'reset_day', fromJson: _parseResetDay) final int? resetDay,
+      @JsonKey(
+          name: 'allow_new_period',
+          fromJson: _intToRequiredBool,
+          toJson: _boolToInt)
+      final bool allowNewPeriod}) = _$SubscriptionInfoImpl;
   const _SubscriptionInfo._() : super._();
 
   factory _SubscriptionInfo.fromJson(Map<String, dynamic> json) =
@@ -1407,7 +1451,13 @@ abstract class _SubscriptionInfo extends SubscriptionInfo {
   DateTime? get nextResetAt; // 下次重置时间
   @override
   @JsonKey(name: 'reset_day', fromJson: _parseResetDay)
-  int? get resetDay;
+  int? get resetDay; // 距下次重置天数
+  @override
+  @JsonKey(
+      name: 'allow_new_period',
+      fromJson: _intToRequiredBool,
+      toJson: _boolToInt)
+  bool get allowNewPeriod;
 
   /// Create a copy of SubscriptionInfo
   /// with the given fields replaced by the non-null parameter values.

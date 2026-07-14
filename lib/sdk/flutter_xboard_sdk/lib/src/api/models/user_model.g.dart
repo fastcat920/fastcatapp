@@ -19,6 +19,9 @@ _$UserModelImpl _$$UserModelImplFromJson(Map<String, dynamic> json) =>
       remindTraffic: json['remind_traffic'] == null
           ? true
           : _intToBool(json['remind_traffic']),
+      autoRenewal: json['auto_renewal'] == null
+          ? false
+          : _intToBool(json['auto_renewal']),
       expiredAt: _fromUnixTimestamp((json['expired_at'] as num?)?.toInt()),
       balance: (json['balance'] as num?)?.toDouble() ?? 0,
       commissionBalance: (json['commission_balance'] as num?)?.toDouble() ?? 0,
@@ -42,6 +45,7 @@ Map<String, dynamic> _$$UserModelImplToJson(_$UserModelImpl instance) =>
       'banned': _boolToInt(instance.banned),
       'remind_expire': _boolToInt(instance.remindExpire),
       'remind_traffic': _boolToInt(instance.remindTraffic),
+      'auto_renewal': _boolToInt(instance.autoRenewal),
       'expired_at': _toUnixTimestamp(instance.expiredAt),
       'balance': instance.balance,
       'commission_balance': instance.commissionBalance,

@@ -84,6 +84,14 @@ class DomainUser with _$DomainUser {
 
   // ========== 业务逻辑（Getter） ==========
 
+  /// 是否开启余额自动续费（V2Board 特有字段）。
+  bool get autoRenewal {
+    final value = metadata['autoRenewal'];
+    if (value is bool) return value;
+    if (value is num) return value.toInt() == 1;
+    return value?.toString() == '1';
+  }
+
   /// 已用流量总计（字节）
   int get totalUsedBytes => uploadedBytes + downloadedBytes;
 

@@ -50,6 +50,8 @@ mixin _$SubscriptionModel {
   DateTime? get nextResetAt => throw _privateConstructorUsedError;
   @JsonKey(name: 'reset_day', fromJson: _parseResetDay)
   int? get resetDay => throw _privateConstructorUsedError;
+  @JsonKey(name: 'allow_new_period', fromJson: _intToRequiredBool)
+  bool get allowNewPeriod => throw _privateConstructorUsedError;
 
   /// Serializes this SubscriptionModel to a JSON map.
   Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
@@ -94,7 +96,9 @@ abstract class $SubscriptionModelCopyWith<$Res> {
           fromJson: _fromUnixTimestamp,
           toJson: _toUnixTimestamp)
       DateTime? nextResetAt,
-      @JsonKey(name: 'reset_day', fromJson: _parseResetDay) int? resetDay});
+      @JsonKey(name: 'reset_day', fromJson: _parseResetDay) int? resetDay,
+      @JsonKey(name: 'allow_new_period', fromJson: _intToRequiredBool)
+      bool allowNewPeriod});
 
   $SubscriptionPlanModelCopyWith<$Res>? get plan;
 }
@@ -128,6 +132,7 @@ class _$SubscriptionModelCopyWithImpl<$Res, $Val extends SubscriptionModel>
     Object? speedLimit = freezed,
     Object? nextResetAt = freezed,
     Object? resetDay = freezed,
+    Object? allowNewPeriod = null,
   }) {
     return _then(_value.copyWith(
       subscribeUrl: freezed == subscribeUrl
@@ -186,6 +191,10 @@ class _$SubscriptionModelCopyWithImpl<$Res, $Val extends SubscriptionModel>
           ? _value.resetDay
           : resetDay // ignore: cast_nullable_to_non_nullable
               as int?,
+      allowNewPeriod: null == allowNewPeriod
+          ? _value.allowNewPeriod
+          : allowNewPeriod // ignore: cast_nullable_to_non_nullable
+              as bool,
     ) as $Val);
   }
 
@@ -239,7 +248,9 @@ abstract class _$$SubscriptionModelImplCopyWith<$Res>
           fromJson: _fromUnixTimestamp,
           toJson: _toUnixTimestamp)
       DateTime? nextResetAt,
-      @JsonKey(name: 'reset_day', fromJson: _parseResetDay) int? resetDay});
+      @JsonKey(name: 'reset_day', fromJson: _parseResetDay) int? resetDay,
+      @JsonKey(name: 'allow_new_period', fromJson: _intToRequiredBool)
+      bool allowNewPeriod});
 
   @override
   $SubscriptionPlanModelCopyWith<$Res>? get plan;
@@ -272,6 +283,7 @@ class __$$SubscriptionModelImplCopyWithImpl<$Res>
     Object? speedLimit = freezed,
     Object? nextResetAt = freezed,
     Object? resetDay = freezed,
+    Object? allowNewPeriod = null,
   }) {
     return _then(_$SubscriptionModelImpl(
       subscribeUrl: freezed == subscribeUrl
@@ -330,6 +342,10 @@ class __$$SubscriptionModelImplCopyWithImpl<$Res>
           ? _value.resetDay
           : resetDay // ignore: cast_nullable_to_non_nullable
               as int?,
+      allowNewPeriod: null == allowNewPeriod
+          ? _value.allowNewPeriod
+          : allowNewPeriod // ignore: cast_nullable_to_non_nullable
+              as bool,
     ));
   }
 }
@@ -364,7 +380,9 @@ class _$SubscriptionModelImpl extends _SubscriptionModel {
           fromJson: _fromUnixTimestamp,
           toJson: _toUnixTimestamp)
       this.nextResetAt,
-      @JsonKey(name: 'reset_day', fromJson: _parseResetDay) this.resetDay})
+      @JsonKey(name: 'reset_day', fromJson: _parseResetDay) this.resetDay,
+      @JsonKey(name: 'allow_new_period', fromJson: _intToRequiredBool)
+      this.allowNewPeriod = false})
       : super._();
 
   factory _$SubscriptionModelImpl.fromJson(Map<String, dynamic> json) =>
@@ -414,10 +432,13 @@ class _$SubscriptionModelImpl extends _SubscriptionModel {
   @override
   @JsonKey(name: 'reset_day', fromJson: _parseResetDay)
   final int? resetDay;
+  @override
+  @JsonKey(name: 'allow_new_period', fromJson: _intToRequiredBool)
+  final bool allowNewPeriod;
 
   @override
   String toString() {
-    return 'SubscriptionModel(subscribeUrl: $subscribeUrl, plan: $plan, token: $token, expiredAt: $expiredAt, u: $u, d: $d, transferEnable: $transferEnable, planId: $planId, email: $email, uuid: $uuid, deviceLimit: $deviceLimit, speedLimit: $speedLimit, nextResetAt: $nextResetAt, resetDay: $resetDay)';
+    return 'SubscriptionModel(subscribeUrl: $subscribeUrl, plan: $plan, token: $token, expiredAt: $expiredAt, u: $u, d: $d, transferEnable: $transferEnable, planId: $planId, email: $email, uuid: $uuid, deviceLimit: $deviceLimit, speedLimit: $speedLimit, nextResetAt: $nextResetAt, resetDay: $resetDay, allowNewPeriod: $allowNewPeriod)';
   }
 
   @override
@@ -445,7 +466,9 @@ class _$SubscriptionModelImpl extends _SubscriptionModel {
             (identical(other.nextResetAt, nextResetAt) ||
                 other.nextResetAt == nextResetAt) &&
             (identical(other.resetDay, resetDay) ||
-                other.resetDay == resetDay));
+                other.resetDay == resetDay) &&
+            (identical(other.allowNewPeriod, allowNewPeriod) ||
+                other.allowNewPeriod == allowNewPeriod));
   }
 
   @JsonKey(includeFromJson: false, includeToJson: false)
@@ -465,7 +488,8 @@ class _$SubscriptionModelImpl extends _SubscriptionModel {
       deviceLimit,
       speedLimit,
       nextResetAt,
-      resetDay);
+      resetDay,
+      allowNewPeriod);
 
   /// Create a copy of SubscriptionModel
   /// with the given fields replaced by the non-null parameter values.
@@ -512,8 +536,9 @@ abstract class _SubscriptionModel extends SubscriptionModel {
           fromJson: _fromUnixTimestamp,
           toJson: _toUnixTimestamp)
       final DateTime? nextResetAt,
-      @JsonKey(name: 'reset_day', fromJson: _parseResetDay)
-      final int? resetDay}) = _$SubscriptionModelImpl;
+      @JsonKey(name: 'reset_day', fromJson: _parseResetDay) final int? resetDay,
+      @JsonKey(name: 'allow_new_period', fromJson: _intToRequiredBool)
+      final bool allowNewPeriod}) = _$SubscriptionModelImpl;
   const _SubscriptionModel._() : super._();
 
   factory _SubscriptionModel.fromJson(Map<String, dynamic> json) =
@@ -563,6 +588,9 @@ abstract class _SubscriptionModel extends SubscriptionModel {
   @override
   @JsonKey(name: 'reset_day', fromJson: _parseResetDay)
   int? get resetDay;
+  @override
+  @JsonKey(name: 'allow_new_period', fromJson: _intToRequiredBool)
+  bool get allowNewPeriod;
 
   /// Create a copy of SubscriptionModel
   /// with the given fields replaced by the non-null parameter values.

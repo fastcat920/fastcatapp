@@ -311,8 +311,8 @@ class InviteNotifier extends Notifier<InviteState> {
             BackendMessageMapper.rawMessage(e),
           ).toLowerCase().contains('creation limit') ||
           BackendMessageMapper.normalizeRaw(
-            BackendMessageMapper.rawMessage(e),
-          ).toLowerCase().contains('maximum') &&
+                BackendMessageMapper.rawMessage(e),
+              ).toLowerCase().contains('maximum') &&
               BackendMessageMapper.normalizeRaw(
                 BackendMessageMapper.rawMessage(e),
               ).toLowerCase().contains('invit');
@@ -596,6 +596,7 @@ DomainUser _mapUser(UserModel user) {
     discount: user.discount,
     commissionRate: user.commissionRate,
     telegramId: user.telegramId,
+    metadata: {'autoRenewal': user.autoRenewal},
   );
 }
 

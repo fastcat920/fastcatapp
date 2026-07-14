@@ -10,7 +10,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:fl_clash/xboard/features/auth/auth.dart';
 import 'package:fl_clash/xboard/features/latency/services/auto_latency_service.dart';
 import 'package:fl_clash/xboard/features/profile/providers/profile_import_provider.dart';
-import 'package:fl_clash/xboard/features/subscription/services/reset_traffic_order_flow.dart';
+import 'package:fl_clash/xboard/features/subscription/services/traffic_recovery_service.dart';
 import 'package:fl_clash/xboard/features/subscription/services/subscription_guard_service.dart';
 import 'package:fl_clash/xboard/features/subscription/services/subscription_status_checker.dart';
 import 'package:fl_clash/xboard/features/subscription/services/subscription_status_service.dart';
@@ -522,9 +522,10 @@ class _NodeSelectorBarState extends ConsumerState<NodeSelectorBar> {
         onPurchase: () {
           SubscriptionStatusChecker.handleRenewAction(context, ref);
         },
-        onResetTraffic: blockStatus.type == SubscriptionStatusType.exhausted
-            ? () => showResetTrafficOrderDialog(context: context, ref: ref)
+        onTrafficRecovery: blockStatus.type == SubscriptionStatusType.exhausted
+            ? () => showTrafficRecoveryDialog(context: context, ref: ref)
             : null,
+        useNewPeriod: isNewPeriodEnabled(ref),
         onRefresh: () {
           ref.read(xboardUserProvider.notifier).refreshSubscriptionInfo();
         },

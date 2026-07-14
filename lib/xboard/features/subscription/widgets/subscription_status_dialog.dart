@@ -6,20 +6,23 @@ import 'package:fl_clash/xboard/features/shared/styles/styles.dart';
 class SubscriptionStatusDialog extends StatelessWidget {
   final SubscriptionStatusResult statusResult;
   final VoidCallback? onPurchase;
-  final VoidCallback? onResetTraffic;
+  final VoidCallback? onTrafficRecovery;
+  final bool useNewPeriod;
   final VoidCallback? onRefresh;
   const SubscriptionStatusDialog({
     super.key,
     required this.statusResult,
     this.onPurchase,
-    this.onResetTraffic,
+    this.onTrafficRecovery,
+    this.useNewPeriod = false,
     this.onRefresh,
   });
   static Future<String?> show(
     BuildContext context,
     SubscriptionStatusResult statusResult, {
     VoidCallback? onPurchase,
-    VoidCallback? onResetTraffic,
+    VoidCallback? onTrafficRecovery,
+    bool useNewPeriod = false,
     VoidCallback? onRefresh,
   }) {
     return showDialog<String>(
@@ -28,7 +31,8 @@ class SubscriptionStatusDialog extends StatelessWidget {
       builder: (context) => SubscriptionStatusDialog(
         statusResult: statusResult,
         onPurchase: onPurchase,
-        onResetTraffic: onResetTraffic,
+        onTrafficRecovery: onTrafficRecovery,
+        useNewPeriod: useNewPeriod,
         onRefresh: onRefresh,
       ),
     );
@@ -142,6 +146,9 @@ class SubscriptionStatusDialog extends StatelessWidget {
   String _getContent(BuildContext context) {
     if (statusResult.type == SubscriptionStatusType.noSubscription) {
       return AppLocalizations.of(context).xboardPurchaseSubscriptionToUse;
+    }
+    if (statusResult.type == SubscriptionStatusType.exhausted && useNewPeriod) {
+      return AppLocalizations.of(context).xboardNewPeriodTrafficExhaustedDetail;
     }
     return statusResult.getDetailMessage(context) ??
         statusResult.getMessage(context);
@@ -296,14 +303,18 @@ class SubscriptionStatusDialog extends StatelessWidget {
           child: FilledButton.icon(
             onPressed: () {
               Navigator.of(context).pop('reset_traffic');
-              onResetTraffic?.call();
+              onTrafficRecovery?.call();
             },
             style: XbUiButton.filledPrimary(context).copyWith(
               backgroundColor:
                   WidgetStatePropertyAll(XbUiStatusColor.pending(context)),
             ),
             icon: const Icon(Icons.restart_alt, size: 18),
-            label: Text(AppLocalizations.of(context).xboardResetTraffic),
+            label: Text(
+              useNewPeriod
+                  ? AppLocalizations.of(context).xboardStartNewPeriod
+                  : AppLocalizations.of(context).xboardResetTraffic,
+            ),
           ),
         ),
       );

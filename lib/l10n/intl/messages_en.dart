@@ -1458,6 +1458,22 @@ class MessageLookup extends MessageLookupByLibrary {
     "xboardAutoOpeningPaymentPage": MessageLookupByLibrary.simpleMessage(
       "Auto-opening payment page, please return to app after payment",
     ),
+    "xboardAutoRenewal": MessageLookupByLibrary.simpleMessage("Auto renewal"),
+    "xboardAutoRenewalDescription": MessageLookupByLibrary.simpleMessage(
+      "Your balance will be used to renew the plan before it expires. Keep enough balance available.",
+    ),
+    "xboardAutoRenewalDisabled": MessageLookupByLibrary.simpleMessage(
+      "Auto renewal disabled",
+    ),
+    "xboardAutoRenewalEnabled": MessageLookupByLibrary.simpleMessage(
+      "Auto renewal enabled",
+    ),
+    "xboardAutoRenewalNoPlan": MessageLookupByLibrary.simpleMessage(
+      "Purchase a plan to enable auto renewal.",
+    ),
+    "xboardAutoRenewalUpdateFailed": MessageLookupByLibrary.simpleMessage(
+      "Could not update auto renewal. Try again later.",
+    ),
     "xboardAutoTesting": MessageLookupByLibrary.simpleMessage("Auto testing"),
     "xboardBack": MessageLookupByLibrary.simpleMessage("Back"),
     "xboardBalancePay": MessageLookupByLibrary.simpleMessage(
@@ -1528,6 +1544,9 @@ class MessageLookup extends MessageLookupByLibrary {
     "xboardConfirmAction": MessageLookupByLibrary.simpleMessage("Confirm"),
     "xboardConfirmChange": MessageLookupByLibrary.simpleMessage(
       "Confirm change",
+    ),
+    "xboardConfirmNewPeriod": MessageLookupByLibrary.simpleMessage(
+      "Start the next traffic period?",
     ),
     "xboardConfirmPassword": MessageLookupByLibrary.simpleMessage(
       "Confirm Password",
@@ -1617,6 +1636,9 @@ class MessageLookup extends MessageLookupByLibrary {
     ),
     "xboardCreatingOrderPleaseWait": MessageLookupByLibrary.simpleMessage(
       "We are creating a new order for you, please wait",
+    ),
+    "xboardCreditedAmount": MessageLookupByLibrary.simpleMessage(
+      "Amount credited",
     ),
     "xboardCurrentBalance": MessageLookupByLibrary.simpleMessage(
       "Current balance",
@@ -2271,6 +2293,18 @@ class MessageLookup extends MessageLookupByLibrary {
     "xboardNetworkDiagnosticsVpnStatus": MessageLookupByLibrary.simpleMessage(
       "VPN status",
     ),
+    "xboardNewPeriodConfirmContent": MessageLookupByLibrary.simpleMessage(
+      "This resets used traffic and deducts the remaining duration of the current traffic period from your plan. This action cannot be undone. Continue?",
+    ),
+    "xboardNewPeriodFailed": MessageLookupByLibrary.simpleMessage(
+      "Could not start a new traffic period. Try again later.",
+    ),
+    "xboardNewPeriodSuccess": MessageLookupByLibrary.simpleMessage(
+      "The new traffic period has started",
+    ),
+    "xboardNewPeriodTrafficExhaustedDetail": MessageLookupByLibrary.simpleMessage(
+      "Your plan traffic is used up. You can start the next traffic period early.",
+    ),
     "xboardNewVersionFound": MessageLookupByLibrary.simpleMessage(
       "New version found",
     ),
@@ -2556,6 +2590,9 @@ class MessageLookup extends MessageLookupByLibrary {
     "xboardRechargeBalanceTip": MessageLookupByLibrary.simpleMessage(
       "The recharge amount will be added to your account balance.",
     ),
+    "xboardRechargeBonus": MessageLookupByLibrary.simpleMessage(
+      "Recharge bonus",
+    ),
     "xboardRechargeNow": MessageLookupByLibrary.simpleMessage("Recharge now"),
     "xboardRedeemFailed": MessageLookupByLibrary.simpleMessage("Redeem failed"),
     "xboardRedeemFailedWithError": m46,
@@ -2661,6 +2698,9 @@ class MessageLookup extends MessageLookupByLibrary {
       "Software settings",
     ),
     "xboardSpeedLimit": MessageLookupByLibrary.simpleMessage("Speed"),
+    "xboardStartNewPeriod": MessageLookupByLibrary.simpleMessage(
+      "Start next traffic period",
+    ),
     "xboardStartProxy": MessageLookupByLibrary.simpleMessage("Start Proxy"),
     "xboardStop": MessageLookupByLibrary.simpleMessage("Stop"),
     "xboardStopProxy": MessageLookupByLibrary.simpleMessage("Stop Proxy"),

@@ -43,6 +43,7 @@ class V2BoardUserAdapter implements UserApi {
       banned: info.banned,
       remindExpire: info.remindExpire,
       remindTraffic: info.remindTraffic,
+      autoRenewal: info.autoRenewal,
       expiredAt: info.expiredAt,
       balance: info.balance,
       commissionBalance: info.commissionBalance,

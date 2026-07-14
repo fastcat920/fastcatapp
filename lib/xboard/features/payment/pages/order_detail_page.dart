@@ -1,4 +1,3 @@
-
 import 'dart:async';
 
 import 'package:cached_network_image/cached_network_image.dart';
@@ -6,6 +5,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_xboard_sdk/flutter_xboard_sdk.dart';
+import 'package:fl_clash/common/common.dart';
 import 'package:fl_clash/xboard/adapter/state/order_state.dart';
 import 'package:fl_clash/xboard/core/core.dart';
 import 'package:fl_clash/xboard/domain/domain.dart';
@@ -60,6 +60,8 @@ class _OrderDetailPageState extends ConsumerState<OrderDetailPage>
   double? _depositAmount;
   double? _commissionBalance;
   double? _actualCommissionBalance;
+  double? _depositBonusAmount;
+  double? _depositCreditedAmount;
   DomainPlan? _resolvedOrderPlan;
   int? _resolvedOrderPlanId;
   int? _resolvingPlanId;
@@ -103,6 +105,8 @@ class _OrderDetailPageState extends ConsumerState<OrderDetailPage>
           _commissionBalance = (data['commission_balance'] as num?)?.toDouble();
           _actualCommissionBalance =
               (data['actual_commission_balance'] as num?)?.toDouble();
+          _depositBonusAmount = (data['bounus'] as num?)?.toDouble();
+          _depositCreditedAmount = (data['get_amount'] as num?)?.toDouble();
         });
       }
     } catch (_) {
@@ -161,6 +165,8 @@ class _OrderDetailPageState extends ConsumerState<OrderDetailPage>
                 depositAmount: _depositAmount,
                 commissionBalance: _commissionBalance,
                 actualCommissionBalance: _actualCommissionBalance,
+                depositBonusAmount: _depositBonusAmount,
+                depositCreditedAmount: _depositCreditedAmount,
                 methodsAsync: methodsAsync,
                 globalPaymentMethods: globalPaymentMethods,
                 plans: plans,
@@ -223,6 +229,8 @@ class _OrderDetailPageState extends ConsumerState<OrderDetailPage>
             depositAmount: _depositAmount,
             commissionBalance: _commissionBalance,
             actualCommissionBalance: _actualCommissionBalance,
+            depositBonusAmount: _depositBonusAmount,
+            depositCreditedAmount: _depositCreditedAmount,
             methodsAsync: methodsAsync,
             globalPaymentMethods: globalPaymentMethods,
             plans: plans,
@@ -275,7 +283,6 @@ class _OrderDetailPageState extends ConsumerState<OrderDetailPage>
   }
 
   // Polling handled by PaymentStatusPoller — see _poller field
-
 
   void _resolveOrderPlanIfNeeded({
     required int? planId,
@@ -534,6 +541,8 @@ class _OrderDetailContent extends StatelessWidget {
   final double? depositAmount;
   final double? commissionBalance;
   final double? actualCommissionBalance;
+  final double? depositBonusAmount;
+  final double? depositCreditedAmount;
   final AsyncValue<List<PaymentMethodModel>> methodsAsync;
   final List<DomainPaymentMethod> globalPaymentMethods;
   final List<DomainPlan> plans;
@@ -565,6 +574,8 @@ class _OrderDetailContent extends StatelessWidget {
     required this.depositAmount,
     required this.commissionBalance,
     required this.actualCommissionBalance,
+    required this.depositBonusAmount,
+    required this.depositCreditedAmount,
     required this.methodsAsync,
     required this.globalPaymentMethods,
     required this.plans,
@@ -608,13 +619,17 @@ class _OrderDetailContent extends StatelessWidget {
       commissionBalance: commissionBalance ?? order?.commissionBalance,
       actualCommissionBalance:
           actualCommissionBalance ?? order?.actualCommissionBalance,
+      depositBonusAmount: depositBonusAmount,
+      depositCreditedAmount: depositCreditedAmount,
     );
 
     return LayoutBuilder(
       builder: (context, constraints) {
-        final isWide = constraints.maxWidth >= 900;
+        final mediaSize = MediaQuery.sizeOf(context);
+        final useSideNavigation =
+            mediaSize.width > mediaSize.height || system.isTV;
         final contentPadding = EdgeInsets.symmetric(
-          horizontal: isWide ? 32 : 16,
+          horizontal: useSideNavigation ? 32 : 16,
           vertical: 12,
         );
         final leftColumn = Column(
@@ -673,7 +688,7 @@ class _OrderDetailContent extends StatelessWidget {
               alignment: Alignment.topCenter,
               child: ConstrainedBox(
                 constraints: const BoxConstraints(maxWidth: 1180),
-                child: isWide
+                child: useSideNavigation
                     ? Row(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
@@ -780,6 +795,8 @@ class _OrderPricing {
   final double surplusAmount;
   final double balanceUsed;
   final double payableAmount;
+  final double depositBonusAmount;
+  final double? depositCreditedAmount;
   final bool needExternalPayment;
 
   const _OrderPricing({
@@ -789,6 +806,8 @@ class _OrderPricing {
     required this.surplusAmount,
     required this.balanceUsed,
     required this.payableAmount,
+    required this.depositBonusAmount,
+    required this.depositCreditedAmount,
     required this.needExternalPayment,
   });
 
@@ -808,6 +827,8 @@ class _OrderPricing {
     double? depositAmount,
     double? commissionBalance,
     double? actualCommissionBalance,
+    double? depositBonusAmount,
+    double? depositCreditedAmount,
   }) {
     final isDeposit = period == 'deposit' || order?.period == 'deposit';
     final planPrice = _priceForPeriod(plan, period);
@@ -859,6 +880,10 @@ class _OrderPricing {
       surplusAmount: surplus,
       balanceUsed: computedBalance,
       payableAmount: payableAmount,
+      depositBonusAmount: _amountFromCents(depositBonusAmount),
+      depositCreditedAmount: depositCreditedAmount == null
+          ? null
+          : _amountFromCents(depositCreditedAmount),
       needExternalPayment: payableAmount > 0,
     );
   }
@@ -999,6 +1024,24 @@ class _OrderInfoCard extends StatelessWidget {
             valueWeight: FontWeight.w700,
             valueColor: amountColor,
           ),
+          if (isDeposit && pricing.depositBonusAmount > 0) ...[
+            const SizedBox(height: 12),
+            _InfoRow(
+              label: l10n.xboardRechargeBonus,
+              value: '+¥${pricing.depositBonusAmount.toStringAsFixed(2)}',
+              valueWeight: FontWeight.w700,
+              valueColor: XbUiStatusColor.success(context),
+            ),
+          ],
+          if (isDeposit && pricing.depositCreditedAmount != null) ...[
+            const SizedBox(height: 12),
+            _InfoRow(
+              label: l10n.xboardCreditedAmount,
+              value: '¥${pricing.depositCreditedAmount!.toStringAsFixed(2)}',
+              valueWeight: FontWeight.w700,
+              valueColor: XbUiStatusColor.success(context),
+            ),
+          ],
           if (pricing.discountAmount > 0) ...[
             const SizedBox(height: 12),
             _InfoRow(
@@ -1329,8 +1372,7 @@ class _ActionButtons extends StatelessWidget {
                 : const Icon(Icons.credit_card, size: 20),
             label: Text(
                 isSubmitting ? l10n.xboardSubmitting : effectivePayButtonText),
-            style: XbUiButton.filledPrimary(context).copyWith(
-            ),
+            style: XbUiButton.filledPrimary(context).copyWith(),
           ),
         ),
         const SizedBox(height: 12),

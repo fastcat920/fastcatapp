@@ -376,6 +376,7 @@ class _ArticleDetailPageState extends ConsumerState<_ArticleDetailPage> {
   bool _inAppWebViewLoading = true;
   bool _standardDocumentReady = false;
   bool _standardWebViewAttached = false;
+  String? _standardWebViewError;
   Timer? _webViewLoadingFallback;
   bool _isClosing = false;
   bool _allowPop = false;
@@ -467,8 +468,8 @@ p{margin:8px 0}
 </script></head><body>$renderedContent</body></html>''';
   }
 
-  /// Linux WebView 失败时，将已经转换好的正文交给 HtmlWidget，避免再次
-  /// 执行 Markdown 转换。
+  /// Windows 缺少 WebView2 时，将已经转换好的正文交给
+  /// HtmlWidget，避免再次执行 Markdown 转换。
   static String _sanitizeBodyHtml(String renderedBodyHtml) {
     return renderedBodyHtml
         .replaceAll(
@@ -605,6 +606,7 @@ p{margin:8px 0}
       _inAppWebViewLoading = true;
       _standardDocumentReady = false;
       _standardWebViewAttached = false;
+      _standardWebViewError = null;
       _lastInAppWebViewIsDark = false;
       _lastWebViewIsDark = false;
     });
@@ -628,7 +630,7 @@ p{margin:8px 0}
     }
 
     // Markdown 转换可能在长文档上占用明显的 UI 时间，放入后台 isolate。
-    // 同一份结果同时供 WebView 与 Linux HtmlWidget 回退使用。
+    // 同一份结果供 WebView 与 Windows HtmlWidget 兼容模式使用。
     final renderedBodyHtml = await compute(_renderMarkdownBody, content);
     if (!mounted || generation != _documentGeneration) return;
 
@@ -639,7 +641,12 @@ p{margin:8px 0}
       _isPreparingDocument = false;
       _preparingBody = null;
     });
-    await _initWebView(content, renderedBodyHtml);
+    try {
+      await _initWebView(content, renderedBodyHtml);
+    } catch (error) {
+      if (!Platform.isLinux) rethrow;
+      _showLinuxWebViewError(error.toString());
+    }
   }
 
   Future<void> _initWebView(
@@ -691,18 +698,7 @@ p{margin:8px 0}
       return;
     }
 
-    if (Platform.isLinux) {
-      if (mounted) {
-        setState(() {
-          _resolvedBody = content;
-          _useHtmlWidget = true;
-          _isPreparingDocument = false;
-        });
-      }
-      return;
-    }
-
-    if (!(Platform.isAndroid || Platform.isIOS)) {
+    if (!(Platform.isAndroid || Platform.isIOS || Platform.isLinux)) {
       if (mounted) {
         setState(() {
           _resolvedBody = content;
@@ -720,6 +716,7 @@ p{margin:8px 0}
     _htmlWidgetContent = _sanitizeBodyHtml(renderedBodyHtml);
     _standardDocumentReady = false;
     _standardWebViewAttached = false;
+    _standardWebViewError = null;
 
     void markDocumentReady() {
       _standardDocumentReady = true;
@@ -741,15 +738,7 @@ p{margin:8px 0}
             if (!Platform.isLinux || error.isForMainFrame != true || !mounted) {
               return;
             }
-            final platformController = _webController?.platform;
-            if (platformController is WindowsPlatformWebViewController) {
-              unawaited(platformController.controller.dispose());
-            }
-            setState(() {
-              _webController = null;
-              _useHtmlWidget = true;
-              _webViewLoading = false;
-            });
+            _showLinuxWebViewError(error.description);
           },
           onNavigationRequest: (request) {
             if (!request.isMainFrame) return NavigationDecision.navigate;
@@ -806,7 +795,50 @@ p{margin:8px 0}
       _isPreparingDocument = false;
     });
     _scheduleWebViewLoadingFallback(inAppWebView: false);
-    unawaited(controller.loadHtmlString(fullHtml));
+    unawaited(
+      controller.loadHtmlString(fullHtml).catchError((Object error) {
+        if (Platform.isLinux && identical(_webController, controller)) {
+          _showLinuxWebViewError(error.toString());
+        }
+      }),
+    );
+  }
+
+  void _showLinuxWebViewError(String message) {
+    if (!mounted || !Platform.isLinux) return;
+    _webViewLoadingFallback?.cancel();
+    final platformController = _webController?.platform;
+    if (platformController is WindowsPlatformWebViewController) {
+      unawaited(platformController.controller.dispose());
+    }
+    setState(() {
+      _webController = null;
+      _standardWebViewAttached = false;
+      _standardDocumentReady = false;
+      _webViewLoading = false;
+      _isPreparingDocument = false;
+      _standardWebViewError =
+          message.trim().isEmpty ? 'WebView document loading failed' : message;
+    });
+  }
+
+  Future<void> _retryLinuxWebView() async {
+    final body = _resolvedBody;
+    final renderedBodyHtml = _renderedBodyHtml;
+    if (body == null || renderedBodyHtml == null) {
+      _retryDetail();
+      return;
+    }
+    setState(() {
+      _standardWebViewError = null;
+      _webViewLoading = true;
+      _isPreparingDocument = true;
+    });
+    try {
+      await _initWebView(body, renderedBodyHtml);
+    } catch (error) {
+      _showLinuxWebViewError(error.toString());
+    }
   }
 
   Future<void> _finishStandardWebViewLoading() async {
@@ -854,6 +886,10 @@ p{margin:8px 0}
       inAppWebView
           ? () => unawaited(_finishInAppWebViewLoading())
           : () {
+              if (Platform.isLinux && _webViewLoading) {
+                _showLinuxWebViewError('WebView document loading timed out');
+                return;
+              }
               _standardDocumentReady = true;
               unawaited(_finishStandardWebViewLoading());
             },
@@ -1003,7 +1039,14 @@ p{margin:8px 0}
       );
     }
 
-    // 与 Apex 一致：Linux 直接使用 HtmlWidget，不创建原生 WebView。
+    if (Platform.isLinux && _standardWebViewError != null) {
+      return XbErrorState(
+        message: _standardWebViewError!,
+        onRetry: () => unawaited(_retryLinuxWebView()),
+      );
+    }
+
+    // Windows 缺少 WebView2 时的兼容显示。
     if (_useHtmlWidget && _htmlWidgetContent != null) {
       return SingleChildScrollView(
         padding: const EdgeInsets.all(16),
@@ -1181,7 +1224,8 @@ p{margin:8px 0}
       );
     }
 
-    if ((Platform.isAndroid || Platform.isIOS) && _webController != null) {
+    if ((Platform.isAndroid || Platform.isIOS || Platform.isLinux) &&
+        _webController != null) {
       final currentIsDark = theme.brightness == Brightness.dark;
       if (_lastWebViewIsDark != currentIsDark && _renderedBodyHtml != null) {
         final fullHtml = _buildDocumentHtml(

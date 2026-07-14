@@ -7175,6 +7175,66 @@ class AppLocalizations {
     );
   }
 
+  /// `Auto renewal`
+  String get xboardAutoRenewal {
+    return Intl.message(
+      'Auto renewal',
+      name: 'xboardAutoRenewal',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Your balance will be used to renew the plan before it expires. Keep enough balance available.`
+  String get xboardAutoRenewalDescription {
+    return Intl.message(
+      'Your balance will be used to renew the plan before it expires. Keep enough balance available.',
+      name: 'xboardAutoRenewalDescription',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Purchase a plan to enable auto renewal.`
+  String get xboardAutoRenewalNoPlan {
+    return Intl.message(
+      'Purchase a plan to enable auto renewal.',
+      name: 'xboardAutoRenewalNoPlan',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Auto renewal enabled`
+  String get xboardAutoRenewalEnabled {
+    return Intl.message(
+      'Auto renewal enabled',
+      name: 'xboardAutoRenewalEnabled',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Auto renewal disabled`
+  String get xboardAutoRenewalDisabled {
+    return Intl.message(
+      'Auto renewal disabled',
+      name: 'xboardAutoRenewalDisabled',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Could not update auto renewal. Try again later.`
+  String get xboardAutoRenewalUpdateFailed {
+    return Intl.message(
+      'Could not update auto renewal. Try again later.',
+      name: 'xboardAutoRenewalUpdateFailed',
+      desc: '',
+      args: [],
+    );
+  }
+
   /// `Pay with balance`
   String get xboardBalancePay {
     return Intl.message(
@@ -7250,6 +7310,16 @@ class AppLocalizations {
     return Intl.message(
       'Confirm traffic reset',
       name: 'xboardConfirmResetTraffic',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Start the next traffic period?`
+  String get xboardConfirmNewPeriod {
+    return Intl.message(
+      'Start the next traffic period?',
+      name: 'xboardConfirmNewPeriod',
       desc: '',
       args: [],
     );
@@ -7655,6 +7725,26 @@ class AppLocalizations {
     );
   }
 
+  /// `Recharge bonus`
+  String get xboardRechargeBonus {
+    return Intl.message(
+      'Recharge bonus',
+      name: 'xboardRechargeBonus',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Amount credited`
+  String get xboardCreditedAmount {
+    return Intl.message(
+      'Amount credited',
+      name: 'xboardCreditedAmount',
+      desc: '',
+      args: [],
+    );
+  }
+
   /// `Original price`
   String get xboardOriginalPrice {
     return Intl.message(
@@ -7890,6 +7980,56 @@ class AppLocalizations {
     return Intl.message(
       'This will reset the used traffic, but will not extend the plan duration. Continue?',
       name: 'xboardResetTrafficConfirmContent',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Start next traffic period`
+  String get xboardStartNewPeriod {
+    return Intl.message(
+      'Start next traffic period',
+      name: 'xboardStartNewPeriod',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `This resets used traffic and deducts the remaining duration of the current traffic period from your plan. This action cannot be undone. Continue?`
+  String get xboardNewPeriodConfirmContent {
+    return Intl.message(
+      'This resets used traffic and deducts the remaining duration of the current traffic period from your plan. This action cannot be undone. Continue?',
+      name: 'xboardNewPeriodConfirmContent',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `The new traffic period has started`
+  String get xboardNewPeriodSuccess {
+    return Intl.message(
+      'The new traffic period has started',
+      name: 'xboardNewPeriodSuccess',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Could not start a new traffic period. Try again later.`
+  String get xboardNewPeriodFailed {
+    return Intl.message(
+      'Could not start a new traffic period. Try again later.',
+      name: 'xboardNewPeriodFailed',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Your plan traffic is used up. You can start the next traffic period early.`
+  String get xboardNewPeriodTrafficExhaustedDetail {
+    return Intl.message(
+      'Your plan traffic is used up. You can start the next traffic period early.',
+      name: 'xboardNewPeriodTrafficExhaustedDetail',
       desc: '',
       args: [],
     );

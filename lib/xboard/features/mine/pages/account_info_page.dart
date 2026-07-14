@@ -111,7 +111,7 @@ class _AccountInfoPageState extends ConsumerState<AccountInfoPage> {
           _buildCard(
             child: Column(
               children: [
-                SwitchListTile.adaptive(
+                SwitchListTile(
                   contentPadding:
                       const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
                   secondary: Icon(Icons.event_available_outlined,
@@ -131,7 +131,7 @@ class _AccountInfoPageState extends ConsumerState<AccountInfoPage> {
                   endIndent: 16,
                   color: isDark ? null : XbUiTokens.dividerLight,
                 ),
-                SwitchListTile.adaptive(
+                SwitchListTile(
                   contentPadding:
                       const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
                   secondary: Icon(Icons.data_usage_outlined,
