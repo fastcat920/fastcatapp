@@ -120,12 +120,34 @@ class DiagnosticBundleService {
     final localProxyListening = coreRunning && system.isDesktop
         ? await _probeLocalProxy(proxyState.port)
         : false;
-    final systemProxyRequired =
-        system.isDesktop && coreRunning && !realTunEnable;
-    final actualProxyOk = !systemProxyRequired ||
-        (networkProps.systemProxy &&
+    final actualProxyMatches =
+        actualProxy?.matches('127.0.0.1', proxyState.port) == true;
+    final systemProxyHealthy = !system.isDesktop ||
+        realTunEnable ||
+        (coreRunning &&
+            networkProps.systemProxy &&
             localProxyListening &&
-            actualProxy?.matches('127.0.0.1', proxyState.port) == true);
+            actualProxyMatches);
+    final systemProxyValue = realTunEnable
+        ? l10n.xboardProxyStatusTunActive
+        : !coreRunning
+            ? l10n.xboardHealthDisabled
+            : !networkProps.systemProxy
+                ? l10n.xboardProxyStatusClientDisabled
+                : !localProxyListening
+                    ? l10n.xboardProxyStatusPortUnavailable
+                    : actualProxy?.available != true
+                        ? l10n.xboardProxyStatusReadFailed
+                        : actualProxy?.enabled != true
+                            ? l10n.xboardProxyStatusSystemDisabled
+                            : !actualProxyMatches
+                                ? l10n.xboardProxyStatusMismatch
+                                : l10n.xboardHealthEnabled;
+    final actualProxyValue = actualProxy?.available != true
+        ? l10n.xboardNetworkDiagnosticsUnavailable
+        : actualProxy?.enabled != true
+            ? l10n.xboardHealthDisabled
+            : '${actualProxy?.host ?? '-'}:${actualProxy?.port ?? '-'}';
     DeviceHealthSummary? deviceSummary;
     try {
       deviceSummary = await ref.read(deviceHealthSummaryProvider.future);
@@ -142,7 +164,7 @@ class DiagnosticBundleService {
       if (!gatewayOk) l10n.xboardDiagnosticIssueGateway,
       if (!subscriptionOk) l10n.xboardSubscriptionHealth,
       if (!nodesOk) l10n.xboardDiagnosticIssueNodes,
-      if (!actualProxyOk) l10n.xboardDiagnosticIssueProxy,
+      if (!systemProxyHealthy) l10n.xboardDiagnosticIssueProxy,
     ];
     final overall = problems.isNotEmpty
         ? l10n.xboardDiagnosticOverallAbnormal
@@ -276,35 +298,20 @@ class DiagnosticBundleService {
       ),
       if (system.isDesktop)
         _ReportItem(
-          localProxyListening,
-          l10n.xboardProxyLocalPort,
-          '127.0.0.1:${proxyState.port} · '
-          '${localProxyListening ? l10n.xboardProxyListening : l10n.xboardProxyNotListening}',
+          systemProxyHealthy,
+          l10n.systemProxy,
+          systemProxyValue,
           details: [
             '${l10n.xboardProxyExpectedAddress}: '
                 '127.0.0.1:${proxyState.port}',
-          ],
-        ),
-      if (system.isDesktop)
-        _ReportItem(
-          actualProxyOk,
-          l10n.xboardProxyActualAddress,
-          actualProxy?.available == true
-              ? '${actualProxy?.host ?? '-'}:${actualProxy?.port ?? '-'} · '
-                  '${actualProxy?.enabled == true ? l10n.xboardHealthEnabled : l10n.xboardHealthDisabled}'
-              : l10n.xboardProxyStatusReadFailed,
-          details: [
+            '${l10n.xboardProxyLocalPort}: '
+                '${localProxyListening ? l10n.xboardProxyListening : l10n.xboardProxyNotListening}',
+            '${l10n.xboardProxyActualAddress}: $actualProxyValue',
+            '${l10n.xboardProxyClientSetting}: '
+                '${networkProps.systemProxy ? l10n.xboardHealthEnabled : l10n.xboardHealthDisabled}',
             if (actualProxy?.source?.isNotEmpty == true)
               '${l10n.xboardProxyStatusSource}: ${actualProxy?.source}',
           ],
-        ),
-      if (system.isDesktop)
-        _ReportItem(
-          !systemProxyRequired || networkProps.systemProxy,
-          l10n.xboardProxyClientSetting,
-          networkProps.systemProxy
-              ? l10n.xboardHealthEnabled
-              : l10n.xboardHealthDisabled,
         ),
     ]);
 

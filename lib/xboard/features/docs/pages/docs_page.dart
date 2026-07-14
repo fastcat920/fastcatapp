@@ -1,10 +1,12 @@
 import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:markdown/markdown.dart' as md;
 import 'package:fl_clash/l10n/l10n.dart';
+import 'package:fl_clash/common/webview2_check.dart';
 import 'package:fl_clash/xboard/adapter/state/knowledge_state.dart';
 import 'package:fl_clash/xboard/config/gateway_config.dart';
 import 'package:fl_clash/xboard/config/xboard_config.dart';
@@ -14,6 +16,16 @@ import 'package:url_launcher/url_launcher.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 import 'package:flutter_inappwebview/flutter_inappwebview.dart' as iaw;
 import 'package:webview_win_floating/webview_plugin.dart';
+
+String _renderMarkdownBody(String content) {
+  // 与 V2Board markdown-it 的 html: true 行为保持一致：Markdown 会转换，
+  // 文档自带的 HTML 与 style 标签继续保留。
+  return md.markdownToHtml(
+    content,
+    extensionSet: md.ExtensionSet.gitHubFlavored,
+    encodeHtml: false,
+  );
+}
 
 /// Build the language tag expected by the V2Board knowledge API.
 ///
@@ -349,6 +361,7 @@ class _ArticleDetailPage extends ConsumerStatefulWidget {
 
 class _ArticleDetailPageState extends ConsumerState<_ArticleDetailPage> {
   String? _resolvedBody;
+  String? _renderedBodyHtml;
   WebViewController? _webController;
   bool _useHtmlWidget = false;
   String? _htmlWidgetContent;
@@ -358,11 +371,15 @@ class _ArticleDetailPageState extends ConsumerState<_ArticleDetailPage> {
   bool _lastInAppWebViewIsDark = false;
   bool _lastWebViewIsDark = false;
   bool _isPreparingDocument = false;
+  String? _preparingBody;
   bool _webViewLoading = true;
   bool _inAppWebViewLoading = true;
+  bool _standardDocumentReady = false;
+  bool _standardWebViewAttached = false;
   Timer? _webViewLoadingFallback;
   bool _isClosing = false;
   bool _allowPop = false;
+  int _documentGeneration = 0;
 
   KnowledgeArticleDetailRequest get _detailRequest =>
       KnowledgeArticleDetailRequest(
@@ -387,21 +404,12 @@ class _ArticleDetailPageState extends ConsumerState<_ArticleDetailPage> {
         '${dt.hour.toString().padLeft(2, '0')}:${dt.minute.toString().padLeft(2, '0')}';
   }
 
-  static String _contentToHtml(
-    String content, {
+  static String _buildDocumentHtml(
+    String renderedContent, {
     bool isDark = false,
     String? baseUrl,
     Color? backgroundColor,
   }) {
-    // V2Board renders knowledge content with markdown-it's `html: true` option:
-    // Markdown is converted, while embedded HTML and document-owned <style>
-    // blocks pass through untouched. Keep the client on the same contract.
-    final renderedContent = md.markdownToHtml(
-      content,
-      extensionSet: md.ExtensionSet.gitHubFlavored,
-      encodeHtml: false,
-    );
-
     final textColor = isDark ? '#e0e0e0' : '#1a1a1a';
     final fallbackBackground = isDark ? '#1e1e1e' : '#ffffff';
     // `Color.toARGB32()` was added after the Flutter 3.27 toolchain used by
@@ -434,18 +442,35 @@ hr{border:none;border-top:1px solid $hrColor;margin:16px 0}
 ul,ol{padding-left:24px}table{border-collapse:collapse;width:100%}
 th,td{border:1px solid #ddd;padding:8px;text-align:left}th{background:$codeBg}
 p{margin:8px 0}
-</style></head><body>$renderedContent</body></html>''';
+</style>
+<script>
+(function(){
+  function reportRendered(){
+    if(window.__fastcatDocRenderReported)return;
+    window.__fastcatDocRenderReported=true;
+    requestAnimationFrame(function(){requestAnimationFrame(function(){
+      try{
+        if(window.flutter_inappwebview){
+          window.flutter_inappwebview.callHandler('documentRendered');
+        }else if(window.FastCatDocument){
+          window.FastCatDocument.postMessage('rendered');
+        }
+      }catch(_){ }
+    });});
+  }
+  if(document.readyState==='loading'){
+    document.addEventListener('DOMContentLoaded',reportRendered,{once:true});
+  }else{
+    reportRendered();
+  }
+})();
+</script></head><body>$renderedContent</body></html>''';
   }
 
-  /// Linux does not have a flutter_inappwebview backend. Reuse the same
-  /// Markdown/HTML conversion, but pass only the body fragment to HtmlWidget.
-  static String _contentToBodyHtml(String content) {
-    final html = _contentToHtml(content);
-    final bodyMatch = RegExp(
-      r'<body[^>]*>([\s\S]*?)</body>',
-      caseSensitive: false,
-    ).firstMatch(html);
-    return (bodyMatch?.group(1) ?? html)
+  /// Linux WebView 失败时，将已经转换好的正文交给 HtmlWidget，避免再次
+  /// 执行 Markdown 转换。
+  static String _sanitizeBodyHtml(String renderedBodyHtml) {
+    return renderedBodyHtml
         .replaceAll(
           RegExp(r'<script\b[^>]*>[\s\S]*?</script>', caseSensitive: false),
           '',
@@ -456,17 +481,17 @@ p{margin:8px 0}
   @override
   void initState() {
     super.initState();
-    if (Platform.isWindows) {
+    if ((Platform.isWindows && WebView2Check.isInstalled()) ||
+        Platform.isMacOS) {
       _useInAppWebView = true;
     }
-    // Never use article.body from list — always fetch fresh via provider
-    _resolvedBody = null;
-    // Invalidate provider to force fresh API load on every open (no caching).
-    // Must be deferred via addPostFrameCallback — Riverpod providers cannot be
-    // accessed during initState before the widget is fully initialized.
+    final initialBody = _stripLeadingTitle(widget.article.body).trim();
+    _resolvedBody = initialBody.isEmpty ? null : initialBody;
+    // 与 Apex 一致：列表接口已有正文时直接准备文档；只有正文为空时，
+    // build 才请求单篇详情。
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (mounted) {
-        ref.invalidate(knowledgeArticleDetailProvider(_detailRequest));
+      if (mounted && initialBody.isNotEmpty) {
+        unawaited(_prepareDocument(initialBody));
       }
     });
   }
@@ -560,12 +585,14 @@ p{margin:8px 0}
   }
 
   void _retryDetail() {
+    _documentGeneration++;
     final platformController = _webController?.platform;
     if (platformController is WindowsPlatformWebViewController) {
       unawaited(platformController.controller.dispose());
     }
     setState(() {
       _resolvedBody = null;
+      _renderedBodyHtml = null;
       _webController = null;
       _useHtmlWidget = false;
       _htmlWidgetContent = null;
@@ -573,12 +600,15 @@ p{margin:8px 0}
       _inAppWebViewHtml = null;
       _inAppController = null;
       _isPreparingDocument = false;
+      _preparingBody = null;
       _webViewLoading = true;
       _inAppWebViewLoading = true;
+      _standardDocumentReady = false;
+      _standardWebViewAttached = false;
       _lastInAppWebViewIsDark = false;
       _lastWebViewIsDark = false;
     });
-    ref.invalidate(knowledgeArticleDetailProvider(_detailRequest));
+    invalidateKnowledgeArticleDetailCache(_detailRequest);
     unawaited(
       ref
           .refresh(knowledgeArticleDetailProvider(_detailRequest).future)
@@ -586,15 +616,56 @@ p{margin:8px 0}
     );
   }
 
-  Future<void> _initWebView(String content) async {
+  Future<void> _prepareDocument(String content) async {
+    if (!mounted || content.isEmpty) return;
+    if (_resolvedBody == content && _renderedBodyHtml != null) return;
+    if (_preparingBody == content) return;
+
+    final generation = ++_documentGeneration;
+    _preparingBody = content;
+    if (!_isPreparingDocument) {
+      setState(() => _isPreparingDocument = true);
+    }
+
+    // Markdown 转换可能在长文档上占用明显的 UI 时间，放入后台 isolate。
+    // 同一份结果同时供 WebView 与 Linux HtmlWidget 回退使用。
+    final renderedBodyHtml = await compute(_renderMarkdownBody, content);
+    if (!mounted || generation != _documentGeneration) return;
+
+    _renderedBodyHtml = renderedBodyHtml;
+    setState(() {
+      _resolvedBody = content;
+      _htmlWidgetContent = _sanitizeBodyHtml(renderedBodyHtml);
+      _isPreparingDocument = false;
+      _preparingBody = null;
+    });
+    await _initWebView(content, renderedBodyHtml);
+  }
+
+  Future<void> _initWebView(
+    String content,
+    String renderedBodyHtml,
+  ) async {
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
     final backgroundColor = theme.scaffoldBackgroundColor;
 
-    if (Platform.isWindows) {
+    if (Platform.isWindows && !WebView2Check.isInstalled()) {
+      if (mounted) {
+        setState(() {
+          _resolvedBody = content;
+          _useInAppWebView = false;
+          _useHtmlWidget = true;
+          _isPreparingDocument = false;
+        });
+      }
+      return;
+    }
+
+    if (Platform.isWindows || Platform.isMacOS) {
       _inAppWebViewLoading = true;
-      _inAppWebViewHtml = _contentToHtml(
-        content,
+      _inAppWebViewHtml = _buildDocumentHtml(
+        renderedBodyHtml,
         isDark: isDark,
         baseUrl: _documentBaseHref,
         backgroundColor: backgroundColor,
@@ -606,14 +677,32 @@ p{margin:8px 0}
           _resolvedBody = content;
           _isPreparingDocument = false;
         });
+        if (_inAppController != null) {
+          _scheduleWebViewLoadingFallback(inAppWebView: true);
+          unawaited(
+            _inAppController!.loadData(
+              data: _inAppWebViewHtml!,
+              mimeType: 'text/html',
+              encoding: 'utf-8',
+            ),
+          );
+        }
       }
       return;
     }
 
-    if (!(Platform.isAndroid ||
-        Platform.isIOS ||
-        Platform.isMacOS ||
-        Platform.isLinux)) {
+    if (Platform.isLinux) {
+      if (mounted) {
+        setState(() {
+          _resolvedBody = content;
+          _useHtmlWidget = true;
+          _isPreparingDocument = false;
+        });
+      }
+      return;
+    }
+
+    if (!(Platform.isAndroid || Platform.isIOS)) {
       if (mounted) {
         setState(() {
           _resolvedBody = content;
@@ -622,18 +711,32 @@ p{margin:8px 0}
       }
       return;
     }
-    final fullHtml = _contentToHtml(
-      content,
+    final fullHtml = _buildDocumentHtml(
+      renderedBodyHtml,
       isDark: isDark,
       baseUrl: _documentBaseHref,
       backgroundColor: backgroundColor,
     );
-    _htmlWidgetContent = _contentToBodyHtml(content);
+    _htmlWidgetContent = _sanitizeBodyHtml(renderedBodyHtml);
+    _standardDocumentReady = false;
+    _standardWebViewAttached = false;
+
+    void markDocumentReady() {
+      _standardDocumentReady = true;
+      if (_standardWebViewAttached) {
+        unawaited(_finishStandardWebViewLoading());
+      }
+    }
+
     final controller = WebViewController()
       ..setJavaScriptMode(JavaScriptMode.unrestricted)
+      ..addJavaScriptChannel(
+        'FastCatDocument',
+        onMessageReceived: (_) => markDocumentReady(),
+      )
       ..setNavigationDelegate(
         NavigationDelegate(
-          onPageFinished: (_) => _finishStandardWebViewLoading(),
+          onPageFinished: (_) => markDocumentReady(),
           onWebResourceError: (error) {
             if (!Platform.isLinux || error.isForMainFrame != true || !mounted) {
               return;
@@ -676,20 +779,56 @@ p{margin:8px 0}
       }
       return;
     }
+    if (!mounted || _resolvedBody != content) {
+      final platformController = controller.platform;
+      if (platformController is WindowsPlatformWebViewController) {
+        unawaited(platformController.controller.dispose());
+      }
+      return;
+    }
+    if (_useHtmlWidget) {
+      final platformController = controller.platform;
+      if (platformController is WindowsPlatformWebViewController) {
+        unawaited(platformController.controller.dispose());
+      }
+      return;
+    }
+    final previousPlatformController = _webController?.platform;
+    if (previousPlatformController is WindowsPlatformWebViewController) {
+      unawaited(previousPlatformController.controller.dispose());
+    }
     _webController = controller;
-    _lastWebViewIsDark = isDark;
+    _standardWebViewAttached = true;
     _webViewLoading = true;
+    _lastWebViewIsDark = isDark;
     setState(() {
       _resolvedBody = content;
       _isPreparingDocument = false;
     });
-    unawaited(controller.loadHtmlString(fullHtml));
     _scheduleWebViewLoadingFallback(inAppWebView: false);
+    unawaited(controller.loadHtmlString(fullHtml));
   }
 
-  void _finishStandardWebViewLoading() {
+  Future<void> _finishStandardWebViewLoading() async {
     _webViewLoadingFallback?.cancel();
+    if (!mounted ||
+        !_webViewLoading ||
+        !_standardDocumentReady ||
+        !_standardWebViewAttached ||
+        _webController == null) {
+      return;
+    }
+
+    // DOM 首帧可能在 WebView 尚未合成到 Flutter 窗口时就已经完成。
+    // 等待原生视图挂载后的两个 Flutter 帧，避免关闭遮罩时露出白色表面。
+    await WidgetsBinding.instance.endOfFrame;
     if (!mounted || !_webViewLoading) return;
+    final nextFrame = Completer<void>();
+    WidgetsBinding.instance.addPostFrameCallback((_) => nextFrame.complete());
+    WidgetsBinding.instance.scheduleFrame();
+    await nextFrame.future;
+    if (!mounted || !_webViewLoading) return;
+
     setState(() {
       _webViewLoading = false;
     });
@@ -714,7 +853,10 @@ p{margin:8px 0}
       const Duration(seconds: 8),
       inAppWebView
           ? () => unawaited(_finishInAppWebViewLoading())
-          : _finishStandardWebViewLoading,
+          : () {
+              _standardDocumentReady = true;
+              unawaited(_finishStandardWebViewLoading());
+            },
     );
   }
 
@@ -739,6 +881,8 @@ p{margin:8px 0}
 
     Widget contentArea;
     if (_resolvedBody == null) {
+      // 与 Apex 一致：只有列表没有正文时才请求单篇详情；列表已有正文时
+      // 不再后台校验并重建 WebView。
       final asyncDetail = ref.watch(
         knowledgeArticleDetailProvider(_detailRequest),
       );
@@ -747,26 +891,23 @@ p{margin:8px 0}
         error: (e, _) =>
             XbErrorState(message: e.toString(), onRetry: _retryDetail),
         data: (result) {
-          if (_resolvedBody == null) {
-            final fetchedBody = _parseDetailBody(result);
-            final resolvedBody = _stripLeadingTitle(fetchedBody);
-            if (!_isPreparingDocument) {
-              _isPreparingDocument = true;
-              WidgetsBinding.instance.addPostFrameCallback((_) {
-                if (!mounted) return;
-                if (resolvedBody.isEmpty) {
-                  setState(() {
-                    _resolvedBody = resolvedBody;
-                    _isPreparingDocument = false;
-                  });
-                  return;
-                }
-                unawaited(_initWebView(resolvedBody));
-              });
-            }
-            return const Center(child: CircularProgressIndicator());
+          final fetchedBody =
+              _stripLeadingTitle(_parseDetailBody(result)).trim();
+          if (!_isPreparingDocument) {
+            _isPreparingDocument = true;
+            WidgetsBinding.instance.addPostFrameCallback((_) {
+              if (!mounted || _resolvedBody != null) return;
+              if (fetchedBody.isEmpty) {
+                setState(() {
+                  _resolvedBody = '';
+                  _isPreparingDocument = false;
+                });
+              } else {
+                unawaited(_prepareDocument(fetchedBody));
+              }
+            });
           }
-          return _buildContentArea(theme);
+          return const Center(child: CircularProgressIndicator());
         },
       );
     } else {
@@ -862,6 +1003,7 @@ p{margin:8px 0}
       );
     }
 
+    // 与 Apex 一致：Linux 直接使用 HtmlWidget，不创建原生 WebView。
     if (_useHtmlWidget && _htmlWidgetContent != null) {
       return SingleChildScrollView(
         padding: const EdgeInsets.all(16),
@@ -884,19 +1026,31 @@ p{margin:8px 0}
 
     if (_useInAppWebView) {
       final isDark = Theme.of(context).brightness == Brightness.dark;
-      if (_inAppWebViewHtml == null || _lastInAppWebViewIsDark != isDark) {
-        _inAppWebViewHtml = _contentToHtml(
-          body,
+      if ((_inAppWebViewHtml == null || _lastInAppWebViewIsDark != isDark) &&
+          _renderedBodyHtml != null) {
+        _inAppWebViewHtml = _buildDocumentHtml(
+          _renderedBodyHtml!,
           isDark: isDark,
           baseUrl: _documentBaseHref,
           backgroundColor: Theme.of(context).scaffoldBackgroundColor,
         );
         _lastInAppWebViewIsDark = isDark;
       }
+      if (_inAppWebViewHtml == null) {
+        return ColoredBox(
+          color: theme.scaffoldBackgroundColor,
+          child: const Center(child: CircularProgressIndicator()),
+        );
+      }
       return Stack(
         children: [
           iaw.InAppWebView(
             key: ValueKey(isDark),
+            initialData: iaw.InAppWebViewInitialData(
+              data: _inAppWebViewHtml!,
+              mimeType: 'text/html',
+              encoding: 'utf-8',
+            ),
             initialSettings: iaw.InAppWebViewSettings(
               javaScriptEnabled: true,
               transparentBackground: false,
@@ -925,10 +1079,6 @@ p{margin:8px 0}
                   }
                 },
               );
-              controller.loadData(
-                  data: _inAppWebViewHtml!,
-                  mimeType: 'text/html',
-                  encoding: 'utf-8');
             },
             onLoadStop: (_, __) {
               _inAppController?.evaluateJavascript(source: r'''
@@ -966,8 +1116,8 @@ p{margin:8px 0}
   // painted frame. Two animation frames ensure text/layout has been painted
   // before Flutter removes the cover. Images are intentionally not awaited,
   // so slow images can appear progressively after the text is visible.
-  if (!window.__fastcatDocRenderReported) {
-    window.__fastcatDocRenderReported = true;
+  if (!window.__fastcatDocRenderDelivered) {
+    window.__fastcatDocRenderDelivered = true;
     requestAnimationFrame(function() {
       requestAnimationFrame(function() {
         window.flutter_inappwebview.callHandler("documentRendered");
@@ -1031,17 +1181,11 @@ p{margin:8px 0}
       );
     }
 
-    if ((Platform.isAndroid ||
-            Platform.isIOS ||
-            Platform.isMacOS ||
-            Platform.isLinux) &&
-        _webController != null) {
+    if ((Platform.isAndroid || Platform.isIOS) && _webController != null) {
       final currentIsDark = theme.brightness == Brightness.dark;
-      if (_lastWebViewIsDark != currentIsDark &&
-          _resolvedBody != null &&
-          _resolvedBody!.isNotEmpty) {
-        final fullHtml = _contentToHtml(
-          _resolvedBody!,
+      if (_lastWebViewIsDark != currentIsDark && _renderedBodyHtml != null) {
+        final fullHtml = _buildDocumentHtml(
+          _renderedBodyHtml!,
           isDark: currentIsDark,
           baseUrl: _documentBaseHref,
           backgroundColor: theme.scaffoldBackgroundColor,
@@ -1070,6 +1214,11 @@ p{margin:8px 0}
       );
     }
 
-    return ColoredBox(color: theme.scaffoldBackgroundColor);
+    return ColoredBox(
+      color: theme.scaffoldBackgroundColor,
+      child: _isPreparingDocument
+          ? const Center(child: CircularProgressIndicator())
+          : null,
+    );
   }
 }

@@ -1,5 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:fl_clash/xboard/adapter/initialization/sdk_provider.dart';
+import 'package:fl_clash/xboard/infrastructure/cache/api_request_cache.dart';
 
 // ── Models ──────────────────────────────────────────────────────────────────
 
@@ -119,23 +120,44 @@ final knowledgeArticlesProvider =
     queryParameters: {'language': language},
   );
   final raw = await sdk.httpService.getRequest(uri.toString());
+  // 列表刷新后正文可能已经更新，不能再让旧的详情缓存覆盖列表中的新正文。
+  ApiRequestCache.invalidatePrefix(_knowledgeArticleDetailCachePrefix);
   return parseKnowledgeArticles(raw);
 });
 
-/// 单篇文章详情 Provider
+const _knowledgeArticleDetailCachePrefix = 'knowledge:detail:';
+
+String _knowledgeArticleDetailCacheKey(KnowledgeArticleDetailRequest request) =>
+    '$_knowledgeArticleDetailCachePrefix${request.id}:${request.language}';
+
+/// 清除单篇文章详情缓存，用于用户主动重试或刷新。
+void invalidateKnowledgeArticleDetailCache(
+  KnowledgeArticleDetailRequest request,
+) {
+  ApiRequestCache.invalidate(_knowledgeArticleDetailCacheKey(request));
+}
+
+/// 单篇文章详情 Provider。
+///
+/// Provider 离开页面后可以自动释放；短时间内重新打开时，由请求缓存直接
+/// 返回结果，并合并同一篇文章的并发请求。
 final knowledgeArticleDetailProvider = FutureProvider.autoDispose
     .family<Map<String, dynamic>?, KnowledgeArticleDetailRequest>(
         (ref, request) async {
-  final sdk = await ref.read(xboardSdkProvider.future);
-  final cacheBuster = DateTime.now().millisecondsSinceEpoch;
-  final uri = Uri(
-    path: '/user/knowledge/fetch',
-    queryParameters: {
-      'id': request.id.toString(),
-      'language': request.language,
-      '_t': cacheBuster.toString(),
+  return ApiRequestCache.get<Map<String, dynamic>?>(
+    _knowledgeArticleDetailCacheKey(request),
+    ttl: const Duration(minutes: 5),
+    fetch: () async {
+      final sdk = await ref.read(xboardSdkProvider.future);
+      final uri = Uri(
+        path: '/user/knowledge/fetch',
+        queryParameters: {
+          'id': request.id.toString(),
+          'language': request.language,
+        },
+      );
+      final raw = await sdk.httpService.getRequest(uri.toString());
+      return raw;
     },
   );
-  final raw = await sdk.httpService.getRequest(uri.toString());
-  return raw;
 });
