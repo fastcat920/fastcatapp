@@ -214,6 +214,9 @@ class _RechargePageState extends ConsumerState<RechargePage> {
     final theme = Theme.of(context);
     final l10n = AppLocalizations.of(context);
     final isDark = theme.brightness == Brightness.dark;
+    final balanceContentColor = isDark
+        ? theme.colorScheme.onSurface
+        : theme.colorScheme.primary.withValues(alpha: 0.96);
     final mediaSize = MediaQuery.sizeOf(context);
     final useSideNavigation = mediaSize.width > mediaSize.height || system.isTV;
     final user = ref.watch(userInfoProvider);
@@ -333,6 +336,7 @@ class _RechargePageState extends ConsumerState<RechargePage> {
                                 overflow: TextOverflow.ellipsis,
                                 style: theme.textTheme.titleSmall?.copyWith(
                                   fontWeight: FontWeight.w600,
+                                  color: balanceContentColor,
                                 ),
                               ),
                             ),
@@ -364,7 +368,7 @@ class _RechargePageState extends ConsumerState<RechargePage> {
                           textAlign: TextAlign.right,
                           softWrap: true,
                           style: theme.textTheme.bodySmall?.copyWith(
-                            color: theme.colorScheme.onSurfaceVariant,
+                            color: balanceContentColor,
                           ),
                         ),
                       ],
