@@ -103,7 +103,9 @@ class GlobalState {
         );
     config = config.copyWith(
       themeProps: config.themeProps.copyWith(
-        primaryColor: configuredThemeColor.toARGB32(),
+        // Flutter 3.27 compatibility; Color.toARGB32 was added later.
+        // ignore: deprecated_member_use
+        primaryColor: configuredThemeColor.value,
       ),
     );
     await globalState.migrateOldData(config);
