@@ -1,5 +1,5 @@
 import 'package:fl_clash/xboard/features/auth/auth.dart';
-import 'package:flutter_xboard_sdk/flutter_xboard_sdk.dart';
+import 'package:flutter_xboard_sdk/flutter_xboard_sdk.dart' show ConfigModel;
 import 'package:fl_clash/common/common.dart';
 import 'package:flutter/material.dart';
 import 'package:fl_clash/xboard/utils/xboard_notification.dart';
@@ -52,7 +52,8 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
 
     // 检查邮箱验证码是否必填
     if (isEmailVerify && _emailCodeController.text.trim().isEmpty) {
-      XBoardNotification.showError('请输入邮箱验证码');
+      XBoardNotification.showError(
+          appLocalizations.pleaseEnterEmailVerificationCode);
       return;
     }
 
@@ -61,22 +62,22 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
         _isRegistering = true;
       });
       try {
-        // 使用 AuthRepository 注册
-        // 使用 SDK 注册
-        final success = await XBoardSDK.instance.auth.register(
-          _emailController.text,
-          _passwordController.text,
-          inviteCode: _inviteCodeController.text.trim().isNotEmpty
-              ? _inviteCodeController.text
-              : null,
-          emailCode:
+        final success = await ref.read(xboardUserProvider.notifier).register(
+              _emailController.text,
+              _passwordController.text,
+              _inviteCodeController.text.trim().isNotEmpty
+                  ? _inviteCodeController.text
+                  : null,
               isEmailVerify && _emailCodeController.text.trim().isNotEmpty
                   ? _emailCodeController.text
                   : null,
-        );
+            );
 
         if (!success) {
-          throw Exception('注册失败');
+          final message = ref.read(xboardUserProvider).errorMessage ??
+              appLocalizations.xboardRegisterFailed;
+          XBoardNotification.showError(message);
+          return;
         }
 
         // 注册成功 — 查全局开关决定新用户的 OSS 模式，同步到 Supabase
@@ -90,8 +91,8 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
           final storageService = ref.read(storageServiceProvider);
           await storageService.saveCredentials(
             _emailController.text,
-            _passwordController.text,
-            true, // 启用记住密码
+            '',
+            false,
           );
           if (mounted) {
             XBoardNotification.showSuccess(
@@ -139,9 +140,14 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
     });
 
     try {
-      // 使用 AuthRepository 发送验证码
-      // 使用 SDK 发送验证码
-      await XBoardSDK.instance.auth.sendEmailVerifyCode(_emailController.text);
+      final success = await ref
+          .read(xboardUserProvider.notifier)
+          .sendVerificationCode(_emailController.text);
+      if (!success) {
+        final message = ref.read(xboardUserProvider).errorMessage ??
+            appLocalizations.sendCodeFailed;
+        throw Exception(message);
+      }
 
       if (mounted) {
         XBoardNotification.showSuccess(

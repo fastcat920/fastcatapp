@@ -1,7 +1,5 @@
-import 'package:fl_clash/clash/core.dart';
 import 'package:fl_clash/common/common.dart';
 import 'package:fl_clash/enum/enum.dart';
-import 'package:fl_clash/models/common.dart';
 import 'package:fl_clash/providers/config.dart';
 import 'package:fl_clash/state.dart';
 import 'package:fl_clash/xboard/config/gateway_config.dart';
@@ -12,8 +10,6 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'dart:io';
 
-import '../providers/app.dart';
-
 class DeveloperView extends ConsumerWidget {
   const DeveloperView({super.key});
 
@@ -21,54 +17,6 @@ class DeveloperView extends ConsumerWidget {
     return generateSectionV2(
       title: appLocalizations.options,
       items: [
-        ListItem(
-          title: Text(appLocalizations.messageTest),
-          onTap: () {
-            context.showNotifier(
-              appLocalizations.messageTestTip,
-            );
-          },
-        ),
-        ListItem(
-          title: Text(appLocalizations.logsTest),
-          onTap: () {
-            for (int i = 0; i < 1000; i++) {
-              ref.read(requestsProvider.notifier).addRequest(Connection(
-                    id: utils.id,
-                    start: DateTime.now(),
-                    metadata: Metadata(
-                      uid: i * i,
-                      network: utils.generateRandomString(
-                        maxLength: 1000,
-                        minLength: 20,
-                      ),
-                      sourceIP: '',
-                      sourcePort: '',
-                      destinationIP: '',
-                      destinationPort: '',
-                      host: '',
-                      process: '',
-                      remoteDestination: '',
-                    ),
-                    chains: ['chains'],
-                  ));
-              globalState.appController.addLog(
-                Log.app(
-                  utils.generateRandomString(
-                    maxLength: 200,
-                    minLength: 20,
-                  ),
-                ),
-              );
-            }
-          },
-        ),
-        ListItem(
-          title: Text(appLocalizations.crashTest),
-          onTap: () {
-            clashCore.clashInterface.crash();
-          },
-        ),
         const ListItem.open(
           title: Text('网关诊断'),
           subtitle: Text('查看当前网关、生效前缀、熔断状态和最近切换事件'),
@@ -84,12 +32,6 @@ class DeveloperView extends ConsumerWidget {
             title: 'API诊断',
             widget: _ApiDiagnosticsPage(),
           ),
-        ),
-        ListItem(
-          title: Text(appLocalizations.clearData),
-          onTap: () async {
-            await globalState.appController.handleClear();
-          },
         )
       ],
     );
@@ -143,8 +85,8 @@ class DeveloperView extends ConsumerWidget {
                 left: 16,
                 right: 16,
               ),
-              title: const Text('日志捕获'),
-              subtitle: const Text('开启后日志将在日志页面中显示'),
+              title: Text(appLocalizations.logcat),
+              subtitle: Text(appLocalizations.logcatDesc),
               delegate: SwitchDelegate(
                 value: logCapture,
                 onChanged: (value) {
@@ -1068,7 +1010,6 @@ Future<_ApiProbeResult> _probeApiEndpoint(
     client = HttpClient();
     client.findProxy = (_) => 'DIRECT';
     client.connectionTimeout = const Duration(seconds: 4);
-    client.badCertificateCallback = (_, __, ___) => true;
     final uri = Uri.parse('$baseUrl$apiPrefix/guest/comm/config');
     final request = await client.getUrl(uri);
     request.headers.set(HttpHeaders.userAgentHeader, globalState.ua);

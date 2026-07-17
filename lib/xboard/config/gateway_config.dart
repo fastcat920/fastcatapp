@@ -1048,7 +1048,6 @@ class GatewayRuntimeService {
       client = HttpClient();
       client.findProxy = (_) => 'DIRECT';
       client.connectionTimeout = const Duration(seconds: 4);
-      client.badCertificateCallback = (_, __, ___) => true;
 
       final testUrl = Uri.parse(
         '${candidate.baseUrl}${candidate.apiPrefix}/guest/comm/config',

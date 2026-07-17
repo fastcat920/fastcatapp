@@ -13,6 +13,7 @@ import 'package:fl_clash/l10n/l10n.dart';
 import 'package:fl_clash/state.dart';
 import 'package:fl_clash/xboard/adapter/state/order_state.dart';
 import 'package:fl_clash/xboard/core/core.dart';
+import 'package:fl_clash/xboard/domain/domain.dart';
 import 'package:fl_clash/xboard/features/shared/utils/desktop_webview_window_helper.dart';
 import 'package:fl_clash/xboard/features/shared/styles/styles.dart';
 import '../services/payment_status_poller.dart';
@@ -111,11 +112,13 @@ class PaymentWebViewPage extends ConsumerStatefulWidget {
         container.invalidate(getOrderProvider(tradeNo));
         final order = await container.read(getOrderProvider(tradeNo).future);
         if (order != null) {
-          if (order.status == 3 || order.status == 4) {
+          final status = OrderStatus.fromCode(order.status ?? 0);
+          if (status == OrderStatus.completed ||
+              status == OrderStatus.discounted) {
             await finish(true);
             return;
           }
-          if (order.status == 2) {
+          if (status == OrderStatus.canceled) {
             shouldContinuePolling = false;
             pollTimer?.cancel();
             return;

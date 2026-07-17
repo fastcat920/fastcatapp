@@ -37,6 +37,7 @@
     </queries>
 
     <application
+        android:allowBackup="false"
         android:name=".FastCatApplication"
         android:hardwareAccelerated="true"
         android:icon="@mipmap/ic_launcher"

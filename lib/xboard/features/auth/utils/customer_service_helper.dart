@@ -33,6 +33,7 @@ const _deviceGatewayApiPrefix = gatewayApiPrefix;
 const _desktopCustomerServiceWindowWidth = 800;
 const _desktopCustomerServiceWindowHeight = 600;
 const _crispProxyProbeTimeout = Duration(seconds: 4);
+const _crispWebViewPrewarmTimeout = Duration(seconds: 8);
 const _crispProxyProbePreviewBytes = 4096;
 const _crispProxyUsableCacheTtl = Duration(minutes: 10);
 const _crispUserDataResolveTimeout = Duration(milliseconds: 1800);
@@ -108,7 +109,8 @@ class CustomerServiceHelper {
   static _CrispIPData? _cachedIPData;
   static DateTime? _cachedIPDataTime;
   static const _ipDataCacheTtl = Duration(minutes: 5);
-  static WebViewController? _prewarmedMacController;
+  static _PrewarmedCrispWebView? _prewarmedSystemWebView;
+  static Future<void>? _systemWebViewPrewarmFuture;
   static iaw.HeadlessInAppWebView? _prewarmedHeadlessWin;
   static Brightness? _desktopCustomerServiceBrightness;
   static String? _desktopCustomerServiceAccent;
@@ -409,16 +411,20 @@ class CustomerServiceHelper {
     if (XBoardConfig.crispProxyUrl.trim().isEmpty) {
       unawaited(_fallbackCrispProxyUrl());
     }
-    unawaited(_prewarmCrispRoute());
-    if (!_isDesktopPlatform) {
-      unawaited(_prewarmMobileWebView());
-    }
+    unawaited(_prewarmCrispRouteAndSystemWebView());
     if (_isDesktopPlatform) {
       unawaited(_isDesktopWebviewAvailable());
       if (Platform.isWindows) {
         unawaited(_webview2DataFolder());
         unawaited(_prewarmWindowsWebView());
       }
+    }
+  }
+
+  static Future<void> _prewarmCrispRouteAndSystemWebView() async {
+    await _prewarmCrispRoute();
+    if (Platform.isAndroid || Platform.isIOS || Platform.isMacOS) {
+      await _prewarmSystemWebView();
     }
   }
 
@@ -484,35 +490,84 @@ class CustomerServiceHelper {
 </html>''';
   }
 
-  /// 预热移动端 WebView：预创建 controller 并加载 bootstrap HTML，
-  /// 消除点击客服后的 WebView 冷启动延迟。
-  static Future<void> _prewarmMobileWebView() async {
-    if (!Platform.isAndroid && !Platform.isIOS && !Platform.isMacOS) return;
-    if (_prewarmedMacController != null) return;
-    try {
-      final ua = Platform.isAndroid || Platform.isIOS
-          ? 'Mozilla/5.0 (Linux; Android 14; Pixel 8) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0.0.0 Mobile Safari/537.36'
-          : 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.0 Safari/605.1.15';
-      final controller = WebViewController()
-        ..setUserAgent(ua)
-        ..setJavaScriptMode(JavaScriptMode.unrestricted);
-      _prewarmedMacController = controller;
-      _logger.info('[Crisp] WebView controller pre-warmed');
-    } catch (e) {
-      _logger.debug('[Crisp] WebView prewarm failed: \$e');
+  /// 预热系统 WebView：Android/iOS/macOS 预先加载已择优的 Crisp 页面。
+  /// 首次打开时直接复用该 controller，避免 WebKit、DNS、TLS 和客服资源冷启动。
+  static Future<void> _prewarmSystemWebView() {
+    if (!Platform.isAndroid && !Platform.isIOS && !Platform.isMacOS) {
+      return Future.value();
     }
+    return _systemWebViewPrewarmFuture ??= () async {
+      try {
+        final websiteId = await _resolveCrispWebsiteId();
+        if (websiteId.isEmpty) return;
+        final proxyUrl = await _resolveUsableCrispProxyUrl(websiteId);
+        final warmed = _prewarmedSystemWebView;
+        if (warmed != null &&
+            warmed.websiteId == websiteId &&
+            normalizeCrispProxyUrl(warmed.proxyUrl) ==
+                normalizeCrispProxyUrl(proxyUrl)) {
+          return;
+        }
+        _prewarmedSystemWebView = null;
+        final uri = localizedCrispUri(
+          crispEmbedUri(websiteId: websiteId, proxyUrl: proxyUrl),
+          'en',
+        );
+        final ua = Platform.isAndroid || Platform.isIOS
+            ? 'Mozilla/5.0 (Linux; Android 14; Pixel 8) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0.0.0 Mobile Safari/537.36'
+            : 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.0 Safari/605.1.15';
+        final loaded = Completer<void>();
+        final controller = WebViewController()
+          ..setUserAgent(ua)
+          ..setJavaScriptMode(JavaScriptMode.unrestricted)
+          ..setNavigationDelegate(
+            NavigationDelegate(
+              onPageFinished: (_) {
+                if (!loaded.isCompleted) loaded.complete();
+              },
+              onWebResourceError: (error) {
+                if (error.isForMainFrame != false && !loaded.isCompleted) {
+                  loaded.complete();
+                }
+              },
+            ),
+          );
+        await controller.loadRequest(uri);
+        await loaded.future.timeout(
+          _crispWebViewPrewarmTimeout,
+          onTimeout: () {},
+        );
+        _prewarmedSystemWebView = _PrewarmedCrispWebView(
+          controller: controller,
+          websiteId: websiteId,
+          proxyUrl: proxyUrl,
+        );
+        _logger.info('[Crisp] System WebView pre-warmed: ${uri.host}');
+      } catch (e) {
+        _logger.debug('[Crisp] System WebView prewarm failed: $e');
+      } finally {
+        _systemWebViewPrewarmFuture = null;
+      }
+    }();
   }
 
-  /// 消费预热的 controller（theme/locale 匹配且未被使用时返回）。
+  /// 消费已经加载目标客服页面的 controller。
   /// 返回 null 表示需要新建 controller。
-  static WebViewController? consumePrewarmedMacController({
-    required Brightness brightness,
-    required String localeTag,
+  static WebViewController? consumePrewarmedSystemWebView({
+    required String websiteId,
+    String? proxyUrl,
   }) {
-    final c = _prewarmedMacController;
-    if (c == null) return null;
-    _prewarmedMacController = null;
-    return c;
+    final warmed = _prewarmedSystemWebView;
+    if (warmed == null) return null;
+    if (warmed.websiteId != websiteId ||
+        normalizeCrispProxyUrl(warmed.proxyUrl) !=
+            normalizeCrispProxyUrl(proxyUrl)) {
+      _prewarmedSystemWebView = null;
+      unawaited(_prewarmSystemWebView());
+      return null;
+    }
+    _prewarmedSystemWebView = null;
+    return warmed.controller;
   }
 
   /// 获取 WebView2 用户数据目录（可写路径）
@@ -593,17 +648,29 @@ class CustomerServiceHelper {
         websiteId: websiteId,
         proxyUrl: proxyUrl,
       );
-      final usable = await _isCrispProxyEmbedUsable(proxyEmbedUri);
-      final usableProxyUrl = usable ? proxyUrl : '';
+      final officialEmbedUri = officialCrispEmbedUri(websiteId);
+      final results = await Future.wait([
+        _probeCrispRoute(proxyEmbedUri),
+        _probeCrispRoute(officialEmbedUri),
+      ]);
+      final proxyResult = results[0];
+      final officialResult = results[1];
+      final useProxy = proxyResult.usable &&
+          (!officialResult.usable ||
+              proxyResult.elapsed <= officialResult.elapsed);
+      final usableProxyUrl = useProxy ? proxyUrl : '';
       _usableCrispProxyCache = _CrispProxyCacheEntry(
         websiteId: websiteId,
         proxyUrl: proxyUrl,
         usableProxyUrl: usableProxyUrl,
         createdAt: DateTime.now(),
       );
-      if (!usable) {
-        _logger.warning('[Crisp] 代理预检失败，使用官方域名: $proxyEmbedUri');
-      }
+      _logger.info(
+        '[Crisp] 线路并行预检完成: '
+        'proxy=${proxyResult.usable}/${proxyResult.elapsed.inMilliseconds}ms, '
+        'official=${officialResult.usable}/${officialResult.elapsed.inMilliseconds}ms, '
+        'selected=${useProxy ? 'proxy' : 'official'}',
+      );
       return usableProxyUrl;
     }();
 
@@ -621,7 +688,8 @@ class CustomerServiceHelper {
     }
   }
 
-  static Future<bool> _isCrispProxyEmbedUsable(Uri uri) async {
+  static Future<_CrispRouteProbeResult> _probeCrispRoute(Uri uri) async {
+    final stopwatch = Stopwatch()..start();
     final client = HttpClient()..connectionTimeout = _crispProxyProbeTimeout;
     try {
       final request = await client.getUrl(uri).timeout(_crispProxyProbeTimeout);
@@ -637,18 +705,19 @@ class CustomerServiceHelper {
       final statusCode = response.statusCode;
       final preview = await _readCrispProxyProbePreview(response);
       if (statusCode < 200 || statusCode >= 400) {
-        _logger.warning('[Crisp] 代理预检 HTTP $statusCode: $uri');
-        return false;
+        _logger.warning('[Crisp] 线路预检 HTTP $statusCode: $uri');
+        return _CrispRouteProbeResult(false, stopwatch.elapsed);
       }
       if (_looksLikeCrispProxyErrorPage(preview)) {
-        _logger.warning('[Crisp] 代理预检命中错误页: $uri');
-        return false;
+        _logger.warning('[Crisp] 线路预检命中错误页: $uri');
+        return _CrispRouteProbeResult(false, stopwatch.elapsed);
       }
-      return true;
+      return _CrispRouteProbeResult(true, stopwatch.elapsed);
     } catch (e) {
-      _logger.warning('[Crisp] 代理预检异常: $e');
-      return false;
+      _logger.warning('[Crisp] 线路预检异常 (${uri.host}): $e');
+      return _CrispRouteProbeResult(false, stopwatch.elapsed);
     } finally {
+      stopwatch.stop();
       client.close(force: true);
     }
   }
@@ -1691,6 +1760,25 @@ class _CrispProxyCacheEntry {
         this.proxyUrl == proxyUrl &&
         now.difference(createdAt) < _crispProxyUsableCacheTtl;
   }
+}
+
+class _CrispRouteProbeResult {
+  const _CrispRouteProbeResult(this.usable, this.elapsed);
+
+  final bool usable;
+  final Duration elapsed;
+}
+
+class _PrewarmedCrispWebView {
+  const _PrewarmedCrispWebView({
+    required this.controller,
+    required this.websiteId,
+    required this.proxyUrl,
+  });
+
+  final WebViewController controller;
+  final String websiteId;
+  final String proxyUrl;
 }
 
 class _PendingCrispProxyProbe {

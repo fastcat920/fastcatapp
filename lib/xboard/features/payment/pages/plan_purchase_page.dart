@@ -287,13 +287,13 @@ class _PlanPurchasePageState extends ConsumerState<PlanPurchasePage> {
       );
 
       if (tradeNo == null) {
-        final errorMessage = ref.read(userUIStateProvider).errorMessage;
+        final errorMessage = ref.read(paymentUIStateProvider).errorMessage;
         if (!mounted) return;
         throw Exception(errorMessage ??
             AppLocalizations.of(context).xboardOrderCreationFailed);
       }
 
-      _logger.debug('[购买] 订单创建成功: $tradeNo');
+      _logger.debug('[购买] 订单创建成功');
 
       // 计算订单金额
       final currentPrice = _getCurrentPrice();
@@ -407,7 +407,7 @@ class _PlanPurchasePageState extends ConsumerState<PlanPurchasePage> {
                 width: double.infinity,
                 child: Consumer(
                   builder: (context, ref, child) {
-                    final paymentState = ref.watch(userUIStateProvider);
+                    final paymentState = ref.watch(paymentUIStateProvider);
                     return FilledButton(
                       onPressed:
                           paymentState.isLoading ? null : _proceedToPurchase,

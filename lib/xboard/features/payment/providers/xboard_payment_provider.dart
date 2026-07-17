@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:fl_clash/common/sensitive_masker.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:fl_clash/xboard/adapter/state/order_state.dart';
 import 'package:fl_clash/xboard/features/auth/auth.dart';
@@ -20,6 +21,7 @@ final paymentMethodsProvider =
     StateProvider<List<DomainPaymentMethod>>((ref) => []);
 final paymentProcessStateProvider =
     StateProvider<PaymentProcessState>((ref) => const PaymentProcessState());
+final paymentUIStateProvider = StateProvider<UIState>((ref) => const UIState());
 
 class XBoardPaymentNotifier extends Notifier<void> {
   DateTime? _pendingOrdersLoadedAt;
@@ -89,7 +91,7 @@ class XBoardPaymentNotifier extends Notifier<void> {
       return;
     }
     if (updateUiState) {
-      ref.read(userUIStateProvider.notifier).state =
+      ref.read(paymentUIStateProvider.notifier).state =
           const UIState(isLoading: true);
     }
     try {
@@ -97,14 +99,14 @@ class XBoardPaymentNotifier extends Notifier<void> {
       final pendingOrders = await _fetchPendingOrdersFast();
       _setPendingOrders(pendingOrders);
       if (updateUiState) {
-        ref.read(userUIStateProvider.notifier).state =
+        ref.read(paymentUIStateProvider.notifier).state =
             const UIState(isLoading: false);
       }
       _logger.info('待支付订单加载成功，共 ${pendingOrders.length} 个');
     } catch (e) {
       _logger.info('加载待支付订单失败: $e');
       if (updateUiState) {
-        ref.read(userUIStateProvider.notifier).state = UIState(
+        ref.read(paymentUIStateProvider.notifier).state = UIState(
           isLoading: false,
           errorMessage: e.toString(),
         );
@@ -155,14 +157,16 @@ class XBoardPaymentNotifier extends Notifier<void> {
     } catch (e, stackTrace) {
       _logger.error('📋 [Payment] ❌ 加载支付方式失败: $e');
       _logger.error('📋 [Payment] 错误堆栈: $stackTrace');
-      ref.read(userUIStateProvider.notifier).state = UIState(
+      ref.read(paymentUIStateProvider.notifier).state = UIState(
         errorMessage: e.toString(),
       );
     }
   }
 
   /// 创建充值订单（仅 v2board 支持）
-  Future<String?> createDepositOrder({required int amountInCents}) async {
+  Future<String?> createDepositOrder({
+    required int amountInCents,
+  }) async {
     return createOrder(
       planId: 0,
       period: 'deposit',
@@ -178,18 +182,17 @@ class XBoardPaymentNotifier extends Notifier<void> {
   }) async {
     final userAuthState = ref.read(xboardUserAuthProvider);
     if (!userAuthState.isAuthenticated) {
-      ref.read(userUIStateProvider.notifier).state = const UIState(
+      ref.read(paymentUIStateProvider.notifier).state = const UIState(
         errorMessage: '请先登录',
       );
       return null;
     }
-    ref.read(userUIStateProvider.notifier).state =
+    ref.read(paymentUIStateProvider.notifier).state =
         const UIState(isLoading: true);
     try {
-      _logger
-          .info('创建订单: planId=$planId, period=$period, couponCode=$couponCode');
+      _logger.info('创建订单: planId=$planId, period=$period');
 
-      // 快速清理待支付订单：优先使用新鲜缓存或首屏订单，避免每次创建订单都全量翻页。
+      // 新操作直接替换历史待支付订单，避免不同订单类型互相弹窗干扰。
       await cancelPendingOrders(
         fastMode: true,
         refreshAfterCancel: false,
@@ -202,13 +205,14 @@ class XBoardPaymentNotifier extends Notifier<void> {
         period: period,
         couponCode: couponCode,
         depositAmount: depositAmount,
+        allowPendingCleanupRetry: true,
       );
       if (tradeNo.isNotEmpty) {
         ref.read(paymentProcessStateProvider.notifier).state =
             PaymentProcessState(
           currentOrderTradeNo: tradeNo,
         );
-        ref.read(userUIStateProvider.notifier).state =
+        ref.read(paymentUIStateProvider.notifier).state =
             const UIState(isLoading: false);
         _addLocalPendingOrder(
           tradeNo: tradeNo,
@@ -217,10 +221,10 @@ class XBoardPaymentNotifier extends Notifier<void> {
           depositAmount: depositAmount,
         );
         unawaited(_refreshPendingOrdersInBackground());
-        _logger.info('订单创建成功: tradeNo=$tradeNo');
+        _logger.info('订单创建成功');
         return tradeNo;
       } else {
-        ref.read(userUIStateProvider.notifier).state = const UIState(
+        ref.read(paymentUIStateProvider.notifier).state = const UIState(
           isLoading: false,
           errorMessage: '创建订单失败',
         );
@@ -228,7 +232,7 @@ class XBoardPaymentNotifier extends Notifier<void> {
       }
     } catch (e) {
       _logger.info('创建订单失败: $e');
-      ref.read(userUIStateProvider.notifier).state = UIState(
+      ref.read(paymentUIStateProvider.notifier).state = UIState(
         isLoading: false,
         errorMessage: BackendMessageMapper.mapError(
           e,
@@ -249,7 +253,7 @@ class XBoardPaymentNotifier extends Notifier<void> {
   }) async {
     final userAuthState = ref.read(xboardUserAuthProvider);
     if (!userAuthState.isAuthenticated) {
-      ref.read(userUIStateProvider.notifier).state = const UIState(
+      ref.read(paymentUIStateProvider.notifier).state = const UIState(
         errorMessage: '请先登录',
       );
       return null;
@@ -259,7 +263,7 @@ class XBoardPaymentNotifier extends Notifier<void> {
       isProcessingPayment: true,
     );
     try {
-      _logger.info('提交支付: tradeNo=$tradeNo, method=$method');
+      _logger.info('提交支付: method=$method');
 
       // 调用 Repository 提交支付，返回支付结果
       final paymentResultModel = await XBoardSDK.instance.order.checkoutOrder(
@@ -275,17 +279,17 @@ class XBoardPaymentNotifier extends Notifier<void> {
       final paymentResult = _mapPaymentResult(paymentResultModel);
       if (paymentResult != null) {
         await loadPendingOrders();
-        _logger.info('支付提交成功，结果: $paymentResult');
+        _logger.info('支付提交成功');
         return paymentResult;
       }
       return null;
     } catch (e) {
-      _logger.info('支付提交失败: $e');
+      _logger.info('支付提交失败: ${SensitiveMasker.maskText(e)}');
       ref.read(paymentProcessStateProvider.notifier).state =
           const PaymentProcessState(
         isProcessingPayment: false,
       );
-      ref.read(userUIStateProvider.notifier).state = UIState(
+      ref.read(paymentUIStateProvider.notifier).state = UIState(
         errorMessage: e.toString(),
       );
       return null;
@@ -299,13 +303,13 @@ class XBoardPaymentNotifier extends Notifier<void> {
   }) async {
     final userAuthState = ref.read(xboardUserAuthProvider);
     if (!userAuthState.isAuthenticated) {
-      ref.read(userUIStateProvider.notifier).state = const UIState(
+      ref.read(paymentUIStateProvider.notifier).state = const UIState(
         errorMessage: '请先登录',
       );
       return 0;
     }
     if (updateUiState) {
-      ref.read(userUIStateProvider.notifier).state =
+      ref.read(paymentUIStateProvider.notifier).state =
           const UIState(isLoading: true);
     }
     try {
@@ -315,7 +319,7 @@ class XBoardPaymentNotifier extends Notifier<void> {
       final canceledCount = await _cancelPendingOrderList(ordersToCancel);
 
       if (updateUiState) {
-        ref.read(userUIStateProvider.notifier).state =
+        ref.read(paymentUIStateProvider.notifier).state =
             const UIState(isLoading: false);
       }
       if (refreshAfterCancel) {
@@ -326,7 +330,7 @@ class XBoardPaymentNotifier extends Notifier<void> {
     } catch (e) {
       _logger.info('取消订单失败: $e');
       if (updateUiState) {
-        ref.read(userUIStateProvider.notifier).state = UIState(
+        ref.read(paymentUIStateProvider.notifier).state = UIState(
           isLoading: false,
           errorMessage: e.toString(),
         );
@@ -353,6 +357,7 @@ class XBoardPaymentNotifier extends Notifier<void> {
     required String period,
     String? couponCode,
     int? depositAmount,
+    required bool allowPendingCleanupRetry,
   }) async {
     try {
       return await XBoardSDK.instance.order.createOrder(
@@ -362,7 +367,8 @@ class XBoardPaymentNotifier extends Notifier<void> {
         depositAmount: depositAmount,
       );
     } catch (e) {
-      if (!BackendMessageMapper.matchesPendingOrderConflict(e)) {
+      if (!allowPendingCleanupRetry ||
+          !BackendMessageMapper.matchesPendingOrderConflict(e)) {
         rethrow;
       }
 
@@ -439,7 +445,7 @@ class XBoardPaymentNotifier extends Notifier<void> {
           canceledTradeNos.add(tradeNo);
         }
       } catch (e) {
-        _logger.info('取消订单失败: $tradeNo, 错误: $e');
+        _logger.info('取消订单失败: ${SensitiveMasker.maskText(e)}');
       }
     }));
 
@@ -574,7 +580,10 @@ Map<String, dynamic>? _mapPaymentResult(PaymentResultModel result) {
       'type': 0, // Redirect
       'data': url,
     },
-    failed: (message, errorCode, extra) => { 'type': -2, 'data': message.isNotEmpty ? message : '支付失败', },
+    failed: (message, errorCode, extra) => {
+      'type': -2,
+      'data': message.isNotEmpty ? message : '支付失败',
+    },
     canceled: (message) => null,
   );
 }

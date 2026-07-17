@@ -54,7 +54,7 @@ Future<void> showResetTrafficOrderDialog({
           planFuture: planFuture,
         );
         if (orderPage == null) {
-          final errorMessage = ref.read(userUIStateProvider).errorMessage;
+          final errorMessage = ref.read(paymentUIStateProvider).errorMessage;
           throw _ResetTrafficOrderException(
             errorMessage ?? l10n.xboardOrderCreationFailed,
           );
@@ -184,33 +184,20 @@ class _ResetTrafficConfirmDialogState
       child: AlertDialog(
         shape: XbUiDialog.shape(),
         backgroundColor: XbUiDialog.background(context),
-        icon: _isCreating
-            ? Center(
-                child: SizedBox.square(
-                  dimension: 20,
-                  child: CircularProgressIndicator(
-                    strokeWidth: 2.2,
-                    color: XbUiStatusColor.pendingByTheme(theme),
-                  ),
-                ),
-              )
-            : Container(
-                padding: const EdgeInsets.all(12),
-                decoration: BoxDecoration(
-                  color: XbUiStatusColor.pendingByTheme(theme)
-                      .withValues(alpha: 0.1),
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: Icon(
-                  Icons.restart_alt,
-                  color: XbUiStatusColor.pendingByTheme(theme),
-                  size: 32,
-                ),
-              ),
+        icon: Container(
+          padding: const EdgeInsets.all(12),
+          decoration: BoxDecoration(
+            color: XbUiStatusColor.pendingByTheme(theme).withValues(alpha: 0.1),
+            borderRadius: BorderRadius.circular(12),
+          ),
+          child: Icon(
+            Icons.restart_alt,
+            color: XbUiStatusColor.pendingByTheme(theme),
+            size: 32,
+          ),
+        ),
         title: Text(
-          _isCreating
-              ? l10n.xboardCreatingOrder
-              : l10n.xboardConfirmResetTraffic,
+          l10n.xboardConfirmResetTraffic,
           style: XbUiText.sectionTitle(context).copyWith(fontSize: 20),
           textAlign: TextAlign.center,
         ),

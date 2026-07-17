@@ -378,9 +378,6 @@ class _OrderDetailPageState extends ConsumerState<OrderDetailPage>
         return;
       }
 
-      // 支付已提交，启动轮询监控状态
-      if (!_isPaymentCompleted) _poller.start();
-
       if (data is String && data.isNotEmpty) {
         if (!mounted) return;
         final success = await PaymentWebViewPage.open(
@@ -390,7 +387,12 @@ class _OrderDetailPageState extends ConsumerState<OrderDetailPage>
         );
         if (success == true && mounted) {
           await _handlePaymentSuccess();
+        } else if (!_isPaymentCompleted) {
+          // WebView 关闭后由订单页接管轮询，避免两个页面同时查询同一订单。
+          _poller.start();
         }
+      } else if (!_isPaymentCompleted) {
+        _poller.start();
       }
     } catch (e, stackTrace) {
       _logger.error('提交支付失败: $e');
@@ -475,7 +477,8 @@ class _OrderDetailPageState extends ConsumerState<OrderDetailPage>
       clearGetOrderCache(widget.tradeNo);
       ref.invalidate(getOrderProvider(widget.tradeNo));
       final order = await ref.read(getOrderProvider(widget.tradeNo).future);
-      if (order?.status == 3 || order?.status == 4) {
+      final status = OrderStatus.fromCode(order?.status ?? 0);
+      if (status == OrderStatus.completed || status == OrderStatus.discounted) {
         await _handlePaymentSuccess();
       } else {
         XBoardNotification.showInfo(
@@ -596,7 +599,9 @@ class _OrderDetailContent extends StatelessWidget {
   Widget build(BuildContext context) {
     final effectivePlanId = order?.planId ?? widgetPlan?.id;
     final period = widgetPeriod ?? order?.period;
-    final isPending = order?.status != null ? order!.status == 0 : true;
+    final isPending = order?.status != null
+        ? OrderStatus.fromCode(order!.status ?? 0) == OrderStatus.pending
+        : true;
     final latestPlan = _findPlan(plans, effectivePlanId);
     final resolvedPlan = latestPlan ?? widgetPlan;
     final trafficFallback = currentSubscription?.planId == effectivePlanId

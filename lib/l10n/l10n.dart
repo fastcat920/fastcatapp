@@ -435,10 +435,10 @@ class AppLocalizations {
     return Intl.message('Logcat', name: 'logcat', desc: '', args: []);
   }
 
-  /// `Disabling will hide the log entry`
+  /// `When enabled, Logs will appear in the root menu`
   String get logcatDesc {
     return Intl.message(
-      'Disabling will hide the log entry',
+      'When enabled, Logs will appear in the root menu',
       name: 'logcatDesc',
       desc: '',
       args: [],
@@ -2358,6 +2358,36 @@ class AppLocalizations {
   /// `Export logs`
   String get exportLogs {
     return Intl.message('Export logs', name: 'exportLogs', desc: '', args: []);
+  }
+
+  /// `Copy logs`
+  String get copyLogs {
+    return Intl.message('Copy logs', name: 'copyLogs', desc: '', args: []);
+  }
+
+  /// `Clear logs`
+  String get clearLogs {
+    return Intl.message('Clear logs', name: 'clearLogs', desc: '', args: []);
+  }
+
+  /// `Clear the current logs and request records? This action cannot be undone.`
+  String get clearLogsConfirm {
+    return Intl.message(
+      'Clear the current logs and request records? This action cannot be undone.',
+      name: 'clearLogsConfirm',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Logs and request records cleared`
+  String get logsCleared {
+    return Intl.message(
+      'Logs and request records cleared',
+      name: 'logsCleared',
+      desc: '',
+      args: [],
+    );
   }
 
   /// `Export Success`
@@ -12010,6 +12040,266 @@ class AppLocalizations {
     return Intl.message(
       'Results are based on service-endpoint and public-page access through the current node and are for reference only. Service policies, account regions, sign-in status, and licensing restrictions may affect actual use.',
       name: 'xboardStreamingDisclaimer',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Loading configuration...`
+  String get xboardLoadingConfiguration {
+    return Intl.message(
+      'Loading configuration...',
+      name: 'xboardLoadingConfiguration',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Logging in...`
+  String get xboardLoggingIn {
+    return Intl.message(
+      'Logging in...',
+      name: 'xboardLoggingIn',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Password changed successfully`
+  String get xboardPasswordChanged {
+    return Intl.message(
+      'Password changed successfully',
+      name: 'xboardPasswordChanged',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Ticket details`
+  String get xboardTicketDetails {
+    return Intl.message(
+      'Ticket details',
+      name: 'xboardTicketDetails',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Close ticket`
+  String get xboardCloseTicket {
+    return Intl.message(
+      'Close ticket',
+      name: 'xboardCloseTicket',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Close this ticket? You will not be able to reply after it is closed.`
+  String get xboardCloseTicketConfirm {
+    return Intl.message(
+      'Close this ticket? You will not be able to reply after it is closed.',
+      name: 'xboardCloseTicketConfirm',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Close`
+  String get xboardConfirmClose {
+    return Intl.message(
+      'Close',
+      name: 'xboardConfirmClose',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Reply failed. Please try again later.`
+  String get xboardReplyFailedRetry {
+    return Intl.message(
+      'Reply failed. Please try again later.',
+      name: 'xboardReplyFailedRetry',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `No messages`
+  String get xboardNoMessages {
+    return Intl.message(
+      'No messages',
+      name: 'xboardNoMessages',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Ticket closed`
+  String get xboardTicketClosedMessage {
+    return Intl.message(
+      'Ticket closed',
+      name: 'xboardTicketClosedMessage',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Enter a reply...`
+  String get xboardReplyHint {
+    return Intl.message(
+      'Enter a reply...',
+      name: 'xboardReplyHint',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Image upload is not configured. Contact support.`
+  String get xboardImageUploadUnavailable {
+    return Intl.message(
+      'Image upload is not configured. Contact support.',
+      name: 'xboardImageUploadUnavailable',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Online support`
+  String get xboardOnlineSupport {
+    return Intl.message(
+      'Online support',
+      name: 'xboardOnlineSupport',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Failed to load. Check your network.`
+  String get xboardLoadFailedCheckNetwork {
+    return Intl.message(
+      'Failed to load. Check your network.',
+      name: 'xboardLoadFailedCheckNetwork',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `TUN mode`
+  String get xboardTunModeTitle {
+    return Intl.message(
+      'TUN mode',
+      name: 'xboardTunModeTitle',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `TUN mode uses a virtual network interface to proxy application traffic more completely.`
+  String get xboardTunModeDescription {
+    return Intl.message(
+      'TUN mode uses a virtual network interface to proxy application traffic more completely.',
+      name: 'xboardTunModeDescription',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `All-traffic proxy`
+  String get xboardTunAllTraffic {
+    return Intl.message(
+      'All-traffic proxy',
+      name: 'xboardTunAllTraffic',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Captures traffic from all apps without separate configuration.`
+  String get xboardTunAllTrafficDescription {
+    return Intl.message(
+      'Captures traffic from all apps without separate configuration.',
+      name: 'xboardTunAllTrafficDescription',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Transparent proxy`
+  String get xboardTunTransparentProxy {
+    return Intl.message(
+      'Transparent proxy',
+      name: 'xboardTunTransparentProxy',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Apps use the proxy without extra setup for better compatibility.`
+  String get xboardTunTransparentProxyDescription {
+    return Intl.message(
+      'Apps use the proxy without extra setup for better compatibility.',
+      name: 'xboardTunTransparentProxyDescription',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Performance optimization`
+  String get xboardTunPerformance {
+    return Intl.message(
+      'Performance optimization',
+      name: 'xboardTunPerformance',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Reduces proxy layers to improve network speed.`
+  String get xboardTunPerformanceDescription {
+    return Intl.message(
+      'Reduces proxy layers to improve network speed.',
+      name: 'xboardTunPerformanceDescription',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Recommended usage`
+  String get xboardTunRecommendedUsage {
+    return Intl.message(
+      'Recommended usage',
+      name: 'xboardTunRecommendedUsage',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Daily use: Rules + TUN for smart routing and best performance`
+  String get xboardTunRuleRecommendation {
+    return Intl.message(
+      'Daily use: Rules + TUN for smart routing and best performance',
+      name: 'xboardTunRuleRecommendation',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Fallback: Global + TUN when rules mode does not work as expected`
+  String get xboardTunGlobalRecommendation {
+    return Intl.message(
+      'Fallback: Global + TUN when rules mode does not work as expected',
+      name: 'xboardTunGlobalRecommendation',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Maybe later`
+  String get xboardMaybeLater {
+    return Intl.message(
+      'Maybe later',
+      name: 'xboardMaybeLater',
       desc: '',
       args: [],
     );

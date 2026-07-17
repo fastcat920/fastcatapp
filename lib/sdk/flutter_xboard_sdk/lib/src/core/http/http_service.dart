@@ -120,10 +120,10 @@ class HttpService {
       },
     ));
 
-    // 配置客户端证书和SSL验证
+    // 配置 TLS 信任策略和代理
     (_dio.httpClientAdapter as IOHttpClientAdapter).createHttpClient = () {
       SdkLogger.d('[XBoardSDK] 🔨 创建 HttpClient...');
-      final client = HttpClient()
+      final client = HttpClient(context: _buildSecurityContext())
         ..idleTimeout =
             const Duration(seconds: 25) // 主动在服务端关闭前回收空闲连接（服务端通常 60~90s）
         // 绕过全局 FastcatHttpOverrides：Clash 代理端口不可用时不影响 XBoard API 调用
@@ -147,24 +147,6 @@ class HttpService {
 
         SocksTCPClient.assignToHttpClient(client, [proxySettings]);
         SdkLogger.i('[XBoardSDK] ✅ SOCKS5 代理配置完成');
-      }
-
-      // 配置SSL证书验证
-      if (httpConfig.enableCertificatePinning ||
-          httpConfig.ignoreCertificateHostname) {
-        client.badCertificateCallback =
-            (X509Certificate cert, String host, int port) {
-          // 如果启用了证书固定，进行严格验证
-          if (httpConfig.enableCertificatePinning) {
-            return _verifyCertificate(cert, host, port);
-          }
-          // 如果允许忽略主机名验证（仅开发环境）
-          if (httpConfig.ignoreCertificateHostname) {
-            return true;
-          }
-          // 默认使用标准验证
-          return false;
-        };
       }
 
       return client;
@@ -444,76 +426,21 @@ class HttpService {
     }
   }
 
-  /// 验证客户端证书（Certificate Pinning）
-  ///
-  /// ⚠️ 安全改进：证书加载失败时拒绝连接
-  /// [cert] 服务器证书
-  /// [host] 主机名
-  /// [port] 端口
-  bool _verifyCertificate(X509Certificate cert, String host, int port) {
-    try {
-      SdkLogger.i('[HttpService] 🔐 开始验证证书: $host:$port');
+  SecurityContext? _buildSecurityContext() {
+    final scheme = Uri.tryParse(_baseUrl)?.scheme.toLowerCase();
+    if (!httpConfig.enableCertificatePinning || scheme != 'https') return null;
 
-      // 安全检查：如果证书加载失败，拒绝连接
-      if (_certificateLoadFailed) {
-        SdkLogger.e('[HttpService] ❌ 证书加载失败，拒绝连接');
-        throw CertificateException(
-            'Certificate pinning is enabled but certificate failed to load. '
-            'Refusing connection for security reasons.');
-      }
-
-      // 安全检查：如果启用了证书固定但没有期望的证书，拒绝连接
-      if (httpConfig.enableCertificatePinning &&
-          _expectedCertificatePem == null) {
-        SdkLogger.e('[HttpService] ❌ 证书固定已启用但未加载期望证书');
-        throw CertificateException(
-            'Certificate pinning is enabled but no expected certificate is available. '
-            'Refusing connection for security reasons.');
-      }
-
-      // 打印服务器证书信息
-      SdkLogger.i('[HttpService] 📜 服务器证书信息:');
-      SdkLogger.i('[HttpService]   - 主体: ${cert.subject}');
-      SdkLogger.i('[HttpService]   - 签发者: ${cert.issuer}');
-      SdkLogger.i(
-          '[HttpService]   - 有效期: ${cert.startValidity} ~ ${cert.endValidity}');
-
-      // 获取当前证书的PEM格式
-      final currentCertPem = cert.pem;
-
-      SdkLogger.i('[HttpService] 🔍 比较证书指纹...');
-      SdkLogger.i(
-          '[HttpService]   - 期望证书长度: ${_expectedCertificatePem!.length} 字符');
-      SdkLogger.i('[HttpService]   - 服务器证书长度: ${currentCertPem.length} 字符');
-
-      // 比较证书内容（忽略空白字符差异）
-      final expectedNormalized =
-          _expectedCertificatePem!.replaceAll(RegExp(r'\s+'), '');
-      final currentNormalized = currentCertPem.replaceAll(RegExp(r'\s+'), '');
-
-      SdkLogger.i('[HttpService]   - 标准化后期望证书长度: ${expectedNormalized.length}');
-      SdkLogger.i('[HttpService]   - 标准化后服务器证书长度: ${currentNormalized.length}');
-
-      final isValid = expectedNormalized == currentNormalized;
-
-      if (!isValid) {
-        SdkLogger.e('[HttpService] ❌ 证书不匹配！');
-        SdkLogger.e(
-            '[HttpService]   - 期望证书前100字符: ${expectedNormalized.substring(0, 100.clamp(0, expectedNormalized.length))}');
-        SdkLogger.e(
-            '[HttpService]   - 服务器证书前100字符: ${currentNormalized.substring(0, 100.clamp(0, currentNormalized.length))}');
-        throw CertificateException(
-            'Certificate verification failed for $host:$port. '
-            'The certificate does not match the expected certificate.');
-      }
-
-      SdkLogger.i('[HttpService] ✅ 证书验证成功！');
-      return isValid;
-    } catch (e) {
-      // 证书验证出错，为安全起见拒绝连接
-      SdkLogger.e('[HttpService] ⛔ 证书验证异常: $e');
-      return false;
+    final certificatePem = _expectedCertificatePem;
+    if (_certificateLoadFailed || certificatePem == null) {
+      throw CertificateException(
+        'Certificate pinning is enabled but the trusted certificate is unavailable.',
+      );
     }
+
+    // 仅信任配置的证书，同时继续由 HttpClient 校验证书有效期和主机名。
+    final context = SecurityContext(withTrustedRoots: false);
+    context.setTrustedCertificatesBytes(utf8.encode(certificatePem));
+    return context;
   }
 
   /// 加载客户端证书

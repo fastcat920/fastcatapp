@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:fl_clash/xboard/adapter/initialization/sdk_provider.dart';
 import 'package:fl_clash/xboard/utils/backend_message_mapper.dart';
 import 'package:fl_clash/xboard/utils/xboard_notification.dart';
+import 'package:fl_clash/l10n/l10n.dart';
 
 Future<void> showChangePasswordSheet(
   BuildContext context,
@@ -47,20 +48,21 @@ class _ChangePasswordSheetState extends ConsumerState<_ChangePasswordSheet> {
   }
 
   Future<void> _submit() async {
+    final l10n = AppLocalizations.of(context);
     final oldPwd = _oldPwdCtrl.text;
     final newPwd = _newPwdCtrl.text;
     final confirmPwd = _confirmPwdCtrl.text;
 
     if (oldPwd.isEmpty || newPwd.isEmpty || confirmPwd.isEmpty) {
-      XBoardNotification.showError('请填写所有密码字段');
+      XBoardNotification.showError(l10n.pleaseEnterPassword);
       return;
     }
     if (newPwd != confirmPwd) {
-      XBoardNotification.showError('两次密码输入不一致');
+      XBoardNotification.showError(l10n.passwordsDoNotMatch);
       return;
     }
     if (newPwd.length < 8) {
-      XBoardNotification.showError('新密码至少需要8位');
+      XBoardNotification.showError(l10n.passwordMin8Chars);
       return;
     }
 
@@ -75,7 +77,7 @@ class _ChangePasswordSheetState extends ConsumerState<_ChangePasswordSheet> {
         final success = resp['data'] == true;
         if (success) {
           Navigator.of(context).pop();
-          XBoardNotification.showSuccess('密码修改成功');
+          XBoardNotification.showSuccess(l10n.xboardPasswordChanged);
         } else {
           final msg = BackendMessageMapper.map(
             resp['message'] as String?,
@@ -101,6 +103,7 @@ class _ChangePasswordSheetState extends ConsumerState<_ChangePasswordSheet> {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final l10n = AppLocalizations.of(context);
     return Padding(
       padding: EdgeInsets.only(
         left: 16,
@@ -115,7 +118,7 @@ class _ChangePasswordSheetState extends ConsumerState<_ChangePasswordSheet> {
           Row(
             children: [
               Text(
-                '修改密码',
+                l10n.xboardChangePassword,
                 style: theme.textTheme.titleMedium
                     ?.copyWith(fontWeight: FontWeight.bold),
               ),
@@ -131,7 +134,7 @@ class _ChangePasswordSheetState extends ConsumerState<_ChangePasswordSheet> {
             controller: _oldPwdCtrl,
             obscureText: _oldObscure,
             decoration: InputDecoration(
-              labelText: '当前密码',
+              labelText: l10n.xboardCurrentPassword,
               border:
                   OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
               contentPadding:
@@ -150,8 +153,8 @@ class _ChangePasswordSheetState extends ConsumerState<_ChangePasswordSheet> {
             controller: _newPwdCtrl,
             obscureText: _newObscure,
             decoration: InputDecoration(
-              labelText: '新密码',
-              hintText: '至少8位',
+              labelText: l10n.newPassword,
+              hintText: l10n.passwordMin8Chars,
               border:
                   OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
               contentPadding:
@@ -170,7 +173,7 @@ class _ChangePasswordSheetState extends ConsumerState<_ChangePasswordSheet> {
             controller: _confirmPwdCtrl,
             obscureText: _confirmObscure,
             decoration: InputDecoration(
-              labelText: '确认新密码',
+              labelText: l10n.confirmNewPassword,
               border:
                   OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
               contentPadding:
@@ -199,7 +202,7 @@ class _ChangePasswordSheetState extends ConsumerState<_ChangePasswordSheet> {
                         color: Colors.white,
                       ),
                     )
-                  : const Text('确认修改'),
+                  : Text(l10n.xboardConfirm),
             ),
           ),
         ],

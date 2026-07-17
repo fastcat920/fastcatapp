@@ -110,12 +110,10 @@ class DomainUser with _$DomainUser {
   /// 是否流量耗尽
   bool get isTrafficExhausted => remainingBytes == 0;
 
-  /// 是否已过期（到期日当天仍视为有效）
+  /// 是否已过期（与后端时间点保持一致）
   bool get isExpired {
     if (expiredAt == null) return false;
-    final endOfDay =
-        DateTime(expiredAt!.year, expiredAt!.month, expiredAt!.day, 23, 59, 59);
-    return DateTime.now().isAfter(endOfDay);
+    return !DateTime.now().isBefore(expiredAt!);
   }
 
   /// 是否即将过期（7天内）

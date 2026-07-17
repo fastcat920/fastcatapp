@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:fl_clash/xboard/features/shared/styles/styles.dart';
+import 'package:fl_clash/l10n/l10n.dart';
+
 class TunIntroductionDialog extends StatelessWidget {
   const TunIntroductionDialog({super.key});
   static Future<bool?> show(BuildContext context) {
@@ -9,9 +11,11 @@ class TunIntroductionDialog extends StatelessWidget {
       builder: (context) => const TunIntroductionDialog(),
     );
   }
+
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
+    final l10n = AppLocalizations.of(context);
 
     return AlertDialog(
       shape: XbUiDialog.shape(),
@@ -29,7 +33,7 @@ class TunIntroductionDialog extends StatelessWidget {
         ),
       ),
       title: Text(
-        'TUN 模式',
+        l10n.xboardTunModeTitle,
         style: XbUiText.sectionTitle(context).copyWith(fontSize: 20),
         textAlign: TextAlign.center,
       ),
@@ -39,33 +43,36 @@ class TunIntroductionDialog extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              'TUN 模式是一种高级网络代理技术，通过虚拟网络接口实现更完整的流量代理。',
+              l10n.xboardTunModeDescription,
               style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.8),
-              ),
+                    color: Theme.of(context)
+                        .colorScheme
+                        .onSurface
+                        .withValues(alpha: 0.8),
+                  ),
             ),
             const SizedBox(height: 16),
             _buildFeatureItem(
               context,
               Icons.network_check,
-              '全流量代理',
-              '捕获所有应用的网络流量，无需单独配置',
+              l10n.xboardTunAllTraffic,
+              l10n.xboardTunAllTrafficDescription,
               isDark,
             ),
             const SizedBox(height: 12),
             _buildFeatureItem(
               context,
               Icons.security,
-              '透明代理',
-              '应用无感知的代理模式，兼容性更好',
+              l10n.xboardTunTransparentProxy,
+              l10n.xboardTunTransparentProxyDescription,
               isDark,
             ),
             const SizedBox(height: 12),
             _buildFeatureItem(
               context,
               Icons.speed,
-              '性能优化',
-              '减少代理层级，提升网络访问速度',
+              l10n.xboardTunPerformance,
+              l10n.xboardTunPerformanceDescription,
               isDark,
             ),
             const SizedBox(height: 16),
@@ -73,10 +80,14 @@ class TunIntroductionDialog extends StatelessWidget {
               padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
                 color: isDark
-                    ? Theme.of(context).colorScheme.surfaceContainerHighest.withValues(alpha: 0.5)
+                    ? Theme.of(context)
+                        .colorScheme
+                        .surfaceContainerHighest
+                        .withValues(alpha: 0.5)
                     : const Color(0xFFF5F7FA),
                 borderRadius: BorderRadius.circular(8),
-                border: isDark ? null : Border.all(color: const Color(0xFFEEF0F4)),
+                border:
+                    isDark ? null : Border.all(color: const Color(0xFFEEF0F4)),
               ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -90,27 +101,33 @@ class TunIntroductionDialog extends StatelessWidget {
                       ),
                       const SizedBox(width: 8),
                       Text(
-                        '推荐使用方式',
+                        l10n.xboardTunRecommendedUsage,
                         style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                          fontWeight: FontWeight.w600,
-                          color: Colors.amber.shade700,
-                        ),
+                              fontWeight: FontWeight.w600,
+                              color: Colors.amber.shade700,
+                            ),
                       ),
                     ],
                   ),
                   const SizedBox(height: 8),
                   Text(
-                    '• 日常使用：规则 + TUN（智能分流，性能最佳）',
+                    '• ${l10n.xboardTunRuleRecommendation}',
                     style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                      color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.8),
-                    ),
+                          color: Theme.of(context)
+                              .colorScheme
+                              .onSurface
+                              .withValues(alpha: 0.8),
+                        ),
                   ),
                   const SizedBox(height: 4),
                   Text(
-                    '• 备用方案：全局 + TUN（如规则模式异常时使用）',
+                    '• ${l10n.xboardTunGlobalRecommendation}',
                     style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                      color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.8),
-                    ),
+                          color: Theme.of(context)
+                              .colorScheme
+                              .onSurface
+                              .withValues(alpha: 0.8),
+                        ),
                   ),
                 ],
               ),
@@ -131,18 +148,19 @@ class TunIntroductionDialog extends StatelessWidget {
                         .withValues(alpha: 0.6),
                   ),
           ),
-          child: const Text('稍后再说'),
+          child: Text(l10n.xboardMaybeLater),
         ),
         FilledButton(
           onPressed: () => Navigator.of(context).pop(true),
           style: XbUiButton.filledPrimary(context).copyWith(
             backgroundColor: WidgetStatePropertyAll(Colors.green.shade600),
           ),
-          child: const Text('开启 TUN'),
+          child: Text(l10n.xboardEnableTun),
         ),
       ],
     );
   }
+
   Widget _buildFeatureItem(
     BuildContext context,
     IconData icon,
@@ -156,13 +174,15 @@ class TunIntroductionDialog extends StatelessWidget {
         color: isDark ? null : Colors.white,
         borderRadius: BorderRadius.circular(12),
         border: isDark ? null : Border.all(color: const Color(0xFFEEF0F4)),
-        boxShadow: isDark ? null : const [
-          BoxShadow(
-            color: Color(0x0A1565C0),
-            blurRadius: 16,
-            offset: Offset(0, 4),
-          ),
-        ],
+        boxShadow: isDark
+            ? null
+            : const [
+                BoxShadow(
+                  color: Color(0x0A1565C0),
+                  blurRadius: 16,
+                  offset: Offset(0, 4),
+                ),
+              ],
       ),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -183,14 +203,17 @@ class TunIntroductionDialog extends StatelessWidget {
                 Text(
                   title,
                   style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                    fontWeight: FontWeight.w600,
-                  ),
+                        fontWeight: FontWeight.w600,
+                      ),
                 ),
                 Text(
                   description,
                   style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                    color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.7),
-                  ),
+                        color: Theme.of(context)
+                            .colorScheme
+                            .onSurface
+                            .withValues(alpha: 0.7),
+                      ),
                 ),
               ],
             ),

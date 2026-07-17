@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'dart:io';
 import 'package:fl_clash/models/models.dart';
 import 'package:fl_clash/xboard/core/core.dart';
+import 'package:fl_clash/common/sensitive_masker.dart';
 import 'package:fl_clash/xboard/infrastructure/http/user_agent_config.dart';
 import 'package:fl_clash/xboard/features/subscription/utils/subscription_url_helper.dart';
 import 'package:socks5_proxy/socks_client.dart';
@@ -24,7 +25,7 @@ class SubscriptionDownloader {
     final sw = Stopwatch()..start();
     final token = cancelToken ?? SubscriptionDownloadCancelToken();
     try {
-      _logger.info('📥 开始下载订阅: $url');
+      _logger.info('📥 开始下载订阅: ${SensitiveMasker.maskUrl(url)}');
 
       final _DownloadResult result;
 
@@ -191,7 +192,6 @@ class SubscriptionDownloader {
       // 创建 HttpClient（绕过 FastcatHttpOverrides，订阅下载不走本地 Clash 代理）
       client = HttpClient();
       client.connectionTimeout = _downloadTimeout;
-      client.badCertificateCallback = (cert, host, port) => true;
       client.findProxy = (_) => 'DIRECT';
 
       // 如果使用代理，配置 SOCKS5 代理

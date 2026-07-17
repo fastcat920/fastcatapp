@@ -101,6 +101,8 @@ class _CrispChatPageState extends State<CrispChatPage> {
   int _lastAppliedRestoreToken = -1;
   bool? _lastLinuxVisibility;
   bool _linuxLoadingMaskRegistered = false;
+  late final bool _usingPrewarmedPage;
+  bool _didResumePrewarmedPage = false;
 
   @override
   void initState() {
@@ -108,10 +110,11 @@ class _CrispChatPageState extends State<CrispChatPage> {
     _isDarkMode =
         WidgetsBinding.instance.platformDispatcher.platformBrightness ==
             Brightness.dark;
-    final prewarmed = CustomerServiceHelper.consumePrewarmedMacController(
-      brightness: Brightness.light,
-      localeTag: 'en',
+    final prewarmed = CustomerServiceHelper.consumePrewarmedSystemWebView(
+      websiteId: widget.websiteId,
+      proxyUrl: widget.crispProxyUrl,
     );
+    _usingPrewarmedPage = prewarmed != null;
     if (prewarmed != null) {
       _controller = prewarmed;
     } else {
@@ -166,7 +169,11 @@ class _CrispChatPageState extends State<CrispChatPage> {
     }
     if (!_didStartLoading) {
       _didStartLoading = true;
-      unawaited(_loadPreferredCrispUrl());
+      if (_usingPrewarmedPage) {
+        unawaited(_resumePrewarmedPage());
+      } else {
+        unawaited(_loadPreferredCrispUrl());
+      }
     }
   }
 
@@ -214,6 +221,25 @@ class _CrispChatPageState extends State<CrispChatPage> {
     _loadEmbed(_preferredEmbedUri(), usingProxy: usingProxy);
   }
 
+  Future<void> _resumePrewarmedPage() async {
+    if (_didResumePrewarmedPage) return;
+    _didResumePrewarmedPage = true;
+    await _ensureLinuxLoadingMaskRegistered();
+    if (!mounted) return;
+    _usingProxy = isCrispProxyConfigured(widget.crispProxyUrl);
+    _didFallbackToOfficial = !_usingProxy;
+    _embedFallbackTimer?.cancel();
+    if (_usingProxy) {
+      _embedFallbackTimer = Timer(
+        crispProxyFallbackDelay,
+        () => unawaited(_handleEmbedTimeout()),
+      );
+    }
+    await _injectDirectEmbedMonitor();
+    unawaited(_runDeferredUserScript());
+    _startReadyPolling();
+  }
+
   void _loadEmbed(Uri uri, {required bool usingProxy}) {
     _embedFallbackTimer?.cancel();
     _stopReadyPolling();
@@ -228,7 +254,7 @@ class _CrispChatPageState extends State<CrispChatPage> {
       });
     }
     _embedFallbackTimer = Timer(
-      const Duration(seconds: 25),
+      usingProxy ? crispProxyFallbackDelay : const Duration(seconds: 25),
       () => unawaited(_handleEmbedTimeout()),
     );
     unawaited(_controller.loadRequest(uri));

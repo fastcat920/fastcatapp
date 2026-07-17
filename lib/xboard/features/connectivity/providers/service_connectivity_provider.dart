@@ -254,7 +254,6 @@ class ServiceConnectivityNotifier
       client = HttpClient();
       client.findProxy = (_) => 'DIRECT';
       client.connectionTimeout = const Duration(seconds: 4);
-      client.badCertificateCallback = (_, __, ___) => true;
       final normalizedBase = baseUrl.endsWith('/')
           ? baseUrl.substring(0, baseUrl.length - 1)
           : baseUrl;

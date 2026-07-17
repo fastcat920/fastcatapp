@@ -120,6 +120,10 @@ class ApplicationState extends ConsumerState<Application>
         globalState.appController = AppController(currentContext, ref);
       }
 
+      // 首帧后立即预热客服配置、线路和 WebView，避免等用户进入“我的”页
+      // 才开始冷启动。初始化完成后会再次调用，幂等逻辑会复用已有结果。
+      CustomerServiceHelper.prewarm();
+
       // ✅ 后台预热：统一初始化服务（不阻塞 UI）
       // 放到首帧之后，避免在 initState/build 生命周期内修改 provider。
       unawaited(() async {
@@ -128,6 +132,8 @@ class ApplicationState extends ConsumerState<Application>
         } catch (e) {
           // 初始化失败，登录页会处理
           debugPrint('[Application] 预热初始化失败: $e');
+        } finally {
+          CustomerServiceHelper.prewarm();
         }
       }());
 
@@ -203,6 +209,7 @@ class ApplicationState extends ConsumerState<Application>
       xboardUserProvider,
       (previous, next) {
         if (previous?.isAuthenticated != true && next.isAuthenticated) {
+          CustomerServiceHelper.prewarm();
           unawaited(
             XBoardDeviceHeartbeatService.markActive(
               reason: 'auth_ready',

@@ -86,7 +86,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
           rememberPassword) {
         _passwordController.text = savedPassword;
       }
-      _rememberPassword = hasRememberPasswordSetting ? rememberPassword : true;
+      _rememberPassword = hasRememberPasswordSetting ? rememberPassword : false;
       if (mounted) {
         setState(() {});
       }
@@ -560,7 +560,8 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                                     ),
                                   ),
                                   const SizedBox(width: 10),
-                                  const Text('正在加载配置...'),
+                                  Text(appLocalizations
+                                      .xboardLoadingConfiguration),
                                 ],
                               )
                             : userState.isLoading
@@ -577,7 +578,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                                       ),
                                       const SizedBox(width: 10),
                                       Text(
-                                        '登录中...',
+                                        appLocalizations.xboardLoggingIn,
                                         style: TextStyle(
                                             color: colorScheme.onPrimary),
                                       ),

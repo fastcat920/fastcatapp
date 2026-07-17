@@ -1,5 +1,5 @@
 const crispOfficialBaseUrl = 'https://go.crisp.chat';
-const crispProxyFallbackDelay = Duration(seconds: 5);
+const crispProxyFallbackDelay = Duration(seconds: 2);
 
 String normalizeCrispProxyUrl(String? value) {
   final trimmed = value?.trim() ?? '';

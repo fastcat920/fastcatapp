@@ -18,7 +18,6 @@ class WebsiteUrlResolver {
       client = HttpClient();
       client.findProxy = (_) => 'DIRECT';
       client.connectionTimeout = const Duration(seconds: 3);
-      client.badCertificateCallback = (_, __, ___) => true;
 
       final request = await client.getUrl(Uri.parse(url));
       request.headers.set('User-Agent', 'FastCat/1.0');

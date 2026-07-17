@@ -9,6 +9,7 @@ export 'src/core/http/http_config.dart';
 
 // 全局事件 (401 通知等)
 export 'src/core/auth/auth_events.dart';
+export 'src/core/auth/token_manager.dart';
 
 // HTTP服务 (用于直接调用 API)
 export 'src/core/http/http_service.dart';
@@ -46,4 +47,3 @@ export 'src/api/models/subscription_model.dart';
 export 'src/api/models/ticket_model.dart';
 export 'src/api/models/user_model.dart';
 export 'src/api/models/coupon_model.dart';
-

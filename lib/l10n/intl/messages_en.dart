@@ -434,6 +434,10 @@ class MessageLookup extends MessageLookupByLibrary {
       "Clear cache and restart",
     ),
     "clearData": MessageLookupByLibrary.simpleMessage("Clear Data"),
+    "clearLogs": MessageLookupByLibrary.simpleMessage("Clear logs"),
+    "clearLogsConfirm": MessageLookupByLibrary.simpleMessage(
+      "Clear the current logs and request records? This action cannot be undone.",
+    ),
     "clipboardExport": MessageLookupByLibrary.simpleMessage("Export clipboard"),
     "clipboardImport": MessageLookupByLibrary.simpleMessage("Clipboard import"),
     "close": MessageLookupByLibrary.simpleMessage("Close"),
@@ -483,6 +487,7 @@ class MessageLookup extends MessageLookupByLibrary {
     ),
     "copyInviteLink": MessageLookupByLibrary.simpleMessage("Copy Link"),
     "copyLink": MessageLookupByLibrary.simpleMessage("Copy link"),
+    "copyLogs": MessageLookupByLibrary.simpleMessage("Copy logs"),
     "copySuccess": MessageLookupByLibrary.simpleMessage("Copy success"),
     "core": MessageLookupByLibrary.simpleMessage("Core"),
     "coreInfo": MessageLookupByLibrary.simpleMessage("Core info"),
@@ -739,7 +744,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "logLevel": MessageLookupByLibrary.simpleMessage("LogLevel"),
     "logcat": MessageLookupByLibrary.simpleMessage("Logcat"),
     "logcatDesc": MessageLookupByLibrary.simpleMessage(
-      "Disabling will hide the log entry",
+      "When enabled, Logs will appear in the root menu",
     ),
     "loggedOutSuccess": MessageLookupByLibrary.simpleMessage("Signed out"),
     "loginNow": MessageLookupByLibrary.simpleMessage("Login Now"),
@@ -749,6 +754,9 @@ class MessageLookup extends MessageLookupByLibrary {
     ),
     "logoutFailed": m7,
     "logs": MessageLookupByLibrary.simpleMessage("Logs"),
+    "logsCleared": MessageLookupByLibrary.simpleMessage(
+      "Logs and request records cleared",
+    ),
     "logsDesc": MessageLookupByLibrary.simpleMessage("Log capture records"),
     "logsTest": MessageLookupByLibrary.simpleMessage("Logs test"),
     "loopback": MessageLookupByLibrary.simpleMessage("Loopback unlock tool"),
@@ -1523,6 +1531,10 @@ class MessageLookup extends MessageLookupByLibrary {
     "xboardClickToSetupNodes": MessageLookupByLibrary.simpleMessage(
       "Click to setup nodes",
     ),
+    "xboardCloseTicket": MessageLookupByLibrary.simpleMessage("Close ticket"),
+    "xboardCloseTicketConfirm": MessageLookupByLibrary.simpleMessage(
+      "Close this ticket? You will not be able to reply after it is closed.",
+    ),
     "xboardCommissionConfirmed": MessageLookupByLibrary.simpleMessage(
       "Confirmed",
     ),
@@ -1550,6 +1562,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "xboardConfirmChange": MessageLookupByLibrary.simpleMessage(
       "Confirm change",
     ),
+    "xboardConfirmClose": MessageLookupByLibrary.simpleMessage("Close"),
     "xboardConfirmNewPeriod": MessageLookupByLibrary.simpleMessage(
       "Start the next traffic period?",
     ),
@@ -1985,6 +1998,9 @@ class MessageLookup extends MessageLookupByLibrary {
       "High-speed network",
     ),
     "xboardHome": MessageLookupByLibrary.simpleMessage("Home"),
+    "xboardImageUploadUnavailable": MessageLookupByLibrary.simpleMessage(
+      "Image upload is not configured. Contact support.",
+    ),
     "xboardImportFailed": MessageLookupByLibrary.simpleMessage("Import failed"),
     "xboardImportSuccess": MessageLookupByLibrary.simpleMessage(
       "Import successful",
@@ -2010,6 +2026,12 @@ class MessageLookup extends MessageLookupByLibrary {
       "Please keep your subscription link safe and don\'t share with others",
     ),
     "xboardLater": MessageLookupByLibrary.simpleMessage("Later"),
+    "xboardLoadFailedCheckNetwork": MessageLookupByLibrary.simpleMessage(
+      "Failed to load. Check your network.",
+    ),
+    "xboardLoadingConfiguration": MessageLookupByLibrary.simpleMessage(
+      "Loading configuration...",
+    ),
     "xboardLoadingFailed": MessageLookupByLibrary.simpleMessage(
       "Loading failed",
     ),
@@ -2018,6 +2040,7 @@ class MessageLookup extends MessageLookupByLibrary {
     ),
     "xboardLocalIP": MessageLookupByLibrary.simpleMessage("Local IP"),
     "xboardLoggedIn": MessageLookupByLibrary.simpleMessage("Logged In"),
+    "xboardLoggingIn": MessageLookupByLibrary.simpleMessage("Logging in..."),
     "xboardLogin": MessageLookupByLibrary.simpleMessage("Login"),
     "xboardLoginErrorConfigLoad": MessageLookupByLibrary.simpleMessage(
       "Configuration load failed, please try again later",
@@ -2074,6 +2097,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "xboardManageDevices": MessageLookupByLibrary.simpleMessage(
       "Manage devices",
     ),
+    "xboardMaybeLater": MessageLookupByLibrary.simpleMessage("Maybe later"),
     "xboardMedium": MessageLookupByLibrary.simpleMessage("Medium"),
     "xboardMine": MessageLookupByLibrary.simpleMessage("Mine"),
     "xboardMissingRequiredField": MessageLookupByLibrary.simpleMessage(
@@ -2371,6 +2395,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "xboardNoInternetConnection": MessageLookupByLibrary.simpleMessage(
       "No internet connection, please check network settings",
     ),
+    "xboardNoMessages": MessageLookupByLibrary.simpleMessage("No messages"),
     "xboardNoOrderRecords": MessageLookupByLibrary.simpleMessage(
       "No order records",
     ),
@@ -2408,6 +2433,9 @@ class MessageLookup extends MessageLookupByLibrary {
       "One-click repair",
     ),
     "xboardOneTimePayment": MessageLookupByLibrary.simpleMessage("One-time"),
+    "xboardOnlineSupport": MessageLookupByLibrary.simpleMessage(
+      "Online support",
+    ),
     "xboardOpenPaymentFailed": MessageLookupByLibrary.simpleMessage(
       "Failed to open payment page",
     ),
@@ -2454,6 +2482,9 @@ class MessageLookup extends MessageLookupByLibrary {
       "Package amount",
     ),
     "xboardPassword": MessageLookupByLibrary.simpleMessage("Password"),
+    "xboardPasswordChanged": MessageLookupByLibrary.simpleMessage(
+      "Password changed successfully",
+    ),
     "xboardPayNow": MessageLookupByLibrary.simpleMessage("Pay now"),
     "xboardPayableAmount": MessageLookupByLibrary.simpleMessage(
       "Payable amount",
@@ -2690,6 +2721,10 @@ class MessageLookup extends MessageLookupByLibrary {
     "xboardRepairCompleted": MessageLookupByLibrary.simpleMessage(
       "Repair completed",
     ),
+    "xboardReplyFailedRetry": MessageLookupByLibrary.simpleMessage(
+      "Reply failed. Please try again later.",
+    ),
+    "xboardReplyHint": MessageLookupByLibrary.simpleMessage("Enter a reply..."),
     "xboardResetCurrentPlanTraffic": MessageLookupByLibrary.simpleMessage(
       "Reset current plan traffic",
     ),
@@ -2927,11 +2962,17 @@ class MessageLookup extends MessageLookupByLibrary {
       "Three-year",
     ),
     "xboardTicketClosed": MessageLookupByLibrary.simpleMessage("Closed"),
+    "xboardTicketClosedMessage": MessageLookupByLibrary.simpleMessage(
+      "Ticket closed",
+    ),
     "xboardTicketDescription": MessageLookupByLibrary.simpleMessage(
       "Description",
     ),
     "xboardTicketDescriptionHint": MessageLookupByLibrary.simpleMessage(
       "Describe your issue in detail",
+    ),
+    "xboardTicketDetails": MessageLookupByLibrary.simpleMessage(
+      "Ticket details",
     ),
     "xboardTicketPendingReply": MessageLookupByLibrary.simpleMessage(
       "Pending reply",
@@ -2973,7 +3014,39 @@ class MessageLookup extends MessageLookupByLibrary {
     "xboardTrafficUsedUp": MessageLookupByLibrary.simpleMessage(
       "Traffic used up",
     ),
+    "xboardTunAllTraffic": MessageLookupByLibrary.simpleMessage(
+      "All-traffic proxy",
+    ),
+    "xboardTunAllTrafficDescription": MessageLookupByLibrary.simpleMessage(
+      "Captures traffic from all apps without separate configuration.",
+    ),
     "xboardTunEnabled": MessageLookupByLibrary.simpleMessage("TUN enabled"),
+    "xboardTunGlobalRecommendation": MessageLookupByLibrary.simpleMessage(
+      "Fallback: Global + TUN when rules mode does not work as expected",
+    ),
+    "xboardTunModeDescription": MessageLookupByLibrary.simpleMessage(
+      "TUN mode uses a virtual network interface to proxy application traffic more completely.",
+    ),
+    "xboardTunModeTitle": MessageLookupByLibrary.simpleMessage("TUN mode"),
+    "xboardTunPerformance": MessageLookupByLibrary.simpleMessage(
+      "Performance optimization",
+    ),
+    "xboardTunPerformanceDescription": MessageLookupByLibrary.simpleMessage(
+      "Reduces proxy layers to improve network speed.",
+    ),
+    "xboardTunRecommendedUsage": MessageLookupByLibrary.simpleMessage(
+      "Recommended usage",
+    ),
+    "xboardTunRuleRecommendation": MessageLookupByLibrary.simpleMessage(
+      "Daily use: Rules + TUN for smart routing and best performance",
+    ),
+    "xboardTunTransparentProxy": MessageLookupByLibrary.simpleMessage(
+      "Transparent proxy",
+    ),
+    "xboardTunTransparentProxyDescription":
+        MessageLookupByLibrary.simpleMessage(
+          "Apps use the proxy without extra setup for better compatibility.",
+        ),
     "xboardTwelveMonthCycle": MessageLookupByLibrary.simpleMessage(
       "12-month cycle",
     ),

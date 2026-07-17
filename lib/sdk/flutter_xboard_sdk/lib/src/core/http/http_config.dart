@@ -9,9 +9,6 @@ class HttpConfig {
   /// 证书文件路径（相对于 assets 目录）
   final String? certificatePath;
 
-  /// 是否忽略证书主机名验证（仅开发环境）
-  final bool ignoreCertificateHostname;
-
   /// HTTP 代理 URL（null 时直连）
   final String? proxyUrl;
 
@@ -28,7 +25,6 @@ class HttpConfig {
     this.userAgent,
     this.enableCertificatePinning = false,
     this.certificatePath,
-    this.ignoreCertificateHostname = false,
     this.proxyUrl,
     this.connectTimeoutSeconds = 30,
     this.receiveTimeoutSeconds = 30,
@@ -46,7 +42,6 @@ class HttpConfig {
       userAgent: userAgent,
       proxyUrl: proxyUrl,
       enableCertificatePinning: false,
-      ignoreCertificateHostname: true,
     );
   }
 
@@ -64,7 +59,6 @@ class HttpConfig {
       userAgent: userAgent,
       enableCertificatePinning: enableCertificatePinning,
       certificatePath: certificatePath,
-      ignoreCertificateHostname: false,
     );
   }
 
@@ -72,7 +66,6 @@ class HttpConfig {
     String? userAgent,
     bool? enableCertificatePinning,
     String? certificatePath,
-    bool? ignoreCertificateHostname,
     String? proxyUrl,
     int? connectTimeoutSeconds,
     int? receiveTimeoutSeconds,
@@ -80,12 +73,14 @@ class HttpConfig {
   }) {
     return HttpConfig(
       userAgent: userAgent ?? this.userAgent,
-      enableCertificatePinning: enableCertificatePinning ?? this.enableCertificatePinning,
+      enableCertificatePinning:
+          enableCertificatePinning ?? this.enableCertificatePinning,
       certificatePath: certificatePath ?? this.certificatePath,
-      ignoreCertificateHostname: ignoreCertificateHostname ?? this.ignoreCertificateHostname,
       proxyUrl: proxyUrl ?? this.proxyUrl,
-      connectTimeoutSeconds: connectTimeoutSeconds ?? this.connectTimeoutSeconds,
-      receiveTimeoutSeconds: receiveTimeoutSeconds ?? this.receiveTimeoutSeconds,
+      connectTimeoutSeconds:
+          connectTimeoutSeconds ?? this.connectTimeoutSeconds,
+      receiveTimeoutSeconds:
+          receiveTimeoutSeconds ?? this.receiveTimeoutSeconds,
       sendTimeoutSeconds: sendTimeoutSeconds ?? this.sendTimeoutSeconds,
     );
   }
@@ -95,7 +90,6 @@ class HttpConfig {
     return 'HttpConfig('
         'userAgent: $userAgent, '
         'enableCertificatePinning: $enableCertificatePinning, '
-        'ignoreCertificateHostname: $ignoreCertificateHostname, '
         'proxyUrl: $proxyUrl'
         ')';
   }

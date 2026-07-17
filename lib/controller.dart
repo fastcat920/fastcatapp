@@ -165,12 +165,11 @@ class AppController {
         globalState.updateCoreSwitchStatus(
           CoreSwitchStage.coreConnecting,
         );
-        await globalState.handleStart([
+        final started = await globalState.handleStart([
           updateRunTime,
           updateTraffic,
         ]);
-        // handleStart resets startTime to null on VPN failure — bail out
-        if (globalState.startTime == null) {
+        if (!started) {
           globalState.updateCoreSwitchStatus(
             CoreSwitchStage.failed,
           );

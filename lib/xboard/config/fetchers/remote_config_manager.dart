@@ -137,7 +137,6 @@ class SimpleHttpClient implements IHttpClient {
       // findProxy=DIRECT 绕过 FastcatHttpOverrides，避免 Clash 未启动时
       // OSS 请求被路由到 localhost:PORT 导致连接被拒绝（"无法获取可用域名"）
       client.findProxy = (uri) => 'DIRECT';
-      client.badCertificateCallback = (cert, host, port) => true;
       client.connectionTimeout = timeout ?? const Duration(seconds: 10);
       final request = await client.getUrl(Uri.parse(url));
       final response = await request.close();

@@ -14,6 +14,7 @@ import 'package:fl_clash/xboard/utils/backend_message_mapper.dart';
 import 'package:fl_clash/xboard/utils/xboard_notification.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:fl_clash/l10n/l10n.dart';
 
 class TicketDetailPage extends ConsumerStatefulWidget {
   final int ticketId;
@@ -54,6 +55,7 @@ class _TicketDetailPageState extends ConsumerState<TicketDetailPage> {
   }
 
   Future<void> _sendReply() async {
+    final l10n = AppLocalizations.of(context);
     final message = _replyCtrl.text.trim();
     if (message.isEmpty) return;
 
@@ -67,13 +69,13 @@ class _TicketDetailPageState extends ConsumerState<TicketDetailPage> {
           ref.invalidate(getTicketProvider(widget.ticketId));
           _scrollToBottom();
         } else {
-          XBoardNotification.showError('回复失败，请稍后重试');
+          XBoardNotification.showError(l10n.xboardReplyFailedRetry);
         }
       }
     } catch (e) {
       if (mounted) {
         XBoardNotification.showError(
-          '回复失败: ${BackendMessageMapper.mapError(
+          '${l10n.xboardOperationFailed}: ${BackendMessageMapper.mapError(
             e,
             context: BackendMessageContext.ticket,
           )}',
@@ -85,22 +87,23 @@ class _TicketDetailPageState extends ConsumerState<TicketDetailPage> {
   }
 
   Future<void> _closeTicket() async {
+    final l10n = AppLocalizations.of(context);
     final confirm = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
         shape: XbUiDialog.shape(),
         backgroundColor: XbUiDialog.background(ctx),
-        title: Text('关闭工单', style: XbUiText.sectionTitle(ctx)),
-        content: const Text('确定要关闭此工单吗？关闭后将无法继续回复。'),
+        title: Text(l10n.xboardCloseTicket, style: XbUiText.sectionTitle(ctx)),
+        content: Text(l10n.xboardCloseTicketConfirm),
         actions: [
           OutlinedButton(
               onPressed: () => Navigator.pop(ctx, false),
               style: XbUiButton.outlinedNeutral(ctx),
-              child: const Text('取消')),
+              child: Text(l10n.cancel)),
           FilledButton(
               onPressed: () => Navigator.pop(ctx, true),
               style: XbUiButton.filledPrimary(ctx),
-              child: const Text('确认关闭')),
+              child: Text(l10n.xboardConfirmClose)),
         ],
       ),
     );
@@ -112,12 +115,12 @@ class _TicketDetailPageState extends ConsumerState<TicketDetailPage> {
       if (mounted && ok) {
         setState(() => _isClosed = true);
         ref.invalidate(getTicketProvider(widget.ticketId));
-        XBoardNotification.showSuccess('工单已关闭');
+        XBoardNotification.showSuccess(l10n.xboardTicketClosedMessage);
       }
     } catch (e) {
       if (mounted) {
         XBoardNotification.showError(
-          '操作失败: ${BackendMessageMapper.mapError(
+          '${l10n.xboardOperationFailed}: ${BackendMessageMapper.mapError(
             e,
             context: BackendMessageContext.ticket,
           )}',
@@ -129,12 +132,13 @@ class _TicketDetailPageState extends ConsumerState<TicketDetailPage> {
   @override
   Widget build(BuildContext context) {
     final detailAsync = ref.watch(getTicketProvider(widget.ticketId));
+    final l10n = AppLocalizations.of(context);
 
     final isDark = Theme.of(context).brightness == Brightness.dark;
     return Scaffold(
       backgroundColor: isDark ? null : XbUiTokens.pageBackgroundLight,
       appBar: AppBar(
-        title: const Text('工单详情'),
+        title: Text(l10n.xboardTicketDetails),
       ),
       body: detailAsync.when(
         loading: () => const Center(child: CircularProgressIndicator()),
@@ -145,14 +149,14 @@ class _TicketDetailPageState extends ConsumerState<TicketDetailPage> {
               Icon(Icons.error_outline,
                   size: 48, color: XbUiStatusColor.error(context)),
               const SizedBox(height: 12),
-              Text('加载失败: $e',
+              Text('${l10n.xboardOperationFailed}: $e',
                   textAlign: TextAlign.center,
                   style: Theme.of(context).textTheme.bodySmall),
               const SizedBox(height: 12),
               FilledButton(
                 onPressed: () =>
                     ref.invalidate(getTicketProvider(widget.ticketId)),
-                child: const Text('重试'),
+                child: Text(l10n.xboardRetry),
               ),
             ],
           ),
@@ -169,7 +173,7 @@ class _TicketDetailPageState extends ConsumerState<TicketDetailPage> {
               Expanded(
                 child: detail.messages.isEmpty
                     ? Center(
-                        child: Text('暂无消息',
+                        child: Text(l10n.xboardNoMessages,
                             style: Theme.of(context)
                                 .textTheme
                                 .bodyMedium
@@ -215,7 +219,7 @@ class _TicketHeader extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final statusColor = _statusColor(context, detail.status);
-    final statusLabel = _statusLabel(detail.status);
+    final statusLabel = _statusLabel(context, detail.status);
 
     return Container(
       width: double.infinity,
@@ -277,16 +281,17 @@ class _TicketHeader extends StatelessWidget {
     }
   }
 
-  String _statusLabel(int status) {
+  String _statusLabel(BuildContext context, int status) {
+    final l10n = AppLocalizations.of(context);
     switch (status) {
       case 0:
-        return '待处理';
+        return l10n.xboardTicketPendingReply;
       case 1:
-        return '已回复';
+        return l10n.xboardTicketReplied;
       case 2:
-        return '已关闭';
+        return l10n.xboardTicketClosed;
       default:
-        return '未知';
+        return l10n.xboardStreamingUnknown;
     }
   }
 
@@ -452,9 +457,10 @@ class _ReplyBarState extends State<_ReplyBar> {
   bool _isUploadingImage = false;
 
   Future<void> _pickAndUploadImage() async {
+    final l10n = AppLocalizations.of(context);
     final apiKey = XBoardConfig.imgbbApiKey;
     if (apiKey.isEmpty) {
-      XBoardNotification.showError('图片上传未配置，请联系管理员');
+      XBoardNotification.showError(l10n.xboardImageUploadUnavailable);
       return;
     }
 
@@ -479,7 +485,7 @@ class _ReplyBarState extends State<_ReplyBar> {
     } catch (e) {
       if (mounted) {
         XBoardNotification.showError(
-            '图片上传失败: ${BackendMessageMapper.mapError(e)}');
+            '${l10n.xboardOperationFailed}: ${BackendMessageMapper.mapError(e)}');
       }
     } finally {
       if (mounted) setState(() => _isUploadingImage = false);
@@ -489,6 +495,7 @@ class _ReplyBarState extends State<_ReplyBar> {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final l10n = AppLocalizations.of(context);
     final hasImgbb = XBoardConfig.imgbbApiKey.isNotEmpty;
     return SafeArea(
       child: Container(
@@ -504,7 +511,7 @@ class _ReplyBarState extends State<_ReplyBar> {
             // 关闭工单按钮
             IconButton(
               icon: const Icon(Icons.lock_outline),
-              tooltip: '关闭工单',
+              tooltip: l10n.xboardCloseTicket,
               onPressed: widget.onClose,
               style: IconButton.styleFrom(
                 foregroundColor: theme.colorScheme.onSurfaceVariant,
@@ -523,7 +530,7 @@ class _ReplyBarState extends State<_ReplyBar> {
                     )
                   : IconButton(
                       icon: const Icon(Icons.image_outlined),
-                      tooltip: '上传图片',
+                      tooltip: l10n.xboardUploadImage,
                       onPressed: _pickAndUploadImage,
                       style: IconButton.styleFrom(
                         foregroundColor: theme.colorScheme.onSurfaceVariant,
@@ -544,7 +551,7 @@ class _ReplyBarState extends State<_ReplyBar> {
                   minLines: 1,
                   maxLines: 4,
                   decoration: InputDecoration(
-                    hintText: '输入回复内容...',
+                    hintText: l10n.xboardReplyHint,
                     isDense: true,
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(20),
@@ -601,7 +608,7 @@ class _ClosedBar extends StatelessWidget {
           ),
         ),
         child: Text(
-          '工单已关闭',
+          AppLocalizations.of(context).xboardTicketClosedMessage,
           textAlign: TextAlign.center,
           style: Theme.of(context)
               .textTheme

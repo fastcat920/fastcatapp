@@ -6,29 +6,30 @@ import '../logging/sdk_logger.dart';
 enum AuthState {
   /// 未认证
   unauthenticated,
+
   /// 已认证
   authenticated,
 }
 
 /// Token管理器（极简版）
-/// 
+///
 /// 负责token的存储、读取和认证状态管理
 /// Token永久有效，不处理过期和刷新
-/// 
+///
 /// 使用示例：
 /// ```dart
 /// // 创建持久化存储的管理器（默认）
 /// final manager = TokenManager();
-/// 
+///
 /// // 或创建内存存储的管理器（测试用）
 /// final manager = TokenManager.memory();
-/// 
+///
 /// // 保存token
 /// await manager.saveToken('your_token');
-/// 
+///
 /// // 获取token
 /// final token = await manager.getToken();
-/// 
+///
 /// // 监听认证状态
 /// manager.authStateStream.listen((state) {
 ///   SdkLogger.d('Auth state: $state');
@@ -36,20 +37,20 @@ enum AuthState {
 /// ```
 class TokenManager {
   static const String _storageKey = 'xboard_token';
-  
+
   /// 是否使用内存存储（测试模式）
   final bool _useMemoryStorage;
-  
+
   /// 内存存储的token
   String? _memoryToken;
-  
+
   /// 认证状态流控制器
-  final StreamController<AuthState> _authStateController = 
+  final StreamController<AuthState> _authStateController =
       StreamController<AuthState>.broadcast();
-  
+
   /// 当前认证状态
   AuthState _currentState = AuthState.unauthenticated;
-  
+
   /// 缓存的token，避免频繁读取存储
   String? _cachedToken;
 
@@ -57,7 +58,7 @@ class TokenManager {
   TokenManager() : _useMemoryStorage = false {
     _initializeTokenState();
   }
-  
+
   /// 创建内存存储的TokenManager（测试用）
   TokenManager.memory() : _useMemoryStorage = true {
     _initializeTokenState();
@@ -81,7 +82,7 @@ class TokenManager {
         final prefs = await SharedPreferences.getInstance();
         await prefs.setString(_storageKey, token);
       }
-      
+
       _cachedToken = token;
       _updateAuthState(AuthState.authenticated);
     } catch (e, stackTrace) {
@@ -98,7 +99,7 @@ class TokenManager {
       if (_cachedToken != null) {
         return _cachedToken;
       }
-      
+
       // 从存储读取
       if (_useMemoryStorage) {
         _cachedToken = _memoryToken;
@@ -106,14 +107,14 @@ class TokenManager {
         final prefs = await SharedPreferences.getInstance();
         _cachedToken = prefs.getString(_storageKey);
       }
-      
+
       // 更新认证状态
       if (_cachedToken != null && _cachedToken!.isNotEmpty) {
         _updateAuthState(AuthState.authenticated);
       } else {
         _updateAuthState(AuthState.unauthenticated);
       }
-      
+
       return _cachedToken;
     } catch (e, stackTrace) {
       SdkLogger.e('[TokenManager] Failed to get token', e, stackTrace);
@@ -136,7 +137,7 @@ class TokenManager {
         final prefs = await SharedPreferences.getInstance();
         await prefs.remove(_storageKey);
       }
-      
+
       _cachedToken = null;
       _updateAuthState(AuthState.unauthenticated);
     } catch (e, stackTrace) {
@@ -160,7 +161,7 @@ class TokenManager {
         final prefs = await SharedPreferences.getInstance();
         token = prefs.getString(_storageKey);
       }
-      
+
       if (token != null && token.isNotEmpty) {
         _cachedToken = token;
         _updateAuthState(AuthState.authenticated);
@@ -168,7 +169,8 @@ class TokenManager {
         _updateAuthState(AuthState.unauthenticated);
       }
     } catch (e, stackTrace) {
-      SdkLogger.e('[TokenManager] Failed to initialize token state', e, stackTrace);
+      SdkLogger.e(
+          '[TokenManager] Failed to initialize token state', e, stackTrace);
       _updateAuthState(AuthState.unauthenticated);
     }
   }

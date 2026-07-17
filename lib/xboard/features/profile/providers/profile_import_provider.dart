@@ -20,7 +20,8 @@ class ProfileImportNotifier extends StateNotifier<ImportState> {
   Future<bool> importSubscription(String url,
       {bool forceRefresh = false}) async {
     final generation = ++_generation;
-    _logger.info('开始导入订阅: $url, forceRefresh: $forceRefresh');
+    _logger.info(
+        '开始导入订阅: ${SensitiveMasker.maskUrl(url)}, forceRefresh: $forceRefresh');
 
     state = state.copyWith(
       status: ImportStatus.downloading,
@@ -125,7 +126,7 @@ class ProfileImportNotifier extends StateNotifier<ImportState> {
       _logger.info('没有可重试的导入URL');
       return false;
     }
-    _logger.info('重试导入: $url');
+    _logger.info('重试导入: ${SensitiveMasker.maskUrl(url)}');
     return await importSubscription(url);
   }
 

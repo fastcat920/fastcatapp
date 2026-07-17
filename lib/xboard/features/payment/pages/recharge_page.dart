@@ -133,13 +133,11 @@ class _RechargePageState extends ConsumerState<RechargePage> {
     setState(() => _isProcessing = true);
     try {
       final paymentNotifier = ref.read(xboardPaymentProvider.notifier);
-      // createDepositOrder 与购买套餐共用 createOrder：
-      // 先清理待支付订单，后端仍提示冲突时再全量清理并重试。
       final tradeNo = await paymentNotifier.createDepositOrder(
         amountInCents: amountCents,
       );
       if (tradeNo == null || tradeNo.isEmpty) {
-        final errorMessage = ref.read(userUIStateProvider).errorMessage;
+        final errorMessage = ref.read(paymentUIStateProvider).errorMessage;
         if (!mounted) return;
         throw Exception(errorMessage ?? l10n.xboardOrderCreationFailed);
       }

@@ -14,7 +14,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 
 import 'developer.dart';
-import 'logs.dart';
 import 'theme.dart';
 
 class ToolsView extends ConsumerStatefulWidget {
@@ -81,12 +80,10 @@ class _ToolboxViewState extends ConsumerState<ToolsView> {
   Widget _getOtherList(
     AppLocalizations l10n,
     bool enableDeveloperMode,
-    bool logCapture,
   ) {
     return generateSectionV2(
       title: l10n.other,
       items: [
-        if (logCapture) const _LogsItem(),
         if (enableDeveloperMode) const _DeveloperItem(),
         const _DiagnosticsCenterItem(),
         const _StreamingCheckItem(),
@@ -112,8 +109,7 @@ class _ToolboxViewState extends ConsumerState<ToolsView> {
     final l10n = AppLocalizations.of(context);
     final vm2 = ref.watch(
       appSettingProvider.select(
-        (state) =>
-            (a: state.locale, b: state.developerMode, c: state.logCapture),
+        (state) => (a: state.locale, b: state.developerMode),
       ),
     );
     return ListView(
@@ -136,7 +132,7 @@ class _ToolboxViewState extends ConsumerState<ToolsView> {
           },
         ),
         _getSettingList(l10n),
-        _getOtherList(l10n, vm2.b, vm2.c),
+        _getOtherList(l10n, vm2.b),
       ],
     );
   }
@@ -281,24 +277,6 @@ class _StreamingCheckItem extends StatelessWidget {
       delegate: OpenDelegate(
         title: l10n.xboardStreamingCheck,
         widget: const StreamingCheckPage(),
-      ),
-    );
-  }
-}
-
-class _LogsItem extends StatelessWidget {
-  const _LogsItem();
-
-  @override
-  Widget build(BuildContext context) {
-    final l10n = AppLocalizations.of(context);
-    return ListItem.open(
-      leading: const Icon(Icons.list_alt_outlined),
-      title: Text(l10n.logs),
-      subtitle: Text(l10n.logsDesc),
-      delegate: OpenDelegate(
-        title: l10n.logs,
-        widget: const LogsView(),
       ),
     );
   }

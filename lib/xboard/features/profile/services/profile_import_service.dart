@@ -45,7 +45,7 @@ class XBoardProfileImportService {
     _downloadCancelToken = cancelToken;
     final stopwatch = Stopwatch()..start();
     try {
-      _logger.info('开始导入订阅配置: $url');
+      _logger.info('开始导入订阅配置: ${SensitiveMasker.maskUrl(url)}');
 
       // 1. 先下载并验证新配置（不删除旧配置）
       onProgress?.call(ImportStatus.downloading, 0.3, '下载配置文件');
@@ -233,7 +233,7 @@ class XBoardProfileImportService {
   }) async {
     final sw = Stopwatch()..start();
     try {
-      _logger.info('🚀 [0ms] 开始下载配置: $url');
+      _logger.info('🚀 [0ms] 开始下载配置: ${SensitiveMasker.maskUrl(url)}');
 
       // 先检查用户配置是否禁用了加密订阅
       final preferEncrypt = await ConfigFileLoaderHelper.getPreferEncrypt();
@@ -274,7 +274,7 @@ class XBoardProfileImportService {
   Future<Profile> _downloadEncryptedProfile(String url) async {
     try {
       _logger.info('📦 开始下载加密订阅配置流程');
-      _logger.debug('🔗 目标URL: $url');
+      _logger.debug('🔗 目标URL: ${SensitiveMasker.maskUrl(url)}');
 
       // 从本地配置读取订阅偏好设置（竞速自动跟随加密选项）
       final preferEncrypt = await ConfigFileLoaderHelper.getPreferEncrypt();

@@ -307,7 +307,6 @@ class XBoardInitializationNotifier extends StateNotifier<InitializationState> {
       client = HttpClient();
       client.findProxy = (_) => 'DIRECT';
       client.connectionTimeout = const Duration(seconds: 4);
-      client.badCertificateCallback = (cert, host, port) => true;
       final testUrl = domain.endsWith('/')
           ? '$domain$prefix/guest/comm/config'
           : '$domain/$prefix/guest/comm/config';
@@ -419,7 +418,6 @@ class XBoardInitializationNotifier extends StateNotifier<InitializationState> {
       client = HttpClient();
       client.findProxy = (_) => 'DIRECT';
       client.connectionTimeout = timeout;
-      client.badCertificateCallback = (_, __, ___) => true;
       final testUrl = domain.endsWith('/')
           ? '$domain$prefix/guest/comm/config'
           : '$domain/$prefix/guest/comm/config';
@@ -468,7 +466,6 @@ class XBoardInitializationNotifier extends StateNotifier<InitializationState> {
         _logger.info('[Fallback] 直连: $maskedUrl');
         client = HttpClient();
         client.findProxy = (_) => 'DIRECT';
-        client.badCertificateCallback = (_, __, ___) => true;
         client.connectionTimeout = const Duration(seconds: 15);
 
         final request = await client.getUrl(Uri.parse(url));
@@ -600,7 +597,6 @@ class XBoardInitializationNotifier extends StateNotifier<InitializationState> {
         try {
           client = HttpClient();
           client.findProxy = (_) => 'DIRECT';
-          client.badCertificateCallback = (_, __, ___) => true;
           client.connectionTimeout = const Duration(seconds: 10);
           final request = await client.getUrl(Uri.parse(ossUrl1));
           final response = await request.close();

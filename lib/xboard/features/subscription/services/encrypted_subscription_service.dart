@@ -5,6 +5,7 @@ import 'package:fl_clash/xboard/config/xboard_config.dart';
 import 'package:flutter_xboard_sdk/flutter_xboard_sdk.dart';
 // 已从core/utils导出
 import 'package:fl_clash/xboard/core/core.dart';
+import 'package:fl_clash/common/sensitive_masker.dart';
 import 'package:fl_clash/xboard/infrastructure/infrastructure.dart';
 import 'package:fl_clash/xboard/infrastructure/http/user_agent_config.dart';
 import 'package:fl_clash/xboard/features/subscription/utils/subscription_url_helper.dart';
@@ -42,7 +43,7 @@ class EncryptedSubscriptionService {
         return SubscriptionResult.failure('订阅URL为空');
       }
 
-      _logger.info('获取到订阅URL: $subscribeUrl');
+      _logger.info('获取到订阅URL: ${SensitiveMasker.maskUrl(subscribeUrl)}');
 
       // 2. 从订阅URL中提取订阅token（不是Auth Token！）
       final token = _extractTokenFromSubscriptionUrl(subscribeUrl);
@@ -51,7 +52,7 @@ class EncryptedSubscriptionService {
         return SubscriptionResult.failure('无法从订阅URL中提取token: $subscribeUrl');
       }
 
-      _logger.info('从订阅URL提取到订阅token: ${token.substring(0, 8)}...');
+      _logger.info('已从订阅URL提取到订阅token');
 
       // 3. 使用订阅token获取加密订阅
       return await getEncryptedSubscription(
@@ -109,8 +110,7 @@ class EncryptedSubscriptionService {
     bool enableRace = true,
   }) async {
     try {
-      _logger.info(
-          '开始获取加密订阅，token: ${token.substring(0, 8)}..., 竞速模式: $enableRace');
+      _logger.info('开始获取加密订阅，竞速模式: $enableRace');
 
       // 1. 获取订阅配置
       final subscriptionInfo = XBoardConfig.subscriptionInfo;
@@ -128,18 +128,21 @@ class EncryptedSubscriptionService {
           token,
           preferEncrypt: preferEncrypt,
         );
-        _logger.info('[订阅竞速] 🏆 竞速完成，最快URL: $subscriptionUrl');
+        _logger.info(
+            '[订阅竞速] 🏆 竞速完成，最快URL: ${SensitiveMasker.maskUrl(subscriptionUrl)}');
       } else {
         subscriptionUrl = subscriptionInfo.buildSubscriptionUrl(token,
             forceEncrypt: preferEncrypt);
-        _logger.debug('[订阅服务] 使用默认URL（无需竞速）: $subscriptionUrl');
+        _logger.debug(
+            '[订阅服务] 使用默认URL（无需竞速）: ${SensitiveMasker.maskUrl(subscriptionUrl)}');
       }
 
       if (subscriptionUrl == null) {
         return SubscriptionResult.failure('无法构建订阅URL');
       }
 
-      _logger.debug('[订阅服务] 最终使用URL: $subscriptionUrl');
+      _logger
+          .debug('[订阅服务] 最终使用URL: ${SensitiveMasker.maskUrl(subscriptionUrl)}');
 
       // 3. 获取加密数据
       final encryptedData = await _fetchEncryptedData(subscriptionUrl);
@@ -191,7 +194,8 @@ class EncryptedSubscriptionService {
 
     for (int attempt = 1; attempt <= maxRetries; attempt++) {
       try {
-        _logger.debug('[数据获取] 第 $attempt/$maxRetries 次请求: $url');
+        _logger.debug(
+            '[数据获取] 第 $attempt/$maxRetries 次请求: ${SensitiveMasker.maskUrl(url)}');
 
         final client = HttpClient();
         client.findProxy = (_) => 'DIRECT';

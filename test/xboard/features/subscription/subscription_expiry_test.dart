@@ -1,4 +1,5 @@
 import 'package:fl_clash/models/profile.dart';
+import 'package:fl_clash/xboard/domain/domain.dart';
 import 'package:fl_clash/xboard/features/auth/models/auth_state.dart';
 import 'package:fl_clash/xboard/features/subscription/services/subscription_status_service.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -39,6 +40,34 @@ void main() {
       );
 
       expect(result.type, SubscriptionStatusType.valid);
+    });
+
+    test('domain models expire at the exact backend timestamp', () {
+      final expiredAt = DateTime.now().subtract(const Duration(minutes: 1));
+      final subscription = DomainSubscription(
+        subscribeUrl: '',
+        email: '',
+        uuid: '',
+        planId: 1,
+        transferLimit: 1,
+        uploadedBytes: 0,
+        downloadedBytes: 0,
+        expiredAt: expiredAt,
+      );
+      final user = DomainUser(
+        email: '',
+        uuid: '',
+        avatarUrl: '',
+        transferLimit: 1,
+        uploadedBytes: 0,
+        downloadedBytes: 0,
+        balanceInCents: 0,
+        commissionBalanceInCents: 0,
+        expiredAt: expiredAt,
+      );
+
+      expect(subscription.isExpired, isTrue);
+      expect(user.isExpired, isTrue);
     });
   });
 }

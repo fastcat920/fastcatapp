@@ -2,13 +2,85 @@ import 'dart:math';
 
 import 'package:fl_clash/common/common.dart';
 import 'package:fl_clash/enum/enum.dart';
+import 'package:fl_clash/l10n/l10n.dart';
 import 'package:fl_clash/providers/providers.dart';
 import 'package:fl_clash/state.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../models/models.dart';
 import '../widgets/widgets.dart';
+
+class LogsPage extends ConsumerWidget {
+  const LogsPage({super.key});
+
+  String _copyableLogs(WidgetRef ref) {
+    return ref.read(logsProvider).list.map((log) {
+      final payload = SensitiveMasker.maskText(log.payload);
+      return '${log.dateTime} [${log.logLevel.name}] $payload';
+    }).join('\n');
+  }
+
+  Future<void> _copyLogs(BuildContext context, WidgetRef ref) async {
+    final l10n = AppLocalizations.of(context);
+    await Clipboard.setData(ClipboardData(text: _copyableLogs(ref)));
+    if (!context.mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text(l10n.copySuccess)),
+    );
+  }
+
+  Future<void> _clearLogs(BuildContext context, WidgetRef ref) async {
+    final l10n = AppLocalizations.of(context);
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: Text(l10n.clearLogs),
+        content: Text(l10n.clearLogsConfirm),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(dialogContext).pop(false),
+            child: Text(l10n.cancel),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.of(dialogContext).pop(true),
+            child: Text(l10n.confirm),
+          ),
+        ],
+      ),
+    );
+    if (confirmed != true || !context.mounted) return;
+    ref.read(logsProvider.notifier).clear();
+    ref.read(requestsProvider.notifier).clear();
+    globalState.cacheHeightMap = {};
+    globalState.cacheScrollPosition.remove(CacheTag.rules);
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text(l10n.logsCleared)),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = AppLocalizations.of(context);
+    return CommonScaffold(
+      title: l10n.logs,
+      actions: [
+        IconButton(
+          tooltip: l10n.copyLogs,
+          onPressed: () => _copyLogs(context, ref),
+          icon: const Icon(Icons.content_copy_outlined),
+        ),
+        IconButton(
+          tooltip: l10n.clearLogs,
+          onPressed: () => _clearLogs(context, ref),
+          icon: const Icon(Icons.delete_sweep_outlined),
+        ),
+      ],
+      body: const LogsView(),
+    );
+  }
+}
 
 class LogsView extends ConsumerStatefulWidget {
   const LogsView({super.key});
@@ -17,7 +89,7 @@ class LogsView extends ConsumerStatefulWidget {
   ConsumerState<LogsView> createState() => _LogsViewState();
 }
 
-class _LogsViewState extends ConsumerState<LogsView> with PageMixin {
+class _LogsViewState extends ConsumerState<LogsView> {
   final _logsStateNotifier = ValueNotifier<LogsState>(
     LogsState(loading: true),
   );
@@ -41,19 +113,6 @@ class _LogsViewState extends ConsumerState<LogsView> with PageMixin {
       logs: _logs,
     );
     ref.listenManual(
-      isCurrentPageProvider(
-        PageLabel.logs,
-        handler: (pageLabel, viewMode) =>
-            pageLabel == PageLabel.tools && viewMode == ViewMode.mobile,
-      ),
-      (prev, next) {
-        if (prev != next && next == true) {
-          initPageState();
-        }
-      },
-      fireImmediately: true,
-    );
-    ref.listenManual(
       logsProvider.select((state) => state.list),
       (prev, next) {
         if (prev != next) {
@@ -68,50 +127,10 @@ class _LogsViewState extends ConsumerState<LogsView> with PageMixin {
   }
 
   @override
-  List<Widget> get actions => [
-        IconButton(
-          onPressed: () {
-            _handleExport();
-          },
-          icon: const Icon(
-            Icons.file_download_outlined,
-          ),
-        ),
-      ];
-
-  @override
-  get onSearch => (value) {
-        _logsStateNotifier.value = _logsStateNotifier.value.copyWith(
-          query: value,
-        );
-      };
-
-  @override
-  get onKeywordsUpdate => (keywords) {
-        _logsStateNotifier.value =
-            _logsStateNotifier.value.copyWith(keywords: keywords);
-      };
-
-  @override
   void dispose() {
     _logsStateNotifier.dispose();
     _scrollController.dispose();
     super.dispose();
-  }
-
-  _handleExport() async {
-    final commonScaffoldState = context.commonScaffoldState;
-    final res = await commonScaffoldState?.loadingRun<bool>(
-      () async {
-        return await globalState.appController.exportLogs();
-      },
-      title: appLocalizations.exportLogs,
-    );
-    if (res != true) return;
-    globalState.showMessage(
-      title: appLocalizations.tip,
-      message: TextSpan(text: appLocalizations.exportSuccess),
-    );
   }
 
   double _getItemHeight(Log log) {

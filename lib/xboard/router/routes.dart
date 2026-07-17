@@ -9,7 +9,6 @@ import 'package:fl_clash/xboard/features/mine/pages/gift_card_page.dart';
 import 'package:fl_clash/xboard/features/mine/pages/order_page.dart';
 import 'package:fl_clash/xboard/features/auth/pages/login_page.dart';
 import 'package:fl_clash/views/logs.dart';
-import 'package:fl_clash/widgets/scaffold.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
@@ -135,7 +134,7 @@ final List<RouteBase> routes = [
             path: '/logs',
             name: 'logs',
             pageBuilder: (context, state) => const NoTransitionPage(
-              child: _LogsPage(),
+              child: LogsPage(),
             ),
           ),
         ],
@@ -161,19 +160,6 @@ final List<RouteBase> routes = [
     ),
   ),
 ];
-
-/// 日志页面（包裹 LogsView，提供 CommonScaffold 以支持 PageMixin 动作/搜索）
-class _LogsPage extends StatelessWidget {
-  const _LogsPage();
-
-  @override
-  Widget build(BuildContext context) {
-    return const CommonScaffold(
-      title: '日志',
-      body: LogsView(),
-    );
-  }
-}
 
 /// 不带过渡动画的 Page
 class NoTransitionPage<T> extends Page<T> {

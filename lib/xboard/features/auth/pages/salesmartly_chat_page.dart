@@ -4,6 +4,7 @@ import 'package:fl_clash/xboard/features/auth/utils/customer_service_helper.dart
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:webview_flutter/webview_flutter.dart';
+import 'package:fl_clash/l10n/l10n.dart';
 
 /// SalesSmartly 客服嵌入页面（Android/iOS/macOS）
 ///
@@ -263,7 +264,7 @@ class _SalesmarylyChatPageState extends State<SalesmarylyChatPage> {
         child: Scaffold(
           backgroundColor: backgroundColor,
           appBar: AppBar(
-            title: const Text('在线客服'),
+            title: Text(AppLocalizations.of(context).xboardOnlineSupport),
             leading: BackButton(
               onPressed: widget.onBackPressed ??
                   () => Navigator.of(context, rootNavigator: true).pop(),
@@ -287,10 +288,15 @@ class _SalesmarylyChatPageState extends State<SalesmarylyChatPage> {
                       const Icon(Icons.error_outline,
                           size: 48, color: Colors.grey),
                       const SizedBox(height: 16),
-                      const Text('加载失败，请检查网络',
+                      Text(
+                          AppLocalizations.of(context)
+                              .xboardLoadFailedCheckNetwork,
                           style: TextStyle(color: Colors.grey)),
                       const SizedBox(height: 16),
-                      FilledButton(onPressed: _retry, child: const Text('重试')),
+                      FilledButton(
+                        onPressed: _retry,
+                        child: Text(AppLocalizations.of(context).xboardRetry),
+                      ),
                     ],
                   ),
                 ),

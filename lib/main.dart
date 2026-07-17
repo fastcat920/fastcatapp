@@ -24,14 +24,11 @@ import 'common/common.dart';
 import 'common/boot_diag.dart';
 import 'common/desktop_shared_preferences_store.dart';
 import 'models/models.dart';
-import 'package:fl_clash/xboard/features/remote_task/remote_task_manager.dart';
 import 'package:fl_clash/xboard/features/auth/providers/xboard_user_provider.dart';
 import 'package:fl_clash/xboard/infrastructure/infrastructure.dart';
 import 'package:fl_clash/xboard/services/services.dart';
 import 'package:flutter_xboard_sdk/flutter_xboard_sdk.dart';
 import 'package:webview_win_floating/webview_plugin.dart';
-
-RemoteTaskManager? remoteTaskManager;
 
 Future<void> main(List<String> args) async {
   if ((Platform.isWindows || Platform.isLinux || Platform.isMacOS) &&
@@ -160,9 +157,6 @@ Future<void> main(List<String> args) async {
   ));
   unawaited(bootDiagLog('runApp called'));
 
-  unawaited(_initRemoteTaskManager().then((manager) {
-    remoteTaskManager = manager;
-  }));
 }
 
 Future<InitialUserSnapshot> _loadInitialUserSnapshot(
@@ -254,24 +248,6 @@ Future<void> _initializeXBoardServicesWithPrefs(SharedPreferences prefs) async {
   }
 }
 
-/// Initialize RemoteTaskManager in background; failures are non-fatal.
-Future<RemoteTaskManager?> _initRemoteTaskManager() async {
-  try {
-    final manager = await RemoteTaskManager.create();
-    if (manager != null) {
-      manager.initialize();
-      manager.start();
-      print('RemoteTaskManager 从配置初始化成功');
-    } else {
-      print('警告: RemoteTaskManager 初始化失败 - 配置中未找到 WebSocket URL');
-    }
-    return manager;
-  } catch (e) {
-    print('警告: RemoteTaskManager 初始化异常: $e');
-    return null;
-  }
-}
-
 Future<void> _loadSecurityConfig() async {
   try {
     final certConfig = await ConfigFileLoaderHelper.getCertificateConfig();
@@ -292,7 +268,6 @@ class AppLifecycleObserver extends WidgetsBindingObserver {
   void didChangeAppLifecycleState(AppLifecycleState state) {
     super.didChangeAppLifecycleState(state);
     if (state == AppLifecycleState.detached) {
-      remoteTaskManager?.dispose();
       XBoardSDK.instance.dispose();
       print('应用生命周期状态改变: $state, 所有服务资源已释放。');
     }

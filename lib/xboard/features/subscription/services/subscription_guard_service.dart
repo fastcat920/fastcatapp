@@ -128,7 +128,7 @@ class SubscriptionGuardService {
     final status = _checkCurrentStatus();
     if (status != null) {
       _logger.info('订阅信息变更检测到异常: ${status.type}，自动断开');
-      _autoDisconnect();
+      unawaited(_autoDisconnect());
       return;
     }
 
@@ -142,23 +142,21 @@ class SubscriptionGuardService {
     final effectiveSubInfo = _getEffectiveSubscriptionInfo();
     if (effectiveSubInfo == null || effectiveSubInfo.expire == 0) return;
 
-    final raw =
+    final expireAt =
         DateTime.fromMillisecondsSinceEpoch(effectiveSubInfo.expire * 1000);
-    // 套餐应在到期日当天 23:59:59 后才真正过期
-    final expireAt = DateTime(raw.year, raw.month, raw.day, 23, 59, 59);
     final now = DateTime.now();
     final remaining = expireAt.difference(now);
 
     if (remaining.isNegative) {
       // 已经过期，立即断开
       _logger.info('订阅已过期，立即断开');
-      _autoDisconnect();
+      unawaited(_autoDisconnect());
       return;
     }
 
     _expiryTimer = Timer(remaining, () {
       _logger.info('订阅到期，自动断开连接');
-      _autoDisconnect();
+      unawaited(_autoDisconnect());
     });
 
     _logger.info('过期定时器已设置，将在 ${remaining.inMinutes} 分钟后触发');
@@ -187,7 +185,9 @@ class SubscriptionGuardService {
 
     try {
       _logger.info('定期刷新订阅信息...');
-      await ref.read(xboardUserProvider.notifier).refreshSubscriptionInfo();
+      await ref.read(xboardUserProvider.notifier).refreshSubscriptionInfo(
+            importProfile: false,
+          );
       // 刷新后 subscriptionInfoProvider 会更新，
       // 外部监听器会调用 onSubscriptionInfoChanged()
     } catch (e) {
@@ -265,12 +265,20 @@ class SubscriptionGuardService {
   }
 
   /// 自动断开连接
-  void _autoDisconnect() {
+  Future<void> _autoDisconnect() async {
     stopGuard();
     final isRunning = globalState.appState.runTime != null;
     if (isRunning) {
-      globalState.appController.updateStatus(false);
-      _logger.info('已自动断开连接');
+      try {
+        final stopped = await globalState.appController.updateStatus(false);
+        if (stopped) {
+          _logger.info('已自动断开连接');
+        } else {
+          _logger.warning('自动断开连接未成功完成');
+        }
+      } catch (error) {
+        _logger.error('自动断开连接失败: $error');
+      }
     }
   }
 }

@@ -86,12 +86,10 @@ extension DomainSubscriptionX on DomainSubscription {
     return value?.toString() == '1';
   }
 
-  /// 是否已过期（到期日当天仍视为有效）
+  /// 是否已过期（与后端时间点保持一致）
   bool get isExpired {
     if (expiredAt == null) return false;
-    final endOfDay =
-        DateTime(expiredAt!.year, expiredAt!.month, expiredAt!.day, 23, 59, 59);
-    return DateTime.now().isAfter(endOfDay);
+    return !DateTime.now().isBefore(expiredAt!);
   }
 
   /// 剩余天数

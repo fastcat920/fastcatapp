@@ -5,6 +5,7 @@ import 'package:fl_clash/xboard/config/xboard_config.dart';
 import 'package:flutter_xboard_sdk/flutter_xboard_sdk.dart';
 // 已从core/utils导出
 import 'package:fl_clash/xboard/core/core.dart';
+import 'package:fl_clash/common/sensitive_masker.dart';
 import 'package:fl_clash/xboard/infrastructure/infrastructure.dart';
 import 'package:fl_clash/xboard/infrastructure/http/user_agent_config.dart';
 import 'package:fl_clash/xboard/features/subscription/utils/subscription_url_helper.dart';
@@ -39,7 +40,7 @@ class ConcurrentSubscriptionService {
         return SubscriptionResult.failure('订阅token无效');
       }
 
-      _logger.info('[竞速订阅] 获取到token: ${token.substring(0, 8)}...');
+      _logger.info('[竞速订阅] 已获取订阅token');
 
       // 2. 使用token进行竞速获取
       return await raceGetEncryptedSubscription(token,
@@ -61,7 +62,7 @@ class ConcurrentSubscriptionService {
     bool preferEncrypt = true,
   }) async {
     try {
-      _logger.info('[竞速订阅] 开始并发竞速获取，token: ${token.substring(0, 8)}...');
+      _logger.info('[竞速订阅] 开始并发竞速获取');
 
       // 1. 获取所有可用的订阅URL信息
       final subscriptionUrlInfos = _getAllSubscriptionUrlInfos();
@@ -82,7 +83,7 @@ class ConcurrentSubscriptionService {
             urlInfo.buildSubscriptionUrl(token, preferEncrypt: preferEncrypt);
         if (fullUrl.isNotEmpty) {
           requestUrls.add(fullUrl);
-          _logger.debug('[竞速订阅] 添加请求URL: $fullUrl');
+          _logger.debug('[竞速订阅] 添加请求URL: ${SensitiveMasker.maskUrl(fullUrl)}');
         }
       }
 

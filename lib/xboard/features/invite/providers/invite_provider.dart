@@ -10,6 +10,7 @@ import 'package:fl_clash/xboard/features/auth/providers/xboard_user_provider.dar
 import 'package:fl_clash/xboard/adapter/initialization/sdk_provider.dart';
 import 'package:fl_clash/xboard/services/services.dart';
 import 'package:fl_clash/xboard/utils/backend_message_mapper.dart';
+import 'package:fl_clash/common/sensitive_masker.dart';
 
 // 初始化文件级日志器
 const _logger = FileLogger('invite_provider.dart');
@@ -333,7 +334,8 @@ class InviteNotifier extends Notifier<InviteState> {
     state = state.copyWith(isLoading: true, errorMessage: null);
 
     try {
-      _logger.info('提现佣金: 方式=$withdrawMethod, 账号=$withdrawAccount');
+      _logger.info(
+          '提现佣金: 方式=$withdrawMethod, 账号=${SensitiveMasker.maskText(withdrawAccount)}');
       final availableAmount = state.availableCommission;
       if (availableAmount <= 0) {
         throw Exception('可提现金额不足');

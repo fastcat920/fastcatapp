@@ -139,25 +139,50 @@ class GlobalState {
     timer = null;
   }
 
-  handleStart([UpdateTasks? tasks]) async {
-    startTime ??= DateTime.now();
-    if (!Platform.isIOS) {
-      await clashCore.startListener();
-    }
+  Future<bool> handleStart([UpdateTasks? tasks]) async {
+    var listenerStarted = false;
+    var vpnStartAttempted = false;
+    final vpnService = service;
     try {
-      await service?.startVpn();
+      if (!Platform.isIOS) {
+        final listenerResult = await clashCore.startListener();
+        if (listenerResult != true) {
+          throw StateError('Clash listener 启动失败');
+        }
+        listenerStarted = true;
+      }
+      if (vpnService != null) {
+        vpnStartAttempted = true;
+        final vpnStarted = await vpnService.startVpn();
+        if (vpnStarted != true) {
+          throw StateError('系统 VPN 返回启动失败');
+        }
+      }
+      startTime = DateTime.now();
+      startUpdateTasks(tasks);
+      return true;
     } catch (e) {
-      // VPN start failed — reset state and show error to user
       startTime = null;
+      stopUpdateTasks();
+      if (vpnStartAttempted) {
+        try {
+          await vpnService?.stopVpn();
+        } catch (_) {}
+      }
+      if (listenerStarted && !Platform.isIOS) {
+        try {
+          await clashCore.stopListener();
+        } catch (_) {}
+      }
       final msg = e
           .toString()
+          .replaceFirst('Bad state: ', '')
           .replaceFirst('PlatformException(VPN_ERROR, ', '')
           .replaceFirst(RegExp(r', null, null\)$'), '');
       commonPrint.log("VPN start failed: $msg");
       showNotifier("VPN启动失败: $msg");
-      return;
+      return false;
     }
-    startUpdateTasks(tasks);
   }
 
   Future updateStartTime() async {
