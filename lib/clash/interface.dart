@@ -26,6 +26,17 @@ mixin ClashInterface {
 
   Future<String> diagnoseProxy(String url, String proxyName);
 
+  Future<String> streamingProbe(
+    String url,
+    String proxyName, {
+    String method = 'GET',
+    String? body,
+    Map<String, String> headers = const {},
+    bool followRedirects = true,
+    Duration timeout = const Duration(seconds: 8),
+    int maxBodySize = 256 * 1024,
+  });
+
   FutureOr<String> updateConfig(UpdateParams updateParams);
 
   FutureOr<String> setupConfig(SetupParams setupParams);
@@ -427,6 +438,44 @@ abstract class ClashHandlerInterface with ClashInterface {
         'proxy-status': 'failed',
         'failure-stage': 'diagnostic',
         'error': 'diagnostic request timed out',
+      }),
+    );
+  }
+
+  @override
+  Future<String> streamingProbe(
+    String url,
+    String proxyName, {
+    String method = 'GET',
+    String? body,
+    Map<String, String> headers = const {},
+    bool followRedirects = true,
+    Duration timeout = const Duration(seconds: 8),
+    int maxBodySize = 256 * 1024,
+  }) {
+    final params = {
+      'proxy-name': proxyName,
+      'url': url,
+      'method': method,
+      if (body != null) 'body': body,
+      'timeout': timeout.inMilliseconds,
+      'max-body-size': maxBodySize,
+      'headers': headers,
+      'no-redirect': !followRedirects,
+    };
+    return invoke<String>(
+      method: ActionMethod.streamingProbe,
+      data: json.encode(params),
+      timeout: timeout + const Duration(seconds: 2),
+      onTimeout: () => json.encode({
+        'ok': false,
+        'status-code': 0,
+        'final-url': url,
+        'headers': <String, String>{},
+        'body': '',
+        'elapsed-ms': timeout.inMilliseconds,
+        'truncated': false,
+        'error': 'streaming probe timed out',
       }),
     );
   }

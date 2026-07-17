@@ -209,6 +209,8 @@ func ClashCore_invoke(method *C.char, data *C.char) *C.char {
 			})
 		case diagnoseProxyMethod:
 			ch <- handleDiagnoseProxy(dataStr)
+		case streamingProbeMethod:
+			ch <- handleStreamingProbe(dataStr)
 		case getConnectionsMethod:
 			ch <- handleGetConnections()
 		case closeConnectionsMethod:

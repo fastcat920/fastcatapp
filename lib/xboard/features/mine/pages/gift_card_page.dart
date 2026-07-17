@@ -160,7 +160,14 @@ class _GiftCardForm extends StatelessWidget {
                       color: Colors.white,
                     ),
                   )
-                : Text(AppLocalizations.of(context).xboardRedeemNow),
+                : Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const Icon(Icons.card_giftcard_outlined, size: 18),
+                      const SizedBox(width: 8),
+                      Text(AppLocalizations.of(context).xboardRedeemNow),
+                    ],
+                  ),
           ),
         ),
       ],

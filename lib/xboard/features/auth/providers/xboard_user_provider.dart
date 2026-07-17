@@ -25,9 +25,19 @@ import 'package:fl_clash/state.dart';
 import 'package:fl_clash/providers/providers.dart';
 import 'package:fl_clash/xboard/features/subscription/services/subscription_guard_service.dart';
 import 'package:fl_clash/xboard/utils/backend_message_mapper.dart';
+import 'package:fl_clash/xboard/features/connectivity/connectivity.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:fl_clash/models/profile.dart';
 
 // 初始化文件级日志器
 const _logger = FileLogger('xboard_user_provider.dart');
+
+class LogoutProtectedException implements Exception {
+  const LogoutProtectedException();
+
+  @override
+  String toString() => 'Logout is protected while the service is unavailable';
+}
 
 // main() 中 runApp 前读取的初始 token 状态，通过 ProviderScope.overrides 注入
 // 默认 false，override 后为实际值
@@ -424,11 +434,12 @@ class XBoardUserAuthNotifier extends Notifier<UserAuthState> {
       );
 
       if (subscriptionData.subscribeUrl.isNotEmpty) {
-        // 每次启动都重新下载订阅，确保节点配置保持最新
-        _logger.info('[后台验证] 启动刷新：重新导入订阅: ${subscriptionData.subscribeUrl}');
-        ref
-            .read(profileImportProvider.notifier)
-            .importSubscription(subscriptionData.subscribeUrl);
+        // 本地已有同一订阅的可用 Profile 时优先恢复本地节点，避免服务器
+        // 抖动导致每次启动都进入长时间的“订阅加载中”。
+        _startPostLoginSubscriptionImport(
+          subscriptionData.subscribeUrl,
+          generation,
+        );
       } else {
         _logger.info('[后台验证] 订阅URL为空，跳过配置导入');
       }
@@ -906,6 +917,10 @@ class XBoardUserAuthNotifier extends Notifier<UserAuthState> {
           _logger.info('[后台导入] 跳过：认证会话已变化');
           return;
         }
+        if (await _restoreReusableLocalProfile(url)) {
+          _logger.info('[后台导入] 已恢复同一订阅的本地配置，跳过启动强制下载');
+          return;
+        }
         final success = await ref
             .read(profileImportProvider.notifier)
             .importSubscription(url);
@@ -915,6 +930,22 @@ class XBoardUserAuthNotifier extends Notifier<UserAuthState> {
         _logger.debug('$stackTrace');
       }
     }));
+  }
+
+  Future<bool> _restoreReusableLocalProfile(String subscriptionUrl) async {
+    final profile = ref.read(currentProfileProvider);
+    if (profile == null || profile.url != subscriptionUrl) return false;
+    try {
+      final file = await profile.getFile();
+      if (!await file.exists() || await file.length() == 0) return false;
+      if (ref.read(groupsProvider).isEmpty) {
+        await globalState.appController.loadGroupsFromLocalProfile();
+      }
+      return true;
+    } catch (error) {
+      _logger.info('[本地节点恢复] 读取现有 Profile 失败: $error');
+      return false;
+    }
   }
 
   String _normalizeLoginError(String message) {
@@ -930,7 +961,9 @@ class XBoardUserAuthNotifier extends Notifier<UserAuthState> {
       if (code == 'NETWORK_ERROR') {
         return '[NETWORK_ERROR]';
       }
-      if (code == 'BACKEND_UNREACHABLE' || code == 'BACKEND_UNAVAILABLE' || code == 'BUSINESS_LOGIN_FAILED') {
+      if (code == 'BACKEND_UNREACHABLE' ||
+          code == 'BACKEND_UNAVAILABLE' ||
+          code == 'BUSINESS_LOGIN_FAILED') {
         return '[CONFIG_LOAD_FAILED]';
       }
       if (code == 'CREDENTIALS_REQUIRED' || code == 'DEVICE_ID_REQUIRED') {
@@ -1237,6 +1270,34 @@ class XBoardUserAuthNotifier extends Notifier<UserAuthState> {
     }
   }
 
+  /// 连接按钮专用的轻量订阅刷新。
+  ///
+  /// 只请求连接校验所需的订阅接口，并由调用方提供总等待上限；失败时保留
+  /// 当前内存/本地缓存，交给连接前的本地校验继续处理。
+  Future<bool> refreshSubscriptionForConnect(Duration timeout) async {
+    if (!state.isAuthenticated) return false;
+
+    try {
+      clearGetSubscriptionCache();
+      ref.invalidate(getSubscriptionProvider);
+      final subscriptionModel =
+          await ref.read(getSubscriptionProvider.future).timeout(timeout);
+      final subscriptionData =
+          _mergeSubscriptionWithCache(_mapSubscription(subscriptionModel));
+      await _storageService.saveDomainSubscription(subscriptionData);
+      ref.read(subscriptionInfoProvider.notifier).state = subscriptionData;
+      state = state.copyWith(subscriptionInfo: subscriptionData);
+      ref.read(serviceConnectivityProvider.notifier).reportRequestSuccess();
+      return true;
+    } catch (error) {
+      _logger.info('连接前刷新订阅失败，使用缓存继续校验: $error');
+      ref
+          .read(serviceConnectivityProvider.notifier)
+          .reportRequestFailure(error);
+      return false;
+    }
+  }
+
   Future<void> refreshUserInfo() async {
     if (!state.isAuthenticated) {
       return;
@@ -1257,7 +1318,8 @@ class XBoardUserAuthNotifier extends Notifier<UserAuthState> {
       // 同时刷新订阅信息，确保套餐卡片上的 planName、expiredAt、流量等数据也更新
       DomainSubscription? subscriptionData;
       try {
-        final subscriptionModel = await ref.read(getSubscriptionProvider.future);
+        final subscriptionModel =
+            await ref.read(getSubscriptionProvider.future);
         subscriptionData = _mapSubscription(subscriptionModel);
         await _storageService.saveDomainSubscription(subscriptionData);
         ref.read(subscriptionInfoProvider.notifier).state = subscriptionData;
@@ -1265,7 +1327,8 @@ class XBoardUserAuthNotifier extends Notifier<UserAuthState> {
         _logger.info('刷新订阅信息失败: $e');
       }
 
-      state = state.copyWith(userInfo: userInfoData, subscriptionInfo: subscriptionData);
+      state = state.copyWith(
+          userInfo: userInfoData, subscriptionInfo: subscriptionData);
       _logger.info('用户详细信息已刷新${subscriptionData != null ? "（含订阅信息）" : ""}');
     } catch (e) {
       _logger.info('刷新用户详细信息出错: $e');
@@ -1391,7 +1454,11 @@ class XBoardUserAuthNotifier extends Notifier<UserAuthState> {
     return null;
   }
 
-  Future<void> logout() async {
+  Future<void> logout({bool allowWhenServiceUnavailable = false}) async {
+    final connectivity = ref.read(serviceConnectivityProvider);
+    if (!allowWhenServiceUnavailable && !connectivity.isOnline) {
+      throw const LogoutProtectedException();
+    }
     _nextAuthGeneration();
     _logger.info('用户登出');
     final savedEmail = await _storageService.getSavedEmail();
@@ -1454,6 +1521,8 @@ class XBoardUserAuthNotifier extends Notifier<UserAuthState> {
       );
       ref.read(groupsProvider.notifier).value = [];
       ref.read(delayDataSourceProvider.notifier).value = {};
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.remove('cached_groups');
     } catch (e) {
       _logger.error('清除 Clash 内存数据失败: $e');
     }
@@ -1570,6 +1639,7 @@ DomainSubscription _mapSubscription(SubscriptionModel sub) {
     metadata: {
       if (sub.resetDay != null) 'resetDay': sub.resetDay,
       'allowNewPeriod': sub.allowNewPeriod,
+      'lastSyncedAt': DateTime.now().toIso8601String(),
     },
   );
 }

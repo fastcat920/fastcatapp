@@ -92,6 +92,10 @@ func handleAction(action *Action, result ActionResult) {
 		data := action.Data.(string)
 		result.success(handleDiagnoseProxy(data))
 		return
+	case streamingProbeMethod:
+		data := action.Data.(string)
+		result.success(handleStreamingProbe(data))
+		return
 	case getConnectionsMethod:
 		result.success(handleGetConnections())
 		return

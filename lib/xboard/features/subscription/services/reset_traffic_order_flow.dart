@@ -12,6 +12,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:fl_clash/l10n/l10n.dart';
 
+bool _isCreatingResetTrafficOrder = false;
+
 Future<void> showResetTrafficOrderDialog({
   required BuildContext context,
   required WidgetRef ref,
@@ -30,40 +32,47 @@ Future<void> showResetTrafficOrderDialog({
     return;
   }
 
-  final tradeNoFuture = _createResetTrafficOrder(
-    ref: ref,
-    planId: resolvedPlanId,
-  );
-  final planFuture = _resolveResetTrafficPlan(
-    ref: ref,
-    planId: resolvedPlanId,
-    plan: plan,
-  );
+  if (!context.mounted || _isCreatingResetTrafficOrder) return;
+  _isCreatingResetTrafficOrder = true;
+  try {
+    final orderPage = await _ResetTrafficConfirmDialog.show(
+      context,
+      onConfirm: () async {
+        // 用户确认后才允许 createOrder 清理待支付订单并创建新订单。
+        final tradeNoFuture = _createResetTrafficOrder(
+          ref: ref,
+          planId: resolvedPlanId,
+        );
+        final planFuture = _resolveResetTrafficPlan(
+          ref: ref,
+          planId: resolvedPlanId,
+          plan: plan,
+        );
+        final orderPage = await _buildResetTrafficOrderPage(
+          ref: ref,
+          tradeNoFuture: tradeNoFuture,
+          planFuture: planFuture,
+        );
+        if (orderPage == null) {
+          final errorMessage = ref.read(userUIStateProvider).errorMessage;
+          throw _ResetTrafficOrderException(
+            errorMessage ?? l10n.xboardOrderCreationFailed,
+          );
+        }
+        return orderPage;
+      },
+    );
+    if (orderPage == null) return;
 
-  final orderPageFuture = _buildResetTrafficOrderPage(
-    ref: ref,
-    tradeNoFuture: tradeNoFuture,
-    planFuture: planFuture,
-  );
-
-  if (!context.mounted) return;
-  final confirmed = await _ResetTrafficConfirmDialog.show(context);
-  if (confirmed != true) return;
-
-  final orderPage = await orderPageFuture;
-  if (orderPage == null) {
-    final errorMessage = ref.read(userUIStateProvider).errorMessage;
-    XBoardNotification.showError(
-        errorMessage ?? l10n.xboardOrderCreationFailed);
-    return;
+    if (!context.mounted) return;
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (_) => orderPage,
+      ),
+    );
+  } finally {
+    _isCreatingResetTrafficOrder = false;
   }
-
-  if (!context.mounted) return;
-  Navigator.of(context).push(
-    MaterialPageRoute(
-      builder: (_) => orderPage,
-    ),
-  );
 }
 
 Future<String?> _createResetTrafficOrder({
@@ -118,76 +127,156 @@ Future<OrderDetailPage?> _buildResetTrafficOrderPage({
 int? _normalizePlanId(int? planId) =>
     planId != null && planId > 0 ? planId : null;
 
-class _ResetTrafficConfirmDialog extends StatelessWidget {
-  const _ResetTrafficConfirmDialog();
+class _ResetTrafficConfirmDialog extends StatefulWidget {
+  const _ResetTrafficConfirmDialog({required this.onConfirm});
 
-  static Future<bool?> show(BuildContext context) {
-    return showDialog<bool>(
+  final Future<OrderDetailPage> Function() onConfirm;
+
+  static Future<OrderDetailPage?> show(
+    BuildContext context, {
+    required Future<OrderDetailPage> Function() onConfirm,
+  }) {
+    return showDialog<OrderDetailPage>(
       context: context,
       barrierDismissible: false,
-      builder: (_) => const _ResetTrafficConfirmDialog(),
+      builder: (_) => _ResetTrafficConfirmDialog(onConfirm: onConfirm),
     );
+  }
+
+  @override
+  State<_ResetTrafficConfirmDialog> createState() =>
+      _ResetTrafficConfirmDialogState();
+}
+
+class _ResetTrafficConfirmDialogState
+    extends State<_ResetTrafficConfirmDialog> {
+  bool _isCreating = false;
+  String? _errorMessage;
+
+  Future<void> _confirm() async {
+    if (_isCreating) return;
+    setState(() {
+      _isCreating = true;
+      _errorMessage = null;
+    });
+
+    try {
+      final orderPage = await widget.onConfirm();
+      if (!mounted) return;
+      Navigator.of(context).pop(orderPage);
+    } catch (error) {
+      if (!mounted) return;
+      setState(() {
+        _isCreating = false;
+        _errorMessage = error is _ResetTrafficOrderException
+            ? error.message
+            : AppLocalizations.of(context).xboardOrderCreationFailed;
+      });
+    }
   }
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final l10n = AppLocalizations.of(context);
-    return AlertDialog(
-      shape: XbUiDialog.shape(),
-      backgroundColor: XbUiDialog.background(context),
-      icon: Container(
-        padding: const EdgeInsets.all(12),
-        decoration: BoxDecoration(
-          color: XbUiStatusColor.pendingByTheme(theme).withValues(alpha: 0.1),
-          borderRadius: BorderRadius.circular(12),
-        ),
-        child: Icon(
-          Icons.restart_alt,
-          color: XbUiStatusColor.pendingByTheme(theme),
-          size: 32,
-        ),
-      ),
-      title: Text(
-        l10n.xboardConfirmResetTraffic,
-        style: XbUiText.sectionTitle(context).copyWith(fontSize: 20),
-        textAlign: TextAlign.center,
-      ),
-      content: Text(
-        l10n.xboardResetTrafficConfirmContent,
-        style: theme.textTheme.bodyMedium?.copyWith(
-          color: theme.colorScheme.onSurface.withValues(alpha: 0.8),
-        ),
-        textAlign: TextAlign.center,
-      ),
-      actions: [
-        Row(
-          children: [
-            Expanded(
-              child: OutlinedButton(
-                onPressed: () => Navigator.of(context).pop(false),
-                style: XbUiButton.outlinedNeutral(context).copyWith(
-                  foregroundColor: WidgetStatePropertyAll(
-                    theme.colorScheme.onSurface.withValues(alpha: 0.68),
+    return PopScope(
+      canPop: !_isCreating,
+      child: AlertDialog(
+        shape: XbUiDialog.shape(),
+        backgroundColor: XbUiDialog.background(context),
+        icon: _isCreating
+            ? Center(
+                child: SizedBox.square(
+                  dimension: 20,
+                  child: CircularProgressIndicator(
+                    strokeWidth: 2.2,
+                    color: XbUiStatusColor.pendingByTheme(theme),
                   ),
                 ),
-                child: Text(l10n.cancel),
-              ),
-            ),
-            const SizedBox(width: 10),
-            Expanded(
-              child: FilledButton(
-                onPressed: () => Navigator.of(context).pop(true),
-                style: XbUiButton.filledPrimary(context).copyWith(
-                  backgroundColor:
-                      WidgetStatePropertyAll(XbUiStatusColor.pendingByTheme(theme)),
+              )
+            : Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: XbUiStatusColor.pendingByTheme(theme)
+                      .withValues(alpha: 0.1),
+                  borderRadius: BorderRadius.circular(12),
                 ),
-                child: Text(l10n.confirm),
+                child: Icon(
+                  Icons.restart_alt,
+                  color: XbUiStatusColor.pendingByTheme(theme),
+                  size: 32,
+                ),
               ),
+        title: Text(
+          _isCreating
+              ? l10n.xboardCreatingOrder
+              : l10n.xboardConfirmResetTraffic,
+          style: XbUiText.sectionTitle(context).copyWith(fontSize: 20),
+          textAlign: TextAlign.center,
+        ),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(
+              l10n.xboardResetTrafficConfirmContent,
+              style: theme.textTheme.bodyMedium?.copyWith(
+                color: theme.colorScheme.onSurface.withValues(alpha: 0.8),
+              ),
+              textAlign: TextAlign.center,
             ),
+            if (_errorMessage != null) ...[
+              const SizedBox(height: 12),
+              Text(
+                _errorMessage!,
+                style: theme.textTheme.bodySmall?.copyWith(
+                  color: theme.colorScheme.error,
+                ),
+                textAlign: TextAlign.center,
+              ),
+            ],
           ],
         ),
-      ],
+        actions: [
+          Row(
+            children: [
+              Expanded(
+                child: OutlinedButton(
+                  onPressed:
+                      _isCreating ? null : () => Navigator.of(context).pop(),
+                  style: XbUiButton.outlinedNeutral(context).copyWith(
+                    foregroundColor: WidgetStatePropertyAll(
+                      theme.colorScheme.onSurface.withValues(alpha: 0.68),
+                    ),
+                  ),
+                  child: Text(l10n.cancel),
+                ),
+              ),
+              const SizedBox(width: 10),
+              Expanded(
+                child: FilledButton(
+                  onPressed: _isCreating ? null : _confirm,
+                  style: XbUiButton.filledPrimary(context).copyWith(
+                    backgroundColor: WidgetStatePropertyAll(
+                      XbUiStatusColor.pendingByTheme(theme),
+                    ),
+                  ),
+                  child: Text(
+                    _isCreating ? l10n.xboardCreatingOrder : l10n.confirm,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
     );
   }
+}
+
+class _ResetTrafficOrderException implements Exception {
+  const _ResetTrafficOrderException(this.message);
+
+  final String message;
 }

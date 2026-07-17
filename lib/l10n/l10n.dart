@@ -3325,6 +3325,56 @@ class AppLocalizations {
     );
   }
 
+  /// `Sign-in protection is active`
+  String get xboardLogoutProtectedTitle {
+    return Intl.message(
+      'Sign-in protection is active',
+      name: 'xboardLogoutProtectedTitle',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `The service connection is currently unstable. Signing out may prevent you from signing in again for a while. Keep this session until the service recovers.`
+  String get xboardLogoutProtectedContent {
+    return Intl.message(
+      'The service connection is currently unstable. Signing out may prevent you from signing in again for a while. Keep this session until the service recovers.',
+      name: 'xboardLogoutProtectedContent',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Sign out anyway`
+  String get xboardLogoutForceAction {
+    return Intl.message(
+      'Sign out anyway',
+      name: 'xboardLogoutForceAction',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Confirm forced sign-out`
+  String get xboardLogoutForceConfirmTitle {
+    return Intl.message(
+      'Confirm forced sign-out',
+      name: 'xboardLogoutForceConfirmTitle',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Forced sign-out clears the local session and node cache. You may be unable to sign in again until the service recovers. Continue?`
+  String get xboardLogoutForceConfirmContent {
+    return Intl.message(
+      'Forced sign-out clears the local session and node cache. You may be unable to sign in again until the service recovers. Continue?',
+      name: 'xboardLogoutForceConfirmContent',
+      desc: '',
+      args: [],
+    );
+  }
+
   /// `Signed out`
   String get xboardLogoutSuccess {
     return Intl.message(
@@ -6220,10 +6270,10 @@ class AppLocalizations {
     return Intl.message('Transfer', name: 'transfer', desc: '', args: []);
   }
 
-  /// `Available`
+  /// `Commission balance`
   String get availableCommission {
     return Intl.message(
-      'Available',
+      'Commission balance',
       name: 'availableCommission',
       desc: '',
       args: [],
@@ -8005,6 +8055,46 @@ class AppLocalizations {
     );
   }
 
+  /// `Starting the new traffic period`
+  String get xboardNewPeriodStarting {
+    return Intl.message(
+      'Starting the new traffic period',
+      name: 'xboardNewPeriodStarting',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Checking the operation result`
+  String get xboardNewPeriodCheckingResult {
+    return Intl.message(
+      'Checking the operation result',
+      name: 'xboardNewPeriodCheckingResult',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Unable to confirm the result`
+  String get xboardNewPeriodResultUncertainTitle {
+    return Intl.message(
+      'Unable to confirm the result',
+      name: 'xboardNewPeriodResultUncertainTitle',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `The network response was interrupted, so the new traffic period cannot be confirmed yet. Check the result instead of submitting again.`
+  String get xboardNewPeriodResultUncertainContent {
+    return Intl.message(
+      'The network response was interrupted, so the new traffic period cannot be confirmed yet. Check the result instead of submitting again.',
+      name: 'xboardNewPeriodResultUncertainContent',
+      desc: '',
+      args: [],
+    );
+  }
+
   /// `The new traffic period has started`
   String get xboardNewPeriodSuccess {
     return Intl.message(
@@ -8060,6 +8150,16 @@ class AppLocalizations {
     return Intl.message(
       'Submit ticket',
       name: 'xboardSubmitTicket',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Submit order`
+  String get xboardSubmitOrder {
+    return Intl.message(
+      'Submit order',
+      name: 'xboardSubmitOrder',
       desc: '',
       args: [],
     );
@@ -10265,6 +10365,56 @@ class AppLocalizations {
     );
   }
 
+  /// `Connect the VPN before running network diagnostics.`
+  String get xboardNetworkDiagnosticsConnectFirst {
+    return Intl.message(
+      'Connect the VPN before running network diagnostics.',
+      name: 'xboardNetworkDiagnosticsConnectFirst',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `The VPN disconnected. Network diagnostics stopped and the current results were cleared.`
+  String get xboardNetworkDiagnosticsDisconnectedInvalidated {
+    return Intl.message(
+      'The VPN disconnected. Network diagnostics stopped and the current results were cleared.',
+      name: 'xboardNetworkDiagnosticsDisconnectedInvalidated',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Xiaomi 204`
+  String get xboardNetworkDiagnosticsTargetXiaomi204 {
+    return Intl.message(
+      'Xiaomi 204',
+      name: 'xboardNetworkDiagnosticsTargetXiaomi204',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `vivo 204`
+  String get xboardNetworkDiagnosticsTargetVivo204 {
+    return Intl.message(
+      'vivo 204',
+      name: 'xboardNetworkDiagnosticsTargetVivo204',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Huawei 204`
+  String get xboardNetworkDiagnosticsTargetHuawei204 {
+    return Intl.message(
+      'Huawei 204',
+      name: 'xboardNetworkDiagnosticsTargetHuawei204',
+      desc: '',
+      args: [],
+    );
+  }
+
   /// `VPN status`
   String get xboardNetworkDiagnosticsVpnStatus {
     return Intl.message(
@@ -10485,20 +10635,20 @@ class AppLocalizations {
     );
   }
 
-  /// `Direct HTTPS`
+  /// `Local direct HTTPS (domestic baseline)`
   String get xboardNetworkDiagnosticsDirectHttps {
     return Intl.message(
-      'Direct HTTPS',
+      'Local direct HTTPS (domestic baseline)',
       name: 'xboardNetworkDiagnosticsDirectHttps',
       desc: '',
       args: [],
     );
   }
 
-  /// `Proxy HTTPS`
+  /// `Node proxy HTTPS (international reference)`
   String get xboardNetworkDiagnosticsProxyHttps {
     return Intl.message(
-      'Proxy HTTPS',
+      'Node proxy HTTPS (international reference)',
       name: 'xboardNetworkDiagnosticsProxyHttps',
       desc: '',
       args: [],
@@ -11390,6 +11540,476 @@ class AppLocalizations {
     return Intl.message(
       'System proxy verification failed after repair; the IP or port still does not match.',
       name: 'xboardProxyRepairVerifyFailed',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Offline cache mode`
+  String get xboardServiceOfflineCacheMode {
+    return Intl.message(
+      'Offline cache mode',
+      name: 'xboardServiceOfflineCacheMode',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Service connection unstable`
+  String get xboardServiceConnectionDegraded {
+    return Intl.message(
+      'Service connection unstable',
+      name: 'xboardServiceConnectionDegraded',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Restoring connection`
+  String get xboardServiceRecovering {
+    return Intl.message(
+      'Restoring connection',
+      name: 'xboardServiceRecovering',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Offline mode: checking cached subscription`
+  String get xboardCheckingCachedSubscription {
+    return Intl.message(
+      'Offline mode: checking cached subscription',
+      name: 'xboardCheckingCachedSubscription',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Server response is slow; using cached data`
+  String get xboardSubscriptionSlowUsingCache {
+    return Intl.message(
+      'Server response is slow; using cached data',
+      name: 'xboardSubscriptionSlowUsingCache',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Streaming & AI check`
+  String get xboardStreamingCheck {
+    return Intl.message(
+      'Streaming & AI check',
+      name: 'xboardStreamingCheck',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Check common streaming and AI services through the current node`
+  String get xboardStreamingCheckSubtitle {
+    return Intl.message(
+      'Check common streaming and AI services through the current node',
+      name: 'xboardStreamingCheckSubtitle',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Start check`
+  String get xboardStreamingStart {
+    return Intl.message(
+      'Start check',
+      name: 'xboardStreamingStart',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Check again`
+  String get xboardStreamingRetest {
+    return Intl.message(
+      'Check again',
+      name: 'xboardStreamingRetest',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Checking…`
+  String get xboardStreamingChecking {
+    return Intl.message(
+      'Checking…',
+      name: 'xboardStreamingChecking',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Copy report`
+  String get xboardStreamingCopyReport {
+    return Intl.message(
+      'Copy report',
+      name: 'xboardStreamingCopyReport',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Visit`
+  String get xboardStreamingVisit {
+    return Intl.message(
+      'Visit',
+      name: 'xboardStreamingVisit',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `VPN connected`
+  String get xboardStreamingConnected {
+    return Intl.message(
+      'VPN connected',
+      name: 'xboardStreamingConnected',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `VPN not connected`
+  String get xboardStreamingNotConnected {
+    return Intl.message(
+      'VPN not connected',
+      name: 'xboardStreamingNotConnected',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Connect the VPN first. Streaming and AI checks must run through the current node.`
+  String get xboardStreamingConnectFirst {
+    return Intl.message(
+      'Connect the VPN first. Streaming and AI checks must run through the current node.',
+      name: 'xboardStreamingConnectFirst',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `The VPN disconnected. These results are no longer valid.`
+  String get xboardStreamingDisconnected {
+    return Intl.message(
+      'The VPN disconnected. These results are no longer valid.',
+      name: 'xboardStreamingDisconnected',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `The node changed during the check. Run the check again.`
+  String get xboardStreamingNodeChanged {
+    return Intl.message(
+      'The node changed during the check. Run the check again.',
+      name: 'xboardStreamingNodeChanged',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `The current node is temporarily unavailable. Try again shortly.`
+  String get xboardStreamingNodeUnavailable {
+    return Intl.message(
+      'The current node is temporarily unavailable. Try again shortly.',
+      name: 'xboardStreamingNodeUnavailable',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Current node`
+  String get xboardStreamingCurrentNode {
+    return Intl.message(
+      'Current node',
+      name: 'xboardStreamingCurrentNode',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Exit region`
+  String get xboardStreamingExitRegion {
+    return Intl.message(
+      'Exit region',
+      name: 'xboardStreamingExitRegion',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Summary`
+  String get xboardStreamingSummary {
+    return Intl.message(
+      'Summary',
+      name: 'xboardStreamingSummary',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Confirmed available`
+  String get xboardStreamingSummaryAccessible {
+    return Intl.message(
+      'Confirmed available',
+      name: 'xboardStreamingSummaryAccessible',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Partially available`
+  String get xboardStreamingSummaryPartial {
+    return Intl.message(
+      'Partially available',
+      name: 'xboardStreamingSummaryPartial',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Restricted/unavailable`
+  String get xboardStreamingSummaryRestricted {
+    return Intl.message(
+      'Restricted/unavailable',
+      name: 'xboardStreamingSummaryRestricted',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Verification required`
+  String get xboardStreamingSummaryVerification {
+    return Intl.message(
+      'Verification required',
+      name: 'xboardStreamingSummaryVerification',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Error/inconclusive`
+  String get xboardStreamingSummaryInconclusive {
+    return Intl.message(
+      'Error/inconclusive',
+      name: 'xboardStreamingSummaryInconclusive',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Results`
+  String get xboardStreamingResults {
+    return Intl.message(
+      'Results',
+      name: 'xboardStreamingResults',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Progress`
+  String get xboardStreamingProgress {
+    return Intl.message(
+      'Progress',
+      name: 'xboardStreamingProgress',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Accessible services`
+  String get xboardStreamingAccessibleCount {
+    return Intl.message(
+      'Accessible services',
+      name: 'xboardStreamingAccessibleCount',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Accessible`
+  String get xboardStreamingAccessible {
+    return Intl.message(
+      'Accessible',
+      name: 'xboardStreamingAccessible',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Partially available`
+  String get xboardStreamingPartiallyAccessible {
+    return Intl.message(
+      'Partially available',
+      name: 'xboardStreamingPartiallyAccessible',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Region restricted`
+  String get xboardStreamingRestricted {
+    return Intl.message(
+      'Region restricted',
+      name: 'xboardStreamingRestricted',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `IP blocked by service`
+  String get xboardStreamingBlocked {
+    return Intl.message(
+      'IP blocked by service',
+      name: 'xboardStreamingBlocked',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Browser verification required`
+  String get xboardStreamingVerificationRequired {
+    return Intl.message(
+      'Browser verification required',
+      name: 'xboardStreamingVerificationRequired',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Unable to confirm`
+  String get xboardStreamingUncertain {
+    return Intl.message(
+      'Unable to confirm',
+      name: 'xboardStreamingUncertain',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Unavailable`
+  String get xboardStreamingUnavailable {
+    return Intl.message(
+      'Unavailable',
+      name: 'xboardStreamingUnavailable',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Timed out`
+  String get xboardStreamingTimeout {
+    return Intl.message(
+      'Timed out',
+      name: 'xboardStreamingTimeout',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Check failed`
+  String get xboardStreamingError {
+    return Intl.message(
+      'Check failed',
+      name: 'xboardStreamingError',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Cancelled`
+  String get xboardStreamingCancelled {
+    return Intl.message(
+      'Cancelled',
+      name: 'xboardStreamingCancelled',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Unknown`
+  String get xboardStreamingUnknown {
+    return Intl.message(
+      'Unknown',
+      name: 'xboardStreamingUnknown',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `FastCat Streaming & AI Check Report`
+  String get xboardStreamingReportTitle {
+    return Intl.message(
+      'FastCat Streaming & AI Check Report',
+      name: 'xboardStreamingReportTitle',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Checked at`
+  String get xboardStreamingReportTime {
+    return Intl.message(
+      'Checked at',
+      name: 'xboardStreamingReportTime',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Client version`
+  String get xboardStreamingReportVersion {
+    return Intl.message(
+      'Client version',
+      name: 'xboardStreamingReportVersion',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `System`
+  String get xboardStreamingReportSystem {
+    return Intl.message(
+      'System',
+      name: 'xboardStreamingReportSystem',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Evidence`
+  String get xboardStreamingReportDetail {
+    return Intl.message(
+      'Evidence',
+      name: 'xboardStreamingReportDetail',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Streaming and AI check report copied`
+  String get xboardStreamingReportCopied {
+    return Intl.message(
+      'Streaming and AI check report copied',
+      name: 'xboardStreamingReportCopied',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Results are based on service-endpoint and public-page access through the current node and are for reference only. Service policies, account regions, sign-in status, and licensing restrictions may affect actual use.`
+  String get xboardStreamingDisclaimer {
+    return Intl.message(
+      'Results are based on service-endpoint and public-page access through the current node and are for reference only. Service policies, account regions, sign-in status, and licensing restrictions may affect actual use.',
+      name: 'xboardStreamingDisclaimer',
       desc: '',
       args: [],
     );

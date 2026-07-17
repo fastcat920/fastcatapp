@@ -5,7 +5,6 @@ import 'dart:io';
 
 import 'package:animations/animations.dart';
 import 'package:dio/dio.dart';
-import 'package:dynamic_color/dynamic_color.dart';
 import 'package:fl_clash/clash/clash.dart';
 import 'package:fl_clash/enum/enum.dart';
 import 'package:fl_clash/l10n/l10n.dart';
@@ -15,7 +14,6 @@ import 'package:fl_clash/widgets/dialog.dart';
 import 'package:fl_clash/widgets/scaffold.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_js/flutter_js.dart';
-import 'package:material_color_utilities/palettes/core_palette.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:url_launcher/url_launcher.dart';
 
@@ -40,10 +38,7 @@ class GlobalState {
   Function? updateCurrentDelayDebounce;
   late Measure measure;
   late CommonTheme theme;
-  late Color accentColor;
-  // dynamic_color still exposes CorePalette; keep this until the plugin API moves.
-  // ignore: deprecated_member_use
-  CorePalette? corePalette;
+  Color configuredThemeColor = const Color(defaultPrimaryColor);
   DateTime? startTime;
   final isCoreSwitchingNotifier = ValueNotifier<bool>(false);
   final coreSwitchStatusNotifier =
@@ -97,25 +92,7 @@ class GlobalState {
       traffics: FixedList(30),
       totalTraffic: Traffic(),
     );
-    await _initDynamicColor();
     await init();
-  }
-
-  _initDynamicColor() async {
-    accentColor = Color(defaultPrimaryColor);
-    try {
-      corePalette = await DynamicColorPlugin.getCorePalette().timeout(
-        const Duration(milliseconds: 800),
-        onTimeout: () => null,
-      );
-      accentColor = await DynamicColorPlugin.getAccentColor().timeout(
-            const Duration(milliseconds: 800),
-            onTimeout: () => null,
-          ) ??
-          Color(defaultPrimaryColor);
-    } catch (_) {
-      corePalette = null;
-    }
   }
 
   init() async {
@@ -124,6 +101,11 @@ class GlobalState {
         Config(
           themeProps: defaultThemeProps,
         );
+    config = config.copyWith(
+      themeProps: config.themeProps.copyWith(
+        primaryColor: configuredThemeColor.toARGB32(),
+      ),
+    );
     await globalState.migrateOldData(config);
     await AppLocalizations.load(
       utils.getLocaleForString(config.appSetting.locale) ??

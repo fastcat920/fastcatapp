@@ -23,6 +23,7 @@ import 'package:fl_clash/xboard/router/app_router.dart' as xboard_router;
 import 'package:fl_clash/xboard/features/initialization/initialization.dart';
 import 'package:fl_clash/xboard/features/auth/utils/customer_service_helper.dart';
 import 'package:fl_clash/xboard/features/auth/services/device_heartbeat_service.dart';
+import 'package:fl_clash/xboard/features/connectivity/connectivity.dart';
 
 class Application extends ConsumerStatefulWidget {
   const Application({
@@ -160,6 +161,19 @@ class ApplicationState extends ConsumerState<Application>
 
   void _setupRootListeners() {
     ref.listenManual(
+      serviceConnectivityProvider,
+      (previous, next) {
+        final recoveredFromOffline = previous?.isOffline == true ||
+            (previous?.isRecovering == true &&
+                (previous?.consecutiveFailures ?? 0) >= 2);
+        if (next.isOnline && recoveredFromOffline) {
+          unawaited(_refreshRemoteDataAfterRecovery());
+        }
+      },
+      fireImmediately: true,
+    );
+
+    ref.listenManual(
       appSettingProvider.select((s) => s.logCapture),
       (_, next) {
         if (next) {
@@ -236,9 +250,34 @@ class ApplicationState extends ConsumerState<Application>
     );
   }
 
+  Future<void> _refreshRemoteDataAfterRecovery() async {
+    final userState = ref.read(xboardUserProvider);
+    if (!userState.isAuthenticated) return;
+    try {
+      await ref.read(xboardUserProvider.notifier).refreshSubscriptionInfo(
+            importProfile: false,
+          );
+    } catch (error) {
+      debugPrint('[Application] 网络恢复后刷新订阅信息失败: $error');
+    }
+    try {
+      await ref.read(xboardSubscriptionProvider.notifier).refreshPlans();
+    } catch (error) {
+      debugPrint('[Application] 网络恢复后刷新套餐失败: $error');
+    }
+    try {
+      await ref.read(noticeProvider.notifier).fetchNotices(forceRefresh: true);
+    } catch (error) {
+      debugPrint('[Application] 网络恢复后刷新公告失败: $error');
+    }
+  }
+
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
     if (state == AppLifecycleState.resumed) {
+      unawaited(
+        ref.read(serviceConnectivityProvider.notifier).verifyNow(),
+      );
       unawaited(
         XBoardDeviceHeartbeatService.markActive(
           reason: 'app_resumed',

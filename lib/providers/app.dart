@@ -207,6 +207,9 @@ class Groups extends _$Groups with AutoDisposeNotifierMixin {
   }
 
   void _cacheGroups(List<Group> groups) {
+    // 短暂的核心未就绪或订阅更新失败不应覆盖最后一份可用节点缓存。
+    // 登出时由认证流程显式清理缓存，避免跨账号保留。
+    if (groups.isEmpty) return;
     SharedPreferences.getInstance().then((prefs) {
       final json = jsonEncode(groups.map((g) => g.toJson()).toList());
       prefs.setString('cached_groups', json);

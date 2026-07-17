@@ -8,6 +8,7 @@ import 'package:fl_clash/views/application_setting.dart';
 import 'package:fl_clash/views/config/config.dart';
 import 'package:fl_clash/widgets/widgets.dart';
 import 'package:fl_clash/xboard/features/diagnostics/pages/diagnostics_center_page.dart';
+import 'package:fl_clash/xboard/features/streaming_check/pages/streaming_check_page.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
@@ -88,6 +89,7 @@ class _ToolboxViewState extends ConsumerState<ToolsView> {
         if (logCapture) const _LogsItem(),
         if (enableDeveloperMode) const _DeveloperItem(),
         const _DiagnosticsCenterItem(),
+        const _StreamingCheckItem(),
         const _InfoItem(),
       ],
     );
@@ -261,6 +263,24 @@ class _InfoItem extends StatelessWidget {
       delegate: OpenDelegate(
         title: l10n.about,
         widget: const AboutView(),
+      ),
+    );
+  }
+}
+
+class _StreamingCheckItem extends StatelessWidget {
+  const _StreamingCheckItem();
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+    return ListItem.open(
+      leading: const Icon(Icons.live_tv_outlined),
+      title: Text(l10n.xboardStreamingCheck),
+      subtitle: Text(l10n.xboardStreamingCheckSubtitle),
+      delegate: OpenDelegate(
+        title: l10n.xboardStreamingCheck,
+        widget: const StreamingCheckPage(),
       ),
     );
   }

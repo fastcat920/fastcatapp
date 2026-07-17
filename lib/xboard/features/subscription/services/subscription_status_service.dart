@@ -97,7 +97,7 @@ class SubscriptionStatusService {
     int? remainingDaysCache;
     if (expiredAt != null) {
       remainingDaysCache = _naturalDaysUntil(expiredAt);
-      if (remainingDaysCache < 0) {
+      if (!DateTime.now().isBefore(expiredAt)) {
         return SubscriptionStatusResult(
           type: SubscriptionStatusType.expired,
           messageBuilder: (context) =>
@@ -169,9 +169,7 @@ class SubscriptionStatusService {
         profileSubscriptionInfo!.expire != 0) {
       final raw = DateTime.fromMillisecondsSinceEpoch(
           profileSubscriptionInfo.expire * 1000);
-      // 服务端时间戳通常指向当天 00:00:00，套餐应在当天结束后才过期
-      // 将过期时间调整到当天 23:59:59 避免提前一天判定过期
-      return DateTime(raw.year, raw.month, raw.day, 23, 59, 59);
+      return raw;
     }
     return null;
   }

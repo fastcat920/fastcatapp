@@ -148,6 +148,29 @@ class ClashCore {
     return Map<String, dynamic>.from(json.decode(data) as Map);
   }
 
+  Future<Map<String, dynamic>> streamingProbe(
+    String url,
+    String proxyName, {
+    String method = 'GET',
+    String? body,
+    Map<String, String> headers = const {},
+    bool followRedirects = true,
+    Duration timeout = const Duration(seconds: 8),
+    int maxBodySize = 256 * 1024,
+  }) async {
+    final data = await clashInterface.streamingProbe(
+      url,
+      proxyName,
+      method: method,
+      body: body,
+      headers: headers,
+      followRedirects: followRedirects,
+      timeout: timeout,
+      maxBodySize: maxBodySize,
+    );
+    return Map<String, dynamic>.from(json.decode(data) as Map);
+  }
+
   FutureOr<String> changeProxy(ChangeProxyParams changeProxyParams) async {
     return await clashInterface.changeProxy(changeProxyParams);
   }

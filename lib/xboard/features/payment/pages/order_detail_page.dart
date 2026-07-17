@@ -1466,7 +1466,7 @@ class _InfoCard extends StatelessWidget {
             ? null
             : [
                 BoxShadow(
-                  color: const Color(0xFF1565C0).withAlpha(12),
+                  color: Theme.of(context).colorScheme.primary.withAlpha(12),
                   blurRadius: 16,
                   offset: const Offset(0, 4),
                 ),

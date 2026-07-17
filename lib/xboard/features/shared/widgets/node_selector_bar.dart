@@ -34,6 +34,7 @@ class _NodeSelectorBarState extends ConsumerState<NodeSelectorBar> {
   // 启动后等待导入开始的最长时间（防止永久卡在加载态）
   bool _startupGraceExpired = false;
   Timer? _startupGraceTimer;
+  bool _isHydratingLocalGroups = false;
 
   @override
   void initState() {
@@ -54,9 +55,31 @@ class _NodeSelectorBarState extends ConsumerState<NodeSelectorBar> {
         }
       },
     );
+    ref.listenManual(profileImportProvider, (previous, next) {
+      if (previous?.isImporting == true &&
+          !next.isImporting &&
+          ref.read(groupsProvider).isEmpty) {
+        unawaited(_hydrateGroupsFromLocalProfile());
+      }
+    });
     WidgetsBinding.instance.addPostFrameCallback((_) {
       autoLatencyService.initialize(ref);
+      unawaited(_hydrateGroupsFromLocalProfile());
     });
+  }
+
+  Future<void> _hydrateGroupsFromLocalProfile() async {
+    if (_isHydratingLocalGroups || ref.read(groupsProvider).isNotEmpty) return;
+    if (ref.read(currentProfileProvider) == null) return;
+    _isHydratingLocalGroups = true;
+    try {
+      await globalState.appController.loadGroupsFromLocalProfile();
+      if (ref.read(groupsProvider).isEmpty && globalState.isStart) {
+        await globalState.appController.updateGroups();
+      }
+    } finally {
+      _isHydratingLocalGroups = false;
+    }
   }
 
   void _startPostImportGrace() {
@@ -171,8 +194,10 @@ class _NodeSelectorBarState extends ConsumerState<NodeSelectorBar> {
     // 仅当用户没有手动选择时才覆盖，避免用户选的节点被强制切回自动选择
     final hasUserSelection = currentGroup != null &&
         (selectedMap[currentGroup.name]?.isNotEmpty == true);
-    if (mode == Mode.rule && currentGroup != null &&
-        !currentGroup.type.isComputedSelected && !hasUserSelection) {
+    if (mode == Mode.rule &&
+        currentGroup != null &&
+        !currentGroup.type.isComputedSelected &&
+        !hasUserSelection) {
       final computedGroup = groups.firstWhere(
         (g) =>
             g.hidden != true &&

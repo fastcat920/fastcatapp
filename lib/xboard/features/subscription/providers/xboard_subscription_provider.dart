@@ -11,6 +11,7 @@ import 'package:fl_clash/xboard/adapter/state/subscription_state.dart';
 import 'package:fl_clash/xboard/features/initialization/providers/initialization_provider.dart';
 import 'package:fl_clash/xboard/features/initialization/models/initialization_state.dart';
 import 'package:fl_clash/xboard/services/services.dart';
+import 'package:fl_clash/xboard/features/connectivity/connectivity.dart';
 
 // 初始化文件级日志器
 const _logger = FileLogger('xboard_subscription_provider.dart');
@@ -123,6 +124,7 @@ class XBoardSubscriptionNotifier extends Notifier<List<DomainPlan>> {
         return a.sort!.compareTo(b.sort!);
       });
       state = visiblePlans;
+      ref.read(serviceConnectivityProvider.notifier).reportRequestSuccess();
       unawaited(
         ref.read(storageServiceProvider).saveDomainPlans(visiblePlans),
       );
@@ -133,6 +135,8 @@ class XBoardSubscriptionNotifier extends Notifier<List<DomainPlan>> {
       _logger.info('套餐列表加载成功，共 ${visiblePlans.length} 个可见套餐');
     } catch (e) {
       _logger.info('加载套餐列表失败: $e');
+      ref.read(serviceConnectivityProvider.notifier).reportRequestFailure(e);
+      await _loadCachedPlans();
       ref.read(userUIStateProvider.notifier).state = UIState(
         isLoading: false,
         errorMessage: e.toString(),

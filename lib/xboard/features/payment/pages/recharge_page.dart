@@ -566,9 +566,19 @@ class _RechargePageState extends ConsumerState<RechargePage> {
                     height: 24,
                     child: CircularProgressIndicator(
                         strokeWidth: 2, color: Colors.white))
-                : Text(l10n.xboardRechargeNow,
-                    style: const TextStyle(
-                        fontSize: 16, fontWeight: FontWeight.w600)),
+                : Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const Icon(Icons.account_balance_wallet_outlined,
+                          size: 19),
+                      const SizedBox(width: 8),
+                      Text(
+                        l10n.xboardRechargeNow,
+                        style: const TextStyle(
+                            fontSize: 16, fontWeight: FontWeight.w600),
+                      ),
+                    ],
+                  ),
           ),
         ),
         const SizedBox(height: 16),

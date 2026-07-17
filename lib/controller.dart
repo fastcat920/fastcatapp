@@ -191,6 +191,11 @@ class AppController {
           );
           return true;
         }
+        // 桌面/Android 的核心已经成功启动时，UI 节点状态仍可能因冷启动、
+        // 订阅下载失败而为空。此时无论配置修改时间是否变化，都从核心恢复。
+        if (_ref.read(groupsProvider).isEmpty) {
+          await updateGroups();
+        }
         final currentLastModified =
             await _ref.read(currentProfileProvider)?.profileLastModified;
         if (currentLastModified == null || lastProfileModified == null) {
@@ -661,6 +666,11 @@ class AppController {
       commonPrint.log('_applyProfileFromYaml error: $e');
     }
   }
+
+  /// 从磁盘中的当前 Profile 和 provider 缓存重建节点列表。
+  ///
+  /// 不访问业务后端，供离线启动和订阅更新失败时恢复节点选择界面。
+  Future<void> loadGroupsFromLocalProfile() => _applyProfileFromYaml();
 
   /// After VPN connects on iOS, mihomo is now running in PacketTunnel.
   /// Fetch live groups from the core and re-apply the user's proxy selections.

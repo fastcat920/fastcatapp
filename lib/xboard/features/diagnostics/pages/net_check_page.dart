@@ -28,16 +28,21 @@ class NetCheckPage extends ConsumerStatefulWidget {
 
 class _NetCheckPageState extends ConsumerState<NetCheckPage> {
   static const _defaultDomain = 'www.google.com';
-  static const _targets = [
+  static const _directTargets = [
+    'https://connect.rom.miui.com/generate_204',
+    'https://wifi.vivo.com.cn/generate_204',
+    'https://connectivitycheck.platform.hicloud.com/generate_204',
+  ];
+  static const _proxyTargets = [
     'https://www.gstatic.com/generate_204',
-    'https://cp.cloudflare.com/generate_204',
-    'https://www.apple.com/library/test/success.html',
+    'https://www.google.com/generate_204',
+    'https://www.youtube.com/generate_204',
   ];
 
   final _domainController = TextEditingController(text: _defaultDomain);
   bool _running = false;
   bool _copyingReport = false;
-  bool? _vpnConnected;
+  int _runGeneration = 0;
   String? _vpnStatus;
   List<_StepResult> _dnsResults = [];
   List<_StepResult> _directResults = [];
@@ -57,9 +62,16 @@ class _NetCheckPageState extends ConsumerState<NetCheckPage> {
 
   Future<void> _start() async {
     if (_running) return;
+    final l10n = AppLocalizations.of(context);
+    if (ref.read(runTimeProvider) == null) {
+      XBoardNotification.showInfo(
+        l10n.xboardNetworkDiagnosticsConnectFirst,
+      );
+      return;
+    }
     final domain = _domainController.text.trim();
     if (domain.isEmpty) return;
-    final l10n = AppLocalizations.of(context);
+    final generation = ++_runGeneration;
 
     setState(() {
       _running = true;
@@ -76,10 +88,10 @@ class _NetCheckPageState extends ConsumerState<NetCheckPage> {
     });
 
     final networkType = await _resolveNetworkType(l10n);
-    if (!mounted) return;
+    if (!_isRunValid(generation)) return;
     setState(() => _networkType = networkType);
 
-    final connected = globalState.isStart;
+    final connected = ref.read(runTimeProvider) != null;
     final startTime = globalState.startTime;
     var elapsedText = '';
     if (startTime != null) {
@@ -89,7 +101,6 @@ class _NetCheckPageState extends ConsumerState<NetCheckPage> {
     }
     if (!mounted) return;
     setState(() {
-      _vpnConnected = connected;
       _vpnStatus = connected
           ? '${l10n.xboardNetworkDiagnosticsConnected} $elapsedText'.trim()
           : l10n.xboardNetworkDiagnosticsDisconnected;
@@ -97,23 +108,26 @@ class _NetCheckPageState extends ConsumerState<NetCheckPage> {
 
     final dnsMode = ref.read(patchClashConfigProvider).dns.enhancedMode;
     final dnsResults = await _checkDns(domain, l10n, dnsMode);
-    if (!mounted) return;
+    if (!_isRunValid(generation)) return;
     setState(() => _dnsResults = dnsResults);
 
     final nodeName = connected ? await _resolveCurrentNodeName() : null;
+    if (!_isRunValid(generation)) return;
     final results = await Future.wait<Object>([
-      Future.wait(_targets.map((url) => _checkRoute(url, 'DIRECT', l10n))),
+      Future.wait(
+        _directTargets.map((url) => _checkRoute(url, 'DIRECT', l10n)),
+      ),
       nodeName == null
           ? Future.value(<_StepResult>[])
           : Future.wait(
-              _targets.map((url) => _checkRoute(url, nodeName, l10n)),
+              _proxyTargets.map((url) => _checkRoute(url, nodeName, l10n)),
             ),
       _checkIpConnectivity(l10n),
       nodeName == null
           ? Future.value(<String, dynamic>{})
-          : clashCore.diagnoseProxy(_targets.first, nodeName),
+          : clashCore.diagnoseProxy(_proxyTargets.first, nodeName),
     ]);
-    if (!mounted) return;
+    if (!_isRunValid(generation)) return;
     final directResults = results[0] as List<_StepResult>;
     final proxyResults = results[1] as List<_StepResult>;
     final ipResults = results[2] as List<_StepResult>;
@@ -161,6 +175,33 @@ class _NetCheckPageState extends ConsumerState<NetCheckPage> {
       _conclusion = conclusion;
       _running = false;
     });
+  }
+
+  bool _isRunValid(int generation) {
+    return mounted &&
+        generation == _runGeneration &&
+        ref.read(runTimeProvider) != null;
+  }
+
+  void _invalidateForDisconnect(AppLocalizations l10n) {
+    _runGeneration++;
+    if (!mounted) return;
+    setState(() {
+      _running = false;
+      _vpnStatus = l10n.xboardNetworkDiagnosticsDisconnected;
+      _dnsResults = [];
+      _directResults = [];
+      _proxyResults = [];
+      _ipResults = [];
+      _nodeLayerResults = [];
+      _reportSnapshot = null;
+      _networkType = null;
+      _nodeName = null;
+      _conclusion = null;
+    });
+    XBoardNotification.showInfo(
+      l10n.xboardNetworkDiagnosticsDisconnectedInvalidated,
+    );
   }
 
   List<NetworkDiagnosticItem> _toSnapshotItems(List<_StepResult> results) {
@@ -456,6 +497,7 @@ class _NetCheckPageState extends ConsumerState<NetCheckPage> {
     AppLocalizations l10n,
   ) async {
     final stopwatch = Stopwatch()..start();
+    final label = _routeTargetLabel(url, l10n);
     try {
       final delay = await clashCore
           .getDelay(url, proxyName)
@@ -463,7 +505,7 @@ class _NetCheckPageState extends ConsumerState<NetCheckPage> {
       stopwatch.stop();
       final value = delay.value;
       return _StepResult(
-        label: Uri.parse(url).host,
+        label: label,
         ok: value != null && value > 0,
         detail: proxyName == 'DIRECT'
             ? 'DIRECT'
@@ -472,14 +514,26 @@ class _NetCheckPageState extends ConsumerState<NetCheckPage> {
       );
     } on TimeoutException {
       stopwatch.stop();
-      return _StepResult.fail(
-          Uri.parse(url).host, l10n.xboardNetworkDiagnosticsTimeout,
+      return _StepResult.fail(label, l10n.xboardNetworkDiagnosticsTimeout,
           elapsedMs: stopwatch.elapsedMilliseconds);
     } catch (error) {
       stopwatch.stop();
-      return _StepResult.fail(Uri.parse(url).host, error.toString(),
+      return _StepResult.fail(label, error.toString(),
           elapsedMs: stopwatch.elapsedMilliseconds);
     }
+  }
+
+  String _routeTargetLabel(String url, AppLocalizations l10n) {
+    return switch (Uri.parse(url).host) {
+      'connect.rom.miui.com' => l10n.xboardNetworkDiagnosticsTargetXiaomi204,
+      'wifi.vivo.com.cn' => l10n.xboardNetworkDiagnosticsTargetVivo204,
+      'connectivitycheck.platform.hicloud.com' =>
+        l10n.xboardNetworkDiagnosticsTargetHuawei204,
+      'www.gstatic.com' => 'gstatic',
+      'www.google.com' => 'Google',
+      'www.youtube.com' => 'YouTube',
+      final host => host,
+    };
   }
 
   Future<List<_StepResult>> _checkIpConnectivity(
@@ -636,6 +690,14 @@ class _NetCheckPageState extends ConsumerState<NetCheckPage> {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
     final theme = Theme.of(context);
+    final connected = ref.watch(runTimeProvider) != null;
+    ref.listen(runTimeProvider, (previous, next) {
+      if (previous != null &&
+          next == null &&
+          (_running || _reportSnapshot != null)) {
+        _invalidateForDisconnect(l10n);
+      }
+    });
     return ListView(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
       children: [
@@ -647,7 +709,7 @@ class _NetCheckPageState extends ConsumerState<NetCheckPage> {
               children: [
                 TextField(
                   controller: _domainController,
-                  enabled: !_running,
+                  enabled: connected && !_running,
                   keyboardType: TextInputType.url,
                   textInputAction: TextInputAction.done,
                   onSubmitted: (_) => _start(),
@@ -664,7 +726,7 @@ class _NetCheckPageState extends ConsumerState<NetCheckPage> {
                   runSpacing: 8,
                   children: [
                     FilledButton.icon(
-                      onPressed: _running ? null : _start,
+                      onPressed: !connected || _running ? null : _start,
                       icon: _running
                           ? const SizedBox.square(
                               dimension: 18,
@@ -678,10 +740,12 @@ class _NetCheckPageState extends ConsumerState<NetCheckPage> {
                       ),
                     ),
                     OutlinedButton.icon(
-                      onPressed:
-                          _running || _copyingReport || _vpnStatus == null
-                              ? null
-                              : _copyReport,
+                      onPressed: !connected ||
+                              _running ||
+                              _copyingReport ||
+                              _reportSnapshot == null
+                          ? null
+                          : _copyReport,
                       icon: _copyingReport
                           ? const SizedBox.square(
                               dimension: 18,
@@ -696,13 +760,22 @@ class _NetCheckPageState extends ConsumerState<NetCheckPage> {
             ),
           ),
         ),
-        if (widget.showVpnStatus && _vpnStatus != null) ...[
+        if (!connected) ...[
+          const SizedBox(height: 12),
+          _ConnectionRequiredCard(
+            message: l10n.xboardNetworkDiagnosticsConnectFirst,
+          ),
+        ],
+        if (widget.showVpnStatus) ...[
           _SectionHeader(l10n.xboardNetworkDiagnosticsVpnStatus),
           _DiagnosticStatusRow(
-            icon: _vpnConnected == true ? Icons.shield : Icons.shield_outlined,
+            icon: connected ? Icons.shield : Icons.shield_outlined,
             title: l10n.xboardNetworkDiagnosticsVpnStatus,
-            detail: _vpnStatus!,
-            healthy: _vpnConnected,
+            detail: _vpnStatus ??
+                (connected
+                    ? l10n.xboardNetworkDiagnosticsConnected
+                    : l10n.xboardNetworkDiagnosticsDisconnected),
+            healthy: connected,
           ),
         ],
         if (_conclusion != null) ...[
@@ -719,6 +792,7 @@ class _NetCheckPageState extends ConsumerState<NetCheckPage> {
             icon: Icons.lan_outlined,
             title: l10n.xboardNetworkDiagnosticsNetworkType,
             detail: _networkType!,
+            healthy: _networkType != l10n.xboardNetworkDiagnosticsNetworkNone,
           ),
         ],
         if (_dnsResults.isNotEmpty) ...[
@@ -832,6 +906,31 @@ class _DiagnosticPanel extends StatelessWidget {
         ),
       ),
       child: child,
+    );
+  }
+}
+
+class _ConnectionRequiredCard extends StatelessWidget {
+  const _ConnectionRequiredCard({required this.message});
+
+  final String message;
+
+  @override
+  Widget build(BuildContext context) {
+    final color = XbUiStatusColor.pending(context);
+    return Container(
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: 0.08),
+        borderRadius: BorderRadius.circular(10),
+      ),
+      child: Row(
+        children: [
+          Icon(Icons.info_outline, color: color, size: 20),
+          const SizedBox(width: 10),
+          Expanded(child: Text(message)),
+        ],
+      ),
     );
   }
 }

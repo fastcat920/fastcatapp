@@ -1,8 +1,12 @@
+import 'dart:async';
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:fl_clash/xboard/features/profile/profile.dart';
 import 'package:fl_clash/xboard/core/core.dart';
 import 'package:fl_clash/common/common.dart';
 import 'package:fl_clash/xboard/utils/xboard_notification.dart';
+import 'package:fl_clash/providers/providers.dart';
+import 'package:fl_clash/state.dart';
 
 // 初始化文件级日志器
 final _logger = FileLogger('profile_import_provider.dart');
@@ -69,6 +73,7 @@ class ProfileImportNotifier extends StateNotifier<ImportState> {
           );
         }
       } else {
+        unawaited(_restoreLocalGroups());
         if (forceRefresh) {
           XBoardNotification.showError(
             appLocalizations.subscriptionUpdateFailed,
@@ -91,12 +96,26 @@ class ProfileImportNotifier extends StateNotifier<ImportState> {
           errorType: ImportErrorType.unknownError,
         ),
       );
+      unawaited(_restoreLocalGroups());
       if (forceRefresh) {
         XBoardNotification.showError(
           appLocalizations.subscriptionUpdateFailed,
         );
       }
       return false;
+    }
+  }
+
+  Future<void> _restoreLocalGroups() async {
+    if (_ref.read(groupsProvider).isNotEmpty) return;
+    if (_ref.read(currentProfileProvider) == null) return;
+    try {
+      await globalState.appController.loadGroupsFromLocalProfile();
+      if (_ref.read(groupsProvider).isEmpty && globalState.isStart) {
+        await globalState.appController.updateGroups();
+      }
+    } catch (error) {
+      _logger.info('订阅导入失败后恢复本地节点失败: $error');
     }
   }
 

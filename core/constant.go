@@ -106,6 +106,7 @@ const (
 	resetTrafficMethod             Method = "resetTraffic"
 	asyncTestDelayMethod           Method = "asyncTestDelay"
 	diagnoseProxyMethod            Method = "diagnoseProxy"
+	streamingProbeMethod           Method = "streamingProbe"
 	getConnectionsMethod           Method = "getConnections"
 	closeConnectionsMethod         Method = "closeConnections"
 	resetConnectionsMethod         Method = "resetConnectionsMethod"

@@ -10,6 +10,7 @@ import 'package:fl_clash/plugins/tile.dart';
 import 'package:fl_clash/plugins/vpn.dart';
 import 'package:fl_clash/state.dart';
 import 'package:fl_clash/xboard/config/xboard_config.dart';
+import 'package:fl_clash/xboard/config/utils/theme_config_loader.dart';
 import 'package:fl_clash/xboard/domain/domain.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -220,6 +221,8 @@ Future<void> _initializeXBoardServicesWithPrefs(SharedPreferences prefs) async {
   try {
     print('[Main] 开始初始化XBoard配置模块...');
 
+    final themeColor = await ThemeConfigLoader.loadThemeColor();
+    globalState.configuredThemeColor = Color(themeColor);
     var configSettings = await ConfigFileLoader.loadFromFile();
     print('[Main] 配置文件加载成功，Provider: ${configSettings.currentProvider}');
 

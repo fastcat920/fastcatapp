@@ -14,6 +14,7 @@ import 'package:fl_clash/xboard/features/subscription/services/subscription_stat
 import 'package:fl_clash/xboard/features/subscription/services/subscription_status_service.dart';
 import 'package:fl_clash/xboard/features/subscription/widgets/subscription_status_dialog.dart';
 import 'package:fl_clash/xboard/utils/xboard_notification.dart';
+import 'package:fl_clash/xboard/features/connectivity/connectivity.dart';
 
 class XBoardConnectButton extends ConsumerStatefulWidget {
   final bool isFloating; // 是否为浮动按钮模式
@@ -35,6 +36,7 @@ class _XBoardConnectButtonState extends ConsumerState<XBoardConnectButton>
   bool isStart = false;
   bool _isCheckingSubscription = false;
   bool _isSwitching = false;
+  String? _subscriptionCheckLabel;
 
   bool get _isBusy =>
       _isCheckingSubscription ||
@@ -103,16 +105,14 @@ class _XBoardConnectButtonState extends ConsumerState<XBoardConnectButton>
       return;
     }
 
-    // 开始连接前：先刷新服务端订阅状态，避免首页缓存滞后时仍然放行连接。
+    // 开始连接前：在线时限时刷新；离线或超时时立即使用本地缓存校验。
     if (mounted) {
       setState(() => _isCheckingSubscription = true);
     } else {
       _isCheckingSubscription = true;
     }
     try {
-      await ref
-          .read(xboardUserProvider.notifier)
-          .refreshSubscriptionInfo(importProfile: false);
+      await _prepareSubscriptionForConnect();
     } finally {
       if (mounted) {
         setState(() => _isCheckingSubscription = false);
@@ -122,7 +122,8 @@ class _XBoardConnectButtonState extends ConsumerState<XBoardConnectButton>
     }
     if (!mounted) return;
 
-    debugPrint('[handleSwitchStart] refreshSubscriptionInfo 完成，开始 checkBeforeConnect');
+    debugPrint(
+        '[handleSwitchStart] refreshSubscriptionInfo 完成，开始 checkBeforeConnect');
     final blockStatus = subscriptionGuardService.checkBeforeConnect();
     debugPrint('[handleSwitchStart] blockStatus=${blockStatus?.type}');
     if (blockStatus != null) {
@@ -166,7 +167,7 @@ class _XBoardConnectButtonState extends ConsumerState<XBoardConnectButton>
   String _busyLabel(BuildContext context) {
     final l10n = AppLocalizations.of(context);
     if (_isCheckingSubscription) {
-      return l10n.xboardCheckingSubscription;
+      return _subscriptionCheckLabel ?? l10n.xboardCheckingSubscription;
     }
     final status = globalState.coreSwitchStatusNotifier.value;
     final statusLabel = status.localizedLabel(l10n);
@@ -174,6 +175,55 @@ class _XBoardConnectButtonState extends ConsumerState<XBoardConnectButton>
       return statusLabel;
     }
     return isStart ? l10n.xboardDisconnecting : l10n.xboardConnecting;
+  }
+
+  Future<void> _prepareSubscriptionForConnect() async {
+    final l10n = AppLocalizations.of(context);
+    var connectivity = ref.read(serviceConnectivityProvider);
+
+    if (connectivity.isOffline) {
+      _setSubscriptionCheckLabel(l10n.xboardCheckingCachedSubscription);
+      return;
+    }
+
+    Duration refreshTimeout;
+    if (connectivity.isRecovering) {
+      _setSubscriptionCheckLabel(l10n.xboardServiceRecovering);
+      final recovered = await ref
+          .read(serviceConnectivityProvider.notifier)
+          .verifyNow()
+          .timeout(
+            const Duration(seconds: 3),
+            onTimeout: () => false,
+          );
+      connectivity = ref.read(serviceConnectivityProvider);
+      if (!recovered || !connectivity.isOnline) {
+        _setSubscriptionCheckLabel(l10n.xboardCheckingCachedSubscription);
+        return;
+      }
+      // 恢复探测最多 3 秒，剩余刷新最多 5 秒，总等待不超过约 8 秒。
+      refreshTimeout = const Duration(seconds: 5);
+    } else if (connectivity.isDegraded) {
+      refreshTimeout = const Duration(seconds: 5);
+    } else {
+      refreshTimeout = const Duration(seconds: 8);
+    }
+
+    _setSubscriptionCheckLabel(l10n.xboardCheckingSubscription);
+    final refreshed = await ref
+        .read(xboardUserProvider.notifier)
+        .refreshSubscriptionForConnect(refreshTimeout);
+    if (!refreshed) {
+      _setSubscriptionCheckLabel(l10n.xboardSubscriptionSlowUsingCache);
+    }
+  }
+
+  void _setSubscriptionCheckLabel(String label) {
+    if (!mounted) {
+      _subscriptionCheckLabel = label;
+      return;
+    }
+    setState(() => _subscriptionCheckLabel = label);
   }
 
   Future<void> _openPlans() async {
@@ -194,7 +244,8 @@ class _XBoardConnectButtonState extends ConsumerState<XBoardConnectButton>
         .refreshSubscriptionInfo(importProfile: false);
     if (!mounted) return;
 
-    debugPrint('[handleSwitchStart] refreshSubscriptionInfo 完成，开始 checkBeforeConnect');
+    debugPrint(
+        '[handleSwitchStart] refreshSubscriptionInfo 完成，开始 checkBeforeConnect');
     final blockStatus = subscriptionGuardService.checkBeforeConnect();
     debugPrint('[handleSwitchStart] blockStatus=${blockStatus?.type}');
     if (blockStatus == null) {
@@ -261,7 +312,7 @@ class _XBoardConnectButtonState extends ConsumerState<XBoardConnectButton>
       child: AnimatedBuilder(
         animation: _controller.view,
         builder: (_, child) {
-          final textWidth = globalState.measure
+          final measuredTextWidth = globalState.measure
                   .computeTextSize(
                     Text(
                       _isBusy
@@ -274,6 +325,7 @@ class _XBoardConnectButtonState extends ConsumerState<XBoardConnectButton>
                   )
                   .width +
               16;
+          final labelWidth = measuredTextWidth.clamp(0.0, 116.0);
           return FloatingActionButton.extended(
             clipBehavior: Clip.antiAlias,
             materialTapTargetSize: MaterialTapTargetSize.padded,
@@ -293,7 +345,7 @@ class _XBoardConnectButtonState extends ConsumerState<XBoardConnectButton>
                     progress: _animation,
                   ),
             label: SizedBox(
-              width: textWidth * _animation.value,
+              width: labelWidth * (_isBusy ? 1 : _animation.value),
               child: child!,
             ),
           );
@@ -303,10 +355,8 @@ class _XBoardConnectButtonState extends ConsumerState<XBoardConnectButton>
             final runTime = ref.watch(runTimeProvider);
             final text =
                 _isBusy ? _busyLabel(context) : utils.getTimeText(runTime);
-            return Text(
-              text,
-              maxLines: 1,
-              overflow: TextOverflow.visible,
+            return _LeftScrollingText(
+              text: text,
               style:
                   Theme.of(context).textTheme.titleMedium?.toSoftBold.copyWith(
                         color: Colors.white,
@@ -408,7 +458,8 @@ class _XBoardConnectButtonState extends ConsumerState<XBoardConnectButton>
                                   child: _isBusy
                                       ? Column(
                                           key: const ValueKey('switching'),
-                                          mainAxisAlignment: MainAxisAlignment.center,
+                                          mainAxisAlignment:
+                                              MainAxisAlignment.center,
                                           children: [
                                             SizedBox(
                                               width: iconSize * 0.58,
@@ -428,11 +479,8 @@ class _XBoardConnectButtonState extends ConsumerState<XBoardConnectButton>
                                               padding:
                                                   const EdgeInsets.symmetric(
                                                       horizontal: 8),
-                                              child: Text(
-                                                _busyLabel(context),
-                                                maxLines: 1,
-                                                overflow: TextOverflow.ellipsis,
-                                                textAlign: TextAlign.center,
+                                              child: _LeftScrollingText(
+                                                text: _busyLabel(context),
                                                 style: Theme.of(context)
                                                     .textTheme
                                                     .labelSmall
@@ -456,25 +504,29 @@ class _XBoardConnectButtonState extends ConsumerState<XBoardConnectButton>
                                               size: iconSize * 0.75,
                                               color: iconColor,
                                             ),
-                                            SizedBox(height: (outerSize * 0.03).clamp(2.0, 4.0)),
+                                            SizedBox(
+                                                height: (outerSize * 0.03)
+                                                    .clamp(2.0, 4.0)),
                                             Consumer(
                                               builder: (_, ref, __) {
-                                                final runTime = ref.watch(runTimeProvider);
-                                                final l10n = AppLocalizations.of(context);
+                                                final runTime =
+                                                    ref.watch(runTimeProvider);
+                                                final l10n =
+                                                    AppLocalizations.of(
+                                                        context);
                                                 final label = isStart
                                                     ? utils.getTimeText(runTime)
                                                     : l10n.tapToConnect;
-                                                return Text(
-                                                  label,
-                                                  maxLines: 1,
-                                                  overflow: TextOverflow.ellipsis,
-                                                  textAlign: TextAlign.center,
+                                                return _LeftScrollingText(
+                                                  text: label,
                                                   style: Theme.of(context)
                                                       .textTheme
                                                       .labelSmall
                                                       ?.copyWith(
                                                         color: iconColor,
-                                                        fontSize: (outerSize * 0.07).clamp(9.0, 12.0),
+                                                        fontSize: (outerSize *
+                                                                0.07)
+                                                            .clamp(9.0, 12.0),
                                                       ),
                                                 );
                                               },
@@ -496,5 +548,115 @@ class _XBoardConnectButtonState extends ConsumerState<XBoardConnectButton>
         );
       },
     );
+  }
+}
+
+class _LeftScrollingText extends StatefulWidget {
+  const _LeftScrollingText({
+    required this.text,
+    this.style,
+  });
+
+  final String text;
+  final TextStyle? style;
+
+  @override
+  State<_LeftScrollingText> createState() => _LeftScrollingTextState();
+}
+
+class _LeftScrollingTextState extends State<_LeftScrollingText> {
+  final ScrollController _scrollController = ScrollController();
+  int _animationGeneration = 0;
+  double? _lastWidth;
+
+  @override
+  void initState() {
+    super.initState();
+    _scheduleAnimation();
+  }
+
+  @override
+  void didUpdateWidget(covariant _LeftScrollingText oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.text != widget.text || oldWidget.style != widget.style) {
+      _scheduleAnimation();
+    }
+  }
+
+  void _scheduleAnimation() {
+    final generation = ++_animationGeneration;
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      if (!mounted || generation != _animationGeneration) return;
+      if (!_scrollController.hasClients) return;
+      _scrollController.jumpTo(0);
+      final maxExtent = _scrollController.position.maxScrollExtent;
+      if (maxExtent <= 0) return;
+
+      await Future.delayed(const Duration(milliseconds: 600));
+      while (mounted && generation == _animationGeneration) {
+        if (!_scrollController.hasClients) return;
+        final extent = _scrollController.position.maxScrollExtent;
+        if (extent <= 0) return;
+        final durationMs = (extent / 28 * 1000).round().clamp(1200, 12000);
+        await _scrollController.animateTo(
+          extent,
+          duration: Duration(milliseconds: durationMs),
+          curve: Curves.linear,
+        );
+        if (!mounted || generation != _animationGeneration) return;
+        await Future.delayed(const Duration(milliseconds: 700));
+        if (!mounted || generation != _animationGeneration) return;
+        _scrollController.jumpTo(0);
+        await Future.delayed(const Duration(milliseconds: 450));
+      }
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final width = constraints.maxWidth;
+        if (width.isFinite && width != _lastWidth) {
+          _lastWidth = width;
+          _scheduleAnimation();
+        }
+        if (!width.isFinite) {
+          return Text(
+            widget.text,
+            maxLines: 1,
+            softWrap: false,
+            style: widget.style,
+          );
+        }
+        return ClipRect(
+          child: SizedBox(
+            width: width,
+            child: SingleChildScrollView(
+              controller: _scrollController,
+              scrollDirection: Axis.horizontal,
+              physics: const NeverScrollableScrollPhysics(),
+              child: Container(
+                constraints: BoxConstraints(minWidth: width),
+                alignment: Alignment.center,
+                child: Text(
+                  widget.text,
+                  maxLines: 1,
+                  softWrap: false,
+                  style: widget.style,
+                ),
+              ),
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  @override
+  void dispose() {
+    _animationGeneration++;
+    _scrollController.dispose();
+    super.dispose();
   }
 }

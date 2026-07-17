@@ -258,7 +258,10 @@ class _DeviceManagementPageState extends ConsumerState<DeviceManagementPage>
         AppLocalizations.of(context).xboardDeviceRemoved);
 
     if (device.isCurrent) {
-      await ref.read(xboardUserProvider.notifier).logout();
+      // 当前设备已在服务端移除，本地登录凭证不再有效，必须完成退出。
+      await ref
+          .read(xboardUserProvider.notifier)
+          .logout(allowWhenServiceUnavailable: true);
       if (mounted) {
         context.go('/login');
       }

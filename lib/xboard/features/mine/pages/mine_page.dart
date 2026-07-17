@@ -248,26 +248,26 @@ class _MinePageState extends ConsumerState<MinePage>
     return Scaffold(
       backgroundColor: isDark ? null : const Color(0xFFFAFBFD),
       appBar: AppBar(
-              title: Text(appLocalizations.userCenter),
-              automaticallyImplyLeading: false,
-              actions: [
-                if (!isDesktop)
-                  Padding(
-                    padding: const EdgeInsets.only(right: 16),
-                    child: _buildCustomerServiceButton(context),
-                  ),
-                if (isDesktop) ...[
-                  Padding(
-                    padding: const EdgeInsets.only(right: 12),
-                    child: _buildCustomerServiceButton(context),
-                  ),
-                  Padding(
-                    padding: const EdgeInsets.only(right: 12),
-                    child: _buildRefreshButton(),
-                  ),
-                ],
-              ],
+        title: Text(appLocalizations.userCenter),
+        automaticallyImplyLeading: false,
+        actions: [
+          if (!isDesktop)
+            Padding(
+              padding: const EdgeInsets.only(right: 16),
+              child: _buildCustomerServiceButton(context),
             ),
+          if (isDesktop) ...[
+            Padding(
+              padding: const EdgeInsets.only(right: 12),
+              child: _buildCustomerServiceButton(context),
+            ),
+            Padding(
+              padding: const EdgeInsets.only(right: 12),
+              child: _buildRefreshButton(),
+            ),
+          ],
+        ],
+      ),
       body: RefreshIndicator(
         onRefresh: _doRefresh,
         child: ListView(
@@ -698,7 +698,14 @@ class _GiftCardSheetState extends ConsumerState<_GiftCardSheet> {
                       height: 18,
                       child: CircularProgressIndicator(
                           strokeWidth: 2, color: Colors.white))
-                  : Text(appLocalizations.xboardRedeemNow),
+                  : Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        const Icon(Icons.card_giftcard_outlined, size: 18),
+                        const SizedBox(width: 8),
+                        Text(appLocalizations.xboardRedeemNow),
+                      ],
+                    ),
             ),
           ),
         ],

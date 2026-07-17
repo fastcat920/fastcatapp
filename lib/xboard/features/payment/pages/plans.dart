@@ -13,10 +13,8 @@ import 'package:go_router/go_router.dart';
 
 final pendingPurchasePlanProvider = StateProvider<DomainPlan?>((ref) => null);
 
-
 class PlansView extends ConsumerStatefulWidget {
   const PlansView({super.key});
-
 
   @override
   ConsumerState<PlansView> createState() => _PlansViewState();
@@ -42,7 +40,6 @@ class _PlansViewState extends ConsumerState<PlansView> {
     });
   }
 
-
   @override
   void didUpdateWidget(PlansView oldWidget) {
     super.didUpdateWidget(oldWidget);
@@ -51,8 +48,8 @@ class _PlansViewState extends ConsumerState<PlansView> {
       if (mounted) _checkUrlParams();
     });
   }
-  Future<void> _checkUrlParams() async {
 
+  Future<void> _checkUrlParams() async {
     if (_hasCheckedUrlParams) return;
     _hasCheckedUrlParams = true;
 
@@ -101,7 +98,8 @@ class _PlansViewState extends ConsumerState<PlansView> {
   Future<void> _refreshPlans() async {
     setState(() => _planLoadError = null);
     try {
-      final subscriptionNotifier = ref.read(xboardSubscriptionProvider.notifier);
+      final subscriptionNotifier =
+          ref.read(xboardSubscriptionProvider.notifier);
       await subscriptionNotifier.refreshPlans();
     } catch (e) {
       if (mounted) setState(() => _planLoadError = e.toString());
@@ -142,13 +140,27 @@ class _PlansViewState extends ConsumerState<PlansView> {
     double? lowest;
     String period = '';
     final entries = <double, String>{};
-    if (plan.monthlyPrice != null) entries[plan.monthlyPrice!] = l10n.xboardMonthlyPayment;
-    if (plan.quarterlyPrice != null) entries[plan.quarterlyPrice!] = l10n.xboardQuarterlyPayment;
-    if (plan.halfYearlyPrice != null) entries[plan.halfYearlyPrice!] = l10n.xboardHalfYearlyPayment;
-    if (plan.yearlyPrice != null) entries[plan.yearlyPrice!] = l10n.xboardYearlyPayment;
-    if (plan.twoYearPrice != null) entries[plan.twoYearPrice!] = l10n.xboardTwoYearPayment;
-    if (plan.threeYearPrice != null) entries[plan.threeYearPrice!] = l10n.xboardThreeYearPayment;
-    if (plan.onetimePrice != null) entries[plan.onetimePrice!] = l10n.xboardOneTimePayment;
+    if (plan.monthlyPrice != null) {
+      entries[plan.monthlyPrice!] = l10n.xboardMonthlyPayment;
+    }
+    if (plan.quarterlyPrice != null) {
+      entries[plan.quarterlyPrice!] = l10n.xboardQuarterlyPayment;
+    }
+    if (plan.halfYearlyPrice != null) {
+      entries[plan.halfYearlyPrice!] = l10n.xboardHalfYearlyPayment;
+    }
+    if (plan.yearlyPrice != null) {
+      entries[plan.yearlyPrice!] = l10n.xboardYearlyPayment;
+    }
+    if (plan.twoYearPrice != null) {
+      entries[plan.twoYearPrice!] = l10n.xboardTwoYearPayment;
+    }
+    if (plan.threeYearPrice != null) {
+      entries[plan.threeYearPrice!] = l10n.xboardThreeYearPayment;
+    }
+    if (plan.onetimePrice != null) {
+      entries[plan.onetimePrice!] = l10n.xboardOneTimePayment;
+    }
     for (final e in entries.entries) {
       if (lowest == null || e.key < lowest) {
         lowest = e.key;
@@ -202,7 +214,7 @@ class _PlansViewState extends ConsumerState<PlansView> {
             ? null
             : [
                 BoxShadow(
-                  color: const Color(0xFF1565C0).withAlpha(15),
+                  color: Theme.of(context).colorScheme.primary.withAlpha(15),
                   blurRadius: 16,
                   offset: const Offset(0, 4),
                 ),

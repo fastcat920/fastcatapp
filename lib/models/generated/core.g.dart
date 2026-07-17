@@ -306,6 +306,7 @@ const _$ActionMethodEnumMap = {
   ActionMethod.resetTraffic: 'resetTraffic',
   ActionMethod.asyncTestDelay: 'asyncTestDelay',
   ActionMethod.diagnoseProxy: 'diagnoseProxy',
+  ActionMethod.streamingProbe: 'streamingProbe',
   ActionMethod.getConnections: 'getConnections',
   ActionMethod.closeConnections: 'closeConnections',
   ActionMethod.resetConnections: 'resetConnections',

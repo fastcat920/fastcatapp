@@ -7,6 +7,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:fl_clash/xboard/domain/domain.dart';
 import 'package:flutter_xboard_sdk/flutter_xboard_sdk.dart';
 import 'package:fl_clash/xboard/adapter/state/notice_state.dart';
+import 'package:fl_clash/xboard/features/connectivity/connectivity.dart';
 
 const _kDismissedNoticeIdsKey = 'xboard_dismissed_notice_ids';
 const _kNoticeCacheKey = 'xboard_notice_cache_v1';
@@ -121,6 +122,7 @@ class NoticeNotifier extends StateNotifier<NoticeState> {
       }
       final noticeModels = await _ref.read(getNoticesProvider.future);
       final notices = noticeModels.map(_mapNotice).toList();
+      _ref.read(serviceConnectivityProvider.notifier).reportRequestSuccess();
       _lastFetchedAt = DateTime.now();
       await _saveCachedNotices(notices);
       final newState = state.copyWith(
@@ -134,6 +136,8 @@ class NoticeNotifier extends StateNotifier<NoticeState> {
       debugPrint(
           '[弹窗] fetchNotices 完成，共 ${notices.length} 条公告, popupNoticeId=${popupList.isNotEmpty ? popupList.first.id : "null"}, popupShownIds=${newState.popupShownIds}');
     } catch (e) {
+      _ref.read(serviceConnectivityProvider.notifier).reportRequestFailure(e);
+      await _loadCachedNotices();
       state = state.copyWith(
         isLoading: false,
         error: e.toString(),

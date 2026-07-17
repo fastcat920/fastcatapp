@@ -88,7 +88,6 @@ class _PlanPurchasePageState extends ConsumerState<PlanPurchasePage> {
 
   // ========== 数据加载 ==========
 
-
   List<Map<String, dynamic>> _getAvailablePeriods(BuildContext context) {
     final List<Map<String, dynamic>> periods = [];
     final plan = widget.plan;
@@ -263,7 +262,6 @@ class _PlanPurchasePageState extends ConsumerState<PlanPurchasePage> {
     _couponType = null;
     _couponValue = null;
   }
-
 
   // ========== 购买流程 ==========
 
@@ -440,13 +438,22 @@ class _PlanPurchasePageState extends ConsumerState<PlanPurchasePage> {
                                 ),
                               ],
                             )
-                          : Text(
-                              AppLocalizations.of(context).submit,
-                              style: const TextStyle(
-                                fontSize: 17,
-                                fontWeight: FontWeight.bold,
-                                letterSpacing: 0.5,
-                              ),
+                          : Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                const Icon(Icons.receipt_long_outlined,
+                                    size: 20),
+                                const SizedBox(width: 8),
+                                Text(
+                                  AppLocalizations.of(context)
+                                      .xboardSubmitOrder,
+                                  style: const TextStyle(
+                                    fontSize: 17,
+                                    fontWeight: FontWeight.bold,
+                                    letterSpacing: 0.5,
+                                  ),
+                                ),
+                              ],
                             ),
                     );
                   },

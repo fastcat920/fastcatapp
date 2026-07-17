@@ -13,6 +13,7 @@ import 'package:fl_clash/xboard/features/subscription/services/subscription_down
 import 'package:fl_clash/xboard/features/subscription/utils/utils.dart';
 import 'package:fl_clash/xboard/core/core.dart';
 import 'package:fl_clash/xboard/config/utils/config_file_loader.dart';
+import 'package:fl_clash/xboard/features/connectivity/connectivity.dart';
 
 // 初始化文件级日志器
 final _logger = FileLogger('profile_import_service.dart');
@@ -28,7 +29,6 @@ class XBoardProfileImportService {
   SubscriptionDownloadCancelToken? _downloadCancelToken;
   static const int maxRetries = 3;
   static const Duration retryDelay = Duration(seconds: 2);
-  static const Duration downloadTimeout = Duration(seconds: 90);
   XBoardProfileImportService(this._ref);
   Future<ImportResult> importSubscription(
     String url, {
@@ -54,10 +54,20 @@ class XBoardProfileImportService {
       final oldSelectedMap =
           _ref.read(currentProfileProvider)?.selectedMap ?? {};
 
+      final connectivity = _ref.read(serviceConnectivityProvider);
+      if (connectivity.isOffline) {
+        throw const SocketException('当前处于离线模式');
+      }
+      final downloadTimeout = connectivity.isOnline
+          ? const Duration(seconds: 20)
+          : const Duration(seconds: 10);
       final profile = await _downloadAndValidateProfile(
         url,
         cancelToken: cancelToken,
-      );
+      ).timeout(downloadTimeout, onTimeout: () {
+        _downloadCancelToken?.cancel();
+        throw TimeoutException('订阅下载超时', downloadTimeout);
+      });
       onProgress?.call(ImportStatus.validating, 0.6, '验证配置格式');
       _throwIfCancelled(cancelToken);
 
@@ -241,11 +251,6 @@ class XBoardProfileImportService {
       final profile = await SubscriptionDownloader.downloadSubscription(
         url,
         cancelToken: cancelToken,
-      ).timeout(
-        downloadTimeout,
-        onTimeout: () {
-          throw TimeoutException('下载超时', downloadTimeout);
-        },
       );
 
       _logger.info(

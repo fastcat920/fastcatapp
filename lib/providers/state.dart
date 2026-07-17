@@ -1,4 +1,3 @@
-import 'package:dynamic_color/dynamic_color.dart';
 import 'package:fl_clash/common/common.dart';
 import 'package:fl_clash/enum/enum.dart';
 import 'package:fl_clash/models/models.dart';
@@ -687,28 +686,14 @@ ColorScheme genColorScheme(
   Color? color,
   bool ignoreConfig = false,
 }) {
-  final vm2 = ref.watch(
-    themeSettingProvider.select(
-      (state) => VM2(
-        a: state.primaryColor,
-        b: state.schemeVariant,
-      ),
-    ),
+  final schemeVariant = ref.watch(
+    themeSettingProvider.select((state) => state.schemeVariant),
   );
-  if (color == null && (ignoreConfig == true || vm2.a == null)) {
-    return ColorScheme.fromSeed(
-      seedColor: globalState.corePalette
-              ?.toColorScheme(brightness: brightness)
-              .primary ??
-          globalState.accentColor,
-      brightness: brightness,
-      dynamicSchemeVariant: vm2.b,
-    );
-  }
   return ColorScheme.fromSeed(
-    seedColor: color ?? Color(vm2.a!),
+    // 显式 color 仅用于颜色预览组件；应用主题始终使用 config.yaml。
+    seedColor: color ?? globalState.configuredThemeColor,
     brightness: brightness,
-    dynamicSchemeVariant: vm2.b,
+    dynamicSchemeVariant: schemeVariant,
   );
 }
 

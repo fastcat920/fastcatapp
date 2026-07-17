@@ -7,6 +7,7 @@ import 'package:fl_clash/xboard/domain/models/subscription.dart';
 import 'package:fl_clash/xboard/features/auth/providers/xboard_user_provider.dart';
 import 'package:fl_clash/xboard/features/subscription/services/subscription_status_service.dart';
 import 'package:fl_clash/xboard/core/core.dart';
+import 'package:fl_clash/xboard/features/connectivity/connectivity.dart';
 
 final _logger = FileLogger('subscription_guard_service.dart');
 
@@ -178,6 +179,12 @@ class SubscriptionGuardService {
     final userState = ref.read(xboardUserProvider);
     if (!userState.isAuthenticated) return;
 
+    final connectivity = ref.read(serviceConnectivityProvider);
+    if (!connectivity.isOnline) {
+      _logger.info('当前处于离线/恢复状态，跳过本轮远程订阅刷新');
+      return;
+    }
+
     try {
       _logger.info('定期刷新订阅信息...');
       await ref.read(xboardUserProvider.notifier).refreshSubscriptionInfo();
@@ -232,8 +239,7 @@ class SubscriptionGuardService {
     );
 
     if (subscriptionInfo != null &&
-        (subscriptionInfo.planId > 0 ||
-            subscriptionInfo.transferLimit > 0)) {
+        (subscriptionInfo.planId > 0 || subscriptionInfo.transferLimit > 0)) {
       final subscriptionExpire = subscriptionInfo.expiredAt != null
           ? subscriptionInfo.expiredAt!.millisecondsSinceEpoch ~/ 1000
           : 0;

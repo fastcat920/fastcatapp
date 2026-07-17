@@ -17,7 +17,7 @@ import 'package:fl_clash/xboard/features/latency/services/auto_latency_service.d
 import 'package:fl_clash/xboard/features/subscription/services/subscription_status_checker.dart';
 import 'package:fl_clash/xboard/features/subscription/services/subscription_guard_service.dart';
 import 'package:fl_clash/xboard/features/profile/providers/profile_import_provider.dart';
-import 'package:fl_clash/xboard/features/initialization/providers/initialization_provider.dart';
+import 'package:fl_clash/xboard/features/connectivity/connectivity.dart';
 import 'package:fl_clash/xboard/config/xboard_config.dart';
 import 'package:fl_clash/xboard/config/utils/website_url_resolver.dart';
 import 'package:fl_clash/xboard/adapter/initialization/sdk_provider.dart';
@@ -182,9 +182,7 @@ class _XBoardHomePageState extends ConsumerState<XBoardHomePage>
                   child: IconButton(
                     icon: Icon(
                       Icons.menu_open,
-                      color: Theme.of(context)
-                          .colorScheme
-                          .onSurfaceVariant,
+                      color: Theme.of(context).colorScheme.onSurfaceVariant,
                     ),
                     tooltip: 'TUN',
                     onPressed: () => _showVpnSheet(context),
@@ -197,9 +195,10 @@ class _XBoardHomePageState extends ConsumerState<XBoardHomePage>
                   automaticallyImplyLeading: false,
                   titleSpacing: 16,
                   title: const _HomeBrandHeader(),
-                  backgroundColor: Theme.of(context).brightness == Brightness.dark
-                      ? Theme.of(context).colorScheme.surface
-                      : Colors.white,
+                  backgroundColor:
+                      Theme.of(context).brightness == Brightness.dark
+                          ? Theme.of(context).colorScheme.surface
+                          : Colors.white,
                   elevation: 0,
                   scrolledUnderElevation: 0,
                   systemOverlayStyle: SystemUiOverlayStyle(
@@ -308,8 +307,9 @@ class _XBoardHomePageState extends ConsumerState<XBoardHomePage>
                     .clamp(0.0, availableGap);
                 final targetTopGap = availableGap * (compactMode ? 0.28 : 0.36);
                 final adaptiveTopGap = (targetTopGap < minTopGapForLowerHalf
-                    ? minTopGapForLowerHalf
-                    : targetTopGap) + (isDesktop ? 20.0 : 0.0);
+                        ? minTopGapForLowerHalf
+                        : targetTopGap) +
+                    (isDesktop ? 20.0 : 0.0);
                 final adaptiveBottomGap =
                     minBottomGap + (availableGap - adaptiveTopGap);
 
@@ -560,9 +560,8 @@ class _XBoardHomePageState extends ConsumerState<XBoardHomePage>
               style: Theme.of(context).textTheme.titleSmall?.copyWith(
                     // fontSize inherited from titleSmall
                     fontWeight: FontWeight.bold,
-                    color: isDark
-                        ? Colors.green.shade300
-                        : Colors.green.shade700,
+                    color:
+                        isDark ? Colors.green.shade300 : Colors.green.shade700,
                   ),
             ),
           );
@@ -639,9 +638,26 @@ class _HomeBrandHeader extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final initState = ref.watch(initializationProvider);
+    final connectivityState = ref.watch(serviceConnectivityProvider);
     final userState = ref.watch(xboardUserProvider);
-    final showOfflineBadge = initState.isFailed && userState.isAuthenticated;
+    final showServiceBadge = userState.isAuthenticated &&
+        !connectivityState.isOnline &&
+        (!connectivityState.isRecovering ||
+            connectivityState.consecutiveFailures >= 2);
+    final badgeLabel = switch (connectivityState.status) {
+      ServiceConnectivityStatus.degraded =>
+        AppLocalizations.of(context).xboardServiceConnectionDegraded,
+      ServiceConnectivityStatus.recovering =>
+        AppLocalizations.of(context).xboardServiceRecovering,
+      ServiceConnectivityStatus.offline =>
+        AppLocalizations.of(context).xboardServiceOfflineCacheMode,
+      ServiceConnectivityStatus.online => '',
+    };
+    final badgeIcon = connectivityState.isRecovering
+        ? Icons.sync_outlined
+        : connectivityState.isDegraded
+            ? Icons.cloud_off_outlined
+            : Icons.wifi_off_outlined;
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
     return Row(
@@ -666,7 +682,7 @@ class _HomeBrandHeader extends ConsumerWidget {
           maxLines: 1,
           overflow: TextOverflow.ellipsis,
         ),
-        if (showOfflineBadge) ...[
+        if (showServiceBadge) ...[
           const SizedBox(width: 8),
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
@@ -685,7 +701,7 @@ class _HomeBrandHeader extends ConsumerWidget {
               mainAxisSize: MainAxisSize.min,
               children: [
                 Icon(
-                  Icons.wifi_off_outlined,
+                  badgeIcon,
                   size: 12,
                   color: isDark
                       ? theme.colorScheme.onSurface
@@ -693,7 +709,7 @@ class _HomeBrandHeader extends ConsumerWidget {
                 ),
                 const SizedBox(width: 4),
                 Text(
-                  '离线缓存模式',
+                  badgeLabel,
                   style: theme.textTheme.labelSmall?.copyWith(
                     color: isDark
                         ? theme.colorScheme.onSurface
@@ -784,7 +800,7 @@ class _HomeNoticeCardState extends ConsumerState<_HomeNoticeCard> {
             ? null
             : [
                 BoxShadow(
-                  color: const Color(0xFF1565C0).withAlpha(15),
+                  color: Theme.of(context).colorScheme.primary.withAlpha(15),
                   blurRadius: 16,
                   offset: const Offset(0, 4),
                 ),

@@ -10,7 +10,8 @@ import 'package:go_router/go_router.dart';
 import '../services/subscription_status_service.dart';
 import 'package:fl_clash/l10n/l10n.dart';
 import 'package:fl_clash/xboard/features/payment/pages/plan_purchase_page.dart';
-import 'package:fl_clash/xboard/features/payment/pages/plans.dart' show pendingPurchasePlanProvider;
+import 'package:fl_clash/xboard/features/payment/pages/plans.dart'
+    show pendingPurchasePlanProvider;
 import 'package:fl_clash/xboard/features/subscription/services/traffic_recovery_service.dart';
 import 'package:fl_clash/xboard/features/shared/styles/styles.dart';
 import 'package:fl_clash/xboard/utils/xboard_notification.dart';
@@ -90,7 +91,7 @@ class SubscriptionUsageCard extends ConsumerWidget {
             ? null
             : [
                 BoxShadow(
-                  color: const Color(0xFF1565C0).withAlpha(15),
+                  color: Theme.of(context).colorScheme.primary.withAlpha(15),
                   blurRadius: 16,
                   offset: const Offset(0, 4),
                 ),
@@ -136,7 +137,7 @@ class SubscriptionUsageCard extends ConsumerWidget {
             ? null
             : [
                 BoxShadow(
-                  color: const Color(0xFF1565C0).withAlpha(15),
+                  color: Theme.of(context).colorScheme.primary.withAlpha(15),
                   blurRadius: 16,
                   offset: const Offset(0, 4),
                 ),
@@ -228,7 +229,7 @@ class SubscriptionUsageCard extends ConsumerWidget {
             ? null
             : [
                 BoxShadow(
-                  color: const Color(0xFF1565C0).withAlpha(15),
+                  color: Theme.of(context).colorScheme.primary.withAlpha(15),
                   blurRadius: 16,
                   offset: const Offset(0, 4),
                 ),
@@ -445,7 +446,8 @@ class SubscriptionUsageCard extends ConsumerWidget {
         if (!await confirmTrafficExhaustedRenewIfNeeded()) return;
         if (!context.mounted) return;
         if (isDesktop) {
-          ref.read(pendingPurchasePlanProvider.notifier).state = planForPurchase;
+          ref.read(pendingPurchasePlanProvider.notifier).state =
+              planForPurchase;
           router.go('/plans');
         } else {
           navigator.push(MaterialPageRoute(
@@ -544,7 +546,7 @@ class SubscriptionUsageCard extends ConsumerWidget {
             ? null
             : [
                 BoxShadow(
-                  color: const Color(0xFF1565C0).withAlpha(15),
+                  color: Theme.of(context).colorScheme.primary.withAlpha(15),
                   blurRadius: 16,
                   offset: const Offset(0, 4),
                 ),
@@ -639,8 +641,7 @@ class SubscriptionUsageCard extends ConsumerWidget {
                     child: FilledButton.icon(
                       onPressed: () => _handleRenewAction(context, ref),
                       icon: const Icon(Icons.refresh, size: 16),
-                      label:
-                          Text(AppLocalizations.of(context).xboardRenewPlan),
+                      label: Text(AppLocalizations.of(context).xboardRenewPlan),
                       style: FilledButton.styleFrom(
                         backgroundColor:
                             _getRenewButtonColor(expiryState, theme),
@@ -744,7 +745,8 @@ class SubscriptionUsageCard extends ConsumerWidget {
                 ? null
                 : [
                     BoxShadow(
-                      color: const Color(0xFF1565C0).withAlpha(15),
+                      color:
+                          Theme.of(context).colorScheme.primary.withAlpha(15),
                       blurRadius: 16,
                       offset: const Offset(0, 4),
                     ),
@@ -862,8 +864,7 @@ class SubscriptionUsageCard extends ConsumerWidget {
                               backgroundColor:
                                   _getRenewButtonColor(expiryState, theme),
                               foregroundColor: theme.colorScheme.onPrimary,
-                              padding:
-                                  const EdgeInsets.symmetric(vertical: 10),
+                              padding: const EdgeInsets.symmetric(vertical: 10),
                               shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(10),
                               ),
@@ -894,8 +895,8 @@ class SubscriptionUsageCard extends ConsumerWidget {
                                 backgroundColor:
                                     _getResetButtonColor(progress, theme),
                                 foregroundColor: theme.colorScheme.onPrimary,
-                                padding: const EdgeInsets.symmetric(
-                                    vertical: 10),
+                                padding:
+                                    const EdgeInsets.symmetric(vertical: 10),
                                 shape: RoundedRectangleBorder(
                                   borderRadius: BorderRadius.circular(10),
                                 ),
@@ -926,8 +927,7 @@ class SubscriptionUsageCard extends ConsumerWidget {
     return SizedBox(height: fixedHeight! + topOffset, child: content);
   }
 
-  String _formatDate(DateTime date) =>
-      '${date.year}-${date.month.toString().padLeft(2, '0')}-${date.day.toString().padLeft(2, '0')}';
+  String _formatDate(DateTime date) => _formatDateTime(date);
 
   String? _buildExpiryText(
       BuildContext context, DateTime? expiredAt, _ExpiryState state) {
@@ -946,8 +946,8 @@ class SubscriptionUsageCard extends ConsumerWidget {
 
   _ExpiryState _getExpiryState(DateTime? expiredAt) {
     if (expiredAt == null) return _ExpiryState.normal;
+    if (!DateTime.now().isBefore(expiredAt)) return _ExpiryState.expired;
     final remainingDays = _naturalDaysUntil(expiredAt);
-    if (remainingDays < 0) return _ExpiryState.expired;
     if (remainingDays < 7) return _ExpiryState.expiringSoon;
     return _ExpiryState.normal;
   }
@@ -1075,9 +1075,9 @@ class SubscriptionUsageCard extends ConsumerWidget {
       unitIndex++;
     }
     String formatted;
-    if (size >= 100) {
+    if (size >= 1000) {
       formatted = size.toStringAsFixed(0);
-    } else if (size >= 10) {
+    } else if (size >= 100) {
       formatted = size.toStringAsFixed(1);
     } else {
       formatted = size.toStringAsFixed(2);
@@ -1145,7 +1145,7 @@ class SubscriptionUsageCard extends ConsumerWidget {
   }
 
   String _formatDateTime(DateTime dateTime) {
-    return '${dateTime.year}-${dateTime.month.toString().padLeft(2, '0')}-${dateTime.day.toString().padLeft(2, '0')} '
+    return '${dateTime.year}/${dateTime.month.toString().padLeft(2, '0')}/${dateTime.day.toString().padLeft(2, '0')} '
         '${dateTime.hour.toString().padLeft(2, '0')}:${dateTime.minute.toString().padLeft(2, '0')}';
   }
 }

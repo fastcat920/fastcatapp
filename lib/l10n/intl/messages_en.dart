@@ -219,7 +219,9 @@ class MessageLookup extends MessageLookupByLibrary {
     "autoUpdateInterval": MessageLookupByLibrary.simpleMessage(
       "Auto update interval (minutes)",
     ),
-    "availableCommission": MessageLookupByLibrary.simpleMessage("Available"),
+    "availableCommission": MessageLookupByLibrary.simpleMessage(
+      "Commission balance",
+    ),
     "backToLogin": MessageLookupByLibrary.simpleMessage("Back to Login"),
     "backendErrorAccountSuspended": MessageLookupByLibrary.simpleMessage(
       "This account has been suspended",
@@ -1507,6 +1509,9 @@ class MessageLookup extends MessageLookupByLibrary {
     ),
     "xboardCheckStatus": MessageLookupByLibrary.simpleMessage("Check status"),
     "xboardChecking": MessageLookupByLibrary.simpleMessage("Checking"),
+    "xboardCheckingCachedSubscription": MessageLookupByLibrary.simpleMessage(
+      "Offline mode: checking cached subscription",
+    ),
     "xboardCheckingSubscription": MessageLookupByLibrary.simpleMessage(
       "Checking subscription",
     ),
@@ -2049,6 +2054,21 @@ class MessageLookup extends MessageLookupByLibrary {
     "xboardLogoutFailed": MessageLookupByLibrary.simpleMessage(
       "Sign out failed",
     ),
+    "xboardLogoutForceAction": MessageLookupByLibrary.simpleMessage(
+      "Sign out anyway",
+    ),
+    "xboardLogoutForceConfirmContent": MessageLookupByLibrary.simpleMessage(
+      "Forced sign-out clears the local session and node cache. You may be unable to sign in again until the service recovers. Continue?",
+    ),
+    "xboardLogoutForceConfirmTitle": MessageLookupByLibrary.simpleMessage(
+      "Confirm forced sign-out",
+    ),
+    "xboardLogoutProtectedContent": MessageLookupByLibrary.simpleMessage(
+      "The service connection is currently unstable. Signing out may prevent you from signing in again for a while. Keep this session until the service recovers.",
+    ),
+    "xboardLogoutProtectedTitle": MessageLookupByLibrary.simpleMessage(
+      "Sign-in protection is active",
+    ),
     "xboardLogoutSuccess": MessageLookupByLibrary.simpleMessage("Signed out"),
     "xboardLow": MessageLookupByLibrary.simpleMessage("Low"),
     "xboardManageDevices": MessageLookupByLibrary.simpleMessage(
@@ -2136,6 +2156,10 @@ class MessageLookup extends MessageLookupByLibrary {
     "xboardNetworkDiagnosticsConclusionUdp": MessageLookupByLibrary.simpleMessage(
       "The UDP-based node timed out while direct internet access works. UDP may be unavailable or restricted on the current network.",
     ),
+    "xboardNetworkDiagnosticsConnectFirst":
+        MessageLookupByLibrary.simpleMessage(
+          "Connect the VPN before running network diagnostics.",
+        ),
     "xboardNetworkDiagnosticsConnected": MessageLookupByLibrary.simpleMessage(
       "Connected",
     ),
@@ -2152,10 +2176,14 @@ class MessageLookup extends MessageLookupByLibrary {
       "DNS checks use the system resolver. Node diagnostics then check the actual endpoint DNS, TCP or UDP transport, proxy handshake, and HTTP reachability.",
     ),
     "xboardNetworkDiagnosticsDirectHttps": MessageLookupByLibrary.simpleMessage(
-      "Direct HTTPS",
+      "Local direct HTTPS (domestic baseline)",
     ),
     "xboardNetworkDiagnosticsDisconnected":
         MessageLookupByLibrary.simpleMessage("Disconnected"),
+    "xboardNetworkDiagnosticsDisconnectedInvalidated":
+        MessageLookupByLibrary.simpleMessage(
+          "The VPN disconnected. Network diagnostics stopped and the current results were cleared.",
+        ),
     "xboardNetworkDiagnosticsDns": MessageLookupByLibrary.simpleMessage(
       "DNS resolution",
     ),
@@ -2224,7 +2252,7 @@ class MessageLookup extends MessageLookupByLibrary {
       "The node endpoint is reachable, but the proxy protocol handshake failed",
     ),
     "xboardNetworkDiagnosticsProxyHttps": MessageLookupByLibrary.simpleMessage(
-      "Proxy HTTPS",
+      "Node proxy HTTPS (international reference)",
     ),
     "xboardNetworkDiagnosticsReachable": MessageLookupByLibrary.simpleMessage(
       "Reachable",
@@ -2248,6 +2276,12 @@ class MessageLookup extends MessageLookupByLibrary {
         MessageLookupByLibrary.simpleMessage(
           "Possible DNS pollution: private or reserved address",
         ),
+    "xboardNetworkDiagnosticsTargetHuawei204":
+        MessageLookupByLibrary.simpleMessage("Huawei 204"),
+    "xboardNetworkDiagnosticsTargetVivo204":
+        MessageLookupByLibrary.simpleMessage("vivo 204"),
+    "xboardNetworkDiagnosticsTargetXiaomi204":
+        MessageLookupByLibrary.simpleMessage("Xiaomi 204"),
     "xboardNetworkDiagnosticsTcpRefused": MessageLookupByLibrary.simpleMessage(
       "TCP connection was refused; the server port may not be listening",
     ),
@@ -2293,11 +2327,23 @@ class MessageLookup extends MessageLookupByLibrary {
     "xboardNetworkDiagnosticsVpnStatus": MessageLookupByLibrary.simpleMessage(
       "VPN status",
     ),
+    "xboardNewPeriodCheckingResult": MessageLookupByLibrary.simpleMessage(
+      "Checking the operation result",
+    ),
     "xboardNewPeriodConfirmContent": MessageLookupByLibrary.simpleMessage(
       "This resets used traffic and deducts the remaining duration of the current traffic period from your plan. This action cannot be undone. Continue?",
     ),
     "xboardNewPeriodFailed": MessageLookupByLibrary.simpleMessage(
       "Could not start a new traffic period. Try again later.",
+    ),
+    "xboardNewPeriodResultUncertainContent": MessageLookupByLibrary.simpleMessage(
+      "The network response was interrupted, so the new traffic period cannot be confirmed yet. Check the result instead of submitting again.",
+    ),
+    "xboardNewPeriodResultUncertainTitle": MessageLookupByLibrary.simpleMessage(
+      "Unable to confirm the result",
+    ),
+    "xboardNewPeriodStarting": MessageLookupByLibrary.simpleMessage(
+      "Starting the new traffic period",
     ),
     "xboardNewPeriodSuccess": MessageLookupByLibrary.simpleMessage(
       "The new traffic period has started",
@@ -2686,6 +2732,15 @@ class MessageLookup extends MessageLookupByLibrary {
     ),
     "xboardServerError": MessageLookupByLibrary.simpleMessage("Server error"),
     "xboardServerStatus": MessageLookupByLibrary.simpleMessage("Server status"),
+    "xboardServiceConnectionDegraded": MessageLookupByLibrary.simpleMessage(
+      "Service connection unstable",
+    ),
+    "xboardServiceOfflineCacheMode": MessageLookupByLibrary.simpleMessage(
+      "Offline cache mode",
+    ),
+    "xboardServiceRecovering": MessageLookupByLibrary.simpleMessage(
+      "Restoring connection",
+    ),
     "xboardSetup": MessageLookupByLibrary.simpleMessage("Setup"),
     "xboardSixMonthCycle": MessageLookupByLibrary.simpleMessage(
       "6-month cycle",
@@ -2704,6 +2759,119 @@ class MessageLookup extends MessageLookupByLibrary {
     "xboardStartProxy": MessageLookupByLibrary.simpleMessage("Start Proxy"),
     "xboardStop": MessageLookupByLibrary.simpleMessage("Stop"),
     "xboardStopProxy": MessageLookupByLibrary.simpleMessage("Stop Proxy"),
+    "xboardStreamingAccessible": MessageLookupByLibrary.simpleMessage(
+      "Accessible",
+    ),
+    "xboardStreamingAccessibleCount": MessageLookupByLibrary.simpleMessage(
+      "Accessible services",
+    ),
+    "xboardStreamingBlocked": MessageLookupByLibrary.simpleMessage(
+      "IP blocked by service",
+    ),
+    "xboardStreamingCancelled": MessageLookupByLibrary.simpleMessage(
+      "Cancelled",
+    ),
+    "xboardStreamingCheck": MessageLookupByLibrary.simpleMessage(
+      "Streaming & AI check",
+    ),
+    "xboardStreamingCheckSubtitle": MessageLookupByLibrary.simpleMessage(
+      "Check common streaming and AI services through the current node",
+    ),
+    "xboardStreamingChecking": MessageLookupByLibrary.simpleMessage(
+      "Checking…",
+    ),
+    "xboardStreamingConnectFirst": MessageLookupByLibrary.simpleMessage(
+      "Connect the VPN first. Streaming and AI checks must run through the current node.",
+    ),
+    "xboardStreamingConnected": MessageLookupByLibrary.simpleMessage(
+      "VPN connected",
+    ),
+    "xboardStreamingCopyReport": MessageLookupByLibrary.simpleMessage(
+      "Copy report",
+    ),
+    "xboardStreamingCurrentNode": MessageLookupByLibrary.simpleMessage(
+      "Current node",
+    ),
+    "xboardStreamingDisclaimer": MessageLookupByLibrary.simpleMessage(
+      "Results are based on service-endpoint and public-page access through the current node and are for reference only. Service policies, account regions, sign-in status, and licensing restrictions may affect actual use.",
+    ),
+    "xboardStreamingDisconnected": MessageLookupByLibrary.simpleMessage(
+      "The VPN disconnected. These results are no longer valid.",
+    ),
+    "xboardStreamingError": MessageLookupByLibrary.simpleMessage(
+      "Check failed",
+    ),
+    "xboardStreamingExitRegion": MessageLookupByLibrary.simpleMessage(
+      "Exit region",
+    ),
+    "xboardStreamingNodeChanged": MessageLookupByLibrary.simpleMessage(
+      "The node changed during the check. Run the check again.",
+    ),
+    "xboardStreamingNodeUnavailable": MessageLookupByLibrary.simpleMessage(
+      "The current node is temporarily unavailable. Try again shortly.",
+    ),
+    "xboardStreamingNotConnected": MessageLookupByLibrary.simpleMessage(
+      "VPN not connected",
+    ),
+    "xboardStreamingPartiallyAccessible": MessageLookupByLibrary.simpleMessage(
+      "Partially available",
+    ),
+    "xboardStreamingProgress": MessageLookupByLibrary.simpleMessage("Progress"),
+    "xboardStreamingReportCopied": MessageLookupByLibrary.simpleMessage(
+      "Streaming and AI check report copied",
+    ),
+    "xboardStreamingReportDetail": MessageLookupByLibrary.simpleMessage(
+      "Evidence",
+    ),
+    "xboardStreamingReportSystem": MessageLookupByLibrary.simpleMessage(
+      "System",
+    ),
+    "xboardStreamingReportTime": MessageLookupByLibrary.simpleMessage(
+      "Checked at",
+    ),
+    "xboardStreamingReportTitle": MessageLookupByLibrary.simpleMessage(
+      "FastCat Streaming & AI Check Report",
+    ),
+    "xboardStreamingReportVersion": MessageLookupByLibrary.simpleMessage(
+      "Client version",
+    ),
+    "xboardStreamingRestricted": MessageLookupByLibrary.simpleMessage(
+      "Region restricted",
+    ),
+    "xboardStreamingResults": MessageLookupByLibrary.simpleMessage("Results"),
+    "xboardStreamingRetest": MessageLookupByLibrary.simpleMessage(
+      "Check again",
+    ),
+    "xboardStreamingStart": MessageLookupByLibrary.simpleMessage("Start check"),
+    "xboardStreamingSummary": MessageLookupByLibrary.simpleMessage("Summary"),
+    "xboardStreamingSummaryAccessible": MessageLookupByLibrary.simpleMessage(
+      "Confirmed available",
+    ),
+    "xboardStreamingSummaryInconclusive": MessageLookupByLibrary.simpleMessage(
+      "Error/inconclusive",
+    ),
+    "xboardStreamingSummaryPartial": MessageLookupByLibrary.simpleMessage(
+      "Partially available",
+    ),
+    "xboardStreamingSummaryRestricted": MessageLookupByLibrary.simpleMessage(
+      "Restricted/unavailable",
+    ),
+    "xboardStreamingSummaryVerification": MessageLookupByLibrary.simpleMessage(
+      "Verification required",
+    ),
+    "xboardStreamingTimeout": MessageLookupByLibrary.simpleMessage("Timed out"),
+    "xboardStreamingUnavailable": MessageLookupByLibrary.simpleMessage(
+      "Unavailable",
+    ),
+    "xboardStreamingUncertain": MessageLookupByLibrary.simpleMessage(
+      "Unable to confirm",
+    ),
+    "xboardStreamingUnknown": MessageLookupByLibrary.simpleMessage("Unknown"),
+    "xboardStreamingVerificationRequired": MessageLookupByLibrary.simpleMessage(
+      "Browser verification required",
+    ),
+    "xboardStreamingVisit": MessageLookupByLibrary.simpleMessage("Visit"),
+    "xboardSubmitOrder": MessageLookupByLibrary.simpleMessage("Submit order"),
     "xboardSubmitTicket": MessageLookupByLibrary.simpleMessage("Submit ticket"),
     "xboardSubmitting": MessageLookupByLibrary.simpleMessage("Submitting..."),
     "xboardSubscription": MessageLookupByLibrary.simpleMessage("Subscription"),
@@ -2730,6 +2898,9 @@ class MessageLookup extends MessageLookupByLibrary {
     ),
     "xboardSubscriptionPurchase": MessageLookupByLibrary.simpleMessage(
       "Subscription purchase",
+    ),
+    "xboardSubscriptionSlowUsingCache": MessageLookupByLibrary.simpleMessage(
+      "Server response is slow; using cached data",
     ),
     "xboardSubscriptionStatus": MessageLookupByLibrary.simpleMessage(
       "Subscription status",

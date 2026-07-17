@@ -4,6 +4,10 @@
 app_name: 快猫
 app_name_en: FastCat
 
+# 客户端统一主题色（仅支持 #RRGGBB）
+# 按钮、导航、选中状态等品牌色均以此字段为准
+theme_color: "#4566AE"
+
 # 面板类型：xboard 或 v2board
 # 必须与远程 config.json 中的 panel_type 一致
 panel_type: v2board

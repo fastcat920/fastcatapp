@@ -171,7 +171,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "autoSetSystemDns": MessageLookupByLibrary.simpleMessage("自动设置系统DNS"),
     "autoUpdate": MessageLookupByLibrary.simpleMessage("自动更新"),
     "autoUpdateInterval": MessageLookupByLibrary.simpleMessage("自动更新间隔（分钟）"),
-    "availableCommission": MessageLookupByLibrary.simpleMessage("可用佣金"),
+    "availableCommission": MessageLookupByLibrary.simpleMessage("佣金余额"),
     "backToLogin": MessageLookupByLibrary.simpleMessage("返回登录"),
     "backendErrorAccountSuspended": MessageLookupByLibrary.simpleMessage(
       "该账户已被停止使用",
@@ -1065,6 +1065,9 @@ class MessageLookup extends MessageLookupByLibrary {
     "xboardCheckPaymentStatus": MessageLookupByLibrary.simpleMessage("检查支付状态"),
     "xboardCheckStatus": MessageLookupByLibrary.simpleMessage("检查状态"),
     "xboardChecking": MessageLookupByLibrary.simpleMessage("检查中"),
+    "xboardCheckingCachedSubscription": MessageLookupByLibrary.simpleMessage(
+      "离线模式，正在检查本地订阅",
+    ),
     "xboardCheckingSubscription": MessageLookupByLibrary.simpleMessage("检查订阅"),
     "xboardCleaningOldConfig": MessageLookupByLibrary.simpleMessage("清理旧配置"),
     "xboardClearError": MessageLookupByLibrary.simpleMessage("清除错误"),
@@ -1460,6 +1463,19 @@ class MessageLookup extends MessageLookupByLibrary {
     ),
     "xboardLogoutConfirmTitle": MessageLookupByLibrary.simpleMessage("确认退出"),
     "xboardLogoutFailed": MessageLookupByLibrary.simpleMessage("退出失败"),
+    "xboardLogoutForceAction": MessageLookupByLibrary.simpleMessage("仍然退出"),
+    "xboardLogoutForceConfirmContent": MessageLookupByLibrary.simpleMessage(
+      "强制退出会清除本地登录状态和节点缓存，服务恢复前可能无法再次登录。确定继续吗？",
+    ),
+    "xboardLogoutForceConfirmTitle": MessageLookupByLibrary.simpleMessage(
+      "确认强制退出",
+    ),
+    "xboardLogoutProtectedContent": MessageLookupByLibrary.simpleMessage(
+      "当前服务连接异常，退出后可能暂时无法重新登录。建议保留当前登录状态，等待服务恢复。",
+    ),
+    "xboardLogoutProtectedTitle": MessageLookupByLibrary.simpleMessage(
+      "登录保护已开启",
+    ),
     "xboardLogoutSuccess": MessageLookupByLibrary.simpleMessage("已退出登录"),
     "xboardLow": MessageLookupByLibrary.simpleMessage("低"),
     "xboardManageDevices": MessageLookupByLibrary.simpleMessage("管理设备"),
@@ -1522,6 +1538,8 @@ class MessageLookup extends MessageLookupByLibrary {
         MessageLookupByLibrary.simpleMessage(
           "公网直连正常，但 UDP 节点测试超时；当前网络可能不支持或限制 UDP。",
         ),
+    "xboardNetworkDiagnosticsConnectFirst":
+        MessageLookupByLibrary.simpleMessage("请先连接 VPN，再进行网络连通性诊断。"),
     "xboardNetworkDiagnosticsConnected": MessageLookupByLibrary.simpleMessage(
       "已连接",
     ),
@@ -1539,10 +1557,12 @@ class MessageLookup extends MessageLookupByLibrary {
       "DNS 检测使用系统解析器；节点诊断会继续检测实际入口 DNS、TCP 或 UDP 传输、代理握手及 HTTP 连通性。",
     ),
     "xboardNetworkDiagnosticsDirectHttps": MessageLookupByLibrary.simpleMessage(
-      "直连 HTTPS",
+      "本地直连 HTTPS（国内基准）",
     ),
     "xboardNetworkDiagnosticsDisconnected":
         MessageLookupByLibrary.simpleMessage("未连接"),
+    "xboardNetworkDiagnosticsDisconnectedInvalidated":
+        MessageLookupByLibrary.simpleMessage("VPN 已断开，网络诊断已停止，当前结果已清除。"),
     "xboardNetworkDiagnosticsDns": MessageLookupByLibrary.simpleMessage(
       "DNS 解析",
     ),
@@ -1604,7 +1624,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "xboardNetworkDiagnosticsProtocolFailed":
         MessageLookupByLibrary.simpleMessage("节点入口可达，但代理协议握手失败"),
     "xboardNetworkDiagnosticsProxyHttps": MessageLookupByLibrary.simpleMessage(
-      "代理 HTTPS",
+      "节点代理 HTTPS（境外参考）",
     ),
     "xboardNetworkDiagnosticsReachable": MessageLookupByLibrary.simpleMessage(
       "可连接",
@@ -1626,6 +1646,12 @@ class MessageLookup extends MessageLookupByLibrary {
     ),
     "xboardNetworkDiagnosticsSuspiciousAddress":
         MessageLookupByLibrary.simpleMessage("疑似 DNS 污染：私网或保留地址"),
+    "xboardNetworkDiagnosticsTargetHuawei204":
+        MessageLookupByLibrary.simpleMessage("华为 204"),
+    "xboardNetworkDiagnosticsTargetVivo204":
+        MessageLookupByLibrary.simpleMessage("vivo 204"),
+    "xboardNetworkDiagnosticsTargetXiaomi204":
+        MessageLookupByLibrary.simpleMessage("小米 204"),
     "xboardNetworkDiagnosticsTcpRefused": MessageLookupByLibrary.simpleMessage(
       "TCP 连接被拒绝，服务器端口可能未监听",
     ),
@@ -1667,11 +1693,24 @@ class MessageLookup extends MessageLookupByLibrary {
     "xboardNetworkDiagnosticsVpnStatus": MessageLookupByLibrary.simpleMessage(
       "VPN 状态",
     ),
+    "xboardNewPeriodCheckingResult": MessageLookupByLibrary.simpleMessage(
+      "正在检查操作结果",
+    ),
     "xboardNewPeriodConfirmContent": MessageLookupByLibrary.simpleMessage(
       "开启后将重置已使用流量，并扣除当前流量周期剩余的套餐时长。此操作无法撤销，是否继续？",
     ),
     "xboardNewPeriodFailed": MessageLookupByLibrary.simpleMessage(
       "开启新的流量周期失败，请稍后重试",
+    ),
+    "xboardNewPeriodResultUncertainContent":
+        MessageLookupByLibrary.simpleMessage(
+          "网络响应异常，暂时无法确认新的流量周期是否已开启。请检查结果，不要重复提交。",
+        ),
+    "xboardNewPeriodResultUncertainTitle": MessageLookupByLibrary.simpleMessage(
+      "暂时无法确认操作结果",
+    ),
+    "xboardNewPeriodStarting": MessageLookupByLibrary.simpleMessage(
+      "正在开启新的流量周期",
     ),
     "xboardNewPeriodSuccess": MessageLookupByLibrary.simpleMessage("新的流量周期已开启"),
     "xboardNewPeriodTrafficExhaustedDetail":
@@ -1929,6 +1968,13 @@ class MessageLookup extends MessageLookupByLibrary {
     "xboardSendVerificationCode": MessageLookupByLibrary.simpleMessage("发送验证码"),
     "xboardServerError": MessageLookupByLibrary.simpleMessage("服务器错误"),
     "xboardServerStatus": MessageLookupByLibrary.simpleMessage("服务器状态"),
+    "xboardServiceConnectionDegraded": MessageLookupByLibrary.simpleMessage(
+      "服务连接不稳定",
+    ),
+    "xboardServiceOfflineCacheMode": MessageLookupByLibrary.simpleMessage(
+      "离线缓存模式",
+    ),
+    "xboardServiceRecovering": MessageLookupByLibrary.simpleMessage("正在恢复连接"),
     "xboardSetup": MessageLookupByLibrary.simpleMessage("设置"),
     "xboardSixMonthCycle": MessageLookupByLibrary.simpleMessage("6个月周期"),
     "xboardSmartLatencyStarted": MessageLookupByLibrary.simpleMessage(
@@ -1941,6 +1987,85 @@ class MessageLookup extends MessageLookupByLibrary {
     "xboardStartProxy": MessageLookupByLibrary.simpleMessage("启动代理"),
     "xboardStop": MessageLookupByLibrary.simpleMessage("停止"),
     "xboardStopProxy": MessageLookupByLibrary.simpleMessage("停止代理"),
+    "xboardStreamingAccessible": MessageLookupByLibrary.simpleMessage("可访问"),
+    "xboardStreamingAccessibleCount": MessageLookupByLibrary.simpleMessage(
+      "可访问服务",
+    ),
+    "xboardStreamingBlocked": MessageLookupByLibrary.simpleMessage("IP 被平台限制"),
+    "xboardStreamingCancelled": MessageLookupByLibrary.simpleMessage("已取消"),
+    "xboardStreamingCheck": MessageLookupByLibrary.simpleMessage("流媒体与 AI 检测"),
+    "xboardStreamingCheckSubtitle": MessageLookupByLibrary.simpleMessage(
+      "检测当前节点对常用流媒体与 AI 服务的访问状态",
+    ),
+    "xboardStreamingChecking": MessageLookupByLibrary.simpleMessage("检测中…"),
+    "xboardStreamingConnectFirst": MessageLookupByLibrary.simpleMessage(
+      "请先连接 VPN，流媒体与 AI 检测必须通过当前节点进行。",
+    ),
+    "xboardStreamingConnected": MessageLookupByLibrary.simpleMessage("VPN 已连接"),
+    "xboardStreamingCopyReport": MessageLookupByLibrary.simpleMessage("复制报告"),
+    "xboardStreamingCurrentNode": MessageLookupByLibrary.simpleMessage("当前节点"),
+    "xboardStreamingDisclaimer": MessageLookupByLibrary.simpleMessage(
+      "检测结果基于当前节点对服务接口和公开页面的访问情况，仅供参考；服务策略、账号地区、登录状态和版权限制都可能影响实际使用。",
+    ),
+    "xboardStreamingDisconnected": MessageLookupByLibrary.simpleMessage(
+      "VPN 已断开，当前检测结果已失效。",
+    ),
+    "xboardStreamingError": MessageLookupByLibrary.simpleMessage("检测失败"),
+    "xboardStreamingExitRegion": MessageLookupByLibrary.simpleMessage("出口地区"),
+    "xboardStreamingNodeChanged": MessageLookupByLibrary.simpleMessage(
+      "检测期间节点发生变化，当前结果已失效，请重新检测。",
+    ),
+    "xboardStreamingNodeUnavailable": MessageLookupByLibrary.simpleMessage(
+      "暂时无法获取当前节点，请稍后重试。",
+    ),
+    "xboardStreamingNotConnected": MessageLookupByLibrary.simpleMessage(
+      "VPN 未连接",
+    ),
+    "xboardStreamingPartiallyAccessible": MessageLookupByLibrary.simpleMessage(
+      "部分可用",
+    ),
+    "xboardStreamingProgress": MessageLookupByLibrary.simpleMessage("检测进度"),
+    "xboardStreamingReportCopied": MessageLookupByLibrary.simpleMessage(
+      "流媒体与 AI 检测报告已复制",
+    ),
+    "xboardStreamingReportDetail": MessageLookupByLibrary.simpleMessage("判定依据"),
+    "xboardStreamingReportSystem": MessageLookupByLibrary.simpleMessage("系统"),
+    "xboardStreamingReportTime": MessageLookupByLibrary.simpleMessage("检测时间"),
+    "xboardStreamingReportTitle": MessageLookupByLibrary.simpleMessage(
+      "FastCat 流媒体与 AI 检测报告",
+    ),
+    "xboardStreamingReportVersion": MessageLookupByLibrary.simpleMessage(
+      "客户端版本",
+    ),
+    "xboardStreamingRestricted": MessageLookupByLibrary.simpleMessage("地区受限"),
+    "xboardStreamingResults": MessageLookupByLibrary.simpleMessage("检测结果"),
+    "xboardStreamingRetest": MessageLookupByLibrary.simpleMessage("重新检测"),
+    "xboardStreamingStart": MessageLookupByLibrary.simpleMessage("开始检测"),
+    "xboardStreamingSummary": MessageLookupByLibrary.simpleMessage("检测汇总"),
+    "xboardStreamingSummaryAccessible": MessageLookupByLibrary.simpleMessage(
+      "确认可用",
+    ),
+    "xboardStreamingSummaryInconclusive": MessageLookupByLibrary.simpleMessage(
+      "异常/无法确认",
+    ),
+    "xboardStreamingSummaryPartial": MessageLookupByLibrary.simpleMessage(
+      "部分可用",
+    ),
+    "xboardStreamingSummaryRestricted": MessageLookupByLibrary.simpleMessage(
+      "明确受限/不可用",
+    ),
+    "xboardStreamingSummaryVerification": MessageLookupByLibrary.simpleMessage(
+      "需要验证",
+    ),
+    "xboardStreamingTimeout": MessageLookupByLibrary.simpleMessage("检测超时"),
+    "xboardStreamingUnavailable": MessageLookupByLibrary.simpleMessage("不可访问"),
+    "xboardStreamingUncertain": MessageLookupByLibrary.simpleMessage("无法确认"),
+    "xboardStreamingUnknown": MessageLookupByLibrary.simpleMessage("未知"),
+    "xboardStreamingVerificationRequired": MessageLookupByLibrary.simpleMessage(
+      "需要浏览器验证",
+    ),
+    "xboardStreamingVisit": MessageLookupByLibrary.simpleMessage("访问"),
+    "xboardSubmitOrder": MessageLookupByLibrary.simpleMessage("提交订单"),
     "xboardSubmitTicket": MessageLookupByLibrary.simpleMessage("提交工单"),
     "xboardSubmitting": MessageLookupByLibrary.simpleMessage("提交中..."),
     "xboardSubscription": MessageLookupByLibrary.simpleMessage("订阅"),
@@ -1958,6 +2083,9 @@ class MessageLookup extends MessageLookupByLibrary {
       "订阅链接已复制到剪贴板",
     ),
     "xboardSubscriptionPurchase": MessageLookupByLibrary.simpleMessage("订阅购买"),
+    "xboardSubscriptionSlowUsingCache": MessageLookupByLibrary.simpleMessage(
+      "后端响应较慢，正在使用缓存",
+    ),
     "xboardSubscriptionStatus": MessageLookupByLibrary.simpleMessage("订阅状态"),
     "xboardSurplusAmount": MessageLookupByLibrary.simpleMessage("旧套餐折抵金额"),
     "xboardSwitch": MessageLookupByLibrary.simpleMessage("切换"),

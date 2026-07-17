@@ -63,7 +63,6 @@ class _InvitePageState extends ConsumerState<InvitePage>
         inviteState.hasInviteData || inviteState.userInfo != null;
     final bool hasError = inviteState.errorMessage != null;
 
-
     Widget body;
     if (!dataReady && !hasError) {
       // 全屏加载中
@@ -125,21 +124,21 @@ class _InvitePageState extends ConsumerState<InvitePage>
     return Scaffold(
       backgroundColor: isDark ? null : const Color(0xFFFAFBFD),
       appBar: AppBar(
-              title: Text(appLocalizations.invite),
-              automaticallyImplyLeading: false,
-              actions: isDesktop
-                  ? [
-                      Padding(
-                        padding: const EdgeInsets.only(right: 12),
-                        child: IconButton(
-                          icon: const Icon(Icons.refresh),
-                          onPressed: _doRefresh,
-                          tooltip: appLocalizations.refresh,
-                        ),
-                      ),
-                    ]
-                  : null,
-            ),
+        title: Text(appLocalizations.invite),
+        automaticallyImplyLeading: false,
+        actions: isDesktop
+            ? [
+                Padding(
+                  padding: const EdgeInsets.only(right: 12),
+                  child: IconButton(
+                    icon: const Icon(Icons.refresh),
+                    onPressed: _doRefresh,
+                    tooltip: appLocalizations.refresh,
+                  ),
+                ),
+              ]
+            : null,
+      ),
       body: body,
     );
   }
@@ -318,7 +317,7 @@ class _ActionButtons extends ConsumerWidget {
             builder: (_) => const TransferDialog(),
           ),
           icon: const Icon(Icons.swap_horiz, size: 18),
-          label: appLocalizations.transfer,
+          label: appLocalizations.transferToWallet,
         ),
       );
     }
@@ -360,7 +359,7 @@ class _ActionButtons extends ConsumerWidget {
               builder: (_) => const TransferDialog(),
             ),
             icon: const Icon(Icons.swap_horiz, size: 18),
-            label: appLocalizations.transfer,
+            label: appLocalizations.transferToWallet,
           ),
         ),
       ],

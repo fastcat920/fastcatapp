@@ -265,6 +265,7 @@ enum ActionMethod {
   resetTraffic,
   asyncTestDelay,
   diagnoseProxy,
+  streamingProbe,
   getConnections,
   closeConnections,
   resetConnections,
