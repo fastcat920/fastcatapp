@@ -17,6 +17,11 @@ import 'package:fl_clash/xboard/features/connectivity/connectivity.dart';
 const _logger = FileLogger('xboard_subscription_provider.dart');
 
 class XBoardSubscriptionNotifier extends Notifier<List<DomainPlan>> {
+  Future<void>? _plansLoadInFlight;
+  final Map<int, DomainPlan> _planDetailCache = <int, DomainPlan>{};
+  final Map<int, Future<DomainPlan?>> _planDetailLoads =
+      <int, Future<DomainPlan?>>{};
+
   void _afterFrame(Future<void> Function() task) {
     SchedulerBinding.instance.addPostFrameCallback((_) {
       Future<void>(task);
@@ -95,7 +100,28 @@ class XBoardSubscriptionNotifier extends Notifier<List<DomainPlan>> {
     }
   }
 
-  Future<void> loadPlans() async {
+  /// Prefer the local snapshot for an immediate interaction, then fall back to
+  /// the network only when no usable snapshot exists.
+  Future<void> ensurePlansLoaded() async {
+    if (state.isNotEmpty) return;
+    await _loadCachedPlans();
+    if (state.isEmpty) await loadPlans();
+  }
+
+  Future<void> loadPlans() {
+    final inFlight = _plansLoadInFlight;
+    if (inFlight != null) return inFlight;
+
+    final operation = _loadPlans();
+    _plansLoadInFlight = operation;
+    return operation.whenComplete(() {
+      if (identical(_plansLoadInFlight, operation)) {
+        _plansLoadInFlight = null;
+      }
+    });
+  }
+
+  Future<void> _loadPlans() async {
     final userAuthState = ref.read(xboardUserAuthProvider);
     if (!userAuthState.isAuthenticated) {
       state = <DomainPlan>[];
@@ -115,6 +141,9 @@ class XBoardSubscriptionNotifier extends Notifier<List<DomainPlan>> {
       _logger.info('开始加载套餐列表...');
       final planModels = await ref.read(getPlansProvider.future);
       final plans = planModels.map(_mapPlan).toList();
+      _planDetailCache
+        ..clear()
+        ..addEntries(plans.map((plan) => MapEntry(plan.id, plan)));
       final visiblePlans = plans.where((plan) => plan.isVisible).toList();
       // 按 sort 字段排序（升序），null 值排在最后
       visiblePlans.sort((a, b) {
@@ -165,6 +194,26 @@ class XBoardSubscriptionNotifier extends Notifier<List<DomainPlan>> {
     final cachedPlan = getPlanById(planId);
     if (cachedPlan != null) return cachedPlan;
 
+    final cachedDetail = _planDetailCache[planId];
+    if (cachedDetail != null) return cachedDetail;
+
+    final inFlight = _planDetailLoads[planId];
+    if (inFlight != null) return inFlight;
+
+    final operation = _loadPlanById(planId);
+    _planDetailLoads[planId] = operation;
+    try {
+      final plan = await operation;
+      if (plan != null) _planDetailCache[planId] = plan;
+      return plan;
+    } finally {
+      if (identical(_planDetailLoads[planId], operation)) {
+        _planDetailLoads.remove(planId);
+      }
+    }
+  }
+
+  Future<DomainPlan?> _loadPlanById(int planId) async {
     try {
       final planModel = await ref.read(getPlanProvider(planId).future);
       if (planModel != null) return _mapPlan(planModel);
@@ -199,6 +248,8 @@ class XBoardSubscriptionNotifier extends Notifier<List<DomainPlan>> {
   void _clearPlans() {
     _logger.info('清空套餐列表');
     state = <DomainPlan>[];
+    _planDetailCache.clear();
+    _planDetailLoads.clear();
     ref.read(userUIStateProvider.notifier).state = const UIState();
   }
 

@@ -25,6 +25,7 @@ class _PlansViewState extends ConsumerState<PlansView> {
   bool _hasCheckedUrlParams = false; // 标记是否已检查URL参数
   String? _initialPeriod; // URL参数传入的初始周期（如 reset_price）
   String? _planLoadError; // 套餐列表独立的错误状态
+  bool _isRefreshingPlans = false;
   AppLocalizations get appLocalizations => AppLocalizations.of(context);
 
   @override
@@ -96,13 +97,19 @@ class _PlansViewState extends ConsumerState<PlansView> {
   }
 
   Future<void> _refreshPlans() async {
-    setState(() => _planLoadError = null);
+    if (_isRefreshingPlans) return;
+    setState(() {
+      _isRefreshingPlans = true;
+      _planLoadError = null;
+    });
     try {
       final subscriptionNotifier =
           ref.read(xboardSubscriptionProvider.notifier);
       await subscriptionNotifier.refreshPlans();
     } catch (e) {
       if (mounted) setState(() => _planLoadError = e.toString());
+    } finally {
+      if (mounted) setState(() => _isRefreshingPlans = false);
     }
   }
 
@@ -420,8 +427,15 @@ class _PlansViewState extends ConsumerState<PlansView> {
                     Padding(
                       padding: const EdgeInsets.only(right: 12),
                       child: IconButton(
-                        icon: const Icon(Icons.refresh),
-                        onPressed: _refreshPlans,
+                        icon: _isRefreshingPlans
+                            ? const SizedBox(
+                                width: 20,
+                                height: 20,
+                                child:
+                                    CircularProgressIndicator(strokeWidth: 2),
+                              )
+                            : const Icon(Icons.refresh),
+                        onPressed: _isRefreshingPlans ? null : _refreshPlans,
                         tooltip: appLocalizations.refresh,
                       ),
                     ),

@@ -93,7 +93,7 @@ Future<DomainPlan?> _resolveResetTrafficPlan({
   if (plan != null) return plan;
   var plans = ref.read(xboardSubscriptionProvider);
   if (plans.isEmpty) {
-    await ref.read(xboardSubscriptionProvider.notifier).loadPlans();
+    await ref.read(xboardSubscriptionProvider.notifier).ensurePlansLoaded();
     plans = ref.read(xboardSubscriptionProvider);
   }
   final matched = plans.where((item) => item.id == planId).firstOrNull;

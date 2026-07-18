@@ -1,14 +1,15 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import '../services/subscription_status_service.dart';
 import 'package:fl_clash/l10n/l10n.dart';
 import 'package:fl_clash/xboard/features/shared/styles/styles.dart';
 
-class SubscriptionStatusDialog extends StatelessWidget {
+class SubscriptionStatusDialog extends StatefulWidget {
   final SubscriptionStatusResult statusResult;
-  final VoidCallback? onPurchase;
-  final VoidCallback? onTrafficRecovery;
+  final FutureOr<void> Function()? onPurchase;
+  final FutureOr<void> Function()? onTrafficRecovery;
   final bool useNewPeriod;
-  final VoidCallback? onRefresh;
+  final FutureOr<void> Function()? onRefresh;
   const SubscriptionStatusDialog({
     super.key,
     required this.statusResult,
@@ -20,10 +21,10 @@ class SubscriptionStatusDialog extends StatelessWidget {
   static Future<String?> show(
     BuildContext context,
     SubscriptionStatusResult statusResult, {
-    VoidCallback? onPurchase,
-    VoidCallback? onTrafficRecovery,
+    FutureOr<void> Function()? onPurchase,
+    FutureOr<void> Function()? onTrafficRecovery,
     bool useNewPeriod = false,
-    VoidCallback? onRefresh,
+    FutureOr<void> Function()? onRefresh,
   }) {
     return showDialog<String>(
       context: context,
@@ -37,6 +38,20 @@ class SubscriptionStatusDialog extends StatelessWidget {
       ),
     );
   }
+
+  @override
+  State<SubscriptionStatusDialog> createState() =>
+      _SubscriptionStatusDialogState();
+}
+
+class _SubscriptionStatusDialogState extends State<SubscriptionStatusDialog> {
+  bool _isRefreshing = false;
+
+  SubscriptionStatusResult get statusResult => widget.statusResult;
+  FutureOr<void> Function()? get onPurchase => widget.onPurchase;
+  FutureOr<void> Function()? get onTrafficRecovery => widget.onTrafficRecovery;
+  FutureOr<void> Function()? get onRefresh => widget.onRefresh;
+  bool get useNewPeriod => widget.useNewPeriod;
 
   @override
   Widget build(BuildContext context) {
@@ -274,12 +289,32 @@ class SubscriptionStatusDialog extends StatelessWidget {
         SizedBox(
           width: double.infinity,
           child: OutlinedButton(
-            onPressed: () {
-              Navigator.of(context).pop('refresh');
-              onRefresh?.call();
-            },
+            onPressed: _isRefreshing
+                ? null
+                : () async {
+                    setState(() => _isRefreshing = true);
+                    try {
+                      await onRefresh?.call();
+                      if (mounted) Navigator.of(context).pop('refresh');
+                    } finally {
+                      if (mounted) setState(() => _isRefreshing = false);
+                    }
+                  },
             style: XbUiButton.outlinedNeutral(context),
-            child: Text(AppLocalizations.of(context).xboardRefreshStatus),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                if (_isRefreshing) ...[
+                  const SizedBox(
+                    width: 18,
+                    height: 18,
+                    child: CircularProgressIndicator(strokeWidth: 2),
+                  ),
+                  const SizedBox(width: 8),
+                ],
+                Text(AppLocalizations.of(context).xboardRefreshStatus),
+              ],
+            ),
           ),
         ),
       );
@@ -289,7 +324,8 @@ class SubscriptionStatusDialog extends StatelessWidget {
       SizedBox(
         width: double.infinity,
         child: OutlinedButton(
-          onPressed: () => Navigator.of(context).pop('later'),
+          onPressed:
+              _isRefreshing ? null : () => Navigator.of(context).pop('later'),
           style: XbUiButton.outlinedNeutral(context),
           child: Text(_getSecondaryButtonText(context)),
         ),
@@ -301,10 +337,12 @@ class SubscriptionStatusDialog extends StatelessWidget {
         SizedBox(
           width: double.infinity,
           child: FilledButton.icon(
-            onPressed: () {
-              Navigator.of(context).pop('reset_traffic');
-              onTrafficRecovery?.call();
-            },
+            onPressed: _isRefreshing
+                ? null
+                : () {
+                    Navigator.of(context).pop('reset_traffic');
+                    onTrafficRecovery?.call();
+                  },
             style: XbUiButton.filledPrimary(context).copyWith(
               backgroundColor:
                   WidgetStatePropertyAll(XbUiStatusColor.pending(context)),
@@ -325,10 +363,12 @@ class SubscriptionStatusDialog extends StatelessWidget {
         SizedBox(
           width: double.infinity,
           child: FilledButton(
-            onPressed: () {
-              Navigator.of(context).pop('purchase');
-              onPurchase?.call();
-            },
+            onPressed: _isRefreshing
+                ? null
+                : () {
+                    Navigator.of(context).pop('purchase');
+                    onPurchase?.call();
+                  },
             style: XbUiButton.filledPrimary(context).copyWith(
               backgroundColor:
                   WidgetStatePropertyAll(_getPrimaryButtonColor(context)),

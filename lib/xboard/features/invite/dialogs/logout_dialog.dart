@@ -6,11 +6,18 @@ import 'package:fl_clash/xboard/utils/xboard_notification.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-class LogoutDialog extends ConsumerWidget {
+class LogoutDialog extends ConsumerStatefulWidget {
   const LogoutDialog({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<LogoutDialog> createState() => _LogoutDialogState();
+}
+
+class _LogoutDialogState extends ConsumerState<LogoutDialog> {
+  bool _isLoggingOut = false;
+
+  @override
+  Widget build(BuildContext context) {
     final isProtected = !ref.watch(serviceConnectivityProvider).isOnline;
     return AlertDialog(
       shape: XbUiDialog.shape(),
@@ -28,24 +35,50 @@ class LogoutDialog extends ConsumerWidget {
       ),
       actions: [
         OutlinedButton(
-          onPressed: () => Navigator.of(context).pop(),
+          onPressed: _isLoggingOut ? null : () => Navigator.of(context).pop(),
           style: XbUiButton.outlinedNeutral(context),
           child: Text(appLocalizations.cancel),
         ),
         FilledButton(
-          onPressed: () async {
-            if (isProtected) {
-              final confirmed = await _confirmForcedLogout(context);
-              if (!confirmed || !context.mounted) return;
-            }
-            if (context.mounted) Navigator.of(context).pop();
-            await _performLogout(context, ref, force: isProtected);
-          },
-          style: XbUiButton.filledDanger(context),
-          child: Text(
-            isProtected
-                ? appLocalizations.xboardLogoutForceAction
-                : appLocalizations.exit,
+          onPressed: _isLoggingOut
+              ? null
+              : () async {
+                  if (isProtected) {
+                    final confirmed = await _confirmForcedLogout(context);
+                    if (!confirmed || !context.mounted) return;
+                  }
+                  setState(() => _isLoggingOut = true);
+                  final succeeded = await _performLogout(force: isProtected);
+                  if (!mounted) return;
+                  if (succeeded) {
+                    Navigator.of(context).pop();
+                    XBoardNotification.showSuccess(
+                        appLocalizations.loggedOutSuccess);
+                  } else {
+                    setState(() => _isLoggingOut = false);
+                  }
+                },
+          style: XbUiButton.filledDanger(context, busy: _isLoggingOut),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              if (_isLoggingOut) ...[
+                const SizedBox(
+                  width: 18,
+                  height: 18,
+                  child: CircularProgressIndicator(
+                    strokeWidth: 2,
+                    color: Colors.white,
+                  ),
+                ),
+                const SizedBox(width: 8),
+              ],
+              Text(
+                isProtected
+                    ? appLocalizations.xboardLogoutForceAction
+                    : appLocalizations.exit,
+              ),
+            ],
           ),
         ),
       ],
@@ -80,25 +113,23 @@ class LogoutDialog extends ConsumerWidget {
         false;
   }
 
-  Future<void> _performLogout(
-    BuildContext context,
-    WidgetRef ref, {
+  Future<bool> _performLogout({
     required bool force,
   }) async {
     try {
       await ref
           .read(xboardUserProvider.notifier)
           .logout(allowWhenServiceUnavailable: force);
-      if (context.mounted) {
-        XBoardNotification.showSuccess(appLocalizations.loggedOutSuccess);
-      }
+      return true;
     } catch (e) {
       if (!ref.read(xboardUserProvider).isAuthenticated) {
-        return;
+        return true;
       }
-      if (context.mounted) {
-        XBoardNotification.showError(appLocalizations.logoutFailed(e.toString()));
+      if (mounted) {
+        XBoardNotification.showError(
+            appLocalizations.logoutFailed(e.toString()));
       }
+      return false;
     }
   }
 }

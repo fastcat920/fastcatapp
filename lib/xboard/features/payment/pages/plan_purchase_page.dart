@@ -42,6 +42,7 @@ class PlanPurchasePage extends ConsumerStatefulWidget {
 }
 
 class _PlanPurchasePageState extends ConsumerState<PlanPurchasePage> {
+  bool _isRefreshing = false;
   // 周期选择
   String? _selectedPeriod;
 
@@ -329,12 +330,14 @@ class _PlanPurchasePageState extends ConsumerState<PlanPurchasePage> {
   // ========== UI 构建 ==========
 
   Future<void> _refreshPage() async {
-    // 刷新用户余额
+    if (_isRefreshing) return;
+    setState(() => _isRefreshing = true);
     try {
-      ref.read(xboardUserAuthProvider.notifier).refreshUserInfo();
-    } catch (_) {}
-    // 重新加载优惠券和套餐信息
-    await Future<void>.delayed(const Duration(milliseconds: 250));
+      await ref.read(xboardUserAuthProvider.notifier).refreshUserInfo();
+    } catch (_) {
+    } finally {
+      if (mounted) setState(() => _isRefreshing = false);
+    }
   }
 
   @override
@@ -483,8 +486,14 @@ class _PlanPurchasePageState extends ConsumerState<PlanPurchasePage> {
         actions: [
           if (isPlatformDesktop)
             IconButton(
-              icon: const Icon(Icons.refresh),
-              onPressed: _refreshPage,
+              icon: _isRefreshing
+                  ? const SizedBox(
+                      width: 20,
+                      height: 20,
+                      child: CircularProgressIndicator(strokeWidth: 2),
+                    )
+                  : const Icon(Icons.refresh),
+              onPressed: _isRefreshing ? null : _refreshPage,
               tooltip: AppLocalizations.of(context).refresh,
             ),
         ],

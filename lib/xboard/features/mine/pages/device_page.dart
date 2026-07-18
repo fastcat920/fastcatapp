@@ -30,6 +30,9 @@ class _DeviceManagementPageState extends ConsumerState<DeviceManagementPage>
     with SingleTickerProviderStateMixin {
   late final AnimationController _refreshAnim;
   late Future<_DevicePageData> _future;
+  bool _isRefreshing = false;
+  bool _isReleasingOfflineDevices = false;
+  String? _removingDeviceId;
 
   @override
   void initState() {
@@ -48,6 +51,8 @@ class _DeviceManagementPageState extends ConsumerState<DeviceManagementPage>
   }
 
   Future<void> _refreshPage() async {
+    if (_isRefreshing) return;
+    _isRefreshing = true;
     setState(() {
       _future = _loadPageData();
     });
@@ -64,6 +69,8 @@ class _DeviceManagementPageState extends ConsumerState<DeviceManagementPage>
         _refreshAnim.stop();
         _refreshAnim.reset();
       }
+      _isRefreshing = false;
+      if (mounted) setState(() {});
     }
   }
 
@@ -215,6 +222,7 @@ class _DeviceManagementPageState extends ConsumerState<DeviceManagementPage>
   }
 
   Future<void> _deleteDevice(_DeviceRecordView device) async {
+    if (_removingDeviceId != null || _isReleasingOfflineDevices) return;
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (dialogContext) => AlertDialog(
@@ -244,34 +252,49 @@ class _DeviceManagementPageState extends ConsumerState<DeviceManagementPage>
     );
     if (confirmed != true) return;
 
-    final sdk = await ref.read(xboardSdkProvider.future);
-    await _requestFromDeviceGateway<void>(
-      sdk,
-      (http, headers) => http.deleteRequest(
-        '/user/devices/${device.id}',
-        headers: headers,
-      ),
-    );
+    setState(() => _removingDeviceId = device.id);
+    try {
+      final sdk = await ref.read(xboardSdkProvider.future);
+      await _requestFromDeviceGateway<void>(
+        sdk,
+        (http, headers) => http.deleteRequest(
+          '/user/devices/${device.id}',
+          headers: headers,
+        ),
+      );
 
-    if (!mounted) return;
-    XBoardNotification.showSuccess(
-        AppLocalizations.of(context).xboardDeviceRemoved);
+      if (!mounted) return;
+      XBoardNotification.showSuccess(
+          AppLocalizations.of(context).xboardDeviceRemoved);
 
-    if (device.isCurrent) {
-      // 当前设备已在服务端移除，本地登录凭证不再有效，必须完成退出。
-      await ref
-          .read(xboardUserProvider.notifier)
-          .logout(allowWhenServiceUnavailable: true);
-      if (mounted) {
-        context.go('/login');
+      if (device.isCurrent) {
+        // 当前设备已在服务端移除，本地登录凭证不再有效，必须完成退出。
+        await ref
+            .read(xboardUserProvider.notifier)
+            .logout(allowWhenServiceUnavailable: true);
+        if (mounted) {
+          context.go('/login');
+        }
+        return;
       }
-      return;
-    }
 
-    await _refreshPage();
+      await _refreshPage();
+    } catch (e) {
+      if (mounted) {
+        XBoardNotification.showError(
+          BackendMessageMapper.mapError(
+            e,
+            context: BackendMessageContext.generic,
+          ),
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _removingDeviceId = null);
+    }
   }
 
   Future<void> _releaseOfflineDevices(_DevicePageData data) async {
+    if (_isReleasingOfflineDevices || _removingDeviceId != null) return;
     final targets = data.offlineActiveDevices;
     if (targets.isEmpty) return;
 
@@ -303,22 +326,36 @@ class _DeviceManagementPageState extends ConsumerState<DeviceManagementPage>
     );
     if (confirmed != true) return;
 
-    final sdk = await ref.read(xboardSdkProvider.future);
-    for (final device in targets) {
-      await _requestFromDeviceGateway<void>(
-        sdk,
-        (http, headers) => http.deleteRequest(
-          '/user/devices/${device.id}',
-          headers: headers,
-        ),
-      );
-    }
+    setState(() => _isReleasingOfflineDevices = true);
+    try {
+      final sdk = await ref.read(xboardSdkProvider.future);
+      for (final device in targets) {
+        await _requestFromDeviceGateway<void>(
+          sdk,
+          (http, headers) => http.deleteRequest(
+            '/user/devices/${device.id}',
+            headers: headers,
+          ),
+        );
+      }
 
-    if (!mounted) return;
-    XBoardNotification.showSuccess(
-      AppLocalizations.of(context).xboardDeviceRemoved,
-    );
-    await _refreshPage();
+      if (!mounted) return;
+      XBoardNotification.showSuccess(
+        AppLocalizations.of(context).xboardDeviceRemoved,
+      );
+      await _refreshPage();
+    } catch (e) {
+      if (mounted) {
+        XBoardNotification.showError(
+          BackendMessageMapper.mapError(
+            e,
+            context: BackendMessageContext.generic,
+          ),
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _isReleasingOfflineDevices = false);
+    }
   }
 
   Widget _buildRefreshButton() {
@@ -329,7 +366,7 @@ class _DeviceManagementPageState extends ConsumerState<DeviceManagementPage>
         child: IconButton(
           icon: const Icon(Icons.refresh),
           tooltip: AppLocalizations.of(context).refresh,
-          onPressed: _refreshPage,
+          onPressed: _isRefreshing ? null : _refreshPage,
         ),
       ),
     );
@@ -361,7 +398,8 @@ class _DeviceManagementPageState extends ConsumerState<DeviceManagementPage>
 
           if (snapshot.hasError) {
             return XbErrorState(
-              message: BackendMessageMapper.mapError(snapshot.error, context: BackendMessageContext.generic),
+              message: BackendMessageMapper.mapError(snapshot.error,
+                  context: BackendMessageContext.generic),
               onRetry: _refreshPage,
             );
           }
@@ -484,9 +522,24 @@ class _DeviceManagementPageState extends ConsumerState<DeviceManagementPage>
               Align(
                 alignment: Alignment.centerLeft,
                 child: FilledButton.icon(
-                  onPressed: () => _releaseOfflineDevices(data),
-                  style: XbUiButton.filledDanger(context),
-                  icon: const Icon(Icons.link_off_outlined),
+                  onPressed:
+                      _isReleasingOfflineDevices || _removingDeviceId != null
+                          ? null
+                          : () => _releaseOfflineDevices(data),
+                  style: XbUiButton.filledDanger(
+                    context,
+                    busy: _isReleasingOfflineDevices,
+                  ),
+                  icon: _isReleasingOfflineDevices
+                      ? const SizedBox(
+                          width: 18,
+                          height: 18,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2,
+                            color: Colors.white,
+                          ),
+                        )
+                      : const Icon(Icons.link_off_outlined),
                   label: Text(l10n.xboardReleaseOfflineDevices),
                 ),
               ),
@@ -628,11 +681,23 @@ class _DeviceManagementPageState extends ConsumerState<DeviceManagementPage>
                 if (!isRevoked)
                   IconButton(
                     tooltip: AppLocalizations.of(context).remove,
-                    onPressed: () => _deleteDevice(device),
-                    icon: Icon(
-                      Icons.delete_outline,
-                      color: XbUiStatusColor.error(context),
-                    ),
+                    onPressed:
+                        _removingDeviceId != null || _isReleasingOfflineDevices
+                            ? null
+                            : () => _deleteDevice(device),
+                    icon: _removingDeviceId == device.id
+                        ? SizedBox(
+                            width: 20,
+                            height: 20,
+                            child: CircularProgressIndicator(
+                              strokeWidth: 2,
+                              color: XbUiStatusColor.error(context),
+                            ),
+                          )
+                        : Icon(
+                            Icons.delete_outline,
+                            color: XbUiStatusColor.error(context),
+                          ),
                   ),
               ],
             ),

@@ -9,7 +9,8 @@ import 'package:fl_clash/xboard/features/subscription/widgets/subscription_statu
 import 'package:fl_clash/xboard/features/auth/providers/xboard_user_provider.dart';
 import 'package:fl_clash/xboard/features/subscription/providers/xboard_subscription_provider.dart';
 import 'package:fl_clash/xboard/features/payment/pages/plan_purchase_page.dart';
-import 'package:fl_clash/xboard/features/payment/pages/plans.dart' show pendingPurchasePlanProvider;
+import 'package:fl_clash/xboard/features/payment/pages/plans.dart'
+    show pendingPurchasePlanProvider;
 import 'package:fl_clash/xboard/features/subscription/services/traffic_recovery_service.dart';
 import 'package:fl_clash/xboard/utils/xboard_notification.dart';
 import 'package:fl_clash/l10n/l10n.dart';
@@ -101,10 +102,6 @@ class SubscriptionStatusChecker {
       onRefresh: () async {
         _logger.info('[订阅状态弹窗] 刷新订阅状态...');
         await ref.read(xboardUserProvider.notifier).refreshSubscriptionInfo();
-        await Future.delayed(const Duration(seconds: 1));
-        if (context.mounted) {
-          context.pop();
-        }
       },
     );
     _logger.info('[订阅状态弹窗] 操作结果: $result');
@@ -150,7 +147,7 @@ class SubscriptionStatusChecker {
       final planNotifier = ref.read(xboardSubscriptionProvider.notifier);
       var plans = ref.read(xboardSubscriptionProvider);
       if (plans.isEmpty) {
-        await planNotifier.loadPlans();
+        await planNotifier.ensurePlansLoaded();
         plans = ref.read(xboardSubscriptionProvider);
       }
 

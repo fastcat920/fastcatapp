@@ -35,6 +35,7 @@ class _NodeSelectorBarState extends ConsumerState<NodeSelectorBar> {
   bool _startupGraceExpired = false;
   Timer? _startupGraceTimer;
   bool _isHydratingLocalGroups = false;
+  bool _isReloadingNodes = false;
 
   @override
   void initState() {
@@ -398,6 +399,7 @@ class _NodeSelectorBarState extends ConsumerState<NodeSelectorBar> {
 
   Widget _buildEmptyState(BuildContext context) {
     final importState = ref.watch(profileImportProvider);
+    final isReloading = importState.isImporting || _isReloadingNodes;
     return Container(
       decoration: BoxDecoration(
         color: XbUiCardStyle.background(context),
@@ -436,19 +438,25 @@ class _NodeSelectorBarState extends ConsumerState<NodeSelectorBar> {
               ],
             ),
           ),
-          TextButton(
-            onPressed: importState.isImporting ? null : _reloadNodes,
+          TextButton.icon(
+            onPressed: isReloading ? null : _reloadNodes,
             style: XbUiButton.textChipPrimary(context),
-            child: Text(
+            icon: isReloading
+                ? const SizedBox(
+                    width: 14,
+                    height: 14,
+                    child: CircularProgressIndicator(strokeWidth: 2),
+                  )
+                : const Icon(Icons.refresh, size: 16),
+            label: Text(
               AppLocalizations.of(context).xboardReloadNodes,
               style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w500),
             ),
           ),
           const SizedBox(width: 8),
           ElevatedButton(
-            onPressed: importState.isImporting
-                ? null
-                : () => _handleOpenProxiesView(context),
+            onPressed:
+                isReloading ? null : () => _handleOpenProxiesView(context),
             style: XbUiButton.filledPrimary(context).copyWith(
               minimumSize: const WidgetStatePropertyAll(Size(56, 30)),
               padding: const WidgetStatePropertyAll(
@@ -465,19 +473,25 @@ class _NodeSelectorBarState extends ConsumerState<NodeSelectorBar> {
   }
 
   Future<void> _reloadNodes() async {
-    if (ref.read(profileImportProvider).isImporting) return;
-    final subscriptionUrl = ref.read(subscriptionInfoProvider)?.subscribeUrl;
-    if (subscriptionUrl != null && subscriptionUrl.isNotEmpty) {
-      final ok = await ref
-          .read(profileImportProvider.notifier)
-          .importSubscription(subscriptionUrl, forceRefresh: true);
-      if (ok && mounted) {
-        _startPostImportGrace();
-      }
+    if (_isReloadingNodes || ref.read(profileImportProvider).isImporting)
       return;
+    setState(() => _isReloadingNodes = true);
+    try {
+      final subscriptionUrl = ref.read(subscriptionInfoProvider)?.subscribeUrl;
+      if (subscriptionUrl != null && subscriptionUrl.isNotEmpty) {
+        final ok = await ref
+            .read(profileImportProvider.notifier)
+            .importSubscription(subscriptionUrl, forceRefresh: true);
+        if (ok && mounted) {
+          _startPostImportGrace();
+        }
+        return;
+      }
+      await globalState.appController.applyProfile(silence: true);
+      await globalState.appController.updateGroups();
+    } finally {
+      if (mounted) setState(() => _isReloadingNodes = false);
     }
-    await globalState.appController.applyProfile(silence: true);
-    await globalState.appController.updateGroups();
   }
 
   void _openProxiesView(BuildContext context) {
@@ -544,16 +558,14 @@ class _NodeSelectorBarState extends ConsumerState<NodeSelectorBar> {
       await SubscriptionStatusDialog.show(
         context,
         blockStatus,
-        onPurchase: () {
-          SubscriptionStatusChecker.handleRenewAction(context, ref);
-        },
+        onPurchase: () =>
+            SubscriptionStatusChecker.handleRenewAction(context, ref),
         onTrafficRecovery: blockStatus.type == SubscriptionStatusType.exhausted
             ? () => showTrafficRecoveryDialog(context: context, ref: ref)
             : null,
         useNewPeriod: isNewPeriodEnabled(ref),
-        onRefresh: () {
-          ref.read(xboardUserProvider.notifier).refreshSubscriptionInfo();
-        },
+        onRefresh: () =>
+            ref.read(xboardUserProvider.notifier).refreshSubscriptionInfo(),
       );
       return;
     }

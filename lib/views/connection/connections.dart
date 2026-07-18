@@ -28,18 +28,34 @@ class _ConnectionsViewState extends ConsumerState<ConnectionsView>
   );
 
   Timer? timer;
+  bool _isClosingAll = false;
+  final Set<String> _closingConnectionIds = <String>{};
+
+  Future<void> _handleCloseAllConnections() async {
+    if (_isClosingAll) return;
+    setState(() => _isClosingAll = true);
+    try {
+      await clashCore.closeConnections();
+      _connectionsStateNotifier.value =
+          _connectionsStateNotifier.value.copyWith(
+        connections: await clashCore.getConnections(),
+      );
+    } finally {
+      if (mounted) setState(() => _isClosingAll = false);
+    }
+  }
 
   @override
   List<Widget> get actions => [
         IconButton(
-          onPressed: () async {
-            clashCore.closeConnections();
-            _connectionsStateNotifier.value =
-                _connectionsStateNotifier.value.copyWith(
-              connections: await clashCore.getConnections(),
-            );
-          },
-          icon: const Icon(Icons.delete_sweep_outlined),
+          onPressed: _isClosingAll ? null : _handleCloseAllConnections,
+          icon: _isClosingAll
+              ? const SizedBox(
+                  width: 20,
+                  height: 20,
+                  child: CircularProgressIndicator(strokeWidth: 2),
+                )
+              : const Icon(Icons.delete_sweep_outlined),
         ),
       ];
 
@@ -90,11 +106,18 @@ class _ConnectionsViewState extends ConsumerState<ConnectionsView>
     _updateConnections();
   }
 
-  _handleBlockConnection(String id) async {
-    clashCore.closeConnection(id);
-    _connectionsStateNotifier.value = _connectionsStateNotifier.value.copyWith(
-      connections: await clashCore.getConnections(),
-    );
+  Future<void> _handleBlockConnection(String id) async {
+    if (_closingConnectionIds.contains(id) || _isClosingAll) return;
+    setState(() => _closingConnectionIds.add(id));
+    try {
+      await clashCore.closeConnection(id);
+      _connectionsStateNotifier.value =
+          _connectionsStateNotifier.value.copyWith(
+        connections: await clashCore.getConnections(),
+      );
+    } finally {
+      if (mounted) setState(() => _closingConnectionIds.remove(id));
+    }
   }
 
   @override
@@ -130,10 +153,17 @@ class _ConnectionsViewState extends ConsumerState<ConnectionsView>
                   context.commonScaffoldState?.addKeyword(value);
                 },
                 trailing: IconButton(
-                  icon: const Icon(Icons.block),
-                  onPressed: () {
-                    _handleBlockConnection(connection.id);
-                  },
+                  icon: _closingConnectionIds.contains(connection.id)
+                      ? const SizedBox(
+                          width: 20,
+                          height: 20,
+                          child: CircularProgressIndicator(strokeWidth: 2),
+                        )
+                      : const Icon(Icons.block),
+                  onPressed: _isClosingAll ||
+                          _closingConnectionIds.contains(connection.id)
+                      ? null
+                      : () => _handleBlockConnection(connection.id),
                 ),
               );
             },

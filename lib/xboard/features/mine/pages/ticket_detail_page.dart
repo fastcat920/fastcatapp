@@ -28,6 +28,7 @@ class _TicketDetailPageState extends ConsumerState<TicketDetailPage> {
   final _replyCtrl = TextEditingController();
   final _scrollCtrl = ScrollController();
   bool _isReplying = false;
+  bool _isClosingTicket = false;
   bool _isClosed = false;
 
   @override
@@ -87,6 +88,7 @@ class _TicketDetailPageState extends ConsumerState<TicketDetailPage> {
   }
 
   Future<void> _closeTicket() async {
+    if (_isClosingTicket) return;
     final l10n = AppLocalizations.of(context);
     final confirm = await showDialog<bool>(
       context: context,
@@ -109,6 +111,7 @@ class _TicketDetailPageState extends ConsumerState<TicketDetailPage> {
     );
     if (confirm != true) return;
 
+    setState(() => _isClosingTicket = true);
     try {
       final sdk = await ref.read(xboardSdkProvider.future);
       final ok = await sdk.ticket.closeTicket(widget.ticketId);
@@ -126,6 +129,8 @@ class _TicketDetailPageState extends ConsumerState<TicketDetailPage> {
           )}',
         );
       }
+    } finally {
+      if (mounted) setState(() => _isClosingTicket = false);
     }
   }
 
@@ -198,6 +203,7 @@ class _TicketDetailPageState extends ConsumerState<TicketDetailPage> {
                 _ReplyBar(
                   controller: _replyCtrl,
                   isReplying: _isReplying,
+                  isClosing: _isClosingTicket,
                   onSend: _sendReply,
                   onClose: _closeTicket,
                 ),
@@ -439,12 +445,14 @@ class _MessageBubble extends StatelessWidget {
 class _ReplyBar extends StatefulWidget {
   final TextEditingController controller;
   final bool isReplying;
+  final bool isClosing;
   final VoidCallback onSend;
   final VoidCallback onClose;
 
   const _ReplyBar({
     required this.controller,
     required this.isReplying,
+    required this.isClosing,
     required this.onSend,
     required this.onClose,
   });
@@ -510,9 +518,15 @@ class _ReplyBarState extends State<_ReplyBar> {
           children: [
             // 关闭工单按钮
             IconButton(
-              icon: const Icon(Icons.lock_outline),
+              icon: widget.isClosing
+                  ? const SizedBox(
+                      width: 20,
+                      height: 20,
+                      child: CircularProgressIndicator(strokeWidth: 2),
+                    )
+                  : const Icon(Icons.lock_outline),
               tooltip: l10n.xboardCloseTicket,
-              onPressed: widget.onClose,
+              onPressed: widget.isClosing ? null : widget.onClose,
               style: IconButton.styleFrom(
                 foregroundColor: theme.colorScheme.onSurfaceVariant,
               ),
@@ -568,7 +582,8 @@ class _ReplyBarState extends State<_ReplyBar> {
             const SizedBox(width: 8),
             // 发送按钮
             IconButton.filled(
-              onPressed: widget.isReplying ? null : widget.onSend,
+              onPressed:
+                  widget.isReplying || widget.isClosing ? null : widget.onSend,
               style: XbUiButton.filledIconPrimary(
                 context,
                 busy: widget.isReplying,

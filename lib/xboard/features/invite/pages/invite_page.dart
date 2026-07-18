@@ -22,6 +22,7 @@ class InvitePage extends ConsumerStatefulWidget {
 class _InvitePageState extends ConsumerState<InvitePage>
     with AutomaticKeepAliveClientMixin, SingleTickerProviderStateMixin {
   bool _hasInitialized = false;
+  bool _isRefreshing = false;
   late final TabController _tabController;
 
   @override
@@ -45,9 +46,14 @@ class _InvitePageState extends ConsumerState<InvitePage>
   }
 
   Future<void> _doRefresh() async {
+    if (_isRefreshing) return;
+    if (mounted) setState(() => _isRefreshing = true);
     try {
       await ref.read(inviteProvider.notifier).refresh();
-    } catch (_) {}
+    } catch (_) {
+    } finally {
+      if (mounted) setState(() => _isRefreshing = false);
+    }
   }
 
   @override
@@ -131,8 +137,14 @@ class _InvitePageState extends ConsumerState<InvitePage>
                 Padding(
                   padding: const EdgeInsets.only(right: 12),
                   child: IconButton(
-                    icon: const Icon(Icons.refresh),
-                    onPressed: _doRefresh,
+                    icon: _isRefreshing
+                        ? const SizedBox(
+                            width: 20,
+                            height: 20,
+                            child: CircularProgressIndicator(strokeWidth: 2),
+                          )
+                        : const Icon(Icons.refresh),
+                    onPressed: _isRefreshing ? null : _doRefresh,
                     tooltip: appLocalizations.refresh,
                   ),
                 ),

@@ -182,13 +182,10 @@ class ClashCore {
     return connectionsRaw.map((e) => Connection.fromJson(e)).toList();
   }
 
-  closeConnection(String id) {
-    clashInterface.closeConnection(id);
-  }
+  FutureOr<bool> closeConnection(String id) =>
+      clashInterface.closeConnection(id);
 
-  closeConnections() {
-    clashInterface.closeConnections();
-  }
+  FutureOr<bool> closeConnections() => clashInterface.closeConnections();
 
   resetConnections() {
     clashInterface.resetConnections();

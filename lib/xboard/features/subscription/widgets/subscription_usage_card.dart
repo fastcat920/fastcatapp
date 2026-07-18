@@ -21,6 +21,9 @@ bool get _isDesktop =>
 
 enum _ExpiryState { normal, expiringSoon, expired }
 
+final _subscriptionCardActionProvider =
+    StateProvider.autoDispose<String?>((ref) => null);
+
 class SubscriptionUsageCard extends ConsumerWidget {
   final DomainSubscription? subscriptionInfo;
   final DomainUser? userInfo;
@@ -312,26 +315,38 @@ class SubscriptionUsageCard extends ConsumerWidget {
             const SizedBox(height: 12),
             Consumer(
               builder: (context, ref, child) {
+                final busyAction = ref.watch(_subscriptionCardActionProvider);
                 final useNewPeriod = isNewPeriodEnabled(
                   ref,
                   subscriptionInfo: subscriptionInfo,
                 );
                 final isTrafficRecovery =
                     statusResult.type == SubscriptionStatusType.exhausted;
+                final actionKey = isTrafficRecovery ? 'reset' : 'renew';
+                final isBusy = busyAction == actionKey;
                 return SizedBox(
                   width: double.infinity,
                   child: FilledButton.icon(
-                    onPressed: () async {
-                      await _handleRenewAction(context, ref,
-                          isResetTraffic: isTrafficRecovery);
-                    },
+                    onPressed: busyAction != null
+                        ? null
+                        : () => _handleRenewAction(
+                              context,
+                              ref,
+                              isResetTraffic: isTrafficRecovery,
+                            ),
                     style: FilledButton.styleFrom(
                       backgroundColor: statusColor,
                       foregroundColor: Theme.of(context).colorScheme.onPrimary,
+                      disabledBackgroundColor: isBusy ? statusColor : null,
+                      disabledForegroundColor: isBusy
+                          ? Theme.of(context).colorScheme.onPrimary
+                          : null,
                       padding: const EdgeInsets.symmetric(vertical: 12),
                     ),
-                    icon: Icon(
-                      isTrafficRecovery
+                    icon: _buildActionIcon(
+                      context,
+                      busy: isBusy,
+                      icon: isTrafficRecovery
                           ? Icons.restart_alt
                           : Icons.shopping_bag,
                       size: 18,
@@ -365,7 +380,42 @@ class SubscriptionUsageCard extends ConsumerWidget {
     }
   }
 
+  Widget _buildActionIcon(
+    BuildContext context, {
+    required bool busy,
+    required IconData icon,
+    double size = 16,
+  }) {
+    if (!busy) return Icon(icon, size: size);
+    return SizedBox.square(
+      dimension: size,
+      child: CircularProgressIndicator(
+        strokeWidth: 2,
+        color: Theme.of(context).colorScheme.onPrimary,
+      ),
+    );
+  }
+
   Future<void> _handleRenewAction(BuildContext context, WidgetRef ref,
+      {bool isResetTraffic = false}) async {
+    final actionState = ref.read(_subscriptionCardActionProvider);
+    if (actionState != null) return;
+    ref.read(_subscriptionCardActionProvider.notifier).state =
+        isResetTraffic ? 'reset' : 'renew';
+    try {
+      await _performRenewAction(
+        context,
+        ref,
+        isResetTraffic: isResetTraffic,
+      );
+    } finally {
+      if (context.mounted) {
+        ref.read(_subscriptionCardActionProvider.notifier).state = null;
+      }
+    }
+  }
+
+  Future<void> _performRenewAction(BuildContext context, WidgetRef ref,
       {bool isResetTraffic = false}) async {
     if (isResetTraffic &&
         isNewPeriodEnabled(ref, subscriptionInfo: subscriptionInfo)) {
@@ -409,7 +459,7 @@ class SubscriptionUsageCard extends ConsumerWidget {
       final planNotifier = ref.read(xboardSubscriptionProvider.notifier);
       var plans = ref.read(xboardSubscriptionProvider);
       if (plans.isEmpty) {
-        await planNotifier.loadPlans();
+        await planNotifier.ensurePlansLoaded();
         plans = ref.read(xboardSubscriptionProvider);
       }
 
@@ -635,44 +685,72 @@ class SubscriptionUsageCard extends ConsumerWidget {
 
             // ── 续费按钮 ──
             Consumer(
-              builder: (context, ref, _) => Row(
-                children: [
-                  Expanded(
-                    child: FilledButton.icon(
-                      onPressed: () => _handleRenewAction(context, ref),
-                      icon: const Icon(Icons.refresh, size: 16),
-                      label: Text(AppLocalizations.of(context).xboardRenewPlan),
-                      style: FilledButton.styleFrom(
-                        backgroundColor:
-                            _getRenewButtonColor(expiryState, theme),
-                        foregroundColor: theme.colorScheme.onPrimary,
-                        iconColor: theme.colorScheme.onPrimary,
-                        padding: const EdgeInsets.symmetric(vertical: 12),
-                      ),
-                    ),
-                  ),
-                  if (shouldShowTrafficRecoveryAction) ...[
-                    const SizedBox(width: 10),
+              builder: (context, ref, _) {
+                final busyAction = ref.watch(_subscriptionCardActionProvider);
+                final renewBusy = busyAction == 'renew';
+                final resetBusy = busyAction == 'reset';
+                final renewColor = _getRenewButtonColor(expiryState, theme);
+                final resetColor = _getResetButtonColor(progress, theme);
+                return Row(
+                  children: [
                     Expanded(
                       child: FilledButton.icon(
-                        onPressed: () => _handleRenewAction(context, ref,
-                            isResetTraffic: true),
-                        icon: const Icon(Icons.restart_alt, size: 16),
-                        label: Text(useNewPeriod
-                            ? AppLocalizations.of(context).xboardStartNewPeriod
-                            : AppLocalizations.of(context).xboardResetTraffic),
+                        onPressed: busyAction != null
+                            ? null
+                            : () => _handleRenewAction(context, ref),
+                        icon: _buildActionIcon(
+                          context,
+                          busy: renewBusy,
+                          icon: Icons.refresh,
+                        ),
+                        label:
+                            Text(AppLocalizations.of(context).xboardRenewPlan),
                         style: FilledButton.styleFrom(
-                          backgroundColor:
-                              _getResetButtonColor(progress, theme),
+                          backgroundColor: renewColor,
                           foregroundColor: theme.colorScheme.onPrimary,
+                          disabledBackgroundColor:
+                              renewBusy ? renewColor : null,
+                          disabledForegroundColor:
+                              renewBusy ? theme.colorScheme.onPrimary : null,
                           iconColor: theme.colorScheme.onPrimary,
                           padding: const EdgeInsets.symmetric(vertical: 12),
                         ),
                       ),
                     ),
+                    if (shouldShowTrafficRecoveryAction) ...[
+                      const SizedBox(width: 10),
+                      Expanded(
+                        child: FilledButton.icon(
+                          onPressed: busyAction != null
+                              ? null
+                              : () => _handleRenewAction(context, ref,
+                                  isResetTraffic: true),
+                          icon: _buildActionIcon(
+                            context,
+                            busy: resetBusy,
+                            icon: Icons.restart_alt,
+                          ),
+                          label: Text(useNewPeriod
+                              ? AppLocalizations.of(context)
+                                  .xboardStartNewPeriod
+                              : AppLocalizations.of(context)
+                                  .xboardResetTraffic),
+                          style: FilledButton.styleFrom(
+                            backgroundColor: resetColor,
+                            foregroundColor: theme.colorScheme.onPrimary,
+                            disabledBackgroundColor:
+                                resetBusy ? resetColor : null,
+                            disabledForegroundColor:
+                                resetBusy ? theme.colorScheme.onPrimary : null,
+                            iconColor: theme.colorScheme.onPrimary,
+                            padding: const EdgeInsets.symmetric(vertical: 12),
+                          ),
+                        ),
+                      ),
+                    ],
                   ],
-                ],
-              ),
+                );
+              },
             ),
           ],
         ],
@@ -852,56 +930,45 @@ class SubscriptionUsageCard extends ConsumerWidget {
           if (showActions) ...[
             const SizedBox(height: 12),
             Consumer(
-              builder: (context, ref, _) => Row(
-                children: [
-                  Expanded(
-                    child: FilledButton.icon(
-                      onPressed: () => _handleRenewAction(context, ref),
-                      icon: const Icon(Icons.refresh, size: 16),
-                      label: Text(AppLocalizations.of(context).xboardRenewPlan),
-                      style: usePlainBackground
-                          ? FilledButton.styleFrom(
-                              backgroundColor:
-                                  _getRenewButtonColor(expiryState, theme),
-                              foregroundColor: theme.colorScheme.onPrimary,
-                              padding: const EdgeInsets.symmetric(vertical: 10),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(10),
-                              ),
-                            )
-                          : XbUiButton.filledPrimary(context).copyWith(
-                              padding: const WidgetStatePropertyAll(
-                                  EdgeInsets.symmetric(vertical: 10)),
-                              shape: WidgetStatePropertyAll(
-                                RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(10),
-                                ),
-                              ),
-                            ),
-                    ),
-                  ),
-                  if (shouldShowTrafficRecoveryAction) ...[
-                    const SizedBox(width: 10),
+              builder: (context, ref, _) {
+                final busyAction = ref.watch(_subscriptionCardActionProvider);
+                final renewBusy = busyAction == 'renew';
+                final resetBusy = busyAction == 'reset';
+                final renewColor = _getRenewButtonColor(expiryState, theme);
+                final resetColor = _getResetButtonColor(progress, theme);
+                return Row(
+                  children: [
                     Expanded(
                       child: FilledButton.icon(
-                        onPressed: () => _handleRenewAction(context, ref,
-                            isResetTraffic: true),
-                        icon: const Icon(Icons.restart_alt, size: 16),
-                        label: Text(useNewPeriod
-                            ? AppLocalizations.of(context).xboardStartNewPeriod
-                            : AppLocalizations.of(context).xboardResetTraffic),
+                        onPressed: busyAction != null
+                            ? null
+                            : () => _handleRenewAction(context, ref),
+                        icon: _buildActionIcon(
+                          context,
+                          busy: renewBusy,
+                          icon: Icons.refresh,
+                        ),
+                        label:
+                            Text(AppLocalizations.of(context).xboardRenewPlan),
                         style: usePlainBackground
                             ? FilledButton.styleFrom(
-                                backgroundColor:
-                                    _getResetButtonColor(progress, theme),
+                                backgroundColor: renewColor,
                                 foregroundColor: theme.colorScheme.onPrimary,
+                                disabledBackgroundColor:
+                                    renewBusy ? renewColor : null,
+                                disabledForegroundColor: renewBusy
+                                    ? theme.colorScheme.onPrimary
+                                    : null,
                                 padding:
                                     const EdgeInsets.symmetric(vertical: 10),
                                 shape: RoundedRectangleBorder(
                                   borderRadius: BorderRadius.circular(10),
                                 ),
                               )
-                            : XbUiButton.filledPrimary(context).copyWith(
+                            : XbUiButton.filledPrimary(
+                                context,
+                                busy: renewBusy,
+                              ).copyWith(
                                 padding: const WidgetStatePropertyAll(
                                     EdgeInsets.symmetric(vertical: 10)),
                                 shape: WidgetStatePropertyAll(
@@ -912,9 +979,57 @@ class SubscriptionUsageCard extends ConsumerWidget {
                               ),
                       ),
                     ),
+                    if (shouldShowTrafficRecoveryAction) ...[
+                      const SizedBox(width: 10),
+                      Expanded(
+                        child: FilledButton.icon(
+                          onPressed: busyAction != null
+                              ? null
+                              : () => _handleRenewAction(context, ref,
+                                  isResetTraffic: true),
+                          icon: _buildActionIcon(
+                            context,
+                            busy: resetBusy,
+                            icon: Icons.restart_alt,
+                          ),
+                          label: Text(useNewPeriod
+                              ? AppLocalizations.of(context)
+                                  .xboardStartNewPeriod
+                              : AppLocalizations.of(context)
+                                  .xboardResetTraffic),
+                          style: usePlainBackground
+                              ? FilledButton.styleFrom(
+                                  backgroundColor: resetColor,
+                                  foregroundColor: theme.colorScheme.onPrimary,
+                                  disabledBackgroundColor:
+                                      resetBusy ? resetColor : null,
+                                  disabledForegroundColor: resetBusy
+                                      ? theme.colorScheme.onPrimary
+                                      : null,
+                                  padding:
+                                      const EdgeInsets.symmetric(vertical: 10),
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(10),
+                                  ),
+                                )
+                              : XbUiButton.filledPrimary(
+                                  context,
+                                  busy: resetBusy,
+                                ).copyWith(
+                                  padding: const WidgetStatePropertyAll(
+                                      EdgeInsets.symmetric(vertical: 10)),
+                                  shape: WidgetStatePropertyAll(
+                                    RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(10),
+                                    ),
+                                  ),
+                                ),
+                        ),
+                      ),
+                    ],
                   ],
-                ],
-              ),
+                );
+              },
             ),
           ],
         ],

@@ -163,13 +163,18 @@ class XbUiButton {
     );
   }
 
-  static ButtonStyle filledDanger(BuildContext context) {
+  static ButtonStyle filledDanger(
+    BuildContext context, {
+    bool busy = false,
+  }) {
     return FilledButton.styleFrom(
       minimumSize: const Size(0, 48),
       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
       backgroundColor: const Color(0xFFF44336),
       foregroundColor: Colors.white,
+      disabledBackgroundColor: busy ? const Color(0xFFF44336) : null,
+      disabledForegroundColor: busy ? Colors.white : null,
     );
   }
 
@@ -199,19 +204,49 @@ class XbUiButton {
 class XbUiStatusColor {
   XbUiStatusColor._();
 
-  static Color pending(BuildContext context) => Theme.of(context).brightness == Brightness.dark ? const Color(0xFFFFB74D) : const Color(0xFFFF9800);
-  static Color pendingByTheme(ThemeData theme) => theme.brightness == Brightness.dark ? const Color(0xFFFFB74D) : const Color(0xFFFF9800);
+  static Color pending(BuildContext context) =>
+      Theme.of(context).brightness == Brightness.dark
+          ? const Color(0xFFFFB74D)
+          : const Color(0xFFFF9800);
+  static Color pendingByTheme(ThemeData theme) =>
+      theme.brightness == Brightness.dark
+          ? const Color(0xFFFFB74D)
+          : const Color(0xFFFF9800);
   static Color processing(BuildContext context) =>
       Theme.of(context).colorScheme.primary;
   static Color processingByTheme(ThemeData theme) => theme.colorScheme.primary;
-  static Color success(BuildContext context) => Theme.of(context).brightness == Brightness.dark ? const Color(0xFF66BB6A) : const Color(0xFF4CAF50);
-  static Color successByTheme(ThemeData theme) => theme.brightness == Brightness.dark ? const Color(0xFF66BB6A) : const Color(0xFF4CAF50);
-  static Color error(BuildContext context) => Theme.of(context).brightness == Brightness.dark ? const Color(0xFFEF5350) : const Color(0xFFF44336);
-  static Color errorByTheme(ThemeData theme) => theme.brightness == Brightness.dark ? const Color(0xFFEF5350) : const Color(0xFFF44336);
-  static Color info(BuildContext context) => Theme.of(context).brightness == Brightness.dark ? const Color(0xFF42A5F5) : const Color(0xFF2196F3);
-  static Color infoByTheme(ThemeData theme) => theme.brightness == Brightness.dark ? const Color(0xFF42A5F5) : const Color(0xFF2196F3);
-  static Color offset(BuildContext context) => Theme.of(context).brightness == Brightness.dark ? const Color(0xFFAB47BC) : const Color(0xFF9C27B0);
-  static Color offsetByTheme(ThemeData theme) => theme.brightness == Brightness.dark ? const Color(0xFFAB47BC) : const Color(0xFF9C27B0);
+  static Color success(BuildContext context) =>
+      Theme.of(context).brightness == Brightness.dark
+          ? const Color(0xFF66BB6A)
+          : const Color(0xFF4CAF50);
+  static Color successByTheme(ThemeData theme) =>
+      theme.brightness == Brightness.dark
+          ? const Color(0xFF66BB6A)
+          : const Color(0xFF4CAF50);
+  static Color error(BuildContext context) =>
+      Theme.of(context).brightness == Brightness.dark
+          ? const Color(0xFFEF5350)
+          : const Color(0xFFF44336);
+  static Color errorByTheme(ThemeData theme) =>
+      theme.brightness == Brightness.dark
+          ? const Color(0xFFEF5350)
+          : const Color(0xFFF44336);
+  static Color info(BuildContext context) =>
+      Theme.of(context).brightness == Brightness.dark
+          ? const Color(0xFF42A5F5)
+          : const Color(0xFF2196F3);
+  static Color infoByTheme(ThemeData theme) =>
+      theme.brightness == Brightness.dark
+          ? const Color(0xFF42A5F5)
+          : const Color(0xFF2196F3);
+  static Color offset(BuildContext context) =>
+      Theme.of(context).brightness == Brightness.dark
+          ? const Color(0xFFAB47BC)
+          : const Color(0xFF9C27B0);
+  static Color offsetByTheme(ThemeData theme) =>
+      theme.brightness == Brightness.dark
+          ? const Color(0xFFAB47BC)
+          : const Color(0xFF9C27B0);
   static Color muted(BuildContext context) =>
       Theme.of(context).colorScheme.outline;
   static Color mutedByTheme(ThemeData theme) => theme.colorScheme.outline;

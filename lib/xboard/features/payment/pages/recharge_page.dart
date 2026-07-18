@@ -37,6 +37,7 @@ class _RechargePageState extends ConsumerState<RechargePage> {
   bool _depositBonusOptionsLoadFailed = false;
   bool _isProcessing = false;
   bool _isAutoRenewalUpdating = false;
+  bool _isRefreshingPage = false;
 
   @override
   void initState() {
@@ -155,7 +156,7 @@ class _RechargePageState extends ConsumerState<RechargePage> {
         ),
       );
       if (mounted) {
-        _refreshUserInfo();
+        unawaited(_refreshUserInfo());
       }
     } catch (e) {
       if (mounted) {
@@ -171,21 +172,26 @@ class _RechargePageState extends ConsumerState<RechargePage> {
     }
   }
 
-  void _refreshUserInfo() {
+  Future<void> _refreshUserInfo() async {
     try {
-      ref.read(xboardUserAuthProvider.notifier).refreshUserInfo();
+      await ref.read(xboardUserAuthProvider.notifier).refreshUserInfo();
     } catch (_) {}
   }
 
   Future<void> _refreshPage() async {
-    _refreshUserInfo();
-    await Future.wait([
-      ref
-          .read(xboardPaymentProvider.notifier)
-          .loadPaymentMethods(forceRefresh: true),
-      _loadDepositBonusOptions(),
-    ]);
-    await Future<void>.delayed(const Duration(milliseconds: 250));
+    if (_isRefreshingPage) return;
+    setState(() => _isRefreshingPage = true);
+    try {
+      await Future.wait([
+        _refreshUserInfo(),
+        ref
+            .read(xboardPaymentProvider.notifier)
+            .loadPaymentMethods(forceRefresh: true),
+        _loadDepositBonusOptions(),
+      ]);
+    } finally {
+      if (mounted) setState(() => _isRefreshingPage = false);
+    }
   }
 
   Future<void> _updateAutoRenewal(bool enabled) async {
@@ -609,8 +615,14 @@ class _RechargePageState extends ConsumerState<RechargePage> {
             Padding(
               padding: const EdgeInsets.only(right: 12),
               child: IconButton(
-                icon: const Icon(Icons.refresh),
-                onPressed: _refreshPage,
+                icon: _isRefreshingPage
+                    ? const SizedBox(
+                        width: 20,
+                        height: 20,
+                        child: CircularProgressIndicator(strokeWidth: 2),
+                      )
+                    : const Icon(Icons.refresh),
+                onPressed: _isRefreshingPage ? null : _refreshPage,
               ),
             ),
         ],
