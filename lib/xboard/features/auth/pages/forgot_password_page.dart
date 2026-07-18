@@ -172,11 +172,13 @@ class _ForgotPasswordPageState extends ConsumerState<ForgotPasswordPage> {
           child: _isLoading
               ? FilledButton(
                   onPressed: null,
-                  child: const SizedBox(
+                  style: XbUiButton.filledPrimary(context, busy: true),
+                  child: SizedBox(
                     width: 20,
                     height: 20,
                     child: CircularProgressIndicator(
                       strokeWidth: 2,
+                      color: Theme.of(context).colorScheme.onPrimary,
                     ),
                   ),
                 )
@@ -299,11 +301,13 @@ class _ForgotPasswordPageState extends ConsumerState<ForgotPasswordPage> {
           child: _isLoading
               ? FilledButton(
                   onPressed: null,
-                  child: const SizedBox(
+                  style: XbUiButton.filledPrimary(context, busy: true),
+                  child: SizedBox(
                     width: 20,
                     height: 20,
                     child: CircularProgressIndicator(
                       strokeWidth: 2,
+                      color: Theme.of(context).colorScheme.onPrimary,
                     ),
                   ),
                 )

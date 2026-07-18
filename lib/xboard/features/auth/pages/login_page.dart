@@ -539,7 +539,10 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                       child: FilledButton(
                         onPressed:
                             (isIniting || userState.isLoading) ? null : _login,
-                        style: XbUiButton.filledPrimary(context).copyWith(
+                        style: XbUiButton.filledPrimary(
+                          context,
+                          busy: userState.isLoading,
+                        ).copyWith(
                           shape: WidgetStatePropertyAll(
                             RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(14),

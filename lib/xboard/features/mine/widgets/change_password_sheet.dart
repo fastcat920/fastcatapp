@@ -4,6 +4,7 @@ import 'package:fl_clash/xboard/adapter/initialization/sdk_provider.dart';
 import 'package:fl_clash/xboard/utils/backend_message_mapper.dart';
 import 'package:fl_clash/xboard/utils/xboard_notification.dart';
 import 'package:fl_clash/l10n/l10n.dart';
+import 'package:fl_clash/xboard/features/shared/styles/styles.dart';
 
 Future<void> showChangePasswordSheet(
   BuildContext context,
@@ -193,13 +194,17 @@ class _ChangePasswordSheetState extends ConsumerState<_ChangePasswordSheet> {
             width: double.infinity,
             child: FilledButton(
               onPressed: _isSubmitting ? null : _submit,
+              style: XbUiButton.filledPrimary(
+                context,
+                busy: _isSubmitting,
+              ),
               child: _isSubmitting
-                  ? const SizedBox(
+                  ? SizedBox(
                       width: 18,
                       height: 18,
                       child: CircularProgressIndicator(
                         strokeWidth: 2,
-                        color: Colors.white,
+                        color: Theme.of(context).colorScheme.onPrimary,
                       ),
                     )
                   : Text(l10n.xboardConfirm),

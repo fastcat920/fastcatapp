@@ -569,12 +569,18 @@ class _ReplyBarState extends State<_ReplyBar> {
             // 发送按钮
             IconButton.filled(
               onPressed: widget.isReplying ? null : widget.onSend,
+              style: XbUiButton.filledIconPrimary(
+                context,
+                busy: widget.isReplying,
+              ),
               icon: widget.isReplying
-                  ? const SizedBox(
+                  ? SizedBox(
                       width: 18,
                       height: 18,
                       child: CircularProgressIndicator(
-                          strokeWidth: 2, color: Colors.white),
+                        strokeWidth: 2,
+                        color: theme.colorScheme.onPrimary,
+                      ),
                     )
                   : const Icon(Icons.send),
             ),

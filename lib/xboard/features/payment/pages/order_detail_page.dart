@@ -1366,18 +1366,21 @@ class _ActionButtons extends StatelessWidget {
           child: FilledButton.icon(
             onPressed: isSubmitting ? null : onPay,
             icon: isSubmitting
-                ? const SizedBox(
+                ? SizedBox(
                     width: 18,
                     height: 18,
                     child: CircularProgressIndicator(
                       strokeWidth: 2,
-                      color: Colors.white,
+                      color: theme.colorScheme.onPrimary,
                     ),
                   )
                 : const Icon(Icons.credit_card, size: 20),
             label: Text(
                 isSubmitting ? l10n.xboardSubmitting : effectivePayButtonText),
-            style: XbUiButton.filledPrimary(context).copyWith(),
+            style: XbUiButton.filledPrimary(
+              context,
+              busy: isSubmitting,
+            ),
           ),
         ),
         const SizedBox(height: 12),

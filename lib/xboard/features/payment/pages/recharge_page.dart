@@ -553,17 +553,22 @@ class _RechargePageState extends ConsumerState<RechargePage> {
           width: double.infinity,
           child: FilledButton(
             onPressed: _isProcessing ? null : _handleRecharge,
-            style: XbUiButton.filledPrimary(context).copyWith(
+            style: XbUiButton.filledPrimary(
+              context,
+              busy: _isProcessing,
+            ).copyWith(
               backgroundColor: isDark
                   ? null
                   : WidgetStatePropertyAll(theme.colorScheme.primary),
             ),
             child: _isProcessing
-                ? const SizedBox(
+                ? SizedBox(
                     width: 24,
                     height: 24,
                     child: CircularProgressIndicator(
-                        strokeWidth: 2, color: Colors.white))
+                      strokeWidth: 2,
+                      color: theme.colorScheme.onPrimary,
+                    ))
                 : Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [

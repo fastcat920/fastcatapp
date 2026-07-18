@@ -71,6 +71,12 @@ jobs:
           channel: stable
           cache: true
 
+      - name: Setup Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: "1.20.x"
+          cache-dependency-path: core/go.sum
+
       - name: Flutter doctor
         run: flutter doctor -v
 
@@ -98,6 +104,21 @@ jobs:
           else
             echo "i KEYSTORE_BASE64 not set, will use debug keystore (signature will vary per build)"
           fi
+
+      - name: Build Android native core
+        run: |
+          export ANDROID_NDK="$ANDROID_SDK_ROOT/ndk/28.0.13004108"
+          dart run setup.dart android --arch arm --out core
+          dart run setup.dart android --arch arm64 --out core
+
+          for abi in armeabi-v7a arm64-v8a; do
+            core="libclash/android/$abi/libclash.so"
+            test -s "$core"
+            grep -a -q "main.handleStreamingProbe" "$core" || {
+              echo "Android core for $abi does not contain streamingProbe"
+              exit 1
+            }
+          done
 
       - name: Build APK
         env:

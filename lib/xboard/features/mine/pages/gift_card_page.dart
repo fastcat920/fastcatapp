@@ -151,13 +151,17 @@ class _GiftCardForm extends StatelessWidget {
           width: double.infinity,
           child: FilledButton(
             onPressed: isSubmitting ? null : onRedeem,
+            style: XbUiButton.filledPrimary(
+              context,
+              busy: isSubmitting,
+            ),
             child: isSubmitting
-                ? const SizedBox(
+                ? SizedBox(
                     width: 18,
                     height: 18,
                     child: CircularProgressIndicator(
                       strokeWidth: 2,
-                      color: Colors.white,
+                      color: Theme.of(context).colorScheme.onPrimary,
                     ),
                   )
                 : Row(

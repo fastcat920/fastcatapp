@@ -411,7 +411,10 @@ class _PlanPurchasePageState extends ConsumerState<PlanPurchasePage> {
                     return FilledButton(
                       onPressed:
                           paymentState.isLoading ? null : _proceedToPurchase,
-                      style: XbUiButton.filledPrimary(context).copyWith(
+                      style: XbUiButton.filledPrimary(
+                        context,
+                        busy: paymentState.isLoading,
+                      ).copyWith(
                         shape: WidgetStatePropertyAll(
                           RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(14),
@@ -422,13 +425,13 @@ class _PlanPurchasePageState extends ConsumerState<PlanPurchasePage> {
                           ? Row(
                               mainAxisAlignment: MainAxisAlignment.center,
                               children: [
-                                const SizedBox(
+                                SizedBox(
                                   width: 20,
                                   height: 20,
                                   child: CircularProgressIndicator(
                                     strokeWidth: 2,
-                                    valueColor: AlwaysStoppedAnimation<Color>(
-                                        Colors.white),
+                                    color:
+                                        Theme.of(context).colorScheme.onPrimary,
                                   ),
                                 ),
                                 const SizedBox(width: 12),

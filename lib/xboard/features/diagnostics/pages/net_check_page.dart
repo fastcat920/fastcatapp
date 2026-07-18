@@ -727,10 +727,17 @@ class _NetCheckPageState extends ConsumerState<NetCheckPage> {
                   children: [
                     FilledButton.icon(
                       onPressed: !connected || _running ? null : _start,
+                      style: XbUiButton.filledPrimary(
+                        context,
+                        busy: _running,
+                      ),
                       icon: _running
-                          ? const SizedBox.square(
+                          ? SizedBox.square(
                               dimension: 18,
-                              child: CircularProgressIndicator(strokeWidth: 2),
+                              child: CircularProgressIndicator(
+                                strokeWidth: 2,
+                                color: Theme.of(context).colorScheme.onPrimary,
+                              ),
                             )
                           : const Icon(Icons.play_arrow),
                       label: Text(

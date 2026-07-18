@@ -242,7 +242,10 @@ class _ResetTrafficConfirmDialogState
               Expanded(
                 child: FilledButton(
                   onPressed: _isCreating ? null : _confirm,
-                  style: XbUiButton.filledPrimary(context).copyWith(
+                  style: XbUiButton.filledPrimary(
+                    context,
+                    busy: _isCreating,
+                  ).copyWith(
                     backgroundColor: WidgetStatePropertyAll(
                       XbUiStatusColor.pendingByTheme(theme),
                     ),

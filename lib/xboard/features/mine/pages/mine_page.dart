@@ -692,12 +692,18 @@ class _GiftCardSheetState extends ConsumerState<_GiftCardSheet> {
             width: double.infinity,
             child: FilledButton(
               onPressed: _isSubmitting ? null : _redeem,
+              style: XbUiButton.filledPrimary(
+                context,
+                busy: _isSubmitting,
+              ),
               child: _isSubmitting
-                  ? const SizedBox(
+                  ? SizedBox(
                       width: 18,
                       height: 18,
                       child: CircularProgressIndicator(
-                          strokeWidth: 2, color: Colors.white))
+                        strokeWidth: 2,
+                        color: Theme.of(context).colorScheme.onPrimary,
+                      ))
                   : Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [

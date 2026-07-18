@@ -395,11 +395,16 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
                           child: _isRegistering
                               ? FilledButton(
                                   onPressed: null,
-                                  child: const SizedBox(
+                                  style: XbUiButton.filledPrimary(
+                                    context,
+                                    busy: true,
+                                  ),
+                                  child: SizedBox(
                                     width: 20,
                                     height: 20,
                                     child: CircularProgressIndicator(
                                       strokeWidth: 2,
+                                      color: colorScheme.onPrimary,
                                     ),
                                   ),
                                 )

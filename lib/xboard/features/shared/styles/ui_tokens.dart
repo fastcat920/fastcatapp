@@ -132,13 +132,34 @@ class XbUiDialog {
 class XbUiButton {
   XbUiButton._();
 
-  static ButtonStyle filledPrimary(BuildContext context) {
+  static ButtonStyle filledPrimary(
+    BuildContext context, {
+    bool busy = false,
+  }) {
+    final colorScheme = Theme.of(context).colorScheme;
     return FilledButton.styleFrom(
       minimumSize: const Size(0, 48),
       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-      backgroundColor: Theme.of(context).colorScheme.primary,
-      foregroundColor: Theme.of(context).colorScheme.onPrimary,
+      backgroundColor: colorScheme.primary,
+      foregroundColor: colorScheme.onPrimary,
+      // A running action is non-interactive but should not look unavailable.
+      // Its spinner and status label already communicate the temporary state.
+      disabledBackgroundColor: busy ? colorScheme.primary : null,
+      disabledForegroundColor: busy ? colorScheme.onPrimary : null,
+    );
+  }
+
+  static ButtonStyle filledIconPrimary(
+    BuildContext context, {
+    bool busy = false,
+  }) {
+    final colorScheme = Theme.of(context).colorScheme;
+    return IconButton.styleFrom(
+      backgroundColor: colorScheme.primary,
+      foregroundColor: colorScheme.onPrimary,
+      disabledBackgroundColor: busy ? colorScheme.primary : null,
+      disabledForegroundColor: busy ? colorScheme.onPrimary : null,
     );
   }
 

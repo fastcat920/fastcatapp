@@ -331,7 +331,10 @@ class _NewPeriodConfirmDialogState extends State<_NewPeriodConfirmDialog> {
                 child: FilledButton(
                   onPressed:
                       _isBusy ? null : () => _run(checkOnly: isUncertain),
-                  style: XbUiButton.filledPrimary(context).copyWith(
+                  style: XbUiButton.filledPrimary(
+                    context,
+                    busy: _isBusy,
+                  ).copyWith(
                     backgroundColor: WidgetStatePropertyAll(actionColor),
                   ),
                   child: Text(

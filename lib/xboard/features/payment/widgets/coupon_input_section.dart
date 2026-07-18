@@ -263,18 +263,21 @@ class _ValidateButton extends StatelessWidget {
                 // 执行验证
                 onPressed();
               },
-        style: XbUiButton.filledPrimary(context).copyWith(
+        style: XbUiButton.filledPrimary(
+          context,
+          busy: isValidating,
+        ).copyWith(
           padding: const WidgetStatePropertyAll(
             EdgeInsets.symmetric(horizontal: 20),
           ),
         ),
         child: isValidating
-            ? const SizedBox(
+            ? SizedBox(
                 width: 18,
                 height: 18,
                 child: CircularProgressIndicator(
                   strokeWidth: 2,
-                  valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                  color: Theme.of(context).colorScheme.onPrimary,
                 ),
               )
             : Text(
