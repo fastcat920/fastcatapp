@@ -22,7 +22,9 @@ class Window {
       protocol.register("clashmeta");
       protocol.register("flclash");
     }
-    await windowManager.ensureInitialized();
+    await windowManager.ensureInitialized().timeout(
+          const Duration(seconds: 8),
+        );
     await bootDiagLog('windowManager.ensureInitialized complete');
     final windowOptions = WindowOptions(
       size: initialSize,
@@ -74,17 +76,31 @@ class Window {
         await windowManager.setAlignment(Alignment.center);
       }
       await bootDiagLog('waitUntilReadyToShow callback complete');
-    });
+    }).timeout(const Duration(seconds: 8));
     await bootDiagLog('window.init end');
   }
 
   show() async {
     await bootDiagLog('window.show begin');
     render?.resume();
-    await windowManager.show();
-    await windowManager.focus();
-    await windowManager.setSkipTaskbar(false);
+    await _bestEffortWindowAction('show', windowManager.show);
+    await _bestEffortWindowAction('focus', windowManager.focus);
+    await _bestEffortWindowAction(
+      'setSkipTaskbar(false)',
+      () => windowManager.setSkipTaskbar(false),
+    );
     await bootDiagLog('window.show complete');
+  }
+
+  Future<void> _bestEffortWindowAction(
+    String name,
+    Future<void> Function() action,
+  ) async {
+    try {
+      await action().timeout(const Duration(seconds: 5));
+    } catch (error) {
+      await bootDiagLog('window.$name failed: $error');
+    }
   }
 
   Future<bool> get isVisible async {

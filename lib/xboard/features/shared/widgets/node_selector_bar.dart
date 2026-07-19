@@ -473,8 +473,9 @@ class _NodeSelectorBarState extends ConsumerState<NodeSelectorBar> {
   }
 
   Future<void> _reloadNodes() async {
-    if (_isReloadingNodes || ref.read(profileImportProvider).isImporting)
+    if (_isReloadingNodes || ref.read(profileImportProvider).isImporting) {
       return;
+    }
     setState(() => _isReloadingNodes = true);
     try {
       final subscriptionUrl = ref.read(subscriptionInfoProvider)?.subscribeUrl;

@@ -23,6 +23,7 @@ import 'clash/lib.dart';
 import 'common/common.dart';
 import 'common/boot_diag.dart';
 import 'common/desktop_shared_preferences_store.dart';
+import 'common/macos_startup_diagnostics.dart';
 import 'models/models.dart';
 import 'package:fl_clash/xboard/features/auth/providers/xboard_user_provider.dart';
 import 'package:fl_clash/xboard/infrastructure/infrastructure.dart';
@@ -38,6 +39,7 @@ Future<void> main(List<String> args) async {
 
   globalState.isService = false;
   WidgetsFlutterBinding.ensureInitialized();
+  MacOSStartupDiagnostics.armFirstFrameWatchdog();
   unawaited(bootDiagLog('main entered'));
   if (Platform.isWindows || Platform.isLinux) {
     WindowsWebViewPlatform.registerWith();
@@ -49,6 +51,11 @@ Future<void> main(List<String> args) async {
 
   FlutterError.onError = (FlutterErrorDetails details) {
     FlutterError.presentError(details);
+    unawaited(
+      bootDiagLog(
+        'FlutterError: ${SensitiveMasker.maskText(details.exceptionAsString())}',
+      ),
+    );
     debugPrint('[FlutterError] ${details.exceptionAsString()}');
     if (details.stack != null) {
       debugPrintStack(
@@ -99,6 +106,9 @@ Future<void> main(List<String> args) async {
   }
 
   PlatformDispatcher.instance.onError = (error, stack) {
+    unawaited(
+      bootDiagLog('PlatformError: ${SensitiveMasker.maskText(error)}'),
+    );
     debugPrint('[PlatformError] $error');
     debugPrintStack(stackTrace: stack, label: '[PlatformError Stack]');
     return false;
@@ -115,30 +125,51 @@ Future<void> main(List<String> args) async {
   );
 
   int? version;
+  Future<void>? appInitialization;
   try {
     final fastInitResult = await Future.wait([
       _initializeXBoardServicesWithPrefs(prefs),
       system.version,
-    ]);
+    ]).timeout(const Duration(seconds: 15));
 
     version = fastInitResult[1] as int;
 
-    await system.detectTV();
-    await globalState.initApp(version);
+    await system.detectTV().timeout(const Duration(seconds: 3));
+    final initTask = globalState.initApp(version);
+    appInitialization = initTask;
+    await initTask.timeout(const Duration(seconds: 15));
     // 优先加载缓存节点，避免启动时短暂显示"暂无可用节点"
     _loadCachedGroups(prefs);
-    await android?.init();
-    await window?.init(version);
+    if (android != null) {
+      await android!.init().timeout(const Duration(seconds: 10));
+    }
+    if (window != null) {
+      await window!.init(version).timeout(const Duration(seconds: 15));
+    }
     unawaited(bootDiagLog('window.init complete'));
   } catch (e, stack) {
     unawaited(bootDiagLog('startup init exception: $e'));
     debugPrint('[Main] 启动初始化异常: $e');
     debugPrintStack(stackTrace: stack);
     // 出错了也继续跑 runApp()，避免原生 splash 永久卡死
-    version ??= await system.version;
-    await globalState.initApp(version);
+    version ??= await system.version.timeout(
+      const Duration(seconds: 3),
+      onTimeout: () => 0,
+    );
+    try {
+      final fallbackTask = appInitialization ?? globalState.initApp(version);
+      appInitialization = fallbackTask;
+      await fallbackTask.timeout(const Duration(seconds: 10));
+    } catch (fallbackError, fallbackStack) {
+      unawaited(
+        bootDiagLog('fallback app initialization failed: $fallbackError'),
+      );
+      debugPrint('[Main] 兜底应用初始化失败: $fallbackError');
+      debugPrintStack(stackTrace: fallbackStack);
+    }
     _loadCachedGroups(prefs);
   }
+  unawaited(MacOSStartupDiagnostics.captureRendererInfo());
 
   HttpOverrides.global = FastcatHttpOverrides();
   WidgetsBinding.instance.addObserver(AppLifecycleObserver());
@@ -156,7 +187,6 @@ Future<void> main(List<String> args) async {
     child: const Application(),
   ));
   unawaited(bootDiagLog('runApp called'));
-
 }
 
 Future<InitialUserSnapshot> _loadInitialUserSnapshot(

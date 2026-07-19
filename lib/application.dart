@@ -3,6 +3,8 @@ import 'dart:async';
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:fl_clash/clash/clash.dart';
 import 'package:fl_clash/common/common.dart';
+import 'package:fl_clash/common/boot_diag.dart';
+import 'package:fl_clash/common/macos_startup_diagnostics.dart';
 import 'package:fl_clash/l10n/l10n.dart';
 import 'package:fl_clash/manager/hotkey_manager.dart';
 import 'package:fl_clash/manager/manager.dart';
@@ -49,6 +51,7 @@ class ApplicationState extends ConsumerState<Application>
   ];
 
   Timer? _autoUpdateProfilesTaskTimer;
+  Timer? _customerServicePrewarmTimer;
   // Router 只创建一次，通过 refresh() 触发 redirect 重新求值
   // 避免每次 auth 状态变化都重建 GoRouter 导致 StatefulShellRoute 重置（Windows 空白屏）
   late final GoRouter _router;
@@ -115,14 +118,12 @@ class ApplicationState extends ConsumerState<Application>
     _setupRootListeners();
 
     WidgetsBinding.instance.addPostFrameCallback((timeStamp) async {
+      unawaited(bootDiagLog('flutter first frame callback reached'));
+      unawaited(MacOSStartupDiagnostics.markFirstFrame());
       final currentContext = globalState.navigatorKey.currentContext;
       if (currentContext != null) {
         globalState.appController = AppController(currentContext, ref);
       }
-
-      // 首帧后立即预热客服配置、线路和 WebView，避免等用户进入“我的”页
-      // 才开始冷启动。初始化完成后会再次调用，幂等逻辑会复用已有结果。
-      CustomerServiceHelper.prewarm();
 
       // ✅ 后台预热：统一初始化服务（不阻塞 UI）
       // 放到首帧之后，避免在 initState/build 生命周期内修改 provider。
@@ -132,8 +133,6 @@ class ApplicationState extends ConsumerState<Application>
         } catch (e) {
           // 初始化失败，登录页会处理
           debugPrint('[Application] 预热初始化失败: $e');
-        } finally {
-          CustomerServiceHelper.prewarm();
         }
       }());
 
@@ -143,6 +142,9 @@ class ApplicationState extends ConsumerState<Application>
       _performQuickAuthWithDomainService();
 
       await globalState.appController.init();
+      await bootDiagLog(
+        'app controller initialization complete',
+      );
       globalState.appController.initLink();
       app?.initShortcuts();
 
@@ -162,6 +164,7 @@ class ApplicationState extends ConsumerState<Application>
 
       // 启动后检查更新
       _checkForUpdates();
+      _scheduleCustomerServicePrewarm();
     });
   }
 
@@ -209,7 +212,7 @@ class ApplicationState extends ConsumerState<Application>
       xboardUserProvider,
       (previous, next) {
         if (previous?.isAuthenticated != true && next.isAuthenticated) {
-          CustomerServiceHelper.prewarm();
+          _scheduleCustomerServicePrewarm();
           unawaited(
             XBoardDeviceHeartbeatService.markActive(
               reason: 'auth_ready',
@@ -255,6 +258,15 @@ class ApplicationState extends ConsumerState<Application>
         });
       },
     );
+  }
+
+  void _scheduleCustomerServicePrewarm() {
+    _customerServicePrewarmTimer?.cancel();
+    if (!ref.read(xboardUserProvider).isAuthenticated) return;
+    _customerServicePrewarmTimer = Timer(const Duration(seconds: 3), () {
+      if (!mounted || !ref.read(xboardUserProvider).isAuthenticated) return;
+      CustomerServiceHelper.prewarm();
+    });
   }
 
   Future<void> _refreshRemoteDataAfterRecovery() async {
@@ -638,6 +650,7 @@ class ApplicationState extends ConsumerState<Application>
       WidgetsBinding.instance.removeObserver(this);
       linkManager.destroy();
       _autoUpdateProfilesTaskTimer?.cancel();
+      _customerServicePrewarmTimer?.cancel();
 
       // 释放XBoard SDK资源
       try {

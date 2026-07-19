@@ -295,7 +295,9 @@ class _SubscriptionStatusDialogState extends State<SubscriptionStatusDialog> {
                     setState(() => _isRefreshing = true);
                     try {
                       await onRefresh?.call();
-                      if (mounted) Navigator.of(context).pop('refresh');
+                      if (context.mounted) {
+                        Navigator.of(context).pop('refresh');
+                      }
                     } finally {
                       if (mounted) setState(() => _isRefreshing = false);
                     }

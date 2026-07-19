@@ -1439,20 +1439,22 @@ end tell
       releaseConfigFile.writeAsStringSync(updated);
     }
 
-    await Build.exec(
-      [
-        "flutter",
-        "build",
-        "macos",
-        "--release",
-        ..._dartDefineList(env),
-      ],
-      name: "build macos app",
-    );
-
-    if (releaseConfigBackup != null) {
-      releaseConfigFile.writeAsStringSync(releaseConfigBackup);
-      print('[setup.dart]   ✅ Release.xcconfig restored');
+    try {
+      await Build.exec(
+        [
+          "flutter",
+          "build",
+          "macos",
+          "--release",
+          ..._dartDefineList(env),
+        ],
+        name: "build macos app",
+      );
+    } finally {
+      if (releaseConfigBackup != null) {
+        releaseConfigFile.writeAsStringSync(releaseConfigBackup);
+        print('[setup.dart]   ✅ Release.xcconfig restored');
+      }
     }
 
     final productName = Platform.environment["APP_NAME"]?.isNotEmpty == true

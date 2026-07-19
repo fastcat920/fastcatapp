@@ -1,13 +1,9 @@
-import 'package:fl_clash/common/common.dart';
-import 'package:fl_clash/enum/enum.dart';
+import 'package:fl_clash/common/system.dart';
 import 'package:flutter/scheduler.dart';
 
 class Render {
   static Render? _instance;
-  bool _isPaused = false;
   final _dispatcher = SchedulerBinding.instance.platformDispatcher;
-  FrameCallback? _beginFrame;
-  VoidCallback? _drawFrame;
 
   Render._internal();
 
@@ -18,39 +14,18 @@ class Render {
 
   active() {
     resume();
-    pause();
   }
 
-  pause() {
-    throttler.call(
-      FunctionTag.renderPause,
-      _pause,
-      duration: Duration(seconds: 5),
-    );
-  }
+  /// Flutter owns [PlatformDispatcher.onBeginFrame] and [onDrawFrame].
+  /// Clearing those callbacks to save resources can permanently stop desktop
+  /// rendering when window lifecycle events race. Let the engine throttle
+  /// hidden/minimized windows itself.
+  void pause() {}
 
-  resume() {
-    throttler.cancel(FunctionTag.renderPause);
-    _resume();
-  }
-
-  void _pause() async {
-    if (_isPaused) return;
-    _isPaused = true;
-    _beginFrame = _dispatcher.onBeginFrame;
-    _drawFrame = _dispatcher.onDrawFrame;
-    _dispatcher.onBeginFrame = null;
-    _dispatcher.onDrawFrame = null;
-    commonPrint.log("pause");
-  }
-
-  void _resume() {
-    if (!_isPaused) return;
-    _isPaused = false;
-    _dispatcher.onBeginFrame = _beginFrame;
-    _dispatcher.onDrawFrame = _drawFrame;
+  void resume() {
+    // Requesting a frame is safe even when one is already scheduled and helps
+    // the surface repaint immediately after a desktop window is restored.
     _dispatcher.scheduleFrame();
-    commonPrint.log("resume");
   }
 }
 

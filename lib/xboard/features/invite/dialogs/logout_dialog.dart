@@ -49,7 +49,7 @@ class _LogoutDialogState extends ConsumerState<LogoutDialog> {
                   }
                   setState(() => _isLoggingOut = true);
                   final succeeded = await _performLogout(force: isProtected);
-                  if (!mounted) return;
+                  if (!context.mounted) return;
                   if (succeeded) {
                     Navigator.of(context).pop();
                     XBoardNotification.showSuccess(
