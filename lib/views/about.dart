@@ -116,6 +116,7 @@ class AboutView extends ConsumerWidget {
     final version = globalState.packageInfo.version;
 
     return Consumer(builder: (_, ref, ___) {
+      final updateState = ref.watch(updateCheckProvider);
       return ListView(
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
         children: [
@@ -200,8 +201,41 @@ class AboutView extends ConsumerWidget {
                     color: theme.colorScheme.primary, size: 20),
               ),
               title: Text(appLocalizations.checkUpdate),
-              trailing: const Icon(Icons.chevron_right),
-              onTap: () => _checkUpdate(context, ref),
+              trailing: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  if (updateState.isChecking)
+                    const SizedBox(
+                      width: 18,
+                      height: 18,
+                      child: CircularProgressIndicator(strokeWidth: 2),
+                    )
+                  else if (updateState.hasUpdate) ...[
+                    if (updateState.latestVersion?.isNotEmpty == true) ...[
+                      Text(
+                        'V${updateState.latestVersion}',
+                        style: theme.textTheme.bodyMedium?.copyWith(
+                          color: theme.colorScheme.onSurfaceVariant,
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                    ],
+                    Container(
+                      width: 8,
+                      height: 8,
+                      decoration: const BoxDecoration(
+                        color: Colors.redAccent,
+                        shape: BoxShape.circle,
+                      ),
+                    ),
+                  ],
+                  const SizedBox(width: 8),
+                  const Icon(Icons.chevron_right),
+                ],
+              ),
+              onTap: updateState.isChecking
+                  ? null
+                  : () => _checkUpdate(context, ref),
             ),
           ),
         ],

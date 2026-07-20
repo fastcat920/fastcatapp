@@ -3445,6 +3445,46 @@ class AppLocalizations {
     );
   }
 
+  /// `Device Signed Out`
+  String get xboardDeviceKickedTitle {
+    return Intl.message(
+      'Device Signed Out',
+      name: 'xboardDeviceKickedTitle',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `This account signed in on another device, so this device has been disconnected. Sign in again or manage your devices to continue.`
+  String get xboardDeviceKickedContent {
+    return Intl.message(
+      'This account signed in on another device, so this device has been disconnected. Sign in again or manage your devices to continue.',
+      name: 'xboardDeviceKickedContent',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Device Removed`
+  String get xboardDeviceSessionRevokedTitle {
+    return Intl.message(
+      'Device Removed',
+      name: 'xboardDeviceSessionRevokedTitle',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `This device's login access was removed and its connection was stopped. Sign in again to continue.`
+  String get xboardDeviceSessionRevokedContent {
+    return Intl.message(
+      'This device\'s login access was removed and its connection was stopped. Sign in again to continue.',
+      name: 'xboardDeviceSessionRevokedContent',
+      desc: '',
+      args: [],
+    );
+  }
+
   /// `Login Again`
   String get xboardRelogin {
     return Intl.message(

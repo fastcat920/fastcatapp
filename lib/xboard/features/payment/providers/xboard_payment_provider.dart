@@ -84,10 +84,16 @@ class XBoardPaymentNotifier extends Notifier<void> {
     }
   }
 
-  Future<void> loadPendingOrders({bool updateUiState = true}) async {
+  Future<void> loadPendingOrders({
+    bool updateUiState = true,
+    bool forceRefresh = false,
+  }) async {
     final userAuthState = ref.read(xboardUserAuthProvider);
     if (!userAuthState.isAuthenticated) {
       ref.read(pendingOrdersProvider.notifier).state = [];
+      return;
+    }
+    if (!forceRefresh && _hasFreshPendingOrders) {
       return;
     }
     if (updateUiState) {
@@ -278,7 +284,7 @@ class XBoardPaymentNotifier extends Notifier<void> {
 
       final paymentResult = _mapPaymentResult(paymentResultModel);
       if (paymentResult != null) {
-        await loadPendingOrders();
+        await loadPendingOrders(forceRefresh: true);
         _logger.info('支付提交成功');
         return paymentResult;
       }
@@ -323,7 +329,10 @@ class XBoardPaymentNotifier extends Notifier<void> {
             const UIState(isLoading: false);
       }
       if (refreshAfterCancel) {
-        await loadPendingOrders(updateUiState: false);
+        await loadPendingOrders(
+          updateUiState: false,
+          forceRefresh: true,
+        );
       }
       _logger.info('取消订单成功，共取消 $canceledCount 个订单');
       return canceledCount;
@@ -340,6 +349,7 @@ class XBoardPaymentNotifier extends Notifier<void> {
   }
 
   void _clearPaymentData() {
+    _pendingOrdersLoadedAt = null;
     ref.read(pendingOrdersProvider.notifier).state = [];
     ref.read(paymentMethodsProvider.notifier).state = [];
     ref.read(paymentProcessStateProvider.notifier).state =
@@ -493,7 +503,10 @@ class XBoardPaymentNotifier extends Notifier<void> {
 
   Future<void> _refreshPendingOrdersInBackground() async {
     try {
-      await loadPendingOrders(updateUiState: false);
+      await loadPendingOrders(
+        updateUiState: false,
+        forceRefresh: true,
+      );
     } catch (e) {
       _logger.info('后台刷新待支付订单失败: $e');
     }

@@ -15,6 +15,22 @@ type PostgresStore struct {
 	db *sql.DB
 }
 
+type PostgresChanges struct {
+	Users           map[string]*UserCache
+	Devices         map[string]*DeviceRecord
+	Sessions        map[string]*SessionRecord
+	Audits          map[string]AuditLog
+	DeletedDevices  []string
+	DeletedSessions []string
+	DeletedAudits   []string
+}
+
+func (c PostgresChanges) Empty() bool {
+	return len(c.Users) == 0 && len(c.Devices) == 0 && len(c.Sessions) == 0 &&
+		len(c.Audits) == 0 && len(c.DeletedDevices) == 0 &&
+		len(c.DeletedSessions) == 0 && len(c.DeletedAudits) == 0
+}
+
 func NewPostgresStore(ctx context.Context, dsn string) (*PostgresStore, error) {
 	db, err := sql.Open("postgres", dsn)
 	if err != nil {
@@ -235,6 +251,56 @@ func (ps *PostgresStore) SaveAll(ctx context.Context, s *Store) error {
 	return tx.Commit()
 }
 
+// SaveChanges persists only records changed by the current request. The old
+// implementation rewrote every table for every heartbeat, which serialized all
+// requests behind a long transaction once the store contained thousands of
+// devices and sessions.
+func (ps *PostgresStore) SaveChanges(ctx context.Context, c PostgresChanges) error {
+	if c.Empty() {
+		return nil
+	}
+	tx, err := ps.db.BeginTx(ctx, nil)
+	if err != nil {
+		return fmt.Errorf("begin incremental tx: %w", err)
+	}
+	defer tx.Rollback()
+
+	if len(c.DeletedSessions) > 0 {
+		if _, err := tx.ExecContext(ctx, "DELETE FROM dg_sessions WHERE id = ANY($1)", pq.Array(c.DeletedSessions)); err != nil {
+			return err
+		}
+	}
+	if len(c.DeletedDevices) > 0 {
+		if _, err := tx.ExecContext(ctx, "DELETE FROM dg_devices WHERE id = ANY($1)", pq.Array(c.DeletedDevices)); err != nil {
+			return err
+		}
+	}
+	if len(c.DeletedAudits) > 0 {
+		if _, err := tx.ExecContext(ctx, "DELETE FROM dg_audit_logs WHERE id = ANY($1)", pq.Array(c.DeletedAudits)); err != nil {
+			return err
+		}
+	}
+
+	partial := &Store{
+		Users:    c.Users,
+		Devices:  c.Devices,
+		Sessions: c.Sessions,
+	}
+	if err := ps.upsertUsers(ctx, tx, partial); err != nil {
+		return err
+	}
+	if err := ps.upsertDevices(ctx, tx, partial); err != nil {
+		return err
+	}
+	if err := ps.upsertSessions(ctx, tx, partial); err != nil {
+		return err
+	}
+	if err := ps.upsertAuditRecords(ctx, tx, c.Audits); err != nil {
+		return err
+	}
+	return tx.Commit()
+}
+
 func (ps *PostgresStore) upsertUsers(ctx context.Context, tx *sql.Tx, s *Store) error {
 	if len(s.Users) == 0 {
 		return nil
@@ -329,12 +395,23 @@ func (ps *PostgresStore) upsertAuditLogs(ctx context.Context, tx *sql.Tx, s *Sto
 	if len(s.Audits) == 0 {
 		return nil
 	}
+	audits := make(map[string]AuditLog, len(s.Audits))
+	for _, audit := range s.Audits {
+		audits[audit.ID] = audit
+	}
+	return ps.upsertAuditRecords(ctx, tx, audits)
+}
+
+func (ps *PostgresStore) upsertAuditRecords(ctx context.Context, tx *sql.Tx, audits map[string]AuditLog) error {
+	if len(audits) == 0 {
+		return nil
+	}
 	stmt, err := tx.PrepareContext(ctx, "INSERT INTO dg_audit_logs(id,user_id,device_id,action,actor,ip,user_agent,details,created_at) VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9) ON CONFLICT(id) DO UPDATE SET user_id=EXCLUDED.user_id,device_id=EXCLUDED.device_id,action=EXCLUDED.action,actor=EXCLUDED.actor,ip=EXCLUDED.ip,user_agent=EXCLUDED.user_agent,details=EXCLUDED.details")
 	if err != nil {
 		return err
 	}
 	defer stmt.Close()
-	for _, a := range s.Audits {
+	for _, a := range audits {
 		raw, _ := json.Marshal(a.Details)
 		if raw == nil {
 			raw = []byte("{}")
@@ -345,4 +422,3 @@ func (ps *PostgresStore) upsertAuditLogs(ctx context.Context, tx *sql.Tx, s *Sto
 	}
 	return nil
 }
-

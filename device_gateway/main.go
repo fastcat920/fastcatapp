@@ -73,13 +73,23 @@ type Server struct {
 }
 
 type Store struct {
-	mu       sync.Mutex                `json:"-"`
-	path     string                    `json:"-"`
-	pg       *PostgresStore            `json:"-"`
-	Users    map[string]*UserCache     `json:"users"`
-	Devices  map[string]*DeviceRecord  `json:"devices"`
-	Sessions map[string]*SessionRecord `json:"sessions"`
-	Audits   []AuditLog                `json:"audits"`
+	mu                     sync.RWMutex              `json:"-"`
+	path                   string                    `json:"-"`
+	pg                     *PostgresStore            `json:"-"`
+	sessionByTokenHash     map[string]string         `json:"-"`
+	sessionBySubscribeHash map[string]string         `json:"-"`
+	dirtyUsers             map[string]struct{}       `json:"-"`
+	dirtyDevices           map[string]struct{}       `json:"-"`
+	dirtySessions          map[string]struct{}       `json:"-"`
+	dirtyAudits            map[string]AuditLog       `json:"-"`
+	deletedDevices         map[string]struct{}       `json:"-"`
+	deletedSessions        map[string]struct{}       `json:"-"`
+	deletedAudits          map[string]struct{}       `json:"-"`
+	revision               uint64                    `json:"-"`
+	Users                  map[string]*UserCache     `json:"users"`
+	Devices                map[string]*DeviceRecord  `json:"devices"`
+	Sessions               map[string]*SessionRecord `json:"sessions"`
+	Audits                 []AuditLog                `json:"audits"`
 }
 
 type UserCache struct {
@@ -214,6 +224,12 @@ func main() {
 		client: &http.Client{
 			Timeout: cfg.HTTPTimeout,
 			Transport: &http.Transport{
+				MaxIdleConns:          256,
+				MaxIdleConnsPerHost:   64,
+				MaxConnsPerHost:       128,
+				IdleConnTimeout:       90 * time.Second,
+				TLSHandshakeTimeout:   5 * time.Second,
+				ExpectContinueTimeout: time.Second,
 				ResponseHeaderTimeout: 5 * time.Second,
 			},
 		},
@@ -626,6 +642,7 @@ func (s *Server) handleLogin(w http.ResponseWriter, r *http.Request) {
 	data["token"] = gatewayToken
 	data["device"] = publicDevice(device, device.ID)
 	data["device_limit"] = nullableLimit(effectiveLimit)
+	data["device_policy"] = s.cfg.DevicePolicy
 	if len(s.ossGatewayURLs()) > 0 {
 		data["gateway_urls"] = s.ossGatewayURLs()
 	}
@@ -698,6 +715,13 @@ func (s *Server) handleSubscribe(w http.ResponseWriter, r *http.Request) {
 }
 
 var errDeviceLimitExceeded = errors.New("device limit exceeded")
+
+type sessionAuthorizationError struct {
+	code    string
+	message string
+}
+
+func (e *sessionAuthorizationError) Error() string { return e.message }
 
 func (s *Server) admitDevice(r *http.Request, req LoginRequest, snapshot SubscriptionSnapshot, businessToken string) (string, *DeviceRecord, int, int, error) {
 	now := time.Now().UTC()
@@ -775,6 +799,7 @@ func (s *Server) admitDevice(r *http.Request, req LoginRequest, snapshot Subscri
 	device.UserAgent = userAgent
 	device.RevokedAt = nil
 	device.RevokedBy = ""
+	s.store.markDeviceLocked(device.ID)
 
 	s.revokeDeviceSessionsLocked(device.ID, now)
 
@@ -795,6 +820,8 @@ func (s *Server) admitDevice(r *http.Request, req LoginRequest, snapshot Subscri
 		UserAgent:            userAgent,
 	}
 	s.store.Sessions[session.ID] = session
+	s.store.indexSessionLocked(session)
+	s.store.markSessionLocked(session.ID)
 	s.addAuditLocked("session.created", user.ID, device.ID, "user", clientIP, userAgent, map[string]any{
 		"platform": req.Platform,
 	}, now)
@@ -877,37 +904,18 @@ func (s *Server) handleHeartbeat(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	now := time.Now().UTC()
-	clientIP := s.clientIP(r)
-	s.store.mu.Lock()
-	// ctx.Device / ctx.Session are copies from authorize(); look up
-	// the real store entries by ID so the update actually persists.
-	var responseDevice *DeviceRecord
-	if dev, ok := s.store.Devices[ctx.Device.ID]; ok {
-		dev.LastSeenAt = now
-		s.updateDeviceIPInfoLocked(dev, clientIP)
-		responseDevice = cloneDevice(dev)
-	}
-	if ses, ok := s.store.Sessions[ctx.Session.ID]; ok {
-		ses.LastSeenAt = now
-		ses.LastIP = clientIP
-	}
-	s.store.mu.Unlock()
-	if responseDevice == nil {
-		responseDevice = ctx.Device
-	}
-
 	writeJSON(w, http.StatusOK, map[string]any{
 		"success": true,
 		"data": map[string]any{
-			"device": publicDevice(responseDevice, ctx.Device.ID),
+			"device":        publicDevice(ctx.Device, ctx.Device.ID),
+			"device_policy": s.cfg.DevicePolicy,
 		},
 	})
 }
 
 func (s *Server) writeUserDevices(w http.ResponseWriter, ctx *SessionContext) {
-	s.store.mu.Lock()
-	defer s.store.mu.Unlock()
+	s.store.mu.RLock()
+	defer s.store.mu.RUnlock()
 
 	devices := s.devicesForUserLocked(ctx.User.ID)
 	activeCount := 0
@@ -990,8 +998,8 @@ func (s *Server) handleAdminListUsers(w http.ResponseWriter, r *http.Request) {
 	sortBy := normalizeAdminUserSort(r.URL.Query().Get("sort"))
 	order := normalizeSortOrder(r.URL.Query().Get("order"))
 
-	s.store.mu.Lock()
-	defer s.store.mu.Unlock()
+	s.store.mu.RLock()
+	defer s.store.mu.RUnlock()
 
 	rows := make([]adminUserRow, 0, len(s.store.Users))
 	for _, user := range s.store.Users {
@@ -1035,7 +1043,7 @@ func (s *Server) handleAdminListUsers(w http.ResponseWriter, r *http.Request) {
 }
 
 func (s *Server) handleAdminDashboard(w http.ResponseWriter, r *http.Request) {
-	s.store.mu.Lock()
+	s.store.mu.RLock()
 	now := time.Now().UTC()
 	totalUsers := len(s.store.Users)
 	totalDevices := len(s.store.Devices)
@@ -1070,7 +1078,7 @@ func (s *Server) handleAdminDashboard(w http.ResponseWriter, r *http.Request) {
 			versions[version]++
 		}
 	}
-	s.store.mu.Unlock()
+	s.store.mu.RUnlock()
 
 	business := s.probeBusinessBackends(r.Context())
 	gatewayURLs := s.ossGatewayURLs()
@@ -1112,8 +1120,8 @@ func (s *Server) handleAdminDashboard(w http.ResponseWriter, r *http.Request) {
 }
 
 func (s *Server) handleAdminUserDevices(w http.ResponseWriter, r *http.Request, userKey string) {
-	s.store.mu.Lock()
-	defer s.store.mu.Unlock()
+	s.store.mu.RLock()
+	defer s.store.mu.RUnlock()
 
 	user := s.findUserLocked(userKey)
 	if user == nil {
@@ -1198,6 +1206,7 @@ func (s *Server) handleAdminPatchDeviceLimit(w http.ResponseWriter, r *http.Requ
 		user.DeviceLimitOverride = &limit
 	}
 	user.UpdatedAt = now
+	s.store.markUserLocked(user.ID)
 	s.addAuditLocked("user.device_limit_override.updated", user.ID, "", "admin", s.clientIP(r), r.UserAgent(), map[string]any{
 		"device_limit_override": user.DeviceLimitOverride,
 	}, now)
@@ -1218,8 +1227,8 @@ func (s *Server) handleAdminPatchDeviceLimit(w http.ResponseWriter, r *http.Requ
 func (s *Server) handleAdminAuditLogs(w http.ResponseWriter, r *http.Request) {
 	page, pageSize := adminPaginationParams(r)
 
-	s.store.mu.Lock()
-	defer s.store.mu.Unlock()
+	s.store.mu.RLock()
+	defer s.store.mu.RUnlock()
 
 	items := append([]AuditLog(nil), s.store.Audits...)
 	sort.Slice(items, func(i, j int) bool {
@@ -1318,6 +1327,11 @@ func (s *Server) proxyToBusiness(w http.ResponseWriter, r *http.Request, session
 func (s *Server) requireSession(w http.ResponseWriter, r *http.Request) (*SessionContext, bool) {
 	ctx, err := s.authorize(r)
 	if err != nil {
+		var authErr *sessionAuthorizationError
+		if errors.As(err, &authErr) {
+			writeError(w, http.StatusUnauthorized, authErr.code, authErr.message, nil)
+			return nil, false
+		}
 		writeError(w, http.StatusUnauthorized, "DEVICE_SESSION_INVALID", "Device session is invalid or expired", nil)
 		return nil, false
 	}
@@ -1340,39 +1354,44 @@ func (s *Server) authorize(r *http.Request) (*SessionContext, error) {
 	shouldSave := false
 
 	s.store.mu.Lock()
-	for _, session := range s.store.Sessions {
-		if session.TokenHash != tokenHash {
-			continue
-		}
-		if session.Status != statusActive || now.After(session.ExpiresAt) {
-			if session.Status == statusActive {
-				session.Status = statusExpired
+	s.store.initRuntimeStateLocked()
+	if sessionID := s.store.sessionByTokenHash[tokenHash]; sessionID != "" {
+		if session := s.store.Sessions[sessionID]; session != nil {
+			if session.Status != statusActive || now.After(session.ExpiresAt) {
+				authErr := s.sessionAuthorizationErrorLocked(session, now)
+				if session.Status == statusActive {
+					session.Status = statusExpired
+					s.store.markSessionLocked(session.ID)
+					shouldSave = true
+				}
+				s.store.mu.Unlock()
+				if shouldSave {
+					_ = s.store.Save()
+				}
+				return nil, authErr
+			}
+			device := s.store.Devices[session.DeviceID]
+			user := s.store.Users[session.UserID]
+			if device == nil || user == nil || device.Status != statusActive {
+				authErr := s.sessionAuthorizationErrorLocked(session, now)
+				s.store.mu.Unlock()
+				return nil, authErr
+			}
+			if now.Sub(session.LastSeenAt) > time.Minute {
+				session.LastSeenAt = now
+				session.LastIP = clientIP
+				session.UserAgent = userAgent
+				device.LastSeenAt = now
+				s.updateDeviceIPInfoLocked(device, clientIP)
+				device.UserAgent = userAgent
+				s.store.markSessionLocked(session.ID)
+				s.store.markDeviceLocked(device.ID)
 				shouldSave = true
 			}
-			s.store.mu.Unlock()
-			if shouldSave {
-				_ = s.store.Save()
-			}
-			return nil, errors.New("session inactive")
+			sessionCopy = *session
+			deviceCopy = *device
+			userCopy = *user
 		}
-		device := s.store.Devices[session.DeviceID]
-		user := s.store.Users[session.UserID]
-		if device == nil || user == nil || device.Status != statusActive {
-			s.store.mu.Unlock()
-			return nil, errors.New("device inactive")
-		}
-		if now.Sub(session.LastSeenAt) > time.Minute {
-			session.LastSeenAt = now
-			session.LastIP = clientIP
-			session.UserAgent = userAgent
-			device.LastSeenAt = now
-			s.updateDeviceIPInfoLocked(device, clientIP)
-			device.UserAgent = userAgent
-		}
-		sessionCopy = *session
-		deviceCopy = *device
-		userCopy = *user
-		break
 	}
 	if sessionCopy.ID == "" {
 		s.store.mu.Unlock()
@@ -1404,6 +1423,35 @@ func (s *Server) authorize(r *http.Request) (*SessionContext, error) {
 	}, nil
 }
 
+func (s *Server) sessionAuthorizationErrorLocked(session *SessionRecord, now time.Time) error {
+	if session.Status == statusRevoked {
+		if device := s.store.Devices[session.DeviceID]; device != nil {
+			switch device.RevokedBy {
+			case "system:kick_oldest":
+				return &sessionAuthorizationError{
+					code:    "DEVICE_KICKED_BY_NEW_LOGIN",
+					message: "This device was signed out because the account logged in on another device",
+				}
+			case "user", "admin":
+				return &sessionAuthorizationError{
+					code:    "DEVICE_REVOKED",
+					message: "This device has been removed",
+				}
+			}
+		}
+	}
+	if session.Status == statusExpired || now.After(session.ExpiresAt) {
+		return &sessionAuthorizationError{
+			code:    "DEVICE_SESSION_EXPIRED",
+			message: "Device session has expired",
+		}
+	}
+	return &sessionAuthorizationError{
+		code:    "DEVICE_SESSION_INVALID",
+		message: "Device session is invalid",
+	}
+}
+
 func (s *Server) authorizeSubscribeToken(r *http.Request, token string) (*SessionContext, error) {
 	tokenHash := s.hashValue("subscribe", token)
 	now := time.Now().UTC()
@@ -1416,39 +1464,42 @@ func (s *Server) authorizeSubscribeToken(r *http.Request, token string) (*Sessio
 	shouldSave := false
 
 	s.store.mu.Lock()
-	for _, session := range s.store.Sessions {
-		if session.SubscribeTokenHash != tokenHash {
-			continue
-		}
-		if session.Status != statusActive || now.After(session.ExpiresAt) {
-			if session.Status == statusActive {
-				session.Status = statusExpired
+	s.store.initRuntimeStateLocked()
+	if sessionID := s.store.sessionBySubscribeHash[tokenHash]; sessionID != "" {
+		if session := s.store.Sessions[sessionID]; session != nil {
+			if session.Status != statusActive || now.After(session.ExpiresAt) {
+				if session.Status == statusActive {
+					session.Status = statusExpired
+					s.store.markSessionLocked(session.ID)
+					shouldSave = true
+				}
+				s.store.mu.Unlock()
+				if shouldSave {
+					_ = s.store.Save()
+				}
+				return nil, errors.New("session inactive")
+			}
+			device := s.store.Devices[session.DeviceID]
+			user := s.store.Users[session.UserID]
+			if device == nil || user == nil || device.Status != statusActive {
+				s.store.mu.Unlock()
+				return nil, errors.New("device inactive")
+			}
+			if now.Sub(session.LastSeenAt) > time.Minute {
+				session.LastSeenAt = now
+				session.LastIP = clientIP
+				session.UserAgent = userAgent
+				device.LastSeenAt = now
+				s.updateDeviceIPInfoLocked(device, clientIP)
+				device.UserAgent = userAgent
+				s.store.markSessionLocked(session.ID)
+				s.store.markDeviceLocked(device.ID)
 				shouldSave = true
 			}
-			s.store.mu.Unlock()
-			if shouldSave {
-				_ = s.store.Save()
-			}
-			return nil, errors.New("session inactive")
+			sessionCopy = *session
+			deviceCopy = *device
+			userCopy = *user
 		}
-		device := s.store.Devices[session.DeviceID]
-		user := s.store.Users[session.UserID]
-		if device == nil || user == nil || device.Status != statusActive {
-			s.store.mu.Unlock()
-			return nil, errors.New("device inactive")
-		}
-		if now.Sub(session.LastSeenAt) > time.Minute {
-			session.LastSeenAt = now
-			session.LastIP = clientIP
-			session.UserAgent = userAgent
-			device.LastSeenAt = now
-			s.updateDeviceIPInfoLocked(device, clientIP)
-			device.UserAgent = userAgent
-		}
-		sessionCopy = *session
-		deviceCopy = *device
-		userCopy = *user
-		break
 	}
 	if sessionCopy.ID == "" {
 		s.store.mu.Unlock()
@@ -1639,11 +1690,16 @@ func (s *Server) rewriteSubscriptionResponse(r *http.Request, sessionCtx *Sessio
 	}
 	user.LastSyncedAt = now
 	user.UpdatedAt = now
+	s.store.markUserLocked(user.ID)
 
 	if encryptedSubURL != "" {
 		if session := s.store.Sessions[sessionCtx.Session.ID]; session != nil {
 			session.BusinessSubURLCipher = encryptedSubURL
+			s.store.markSessionLocked(session.ID)
 		}
+	}
+	if err := s.store.saveLocked(); err != nil {
+		s.log.Printf("subscription persistence failed: %v", err)
 	}
 
 	if sessionCtx.SubscribeToken != "" {
@@ -1731,6 +1787,7 @@ func (s *Server) upsertUserLocked(snapshot SubscriptionSnapshot, fallbackEmail s
 	}
 	user.LastSyncedAt = now
 	user.UpdatedAt = now
+	s.store.markUserLocked(user.ID)
 	return user
 }
 
@@ -1794,6 +1851,7 @@ func (s *Server) revokeDeviceLocked(device *DeviceRecord, actor string, now time
 	device.Status = statusRevoked
 	device.RevokedAt = &now
 	device.RevokedBy = actor
+	s.store.markDeviceLocked(device.ID)
 }
 
 func (s *Server) revokeDeviceSessionsLocked(deviceID string, now time.Time) {
@@ -1801,12 +1859,13 @@ func (s *Server) revokeDeviceSessionsLocked(deviceID string, now time.Time) {
 		if session.DeviceID == deviceID && session.Status == statusActive {
 			session.Status = statusRevoked
 			session.ExpiresAt = now
+			s.store.markSessionLocked(session.ID)
 		}
 	}
 }
 
 func (s *Server) addAuditLocked(action, userID, deviceID, actor, ip, userAgent string, details map[string]any, now time.Time) {
-	s.store.Audits = append(s.store.Audits, AuditLog{
+	audit := AuditLog{
 		ID:        "aud_" + randomHex(12),
 		UserID:    userID,
 		DeviceID:  deviceID,
@@ -1816,8 +1875,14 @@ func (s *Server) addAuditLocked(action, userID, deviceID, actor, ip, userAgent s
 		UserAgent: userAgent,
 		Details:   details,
 		CreatedAt: now,
-	})
+	}
+	s.store.Audits = append(s.store.Audits, audit)
+	s.store.markAuditLocked(audit)
 	if len(s.store.Audits) > 5000 {
+		for _, removed := range s.store.Audits[:len(s.store.Audits)-5000] {
+			delete(s.store.dirtyAudits, removed.ID)
+			s.store.deletedAudits[removed.ID] = struct{}{}
+		}
 		s.store.Audits = s.store.Audits[len(s.store.Audits)-5000:]
 	}
 }
@@ -1880,12 +1945,36 @@ func (s *Server) tryBusinessURLs(ctx context.Context, makeReq func(baseURL strin
 			lastErr = err
 			continue
 		}
+		// A reachable reverse proxy may still return 5xx while another business
+		// backend is healthy. Retry only requests that are safe to repeat; avoid
+		// duplicating state-changing operations such as orders and payments.
+		if resp.StatusCode >= 500 && i+1 < len(urls) && safeBusinessRetry(req) {
+			_, _ = io.Copy(io.Discard, io.LimitReader(resp.Body, 4096))
+			_ = resp.Body.Close()
+			s.log.Printf("business request to %s returned HTTP %d (%d/%d), trying next backend", baseURL, resp.StatusCode, i+1, len(urls))
+			lastErr = fmt.Errorf("business backend %s returned HTTP %d", baseURL, resp.StatusCode)
+			continue
+		}
 		return resp, nil
 	}
 	if lastErr != nil {
 		return nil, lastErr
 	}
 	return nil, errors.New("no business URLs configured")
+}
+
+func safeBusinessRetry(req *http.Request) bool {
+	if req == nil {
+		return false
+	}
+	switch req.Method {
+	case http.MethodGet, http.MethodHead, http.MethodOptions:
+		return true
+	case http.MethodPost:
+		return strings.HasSuffix(req.URL.Path, "/passport/auth/login")
+	default:
+		return false
+	}
 }
 
 func (s *Server) probeBusinessBackends(ctx context.Context) map[string]any {
@@ -1967,6 +2056,8 @@ func (s *Server) businessSubscribeURL(ctx context.Context, sessionCtx *SessionCo
 		s.store.mu.Lock()
 		if session := s.store.Sessions[sessionCtx.Session.ID]; session != nil {
 			session.BusinessSubURLCipher = encryptedSubURL
+			s.store.markSessionLocked(session.ID)
+			_ = s.store.saveLocked()
 		}
 		s.store.mu.Unlock()
 	}
@@ -2202,6 +2293,164 @@ func loadFromFile(s *Store) error {
 	}
 	return nil
 }
+func (s *Store) initRuntimeStateLocked() {
+	if s.sessionByTokenHash == nil {
+		s.sessionByTokenHash = make(map[string]string, len(s.Sessions))
+	}
+	if s.sessionBySubscribeHash == nil {
+		s.sessionBySubscribeHash = make(map[string]string, len(s.Sessions))
+	}
+	if s.dirtyUsers == nil {
+		s.dirtyUsers = map[string]struct{}{}
+	}
+	if s.dirtyDevices == nil {
+		s.dirtyDevices = map[string]struct{}{}
+	}
+	if s.dirtySessions == nil {
+		s.dirtySessions = map[string]struct{}{}
+	}
+	if s.dirtyAudits == nil {
+		s.dirtyAudits = map[string]AuditLog{}
+	}
+	if s.deletedDevices == nil {
+		s.deletedDevices = map[string]struct{}{}
+	}
+	if s.deletedSessions == nil {
+		s.deletedSessions = map[string]struct{}{}
+	}
+	if s.deletedAudits == nil {
+		s.deletedAudits = map[string]struct{}{}
+	}
+}
+
+func (s *Store) rebuildSessionIndexesLocked() {
+	s.sessionByTokenHash = make(map[string]string, len(s.Sessions))
+	s.sessionBySubscribeHash = make(map[string]string, len(s.Sessions))
+	for id, session := range s.Sessions {
+		if session.TokenHash != "" {
+			s.sessionByTokenHash[session.TokenHash] = id
+		}
+		if session.SubscribeTokenHash != "" {
+			s.sessionBySubscribeHash[session.SubscribeTokenHash] = id
+		}
+	}
+}
+
+func (s *Store) indexSessionLocked(session *SessionRecord) {
+	s.initRuntimeStateLocked()
+	if session.TokenHash != "" {
+		s.sessionByTokenHash[session.TokenHash] = session.ID
+	}
+	if session.SubscribeTokenHash != "" {
+		s.sessionBySubscribeHash[session.SubscribeTokenHash] = session.ID
+	}
+}
+
+func (s *Store) markUserLocked(id string) {
+	s.initRuntimeStateLocked()
+	s.dirtyUsers[id] = struct{}{}
+	s.revision++
+}
+
+func (s *Store) markDeviceLocked(id string) {
+	s.initRuntimeStateLocked()
+	delete(s.deletedDevices, id)
+	s.dirtyDevices[id] = struct{}{}
+	s.revision++
+}
+
+func (s *Store) markSessionLocked(id string) {
+	s.initRuntimeStateLocked()
+	delete(s.deletedSessions, id)
+	s.dirtySessions[id] = struct{}{}
+	s.revision++
+}
+
+func (s *Store) markAuditLocked(audit AuditLog) {
+	s.initRuntimeStateLocked()
+	delete(s.deletedAudits, audit.ID)
+	s.dirtyAudits[audit.ID] = audit
+	s.revision++
+}
+
+func (s *Store) deleteDeviceLocked(id string) {
+	s.initRuntimeStateLocked()
+	delete(s.dirtyDevices, id)
+	s.deletedDevices[id] = struct{}{}
+	delete(s.Devices, id)
+	s.revision++
+}
+
+func (s *Store) deleteSessionLocked(id string) {
+	s.initRuntimeStateLocked()
+	if session := s.Sessions[id]; session != nil {
+		delete(s.sessionByTokenHash, session.TokenHash)
+		delete(s.sessionBySubscribeHash, session.SubscribeTokenHash)
+	}
+	delete(s.dirtySessions, id)
+	s.deletedSessions[id] = struct{}{}
+	delete(s.Sessions, id)
+	s.revision++
+}
+
+func keysOf(values map[string]struct{}) []string {
+	keys := make([]string, 0, len(values))
+	for key := range values {
+		keys = append(keys, key)
+	}
+	return keys
+}
+
+func (s *Store) postgresChangesLocked() PostgresChanges {
+	s.initRuntimeStateLocked()
+	changes := PostgresChanges{
+		Users:           make(map[string]*UserCache, len(s.dirtyUsers)),
+		Devices:         make(map[string]*DeviceRecord, len(s.dirtyDevices)),
+		Sessions:        make(map[string]*SessionRecord, len(s.dirtySessions)),
+		Audits:          make(map[string]AuditLog, len(s.dirtyAudits)),
+		DeletedDevices:  keysOf(s.deletedDevices),
+		DeletedSessions: keysOf(s.deletedSessions),
+		DeletedAudits:   keysOf(s.deletedAudits),
+	}
+	for id := range s.dirtyUsers {
+		if record := s.Users[id]; record != nil {
+			changes.Users[id] = record
+		}
+	}
+	for id := range s.dirtyDevices {
+		if record := s.Devices[id]; record != nil {
+			changes.Devices[id] = record
+		}
+	}
+	for id := range s.dirtySessions {
+		if record := s.Sessions[id]; record != nil {
+			changes.Sessions[id] = record
+		}
+	}
+	for id, record := range s.dirtyAudits {
+		changes.Audits[id] = record
+	}
+	return changes
+}
+
+func (s *Store) clearDirtyLocked() {
+	s.dirtyUsers = map[string]struct{}{}
+	s.dirtyDevices = map[string]struct{}{}
+	s.dirtySessions = map[string]struct{}{}
+	s.dirtyAudits = map[string]AuditLog{}
+	s.deletedDevices = map[string]struct{}{}
+	s.deletedSessions = map[string]struct{}{}
+	s.deletedAudits = map[string]struct{}{}
+}
+
+func (s *Store) hasPendingChangesLocked() bool {
+	s.initRuntimeStateLocked()
+	return len(s.dirtyUsers) > 0 || len(s.dirtyDevices) > 0 ||
+		len(s.dirtySessions) > 0 || len(s.dirtyAudits) > 0 ||
+		len(s.deletedDevices) > 0 || len(s.deletedSessions) > 0 ||
+		len(s.deletedAudits) > 0
+}
+
 func LoadStore(path, pgDSN string) (*Store, func(), error) {
 	store := &Store{
 		path:     path,
@@ -2229,12 +2478,16 @@ func LoadStore(path, pgDSN string) (*Store, func(), error) {
 				}
 			}
 		}
+		store.initRuntimeStateLocked()
+		store.rebuildSessionIndexesLocked()
 		return store, func() { pg.Close() }, nil
 	}
 
 	if err := loadFromFile(store); err != nil {
 		return nil, nil, err
 	}
+	store.initRuntimeStateLocked()
+	store.rebuildSessionIndexesLocked()
 	return store, nil, nil
 }
 
@@ -2246,7 +2499,17 @@ func (s *Store) Save() error {
 
 func (s *Store) saveLocked() error {
 	if s.pg != nil {
-		return s.pg.SaveAll(context.Background(), s)
+		changes := s.postgresChangesLocked()
+		if changes.Empty() {
+			return nil
+		}
+		ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+		defer cancel()
+		if err := s.pg.SaveChanges(ctx, changes); err != nil {
+			return err
+		}
+		s.clearDirtyLocked()
+		return nil
 	}
 	if err := os.MkdirAll(filepath.Dir(s.path), 0o755); err != nil {
 		return err
@@ -2938,10 +3201,10 @@ func (s *Server) cleanupRevokedDevices() {
 		if device.Status == statusRevoked && device.RevokedAt != nil && device.RevokedAt.Before(cutoff90) {
 			for sid, session := range s.store.Sessions {
 				if session.DeviceID == id {
-					delete(s.store.Sessions, sid)
+					s.store.deleteSessionLocked(sid)
 				}
 			}
-			delete(s.store.Devices, id)
+			s.store.deleteDeviceLocked(id)
 			removed++
 		}
 	}
@@ -2958,12 +3221,37 @@ func syncPostgresLoop(s *Store, interval time.Duration, logger *log.Logger) {
 	defer ticker.Stop()
 	for range ticker.C {
 		s.mu.Lock()
-		if s.pg != nil {
-			if err := s.pg.LoadAll(context.Background(), s); err != nil {
-				if logger != nil {
-					logger.Printf("postgres sync failed: %v", err)
-				}
+		pg := s.pg
+		startRevision := s.revision
+		hasPendingChanges := s.hasPendingChangesLocked()
+		s.mu.Unlock()
+		if pg == nil || hasPendingChanges {
+			continue
+		}
+
+		fresh := &Store{
+			Users:    map[string]*UserCache{},
+			Devices:  map[string]*DeviceRecord{},
+			Sessions: map[string]*SessionRecord{},
+			Audits:   []AuditLog{},
+		}
+		ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+		err := pg.LoadAll(ctx, fresh)
+		cancel()
+		if err != nil {
+			if logger != nil {
+				logger.Printf("postgres sync failed: %v", err)
 			}
+			continue
+		}
+
+		s.mu.Lock()
+		if s.revision == startRevision {
+			s.Users = fresh.Users
+			s.Devices = fresh.Devices
+			s.Sessions = fresh.Sessions
+			s.Audits = fresh.Audits
+			s.rebuildSessionIndexesLocked()
 		}
 		s.mu.Unlock()
 	}

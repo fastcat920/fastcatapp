@@ -30,6 +30,8 @@ class OrderDetailPage extends ConsumerStatefulWidget {
   final double? discountAmount;
   final double? balanceUsed;
   final bool optimistic;
+  final VoidCallback? onOrderChanged;
+  final VoidCallback? onPaymentSuccess;
 
   const OrderDetailPage({
     super.key,
@@ -41,6 +43,8 @@ class OrderDetailPage extends ConsumerStatefulWidget {
     this.discountAmount,
     this.balanceUsed,
     this.optimistic = false,
+    this.onOrderChanged,
+    this.onPaymentSuccess,
   });
 
   @override
@@ -71,6 +75,20 @@ class _OrderDetailPageState extends ConsumerState<OrderDetailPage>
     onSuccess: _handlePaymentSuccess,
   );
   bool _isPaymentCompleted = false;
+  bool _didNotifyOrderChanged = false;
+  bool _didNotifyPaymentSuccess = false;
+
+  void _notifyOrderChanged() {
+    if (_didNotifyOrderChanged) return;
+    _didNotifyOrderChanged = true;
+    widget.onOrderChanged?.call();
+  }
+
+  void _notifyPaymentSuccess() {
+    if (_didNotifyPaymentSuccess) return;
+    _didNotifyPaymentSuccess = true;
+    widget.onPaymentSuccess?.call();
+  }
 
   @override
   void initState() {
@@ -459,6 +477,7 @@ class _OrderDetailPageState extends ConsumerState<OrderDetailPage>
       clearGetOrdersCache();
       ref.invalidate(getOrderProvider(widget.tradeNo));
       ref.invalidate(getOrdersProvider);
+      _notifyOrderChanged();
       XBoardNotification.showSuccess(l10n.xboardOrderStatusCancelled);
     } catch (e) {
       XBoardNotification.showError(
@@ -508,6 +527,8 @@ class _OrderDetailPageState extends ConsumerState<OrderDetailPage>
       clearGetOrdersCache();
       ref.invalidate(getOrderProvider(widget.tradeNo));
       ref.invalidate(getOrdersProvider);
+      _notifyOrderChanged();
+      _notifyPaymentSuccess();
       XBoardNotification.showSuccess(l10n.xboardPaymentSuccess);
 
       // 后台异步刷新订阅信息，不阻塞 toast 和页面返回

@@ -15,6 +15,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import 'controller.dart';
 import 'xboard/xboard.dart';
@@ -38,6 +39,9 @@ class Application extends ConsumerStatefulWidget {
 
 class ApplicationState extends ConsumerState<Application>
     with WidgetsBindingObserver {
+  static const _lastPromptedOptionalUpdateVersionKey =
+      'last_prompted_optional_update_version';
+
   static const _fontFamilyFallback = [
     'Noto Sans CJK SC',
     'Noto Sans CJK',
@@ -169,6 +173,16 @@ class ApplicationState extends ConsumerState<Application>
   }
 
   void _setupRootListeners() {
+    void syncDeviceHeartbeat() {
+      final isAuthenticated = ref.read(xboardUserProvider).isAuthenticated;
+      final isConnected = ref.read(runTimeProvider) != null;
+      if (isAuthenticated && isConnected) {
+        XBoardDeviceHeartbeatService.startPeriodic();
+      } else {
+        XBoardDeviceHeartbeatService.stopPeriodic();
+      }
+    }
+
     ref.listenManual(
       serviceConnectivityProvider,
       (previous, next) {
@@ -222,6 +236,7 @@ class ApplicationState extends ConsumerState<Application>
         }
         if (previous?.isAuthenticated != next.isAuthenticated ||
             previous?.isInitialized != next.isInitialized) {
+          syncDeviceHeartbeat();
           WidgetsBinding.instance.addPostFrameCallback((_) {
             if (mounted) {
               _router.refresh();
@@ -229,6 +244,12 @@ class ApplicationState extends ConsumerState<Application>
           });
         }
       },
+    );
+
+    ref.listenManual(
+      runTimeProvider,
+      (_, __) => syncDeviceHeartbeat(),
+      fireImmediately: true,
     );
 
     // 监听公告弹窗：popupNoticeId 非 null 时自动弹出
@@ -326,6 +347,12 @@ class ApplicationState extends ConsumerState<Application>
     // 延迟5秒后检查更新，确保应用完全启动
     Future.delayed(const Duration(seconds: 5), () async {
       try {
+        if (!mounted) return;
+        if (!ref.read(appSettingProvider).autoCheckUpdate) {
+          debugPrint('[Application] 自动检查更新已关闭');
+          return;
+        }
+
         debugPrint('[Application] 开始自动检查更新...');
         final updateNotifier = ref.read(updateCheckProvider.notifier);
         await updateNotifier.checkForUpdates();
@@ -334,16 +361,41 @@ class ApplicationState extends ConsumerState<Application>
         final updateState = ref.read(updateCheckProvider);
         if (!mounted) return;
         if (updateState.hasUpdate) {
+          SharedPreferences? preferences;
+          var latestVersion = '';
+          if (!updateState.forceUpdate) {
+            latestVersion = updateState.latestVersion?.trim() ?? '';
+            preferences = await SharedPreferences.getInstance();
+            final lastPromptedVersion = preferences
+                .getString(_lastPromptedOptionalUpdateVersionKey)
+                ?.trim();
+            if (latestVersion.isNotEmpty &&
+                lastPromptedVersion == latestVersion) {
+              debugPrint(
+                '[Application] 普通更新 V$latestVersion 已提示过，仅保留红点',
+              );
+              return;
+            }
+          }
+
+          if (!mounted) return;
           final currentContext = globalState.navigatorKey.currentContext;
-          if (currentContext != null && currentContext.mounted) {
-            debugPrint('[Application] 发现新版本，显示更新弹窗');
-            // 显示更新弹窗
-            showDialog(
-              context: currentContext,
-              barrierDismissible: !updateState.forceUpdate, // 强制更新时不能取消
-              builder: (context) => UpdateDialog(state: updateState),
+          if (currentContext == null || !currentContext.mounted) return;
+          if (preferences != null && latestVersion.isNotEmpty) {
+            await preferences.setString(
+              _lastPromptedOptionalUpdateVersionKey,
+              latestVersion,
             );
           }
+          if (!mounted || !currentContext.mounted) return;
+          debugPrint(updateState.forceUpdate
+              ? '[Application] 发现强制更新，显示不可关闭弹窗'
+              : '[Application] 首次发现普通更新，显示一次更新弹窗');
+          showDialog(
+            context: currentContext,
+            barrierDismissible: !updateState.forceUpdate,
+            builder: (context) => UpdateDialog(state: updateState),
+          );
         } else if (updateState.error != null) {
           debugPrint('[Application] 自动更新检查失败，忽略错误: ${updateState.error}');
           // 自动检查失败时静默处理，不打扰用户

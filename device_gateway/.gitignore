@@ -1,5 +1,6 @@
 data/
 *.env
+!config.example.env
 *.local
 device-gateway
 fastcat-device-gateway

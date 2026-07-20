@@ -5,6 +5,7 @@ import 'package:fl_clash/common/common.dart';
 import 'package:fl_clash/models/models.dart' as fl_models;
 import 'package:fl_clash/providers/providers.dart';
 import 'package:fl_clash/xboard/features/auth/providers/xboard_user_provider.dart';
+import 'package:fl_clash/xboard/features/auth/models/session_termination.dart';
 import 'package:fl_clash/views/config/network.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -58,9 +59,9 @@ class _XBoardHomePageState extends ConsumerState<XBoardHomePage>
       ref.read(noticeProvider.notifier).fetchNotices();
     });
     ref.listenManual(xboardUserProvider, (previous, next) {
-      if (next.isAuthenticated && next.errorMessage == 'TOKEN_EXPIRED') {
+      if (next.isAuthenticated && isSessionTerminationCode(next.errorMessage)) {
         WidgetsBinding.instance.addPostFrameCallback((_) {
-          _showTokenExpiredDialog();
+          _showTokenExpiredDialog(next.errorMessage!);
         });
       }
       // 注意：登录后订阅下载的 HTTP 重试已在 SubscriptionDownloader 层处理，
@@ -586,7 +587,7 @@ class _XBoardHomePageState extends ConsumerState<XBoardHomePage>
     }
   }
 
-  void _showTokenExpiredDialog() {
+  void _showTokenExpiredDialog(String failureCode) {
     if (!mounted) return;
     if (_isTokenExpiredDialogVisible) return;
     if (!ref.read(xboardUserProvider).isAuthenticated) {
@@ -594,35 +595,52 @@ class _XBoardHomePageState extends ConsumerState<XBoardHomePage>
       return;
     }
     _isTokenExpiredDialogVisible = true;
-    final appLocalizations = AppLocalizations.of(context);
     // 保存外层页面 context 的 navigator 和 router，弹窗 pop 后弹窗 context 已失效
     final outerContext = context;
     showDialog(
       context: context,
-      barrierDismissible: true,
-      builder: (dialogContext) => AlertDialog(
-        title: Text(appLocalizations.xboardTokenExpiredTitle),
-        content: Text(appLocalizations.xboardTokenExpiredContent),
-        actions: [
-          TextButton(
-            onPressed: () async {
-              final userNotifier = ref.read(xboardUserProvider.notifier);
-              // 先关闭对话框
-              if (dialogContext.mounted) {
-                Navigator.of(dialogContext, rootNavigator: true).pop();
-              }
-              // 清除错误状态
-              userNotifier.clearTokenExpiredError();
-              // 处理 Token 过期（清除数据）
-              await userNotifier.handleTokenExpired();
-              // 使用外层 context 导航到登录页（弹窗 context 已被 pop 销毁）
-              if (outerContext.mounted) {
-                GoRouter.of(outerContext).go('/login');
-              }
-            },
-            child: Text(appLocalizations.xboardRelogin),
-          ),
-        ],
+      barrierDismissible: false,
+      builder: (dialogContext) => Consumer(
+        builder: (context, dialogRef, _) {
+          final latestCode = dialogRef.watch(
+                xboardUserProvider.select((state) => state.errorMessage),
+              ) ??
+              failureCode;
+          final appLocalizations = AppLocalizations.of(context);
+          final (dialogTitle, dialogContent) = switch (latestCode) {
+            SessionTerminationCode.deviceKickedByNewLogin => (
+                appLocalizations.xboardDeviceKickedTitle,
+                appLocalizations.xboardDeviceKickedContent,
+              ),
+            SessionTerminationCode.deviceRevoked => (
+                appLocalizations.xboardDeviceSessionRevokedTitle,
+                appLocalizations.xboardDeviceSessionRevokedContent,
+              ),
+            _ => (
+                appLocalizations.xboardTokenExpiredTitle,
+                appLocalizations.xboardTokenExpiredContent,
+              ),
+          };
+          return PopScope(
+            canPop: false,
+            child: _TokenExpiredDialog(
+              title: dialogTitle,
+              content: dialogContent,
+              actionLabel: appLocalizations.xboardRelogin,
+              onRelogin: () async {
+                final userNotifier =
+                    dialogRef.read(xboardUserProvider.notifier);
+                await userNotifier.handleTokenExpired();
+                if (dialogContext.mounted) {
+                  Navigator.of(dialogContext, rootNavigator: true).pop();
+                }
+                if (outerContext.mounted) {
+                  GoRouter.of(outerContext).go('/login');
+                }
+              },
+            ),
+          );
+        },
       ),
     ).whenComplete(() {
       _isTokenExpiredDialogVisible = false;
@@ -630,6 +648,57 @@ class _XBoardHomePageState extends ConsumerState<XBoardHomePage>
         ref.read(xboardUserProvider.notifier).clearTokenExpiredError();
       }
     });
+  }
+}
+
+class _TokenExpiredDialog extends StatefulWidget {
+  final String title;
+  final String content;
+  final String actionLabel;
+  final Future<void> Function() onRelogin;
+
+  const _TokenExpiredDialog({
+    required this.title,
+    required this.content,
+    required this.actionLabel,
+    required this.onRelogin,
+  });
+
+  @override
+  State<_TokenExpiredDialog> createState() => _TokenExpiredDialogState();
+}
+
+class _TokenExpiredDialogState extends State<_TokenExpiredDialog> {
+  bool _isProcessing = false;
+
+  Future<void> _handleRelogin() async {
+    if (_isProcessing) return;
+    setState(() => _isProcessing = true);
+    try {
+      await widget.onRelogin();
+    } finally {
+      if (mounted) setState(() => _isProcessing = false);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AlertDialog(
+      title: Text(widget.title),
+      content: Text(widget.content),
+      actions: [
+        TextButton(
+          onPressed: _isProcessing ? null : _handleRelogin,
+          child: _isProcessing
+              ? const SizedBox(
+                  width: 18,
+                  height: 18,
+                  child: CircularProgressIndicator(strokeWidth: 2),
+                )
+              : Text(widget.actionLabel),
+        ),
+      ],
+    );
   }
 }
 

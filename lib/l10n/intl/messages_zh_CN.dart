@@ -1197,6 +1197,10 @@ class MessageLookup extends MessageLookupByLibrary {
     "xboardDeviceHistoryHint": MessageLookupByLibrary.simpleMessage(
       "仅保留 90 天内的移除记录，超期设备将自动清理",
     ),
+    "xboardDeviceKickedContent": MessageLookupByLibrary.simpleMessage(
+      "当前账号已在其他设备登录，本设备已断开连接。请重新登录或前往设备管理处理。",
+    ),
+    "xboardDeviceKickedTitle": MessageLookupByLibrary.simpleMessage("本设备已下线"),
     "xboardDeviceLabelId": MessageLookupByLibrary.simpleMessage("设备标识"),
     "xboardDeviceLabelLastIp": MessageLookupByLibrary.simpleMessage("最近 IP"),
     "xboardDeviceLabelLastOnline": MessageLookupByLibrary.simpleMessage("最后在线"),
@@ -1217,6 +1221,12 @@ class MessageLookup extends MessageLookupByLibrary {
     "xboardDeviceRemoveTitle": MessageLookupByLibrary.simpleMessage("移除设备"),
     "xboardDeviceRemoved": MessageLookupByLibrary.simpleMessage("设备已移除"),
     "xboardDeviceRevoked": MessageLookupByLibrary.simpleMessage("已移除"),
+    "xboardDeviceSessionRevokedContent": MessageLookupByLibrary.simpleMessage(
+      "本设备的登录权限已被移除，连接已断开。请重新登录以继续使用。",
+    ),
+    "xboardDeviceSessionRevokedTitle": MessageLookupByLibrary.simpleMessage(
+      "设备已被移除",
+    ),
     "xboardDeviceSummary": m38,
     "xboardDeviceUnit": m39,
     "xboardDeviceUnknown": MessageLookupByLibrary.simpleMessage("未知"),

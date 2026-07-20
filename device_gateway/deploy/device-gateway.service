@@ -1,0 +1,23 @@
+[Unit]
+Description=FastCat Device Gateway
+Wants=network-online.target
+After=network-online.target
+
+[Service]
+Type=simple
+WorkingDirectory=/www/wwwroot/get.fastcat.com
+EnvironmentFile=/www/wwwroot/get.fastcat.com/.env
+ExecStart=/www/wwwroot/get.fastcat.com/device_gateway
+Restart=always
+RestartSec=2s
+TimeoutStopSec=15s
+KillSignal=SIGTERM
+LimitNOFILE=65535
+NoNewPrivileges=true
+PrivateTmp=true
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=device-gateway
+
+[Install]
+WantedBy=multi-user.target

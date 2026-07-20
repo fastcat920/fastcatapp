@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:fl_clash/l10n/l10n.dart';
+import 'package:fl_clash/xboard/features/update_check/providers/update_check_provider.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 /// 移动端底部导航栏
-class MobileNavigationBar extends StatelessWidget {
+class MobileNavigationBar extends ConsumerWidget {
   final int selectedIndex;
   final Function(int) onDestinationSelected;
   final bool logCapture;
@@ -15,10 +17,13 @@ class MobileNavigationBar extends StatelessWidget {
   });
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final appLocalizations = AppLocalizations.of(context);
     final colorScheme = Theme.of(context).colorScheme;
     final isDark = colorScheme.brightness == Brightness.dark;
+    final hasUpdate = ref.watch(
+      updateCheckProvider.select((state) => state.hasUpdate),
+    );
 
     return Material(
       color: isDark ? colorScheme.surface : Colors.white,
@@ -68,6 +73,7 @@ class MobileNavigationBar extends StatelessWidget {
               icon: Icons.person_outline,
               selectedIcon: Icons.person,
               label: appLocalizations.xboardMine,
+              showBadge: hasUpdate,
               onTap: onDestinationSelected,
             ),
             if (logCapture)
@@ -94,6 +100,7 @@ class _MobileNavItem extends StatelessWidget {
     required this.selectedIcon,
     required this.label,
     required this.onTap,
+    this.showBadge = false,
   });
 
   final int index;
@@ -102,6 +109,7 @@ class _MobileNavItem extends StatelessWidget {
   final IconData selectedIcon;
   final String label;
   final Function(int) onTap;
+  final bool showBadge;
 
   @override
   Widget build(BuildContext context) {
@@ -118,23 +126,45 @@ class _MobileNavItem extends StatelessWidget {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              AnimatedContainer(
-                duration: const Duration(milliseconds: 200),
-                padding: const EdgeInsets.all(7),
-                decoration: BoxDecoration(
-                  color: isSelected
-                      ? colorScheme.primary
-                          .withValues(alpha: isDark ? 0.22 : 0.12)
-                      : Colors.transparent,
-                  borderRadius: BorderRadius.circular(14),
-                ),
-                child: Icon(
-                  isSelected ? selectedIcon : icon,
-                  color: isSelected
-                      ? colorScheme.primary
-                      : colorScheme.onSurfaceVariant,
-                  size: 22,
-                ),
+              Stack(
+                clipBehavior: Clip.none,
+                children: [
+                  AnimatedContainer(
+                    duration: const Duration(milliseconds: 200),
+                    padding: const EdgeInsets.all(7),
+                    decoration: BoxDecoration(
+                      color: isSelected
+                          ? colorScheme.primary
+                              .withValues(alpha: isDark ? 0.22 : 0.12)
+                          : Colors.transparent,
+                      borderRadius: BorderRadius.circular(14),
+                    ),
+                    child: Icon(
+                      isSelected ? selectedIcon : icon,
+                      color: isSelected
+                          ? colorScheme.primary
+                          : colorScheme.onSurfaceVariant,
+                      size: 22,
+                    ),
+                  ),
+                  if (showBadge)
+                    Positioned(
+                      top: -1,
+                      right: -1,
+                      child: Container(
+                        width: 9,
+                        height: 9,
+                        decoration: BoxDecoration(
+                          color: Colors.redAccent,
+                          shape: BoxShape.circle,
+                          border: Border.all(
+                            color: isDark ? colorScheme.surface : Colors.white,
+                            width: 1.5,
+                          ),
+                        ),
+                      ),
+                    ),
+                ],
               ),
               const SizedBox(height: 2),
               Text(

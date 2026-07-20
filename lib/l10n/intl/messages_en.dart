@@ -1705,6 +1705,12 @@ class MessageLookup extends MessageLookupByLibrary {
     "xboardDeviceHistoryHint": MessageLookupByLibrary.simpleMessage(
       "Only removal records within 90 days are kept. Older records will be automatically cleaned up.",
     ),
+    "xboardDeviceKickedContent": MessageLookupByLibrary.simpleMessage(
+      "This account signed in on another device, so this device has been disconnected. Sign in again or manage your devices to continue.",
+    ),
+    "xboardDeviceKickedTitle": MessageLookupByLibrary.simpleMessage(
+      "Device Signed Out",
+    ),
     "xboardDeviceLabelId": MessageLookupByLibrary.simpleMessage("Device ID"),
     "xboardDeviceLabelLastIp": MessageLookupByLibrary.simpleMessage("Last IP"),
     "xboardDeviceLabelLastOnline": MessageLookupByLibrary.simpleMessage(
@@ -1741,6 +1747,12 @@ class MessageLookup extends MessageLookupByLibrary {
       "Device removed",
     ),
     "xboardDeviceRevoked": MessageLookupByLibrary.simpleMessage("Removed"),
+    "xboardDeviceSessionRevokedContent": MessageLookupByLibrary.simpleMessage(
+      "This device\'s login access was removed and its connection was stopped. Sign in again to continue.",
+    ),
+    "xboardDeviceSessionRevokedTitle": MessageLookupByLibrary.simpleMessage(
+      "Device Removed",
+    ),
     "xboardDeviceSummary": m38,
     "xboardDeviceUnit": m39,
     "xboardDeviceUnknown": MessageLookupByLibrary.simpleMessage("Unknown"),
