@@ -33,7 +33,7 @@ for ($attempt = 1; $attempt -le $MaxAttempts; $attempt++) {
   }
 
   try {
-    Write-Host "Download attempt $attempt/$MaxAttempts: $Uri"
+    Write-Host "Download attempt $attempt/${MaxAttempts}: $Uri"
     if ($attempt -le 2) {
       Invoke-WebRequest -Uri $Uri -OutFile $partial -UseBasicParsing
     } else {
