@@ -389,8 +389,24 @@ jobs:
         with:
           flutter-version: ${{ env.FLUTTER_VERSION }}
           channel: stable
-          architecture: arm64
+          architecture: x64
           cache: true
+
+      - name: Configure Flutter Windows ARM64 target
+        shell: pwsh
+        run: |
+          $flutterBin = Split-Path -Parent (Get-Command flutter).Source
+          $flutterRoot = Split-Path -Parent $flutterBin
+          $commandFile = Join-Path $flutterRoot "packages\flutter_tools\lib\src\commands\build_windows.dart"
+          $content = Get-Content $commandFile -Raw
+          $pattern = "final defaultTargetPlatform = \(_operatingSystemUtils\.hostPlatform == HostPlatform\.windows_arm64\)\s*\? 'windows-arm64'\s*:\s*'windows-x64';"
+          $patched = [regex]::Replace($content, $pattern, "final defaultTargetPlatform = 'windows-arm64';")
+          if ($patched -eq $content) {
+            throw "Unable to configure Flutter Windows ARM64 target"
+          }
+          Set-Content $commandFile $patched -Encoding utf8
+          Remove-Item (Join-Path $flutterRoot "bin\cache\flutter_tools.snapshot") -Force -ErrorAction SilentlyContinue
+          Write-Host "Flutter Windows target forced to arm64; PE verification remains enabled"
 
       - name: Setup Go
         uses: actions/setup-go@v5
