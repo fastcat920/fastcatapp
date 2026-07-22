@@ -166,8 +166,6 @@ class BackendMessageMapper {
           l10n.backendErrorGiftCardLimitReached,
       'the gift card has already been used by this user': (l10n) =>
           l10n.backendErrorGiftCardAlreadyUsedByUser,
-      'the given data was invalid': (l10n) =>
-          l10n.backendErrorEmailFormatInvalid,
       'not suitable gift card type': (l10n) =>
           l10n.backendErrorGiftCardTypeNotSuitable,
       'unknown gift card type': (l10n) => l10n.backendErrorGiftCardTypeUnknown,
@@ -204,10 +202,8 @@ class BackendMessageMapper {
       'reset failed': (l10n) => l10n.backendErrorResetFailed,
       'the maximum number of invitations has been reached': (l10n) =>
           l10n.backendErrorInviteLimitReached,
-      'creation limit reached': (l10n) =>
-          l10n.backendErrorInviteLimitReached,
-      'maximum invites reached': (l10n) =>
-          l10n.backendErrorInviteLimitReached,
+      'creation limit reached': (l10n) => l10n.backendErrorInviteLimitReached,
+      'maximum invites reached': (l10n) => l10n.backendErrorInviteLimitReached,
     };
 
     return exact[normalized]?.call(l10n);
@@ -217,12 +213,33 @@ class BackendMessageMapper {
     final l10n = AppLocalizations.current;
     final lower = raw.toLowerCase();
 
+    // Laravel 的通用验证提示不代表邮箱错误。具体字段消息应由网络层
+    // 从 errors 中提取；若后端未提供详情，则使用当前操作的通用失败提示。
+    if (lower == 'the given data was invalid' ||
+        lower == 'the given data was invalid.') {
+      return _defaultFallback(context);
+    }
+
+    if (lower.contains('password') &&
+        (_containsAny(lower, const [
+          'greater than 8',
+          'at least 8',
+          'minimum 8',
+          'too short',
+        ]))) {
+      return l10n.backendErrorPasswordTooShort;
+    }
+
     // 网络相关异常统一映射为「无网络连接，请检查网络设置」
-    if (lower.contains('socketexception') || lower.contains('httpexception') ||
+    if (lower.contains('socketexception') ||
+        lower.contains('httpexception') ||
         lower.contains('network') && lower.contains('unreachable') ||
-        lower.contains('no internet') || lower.contains('no route to host') ||
-        lower.contains('connection failed') || lower.contains('connection refused') ||
-        lower.contains('connection timed out') || lower.contains('timed out') ||
+        lower.contains('no internet') ||
+        lower.contains('no route to host') ||
+        lower.contains('connection failed') ||
+        lower.contains('connection refused') ||
+        lower.contains('connection timed out') ||
+        lower.contains('timed out') ||
         lower.contains('network is unreachable')) {
       return l10n.xboardNoInternetConnection;
     }
@@ -286,9 +303,6 @@ class BackendMessageMapper {
     }
 
     if (context == BackendMessageContext.login) {
-      if (lower.contains('the given data was invalid')) {
-        return l10n.backendErrorEmailFormatInvalid;
-      }
       if (_containsAny(lower, const [
         'incorrect email or password',
         'email or password',
@@ -336,6 +350,10 @@ class BackendMessageMapper {
     BackendMessageContext context,
   ) {
     final l10n = AppLocalizations.current;
+    if (raw.contains('密码') &&
+        RegExp(r'(大于|至少|不少于|不能少于|不能小于)\s*8').hasMatch(raw)) {
+      return l10n.backendErrorPasswordTooShort;
+    }
     if (context == BackendMessageContext.giftCard) {
       if (raw.contains('已使用') || raw.contains('已被')) {
         return l10n.backendErrorGiftCardAlreadyUsedByUser;

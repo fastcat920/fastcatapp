@@ -11,6 +11,7 @@ class XBInputField extends StatelessWidget {
   final TextInputType? keyboardType;
   final TextInputAction? textInputAction;
   final String? Function(String?)? validator;
+  final AutovalidateMode? autovalidateMode;
   final void Function(String)? onChanged;
   final ValueChanged<String>? onFieldSubmitted;
   final bool enabled;
@@ -25,6 +26,7 @@ class XBInputField extends StatelessWidget {
     this.keyboardType,
     this.textInputAction,
     this.validator,
+    this.autovalidateMode,
     this.onChanged,
     this.onFieldSubmitted,
     this.enabled = true,
@@ -45,6 +47,7 @@ class XBInputField extends StatelessWidget {
           keyboardType: keyboardType,
           textInputAction: textInputAction,
           validator: validator,
+          autovalidateMode: autovalidateMode,
           onChanged: onChanged,
           onFieldSubmitted: onFieldSubmitted,
           enabled: enabled,

@@ -13,6 +13,7 @@ import 'package:fl_clash/xboard/config/utils/website_url_resolver.dart';
 import 'package:fl_clash/xboard/adapter/initialization/sdk_provider.dart';
 import 'package:fl_clash/xboard/utils/backend_message_mapper.dart';
 import 'package:fl_clash/xboard/utils/xboard_notification.dart';
+import 'package:fl_clash/xboard/features/auth/utils/login_validation.dart';
 
 const _gatewayOverrideUrl = String.fromEnvironment('XBOARD_GATEWAY_URL');
 
@@ -29,6 +30,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
   bool _rememberPassword = true;
   bool _isPasswordVisible = false;
   bool _isCheckingWebsite = false;
+  bool _hasAttemptedLogin = false;
   late XBoardStorageService _storageService;
 
   static const String _appWebsite = '';
@@ -96,6 +98,9 @@ class _LoginPageState extends ConsumerState<LoginPage> {
   }
 
   Future<void> _login() async {
+    if (!_hasAttemptedLogin) {
+      setState(() => _hasAttemptedLogin = true);
+    }
     if (_formKey.currentState!.validate()) {
       final email = _emailController.text.trim();
       final password = _passwordController.text;
@@ -413,6 +418,9 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                         }
                       },
                       obscureText: !_isPasswordVisible,
+                      autovalidateMode: _hasAttemptedLogin
+                          ? AutovalidateMode.onUserInteraction
+                          : AutovalidateMode.disabled,
                       suffixIcon: IconButton(
                         icon: Icon(
                           _isPasswordVisible
@@ -426,10 +434,13 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                         },
                       ),
                       validator: (value) {
-                        if (value == null || value.isEmpty) {
-                          return appLocalizations.xboardPassword;
-                        }
-                        return null;
+                        return switch (validateLoginPassword(value)) {
+                          LoginPasswordIssue.empty =>
+                            appLocalizations.xboardPassword,
+                          LoginPasswordIssue.tooShort =>
+                            appLocalizations.passwordMin8Chars,
+                          null => null,
+                        };
                       },
                     ),
                     const SizedBox(height: 16),

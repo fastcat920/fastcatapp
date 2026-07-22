@@ -558,8 +558,14 @@ class HttpService {
             responseData['code'].toString().isNotEmpty) {
           errorCode = responseData['code'].toString();
         }
-        // 优先级：message > error > data
-        if (responseData.containsKey('message') &&
+        // Laravel 验证失败通常把具体原因放在 errors 字段，顶层 message
+        // 只有笼统的 "The given data was invalid."。优先展示具体原因。
+        final validationMessage =
+            _firstValidationMessage(responseData['errors']);
+        if (validationMessage != null) {
+          errorMessage = validationMessage;
+          hasBackendBusinessMessage = true;
+        } else if (responseData.containsKey('message') &&
             responseData['message'] != null &&
             responseData['message'].toString().isNotEmpty) {
           errorMessage = responseData['message'].toString();
@@ -615,6 +621,27 @@ class HttpService {
     }
 
     return error;
+  }
+
+  String? _firstValidationMessage(dynamic value) {
+    if (value is String) {
+      final message = value.trim();
+      return message.isEmpty ? null : message;
+    }
+    if (value is Iterable) {
+      for (final item in value) {
+        final message = _firstValidationMessage(item);
+        if (message != null) return message;
+      }
+      return null;
+    }
+    if (value is Map) {
+      for (final item in value.values) {
+        final message = _firstValidationMessage(item);
+        if (message != null) return message;
+      }
+    }
+    return null;
   }
 
   /// 转换Dio错误为XBoard异常
