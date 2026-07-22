@@ -126,12 +126,19 @@ class _NetCheckPageState extends ConsumerState<NetCheckPage> {
       nodeName == null
           ? Future.value(<String, dynamic>{})
           : clashCore.diagnoseProxy(_proxyTargets.first, nodeName),
+      nodeName == null
+          ? Future.value(_StepResult.fail(
+              l10n.xboardCurrentNode,
+              l10n.xboardNetworkDiagnosticsEndpointUnavailable,
+            ))
+          : _checkCurrentNode(nodeName, l10n),
     ]);
     if (!_isRunValid(generation)) return;
     final directResults = results[0] as List<_StepResult>;
     final proxyResults = results[1] as List<_StepResult>;
     final ipResults = results[2] as List<_StepResult>;
     final rawNodeDiagnostic = results[3] as Map<String, dynamic>;
+    final currentNodeResult = results[4] as _StepResult;
     final nodeDiagnostic = connected
         ? rawNodeDiagnostic
         : <String, dynamic>{
@@ -140,7 +147,11 @@ class _NetCheckPageState extends ConsumerState<NetCheckPage> {
             'tcp-status': 'skipped',
             'proxy-status': 'skipped',
           };
-    final nodeLayerResults = _buildNodeLayerResults(nodeDiagnostic, l10n);
+    final nodeLayerResults = _buildNodeLayerResults(
+      nodeDiagnostic,
+      l10n,
+      currentNodeResult,
+    );
     final conclusion = _buildConclusion(
       l10n,
       dnsResults,
@@ -255,10 +266,13 @@ class _NetCheckPageState extends ConsumerState<NetCheckPage> {
   List<_StepResult> _buildNodeLayerResults(
     Map<String, dynamic> data,
     AppLocalizations l10n,
+    _StepResult currentNodeResult,
   ) {
-    if (data.isEmpty) return const [];
+    final results = <_StepResult>[currentNodeResult];
+    if (data.isEmpty) return results;
     if (data['diagnostic-status'] == 'skipped_not_connected') {
       return [
+        ...results,
         _StepResult.skipped(
           l10n.xboardNetworkDiagnosticsNodeLayers,
           l10n.xboardNetworkDiagnosticsVpnRequired,
@@ -267,13 +281,13 @@ class _NetCheckPageState extends ConsumerState<NetCheckPage> {
     }
     if (data['diagnostic-status'] == 'unavailable') {
       return [
+        ...results,
         _StepResult.skipped(
           l10n.xboardNetworkDiagnosticsNodeLayers,
           l10n.xboardNetworkDiagnosticsCoreUnavailable,
         ),
       ];
     }
-    final results = <_StepResult>[];
     final host = data['host']?.toString() ?? '';
     final port = data['port']?.toString() ?? '';
     final type = data['proxy-type']?.toString() ?? '-';
@@ -489,6 +503,45 @@ class _NetCheckPageState extends ConsumerState<NetCheckPage> {
       }
     }
     return null;
+  }
+
+  Future<_StepResult> _checkCurrentNode(
+    String nodeName,
+    AppLocalizations l10n,
+  ) async {
+    try {
+      final controller = globalState.appController;
+      final proxyState = controller.getProxyCardState(nodeName);
+      final resolvedName =
+          proxyState.proxyName.isEmpty ? nodeName : proxyState.proxyName;
+      final testUrl = controller.getRealTestUrl(proxyState.testUrl);
+      final delay = await clashCore
+          .getDelay(testUrl, resolvedName)
+          .timeout(const Duration(seconds: 8));
+      final value = delay.value;
+      if (value == null || value <= 0) {
+        return _StepResult.fail(
+          l10n.xboardCurrentNode,
+          '$resolvedName · ${l10n.xboardTimeout}',
+        );
+      }
+      return _StepResult(
+        label: l10n.xboardCurrentNode,
+        ok: true,
+        detail: resolvedName,
+        elapsedMs: value,
+      );
+    } on TimeoutException {
+      return _StepResult.fail(
+        l10n.xboardCurrentNode,
+        '$nodeName · ${l10n.xboardTimeout}',
+      );
+    } catch (_) {
+      return _StepResult.fail(
+        l10n.xboardCurrentNode,
+        '$nodeName · ${l10n.xboardNetworkDiagnosticsUnreachable}',
+      );
+    }
   }
 
   Future<_StepResult> _checkRoute(

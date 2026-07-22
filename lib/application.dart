@@ -16,6 +16,7 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:flutter/foundation.dart';
 
 import 'controller.dart';
 import 'xboard/xboard.dart';
@@ -507,6 +508,14 @@ class ApplicationState extends ConsumerState<Application>
               brightness: effectiveBrightness,
               primaryColor: themeProps.primaryColor,
             );
+            final lightColorScheme = _getAppColorScheme(
+              brightness: Brightness.light,
+              primaryColor: themeProps.primaryColor,
+            );
+            final darkColorScheme = _getAppColorScheme(
+              brightness: Brightness.dark,
+              primaryColor: themeProps.primaryColor,
+            ).toPureBlack(themeProps.pureBlack);
             final currentContext = globalState.navigatorKey.currentContext;
             final currentL10n = currentContext == null
                 ? null
@@ -600,9 +609,10 @@ class ApplicationState extends ConsumerState<Application>
                 useMaterial3: true,
                 fontFamilyFallback: _fontFamilyFallback,
                 pageTransitionsTheme: _pageTransitionsTheme,
-                colorScheme: _getAppColorScheme(
-                  brightness: Brightness.light,
-                  primaryColor: themeProps.primaryColor,
+                colorScheme: lightColorScheme,
+                typography: buildAppTypography(
+                  platform: defaultTargetPlatform,
+                  colorScheme: lightColorScheme,
                 ),
                 scaffoldBackgroundColor: const Color(0xFFFAFBFD),
                 appBarTheme: const AppBarTheme(
@@ -681,10 +691,11 @@ class ApplicationState extends ConsumerState<Application>
                 useMaterial3: true,
                 fontFamilyFallback: _fontFamilyFallback,
                 pageTransitionsTheme: _pageTransitionsTheme,
-                colorScheme: _getAppColorScheme(
-                  brightness: Brightness.dark,
-                  primaryColor: themeProps.primaryColor,
-                ).toPureBlack(themeProps.pureBlack),
+                colorScheme: darkColorScheme,
+                typography: buildAppTypography(
+                  platform: defaultTargetPlatform,
+                  colorScheme: darkColorScheme,
+                ),
                 appBarTheme: const AppBarTheme(
                   centerTitle: false,
                 ),
