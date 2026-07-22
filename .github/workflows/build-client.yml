@@ -199,7 +199,9 @@ jobs:
           }
           Write-Host "Downloading VS 2019 Build Tools installer..."
           $installer = "$env:TEMP\vs_buildtools_2019.exe"
-          Invoke-WebRequest -Uri "https://aka.ms/vs/16/release/vs_buildtools.exe" -OutFile $installer
+          & ".\.github\scripts\download-file.ps1" `
+            -Uri "https://aka.ms/vs/16/release/vs_buildtools.exe" `
+            -OutFile $installer
           Write-Host "Installing VS 2019 Build Tools (C++ workload only, this takes ~4 min)..."
           Start-Process -FilePath $installer -ArgumentList "--quiet --wait --norestart --add Microsoft.VisualStudio.Workload.VCTools --includeRecommended" -NoNewWindow -Wait
           Write-Host "VS 2019 Build Tools installed"
@@ -209,7 +211,9 @@ jobs:
         run: |
           # --- 1. 下载 vc_redist.x64.exe (供 Inno Setup 安装时运行) ---
           Write-Host "Downloading VC++ Redist x64..."
-          Invoke-WebRequest -Uri "https://aka.ms/vs/17/release/vc_redist.x64.exe" -OutFile "vc_redist.x64.exe"
+          & ".\.github\scripts\download-file.ps1" `
+            -Uri "https://aka.ms/vs/17/release/vc_redist.x64.exe" `
+            -OutFile "vc_redist.x64.exe"
           Write-Host "vc_redist.x64.exe downloaded ($((Get-Item vc_redist.x64.exe).Length) bytes)"
 
           # --- 2. 从已安装的 VS Build Tools 提取 DLL 到 windows/vc_redist/ (CMake 兜底打包) ---
@@ -423,7 +427,9 @@ jobs:
         shell: pwsh
         run: |
           Write-Host "Downloading VC++ Redist arm64..."
-          Invoke-WebRequest -Uri "https://aka.ms/vs/17/release/vc_redist.arm64.exe" -OutFile "vc_redist.x64.exe"
+          & ".\.github\scripts\download-file.ps1" `
+            -Uri "https://aka.ms/vs/17/release/vc_redist.arm64.exe" `
+            -OutFile "vc_redist.x64.exe"
           Write-Host "vc_redist arm64 downloaded as vc_redist.x64.exe for the shared installer template"
 
           Write-Host "Copying ARM64 VC++ runtime DLLs from VS installation..."
@@ -640,8 +646,12 @@ jobs:
       - name: Bundle VC++ Redists
         shell: pwsh
         run: |
-          Invoke-WebRequest -Uri "https://aka.ms/vs/17/release/vc_redist.x64.exe" -OutFile "vc_redist.x64.exe"
-          Invoke-WebRequest -Uri "https://aka.ms/vs/17/release/vc_redist.arm64.exe" -OutFile "vc_redist.arm64.exe"
+          & ".\.github\scripts\download-file.ps1" `
+            -Uri "https://aka.ms/vs/17/release/vc_redist.x64.exe" `
+            -OutFile "vc_redist.x64.exe"
+          & ".\.github\scripts\download-file.ps1" `
+            -Uri "https://aka.ms/vs/17/release/vc_redist.arm64.exe" `
+            -OutFile "vc_redist.arm64.exe"
 
       - name: Build Windows universal exe installer
         shell: pwsh
