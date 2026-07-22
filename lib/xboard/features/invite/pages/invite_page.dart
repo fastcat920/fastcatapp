@@ -304,7 +304,7 @@ class _BalanceCard extends StatelessWidget {
           Text(
             value,
             style: TextStyle(
-                color: valueColor, fontSize: 24, fontWeight: FontWeight.bold),
+                color: valueColor, fontSize: 24, fontWeight: XbFontWeight.bold),
           ),
         ],
       ),
@@ -451,7 +451,7 @@ class _InviteStatsSection extends StatelessWidget {
             Text(
               appLocalizations.inviteStats,
               style: theme.textTheme.titleMedium
-                  ?.copyWith(fontWeight: FontWeight.bold),
+                  ?.copyWith(fontWeight: XbFontWeight.bold),
             ),
           ],
         ),
@@ -610,7 +610,7 @@ class _StatCard extends StatelessWidget {
           Text(
             value,
             style: theme.textTheme.titleMedium?.copyWith(
-              fontWeight: FontWeight.bold,
+              fontWeight: XbFontWeight.bold,
               color: valueColor ?? theme.colorScheme.onSurface,
             ),
           ),
@@ -736,7 +736,7 @@ class _InviteCodesTab extends StatelessWidget {
             Text(
               '${appLocalizations.inviteCode} (${codes.length})',
               style: theme.textTheme.titleSmall
-                  ?.copyWith(fontWeight: FontWeight.w600),
+                  ?.copyWith(fontWeight: XbFontWeight.semibold),
             ),
             const Spacer(),
             Builder(builder: (context) {
@@ -863,7 +863,7 @@ class _InviteCodeItem extends StatelessWidget {
                 Text(
                   code,
                   style: theme.textTheme.titleSmall?.copyWith(
-                    fontWeight: FontWeight.w600,
+                    fontWeight: XbFontWeight.semibold,
                     fontFamily: 'monospace',
                   ),
                 ),
@@ -1014,7 +1014,8 @@ class _CommissionHistoryTab extends ConsumerWidget {
                         Text(
                           '¥${c.amount.toStringAsFixed(2)}',
                           style: theme.textTheme.titleSmall?.copyWith(
-                              fontWeight: FontWeight.bold, color: amountColor),
+                              fontWeight: XbFontWeight.bold,
+                              color: amountColor),
                         ),
                         Text(
                           c.tradeNo,

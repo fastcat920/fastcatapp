@@ -373,7 +373,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                             localizedAppName,
                             style: textTheme.headlineMedium?.copyWith(
                               color: colorScheme.onSurface,
-                              fontWeight: FontWeight.bold,
+                              fontWeight: XbFontWeight.bold,
                             ),
                           ),
                           if (_appWebsite.isNotEmpty) ...[

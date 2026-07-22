@@ -147,7 +147,7 @@ class _TicketCard extends StatelessWidget {
                     child: Text(
                       ticket.subject,
                       style: theme.textTheme.titleSmall
-                          ?.copyWith(fontWeight: FontWeight.w600),
+                          ?.copyWith(fontWeight: XbFontWeight.semibold),
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,
                     ),
@@ -164,7 +164,7 @@ class _TicketCard extends StatelessWidget {
                       statusLabel,
                       style: theme.textTheme.labelSmall?.copyWith(
                         color: statusColor,
-                        fontWeight: FontWeight.w600,
+                        fontWeight: XbFontWeight.semibold,
                       ),
                     ),
                   ),

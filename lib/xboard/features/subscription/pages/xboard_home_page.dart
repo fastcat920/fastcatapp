@@ -548,7 +548,7 @@ class _XBoardHomePageState extends ConsumerState<XBoardHomePage>
                 AppLocalizations.of(context).notConnected,
                 style: Theme.of(context).textTheme.titleSmall?.copyWith(
                       // fontSize inherited from titleSmall
-                      fontWeight: FontWeight.bold,
+                      fontWeight: XbFontWeight.bold,
                       color: Theme.of(context).colorScheme.onSurface,
                     ),
               ),
@@ -560,7 +560,7 @@ class _XBoardHomePageState extends ConsumerState<XBoardHomePage>
               AppLocalizations.of(context).connected,
               style: Theme.of(context).textTheme.titleSmall?.copyWith(
                     // fontSize inherited from titleSmall
-                    fontWeight: FontWeight.bold,
+                    fontWeight: XbFontWeight.bold,
                     color:
                         isDark ? Colors.green.shade300 : Colors.green.shade700,
                   ),
@@ -745,7 +745,7 @@ class _HomeBrandHeader extends ConsumerWidget {
         Text(
           localizedAppName,
           style: theme.textTheme.titleMedium?.copyWith(
-            fontWeight: FontWeight.w800,
+            fontWeight: XbFontWeight.heavy,
             color: theme.colorScheme.onSurface,
           ),
           maxLines: 1,
@@ -783,7 +783,7 @@ class _HomeBrandHeader extends ConsumerWidget {
                     color: isDark
                         ? theme.colorScheme.onSurface
                         : const Color(0xFF8A5A00),
-                    fontWeight: FontWeight.w700,
+                    fontWeight: XbFontWeight.bold,
                   ),
                 ),
               ],
@@ -1032,7 +1032,7 @@ class _NoticeCardContent extends StatelessWidget {
               child: Text(
                 title,
                 style: theme.textTheme.titleSmall?.copyWith(
-                  fontWeight: FontWeight.w700,
+                  fontWeight: XbFontWeight.bold,
                   color: colorScheme.onSurface,
                 ),
                 maxLines: 1,
@@ -1045,7 +1045,7 @@ class _NoticeCardContent extends StatelessWidget {
                 dateText,
                 style: theme.textTheme.bodySmall?.copyWith(
                   color: colorScheme.onSurfaceVariant,
-                  fontWeight: FontWeight.w600,
+                  fontWeight: XbFontWeight.semibold,
                 ),
               ),
             ] else if (isLoading)

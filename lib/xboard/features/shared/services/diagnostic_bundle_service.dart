@@ -155,6 +155,10 @@ class DiagnosticBundleService {
     final helperStatus =
         Platform.isWindows ? await request.getHelperRuntimeStatus() : null;
     final snapshot = NetworkDiagnosticSnapshotStore.latest;
+    final networkError =
+        snapshot?.conclusionSeverity == NetworkDiagnosticSeverity.error;
+    final networkWarning =
+        snapshot?.conclusionSeverity == NetworkDiagnosticSeverity.warning;
     final networkType = includeMetadata
         ? snapshot?.networkType ?? await _resolveNetworkType(l10n)
         : null;
@@ -163,12 +167,13 @@ class DiagnosticBundleService {
       if (!coreRunning) l10n.xboardDiagnosticIssueCore,
       if (!gatewayOk) l10n.xboardDiagnosticIssueGateway,
       if (!subscriptionOk) l10n.xboardSubscriptionHealth,
+      if (deviceSummary == null) l10n.xboardDeviceHealth,
       if (!nodesOk) l10n.xboardDiagnosticIssueNodes,
       if (!systemProxyHealthy) l10n.xboardDiagnosticIssueProxy,
     ];
-    final overall = problems.isNotEmpty
+    final overall = problems.isNotEmpty || networkError
         ? l10n.xboardDiagnosticOverallAbnormal
-        : tunPending
+        : tunPending || networkWarning
             ? l10n.xboardDiagnosticOverallAttention
             : snapshot == null
                 ? l10n.xboardDiagnosticOverallServiceHealthy
@@ -330,13 +335,15 @@ class DiagnosticBundleService {
       ..writeln()
       ..writeln('[${l10n.xboardDiagnosticSuggestion}]')
       ..writeln(
-        problems.isNotEmpty
-            ? l10n.xboardDiagnosticSuggestionRepair
-            : tunPending
-                ? l10n.xboardDiagnosticSuggestionTun
-                : snapshot == null
-                    ? l10n.xboardDiagnosticSuggestionRunNetwork
-                    : l10n.xboardDiagnosticSuggestionNone,
+        networkError || networkWarning
+            ? _networkSuggestion(snapshot!, l10n)
+            : problems.isNotEmpty
+                ? l10n.xboardDiagnosticSuggestionRepair
+                : tunPending
+                    ? l10n.xboardDiagnosticSuggestionTun
+                    : snapshot == null
+                        ? l10n.xboardDiagnosticSuggestionRunNetwork
+                        : l10n.xboardDiagnosticSuggestionNone,
       );
     return buffer.toString();
   }
@@ -476,11 +483,39 @@ class DiagnosticBundleService {
       return;
     }
     for (final item in items) {
+      final elapsed = item.elapsedMs > 0 ? '${item.elapsedMs}ms' : '—';
       buffer.writeln(
         '  ${item.marker} ${item.label}: '
-        '${_maskNetworkValue(item.detail)} (${item.elapsedMs}ms)',
+        '${_maskNetworkValue(item.detail)} ($elapsed)',
       );
     }
+  }
+
+  static String _networkSuggestion(
+    NetworkDiagnosticSnapshot snapshot,
+    AppLocalizations l10n,
+  ) {
+    return switch (snapshot.conclusionReason) {
+      NetworkDiagnosticReason.noNetwork ||
+      NetworkDiagnosticReason.disconnectedDns ||
+      NetworkDiagnosticReason.disconnectedNetwork ||
+      NetworkDiagnosticReason.dns ||
+      NetworkDiagnosticReason.network =>
+        l10n.xboardDiagnosticSuggestionNetwork,
+      NetworkDiagnosticReason.nodeDns ||
+      NetworkDiagnosticReason.tcp ||
+      NetworkDiagnosticReason.tcpRefused ||
+      NetworkDiagnosticReason.tls ||
+      NetworkDiagnosticReason.protocol ||
+      NetworkDiagnosticReason.udp ||
+      NetworkDiagnosticReason.nodeUnknown ||
+      NetworkDiagnosticReason.proxy =>
+        l10n.xboardDiagnosticSuggestionNode,
+      NetworkDiagnosticReason.disconnectedHealthy ||
+      NetworkDiagnosticReason.proxyWorking =>
+        snapshot.conclusion,
+      NetworkDiagnosticReason.healthy => l10n.xboardDiagnosticSuggestionNone,
+    };
   }
 
   static String _maskNetworkValue(String value) {

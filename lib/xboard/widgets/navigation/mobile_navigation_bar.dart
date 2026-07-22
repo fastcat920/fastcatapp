@@ -1,3 +1,4 @@
+import 'package:fl_clash/xboard/features/shared/styles/font_weights.dart';
 import 'package:flutter/material.dart';
 import 'package:fl_clash/l10n/l10n.dart';
 import 'package:fl_clash/xboard/features/update_check/providers/update_check_provider.dart';
@@ -171,7 +172,8 @@ class _MobileNavItem extends StatelessWidget {
                 label,
                 style: TextStyle(
                   fontSize: 11,
-                  fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
+                  fontWeight:
+                      isSelected ? XbFontWeight.semibold : FontWeight.normal,
                   color: isSelected
                       ? colorScheme.primary
                       : colorScheme.onSurfaceVariant,

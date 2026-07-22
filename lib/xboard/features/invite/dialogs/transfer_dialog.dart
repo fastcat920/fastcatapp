@@ -74,7 +74,7 @@ class _TransferDialogState extends ConsumerState<TransferDialog> {
                     appLocalizations.transferSuccess,
                     style: const TextStyle(
                       fontSize: 18,
-                      fontWeight: FontWeight.bold,
+                      fontWeight: XbFontWeight.bold,
                       color: Colors.green,
                     ),
                     key: const ValueKey('success-text'),
@@ -84,7 +84,7 @@ class _TransferDialogState extends ConsumerState<TransferDialog> {
                         appLocalizations.transferring,
                         style: const TextStyle(
                           fontSize: 16,
-                          fontWeight: FontWeight.bold,
+                          fontWeight: XbFontWeight.bold,
                         ),
                         key: const ValueKey('loading-text'),
                       )
@@ -93,7 +93,7 @@ class _TransferDialogState extends ConsumerState<TransferDialog> {
                             inviteState.availableCommission.toStringAsFixed(2)),
                         style: const TextStyle(
                           fontSize: 16,
-                          fontWeight: FontWeight.bold,
+                          fontWeight: XbFontWeight.bold,
                         ),
                         key: const ValueKey('balance-text'),
                       ),

@@ -241,7 +241,7 @@ class _TicketHeader extends StatelessWidget {
         children: [
           Text(detail.subject,
               style: theme.textTheme.titleSmall
-                  ?.copyWith(fontWeight: FontWeight.bold)),
+                  ?.copyWith(fontWeight: XbFontWeight.bold)),
           const SizedBox(height: 6),
           Row(
             children: [
@@ -253,7 +253,7 @@ class _TicketHeader extends StatelessWidget {
                 ),
                 child: Text(statusLabel,
                     style: theme.textTheme.labelSmall?.copyWith(
-                        color: statusColor, fontWeight: FontWeight.w600)),
+                        color: statusColor, fontWeight: XbFontWeight.semibold)),
               ),
               const SizedBox(width: 8),
               Text(

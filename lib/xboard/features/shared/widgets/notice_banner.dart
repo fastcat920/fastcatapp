@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:io';
 import 'package:fl_clash/common/common.dart';
+import 'package:fl_clash/xboard/features/shared/styles/font_weights.dart';
 import 'package:flutter/material.dart';
 import 'package:fl_clash/xboard/utils/xboard_notification.dart';
 import 'package:fl_clash/l10n/l10n.dart';
@@ -435,7 +436,7 @@ class _NoticeDetailDialogState extends State<NoticeDetailDialog>
             child: Text(
               title,
               style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                    fontWeight: FontWeight.bold,
+                    fontWeight: XbFontWeight.bold,
                     color: Theme.of(context).colorScheme.onSurface,
                   ),
               maxLines: 2,

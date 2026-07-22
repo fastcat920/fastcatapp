@@ -438,7 +438,7 @@ class _OrderCard extends StatelessWidget {
                           statusLabel,
                           style: theme.textTheme.labelSmall?.copyWith(
                             color: statusColor,
-                            fontWeight: FontWeight.w600,
+                            fontWeight: XbFontWeight.semibold,
                           ),
                         ),
                       ),
@@ -446,7 +446,7 @@ class _OrderCard extends StatelessWidget {
                       Text(
                         '¥${amount.toStringAsFixed(2)}',
                         style: theme.textTheme.titleSmall?.copyWith(
-                          fontWeight: FontWeight.bold,
+                          fontWeight: XbFontWeight.bold,
                           color: theme.colorScheme.primary,
                         ),
                       ),

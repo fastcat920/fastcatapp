@@ -1,3 +1,4 @@
+import 'package:fl_clash/xboard/features/shared/styles/font_weights.dart';
 import 'package:flutter/material.dart';
 
 /// XBoard UI tokens for visual consistency across pages.
@@ -84,24 +85,24 @@ class XbUiText {
     return Theme.of(context)
             .textTheme
             .titleLarge
-            ?.copyWith(fontWeight: FontWeight.bold) ??
-        const TextStyle(fontSize: 20, fontWeight: FontWeight.bold);
+            ?.copyWith(fontWeight: XbFontWeight.bold) ??
+        const TextStyle(fontSize: 20, fontWeight: XbFontWeight.bold);
   }
 
   static TextStyle sectionTitle(BuildContext context) {
     return Theme.of(context)
             .textTheme
             .titleMedium
-            ?.copyWith(fontWeight: FontWeight.w600) ??
-        const TextStyle(fontSize: 16, fontWeight: FontWeight.w600);
+            ?.copyWith(fontWeight: XbFontWeight.semibold) ??
+        const TextStyle(fontSize: 16, fontWeight: XbFontWeight.semibold);
   }
 
   static TextStyle cardTitle(BuildContext context) {
     return Theme.of(context)
             .textTheme
             .titleSmall
-            ?.copyWith(fontWeight: FontWeight.w600) ??
-        const TextStyle(fontSize: 14, fontWeight: FontWeight.w600);
+            ?.copyWith(fontWeight: XbFontWeight.semibold) ??
+        const TextStyle(fontSize: 14, fontWeight: XbFontWeight.semibold);
   }
 
   static TextStyle bodySmall(BuildContext context, {Color? color}) {

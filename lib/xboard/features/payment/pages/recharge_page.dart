@@ -382,7 +382,7 @@ class _RechargePageState extends ConsumerState<RechargePage> {
                                   : theme.colorScheme.primary
                                       .withValues(alpha: 0.96),
                               fontSize: 28,
-                              fontWeight: FontWeight.bold,
+                              fontWeight: XbFontWeight.bold,
                             ),
                           ),
                         ),
@@ -405,7 +405,7 @@ class _RechargePageState extends ConsumerState<RechargePage> {
                                 maxLines: 1,
                                 overflow: TextOverflow.ellipsis,
                                 style: theme.textTheme.titleSmall?.copyWith(
-                                  fontWeight: FontWeight.w600,
+                                  fontWeight: XbFontWeight.semibold,
                                   color: balanceContentColor,
                                 ),
                               ),
@@ -459,7 +459,7 @@ class _RechargePageState extends ConsumerState<RechargePage> {
         // 快捷金额
         Text(l10n.xboardSelectRechargeAmount,
             style: theme.textTheme.titleMedium
-                ?.copyWith(fontWeight: FontWeight.bold)),
+                ?.copyWith(fontWeight: XbFontWeight.bold)),
         const SizedBox(height: 12),
         if (_isLoadingDepositBonusOptions)
           const SizedBox(
@@ -532,7 +532,7 @@ class _RechargePageState extends ConsumerState<RechargePage> {
                               '$_currencySymbol${option.amountLabel}',
                               style: TextStyle(
                                 fontSize: 18,
-                                fontWeight: FontWeight.w600,
+                                fontWeight: XbFontWeight.semibold,
                                 color: selected
                                     ? Colors.white
                                     : theme.colorScheme.onSurface,
@@ -564,7 +564,7 @@ class _RechargePageState extends ConsumerState<RechargePage> {
                                 style: const TextStyle(
                                   color: Colors.white,
                                   fontSize: 11,
-                                  fontWeight: FontWeight.w700,
+                                  fontWeight: XbFontWeight.bold,
                                 ),
                               ),
                             ),
@@ -580,7 +580,7 @@ class _RechargePageState extends ConsumerState<RechargePage> {
         // 自定义金额输入
         Text(l10n.xboardCustomRechargeAmount,
             style: theme.textTheme.titleMedium
-                ?.copyWith(fontWeight: FontWeight.bold)),
+                ?.copyWith(fontWeight: XbFontWeight.bold)),
         const SizedBox(height: 12),
         TVDeferredInput(
           borderRadius: BorderRadius.circular(14),
@@ -650,7 +650,7 @@ class _RechargePageState extends ConsumerState<RechargePage> {
                       Text(
                         l10n.xboardRechargeNow,
                         style: const TextStyle(
-                            fontSize: 16, fontWeight: FontWeight.w600),
+                            fontSize: 16, fontWeight: XbFontWeight.semibold),
                       ),
                     ],
                   ),

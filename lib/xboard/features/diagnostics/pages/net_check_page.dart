@@ -52,7 +52,7 @@ class _NetCheckPageState extends ConsumerState<NetCheckPage> {
   NetworkDiagnosticSnapshot? _reportSnapshot;
   String? _networkType;
   String? _nodeName;
-  String? _conclusion;
+  NetworkDiagnosticDecision? _conclusion;
 
   @override
   void dispose() {
@@ -153,21 +153,25 @@ class _NetCheckPageState extends ConsumerState<NetCheckPage> {
       currentNodeResult,
     );
     final conclusion = _buildConclusion(
-      l10n,
       dnsResults,
       directResults,
       proxyResults,
       ipResults,
       connected,
       nodeDiagnostic,
+      networkDisconnected:
+          networkType == l10n.xboardNetworkDiagnosticsNetworkNone,
     );
+    final conclusionMessage = _conclusionMessage(conclusion, l10n);
     final snapshot = NetworkDiagnosticSnapshot(
       generatedAt: DateTime.now(),
       networkType: networkType,
       vpnConnected: connected,
       vpnStatus: _vpnStatus ?? '-',
       nodeAvailable: nodeName != null,
-      conclusion: conclusion,
+      conclusion: conclusionMessage,
+      conclusionSeverity: conclusion.severity,
+      conclusionReason: conclusion.reason,
       dnsResults: _toSnapshotItems(dnsResults),
       ipResults: _toSnapshotItems(ipResults),
       nodeLayerResults: _toSnapshotItems(nodeLayerResults),
@@ -398,7 +402,8 @@ class _NetCheckPageState extends ConsumerState<NetCheckPage> {
         return [
           _StepResult.fail(
             'DNS',
-            '${stopwatch.elapsedMilliseconds}ms — ${l10n.xboardNetworkDiagnosticsEmptyResult}',
+            l10n.xboardNetworkDiagnosticsEmptyResult,
+            elapsedMs: stopwatch.elapsedMilliseconds,
           ),
         ];
       }
@@ -420,7 +425,8 @@ class _NetCheckPageState extends ConsumerState<NetCheckPage> {
       return [
         _StepResult.fail(
           'DNS',
-          '${stopwatch.elapsedMilliseconds}ms — ${l10n.xboardNetworkDiagnosticsTimeout}',
+          l10n.xboardNetworkDiagnosticsTimeout,
+          elapsedMs: stopwatch.elapsedMilliseconds,
         ),
       ];
     } on SocketException catch (error) {
@@ -428,7 +434,8 @@ class _NetCheckPageState extends ConsumerState<NetCheckPage> {
       return [
         _StepResult.fail(
           'DNS',
-          '${stopwatch.elapsedMilliseconds}ms — ${error.osError?.message ?? error.message}',
+          error.osError?.message ?? error.message,
+          elapsedMs: stopwatch.elapsedMilliseconds,
         ),
       ];
     } catch (error) {
@@ -436,7 +443,8 @@ class _NetCheckPageState extends ConsumerState<NetCheckPage> {
       return [
         _StepResult.fail(
           'DNS',
-          '${stopwatch.elapsedMilliseconds}ms — $error',
+          error.toString(),
+          elapsedMs: stopwatch.elapsedMilliseconds,
         ),
       ];
     }
@@ -637,65 +645,73 @@ class _NetCheckPageState extends ConsumerState<NetCheckPage> {
     }
   }
 
-  String _buildConclusion(
-    AppLocalizations l10n,
+  NetworkDiagnosticDecision _buildConclusion(
     List<_StepResult> dns,
     List<_StepResult> direct,
     List<_StepResult> proxy,
     List<_StepResult> ip,
     bool connected,
-    Map<String, dynamic> nodeDiagnostic,
-  ) {
+    Map<String, dynamic> nodeDiagnostic, {
+    required bool networkDisconnected,
+  }) {
     final dnsOk = dns.isNotEmpty && dns.every((item) => item.ok);
     final directOk = direct.any((item) => item.ok);
     final directAllOk = direct.isNotEmpty && direct.every((item) => item.ok);
     final proxyOk = proxy.any((item) => item.ok);
     final ipOk = ip.any((item) => item.ok);
-    if (!connected) {
-      if (!dnsOk) {
-        return l10n.xboardNetworkDiagnosticsConclusionDisconnectedDns;
-      }
-      if (!directOk || !ipOk) {
-        return l10n.xboardNetworkDiagnosticsConclusionDisconnectedNetwork;
-      }
-      return l10n.xboardNetworkDiagnosticsConclusionDisconnectedHealthy;
-    }
     final failureStage = nodeDiagnostic['failure-stage']?.toString();
     final tcpStatus = nodeDiagnostic['tcp-status']?.toString();
     final diagnosticUnavailable =
         nodeDiagnostic['diagnostic-status'] == 'unavailable';
-    if (!diagnosticUnavailable && failureStage == 'dns') {
-      return l10n.xboardNetworkDiagnosticsConclusionNodeDns;
-    }
-    if (!diagnosticUnavailable && failureStage == 'tcp') {
-      return tcpStatus == 'refused'
-          ? l10n.xboardNetworkDiagnosticsConclusionTcpRefused
-          : l10n.xboardNetworkDiagnosticsConclusionTcp;
-    }
-    if (!diagnosticUnavailable && failureStage == 'tls') {
-      return l10n.xboardNetworkDiagnosticsConclusionTls;
-    }
-    if (!diagnosticUnavailable && failureStage == 'protocol') {
-      return l10n.xboardNetworkDiagnosticsConclusionProtocol;
-    }
-    if (!diagnosticUnavailable && failureStage == 'udp') {
-      return l10n.xboardNetworkDiagnosticsConclusionUdp;
-    }
-    if (connected && proxy.isEmpty) {
-      return l10n.xboardNetworkDiagnosticsConclusionNodeUnknown;
-    }
-    if (connected && !proxyOk) {
-      return l10n.xboardNetworkDiagnosticsConclusionProxy;
-    }
-    if (!directAllOk && proxyOk) {
-      return l10n.xboardNetworkDiagnosticsConclusionProxyWorking;
-    }
-    if (directOk && (!connected || proxyOk)) {
-      return l10n.xboardNetworkDiagnosticsConclusionHealthy;
-    }
-    if (!dnsOk) return l10n.xboardNetworkDiagnosticsConclusionDns;
-    if (!ipOk) return l10n.xboardNetworkDiagnosticsConclusionNetwork;
-    return l10n.xboardNetworkDiagnosticsConclusionNetwork;
+    return evaluateNetworkDiagnostic(
+      networkDisconnected: networkDisconnected,
+      connected: connected,
+      dnsOk: dnsOk,
+      directOk: directOk,
+      directAllOk: directAllOk,
+      proxyOk: proxyOk,
+      proxyEmpty: proxy.isEmpty,
+      ipOk: ipOk,
+      diagnosticUnavailable: diagnosticUnavailable,
+      failureStage: failureStage,
+      tcpStatus: tcpStatus,
+    );
+  }
+
+  String _conclusionMessage(
+    NetworkDiagnosticDecision conclusion,
+    AppLocalizations l10n,
+  ) {
+    return switch (conclusion.reason) {
+      NetworkDiagnosticReason.noNetwork =>
+        l10n.xboardNetworkDiagnosticsConclusionNoNetwork,
+      NetworkDiagnosticReason.disconnectedHealthy =>
+        l10n.xboardNetworkDiagnosticsConclusionDisconnectedHealthy,
+      NetworkDiagnosticReason.disconnectedDns =>
+        l10n.xboardNetworkDiagnosticsConclusionDisconnectedDns,
+      NetworkDiagnosticReason.disconnectedNetwork =>
+        l10n.xboardNetworkDiagnosticsConclusionDisconnectedNetwork,
+      NetworkDiagnosticReason.dns => l10n.xboardNetworkDiagnosticsConclusionDns,
+      NetworkDiagnosticReason.network =>
+        l10n.xboardNetworkDiagnosticsConclusionNetwork,
+      NetworkDiagnosticReason.nodeDns =>
+        l10n.xboardNetworkDiagnosticsConclusionNodeDns,
+      NetworkDiagnosticReason.tcp => l10n.xboardNetworkDiagnosticsConclusionTcp,
+      NetworkDiagnosticReason.tcpRefused =>
+        l10n.xboardNetworkDiagnosticsConclusionTcpRefused,
+      NetworkDiagnosticReason.tls => l10n.xboardNetworkDiagnosticsConclusionTls,
+      NetworkDiagnosticReason.protocol =>
+        l10n.xboardNetworkDiagnosticsConclusionProtocol,
+      NetworkDiagnosticReason.udp => l10n.xboardNetworkDiagnosticsConclusionUdp,
+      NetworkDiagnosticReason.nodeUnknown =>
+        l10n.xboardNetworkDiagnosticsConclusionNodeUnknown,
+      NetworkDiagnosticReason.proxy =>
+        l10n.xboardNetworkDiagnosticsConclusionProxy,
+      NetworkDiagnosticReason.proxyWorking =>
+        l10n.xboardNetworkDiagnosticsConclusionProxyWorking,
+      NetworkDiagnosticReason.healthy =>
+        l10n.xboardNetworkDiagnosticsConclusionHealthy,
+    };
   }
 
   Future<void> _copyReport() async {
@@ -843,7 +859,12 @@ class _NetCheckPageState extends ConsumerState<NetCheckPage> {
           _DiagnosticStatusRow(
             icon: Icons.analytics_outlined,
             title: l10n.xboardNetworkDiagnosticsConclusion,
-            detail: _conclusion!,
+            detail: _conclusionMessage(_conclusion!, l10n),
+            healthy: switch (_conclusion!.severity) {
+              NetworkDiagnosticSeverity.healthy => true,
+              NetworkDiagnosticSeverity.warning => null,
+              NetworkDiagnosticSeverity.error => false,
+            },
           ),
         ],
         if (_networkType != null) ...[
@@ -915,7 +936,7 @@ class _SectionHeader extends StatelessWidget {
         text,
         style: Theme.of(context).textTheme.titleSmall?.copyWith(
               color: Theme.of(context).colorScheme.onSurfaceVariant,
-              fontWeight: FontWeight.w700,
+              fontWeight: XbFontWeight.bold,
             ),
       ),
     );
@@ -1048,7 +1069,7 @@ class _DiagnosticStatusRow extends StatelessWidget {
                 Text(
                   title,
                   style: theme.textTheme.labelLarge?.copyWith(
-                    fontWeight: FontWeight.w700,
+                    fontWeight: XbFontWeight.bold,
                   ),
                 ),
                 const SizedBox(height: 3),

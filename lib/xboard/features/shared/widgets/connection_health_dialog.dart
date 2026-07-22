@@ -141,7 +141,7 @@ class _ConnectionHealthViewState extends ConsumerState<ConnectionHealthView> {
                 child: Text(
                   l10n.xboardConnectionHealth,
                   style: theme.textTheme.titleMedium?.copyWith(
-                    fontWeight: FontWeight.w700,
+                    fontWeight: XbFontWeight.bold,
                   ),
                 ),
               ),
@@ -735,7 +735,7 @@ class _HealthRow extends StatelessWidget {
                 Text(
                   title,
                   style: theme.textTheme.labelLarge?.copyWith(
-                    fontWeight: FontWeight.w700,
+                    fontWeight: XbFontWeight.bold,
                   ),
                 ),
                 const SizedBox(height: 3),
@@ -785,7 +785,7 @@ class _ConnectionSectionHeader extends StatelessWidget {
         title,
         style: theme.textTheme.titleSmall?.copyWith(
           color: theme.colorScheme.onSurfaceVariant,
-          fontWeight: FontWeight.w700,
+          fontWeight: XbFontWeight.bold,
         ),
       ),
     );

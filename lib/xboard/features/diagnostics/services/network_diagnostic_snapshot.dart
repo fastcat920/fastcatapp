@@ -6,6 +6,8 @@ class NetworkDiagnosticSnapshot {
     required this.vpnStatus,
     required this.nodeAvailable,
     required this.conclusion,
+    required this.conclusionSeverity,
+    required this.conclusionReason,
     required this.dnsResults,
     required this.ipResults,
     required this.nodeLayerResults,
@@ -20,12 +22,143 @@ class NetworkDiagnosticSnapshot {
   final String vpnStatus;
   final bool nodeAvailable;
   final String conclusion;
+  final NetworkDiagnosticSeverity conclusionSeverity;
+  final NetworkDiagnosticReason conclusionReason;
   final List<NetworkDiagnosticItem> dnsResults;
   final List<NetworkDiagnosticItem> ipResults;
   final List<NetworkDiagnosticItem> nodeLayerResults;
   final List<NetworkDiagnosticItem> directResults;
   final List<NetworkDiagnosticItem> proxyResults;
   final Map<String, dynamic> nodeResult;
+}
+
+enum NetworkDiagnosticSeverity { healthy, warning, error }
+
+enum NetworkDiagnosticReason {
+  noNetwork,
+  disconnectedHealthy,
+  disconnectedDns,
+  disconnectedNetwork,
+  dns,
+  network,
+  nodeDns,
+  tcp,
+  tcpRefused,
+  tls,
+  protocol,
+  udp,
+  nodeUnknown,
+  proxy,
+  proxyWorking,
+  healthy,
+}
+
+class NetworkDiagnosticDecision {
+  const NetworkDiagnosticDecision(this.reason, this.severity);
+
+  final NetworkDiagnosticReason reason;
+  final NetworkDiagnosticSeverity severity;
+}
+
+NetworkDiagnosticDecision evaluateNetworkDiagnostic({
+  required bool networkDisconnected,
+  required bool connected,
+  required bool dnsOk,
+  required bool directOk,
+  required bool directAllOk,
+  required bool proxyOk,
+  required bool proxyEmpty,
+  required bool ipOk,
+  required bool diagnosticUnavailable,
+  required String? failureStage,
+  required String? tcpStatus,
+}) {
+  const error = NetworkDiagnosticSeverity.error;
+
+  // Loss of the underlying network makes every node-layer failure a
+  // downstream symptom, so it must always win over DNS/TCP/TLS conclusions.
+  if (networkDisconnected && !directOk && !ipOk) {
+    return const NetworkDiagnosticDecision(
+      NetworkDiagnosticReason.noNetwork,
+      error,
+    );
+  }
+  if (!directOk && !ipOk) {
+    return NetworkDiagnosticDecision(
+      connected
+          ? NetworkDiagnosticReason.network
+          : NetworkDiagnosticReason.disconnectedNetwork,
+      error,
+    );
+  }
+  if (!dnsOk) {
+    return NetworkDiagnosticDecision(
+      connected
+          ? NetworkDiagnosticReason.dns
+          : NetworkDiagnosticReason.disconnectedDns,
+      error,
+    );
+  }
+  if (!connected) {
+    return const NetworkDiagnosticDecision(
+      NetworkDiagnosticReason.disconnectedHealthy,
+      NetworkDiagnosticSeverity.warning,
+    );
+  }
+
+  if (!diagnosticUnavailable) {
+    switch (failureStage) {
+      case 'dns':
+        return const NetworkDiagnosticDecision(
+          NetworkDiagnosticReason.nodeDns,
+          error,
+        );
+      case 'tcp':
+        return NetworkDiagnosticDecision(
+          tcpStatus == 'refused'
+              ? NetworkDiagnosticReason.tcpRefused
+              : NetworkDiagnosticReason.tcp,
+          error,
+        );
+      case 'tls':
+        return const NetworkDiagnosticDecision(
+          NetworkDiagnosticReason.tls,
+          error,
+        );
+      case 'protocol':
+        return const NetworkDiagnosticDecision(
+          NetworkDiagnosticReason.protocol,
+          error,
+        );
+      case 'udp':
+        return const NetworkDiagnosticDecision(
+          NetworkDiagnosticReason.udp,
+          error,
+        );
+    }
+  }
+  if (proxyEmpty) {
+    return const NetworkDiagnosticDecision(
+      NetworkDiagnosticReason.nodeUnknown,
+      NetworkDiagnosticSeverity.warning,
+    );
+  }
+  if (!proxyOk) {
+    return const NetworkDiagnosticDecision(
+      NetworkDiagnosticReason.proxy,
+      error,
+    );
+  }
+  if (!directAllOk) {
+    return const NetworkDiagnosticDecision(
+      NetworkDiagnosticReason.proxyWorking,
+      NetworkDiagnosticSeverity.warning,
+    );
+  }
+  return const NetworkDiagnosticDecision(
+    NetworkDiagnosticReason.healthy,
+    NetworkDiagnosticSeverity.healthy,
+  );
 }
 
 class NetworkDiagnosticItem {

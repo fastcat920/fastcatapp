@@ -184,7 +184,7 @@ class _MinePageState extends ConsumerState<MinePage>
         title: Text(
           appLocalizations.xboardAccountInfo,
           style: theme.textTheme.titleSmall?.copyWith(
-            fontWeight: FontWeight.w600,
+            fontWeight: XbFontWeight.semibold,
           ),
         ),
         subtitle: Text(
@@ -581,7 +581,7 @@ class _MinePageState extends ConsumerState<MinePage>
       child: Text(
         title,
         style: theme.textTheme.titleSmall?.copyWith(
-          fontWeight: FontWeight.w600,
+          fontWeight: XbFontWeight.semibold,
           color: theme.colorScheme.onSurfaceVariant,
         ),
       ),
@@ -723,7 +723,7 @@ class _GiftCardSheetState extends ConsumerState<_GiftCardSheet> {
             children: [
               Text(appLocalizations.xboardGiftCardRedeem,
                   style: theme.textTheme.titleMedium
-                      ?.copyWith(fontWeight: FontWeight.bold)),
+                      ?.copyWith(fontWeight: XbFontWeight.bold)),
               const Spacer(),
               IconButton(
                   icon: const Icon(Icons.close),

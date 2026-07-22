@@ -263,7 +263,7 @@ class SubscriptionUsageCard extends ConsumerWidget {
                     Text(
                       statusText,
                       style: theme.textTheme.titleMedium?.copyWith(
-                        fontWeight: FontWeight.bold,
+                        fontWeight: XbFontWeight.bold,
                         color: statusColor,
                       ),
                     ),
@@ -611,7 +611,7 @@ class SubscriptionUsageCard extends ConsumerWidget {
                 ? planName
                 : AppLocalizations.of(context).xboardSubscription,
             style: theme.textTheme.titleSmall?.copyWith(
-              fontWeight: FontWeight.w600,
+              fontWeight: XbFontWeight.semibold,
             ),
             overflow: TextOverflow.ellipsis,
           ),
@@ -623,7 +623,7 @@ class SubscriptionUsageCard extends ConsumerWidget {
                 color: expiryColor,
                 fontWeight: expiryState == _ExpiryState.normal
                     ? FontWeight.w400
-                    : FontWeight.w700,
+                    : XbFontWeight.bold,
               ),
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
@@ -663,7 +663,7 @@ class SubscriptionUsageCard extends ConsumerWidget {
                 progressPercentText,
                 style: theme.textTheme.bodySmall?.copyWith(
                   color: progressColor,
-                  fontWeight: FontWeight.w700,
+                  fontWeight: XbFontWeight.bold,
                 ),
               ),
             ],
@@ -675,7 +675,7 @@ class SubscriptionUsageCard extends ConsumerWidget {
           Text(
             '${prefixUsedTraffic ? '${AppLocalizations.of(context).xboardUsedTraffic} ' : ''}${_formatBytes(usedTraffic)} / ${AppLocalizations.of(context).xboardTotalTraffic} ${_formatBytes(totalTraffic)}',
             style: theme.textTheme.bodySmall?.copyWith(
-              fontWeight: FontWeight.w600,
+              fontWeight: XbFontWeight.semibold,
               color: usedTrafficColor,
             ),
           ),
@@ -852,7 +852,7 @@ class SubscriptionUsageCard extends ConsumerWidget {
                       ? planName
                       : AppLocalizations.of(context).xboardSubscription,
                   style: theme.textTheme.titleMedium?.copyWith(
-                    fontWeight: FontWeight.bold,
+                    fontWeight: XbFontWeight.bold,
                     color: cardTextColor,
                     letterSpacing: 0.3,
                   ),
@@ -872,7 +872,7 @@ class SubscriptionUsageCard extends ConsumerWidget {
                     : expiryColor,
                 fontWeight: expiryState == _ExpiryState.normal
                     ? FontWeight.w400
-                    : FontWeight.w700,
+                    : XbFontWeight.bold,
               ),
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
@@ -914,7 +914,7 @@ class SubscriptionUsageCard extends ConsumerWidget {
                 progressPercentText,
                 style: theme.textTheme.bodySmall?.copyWith(
                   color: progressColor,
-                  fontWeight: FontWeight.w700,
+                  fontWeight: XbFontWeight.bold,
                 ),
               ),
             ],
@@ -1298,7 +1298,7 @@ class _TrafficExhaustedRenewConfirmDialog extends StatelessWidget {
       title: Text(
         l10n.xboardConfirmRenewPlan,
         style: const TextStyle(
-          fontWeight: FontWeight.bold,
+          fontWeight: XbFontWeight.bold,
           fontSize: 20,
         ),
         textAlign: TextAlign.center,

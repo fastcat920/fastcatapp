@@ -1047,7 +1047,7 @@ class _OrderInfoCard extends StatelessWidget {
                 : l10n.xboardPackageAmount,
             value: '¥${pricing.packageAmount.toStringAsFixed(2)}',
             valueFontSize: 14,
-            valueWeight: FontWeight.w700,
+            valueWeight: XbFontWeight.bold,
             valueColor: amountColor,
           ),
           if (isDeposit && pricing.depositBonusAmount > 0) ...[
@@ -1055,7 +1055,7 @@ class _OrderInfoCard extends StatelessWidget {
             _InfoRow(
               label: l10n.xboardRechargeBonus,
               value: '+¥${pricing.depositBonusAmount.toStringAsFixed(2)}',
-              valueWeight: FontWeight.w700,
+              valueWeight: XbFontWeight.bold,
               valueColor: XbUiStatusColor.success(context),
             ),
           ],
@@ -1064,7 +1064,7 @@ class _OrderInfoCard extends StatelessWidget {
             _InfoRow(
               label: l10n.xboardCreditedAmount,
               value: '¥${pricing.depositCreditedAmount!.toStringAsFixed(2)}',
-              valueWeight: FontWeight.w700,
+              valueWeight: XbFontWeight.bold,
               valueColor: XbUiStatusColor.success(context),
             ),
           ],
@@ -1102,7 +1102,7 @@ class _OrderInfoCard extends StatelessWidget {
               label: l10n.xboardUseBalance,
               value: '-¥${pricing.balanceUsed.toStringAsFixed(2)}',
               valueFontSize: 14,
-              valueWeight: FontWeight.w700,
+              valueWeight: XbFontWeight.bold,
               valueColor: amountColor,
             ),
           ],
@@ -1134,7 +1134,7 @@ class _OrderInfoCard extends StatelessWidget {
                 '¥${pricing.payableAmount.toStringAsFixed(2)}',
                 style: Theme.of(context).textTheme.titleLarge?.copyWith(
                       color: amountColor,
-                      fontWeight: FontWeight.w800,
+                      fontWeight: XbFontWeight.heavy,
                     ),
               ),
             ],
@@ -1170,7 +1170,7 @@ class _OrderStatusCard extends StatelessWidget {
                   _statusLabel(context, order?.status),
                   style: Theme.of(context).textTheme.titleMedium?.copyWith(
                         color: color,
-                        fontWeight: FontWeight.w800,
+                        fontWeight: XbFontWeight.heavy,
                       ),
                 ),
                 const SizedBox(height: 6),
@@ -1274,7 +1274,7 @@ class _PaymentMethodTile extends StatelessWidget {
                     Text(
                       method.name,
                       style: theme.textTheme.titleSmall?.copyWith(
-                        fontWeight: FontWeight.w700,
+                        fontWeight: XbFontWeight.bold,
                       ),
                     ),
                     if (method.feePercentage > 0) ...[
@@ -1518,7 +1518,7 @@ class _InfoCard extends StatelessWidget {
               Text(
                 title,
                 style: theme.textTheme.titleSmall?.copyWith(
-                  fontWeight: FontWeight.w800,
+                  fontWeight: XbFontWeight.heavy,
                 ),
               ),
               const SizedBox(width: 16),
@@ -1583,7 +1583,7 @@ class _InfoRow extends StatelessWidget {
                     color: valueColor ??
                         theme.colorScheme.onSurface.withValues(alpha: 0.48),
                     fontSize: valueFontSize,
-                    fontWeight: valueWeight ?? FontWeight.w600,
+                    fontWeight: valueWeight ?? XbFontWeight.semibold,
                   ),
                 ),
               ),

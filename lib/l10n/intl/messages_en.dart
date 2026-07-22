@@ -1850,6 +1850,12 @@ class MessageLookup extends MessageLookupByLibrary {
     "xboardDiagnosticSuggestion": MessageLookupByLibrary.simpleMessage(
       "Suggestion",
     ),
+    "xboardDiagnosticSuggestionNetwork": MessageLookupByLibrary.simpleMessage(
+      "Check Wi-Fi, Ethernet, or system network settings first, then rerun diagnostics after connectivity is restored.",
+    ),
+    "xboardDiagnosticSuggestionNode": MessageLookupByLibrary.simpleMessage(
+      "The local network is available, but the current node route is unhealthy. Switch nodes and rerun diagnostics.",
+    ),
     "xboardDiagnosticSuggestionNone": MessageLookupByLibrary.simpleMessage(
       "The current connection is working normally; no action is required.",
     ),
@@ -2158,6 +2164,10 @@ class MessageLookup extends MessageLookupByLibrary {
     "xboardNetworkDiagnosticsConclusionNetwork":
         MessageLookupByLibrary.simpleMessage(
           "The local network appears abnormal or unreachable.",
+        ),
+    "xboardNetworkDiagnosticsConclusionNoNetwork":
+        MessageLookupByLibrary.simpleMessage(
+          "This device has no usable network connection. The proxy core is running, but the local network or internet is unreachable. Check Wi-Fi, Ethernet, or system network settings.",
         ),
     "xboardNetworkDiagnosticsConclusionNodeDns":
         MessageLookupByLibrary.simpleMessage(

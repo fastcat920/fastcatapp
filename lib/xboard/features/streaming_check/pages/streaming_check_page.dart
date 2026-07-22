@@ -351,7 +351,7 @@ class _StreamingCheckPageState extends ConsumerState<StreamingCheckPage> {
           Text(
             l10n.xboardStreamingSummary,
             style: theme.textTheme.titleSmall?.copyWith(
-              fontWeight: FontWeight.w700,
+              fontWeight: XbFontWeight.bold,
               color: theme.colorScheme.onSurfaceVariant,
             ),
           ),
@@ -369,7 +369,7 @@ class _StreamingCheckPageState extends ConsumerState<StreamingCheckPage> {
           Text(
             l10n.xboardStreamingResults,
             style: theme.textTheme.titleSmall?.copyWith(
-              fontWeight: FontWeight.w700,
+              fontWeight: XbFontWeight.bold,
               color: theme.colorScheme.onSurfaceVariant,
             ),
           ),
@@ -472,7 +472,7 @@ class _CheckingMoreIndicator extends StatelessWidget {
               AppLocalizations.of(context).xboardStreamingChecking,
               style: theme.textTheme.bodySmall?.copyWith(
                 color: color,
-                fontWeight: FontWeight.w600,
+                fontWeight: XbFontWeight.semibold,
               ),
             ),
           ],
@@ -508,7 +508,7 @@ class _StatusLine extends StatelessWidget {
                     ? l10n.xboardStreamingConnected
                     : l10n.xboardStreamingNotConnected,
                 style: theme.textTheme.titleSmall?.copyWith(
-                  fontWeight: FontWeight.w700,
+                  fontWeight: XbFontWeight.bold,
                 ),
               ),
               if (nodeName != null)
@@ -619,7 +619,7 @@ class _SummaryRow extends StatelessWidget {
             value,
             textAlign: TextAlign.right,
             style: theme.textTheme.bodyMedium?.copyWith(
-              fontWeight: FontWeight.w600,
+              fontWeight: XbFontWeight.semibold,
             ),
           ),
         ),
@@ -685,7 +685,7 @@ class _ResultCard extends StatelessWidget {
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                         style: theme.textTheme.labelLarge?.copyWith(
-                          fontWeight: FontWeight.w700,
+                          fontWeight: XbFontWeight.bold,
                         ),
                       ),
                     ),
@@ -695,7 +695,7 @@ class _ResultCard extends StatelessWidget {
                       textAlign: TextAlign.right,
                       style: theme.textTheme.bodySmall?.copyWith(
                         color: color,
-                        fontWeight: FontWeight.w600,
+                        fontWeight: XbFontWeight.semibold,
                       ),
                     ),
                   ],

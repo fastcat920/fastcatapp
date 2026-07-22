@@ -10785,6 +10785,16 @@ class AppLocalizations {
     );
   }
 
+  /// `This device has no usable network connection. The proxy core is running, but the local network or internet is unreachable. Check Wi-Fi, Ethernet, or system network settings.`
+  String get xboardNetworkDiagnosticsConclusionNoNetwork {
+    return Intl.message(
+      'This device has no usable network connection. The proxy core is running, but the local network or internet is unreachable. Check Wi-Fi, Ethernet, or system network settings.',
+      name: 'xboardNetworkDiagnosticsConclusionNoNetwork',
+      desc: '',
+      args: [],
+    );
+  }
+
   /// `Network type`
   String get xboardNetworkDiagnosticsNetworkType {
     return Intl.message(
@@ -11390,6 +11400,26 @@ class AppLocalizations {
     return Intl.message(
       'Services and system proxy settings are healthy. Run network diagnostics to verify the node endpoint, TLS, and proxy route.',
       name: 'xboardDiagnosticSuggestionRunNetwork',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Check Wi-Fi, Ethernet, or system network settings first, then rerun diagnostics after connectivity is restored.`
+  String get xboardDiagnosticSuggestionNetwork {
+    return Intl.message(
+      'Check Wi-Fi, Ethernet, or system network settings first, then rerun diagnostics after connectivity is restored.',
+      name: 'xboardDiagnosticSuggestionNetwork',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `The local network is available, but the current node route is unhealthy. Switch nodes and rerun diagnostics.`
+  String get xboardDiagnosticSuggestionNode {
+    return Intl.message(
+      'The local network is available, but the current node route is unhealthy. Switch nodes and rerun diagnostics.',
+      name: 'xboardDiagnosticSuggestionNode',
       desc: '',
       args: [],
     );

@@ -455,7 +455,7 @@ class _PlanPurchasePageState extends ConsumerState<PlanPurchasePage> {
                                       .xboardSubmitOrder,
                                   style: const TextStyle(
                                     fontSize: 17,
-                                    fontWeight: FontWeight.bold,
+                                    fontWeight: XbFontWeight.bold,
                                     letterSpacing: 0.5,
                                   ),
                                 ),

@@ -777,7 +777,7 @@ class _DeviceManagementPageState extends ConsumerState<DeviceManagementPage>
                 style: XbUiText.bodySmall(
                   context,
                   color: theme.colorScheme.primary,
-                ).copyWith(fontWeight: FontWeight.w600),
+                ).copyWith(fontWeight: XbFontWeight.semibold),
               ),
             ],
           ],
@@ -808,7 +808,7 @@ class _DeviceManagementPageState extends ConsumerState<DeviceManagementPage>
         style: XbUiText.bodySmall(
           context,
           color: color,
-        ).copyWith(fontWeight: FontWeight.w600),
+        ).copyWith(fontWeight: XbFontWeight.semibold),
       ),
     );
   }

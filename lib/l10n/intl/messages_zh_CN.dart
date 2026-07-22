@@ -1311,6 +1311,12 @@ class MessageLookup extends MessageLookupByLibrary {
       "服务状态",
     ),
     "xboardDiagnosticSuggestion": MessageLookupByLibrary.simpleMessage("建议"),
+    "xboardDiagnosticSuggestionNetwork": MessageLookupByLibrary.simpleMessage(
+      "请先检查 Wi-Fi、网线或系统网络设置，恢复网络后重新检测。",
+    ),
+    "xboardDiagnosticSuggestionNode": MessageLookupByLibrary.simpleMessage(
+      "本地网络可用，但当前节点链路异常；请切换节点后重新检测。",
+    ),
     "xboardDiagnosticSuggestionNone": MessageLookupByLibrary.simpleMessage(
       "当前连接工作正常，无需处理。",
     ),
@@ -1546,6 +1552,10 @@ class MessageLookup extends MessageLookupByLibrary {
         MessageLookupByLibrary.simpleMessage("DNS 与网络链路工作正常。"),
     "xboardNetworkDiagnosticsConclusionNetwork":
         MessageLookupByLibrary.simpleMessage("本地网络可能异常或无法连接外网。"),
+    "xboardNetworkDiagnosticsConclusionNoNetwork":
+        MessageLookupByLibrary.simpleMessage(
+          "当前设备没有可用网络连接。代理内核虽然正在运行，但无法访问本地网络或互联网；请检查 Wi-Fi、网线或系统网络设置。",
+        ),
     "xboardNetworkDiagnosticsConclusionNodeDns":
         MessageLookupByLibrary.simpleMessage("当前网络无法解析所选节点的入口域名。"),
     "xboardNetworkDiagnosticsConclusionNodeUnknown":

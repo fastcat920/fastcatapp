@@ -1,3 +1,4 @@
+import 'package:fl_clash/xboard/features/shared/styles/font_weights.dart';
 import 'package:flutter/material.dart';
 import 'package:fl_clash/l10n/l10n.dart';
 import '../utils/price_calculator.dart';
@@ -143,7 +144,7 @@ class _PriceRow extends StatelessWidget {
           style: TextStyle(
             fontSize: 13,
             decoration: isStrikethrough ? TextDecoration.lineThrough : null,
-            fontWeight: isDiscount ? FontWeight.w600 : null,
+            fontWeight: isDiscount ? XbFontWeight.semibold : null,
             color: isDiscount
                 ? Colors.green.shade700
                 : isBalance
@@ -175,7 +176,7 @@ class _FinalPriceRow extends StatelessWidget {
           label,
           style: TextStyle(
             fontSize: 13,
-            fontWeight: FontWeight.bold,
+            fontWeight: XbFontWeight.bold,
             color: isDark ? Colors.white : Colors.grey.shade800,
           ),
         ),
@@ -184,7 +185,7 @@ class _FinalPriceRow extends StatelessWidget {
           PriceCalculator.formatPrice(price),
           style: TextStyle(
             fontSize: 20,
-            fontWeight: FontWeight.bold,
+            fontWeight: XbFontWeight.bold,
             color: isDark ? Colors.white : theme.colorScheme.primary,
           ),
         ),

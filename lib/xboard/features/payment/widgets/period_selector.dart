@@ -1,3 +1,4 @@
+import 'package:fl_clash/xboard/features/shared/styles/font_weights.dart';
 import 'package:flutter/material.dart';
 import 'package:fl_clash/common/common.dart';
 import 'package:fl_clash/l10n/l10n.dart';
@@ -36,7 +37,7 @@ class PeriodSelector extends StatelessWidget {
             AppLocalizations.of(context).xboardSelectPaymentPeriod,
             style: TextStyle(
               fontSize: 15,
-              fontWeight: FontWeight.w600,
+              fontWeight: XbFontWeight.semibold,
               color: colorScheme.onSurface,
             ),
           ),
@@ -201,7 +202,7 @@ class _PeriodCard extends StatelessWidget {
                       period['label'],
                       style: TextStyle(
                         fontSize: labelFontSize,
-                        fontWeight: FontWeight.bold,
+                        fontWeight: XbFontWeight.bold,
                         color: isSelected
                             ? selectedForeground
                             : unselectedForeground,
@@ -236,7 +237,7 @@ class _PeriodCard extends StatelessWidget {
                       PriceCalculator.formatPrice(displayPrice),
                       style: TextStyle(
                         fontSize: priceFontSize,
-                        fontWeight: FontWeight.bold,
+                        fontWeight: XbFontWeight.bold,
                         color: selectedForeground,
                       ),
                     ),
@@ -247,7 +248,7 @@ class _PeriodCard extends StatelessWidget {
                   PriceCalculator.formatPrice(periodPrice),
                   style: TextStyle(
                     fontSize: priceFontSize,
-                    fontWeight: FontWeight.bold,
+                    fontWeight: XbFontWeight.bold,
                     color:
                         isSelected ? selectedForeground : colorScheme.primary,
                   ),

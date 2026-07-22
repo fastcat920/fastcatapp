@@ -196,7 +196,7 @@ class _CommissionHistoryDialogState extends ConsumerState<CommissionHistoryDialo
                 Text(
                   '¥${commission.amount.toStringAsFixed(2)}',
                   style: const TextStyle(
-                    fontWeight: FontWeight.bold,
+                    fontWeight: XbFontWeight.bold,
                     fontSize: 16,
                   ),
                 ),

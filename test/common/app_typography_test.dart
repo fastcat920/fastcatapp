@@ -1,4 +1,5 @@
 import 'package:fl_clash/common/app_typography.dart';
+import 'package:fl_clash/xboard/features/shared/styles/font_weights.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
@@ -33,5 +34,13 @@ void main() {
 
     expect(typography.dense.titleLarge?.fontWeight, FontWeight.w400);
     expect(typography.dense.headlineMedium?.fontWeight, FontWeight.w400);
+  });
+
+  test('uses softened explicit emphasis weights for variable fonts', () {
+    expect(XbFontWeight.regular, FontWeight.w400);
+    expect(XbFontWeight.medium, FontWeight.w500);
+    expect(XbFontWeight.semibold, FontWeight.w500);
+    expect(XbFontWeight.bold, FontWeight.w600);
+    expect(XbFontWeight.heavy, FontWeight.w700);
   });
 }
