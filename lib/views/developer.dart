@@ -194,7 +194,7 @@ class _GatewayDiagnosticsPageState extends State<_GatewayDiagnosticsPage> {
                     const Text(
                       '当前状态',
                       style:
-                          TextStyle(fontSize: 16, fontWeight: FontWeight.w700),
+                          TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
                     ),
                     const SizedBox(height: 12),
                     _KvRow(
@@ -336,7 +336,7 @@ class _GatewayDiagnosticsPageState extends State<_GatewayDiagnosticsPage> {
                     const Text(
                       '候选节点',
                       style:
-                          TextStyle(fontSize: 16, fontWeight: FontWeight.w700),
+                          TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
                     ),
                     const SizedBox(height: 12),
                     if (candidates.isEmpty)
@@ -366,7 +366,7 @@ class _GatewayDiagnosticsPageState extends State<_GatewayDiagnosticsPage> {
                     const Text(
                       '最近事件',
                       style:
-                          TextStyle(fontSize: 16, fontWeight: FontWeight.w700),
+                          TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
                     ),
                     const SizedBox(height: 12),
                     if (events.isEmpty)
@@ -409,7 +409,7 @@ class _KvRow extends StatelessWidget {
             child: Text(
               label,
               style: const TextStyle(
-                fontWeight: FontWeight.w600,
+                fontWeight: FontWeight.w500,
                 color: Colors.grey,
               ),
             ),
@@ -448,7 +448,7 @@ class _CandidateTile extends StatelessWidget {
                 gatewayDisplayLabel(candidate.baseUrl),
                 style: const TextStyle(
                   fontFamily: 'JetBrainsMono',
-                  fontWeight: FontWeight.w600,
+                  fontWeight: FontWeight.w500,
                 ),
               ),
             ),
@@ -463,7 +463,7 @@ class _CandidateTile extends StatelessWidget {
                   'ACTIVE',
                   style: TextStyle(
                     fontSize: 11,
-                    fontWeight: FontWeight.w700,
+                    fontWeight: FontWeight.w500,
                     color: Colors.blue,
                   ),
                 ),
@@ -548,7 +548,7 @@ class _PanelApiTile extends StatelessWidget {
           gatewayDisplayLabel(url),
           style: const TextStyle(
             fontFamily: 'JetBrainsMono',
-            fontWeight: FontWeight.w600,
+            fontWeight: FontWeight.w500,
           ),
         ),
         const SizedBox(height: 6),
@@ -643,7 +643,7 @@ class _ApiDiagnosticEventTile extends StatelessWidget {
           style: const TextStyle(
             fontFamily: 'JetBrainsMono',
             fontSize: 12,
-            fontWeight: FontWeight.w700,
+            fontWeight: FontWeight.w500,
           ),
         ),
         const SizedBox(height: 6),
@@ -690,7 +690,7 @@ class _MetaChip extends StatelessWidget {
         style: TextStyle(
           fontSize: 12,
           color: color ?? Colors.grey.shade800,
-          fontWeight: FontWeight.w600,
+          fontWeight: FontWeight.w500,
         ),
       ),
     );
@@ -794,7 +794,7 @@ class _ApiDiagnosticsPageState extends State<_ApiDiagnosticsPage> {
               children: [
                 const Text(
                   '主业务API状态',
-                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700),
+                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
                 ),
                 const SizedBox(height: 12),
                 _KvRow(label: 'API Count', value: '${panelSummary.totalCount}'),
@@ -863,7 +863,7 @@ class _ApiDiagnosticsPageState extends State<_ApiDiagnosticsPage> {
               children: [
                 const Text(
                   '主业务API列表',
-                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700),
+                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
                 ),
                 const SizedBox(height: 12),
                 if (panelUrls.isEmpty)
@@ -892,7 +892,7 @@ class _ApiDiagnosticsPageState extends State<_ApiDiagnosticsPage> {
               children: [
                 const Text(
                   '最近事件',
-                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700),
+                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
                 ),
                 const SizedBox(height: 12),
                 if (_events.isEmpty)
@@ -1056,7 +1056,7 @@ class _EventTile extends StatelessWidget {
           style: const TextStyle(
             fontFamily: 'JetBrainsMono',
             fontSize: 12,
-            fontWeight: FontWeight.w700,
+            fontWeight: FontWeight.w500,
           ),
         ),
         const SizedBox(height: 6),

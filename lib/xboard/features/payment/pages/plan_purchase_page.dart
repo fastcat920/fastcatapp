@@ -450,15 +450,8 @@ class _PlanPurchasePageState extends ConsumerState<PlanPurchasePage> {
                                 const Icon(Icons.receipt_long_outlined,
                                     size: 20),
                                 const SizedBox(width: 8),
-                                Text(
-                                  AppLocalizations.of(context)
-                                      .xboardSubmitOrder,
-                                  style: const TextStyle(
-                                    fontSize: 17,
-                                    fontWeight: XbFontWeight.bold,
-                                    letterSpacing: 0.5,
-                                  ),
-                                ),
+                                Text(AppLocalizations.of(context)
+                                    .xboardSubmitOrder),
                               ],
                             ),
                     );

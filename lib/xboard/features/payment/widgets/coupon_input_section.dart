@@ -280,13 +280,7 @@ class _ValidateButton extends StatelessWidget {
                   color: Theme.of(context).colorScheme.onPrimary,
                 ),
               )
-            : Text(
-                AppLocalizations.of(context).xboardVerify,
-                style: const TextStyle(
-                  fontWeight: XbFontWeight.bold,
-                  fontSize: 14,
-                ),
-              ),
+            : Text(AppLocalizations.of(context).xboardVerify),
       ),
     );
   }

@@ -38,7 +38,7 @@ class PlanDescriptionWidget extends StatelessWidget {
                   caseSensitive: false,
                 ).hasMatch(inlineStyle);
                 if (tag == 'b' || tag == 'strong' || declaresBold) {
-                  return const {'font-weight': '600'};
+                  return const {'font-weight': '500'};
                 }
                 return null;
               },
@@ -47,7 +47,7 @@ class PlanDescriptionWidget extends StatelessWidget {
               data: content,
               styleSheet: MarkdownStyleSheet(
                 p: textStyle,
-                strong: textStyle.copyWith(fontWeight: XbFontWeight.bold),
+                strong: textStyle.copyWith(fontWeight: XbFontWeight.semibold),
                 textAlign: WrapAlignment.center,
               ),
             ),

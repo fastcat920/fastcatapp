@@ -2792,11 +2792,32 @@ class MessageLookup extends MessageLookupByLibrary {
     "xboardServiceConnectionDegraded": MessageLookupByLibrary.simpleMessage(
       "Service connection unstable",
     ),
+    "xboardServiceDegradedTooltip": MessageLookupByLibrary.simpleMessage(
+      "A business request failed. The client is checking the local network and business gateways.",
+    ),
+    "xboardServiceNetworkRestricted": MessageLookupByLibrary.simpleMessage(
+      "Network access restricted",
+    ),
+    "xboardServiceNetworkRestrictedTooltip": MessageLookupByLibrary.simpleMessage(
+      "A network interface is present, but both public internet checks and business gateways are unreachable. The proxy may not work. Check network restrictions or DNS, or run network diagnostics.",
+    ),
+    "xboardServiceNoNetwork": MessageLookupByLibrary.simpleMessage(
+      "Local network unavailable",
+    ),
+    "xboardServiceNoNetworkTooltip": MessageLookupByLibrary.simpleMessage(
+      "This device has no usable network connection, so the proxy cannot work either. Check Wi-Fi, mobile data, or Ethernet.",
+    ),
     "xboardServiceOfflineCacheMode": MessageLookupByLibrary.simpleMessage(
       "Offline cache mode",
     ),
+    "xboardServiceOfflineCacheTooltip": MessageLookupByLibrary.simpleMessage(
+      "The local internet connection is working, but the business service is temporarily unreachable. The proxy can continue using cached subscriptions and nodes, while login, plans, and payments may be unavailable. Offline cache mode ends automatically after recovery.",
+    ),
     "xboardServiceRecovering": MessageLookupByLibrary.simpleMessage(
       "Restoring connection",
+    ),
+    "xboardServiceRecoveringTooltip": MessageLookupByLibrary.simpleMessage(
+      "The network has recovered. The client is confirming business gateway availability.",
     ),
     "xboardSetup": MessageLookupByLibrary.simpleMessage("Setup"),
     "xboardSixMonthCycle": MessageLookupByLibrary.simpleMessage(

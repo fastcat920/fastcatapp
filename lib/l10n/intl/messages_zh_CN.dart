@@ -2020,10 +2020,30 @@ class MessageLookup extends MessageLookupByLibrary {
     "xboardServiceConnectionDegraded": MessageLookupByLibrary.simpleMessage(
       "服务连接不稳定",
     ),
+    "xboardServiceDegradedTooltip": MessageLookupByLibrary.simpleMessage(
+      "业务请求出现异常，客户端正在确认本地网络和业务网关状态。",
+    ),
+    "xboardServiceNetworkRestricted": MessageLookupByLibrary.simpleMessage(
+      "网络连接受限",
+    ),
+    "xboardServiceNetworkRestrictedTooltip":
+        MessageLookupByLibrary.simpleMessage(
+          "检测到网络接口，但公网基准和业务网关均不可达，当前代理可能无法使用。请检查网络限制、DNS 或运行网络诊断。",
+        ),
+    "xboardServiceNoNetwork": MessageLookupByLibrary.simpleMessage("本地网络不可用"),
+    "xboardServiceNoNetworkTooltip": MessageLookupByLibrary.simpleMessage(
+      "当前设备没有可用的网络连接，代理也无法正常使用。请检查 Wi-Fi、移动数据或有线网络。",
+    ),
     "xboardServiceOfflineCacheMode": MessageLookupByLibrary.simpleMessage(
       "离线缓存模式",
     ),
+    "xboardServiceOfflineCacheTooltip": MessageLookupByLibrary.simpleMessage(
+      "本地网络正常，但暂时无法连接业务服务器。当前代理可继续使用已缓存的订阅和节点，登录、套餐、支付等功能可能暂不可用。网络或网关恢复后会自动退出离线缓存模式。",
+    ),
     "xboardServiceRecovering": MessageLookupByLibrary.simpleMessage("正在恢复连接"),
+    "xboardServiceRecoveringTooltip": MessageLookupByLibrary.simpleMessage(
+      "网络已恢复，客户端正在重新确认业务网关状态。",
+    ),
     "xboardSetup": MessageLookupByLibrary.simpleMessage("设置"),
     "xboardSixMonthCycle": MessageLookupByLibrary.simpleMessage("6个月周期"),
     "xboardSmartLatencyStarted": MessageLookupByLibrary.simpleMessage(

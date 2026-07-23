@@ -38,7 +38,7 @@ class InitErrorScreen extends StatelessWidget {
                     child: Text(
                       'The application encountered a critical error during startup and cannot continue.',
                       style: TextStyle(
-                        fontWeight: FontWeight.bold,
+                        fontWeight: FontWeight.w500,
                         fontSize: 16,
                       ),
                     ),
@@ -59,7 +59,7 @@ class InitErrorScreen extends StatelessWidget {
                   error.toString(),
                   style: TextStyle(
                     color: colorScheme.onErrorContainer,
-                    fontWeight: FontWeight.w600,
+                    fontWeight: FontWeight.w500,
                   ),
                 ),
               ),
@@ -103,7 +103,7 @@ class InitErrorScreen extends StatelessWidget {
       padding: const EdgeInsets.only(bottom: 8.0),
       child: Text(
         text,
-        style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
+        style: const TextStyle(fontWeight: FontWeight.w500, fontSize: 15),
       ),
     );
   }

@@ -707,6 +707,7 @@ class _HomeBrandHeader extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = AppLocalizations.of(context);
     final connectivityState = ref.watch(serviceConnectivityProvider);
     final userState = ref.watch(xboardUserProvider);
     final showServiceBadge = userState.isAuthenticated &&
@@ -715,20 +716,61 @@ class _HomeBrandHeader extends ConsumerWidget {
             connectivityState.consecutiveFailures >= 2);
     final badgeLabel = switch (connectivityState.status) {
       ServiceConnectivityStatus.degraded =>
-        AppLocalizations.of(context).xboardServiceConnectionDegraded,
-      ServiceConnectivityStatus.recovering =>
-        AppLocalizations.of(context).xboardServiceRecovering,
-      ServiceConnectivityStatus.offline =>
-        AppLocalizations.of(context).xboardServiceOfflineCacheMode,
+        l10n.xboardServiceConnectionDegraded,
+      ServiceConnectivityStatus.recovering => l10n.xboardServiceRecovering,
+      ServiceConnectivityStatus.offline => switch (connectivityState.cause) {
+          ServiceConnectivityCause.noNetwork => l10n.xboardServiceNoNetwork,
+          ServiceConnectivityCause.networkRestricted =>
+            l10n.xboardServiceNetworkRestricted,
+          _ => l10n.xboardServiceOfflineCacheMode,
+        },
       ServiceConnectivityStatus.online => '',
     };
-    final badgeIcon = connectivityState.isRecovering
-        ? Icons.sync_outlined
-        : connectivityState.isDegraded
-            ? Icons.cloud_off_outlined
-            : Icons.wifi_off_outlined;
+    final tooltipMessage = switch (connectivityState.status) {
+      ServiceConnectivityStatus.degraded => l10n.xboardServiceDegradedTooltip,
+      ServiceConnectivityStatus.recovering =>
+        l10n.xboardServiceRecoveringTooltip,
+      ServiceConnectivityStatus.offline => switch (connectivityState.cause) {
+          ServiceConnectivityCause.noNetwork =>
+            l10n.xboardServiceNoNetworkTooltip,
+          ServiceConnectivityCause.networkRestricted =>
+            l10n.xboardServiceNetworkRestrictedTooltip,
+          _ => l10n.xboardServiceOfflineCacheTooltip,
+        },
+      ServiceConnectivityStatus.online => '',
+    };
+    final badgeIcon = switch (connectivityState.status) {
+      ServiceConnectivityStatus.recovering => Icons.sync_outlined,
+      ServiceConnectivityStatus.degraded => Icons.cloud_off_outlined,
+      ServiceConnectivityStatus.offline => switch (connectivityState.cause) {
+          ServiceConnectivityCause.noNetwork => Icons.wifi_off_outlined,
+          ServiceConnectivityCause.networkRestricted =>
+            Icons.signal_wifi_statusbar_connected_no_internet_4_outlined,
+          _ => Icons.cloud_off_outlined,
+        },
+      ServiceConnectivityStatus.online => Icons.cloud_done_outlined,
+    };
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
+    final isLocalNetworkFailure = connectivityState.isOffline &&
+        (connectivityState.cause == ServiceConnectivityCause.noNetwork ||
+            connectivityState.cause ==
+                ServiceConnectivityCause.networkRestricted);
+    final badgeForeground = isDark
+        ? theme.colorScheme.onSurface
+        : isLocalNetworkFailure
+            ? const Color(0xFFB3261E)
+            : const Color(0xFF8A5A00);
+    final badgeBackground = isDark
+        ? theme.colorScheme.errorContainer.withValues(alpha: 0.28)
+        : isLocalNetworkFailure
+            ? const Color(0xFFFFEDEA)
+            : const Color(0xFFFFF4E5);
+    final badgeBorder = isDark
+        ? theme.colorScheme.error.withValues(alpha: 0.45)
+        : isLocalNetworkFailure
+            ? const Color(0xFFFFB4AB)
+            : const Color(0xFFFFD08A);
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: [
@@ -745,7 +787,7 @@ class _HomeBrandHeader extends ConsumerWidget {
         Text(
           localizedAppName,
           style: theme.textTheme.titleMedium?.copyWith(
-            fontWeight: XbFontWeight.heavy,
+            fontWeight: XbFontWeight.bold,
             color: theme.colorScheme.onSurface,
           ),
           maxLines: 1,
@@ -753,40 +795,54 @@ class _HomeBrandHeader extends ConsumerWidget {
         ),
         if (showServiceBadge) ...[
           const SizedBox(width: 8),
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-            decoration: BoxDecoration(
-              color: isDark
-                  ? theme.colorScheme.errorContainer.withValues(alpha: 0.28)
-                  : const Color(0xFFFFF4E5),
-              borderRadius: BorderRadius.circular(999),
-              border: Border.all(
-                color: isDark
-                    ? theme.colorScheme.error.withValues(alpha: 0.45)
-                    : const Color(0xFFFFD08A),
+          Tooltip(
+            message: tooltipMessage,
+            triggerMode: TooltipTriggerMode.tap,
+            preferBelow: false,
+            waitDuration: const Duration(milliseconds: 300),
+            showDuration: const Duration(seconds: 6),
+            child: MouseRegion(
+              cursor: SystemMouseCursors.click,
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                decoration: BoxDecoration(
+                  color: badgeBackground,
+                  borderRadius: BorderRadius.circular(999),
+                  border: Border.all(color: badgeBorder),
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(badgeIcon, size: 12, color: badgeForeground),
+                    const SizedBox(width: 4),
+                    Text(
+                      badgeLabel,
+                      style: theme.textTheme.labelSmall?.copyWith(
+                        color: badgeForeground,
+                        fontWeight: XbFontWeight.bold,
+                      ),
+                    ),
+                    const SizedBox(width: 4),
+                    Container(
+                      width: 15,
+                      height: 15,
+                      alignment: Alignment.center,
+                      decoration: BoxDecoration(
+                        color: badgeForeground.withValues(alpha: 0.10),
+                        shape: BoxShape.circle,
+                        border: Border.all(
+                          color: badgeForeground.withValues(alpha: 0.24),
+                        ),
+                      ),
+                      child: Icon(
+                        Icons.question_mark_rounded,
+                        size: 9,
+                        color: badgeForeground,
+                      ),
+                    ),
+                  ],
+                ),
               ),
-            ),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Icon(
-                  badgeIcon,
-                  size: 12,
-                  color: isDark
-                      ? theme.colorScheme.onSurface
-                      : const Color(0xFF8A5A00),
-                ),
-                const SizedBox(width: 4),
-                Text(
-                  badgeLabel,
-                  style: theme.textTheme.labelSmall?.copyWith(
-                    color: isDark
-                        ? theme.colorScheme.onSurface
-                        : const Color(0xFF8A5A00),
-                    fontWeight: XbFontWeight.bold,
-                  ),
-                ),
-              ],
             ),
           ),
         ],

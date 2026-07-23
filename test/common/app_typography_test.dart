@@ -40,7 +40,7 @@ void main() {
     expect(XbFontWeight.regular, FontWeight.w400);
     expect(XbFontWeight.medium, FontWeight.w500);
     expect(XbFontWeight.semibold, FontWeight.w500);
-    expect(XbFontWeight.bold, FontWeight.w600);
-    expect(XbFontWeight.heavy, FontWeight.w700);
+    expect(XbFontWeight.bold, FontWeight.w500);
+    expect(XbFontWeight.heavy, FontWeight.w500);
   });
 }

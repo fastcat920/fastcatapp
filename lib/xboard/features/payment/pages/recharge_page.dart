@@ -647,11 +647,7 @@ class _RechargePageState extends ConsumerState<RechargePage> {
                       const Icon(Icons.account_balance_wallet_outlined,
                           size: 19),
                       const SizedBox(width: 8),
-                      Text(
-                        l10n.xboardRechargeNow,
-                        style: const TextStyle(
-                            fontSize: 16, fontWeight: XbFontWeight.semibold),
-                      ),
+                      Text(l10n.xboardRechargeNow),
                     ],
                   ),
           ),

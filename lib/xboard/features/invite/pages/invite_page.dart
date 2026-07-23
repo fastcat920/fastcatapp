@@ -863,8 +863,7 @@ class _InviteCodeItem extends StatelessWidget {
                 Text(
                   code,
                   style: theme.textTheme.titleSmall?.copyWith(
-                    fontWeight: XbFontWeight.semibold,
-                    fontFamily: 'monospace',
+                    fontWeight: XbFontWeight.bold,
                   ),
                 ),
                 const SizedBox(height: 3),

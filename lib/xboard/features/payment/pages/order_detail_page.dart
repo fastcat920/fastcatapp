@@ -1170,7 +1170,7 @@ class _OrderStatusCard extends StatelessWidget {
                   _statusLabel(context, order?.status),
                   style: Theme.of(context).textTheme.titleMedium?.copyWith(
                         color: color,
-                        fontWeight: XbFontWeight.heavy,
+                        fontWeight: XbFontWeight.bold,
                       ),
                 ),
                 const SizedBox(height: 6),
@@ -1518,7 +1518,7 @@ class _InfoCard extends StatelessWidget {
               Text(
                 title,
                 style: theme.textTheme.titleSmall?.copyWith(
-                  fontWeight: XbFontWeight.heavy,
+                  fontWeight: XbFontWeight.bold,
                 ),
               ),
               const SizedBox(width: 16),

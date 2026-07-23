@@ -852,7 +852,7 @@ class SubscriptionUsageCard extends ConsumerWidget {
                       ? planName
                       : AppLocalizations.of(context).xboardSubscription,
                   style: theme.textTheme.titleMedium?.copyWith(
-                    fontWeight: XbFontWeight.bold,
+                    fontWeight: XbFontWeight.semibold,
                     color: cardTextColor,
                     letterSpacing: 0.3,
                   ),

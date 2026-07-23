@@ -607,27 +607,22 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
                         TextButton.icon(
-                          onPressed: _navigateToRegister,
-                          icon: Icon(Icons.person_add_outlined,
-                              size: 18, color: colorScheme.primary),
-                          label: Text(
-                            appLocalizations.xboardRegister,
-                            style: TextStyle(
-                              color: colorScheme.primary,
-                            ),
+                          onPressed: isIniting ? null : _navigateToRegister,
+                          icon: const Icon(
+                            Icons.person_add_outlined,
+                            size: 18,
                           ),
+                          label: Text(appLocalizations.xboardRegister),
                         ),
                         const SizedBox(width: 16),
                         TextButton.icon(
-                          onPressed: _navigateToForgotPassword,
-                          icon: Icon(Icons.help_outline,
-                              size: 18, color: colorScheme.primary),
-                          label: Text(
-                            appLocalizations.xboardForgotPassword,
-                            style: TextStyle(
-                              color: colorScheme.primary,
-                            ),
+                          onPressed:
+                              isIniting ? null : _navigateToForgotPassword,
+                          icon: const Icon(
+                            Icons.help_outline,
+                            size: 18,
                           ),
+                          label: Text(appLocalizations.xboardForgotPassword),
                         ),
                       ],
                     ),
