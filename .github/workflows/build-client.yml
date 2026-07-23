@@ -1,8 +1,7 @@
 name: Build Client
 
 env:
-  FLUTTER_VERSION: "3.41.6"
-  FLUTTER_WINDOWS_ARM64_VERSION: "3.44.7"
+  FLUTTER_VERSION: "3.44.7"
 
 on:
   workflow_dispatch:
@@ -390,10 +389,10 @@ jobs:
         run: |
           $ErrorActionPreference = "Stop"
           $flutterRoot = Join-Path $env:RUNNER_TEMP "flutter-arm64"
-          git clone --filter=blob:none --depth 1 --branch $env:FLUTTER_WINDOWS_ARM64_VERSION `
+          git clone --filter=blob:none --depth 1 --branch $env:FLUTTER_VERSION `
             https://github.com/flutter/flutter.git $flutterRoot
           if ($LASTEXITCODE -ne 0) {
-            throw "Failed to clone Flutter $env:FLUTTER_WINDOWS_ARM64_VERSION"
+            throw "Failed to clone Flutter $env:FLUTTER_VERSION"
           }
           $flutterBin = Join-Path $flutterRoot "bin"
           $flutter = Join-Path $flutterBin "flutter.bat"

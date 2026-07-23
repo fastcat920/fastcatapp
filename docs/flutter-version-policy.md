@@ -2,7 +2,7 @@
 
 This project treats CI as the supported Flutter baseline.
 
-- Supported Flutter: `3.27.4` stable.
+- Supported Flutter: `3.44.7` stable.
 - Local development should use the version in `.flutter-version`.
 - GitHub Actions reads the same version through `FLUTTER_VERSION`.
 - `Dockerfile.linux` should stay aligned with `.flutter-version`.

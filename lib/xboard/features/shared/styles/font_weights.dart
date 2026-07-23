@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 
 /// Visual font-weight tokens tuned for Flutter's precise variable-font axis.
 ///
-/// Flutter 3.41 maps [FontWeight] directly to a variable font's `wght` axis.
+/// Flutter 3.44 maps [FontWeight] directly to a variable font's `wght` axis.
 /// Keep every explicit emphasis level at w500 so variable system fonts do not
 /// render selected labels, headings, prices, or rich text excessively heavy.
 abstract final class XbFontWeight {
