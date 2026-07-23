@@ -385,28 +385,37 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Setup Flutter
-        uses: subosito/flutter-action@v2
-        with:
-          flutter-version: ${{ env.FLUTTER_VERSION }}
-          channel: stable
-          architecture: x64
-          cache: true
-
-      - name: Configure Flutter Windows ARM64 target
         shell: pwsh
         run: |
-          $flutterBin = Split-Path -Parent (Get-Command flutter).Source
-          $flutterRoot = Split-Path -Parent $flutterBin
-          $commandFile = Join-Path $flutterRoot "packages\flutter_tools\lib\src\commands\build_windows.dart"
-          $content = Get-Content $commandFile -Raw
-          $pattern = "final defaultTargetPlatform = \(_operatingSystemUtils\.hostPlatform == HostPlatform\.windows_arm64\)\s*\? 'windows-arm64'\s*:\s*'windows-x64';"
-          $patched = [regex]::Replace($content, $pattern, "final defaultTargetPlatform = 'windows-arm64';")
-          if ($patched -eq $content) {
-            throw "Unable to configure Flutter Windows ARM64 target"
+          $ErrorActionPreference = "Stop"
+          $flutterRoot = Join-Path $env:RUNNER_TEMP "flutter-arm64"
+          git clone --filter=blob:none --depth 1 --branch $env:FLUTTER_VERSION `
+            https://github.com/flutter/flutter.git $flutterRoot
+          if ($LASTEXITCODE -ne 0) { throw "Failed to clone Flutter $env:FLUTTER_VERSION" }
+          $flutterBin = Join-Path $flutterRoot "bin"
+          $flutter = Join-Path $flutterBin "flutter.bat"
+          $flutterBin >> $env:GITHUB_PATH
+          "FLUTTER_ROOT=$flutterRoot" >> $env:GITHUB_ENV
+          & $flutter config --no-analytics --enable-windows-desktop
+          if ($LASTEXITCODE -ne 0) { throw "Flutter configuration failed" }
+          & $flutter precache --windows
+          if ($LASTEXITCODE -ne 0) { throw "Flutter Windows precache failed" }
+          & $flutter --version
+          if ($LASTEXITCODE -ne 0) { throw "Flutter version check failed" }
+
+      - name: Verify Flutter Windows ARM64 host
+        shell: pwsh
+        run: |
+          $windowsDevice = flutter devices --machine |
+            ConvertFrom-Json |
+            Where-Object { $_.id -eq "windows" }
+          if (-not $windowsDevice) {
+            throw "Flutter did not detect the Windows desktop target"
           }
-          Set-Content $commandFile $patched -Encoding utf8
-          Remove-Item (Join-Path $flutterRoot "bin\cache\flutter_tools.snapshot") -Force -ErrorAction SilentlyContinue
-          Write-Host "Flutter Windows target forced to arm64; PE verification remains enabled"
+          Write-Host "Flutter Windows target: $($windowsDevice.targetPlatform)"
+          if ($windowsDevice.targetPlatform -ne "windows-arm64") {
+            throw "Expected windows-arm64, got $($windowsDevice.targetPlatform)"
+          }
 
       - name: Setup Go
         uses: actions/setup-go@v5

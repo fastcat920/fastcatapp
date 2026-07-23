@@ -1832,6 +1832,7 @@ end tell
             "build",
             "windows",
             "--release",
+            if (arch == Arch.arm64) "--verbose",
             ..._dartDefineList(env),
             '--dart-define=CORE_SHA256=$token',
           ],
