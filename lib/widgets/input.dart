@@ -318,10 +318,7 @@ class ListInputPage extends StatelessWidget {
                   ),
                 );
               },
-              onReorder: (oldIndex, newIndex) {
-                if (oldIndex < newIndex) {
-                  newIndex -= 1;
-                }
+              onReorderItem: (oldIndex, newIndex) {
                 final nextItems = List<String>.from(items);
                 final item = nextItems.removeAt(oldIndex);
                 nextItems.insert(newIndex, item);
@@ -470,10 +467,7 @@ class MapInputPage extends StatelessWidget {
                   ),
                 );
               },
-              onReorder: (oldIndex, newIndex) {
-                if (oldIndex < newIndex) {
-                  newIndex -= 1;
-                }
+              onReorderItem: (oldIndex, newIndex) {
                 final nextItems = List<MapEntry<String, String>>.from(items);
                 final item = nextItems.removeAt(oldIndex);
                 nextItems.insert(newIndex, item);

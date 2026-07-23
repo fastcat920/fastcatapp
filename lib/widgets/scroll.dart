@@ -175,7 +175,7 @@ class CacheItemExtentSliverReorderableList extends StatefulWidget {
   final int itemCount;
   final String Function(int index) keyBuilder;
   final double Function(int index) itemExtentBuilder;
-  final ReorderCallback onReorder;
+  final ReorderCallback onReorderItem;
   final ReorderItemProxyDecorator? proxyDecorator;
   final CacheTag tag;
 
@@ -185,7 +185,7 @@ class CacheItemExtentSliverReorderableList extends StatefulWidget {
     required this.keyBuilder,
     required this.itemCount,
     required this.itemExtentBuilder,
-    required this.onReorder,
+    required this.onReorderItem,
     this.proxyDecorator,
     required this.tag,
   });
@@ -216,7 +216,7 @@ class CacheItemExtentSliverReorderableListState
           () => widget.itemExtentBuilder(index),
         );
       },
-      onReorder: widget.onReorder,
+      onReorderItem: widget.onReorderItem,
       proxyDecorator: widget.proxyDecorator,
     );
   }
