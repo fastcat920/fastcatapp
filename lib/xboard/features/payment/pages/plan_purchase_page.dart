@@ -349,119 +349,108 @@ class _PlanPurchasePageState extends ConsumerState<PlanPurchasePage> {
     final isPlatformDesktop =
         Platform.isLinux || Platform.isWindows || Platform.isMacOS;
 
-    final content = Align(
-      alignment: Alignment.topCenter,
-      child: ConstrainedBox(
-        constraints: const BoxConstraints(
-          maxWidth: 700,
-        ),
-        child: SingleChildScrollView(
-          physics: const AlwaysScrollableScrollPhysics(),
-          padding: XbUiTokens.pagePadding,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // 套餐信息卡片
-              PlanHeaderCard(plan: widget.plan),
-              const SizedBox(height: 16),
+    final content = SingleChildScrollView(
+      physics: const AlwaysScrollableScrollPhysics(),
+      padding: XbUiTokens.pagePadding,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // 套餐信息卡片
+          PlanHeaderCard(plan: widget.plan),
+          const SizedBox(height: 16),
 
-              // 周期选择器
-              PeriodSelector(
-                periods: periods,
-                selectedPeriod: _selectedPeriod,
-                onPeriodSelected: (period) {
-                  setState(() {
-                    _selectedPeriod = period;
-                  });
-                  // 切换周期后若有已校验的优惠券，重新向服务端校验
-                  if (_isCouponValid == true && _couponCode != null) {
-                    _validateCoupon();
-                  }
-                },
-                couponType: _couponType,
-                couponValue: _couponValue,
-              ),
-              const SizedBox(height: 16),
-
-              // 优惠券输入
-              CouponInputSection(
-                controller: _couponController,
-                isValidating: _isCouponValidating,
-                isValid: _isCouponValid,
-                errorMessage: _couponErrorMessage,
-                discountAmount: _discountAmount,
-                onValidate: _validateCoupon,
-                onChanged: _clearCoupon,
-              ),
-              const SizedBox(height: 16),
-
-              // 价格汇总
-              if (_selectedPeriod != null)
-                PriceSummaryCard(
-                  originalPrice: currentPrice,
-                  finalPrice: _finalPrice,
-                  discountAmount: _discountAmount,
-                  userBalance: ref.watch(userInfoProvider)?.balanceInYuan,
-                ),
-              const SizedBox(height: 16),
-
-              // 提交订单按钮
-              SizedBox(
-                width: double.infinity,
-                child: Consumer(
-                  builder: (context, ref, child) {
-                    final paymentState = ref.watch(paymentUIStateProvider);
-                    return FilledButton(
-                      onPressed:
-                          paymentState.isLoading ? null : _proceedToPurchase,
-                      style: XbUiButton.filledPrimary(
-                        context,
-                        busy: paymentState.isLoading,
-                      ).copyWith(
-                        shape: WidgetStatePropertyAll(
-                          RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(14),
-                          ),
-                        ),
-                      ),
-                      child: paymentState.isLoading
-                          ? Row(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                SizedBox(
-                                  width: 20,
-                                  height: 20,
-                                  child: CircularProgressIndicator(
-                                    strokeWidth: 2,
-                                    color:
-                                        Theme.of(context).colorScheme.onPrimary,
-                                  ),
-                                ),
-                                const SizedBox(width: 12),
-                                Text(
-                                  AppLocalizations.of(context).xboardProcessing,
-                                  style: const TextStyle(fontSize: 16),
-                                ),
-                              ],
-                            )
-                          : Row(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                const Icon(Icons.receipt_long_outlined,
-                                    size: 20),
-                                const SizedBox(width: 8),
-                                Text(AppLocalizations.of(context)
-                                    .xboardSubmitOrder),
-                              ],
-                            ),
-                    );
-                  },
-                ),
-              ),
-              const SizedBox(height: 16),
-            ],
+          // 周期选择器
+          PeriodSelector(
+            periods: periods,
+            selectedPeriod: _selectedPeriod,
+            onPeriodSelected: (period) {
+              setState(() {
+                _selectedPeriod = period;
+              });
+              // 切换周期后若有已校验的优惠券，重新向服务端校验
+              if (_isCouponValid == true && _couponCode != null) {
+                _validateCoupon();
+              }
+            },
+            couponType: _couponType,
+            couponValue: _couponValue,
           ),
-        ),
+          const SizedBox(height: 16),
+
+          // 优惠券输入
+          CouponInputSection(
+            controller: _couponController,
+            isValidating: _isCouponValidating,
+            isValid: _isCouponValid,
+            errorMessage: _couponErrorMessage,
+            discountAmount: _discountAmount,
+            onValidate: _validateCoupon,
+            onChanged: _clearCoupon,
+          ),
+          const SizedBox(height: 16),
+
+          // 价格汇总
+          if (_selectedPeriod != null)
+            PriceSummaryCard(
+              originalPrice: currentPrice,
+              finalPrice: _finalPrice,
+              discountAmount: _discountAmount,
+              userBalance: ref.watch(userInfoProvider)?.balanceInYuan,
+            ),
+          const SizedBox(height: 16),
+
+          // 提交订单按钮
+          SizedBox(
+            width: double.infinity,
+            child: Consumer(
+              builder: (context, ref, child) {
+                final paymentState = ref.watch(paymentUIStateProvider);
+                return FilledButton(
+                  onPressed: paymentState.isLoading ? null : _proceedToPurchase,
+                  style: XbUiButton.filledPrimary(
+                    context,
+                    busy: paymentState.isLoading,
+                  ).copyWith(
+                    shape: WidgetStatePropertyAll(
+                      RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(14),
+                      ),
+                    ),
+                  ),
+                  child: paymentState.isLoading
+                      ? Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            SizedBox(
+                              width: 20,
+                              height: 20,
+                              child: CircularProgressIndicator(
+                                strokeWidth: 2,
+                                color: Theme.of(context).colorScheme.onPrimary,
+                              ),
+                            ),
+                            const SizedBox(width: 12),
+                            Text(
+                              AppLocalizations.of(context).xboardProcessing,
+                              style: const TextStyle(fontSize: 16),
+                            ),
+                          ],
+                        )
+                      : Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            const Icon(Icons.receipt_long_outlined, size: 20),
+                            const SizedBox(width: 8),
+                            Text(
+                                AppLocalizations.of(context).xboardSubmitOrder),
+                          ],
+                        ),
+                );
+              },
+            ),
+          ),
+          const SizedBox(height: 16),
+        ],
       ),
     );
 

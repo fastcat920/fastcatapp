@@ -710,28 +710,22 @@ class _OrderDetailContent extends StatelessWidget {
           child: SingleChildScrollView(
             physics: const AlwaysScrollableScrollPhysics(),
             padding: contentPadding,
-            child: Align(
-              alignment: Alignment.topCenter,
-              child: ConstrainedBox(
-                constraints: const BoxConstraints(maxWidth: 1180),
-                child: useSideNavigation
-                    ? Row(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Expanded(child: leftColumn),
-                          const SizedBox(width: 24),
-                          Expanded(child: rightColumn),
-                        ],
-                      )
-                    : Column(
-                        children: [
-                          leftColumn,
-                          const SizedBox(height: 16),
-                          rightColumn,
-                        ],
-                      ),
-              ),
-            ),
+            child: useSideNavigation
+                ? Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Expanded(child: leftColumn),
+                      const SizedBox(width: 24),
+                      Expanded(child: rightColumn),
+                    ],
+                  )
+                : Column(
+                    children: [
+                      leftColumn,
+                      const SizedBox(height: 16),
+                      rightColumn,
+                    ],
+                  ),
           ),
         );
       },
