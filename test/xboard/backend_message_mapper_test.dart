@@ -27,4 +27,41 @@ void main() {
 
     expect(message, AppLocalizations.current.backendErrorPasswordTooShort);
   });
+
+  test('new period insufficient duration error is localized', () {
+    final message = BackendMessageMapper.map(
+      'You do not have enough time to renew your subscription',
+      context: BackendMessageContext.newPeriod,
+    );
+
+    expect(
+        message, AppLocalizations.current.xboardNewPeriodInsufficientDuration);
+  });
+
+  test('new period not allowed error is localized', () {
+    final message = BackendMessageMapper.map(
+      'Renewal is not allowed',
+      context: BackendMessageContext.newPeriod,
+    );
+
+    expect(message, AppLocalizations.current.xboardNewPeriodNotAllowed);
+  });
+
+  test('unknown English new period error uses localized fallback', () {
+    final message = BackendMessageMapper.map(
+      'Unexpected backend failure',
+      context: BackendMessageContext.newPeriod,
+    );
+
+    expect(message, AppLocalizations.current.xboardNewPeriodFailed);
+  });
+
+  test('Chinese new period error detail is preserved', () {
+    final message = BackendMessageMapper.map(
+      '当前套餐状态不支持此操作',
+      context: BackendMessageContext.newPeriod,
+    );
+
+    expect(message, '当前套餐状态不支持此操作');
+  });
 }

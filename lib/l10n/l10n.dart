@@ -8185,6 +8185,26 @@ class AppLocalizations {
     );
   }
 
+  /// `Your plan does not have enough remaining time to start a new traffic period.`
+  String get xboardNewPeriodInsufficientDuration {
+    return Intl.message(
+      'Your plan does not have enough remaining time to start a new traffic period.',
+      name: 'xboardNewPeriodInsufficientDuration',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `This plan does not allow starting a new traffic period.`
+  String get xboardNewPeriodNotAllowed {
+    return Intl.message(
+      'This plan does not allow starting a new traffic period.',
+      name: 'xboardNewPeriodNotAllowed',
+      desc: '',
+      args: [],
+    );
+  }
+
   /// `Your plan traffic is used up. You can start the next traffic period early.`
   String get xboardNewPeriodTrafficExhaustedDetail {
     return Intl.message(

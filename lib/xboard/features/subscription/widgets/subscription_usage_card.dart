@@ -579,8 +579,7 @@ class SubscriptionUsageCard extends ConsumerWidget {
     final shouldShowResetText = !isExpired;
     final useNewPeriod =
         isNewPeriodEnabled(ref, subscriptionInfo: subscriptionInfo);
-    final shouldShowTrafficRecoveryAction =
-        !isExpired && (useNewPeriod ? progress >= 1.0 : progress >= 0.9);
+    final shouldShowTrafficRecoveryAction = !isExpired && progress >= 0.9;
 
     final isDark = theme.brightness == Brightness.dark;
     final card = Container(
@@ -782,8 +781,7 @@ class SubscriptionUsageCard extends ConsumerWidget {
     final shouldShowResetText = !isExpired;
     final useNewPeriod =
         isNewPeriodEnabled(ref, subscriptionInfo: subscriptionInfo);
-    final shouldShowTrafficRecoveryAction =
-        !isExpired && (useNewPeriod ? progress >= 1.0 : progress >= 0.9);
+    final shouldShowTrafficRecoveryAction = !isExpired && progress >= 0.9;
     final colorScheme = theme.colorScheme;
     final isDark = theme.brightness == Brightness.dark;
     final plainTextColor = theme.colorScheme.onSurface;

@@ -1130,6 +1130,8 @@
   "xboardNewPeriodResultUncertainContent": "The network response was interrupted, so the new traffic period cannot be confirmed yet. Check the result instead of submitting again.",
   "xboardNewPeriodSuccess": "The new traffic period has started",
   "xboardNewPeriodFailed": "Could not start a new traffic period. Try again later.",
+  "xboardNewPeriodInsufficientDuration": "Your plan does not have enough remaining time to start a new traffic period.",
+  "xboardNewPeriodNotAllowed": "This plan does not allow starting a new traffic period.",
   "xboardNewPeriodTrafficExhaustedDetail": "Your plan traffic is used up. You can start the next traffic period early.",
   "xboardSelectRechargeAmount": "Select recharge amount",
   "xboardSmartRouting": "Smart routing",

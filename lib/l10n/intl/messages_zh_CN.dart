@@ -1744,6 +1744,12 @@ class MessageLookup extends MessageLookupByLibrary {
     "xboardNewPeriodFailed": MessageLookupByLibrary.simpleMessage(
       "开启新的流量周期失败，请稍后重试",
     ),
+    "xboardNewPeriodInsufficientDuration": MessageLookupByLibrary.simpleMessage(
+      "套餐剩余时长不足，无法开启新周期",
+    ),
+    "xboardNewPeriodNotAllowed": MessageLookupByLibrary.simpleMessage(
+      "当前套餐不支持开启新周期",
+    ),
     "xboardNewPeriodResultUncertainContent":
         MessageLookupByLibrary.simpleMessage(
           "网络响应异常，暂时无法确认新的流量周期是否已开启。请检查结果，不要重复提交。",
@@ -2052,7 +2058,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "xboardSmartRouting": MessageLookupByLibrary.simpleMessage("智能分流"),
     "xboardSoftwareSettings": MessageLookupByLibrary.simpleMessage("软件设置"),
     "xboardSpeedLimit": MessageLookupByLibrary.simpleMessage("限速"),
-    "xboardStartNewPeriod": MessageLookupByLibrary.simpleMessage("提前开启流量周期"),
+    "xboardStartNewPeriod": MessageLookupByLibrary.simpleMessage("开启新周期"),
     "xboardStartProxy": MessageLookupByLibrary.simpleMessage("启动代理"),
     "xboardStop": MessageLookupByLibrary.simpleMessage("停止"),
     "xboardStopProxy": MessageLookupByLibrary.simpleMessage("停止代理"),

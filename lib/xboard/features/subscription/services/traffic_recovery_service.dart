@@ -85,6 +85,7 @@ Future<_NewPeriodAttemptResult> _startNewPeriod(
       return _NewPeriodAttemptResult.failure(
         BackendMessageMapper.mapError(
           error,
+          context: BackendMessageContext.newPeriod,
           fallback: l10n.xboardNewPeriodFailed,
         ),
       );

@@ -14,6 +14,7 @@ enum BackendMessageContext {
   coupon,
   order,
   ticket,
+  newPeriod,
   generic,
 }
 
@@ -47,6 +48,13 @@ class BackendMessageMapper {
         _mapChinesePattern(raw, context);
     if (mapped != null && mapped.isNotEmpty) {
       return mapped;
+    }
+
+    // 开启新周期属于强业务语境：未知的英文后端消息不直接暴露给中文用户，
+    // 但保留后端已经返回的中文详情。
+    if (context == BackendMessageContext.newPeriod &&
+        !RegExp(r'[\u3400-\u9FFF]').hasMatch(raw)) {
+      return fallback ?? _defaultFallback(context);
     }
 
     return raw;
@@ -204,6 +212,9 @@ class BackendMessageMapper {
           l10n.backendErrorInviteLimitReached,
       'creation limit reached': (l10n) => l10n.backendErrorInviteLimitReached,
       'maximum invites reached': (l10n) => l10n.backendErrorInviteLimitReached,
+      'you do not have enough time to renew your subscription': (l10n) =>
+          l10n.xboardNewPeriodInsufficientDuration,
+      'renewal is not allowed': (l10n) => l10n.xboardNewPeriodNotAllowed,
     };
 
     return exact[normalized]?.call(l10n);
@@ -337,6 +348,7 @@ class BackendMessageMapper {
         case BackendMessageContext.withdraw:
         case BackendMessageContext.transfer:
         case BackendMessageContext.password:
+        case BackendMessageContext.newPeriod:
         case BackendMessageContext.generic:
           break;
       }
@@ -411,6 +423,8 @@ class BackendMessageMapper {
         return l10n.backendFallbackOrderFailed;
       case BackendMessageContext.ticket:
         return l10n.backendFallbackTicketFailed;
+      case BackendMessageContext.newPeriod:
+        return l10n.xboardNewPeriodFailed;
       case BackendMessageContext.generic:
         return l10n.backendFallbackOperationFailed;
     }

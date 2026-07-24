@@ -2382,6 +2382,12 @@ class MessageLookup extends MessageLookupByLibrary {
     "xboardNewPeriodFailed": MessageLookupByLibrary.simpleMessage(
       "Could not start a new traffic period. Try again later.",
     ),
+    "xboardNewPeriodInsufficientDuration": MessageLookupByLibrary.simpleMessage(
+      "Your plan does not have enough remaining time to start a new traffic period.",
+    ),
+    "xboardNewPeriodNotAllowed": MessageLookupByLibrary.simpleMessage(
+      "This plan does not allow starting a new traffic period.",
+    ),
     "xboardNewPeriodResultUncertainContent": MessageLookupByLibrary.simpleMessage(
       "The network response was interrupted, so the new traffic period cannot be confirmed yet. Check the result instead of submitting again.",
     ),
