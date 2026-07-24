@@ -50,11 +50,11 @@ void main() {
     expect(find.byType(Form), findsOneWidget);
   });
 
-  testWidgets('hides the app bar while the keyboard is visible',
+  testWidgets('keeps the app bar when the keyboard opens at sufficient height',
       (tester) async {
     await pumpResponsiveScaffold(tester, height: 800, keyboardInset: 300);
 
-    expect(find.byKey(const Key('login-page-app-bar')), findsNothing);
+    expect(find.byKey(const Key('login-page-app-bar')), findsOneWidget);
     expect(find.byType(Form), findsOneWidget);
   });
 

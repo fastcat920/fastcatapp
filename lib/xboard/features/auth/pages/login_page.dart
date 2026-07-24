@@ -37,8 +37,7 @@ class LoginResponsiveScaffold extends StatelessWidget {
     return LayoutBuilder(
       builder: (context, constraints) {
         final showPageActions = (isDesktop ?? system.isDesktop) ||
-            (MediaQuery.viewInsetsOf(context).bottom == 0 &&
-                constraints.maxHeight >= fullLayoutMinHeight);
+            constraints.maxHeight >= fullLayoutMinHeight;
 
         return Scaffold(
           appBar: showPageActions ? appBar : null,
