@@ -18,6 +18,38 @@ import 'package:flutter/services.dart';
 
 const _gatewayOverrideUrl = String.fromEnvironment('XBOARD_GATEWAY_URL');
 
+class LoginResponsiveScaffold extends StatelessWidget {
+  const LoginResponsiveScaffold({
+    super.key,
+    required this.appBar,
+    required this.body,
+  });
+
+  static const fullLayoutMinHeight = 640.0;
+
+  final PreferredSizeWidget appBar;
+  final Widget body;
+
+  @override
+  Widget build(BuildContext context) {
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final showPageActions = MediaQuery.viewInsetsOf(context).bottom == 0 &&
+            constraints.maxHeight >= fullLayoutMinHeight;
+
+        return Scaffold(
+          appBar: showPageActions ? appBar : null,
+          extendBodyBehindAppBar: showPageActions,
+          body: SafeArea(
+            top: !showPageActions,
+            child: body,
+          ),
+        );
+      },
+    );
+  }
+}
+
 class LoginPage extends ConsumerStatefulWidget {
   const LoginPage({super.key});
   @override
@@ -364,8 +396,9 @@ class _LoginPageState extends ConsumerState<LoginPage> {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final isIniting = !initState.isReady && !initState.isFailed;
 
-    return Scaffold(
+    return LoginResponsiveScaffold(
       appBar: AppBar(
+        key: const Key('login-page-app-bar'),
         backgroundColor: isDark ? null : Colors.white,
         elevation: 0,
         automaticallyImplyLeading: false,
@@ -415,13 +448,14 @@ class _LoginPageState extends ConsumerState<LoginPage> {
           ],
         ),
       ),
-      extendBodyBehindAppBar: true,
       body: Container(
         color: isDark ? colorScheme.surface : const Color(0xFFFAFBFD),
         child: Center(
           child: SingleChildScrollView(
-            padding:
-                const EdgeInsets.symmetric(horizontal: 32.0, vertical: 16.0),
+            padding: const EdgeInsets.symmetric(
+              horizontal: 32.0,
+              vertical: 16.0,
+            ),
             child: ConstrainedBox(
               constraints: const BoxConstraints(maxWidth: 400),
               child: Form(

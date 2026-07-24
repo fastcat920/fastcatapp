@@ -1,0 +1,58 @@
+import 'package:fl_clash/xboard/features/auth/pages/login_page.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter_test/flutter_test.dart';
+
+void main() {
+  Future<void> pumpResponsiveScaffold(
+    WidgetTester tester, {
+    required double height,
+    double keyboardInset = 0,
+  }) async {
+    await tester.binding.setSurfaceSize(Size(900, height));
+    addTearDown(() => tester.binding.setSurfaceSize(null));
+
+    await tester.pumpWidget(
+      MaterialApp(
+        home: Builder(
+          builder: (context) {
+            final mediaQuery = MediaQuery.of(context);
+            return MediaQuery(
+              data: mediaQuery.copyWith(
+                viewInsets: EdgeInsets.only(bottom: keyboardInset),
+              ),
+              child: LoginResponsiveScaffold(
+                appBar: AppBar(key: const Key('login-page-app-bar')),
+                body: const Form(
+                  child: Text('登录表单'),
+                ),
+              ),
+            );
+          },
+        ),
+      ),
+    );
+  }
+
+  testWidgets('shows the app bar when vertical space is sufficient',
+      (tester) async {
+    await pumpResponsiveScaffold(tester, height: 800);
+
+    expect(find.byKey(const Key('login-page-app-bar')), findsOneWidget);
+  });
+
+  testWidgets('hides the app bar when vertical space is insufficient',
+      (tester) async {
+    await pumpResponsiveScaffold(tester, height: 560);
+
+    expect(find.byKey(const Key('login-page-app-bar')), findsNothing);
+    expect(find.byType(Form), findsOneWidget);
+  });
+
+  testWidgets('hides the app bar while the keyboard is visible',
+      (tester) async {
+    await pumpResponsiveScaffold(tester, height: 800, keyboardInset: 300);
+
+    expect(find.byKey(const Key('login-page-app-bar')), findsNothing);
+    expect(find.byType(Form), findsOneWidget);
+  });
+}
