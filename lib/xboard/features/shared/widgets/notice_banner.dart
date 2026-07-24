@@ -11,6 +11,7 @@ import 'package:url_launcher/url_launcher.dart';
 import 'package:fl_clash/xboard/features/notice/notice.dart';
 import '../styles/markdown_styles.dart';
 import '../styles/html_styles.dart';
+import '../utils/tv_focus_restoration.dart';
 
 /// 通知内容渲染类型
 enum NoticeRenderType {
@@ -218,8 +219,10 @@ class _NoticeBannerState extends ConsumerState<NoticeBanner>
     final noticeState = ref.read(noticeProvider);
     if (noticeState.visibleNotices.isEmpty) return;
 
-    // 在打开对话框前移除焦点
-    FocusScope.of(context).unfocus();
+    final previousFocus = TvFocusRestoration.capture();
+    if (!system.isTV) {
+      FocusScope.of(context).unfocus();
+    }
 
     showDialog(
       context: context,
@@ -231,8 +234,10 @@ class _NoticeBannerState extends ConsumerState<NoticeBanner>
         },
       ),
     ).then((_) {
-      // 对话框关闭后也确保移除焦点
-      if (mounted) {
+      if (!mounted) return;
+      if (system.isTV) {
+        TvFocusRestoration.restore(context, previousFocus);
+      } else {
         FocusScope.of(context).unfocus();
       }
     });
@@ -337,7 +342,7 @@ class _NoticeDetailDialogState extends State<NoticeDetailDialog>
       onPopInvokedWithResult: (didPop, result) {
         if (didPop) {
           Future.microtask(() {
-            if (context.mounted) {
+            if (context.mounted && !system.isTV) {
               FocusScope.of(context).unfocus();
             }
           });
@@ -448,7 +453,9 @@ class _NoticeDetailDialogState extends State<NoticeDetailDialog>
             color: Colors.transparent,
             child: InkWell(
               onTap: () {
-                FocusScope.of(context).unfocus();
+                if (!system.isTV) {
+                  FocusScope.of(context).unfocus();
+                }
                 Navigator.of(context).pop();
               },
               borderRadius: BorderRadius.circular(12),

@@ -15,6 +15,8 @@ class XBInputField extends StatelessWidget {
   final void Function(String)? onChanged;
   final ValueChanged<String>? onFieldSubmitted;
   final bool enabled;
+  final FocusNode? focusNode;
+  final KeyEventResult Function(FocusNode node, KeyEvent event)? onKeyEvent;
   const XBInputField({
     super.key,
     required this.controller,
@@ -30,12 +32,16 @@ class XBInputField extends StatelessWidget {
     this.onChanged,
     this.onFieldSubmitted,
     this.enabled = true,
+    this.focusNode,
+    this.onKeyEvent,
   });
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
     final isDark = Theme.of(context).brightness == Brightness.dark;
     return TVDeferredInput(
+      focusNode: focusNode,
+      onKeyEvent: onKeyEvent,
       builder: (context, focusNode, readOnly, showCursor, beginEditing) {
         return TextFormField(
           focusNode: focusNode,

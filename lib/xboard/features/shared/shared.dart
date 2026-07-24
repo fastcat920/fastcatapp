@@ -6,4 +6,4 @@ library;
 export 'widgets/widgets.dart';
 export 'styles/styles.dart';
 export 'services/diagnostic_bundle_service.dart';
-
+export 'utils/tv_focus_restoration.dart';

@@ -13,37 +13,63 @@ typedef TVDeferredInputBuilder = Widget Function(
 class TVDeferredInput extends StatefulWidget {
   final TVDeferredInputBuilder builder;
   final BorderRadius? borderRadius;
+  final FocusNode? focusNode;
+  final KeyEventResult Function(FocusNode node, KeyEvent event)? onKeyEvent;
 
   const TVDeferredInput({
     super.key,
     required this.builder,
     this.borderRadius,
+    this.focusNode,
+    this.onKeyEvent,
   });
 
   @override
   State<TVDeferredInput> createState() => _TVDeferredInputState();
 }
 
-class _TVDeferredInputState extends State<TVDeferredInput> {
+class _TVDeferredInputState extends State<TVDeferredInput>
+    with WidgetsBindingObserver {
   late final FocusNode _selectFocusNode;
   late final FocusNode _editFocusNode;
   bool _isSelecting = false;
   bool _isEditing = false;
+  bool _wasKeyboardVisible = false;
 
   @override
   void initState() {
     super.initState();
-    _selectFocusNode = FocusNode();
+    WidgetsBinding.instance.addObserver(this);
+    _selectFocusNode = widget.focusNode ?? FocusNode();
     _editFocusNode = FocusNode(canRequestFocus: false);
     _editFocusNode.addListener(_handleEditFocusChange);
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) {
+        _wasKeyboardVisible = View.of(context).viewInsets.bottom > 0;
+      }
+    });
   }
 
   @override
   void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
     _editFocusNode.removeListener(_handleEditFocusChange);
-    _selectFocusNode.dispose();
+    if (widget.focusNode == null) {
+      _selectFocusNode.dispose();
+    }
     _editFocusNode.dispose();
     super.dispose();
+  }
+
+  @override
+  void didChangeMetrics() {
+    if (!mounted || !system.isTV) return;
+    final isKeyboardVisible = View.of(context).viewInsets.bottom > 0;
+    final keyboardWasDismissed = _wasKeyboardVisible && !isKeyboardVisible;
+    _wasKeyboardVisible = isKeyboardVisible;
+    if (keyboardWasDismissed && _isEditing) {
+      _endEditing(hideKeyboard: false);
+    }
   }
 
   void _handleEditFocusChange() {
@@ -64,19 +90,44 @@ class _TVDeferredInputState extends State<TVDeferredInput> {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (mounted) {
         _editFocusNode.requestFocus();
+        SystemChannels.textInput.invokeMethod<void>('TextInput.show');
+      }
+    });
+  }
+
+  void _endEditing({bool hideKeyboard = true}) {
+    if (!_isEditing || !mounted) return;
+    setState(() {
+      _isEditing = false;
+      _editFocusNode.canRequestFocus = false;
+    });
+    _editFocusNode.unfocus();
+    if (hideKeyboard) {
+      SystemChannels.textInput.invokeMethod<void>('TextInput.hide');
+    }
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted && _selectFocusNode.canRequestFocus) {
+        _selectFocusNode.requestFocus();
       }
     });
   }
 
   KeyEventResult _handleKeyEvent(FocusNode node, KeyEvent event) {
     if (event is! KeyDownEvent) return KeyEventResult.ignored;
+    if (_isEditing &&
+        (event.logicalKey == LogicalKeyboardKey.goBack ||
+            event.logicalKey == LogicalKeyboardKey.browserBack ||
+            event.logicalKey == LogicalKeyboardKey.escape)) {
+      _endEditing();
+      return KeyEventResult.handled;
+    }
     if (event.logicalKey == LogicalKeyboardKey.select ||
         event.logicalKey == LogicalKeyboardKey.enter ||
         event.logicalKey == LogicalKeyboardKey.gameButtonA) {
       _beginEditing();
       return KeyEventResult.handled;
     }
-    return KeyEventResult.ignored;
+    return widget.onKeyEvent?.call(node, event) ?? KeyEventResult.ignored;
   }
 
   @override
@@ -108,12 +159,15 @@ class _TVDeferredInputState extends State<TVDeferredInput> {
                   )
                 : Border.all(color: Colors.transparent, width: 2),
           ),
-          child: widget.builder(
-            context,
-            _editFocusNode,
-            !_isEditing,
-            _isEditing,
-            _beginEditing,
+          child: ExcludeFocus(
+            excluding: !_isEditing,
+            child: widget.builder(
+              context,
+              _editFocusNode,
+              !_isEditing,
+              _isEditing,
+              _beginEditing,
+            ),
           ),
         ),
       ),

@@ -14,6 +14,7 @@ import 'package:fl_clash/xboard/adapter/initialization/sdk_provider.dart';
 import 'package:fl_clash/xboard/utils/backend_message_mapper.dart';
 import 'package:fl_clash/xboard/utils/xboard_notification.dart';
 import 'package:fl_clash/xboard/features/auth/utils/login_validation.dart';
+import 'package:flutter/services.dart';
 
 const _gatewayOverrideUrl = String.fromEnvironment('XBOARD_GATEWAY_URL');
 
@@ -27,6 +28,12 @@ class _LoginPageState extends ConsumerState<LoginPage> {
   final _formKey = GlobalKey<FormState>();
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
+  late final FocusNode _emailFocusNode;
+  late final FocusNode _passwordFocusNode;
+  late final FocusNode _rememberFocusNode;
+  late final FocusNode _loginFocusNode;
+  late final FocusNode _registerFocusNode;
+  late final FocusNode _forgotPasswordFocusNode;
   bool _rememberPassword = true;
   bool _isPasswordVisible = false;
   bool _isCheckingWebsite = false;
@@ -38,6 +45,32 @@ class _LoginPageState extends ConsumerState<LoginPage> {
   @override
   void initState() {
     super.initState();
+    _emailFocusNode = FocusNode(debugLabel: 'login-email');
+    _passwordFocusNode = FocusNode(debugLabel: 'login-password');
+    _rememberFocusNode = FocusNode(debugLabel: 'login-remember-password');
+    _loginFocusNode = FocusNode(debugLabel: 'login-submit');
+    _registerFocusNode = FocusNode(debugLabel: 'login-register');
+    _forgotPasswordFocusNode = FocusNode(debugLabel: 'login-forgot-password');
+    _rememberFocusNode.onKeyEvent = (_, event) => _moveTvFocus(
+          event,
+          up: _passwordFocusNode,
+          down: _loginFocusNode,
+        );
+    _loginFocusNode.onKeyEvent = (_, event) => _moveTvFocus(
+          event,
+          up: _rememberFocusNode,
+          down: _registerFocusNode,
+        );
+    _registerFocusNode.onKeyEvent = (_, event) => _moveTvFocus(
+          event,
+          up: _loginFocusNode,
+          right: _forgotPasswordFocusNode,
+        );
+    _forgotPasswordFocusNode.onKeyEvent = (_, event) => _moveTvFocus(
+          event,
+          up: _loginFocusNode,
+          left: _registerFocusNode,
+        );
     _storageService = ref.read(storageServiceProvider);
     _loadSavedCredentials();
     // 根 Application 已在首帧后预热初始化；这里仅在非网关调试模式下兜底。
@@ -46,6 +79,9 @@ class _LoginPageState extends ConsumerState<LoginPage> {
     }
     WidgetsBinding.instance.addPostFrameCallback((_) {
       CustomerServiceHelper.prewarm();
+      if (system.isTV && _emailFocusNode.canRequestFocus) {
+        _emailFocusNode.requestFocus();
+      }
     });
   }
 
@@ -53,7 +89,37 @@ class _LoginPageState extends ConsumerState<LoginPage> {
   void dispose() {
     _emailController.dispose();
     _passwordController.dispose();
+    _emailFocusNode.dispose();
+    _passwordFocusNode.dispose();
+    _rememberFocusNode.dispose();
+    _loginFocusNode.dispose();
+    _registerFocusNode.dispose();
+    _forgotPasswordFocusNode.dispose();
     super.dispose();
+  }
+
+  KeyEventResult _moveTvFocus(
+    KeyEvent event, {
+    FocusNode? up,
+    FocusNode? down,
+    FocusNode? left,
+    FocusNode? right,
+  }) {
+    if (!system.isTV || event is! KeyDownEvent) {
+      return KeyEventResult.ignored;
+    }
+    final target = switch (event.logicalKey) {
+      LogicalKeyboardKey.arrowUp => up,
+      LogicalKeyboardKey.arrowDown => down,
+      LogicalKeyboardKey.arrowLeft => left,
+      LogicalKeyboardKey.arrowRight => right,
+      _ => null,
+    };
+    if (target == null || !target.canRequestFocus) {
+      return KeyEventResult.ignored;
+    }
+    target.requestFocus();
+    return KeyEventResult.handled;
   }
 
   /// 初始化 XBoard（统一入口）
@@ -390,6 +456,11 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                     ),
                     const SizedBox(height: 24),
                     XBInputField(
+                      focusNode: _emailFocusNode,
+                      onKeyEvent: (_, event) => _moveTvFocus(
+                        event,
+                        down: _passwordFocusNode,
+                      ),
                       controller: _emailController,
                       labelText: appLocalizations.xboardEmail,
                       hintText: appLocalizations.xboardEmail,
@@ -407,6 +478,12 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                     ),
                     const SizedBox(height: 16),
                     XBInputField(
+                      focusNode: _passwordFocusNode,
+                      onKeyEvent: (_, event) => _moveTvFocus(
+                        event,
+                        up: _emailFocusNode,
+                        down: _rememberFocusNode,
+                      ),
                       controller: _passwordController,
                       labelText: appLocalizations.xboardPassword,
                       hintText: appLocalizations.xboardPassword,
@@ -463,6 +540,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                                   width: 24,
                                   height: 24,
                                   child: Checkbox(
+                                    focusNode: _rememberFocusNode,
                                     value: _rememberPassword,
                                     onChanged: (value) {
                                       setState(() {
@@ -548,6 +626,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                     ],
                     SizedBox(
                       child: FilledButton(
+                        focusNode: _loginFocusNode,
                         onPressed:
                             (isIniting || userState.isLoading) ? null : _login,
                         style: XbUiButton.filledPrimary(
@@ -607,6 +686,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
                         TextButton.icon(
+                          focusNode: _registerFocusNode,
                           onPressed: isIniting ? null : _navigateToRegister,
                           icon: const Icon(
                             Icons.person_add_outlined,
@@ -616,6 +696,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                         ),
                         const SizedBox(width: 16),
                         TextButton.icon(
+                          focusNode: _forgotPasswordFocusNode,
                           onPressed:
                               isIniting ? null : _navigateToForgotPassword,
                           icon: const Icon(

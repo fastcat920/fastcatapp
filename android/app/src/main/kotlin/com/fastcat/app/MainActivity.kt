@@ -27,6 +27,7 @@ class MainActivity : FlutterActivity() {
         flutterEngine.plugins.add(ServicePlugin)
         flutterEngine.plugins.add(TilePlugin())
         GlobalState.flutterEngine = flutterEngine
+        GlobalState.syncStatus()
     }
 
     override fun onBackPressed() {
@@ -96,7 +97,6 @@ class MainActivity : FlutterActivity() {
     override fun onDestroy() {
         unregisterCustomerServiceBackCallback()
         GlobalState.flutterEngine = null
-        GlobalState.runState.value = RunState.STOP
         super.onDestroy()
     }
 }

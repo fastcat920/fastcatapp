@@ -4,6 +4,7 @@ import 'package:flutter/services.dart';
 import 'package:fl_clash/common/common.dart';
 import 'package:fl_clash/models/models.dart' as fl_models;
 import 'package:fl_clash/providers/providers.dart';
+import 'package:fl_clash/state.dart';
 import 'package:fl_clash/xboard/features/auth/providers/xboard_user_provider.dart';
 import 'package:fl_clash/xboard/features/auth/models/session_termination.dart';
 import 'package:fl_clash/views/config/network.dart';
@@ -537,34 +538,51 @@ class _XBoardHomePageState extends ConsumerState<XBoardHomePage>
     final isDark = Theme.of(context).brightness == Brightness.dark;
     return SizedBox(
       height: 38,
-      child: Consumer(
-        builder: (_, ref, __) {
-          final runTime = ref.watch(runTimeProvider);
-          final isRunning = runTime != null;
-
-          if (!isRunning) {
+      child: ValueListenableBuilder<bool>(
+        valueListenable: globalState.coreStatusReadyNotifier,
+        builder: (context, isCoreStatusReady, _) {
+          if (!isCoreStatusReady) {
             return Center(
               child: Text(
-                AppLocalizations.of(context).notConnected,
+                AppLocalizations.of(context).xboardServiceRecovering,
                 style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                      // fontSize inherited from titleSmall
                       fontWeight: XbFontWeight.bold,
-                      color: Theme.of(context).colorScheme.onSurface,
+                      color: Theme.of(context).colorScheme.onSurfaceVariant,
                     ),
               ),
             );
           }
+          return Consumer(
+            builder: (_, ref, __) {
+              final runTime = ref.watch(runTimeProvider);
+              final isRunning = runTime != null;
 
-          return Center(
-            child: Text(
-              AppLocalizations.of(context).connected,
-              style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                    // fontSize inherited from titleSmall
-                    fontWeight: XbFontWeight.bold,
-                    color:
-                        isDark ? Colors.green.shade300 : Colors.green.shade700,
+              if (!isRunning) {
+                return Center(
+                  child: Text(
+                    AppLocalizations.of(context).notConnected,
+                    style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                          // fontSize inherited from titleSmall
+                          fontWeight: XbFontWeight.bold,
+                          color: Theme.of(context).colorScheme.onSurface,
+                        ),
                   ),
-            ),
+                );
+              }
+
+              return Center(
+                child: Text(
+                  AppLocalizations.of(context).connected,
+                  style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                        // fontSize inherited from titleSmall
+                        fontWeight: XbFontWeight.bold,
+                        color: isDark
+                            ? Colors.green.shade300
+                            : Colors.green.shade700,
+                      ),
+                ),
+              );
+            },
           );
         },
       ),

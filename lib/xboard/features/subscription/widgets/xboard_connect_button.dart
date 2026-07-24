@@ -15,6 +15,7 @@ import 'package:fl_clash/xboard/features/subscription/services/subscription_stat
 import 'package:fl_clash/xboard/features/subscription/widgets/subscription_status_dialog.dart';
 import 'package:fl_clash/xboard/utils/xboard_notification.dart';
 import 'package:fl_clash/xboard/features/connectivity/connectivity.dart';
+import 'package:fl_clash/xboard/features/shared/utils/tv_focus_restoration.dart';
 
 class XBoardConnectButton extends ConsumerStatefulWidget {
   final bool isFloating; // 是否为浮动按钮模式
@@ -37,8 +38,10 @@ class _XBoardConnectButtonState extends ConsumerState<XBoardConnectButton>
   bool _isCheckingSubscription = false;
   bool _isSwitching = false;
   String? _subscriptionCheckLabel;
+  late final FocusNode _tvFocusNode;
 
   bool get _isBusy =>
+      !globalState.coreStatusReadyNotifier.value ||
       _isCheckingSubscription ||
       _isSwitching ||
       globalState.isCoreSwitchingNotifier.value;
@@ -46,6 +49,8 @@ class _XBoardConnectButtonState extends ConsumerState<XBoardConnectButton>
   @override
   void initState() {
     super.initState();
+    _tvFocusNode = FocusNode(debugLabel: 'home-connect');
+    TvFocusRestoration.registerDefault(_tvFocusNode);
     isStart = globalState.appState.runTime != null;
     _controller = AnimationController(
       vsync: this,
@@ -73,12 +78,16 @@ class _XBoardConnectButtonState extends ConsumerState<XBoardConnectButton>
     );
     globalState.isCoreSwitchingNotifier.addListener(_handleCoreSwitching);
     globalState.coreSwitchStatusNotifier.addListener(_handleCoreSwitching);
+    globalState.coreStatusReadyNotifier.addListener(_handleCoreSwitching);
   }
 
   @override
   void dispose() {
+    TvFocusRestoration.unregisterDefault(_tvFocusNode);
+    _tvFocusNode.dispose();
     globalState.isCoreSwitchingNotifier.removeListener(_handleCoreSwitching);
     globalState.coreSwitchStatusNotifier.removeListener(_handleCoreSwitching);
+    globalState.coreStatusReadyNotifier.removeListener(_handleCoreSwitching);
     _controller.dispose();
     super.dispose();
   }
@@ -166,6 +175,9 @@ class _XBoardConnectButtonState extends ConsumerState<XBoardConnectButton>
 
   String _busyLabel(BuildContext context) {
     final l10n = AppLocalizations.of(context);
+    if (!globalState.coreStatusReadyNotifier.value) {
+      return l10n.xboardServiceRecovering;
+    }
     if (_isCheckingSubscription) {
       return _subscriptionCheckLabel ?? l10n.xboardCheckingSubscription;
     }
@@ -401,6 +413,7 @@ class _XBoardConnectButtonState extends ConsumerState<XBoardConnectButton>
             child: Center(
               child: TVFocusable(
                 autofocus: system.isTV,
+                focusNode: _tvFocusNode,
                 borderRadius: BorderRadius.circular(outerSize / 2),
                 onPressed: _isBusy ? null : handleSwitchStart,
                 child: GestureDetector(

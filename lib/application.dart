@@ -268,6 +268,7 @@ class ApplicationState extends ConsumerState<Application>
           if (!mounted) return;
           final ctx = globalState.navigatorKey.currentContext;
           if (ctx == null) return;
+          final previousFocus = TvFocusRestoration.capture();
           showDialog(
             context: ctx,
             builder: (_) => NoticeDetailDialog(
@@ -276,7 +277,12 @@ class ApplicationState extends ConsumerState<Application>
                 ref.read(noticeProvider.notifier).markPopupShown(noticeId);
               },
             ),
-          );
+          ).whenComplete(() {
+            final restoreContext = globalState.navigatorKey.currentContext;
+            if (restoreContext != null && restoreContext.mounted) {
+              TvFocusRestoration.restore(restoreContext, previousFocus);
+            }
+          });
         });
       },
     );
@@ -392,11 +398,17 @@ class ApplicationState extends ConsumerState<Application>
           debugPrint(updateState.forceUpdate
               ? '[Application] 发现强制更新，显示不可关闭弹窗'
               : '[Application] 首次发现普通更新，显示一次更新弹窗');
+          final previousFocus = TvFocusRestoration.capture();
           showDialog(
             context: currentContext,
             barrierDismissible: !updateState.forceUpdate,
             builder: (context) => UpdateDialog(state: updateState),
-          );
+          ).whenComplete(() {
+            final restoreContext = globalState.navigatorKey.currentContext;
+            if (restoreContext != null && restoreContext.mounted) {
+              TvFocusRestoration.restore(restoreContext, previousFocus);
+            }
+          });
         } else if (updateState.error != null) {
           debugPrint('[Application] 自动更新检查失败，忽略错误: ${updateState.error}');
           // 自动检查失败时静默处理，不打扰用户
