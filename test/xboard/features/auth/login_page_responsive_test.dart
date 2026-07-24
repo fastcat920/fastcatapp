@@ -7,6 +7,7 @@ void main() {
     WidgetTester tester, {
     required double height,
     double keyboardInset = 0,
+    bool isDesktop = false,
   }) async {
     await tester.binding.setSurfaceSize(Size(900, height));
     addTearDown(() => tester.binding.setSurfaceSize(null));
@@ -22,6 +23,7 @@ void main() {
               ),
               child: LoginResponsiveScaffold(
                 appBar: AppBar(key: const Key('login-page-app-bar')),
+                isDesktop: isDesktop,
                 body: const Form(
                   child: Text('登录表单'),
                 ),
@@ -54,5 +56,19 @@ void main() {
 
     expect(find.byKey(const Key('login-page-app-bar')), findsNothing);
     expect(find.byType(Form), findsOneWidget);
+  });
+
+  testWidgets('always shows the default-height app bar on desktop',
+      (tester) async {
+    await pumpResponsiveScaffold(
+      tester,
+      height: 560,
+      keyboardInset: 300,
+      isDesktop: true,
+    );
+
+    final appBar = find.byKey(const Key('login-page-app-bar'));
+    expect(appBar, findsOneWidget);
+    expect(tester.getSize(appBar).height, kToolbarHeight);
   });
 }

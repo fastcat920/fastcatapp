@@ -23,19 +23,22 @@ class LoginResponsiveScaffold extends StatelessWidget {
     super.key,
     required this.appBar,
     required this.body,
+    this.isDesktop,
   });
 
   static const fullLayoutMinHeight = 640.0;
 
   final PreferredSizeWidget appBar;
   final Widget body;
+  final bool? isDesktop;
 
   @override
   Widget build(BuildContext context) {
     return LayoutBuilder(
       builder: (context, constraints) {
-        final showPageActions = MediaQuery.viewInsetsOf(context).bottom == 0 &&
-            constraints.maxHeight >= fullLayoutMinHeight;
+        final showPageActions = (isDesktop ?? system.isDesktop) ||
+            (MediaQuery.viewInsetsOf(context).bottom == 0 &&
+                constraints.maxHeight >= fullLayoutMinHeight);
 
         return Scaffold(
           appBar: showPageActions ? appBar : null,
