@@ -76,24 +76,53 @@ void main() {
     expect(suffixFocus.hasFocus, isFalse);
     expect(inputFocus.hasFocus, isTrue);
 
-    await tester.sendKeyEvent(LogicalKeyboardKey.enter);
+    await tester.sendKeyDownEvent(LogicalKeyboardKey.enter);
+    await tester.pump();
+    final keyDownText = tester.widget<EditableText>(find.byType(EditableText));
+    expect(keyDownText.readOnly, isTrue);
+    expect(keyDownText.showCursor, isFalse);
+    expect(controller.text, isEmpty);
+
+    await tester.sendKeyUpEvent(LogicalKeyboardKey.enter);
     await tester.pump();
     final editableText = tester.widget<EditableText>(find.byType(EditableText));
     expect(editableText.readOnly, isFalse);
     expect(editableText.showCursor, isTrue);
+    expect(controller.text, isEmpty);
 
-    await tester.sendKeyEvent(LogicalKeyboardKey.escape);
+    await tester.sendKeyDownEvent(LogicalKeyboardKey.escape);
     await tester.pump();
     final readOnlyText = tester.widget<EditableText>(find.byType(EditableText));
     expect(readOnlyText.readOnly, isTrue);
     expect(readOnlyText.showCursor, isFalse);
     expect(inputFocus.hasFocus, isTrue);
+    await tester.sendKeyUpEvent(LogicalKeyboardKey.escape);
 
     await tester.sendKeyEvent(LogicalKeyboardKey.enter);
     await tester.pump();
     final reopenedText = tester.widget<EditableText>(find.byType(EditableText));
     expect(reopenedText.readOnly, isFalse);
     expect(reopenedText.showCursor, isTrue);
+
+    tester.view.viewInsets = const FakeViewPadding(bottom: 500);
+    await tester.pump();
+
+    await tester.sendKeyDownEvent(LogicalKeyboardKey.escape);
+    await tester.pump();
+    await tester.sendKeyUpEvent(LogicalKeyboardKey.escape);
+    await tester.sendKeyEvent(LogicalKeyboardKey.enter);
+    await tester.pump();
+    final queuedReopenText =
+        tester.widget<EditableText>(find.byType(EditableText));
+    expect(queuedReopenText.readOnly, isTrue);
+
+    tester.view.viewInsets = FakeViewPadding.zero;
+    await tester.pump();
+    await tester.pump();
+    final reopenedAfterHideText =
+        tester.widget<EditableText>(find.byType(EditableText));
+    expect(reopenedAfterHideText.readOnly, isFalse);
+    expect(reopenedAfterHideText.showCursor, isTrue);
 
     tester.view.viewInsets = const FakeViewPadding(bottom: 500);
     await tester.pump();
