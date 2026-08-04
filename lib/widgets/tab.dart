@@ -34,9 +34,9 @@ const double _kContentPressedMinOpacity = 0.2;
 
 const double _kFontSize = 13.0;
 
-const FontWeight _kFontWeight = FontWeight.w500;
+const FontWeight _kFontWeight = FontWeight.w400;
 
-const FontWeight _kHighlightedFontWeight = FontWeight.w600;
+const FontWeight _kHighlightedFontWeight = FontWeight.w500;
 
 const Color _kDisabledContentColor = Color.fromARGB(115, 122, 122, 122);
 

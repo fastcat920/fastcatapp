@@ -1,6 +1,7 @@
 // UI-related utilities barrel.
 export 'color.dart';
 export 'context.dart';
+export 'app_typography.dart';
 export 'icons.dart';
 export 'measure.dart';
 export 'navigation.dart';

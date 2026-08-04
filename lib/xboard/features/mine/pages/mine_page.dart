@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:fl_clash/common/common.dart';
 import 'package:fl_clash/models/models.dart' as fl_models;
 import 'package:fl_clash/providers/providers.dart';
+import 'package:fl_clash/state.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -22,6 +23,8 @@ import 'order_page.dart';
 import 'ticket_page.dart';
 import 'package:fl_clash/xboard/features/docs/pages/docs_page.dart';
 import 'package:fl_clash/xboard/features/payment/pages/recharge_page.dart';
+import 'package:fl_clash/xboard/features/update_check/providers/update_check_provider.dart';
+import 'package:fl_clash/views/about.dart';
 
 class MinePage extends ConsumerStatefulWidget {
   const MinePage({super.key});
@@ -181,7 +184,7 @@ class _MinePageState extends ConsumerState<MinePage>
         title: Text(
           appLocalizations.xboardAccountInfo,
           style: theme.textTheme.titleSmall?.copyWith(
-            fontWeight: FontWeight.w600,
+            fontWeight: XbFontWeight.semibold,
           ),
         ),
         subtitle: Text(
@@ -230,6 +233,7 @@ class _MinePageState extends ConsumerState<MinePage>
         system.isTV;
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
+    final updateState = ref.watch(updateCheckProvider);
     fl_models.SubscriptionInfo? profileSubscriptionInfo =
         currentProfile?.subscriptionInfo;
     if (profileSubscriptionInfo == null &&
@@ -296,8 +300,60 @@ class _MinePageState extends ConsumerState<MinePage>
             const SizedBox(height: 16),
             _buildSectionHeader(appLocalizations.xboardSoftwareSettings, theme),
             _buildSettingsCard(context, isDesktop, theme, isDark),
-            const SizedBox(height: 24),
+            const SizedBox(height: 20),
+            _buildVersionFooter(
+              context,
+              version: globalState.packageInfo.version,
+              hasUpdate: updateState.hasUpdate,
+            ),
+            const SizedBox(height: 8),
           ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildVersionFooter(
+    BuildContext context, {
+    required String version,
+    required bool hasUpdate,
+  }) {
+    final theme = Theme.of(context);
+    return Center(
+      child: InkWell(
+        borderRadius: BorderRadius.circular(16),
+        onTap: () => Navigator.of(context).push(
+          MaterialPageRoute(
+            builder: (_) => Scaffold(
+              appBar: AppBar(title: Text(appLocalizations.about)),
+              body: const AboutView(),
+            ),
+          ),
+        ),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                appLocalizations.updateCheckCurrentVersion('V$version'),
+                style: theme.textTheme.bodySmall?.copyWith(
+                  color: theme.colorScheme.onSurfaceVariant,
+                ),
+              ),
+              if (hasUpdate) ...[
+                const SizedBox(width: 6),
+                Container(
+                  width: 7,
+                  height: 7,
+                  decoration: const BoxDecoration(
+                    color: Colors.redAccent,
+                    shape: BoxShape.circle,
+                  ),
+                ),
+              ],
+            ],
+          ),
         ),
       ),
     );
@@ -525,7 +581,7 @@ class _MinePageState extends ConsumerState<MinePage>
       child: Text(
         title,
         style: theme.textTheme.titleSmall?.copyWith(
-          fontWeight: FontWeight.w600,
+          fontWeight: XbFontWeight.semibold,
           color: theme.colorScheme.onSurfaceVariant,
         ),
       ),
@@ -667,7 +723,7 @@ class _GiftCardSheetState extends ConsumerState<_GiftCardSheet> {
             children: [
               Text(appLocalizations.xboardGiftCardRedeem,
                   style: theme.textTheme.titleMedium
-                      ?.copyWith(fontWeight: FontWeight.bold)),
+                      ?.copyWith(fontWeight: XbFontWeight.bold)),
               const Spacer(),
               IconButton(
                   icon: const Icon(Icons.close),

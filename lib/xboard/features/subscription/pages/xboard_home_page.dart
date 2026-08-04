@@ -4,7 +4,9 @@ import 'package:flutter/services.dart';
 import 'package:fl_clash/common/common.dart';
 import 'package:fl_clash/models/models.dart' as fl_models;
 import 'package:fl_clash/providers/providers.dart';
+import 'package:fl_clash/state.dart';
 import 'package:fl_clash/xboard/features/auth/providers/xboard_user_provider.dart';
+import 'package:fl_clash/xboard/features/auth/models/session_termination.dart';
 import 'package:fl_clash/views/config/network.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -58,9 +60,9 @@ class _XBoardHomePageState extends ConsumerState<XBoardHomePage>
       ref.read(noticeProvider.notifier).fetchNotices();
     });
     ref.listenManual(xboardUserProvider, (previous, next) {
-      if (next.isAuthenticated && next.errorMessage == 'TOKEN_EXPIRED') {
+      if (next.isAuthenticated && isSessionTerminationCode(next.errorMessage)) {
         WidgetsBinding.instance.addPostFrameCallback((_) {
-          _showTokenExpiredDialog();
+          _showTokenExpiredDialog(next.errorMessage!);
         });
       }
       // 注意：登录后订阅下载的 HTTP 重试已在 SubscriptionDownloader 层处理，
@@ -536,34 +538,51 @@ class _XBoardHomePageState extends ConsumerState<XBoardHomePage>
     final isDark = Theme.of(context).brightness == Brightness.dark;
     return SizedBox(
       height: 38,
-      child: Consumer(
-        builder: (_, ref, __) {
-          final runTime = ref.watch(runTimeProvider);
-          final isRunning = runTime != null;
-
-          if (!isRunning) {
+      child: ValueListenableBuilder<bool>(
+        valueListenable: globalState.coreStatusReadyNotifier,
+        builder: (context, isCoreStatusReady, _) {
+          if (!isCoreStatusReady) {
             return Center(
               child: Text(
-                AppLocalizations.of(context).notConnected,
+                AppLocalizations.of(context).xboardServiceRecovering,
                 style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                      // fontSize inherited from titleSmall
-                      fontWeight: FontWeight.bold,
-                      color: Theme.of(context).colorScheme.onSurface,
+                      fontWeight: XbFontWeight.bold,
+                      color: Theme.of(context).colorScheme.onSurfaceVariant,
                     ),
               ),
             );
           }
+          return Consumer(
+            builder: (_, ref, __) {
+              final runTime = ref.watch(runTimeProvider);
+              final isRunning = runTime != null;
 
-          return Center(
-            child: Text(
-              AppLocalizations.of(context).connected,
-              style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                    // fontSize inherited from titleSmall
-                    fontWeight: FontWeight.bold,
-                    color:
-                        isDark ? Colors.green.shade300 : Colors.green.shade700,
+              if (!isRunning) {
+                return Center(
+                  child: Text(
+                    AppLocalizations.of(context).notConnected,
+                    style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                          // fontSize inherited from titleSmall
+                          fontWeight: XbFontWeight.bold,
+                          color: Theme.of(context).colorScheme.onSurface,
+                        ),
                   ),
-            ),
+                );
+              }
+
+              return Center(
+                child: Text(
+                  AppLocalizations.of(context).connected,
+                  style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                        // fontSize inherited from titleSmall
+                        fontWeight: XbFontWeight.bold,
+                        color: isDark
+                            ? Colors.green.shade300
+                            : Colors.green.shade700,
+                      ),
+                ),
+              );
+            },
           );
         },
       ),
@@ -586,7 +605,7 @@ class _XBoardHomePageState extends ConsumerState<XBoardHomePage>
     }
   }
 
-  void _showTokenExpiredDialog() {
+  void _showTokenExpiredDialog(String failureCode) {
     if (!mounted) return;
     if (_isTokenExpiredDialogVisible) return;
     if (!ref.read(xboardUserProvider).isAuthenticated) {
@@ -594,35 +613,52 @@ class _XBoardHomePageState extends ConsumerState<XBoardHomePage>
       return;
     }
     _isTokenExpiredDialogVisible = true;
-    final appLocalizations = AppLocalizations.of(context);
     // 保存外层页面 context 的 navigator 和 router，弹窗 pop 后弹窗 context 已失效
     final outerContext = context;
     showDialog(
       context: context,
-      barrierDismissible: true,
-      builder: (dialogContext) => AlertDialog(
-        title: Text(appLocalizations.xboardTokenExpiredTitle),
-        content: Text(appLocalizations.xboardTokenExpiredContent),
-        actions: [
-          TextButton(
-            onPressed: () async {
-              final userNotifier = ref.read(xboardUserProvider.notifier);
-              // 先关闭对话框
-              if (dialogContext.mounted) {
-                Navigator.of(dialogContext, rootNavigator: true).pop();
-              }
-              // 清除错误状态
-              userNotifier.clearTokenExpiredError();
-              // 处理 Token 过期（清除数据）
-              await userNotifier.handleTokenExpired();
-              // 使用外层 context 导航到登录页（弹窗 context 已被 pop 销毁）
-              if (outerContext.mounted) {
-                GoRouter.of(outerContext).go('/login');
-              }
-            },
-            child: Text(appLocalizations.xboardRelogin),
-          ),
-        ],
+      barrierDismissible: false,
+      builder: (dialogContext) => Consumer(
+        builder: (context, dialogRef, _) {
+          final latestCode = dialogRef.watch(
+                xboardUserProvider.select((state) => state.errorMessage),
+              ) ??
+              failureCode;
+          final appLocalizations = AppLocalizations.of(context);
+          final (dialogTitle, dialogContent) = switch (latestCode) {
+            SessionTerminationCode.deviceKickedByNewLogin => (
+                appLocalizations.xboardDeviceKickedTitle,
+                appLocalizations.xboardDeviceKickedContent,
+              ),
+            SessionTerminationCode.deviceRevoked => (
+                appLocalizations.xboardDeviceSessionRevokedTitle,
+                appLocalizations.xboardDeviceSessionRevokedContent,
+              ),
+            _ => (
+                appLocalizations.xboardTokenExpiredTitle,
+                appLocalizations.xboardTokenExpiredContent,
+              ),
+          };
+          return PopScope(
+            canPop: false,
+            child: _TokenExpiredDialog(
+              title: dialogTitle,
+              content: dialogContent,
+              actionLabel: appLocalizations.xboardRelogin,
+              onRelogin: () async {
+                final userNotifier =
+                    dialogRef.read(xboardUserProvider.notifier);
+                await userNotifier.handleTokenExpired();
+                if (dialogContext.mounted) {
+                  Navigator.of(dialogContext, rootNavigator: true).pop();
+                }
+                if (outerContext.mounted) {
+                  GoRouter.of(outerContext).go('/login');
+                }
+              },
+            ),
+          );
+        },
       ),
     ).whenComplete(() {
       _isTokenExpiredDialogVisible = false;
@@ -633,11 +669,63 @@ class _XBoardHomePageState extends ConsumerState<XBoardHomePage>
   }
 }
 
+class _TokenExpiredDialog extends StatefulWidget {
+  final String title;
+  final String content;
+  final String actionLabel;
+  final Future<void> Function() onRelogin;
+
+  const _TokenExpiredDialog({
+    required this.title,
+    required this.content,
+    required this.actionLabel,
+    required this.onRelogin,
+  });
+
+  @override
+  State<_TokenExpiredDialog> createState() => _TokenExpiredDialogState();
+}
+
+class _TokenExpiredDialogState extends State<_TokenExpiredDialog> {
+  bool _isProcessing = false;
+
+  Future<void> _handleRelogin() async {
+    if (_isProcessing) return;
+    setState(() => _isProcessing = true);
+    try {
+      await widget.onRelogin();
+    } finally {
+      if (mounted) setState(() => _isProcessing = false);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AlertDialog(
+      title: Text(widget.title),
+      content: Text(widget.content),
+      actions: [
+        TextButton(
+          onPressed: _isProcessing ? null : _handleRelogin,
+          child: _isProcessing
+              ? const SizedBox(
+                  width: 18,
+                  height: 18,
+                  child: CircularProgressIndicator(strokeWidth: 2),
+                )
+              : Text(widget.actionLabel),
+        ),
+      ],
+    );
+  }
+}
+
 class _HomeBrandHeader extends ConsumerWidget {
   const _HomeBrandHeader();
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = AppLocalizations.of(context);
     final connectivityState = ref.watch(serviceConnectivityProvider);
     final userState = ref.watch(xboardUserProvider);
     final showServiceBadge = userState.isAuthenticated &&
@@ -646,20 +734,61 @@ class _HomeBrandHeader extends ConsumerWidget {
             connectivityState.consecutiveFailures >= 2);
     final badgeLabel = switch (connectivityState.status) {
       ServiceConnectivityStatus.degraded =>
-        AppLocalizations.of(context).xboardServiceConnectionDegraded,
-      ServiceConnectivityStatus.recovering =>
-        AppLocalizations.of(context).xboardServiceRecovering,
-      ServiceConnectivityStatus.offline =>
-        AppLocalizations.of(context).xboardServiceOfflineCacheMode,
+        l10n.xboardServiceConnectionDegraded,
+      ServiceConnectivityStatus.recovering => l10n.xboardServiceRecovering,
+      ServiceConnectivityStatus.offline => switch (connectivityState.cause) {
+          ServiceConnectivityCause.noNetwork => l10n.xboardServiceNoNetwork,
+          ServiceConnectivityCause.networkRestricted =>
+            l10n.xboardServiceNetworkRestricted,
+          _ => l10n.xboardServiceOfflineCacheMode,
+        },
       ServiceConnectivityStatus.online => '',
     };
-    final badgeIcon = connectivityState.isRecovering
-        ? Icons.sync_outlined
-        : connectivityState.isDegraded
-            ? Icons.cloud_off_outlined
-            : Icons.wifi_off_outlined;
+    final tooltipMessage = switch (connectivityState.status) {
+      ServiceConnectivityStatus.degraded => l10n.xboardServiceDegradedTooltip,
+      ServiceConnectivityStatus.recovering =>
+        l10n.xboardServiceRecoveringTooltip,
+      ServiceConnectivityStatus.offline => switch (connectivityState.cause) {
+          ServiceConnectivityCause.noNetwork =>
+            l10n.xboardServiceNoNetworkTooltip,
+          ServiceConnectivityCause.networkRestricted =>
+            l10n.xboardServiceNetworkRestrictedTooltip,
+          _ => l10n.xboardServiceOfflineCacheTooltip,
+        },
+      ServiceConnectivityStatus.online => '',
+    };
+    final badgeIcon = switch (connectivityState.status) {
+      ServiceConnectivityStatus.recovering => Icons.sync_outlined,
+      ServiceConnectivityStatus.degraded => Icons.cloud_off_outlined,
+      ServiceConnectivityStatus.offline => switch (connectivityState.cause) {
+          ServiceConnectivityCause.noNetwork => Icons.wifi_off_outlined,
+          ServiceConnectivityCause.networkRestricted =>
+            Icons.signal_wifi_statusbar_connected_no_internet_4_outlined,
+          _ => Icons.cloud_off_outlined,
+        },
+      ServiceConnectivityStatus.online => Icons.cloud_done_outlined,
+    };
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
+    final isLocalNetworkFailure = connectivityState.isOffline &&
+        (connectivityState.cause == ServiceConnectivityCause.noNetwork ||
+            connectivityState.cause ==
+                ServiceConnectivityCause.networkRestricted);
+    final badgeForeground = isDark
+        ? theme.colorScheme.onSurface
+        : isLocalNetworkFailure
+            ? const Color(0xFFB3261E)
+            : const Color(0xFF8A5A00);
+    final badgeBackground = isDark
+        ? theme.colorScheme.errorContainer.withValues(alpha: 0.28)
+        : isLocalNetworkFailure
+            ? const Color(0xFFFFEDEA)
+            : const Color(0xFFFFF4E5);
+    final badgeBorder = isDark
+        ? theme.colorScheme.error.withValues(alpha: 0.45)
+        : isLocalNetworkFailure
+            ? const Color(0xFFFFB4AB)
+            : const Color(0xFFFFD08A);
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: [
@@ -676,7 +805,7 @@ class _HomeBrandHeader extends ConsumerWidget {
         Text(
           localizedAppName,
           style: theme.textTheme.titleMedium?.copyWith(
-            fontWeight: FontWeight.w800,
+            fontWeight: XbFontWeight.bold,
             color: theme.colorScheme.onSurface,
           ),
           maxLines: 1,
@@ -684,40 +813,54 @@ class _HomeBrandHeader extends ConsumerWidget {
         ),
         if (showServiceBadge) ...[
           const SizedBox(width: 8),
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-            decoration: BoxDecoration(
-              color: isDark
-                  ? theme.colorScheme.errorContainer.withValues(alpha: 0.28)
-                  : const Color(0xFFFFF4E5),
-              borderRadius: BorderRadius.circular(999),
-              border: Border.all(
-                color: isDark
-                    ? theme.colorScheme.error.withValues(alpha: 0.45)
-                    : const Color(0xFFFFD08A),
+          Tooltip(
+            message: tooltipMessage,
+            triggerMode: TooltipTriggerMode.tap,
+            preferBelow: false,
+            waitDuration: const Duration(milliseconds: 300),
+            showDuration: const Duration(seconds: 6),
+            child: MouseRegion(
+              cursor: SystemMouseCursors.click,
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                decoration: BoxDecoration(
+                  color: badgeBackground,
+                  borderRadius: BorderRadius.circular(999),
+                  border: Border.all(color: badgeBorder),
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(badgeIcon, size: 12, color: badgeForeground),
+                    const SizedBox(width: 4),
+                    Text(
+                      badgeLabel,
+                      style: theme.textTheme.labelSmall?.copyWith(
+                        color: badgeForeground,
+                        fontWeight: XbFontWeight.bold,
+                      ),
+                    ),
+                    const SizedBox(width: 4),
+                    Container(
+                      width: 15,
+                      height: 15,
+                      alignment: Alignment.center,
+                      decoration: BoxDecoration(
+                        color: badgeForeground.withValues(alpha: 0.10),
+                        shape: BoxShape.circle,
+                        border: Border.all(
+                          color: badgeForeground.withValues(alpha: 0.24),
+                        ),
+                      ),
+                      child: Icon(
+                        Icons.question_mark_rounded,
+                        size: 9,
+                        color: badgeForeground,
+                      ),
+                    ),
+                  ],
+                ),
               ),
-            ),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Icon(
-                  badgeIcon,
-                  size: 12,
-                  color: isDark
-                      ? theme.colorScheme.onSurface
-                      : const Color(0xFF8A5A00),
-                ),
-                const SizedBox(width: 4),
-                Text(
-                  badgeLabel,
-                  style: theme.textTheme.labelSmall?.copyWith(
-                    color: isDark
-                        ? theme.colorScheme.onSurface
-                        : const Color(0xFF8A5A00),
-                    fontWeight: FontWeight.w700,
-                  ),
-                ),
-              ],
             ),
           ),
         ],
@@ -963,7 +1106,7 @@ class _NoticeCardContent extends StatelessWidget {
               child: Text(
                 title,
                 style: theme.textTheme.titleSmall?.copyWith(
-                  fontWeight: FontWeight.w700,
+                  fontWeight: XbFontWeight.bold,
                   color: colorScheme.onSurface,
                 ),
                 maxLines: 1,
@@ -976,7 +1119,7 @@ class _NoticeCardContent extends StatelessWidget {
                 dateText,
                 style: theme.textTheme.bodySmall?.copyWith(
                   color: colorScheme.onSurfaceVariant,
-                  fontWeight: FontWeight.w600,
+                  fontWeight: XbFontWeight.semibold,
                 ),
               ),
             ] else if (isLoading)

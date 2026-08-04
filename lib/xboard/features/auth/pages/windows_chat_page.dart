@@ -273,7 +273,7 @@ class _WindowsChatPageState extends State<WindowsChatPage> {
             _localeTag,
           );
     _embedFallbackTimer = Timer(
-      _embedTimeoutDelay,
+      actualUseProxy ? crispProxyFallbackDelay : _embedTimeoutDelay,
       () => unawaited(_handleEmbedTimeout()),
     );
     unawaited(

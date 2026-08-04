@@ -17,17 +17,11 @@ import 'package:fl_clash/xboard/domain/domain.dart';
 import 'package:fl_clash/xboard/features/shared/utils/desktop_webview_window_helper.dart';
 import 'package:fl_clash/xboard/features/shared/styles/styles.dart';
 import '../services/payment_status_poller.dart';
+import '../services/payment_user_agent.dart';
 
 const _logger = FileLogger('payment_webview_page.dart');
 Webview? _desktopPaymentWebview;
 Brightness? _desktopPaymentBrightness;
-
-/// Desktop Chrome UA used on mobile so payment gateways serve the QR-code
-/// page instead of the H5 cashier that tries (and fails) to invoke Alipay /
-/// WeChat via JSBridge.
-const _desktopUserAgent = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) '
-    'AppleWebKit/537.36 (KHTML, like Gecko) '
-    'Chrome/125.0.0.0 Safari/537.36';
 
 /// Unified in-app payment page for all platforms.
 ///
@@ -516,7 +510,11 @@ class _PaymentWebViewPageState extends ConsumerState<PaymentWebViewPage> {
     _beginPageLoading();
     _webViewController = WebViewController()
       ..setJavaScriptMode(JavaScriptMode.unrestricted)
-      ..setUserAgent(_desktopUserAgent)
+      ..setUserAgent(
+        paymentGatewayUserAgentOverride(
+          isMobilePlatform: Platform.isAndroid || Platform.isIOS,
+        ),
+      )
       ..setNavigationDelegate(
         NavigationDelegate(
           onPageStarted: (_) => _beginPageLoading(),

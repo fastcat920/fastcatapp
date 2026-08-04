@@ -1,5 +1,5 @@
+import 'package:fl_clash/xboard/features/shared/styles/font_weights.dart';
 import 'package:flutter/material.dart';
-import 'package:fl_clash/common/common.dart';
 import 'package:fl_clash/l10n/l10n.dart';
 import '../utils/price_calculator.dart';
 
@@ -36,7 +36,7 @@ class PeriodSelector extends StatelessWidget {
             AppLocalizations.of(context).xboardSelectPaymentPeriod,
             style: TextStyle(
               fontSize: 15,
-              fontWeight: FontWeight.w600,
+              fontWeight: XbFontWeight.semibold,
               color: colorScheme.onSurface,
             ),
           ),
@@ -47,44 +47,42 @@ class PeriodSelector extends StatelessWidget {
   }
 
   Widget _buildGridLayout(BuildContext context) {
-    final mediaSize = MediaQuery.sizeOf(context);
-    final screenWidth = mediaSize.width;
-    final baseWidth = 800.0; // 统一基准宽度
-    final scaleFactor = (screenWidth / baseWidth).clamp(0.8, 1.5);
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final crossAxisCount = _columnCountForWidth(constraints.maxWidth);
+        const spacing = 12.0;
 
-    // 与根菜单使用相同判断：左侧根菜单 4 列，底部根菜单 2 列。
-    final useSideNavigation = mediaSize.width > mediaSize.height || system.isTV;
-    final crossAxisCount = useSideNavigation ? 4 : 2;
-
-    // 与余额充值金额卡片保持一致的横向、纵向间距。
-    const spacing = 12.0;
-
-    // 参考充值金额卡片增加上下留白，仅小幅增高周期卡片。
-    final aspectRatio = (2.7 * scaleFactor).clamp(2.25, 3.2);
-
-    return GridView.builder(
-      shrinkWrap: true,
-      physics: const NeverScrollableScrollPhysics(),
-      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-        crossAxisCount: crossAxisCount,
-        childAspectRatio: aspectRatio,
-        crossAxisSpacing: spacing,
-        mainAxisSpacing: spacing,
-      ),
-      itemCount: periods.length,
-      itemBuilder: (context, index) {
-        final period = periods[index];
-        final isSelected = selectedPeriod == period['period'];
-        return _PeriodCard(
-          period: period,
-          isSelected: isSelected,
-          onTap: () => onPeriodSelected(period['period']),
-          couponType: couponType,
-          couponValue: couponValue,
-          scaleFactor: scaleFactor,
+        return GridView.builder(
+          shrinkWrap: true,
+          physics: const NeverScrollableScrollPhysics(),
+          gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+            crossAxisCount: crossAxisCount,
+            mainAxisExtent: 80,
+            crossAxisSpacing: spacing,
+            mainAxisSpacing: spacing,
+          ),
+          itemCount: periods.length,
+          itemBuilder: (context, index) {
+            final period = periods[index];
+            final isSelected = selectedPeriod == period['period'];
+            return _PeriodCard(
+              period: period,
+              isSelected: isSelected,
+              onTap: () => onPeriodSelected(period['period']),
+              couponType: couponType,
+              couponValue: couponValue,
+            );
+          },
         );
       },
     );
+  }
+
+  int _columnCountForWidth(double width) {
+    if (width >= 840) return 4;
+    if (width >= 560) return 3;
+    if (width >= 320) return 2;
+    return 1;
   }
 }
 
@@ -94,7 +92,6 @@ class _PeriodCard extends StatelessWidget {
   final VoidCallback onTap;
   final int? couponType;
   final int? couponValue;
-  final double scaleFactor;
 
   const _PeriodCard({
     required this.period,
@@ -102,7 +99,6 @@ class _PeriodCard extends StatelessWidget {
     required this.onTap,
     this.couponType,
     this.couponValue,
-    this.scaleFactor = 1.0,
   });
 
   @override
@@ -122,16 +118,16 @@ class _PeriodCard extends StatelessWidget {
     final hasDiscount =
         isSelected && couponType != null && displayPrice < periodPrice;
 
-    // 根据屏幕大小动态调整尺寸
-    final padding = (6 * scaleFactor).clamp(4.0, 10.0);
-    final borderRadius = isDark ? (8 * scaleFactor).clamp(6.0, 12.0) : 12.0;
-    final iconSize = (14 * scaleFactor).clamp(12.0, 18.0);
-    final labelFontSize = (11 * scaleFactor).clamp(10.0, 13.0);
-    final priceFontSize = (13 * scaleFactor).clamp(12.0, 16.0);
-    final originalPriceFontSize = (9 * scaleFactor).clamp(8.0, 11.0);
-    final horizontalSpacing = (3 * scaleFactor).clamp(2.0, 5.0);
-    final verticalSpacing = (3 * scaleFactor).clamp(2.0, 5.0);
-    final priceSpacing = (4 * scaleFactor).clamp(3.0, 6.0);
+    // 卡片尺寸由实际内容区宽度决定列数，高度保持稳定，避免平板横屏裁切。
+    const padding = 8.0;
+    const borderRadius = 12.0;
+    const iconSize = 16.0;
+    const labelFontSize = 13.0;
+    const priceFontSize = 15.0;
+    const originalPriceFontSize = 10.0;
+    const horizontalSpacing = 4.0;
+    const verticalSpacing = 4.0;
+    const priceSpacing = 4.0;
     final selectedForeground =
         isDark ? const Color(0xFF1F2937) : colorScheme.onPrimary;
     final unselectedForeground =
@@ -201,7 +197,7 @@ class _PeriodCard extends StatelessWidget {
                       period['label'],
                       style: TextStyle(
                         fontSize: labelFontSize,
-                        fontWeight: FontWeight.bold,
+                        fontWeight: XbFontWeight.bold,
                         color: isSelected
                             ? selectedForeground
                             : unselectedForeground,
@@ -236,7 +232,7 @@ class _PeriodCard extends StatelessWidget {
                       PriceCalculator.formatPrice(displayPrice),
                       style: TextStyle(
                         fontSize: priceFontSize,
-                        fontWeight: FontWeight.bold,
+                        fontWeight: XbFontWeight.bold,
                         color: selectedForeground,
                       ),
                     ),
@@ -247,7 +243,7 @@ class _PeriodCard extends StatelessWidget {
                   PriceCalculator.formatPrice(periodPrice),
                   style: TextStyle(
                     fontSize: priceFontSize,
-                    fontWeight: FontWeight.bold,
+                    fontWeight: XbFontWeight.bold,
                     color:
                         isSelected ? selectedForeground : colorScheme.primary,
                   ),

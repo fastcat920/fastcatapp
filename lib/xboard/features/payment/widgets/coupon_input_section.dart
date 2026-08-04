@@ -41,7 +41,7 @@ class CouponInputSection extends StatelessWidget {
                 AppLocalizations.of(context).xboardCouponOptional,
                 style: TextStyle(
                   fontSize: 15,
-                  fontWeight: FontWeight.w600,
+                  fontWeight: XbFontWeight.semibold,
                   color: colorScheme.onSurface,
                 ),
               ),
@@ -107,7 +107,7 @@ class _DiscountBadge extends StatelessWidget {
             style: const TextStyle(
               color: Colors.white,
               fontSize: 12,
-              fontWeight: FontWeight.bold,
+              fontWeight: XbFontWeight.bold,
             ),
           ),
         ],
@@ -175,7 +175,7 @@ class _CouponTextFieldState extends State<_CouponTextField> {
             style: TextStyle(
               color: colorScheme.onSurface,
               fontSize: 15,
-              fontWeight: FontWeight.w600,
+              fontWeight: XbFontWeight.semibold,
               letterSpacing: 0.5,
             ),
             decoration: InputDecoration(
@@ -280,13 +280,7 @@ class _ValidateButton extends StatelessWidget {
                   color: Theme.of(context).colorScheme.onPrimary,
                 ),
               )
-            : Text(
-                AppLocalizations.of(context).xboardVerify,
-                style: const TextStyle(
-                  fontWeight: FontWeight.bold,
-                  fontSize: 14,
-                ),
-              ),
+            : Text(AppLocalizations.of(context).xboardVerify),
       ),
     );
   }

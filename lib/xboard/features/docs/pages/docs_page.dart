@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 import 'package:flutter/foundation.dart';
+import 'package:fl_clash/xboard/features/shared/styles/font_weights.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:markdown/markdown.dart' as md;
@@ -206,7 +207,7 @@ class _DocsPageState extends ConsumerState<DocsPage>
       ),
       title: Text(
         entry.key,
-        style: const TextStyle(fontWeight: FontWeight.w600),
+        style: const TextStyle(fontWeight: XbFontWeight.semibold),
       ),
       children: entry.value.asMap().entries.map((articleEntry) {
         final article = articleEntry.value;

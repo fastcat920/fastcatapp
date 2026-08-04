@@ -30,6 +30,8 @@ class OrderDetailPage extends ConsumerStatefulWidget {
   final double? discountAmount;
   final double? balanceUsed;
   final bool optimistic;
+  final VoidCallback? onOrderChanged;
+  final VoidCallback? onPaymentSuccess;
 
   const OrderDetailPage({
     super.key,
@@ -41,6 +43,8 @@ class OrderDetailPage extends ConsumerStatefulWidget {
     this.discountAmount,
     this.balanceUsed,
     this.optimistic = false,
+    this.onOrderChanged,
+    this.onPaymentSuccess,
   });
 
   @override
@@ -71,6 +75,20 @@ class _OrderDetailPageState extends ConsumerState<OrderDetailPage>
     onSuccess: _handlePaymentSuccess,
   );
   bool _isPaymentCompleted = false;
+  bool _didNotifyOrderChanged = false;
+  bool _didNotifyPaymentSuccess = false;
+
+  void _notifyOrderChanged() {
+    if (_didNotifyOrderChanged) return;
+    _didNotifyOrderChanged = true;
+    widget.onOrderChanged?.call();
+  }
+
+  void _notifyPaymentSuccess() {
+    if (_didNotifyPaymentSuccess) return;
+    _didNotifyPaymentSuccess = true;
+    widget.onPaymentSuccess?.call();
+  }
 
   @override
   void initState() {
@@ -459,6 +477,7 @@ class _OrderDetailPageState extends ConsumerState<OrderDetailPage>
       clearGetOrdersCache();
       ref.invalidate(getOrderProvider(widget.tradeNo));
       ref.invalidate(getOrdersProvider);
+      _notifyOrderChanged();
       XBoardNotification.showSuccess(l10n.xboardOrderStatusCancelled);
     } catch (e) {
       XBoardNotification.showError(
@@ -508,6 +527,8 @@ class _OrderDetailPageState extends ConsumerState<OrderDetailPage>
       clearGetOrdersCache();
       ref.invalidate(getOrderProvider(widget.tradeNo));
       ref.invalidate(getOrdersProvider);
+      _notifyOrderChanged();
+      _notifyPaymentSuccess();
       XBoardNotification.showSuccess(l10n.xboardPaymentSuccess);
 
       // 后台异步刷新订阅信息，不阻塞 toast 和页面返回
@@ -689,28 +710,22 @@ class _OrderDetailContent extends StatelessWidget {
           child: SingleChildScrollView(
             physics: const AlwaysScrollableScrollPhysics(),
             padding: contentPadding,
-            child: Align(
-              alignment: Alignment.topCenter,
-              child: ConstrainedBox(
-                constraints: const BoxConstraints(maxWidth: 1180),
-                child: useSideNavigation
-                    ? Row(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Expanded(child: leftColumn),
-                          const SizedBox(width: 24),
-                          Expanded(child: rightColumn),
-                        ],
-                      )
-                    : Column(
-                        children: [
-                          leftColumn,
-                          const SizedBox(height: 16),
-                          rightColumn,
-                        ],
-                      ),
-              ),
-            ),
+            child: useSideNavigation
+                ? Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Expanded(child: leftColumn),
+                      const SizedBox(width: 24),
+                      Expanded(child: rightColumn),
+                    ],
+                  )
+                : Column(
+                    children: [
+                      leftColumn,
+                      const SizedBox(height: 16),
+                      rightColumn,
+                    ],
+                  ),
           ),
         );
       },
@@ -1026,7 +1041,7 @@ class _OrderInfoCard extends StatelessWidget {
                 : l10n.xboardPackageAmount,
             value: '¥${pricing.packageAmount.toStringAsFixed(2)}',
             valueFontSize: 14,
-            valueWeight: FontWeight.w700,
+            valueWeight: XbFontWeight.bold,
             valueColor: amountColor,
           ),
           if (isDeposit && pricing.depositBonusAmount > 0) ...[
@@ -1034,7 +1049,7 @@ class _OrderInfoCard extends StatelessWidget {
             _InfoRow(
               label: l10n.xboardRechargeBonus,
               value: '+¥${pricing.depositBonusAmount.toStringAsFixed(2)}',
-              valueWeight: FontWeight.w700,
+              valueWeight: XbFontWeight.bold,
               valueColor: XbUiStatusColor.success(context),
             ),
           ],
@@ -1043,7 +1058,7 @@ class _OrderInfoCard extends StatelessWidget {
             _InfoRow(
               label: l10n.xboardCreditedAmount,
               value: '¥${pricing.depositCreditedAmount!.toStringAsFixed(2)}',
-              valueWeight: FontWeight.w700,
+              valueWeight: XbFontWeight.bold,
               valueColor: XbUiStatusColor.success(context),
             ),
           ],
@@ -1081,7 +1096,7 @@ class _OrderInfoCard extends StatelessWidget {
               label: l10n.xboardUseBalance,
               value: '-¥${pricing.balanceUsed.toStringAsFixed(2)}',
               valueFontSize: 14,
-              valueWeight: FontWeight.w700,
+              valueWeight: XbFontWeight.bold,
               valueColor: amountColor,
             ),
           ],
@@ -1113,7 +1128,7 @@ class _OrderInfoCard extends StatelessWidget {
                 '¥${pricing.payableAmount.toStringAsFixed(2)}',
                 style: Theme.of(context).textTheme.titleLarge?.copyWith(
                       color: amountColor,
-                      fontWeight: FontWeight.w800,
+                      fontWeight: XbFontWeight.heavy,
                     ),
               ),
             ],
@@ -1149,7 +1164,7 @@ class _OrderStatusCard extends StatelessWidget {
                   _statusLabel(context, order?.status),
                   style: Theme.of(context).textTheme.titleMedium?.copyWith(
                         color: color,
-                        fontWeight: FontWeight.w800,
+                        fontWeight: XbFontWeight.bold,
                       ),
                 ),
                 const SizedBox(height: 6),
@@ -1253,7 +1268,7 @@ class _PaymentMethodTile extends StatelessWidget {
                     Text(
                       method.name,
                       style: theme.textTheme.titleSmall?.copyWith(
-                        fontWeight: FontWeight.w700,
+                        fontWeight: XbFontWeight.bold,
                       ),
                     ),
                     if (method.feePercentage > 0) ...[
@@ -1497,7 +1512,7 @@ class _InfoCard extends StatelessWidget {
               Text(
                 title,
                 style: theme.textTheme.titleSmall?.copyWith(
-                  fontWeight: FontWeight.w800,
+                  fontWeight: XbFontWeight.bold,
                 ),
               ),
               const SizedBox(width: 16),
@@ -1562,7 +1577,7 @@ class _InfoRow extends StatelessWidget {
                     color: valueColor ??
                         theme.colorScheme.onSurface.withValues(alpha: 0.48),
                     fontSize: valueFontSize,
-                    fontWeight: valueWeight ?? FontWeight.w600,
+                    fontWeight: valueWeight ?? XbFontWeight.semibold,
                   ),
                 ),
               ),

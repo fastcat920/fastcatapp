@@ -81,7 +81,7 @@ class NoticeHtmlStyles {
               'background-color': backgroundColor,
               'color': foregroundColor,
               'text-decoration': 'none',
-              'font-weight': '600',
+              'font-weight': '500',
               'border':
                   '1px solid ${_colorToHex(isOutline ? colorScheme.primary : Colors.transparent)}',
             };
@@ -114,7 +114,7 @@ class NoticeHtmlStyles {
           case 'h1':
             return {
               'font-size': '${textTheme.titleLarge?.fontSize ?? 22}px',
-              'font-weight': 'bold',
+              'font-weight': '500',
               'color': _colorToHex(colorScheme.onSurface),
               'line-height': '1.3',
               'margin': '16px 0 12px 0',
@@ -122,7 +122,7 @@ class NoticeHtmlStyles {
           case 'h2':
             return {
               'font-size': '${textTheme.titleMedium?.fontSize ?? 16}px',
-              'font-weight': 'bold',
+              'font-weight': '500',
               'color': _colorToHex(colorScheme.onSurface),
               'line-height': '1.3',
               'margin': '14px 0 10px 0',
@@ -130,7 +130,7 @@ class NoticeHtmlStyles {
           case 'h3':
             return {
               'font-size': '${textTheme.bodyLarge?.fontSize ?? 16}px',
-              'font-weight': 'bold',
+              'font-weight': '500',
               'color': _colorToHex(colorScheme.onSurface),
               'line-height': '1.3',
               'margin': '12px 0 8px 0',
@@ -140,7 +140,7 @@ class NoticeHtmlStyles {
           case 'h6':
             return {
               'font-size': '${textTheme.bodyMedium?.fontSize ?? 14}px',
-              'font-weight': element.localName == 'h4' ? 'bold' : '600',
+              'font-weight': '500',
               'color': _colorToHex(colorScheme.onSurface),
               'line-height': '1.3',
               'margin': '10px 0 8px 0',
@@ -201,7 +201,7 @@ class NoticeHtmlStyles {
           case 'strong':
           case 'b':
             return {
-              'font-weight': 'bold',
+              'font-weight': '500',
             };
           case 'em':
           case 'i':

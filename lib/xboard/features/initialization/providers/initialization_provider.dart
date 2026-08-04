@@ -34,6 +34,7 @@ class XBoardInitializationNotifier extends StateNotifier<InitializationState> {
   StreamSubscription<Map<String, dynamic>>? _configSub;
   bool _configListenRequested = false;
   bool _disposed = false;
+  Future<void>? _initializationFuture;
 
   XBoardInitializationNotifier(this.ref) : super(const InitializationState()) {
     _logger.info('[Initialization] Provider 已创建');
@@ -81,14 +82,31 @@ class XBoardInitializationNotifier extends StateNotifier<InitializationState> {
       return;
     }
 
-    // 如果正在初始化，避免重复触发
-    if (state.isInitializing) {
-      _logger.info('[Initialization] ⏳ 正在初始化中，跳过重复触发');
-      return;
+    final inFlight = _initializationFuture;
+    if (inFlight != null) {
+      _logger.info('[Initialization] ⏳ 正在初始化中，复用当前任务');
+      return inFlight;
     }
 
+    final future = _runInitialization();
+    _initializationFuture = future;
+    try {
+      await future;
+    } finally {
+      if (identical(_initializationFuture, future)) {
+        _initializationFuture = null;
+      }
+    }
+  }
+
+  Future<void> _runInitialization() async {
     try {
       _logger.info('[Initialization] 🚀 开始初始化流程');
+      state = state.copyWith(
+        status: InitializationStatus.checkingDomain,
+        errorMessage: null,
+        currentStepDescription: '正在准备初始化...',
+      );
       await _ensureConfigInitialized();
 
       // ========== 步骤 0: 加载远程配置（限时 20 秒） ==========
@@ -254,6 +272,14 @@ class XBoardInitializationNotifier extends StateNotifier<InitializationState> {
   /// 重置状态并重新执行完整的初始化流程
   Future<void> refresh() async {
     _logger.info('[Initialization] 🔄 刷新初始化状态');
+
+    final inFlight = _initializationFuture;
+    if (inFlight != null) {
+      _logger.info('[Initialization] ⏳ 等待当前初始化结束后再刷新');
+      try {
+        await inFlight;
+      } catch (_) {}
+    }
 
     // 重置状态
     state = const InitializationState();

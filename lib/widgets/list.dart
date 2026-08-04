@@ -483,7 +483,7 @@ class ListHeader extends StatelessWidget {
                             .colorScheme
                             .onSurfaceVariant
                             .opacity80,
-                        fontWeight: FontWeight.w600,
+                        fontWeight: FontWeight.w500,
                       ),
                 ),
                 if (subTitle != null)

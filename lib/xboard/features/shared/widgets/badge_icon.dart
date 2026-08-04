@@ -1,3 +1,4 @@
+import 'package:fl_clash/xboard/features/shared/styles/font_weights.dart';
 import 'package:flutter/material.dart';
 
 /// 带未读数标记的图标组件
@@ -50,7 +51,7 @@ class BadgeIcon extends StatelessWidget {
                     style: TextStyle(
                       color: textColor ?? Colors.white,
                       fontSize: 10,
-                      fontWeight: FontWeight.bold,
+                      fontWeight: XbFontWeight.bold,
                     ),
                     textAlign: TextAlign.center,
                   )

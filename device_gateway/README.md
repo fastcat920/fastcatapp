@@ -119,17 +119,25 @@ Clear override:
 `DG_DEVICE_POLICY=strict`
 
 Rejects new devices when the user's active device count reaches the effective
-limit.
+limit. Clients use a lower-frequency heartbeat randomized between 2 and 5
+minutes.
 
 `DG_DEVICE_POLICY=kick_oldest`
 
-Revokes the oldest active device and allows the new device.
+Revokes the oldest active device and allows the new device. Clients keep a
+20–30 second heartbeat so replaced devices are signed out promptly.
 
 ## Production notes
 
-This MVP uses a local JSON file for storage to keep the service dependency-free.
-For production, keep the API surface and replace the store with MySQL/Postgres
-plus a lock around login device admission.
+Set `DG_POSTGRES_DSN` in production. PostgreSQL persistence uses incremental
+upserts for changed users, devices, sessions, and audit records; it does not
+rewrite the full dataset for heartbeats. The JSON file remains available as a
+single-process fallback and initial migration source.
+
+The `deploy/` directory contains a systemd unit for the production path
+`/www/wwwroot/get.fastcat.com`. Install it into `/etc/systemd/system/`, then
+enable the service with `systemctl enable --now device-gateway`. Runtime logs
+are available through `journalctl -u device-gateway` and rotated by journald.
 
 Always set a strong `DG_TOKEN_SECRET`; it is used for session hashing and
 business token encryption at rest.

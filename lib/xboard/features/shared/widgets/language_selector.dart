@@ -1,4 +1,5 @@
 import 'package:fl_clash/providers/providers.dart';
+import 'package:fl_clash/xboard/features/shared/styles/font_weights.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -45,8 +46,9 @@ class LanguageSelector extends ConsumerWidget {
                         color: isSelected
                             ? colorScheme.primary
                             : colorScheme.onSurface,
-                        fontWeight:
-                            isSelected ? FontWeight.w600 : FontWeight.normal,
+                        fontWeight: isSelected
+                            ? XbFontWeight.semibold
+                            : FontWeight.normal,
                       ),
                     ),
                   ),

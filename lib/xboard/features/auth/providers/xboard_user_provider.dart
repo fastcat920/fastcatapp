@@ -78,6 +78,8 @@ class XBoardUserAuthNotifier extends Notifier<UserAuthState> {
   bool _isEnsuringUserSnapshot = false;
   Future<DomainSubscription?>? _accountRefreshFuture;
   int _authGeneration = 0;
+  bool _isTokenExpiryActive = false;
+  bool _isDisconnectingExpiredSession = false;
 
   int _nextAuthGeneration() => ++_authGeneration;
   bool _isAuthGenerationActive(int generation) => generation == _authGeneration;
@@ -90,11 +92,31 @@ class XBoardUserAuthNotifier extends Notifier<UserAuthState> {
     final hasToken = ref.read(initialTokenProvider);
     final initialSnapshot = ref.read(initialUserSnapshotProvider);
 
+    // Token 过期提示存在期间，如果外部入口（托盘、快捷开关等）重新建立连接，
+    // 立即再次断开，避免失效会话继续使用代理。
+    ref.listen(runTimeProvider, (_, next) {
+      if (_isTokenExpiryActive && next != null) {
+        unawaited(_disconnectExpiredSession());
+      }
+    });
+
     // 监听 SDK 401 事件：任意接口返回 401 时，若当前已登录则提示用户重新登录
-    final sub = XBoardAuthEvents.onUnauthorized.listen((_) {
+    final sub = XBoardAuthEvents.onUnauthorized.listen((event) {
       if (state.isAuthenticated) {
-        _logger.warning('SDK 检测到 401，token 已失效，提示用户重新登录');
-        _showTokenExpiredDialog();
+        final code = switch (event.reason) {
+          AuthFailureReason.deviceKickedByNewLogin =>
+            SessionTerminationCode.deviceKickedByNewLogin,
+          AuthFailureReason.deviceRevoked =>
+            SessionTerminationCode.deviceRevoked,
+          AuthFailureReason.deviceSessionExpired =>
+            SessionTerminationCode.deviceSessionExpired,
+          AuthFailureReason.tokenExpired => SessionTerminationCode.tokenExpired,
+          AuthFailureReason.unauthorized => SessionTerminationCode.tokenExpired,
+        };
+        _logger.warning(
+          'SDK 检测到认证失败: code=${event.code ?? code}, reason=${event.reason}',
+        );
+        _showTokenExpiredDialog(code: code);
       }
     });
     ref.onDispose(sub.cancel);
@@ -363,17 +385,10 @@ class XBoardUserAuthNotifier extends Notifier<UserAuthState> {
           _logger.info('Token验证成功，静默更新用户数据');
           await _silentUpdateUserData(generation);
         } catch (e) {
-          final errStr = e.toString().toLowerCase();
-          // 只有明确的 401/auth 错误才判定 token 失效
-          // 网络错误、超时、连接失败等不弹"登录过期"，避免误伤离线用户
-          final isAuthError = errStr.contains('401') ||
-              errStr.contains('unauthorized') ||
-              errStr.contains('unauthenticated') ||
-              errStr.contains('token') ||
-              errStr.contains('auth');
-          if (isAuthError) {
-            _logger.info('Token验证失败（auth错误），显示登录过期提示: $e');
-            _showTokenExpiredDialog();
+          final code = sessionTerminationCodeFromError(e);
+          if (code != null) {
+            _logger.info('Token验证失败（auth错误），显示会话终止提示: $e');
+            _showTokenExpiredDialog(code: code);
           } else {
             _logger.info('Token验证失败（网络/其他错误），保持当前登录状态: $e');
           }
@@ -451,21 +466,78 @@ class XBoardUserAuthNotifier extends Notifier<UserAuthState> {
     }
   }
 
-  void _showTokenExpiredDialog() {
+  void _showTokenExpiredDialog({
+    String code = SessionTerminationCode.tokenExpired,
+  }) {
+    if (!state.isAuthenticated) return;
+    if (_isTokenExpiryActive) {
+      final preferred = preferSpecificSessionTerminationCode(
+        state.errorMessage,
+        code,
+      );
+      if (preferred != state.errorMessage) {
+        state = state.copyWith(errorMessage: preferred);
+      }
+      return;
+    }
+    _isTokenExpiryActive = true;
     state = state.copyWith(
-      errorMessage: 'TOKEN_EXPIRED', // 特殊标记，UI层检测到后显示对话框
+      errorMessage: code,
     );
+    unawaited(_disconnectExpiredSession());
+  }
+
+  Future<void> _disconnectExpiredSession() async {
+    if (_isDisconnectingExpiredSession) return;
+    _isDisconnectingExpiredSession = true;
+    _logger.warning('登录状态已过期，立即断开代理连接');
+    try {
+      const retryInterval = Duration(milliseconds: 250);
+      const maxAttempts = 40;
+      for (var attempt = 0; attempt < maxAttempts; attempt++) {
+        final controller = globalState.appController;
+        if (controller.isCoreSwitching) {
+          await Future.delayed(retryInterval);
+          continue;
+        }
+
+        final isConnected = ref.read(runTimeProvider) != null ||
+            globalState.appState.runTime != null;
+        if (!isConnected) {
+          _logger.info('登录过期断开检查完成：当前未连接');
+          return;
+        }
+
+        try {
+          final stopped = await controller.updateStatus(false);
+          if (stopped) {
+            _logger.info('登录过期后已断开代理连接');
+            return;
+          }
+        } catch (e) {
+          _logger.error('登录过期断开连接失败，将重试: $e');
+        }
+        await Future.delayed(retryInterval);
+      }
+      _logger.error('登录过期后未能在限定时间内确认连接已断开');
+    } finally {
+      _isDisconnectingExpiredSession = false;
+    }
   }
 
   void clearTokenExpiredError() {
-    if (state.errorMessage == 'TOKEN_EXPIRED') {
+    if (isSessionTerminationCode(state.errorMessage)) {
       state = state.copyWith(errorMessage: null);
     }
   }
 
   Future<void> handleTokenExpired() async {
     _logger.info('处理token过期，执行统一会话清理');
-    await logout(allowWhenServiceUnavailable: true);
+    try {
+      await logout(allowWhenServiceUnavailable: true);
+    } finally {
+      _isTokenExpiryActive = false;
+    }
   }
 
   /// 根据 Supabase 查询结果决定走哪个 OSS 源

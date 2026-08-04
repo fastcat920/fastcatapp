@@ -6,6 +6,7 @@ import 'package:fl_clash/enum/enum.dart';
 import 'package:fl_clash/plugins/app.dart';
 import 'package:fl_clash/state.dart';
 import 'package:fl_clash/widgets/input.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 
 class System {
@@ -28,6 +29,11 @@ class System {
     if (Platform.isAndroid) {
       _isTV = await app?.isTV() ?? false;
     }
+  }
+
+  @visibleForTesting
+  void setTVForTesting(bool value) {
+    _isTV = value;
   }
 
   bool get isDesktop =>

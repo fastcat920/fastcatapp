@@ -1705,6 +1705,12 @@ class MessageLookup extends MessageLookupByLibrary {
     "xboardDeviceHistoryHint": MessageLookupByLibrary.simpleMessage(
       "Only removal records within 90 days are kept. Older records will be automatically cleaned up.",
     ),
+    "xboardDeviceKickedContent": MessageLookupByLibrary.simpleMessage(
+      "This account signed in on another device, so this device has been disconnected. Sign in again or manage your devices to continue.",
+    ),
+    "xboardDeviceKickedTitle": MessageLookupByLibrary.simpleMessage(
+      "Device Signed Out",
+    ),
     "xboardDeviceLabelId": MessageLookupByLibrary.simpleMessage("Device ID"),
     "xboardDeviceLabelLastIp": MessageLookupByLibrary.simpleMessage("Last IP"),
     "xboardDeviceLabelLastOnline": MessageLookupByLibrary.simpleMessage(
@@ -1741,6 +1747,12 @@ class MessageLookup extends MessageLookupByLibrary {
       "Device removed",
     ),
     "xboardDeviceRevoked": MessageLookupByLibrary.simpleMessage("Removed"),
+    "xboardDeviceSessionRevokedContent": MessageLookupByLibrary.simpleMessage(
+      "This device\'s login access was removed and its connection was stopped. Sign in again to continue.",
+    ),
+    "xboardDeviceSessionRevokedTitle": MessageLookupByLibrary.simpleMessage(
+      "Device Removed",
+    ),
     "xboardDeviceSummary": m38,
     "xboardDeviceUnit": m39,
     "xboardDeviceUnknown": MessageLookupByLibrary.simpleMessage("Unknown"),
@@ -1837,6 +1849,12 @@ class MessageLookup extends MessageLookupByLibrary {
     ),
     "xboardDiagnosticSuggestion": MessageLookupByLibrary.simpleMessage(
       "Suggestion",
+    ),
+    "xboardDiagnosticSuggestionNetwork": MessageLookupByLibrary.simpleMessage(
+      "Check Wi-Fi, Ethernet, or system network settings first, then rerun diagnostics after connectivity is restored.",
+    ),
+    "xboardDiagnosticSuggestionNode": MessageLookupByLibrary.simpleMessage(
+      "The local network is available, but the current node route is unhealthy. Switch nodes and rerun diagnostics.",
     ),
     "xboardDiagnosticSuggestionNone": MessageLookupByLibrary.simpleMessage(
       "The current connection is working normally; no action is required.",
@@ -2147,6 +2165,10 @@ class MessageLookup extends MessageLookupByLibrary {
         MessageLookupByLibrary.simpleMessage(
           "The local network appears abnormal or unreachable.",
         ),
+    "xboardNetworkDiagnosticsConclusionNoNetwork":
+        MessageLookupByLibrary.simpleMessage(
+          "This device has no usable network connection. The proxy core is running, but the local network or internet is unreachable. Check Wi-Fi, Ethernet, or system network settings.",
+        ),
     "xboardNetworkDiagnosticsConclusionNodeDns":
         MessageLookupByLibrary.simpleMessage(
           "The selected node domain could not be resolved on the current network.",
@@ -2359,6 +2381,12 @@ class MessageLookup extends MessageLookupByLibrary {
     ),
     "xboardNewPeriodFailed": MessageLookupByLibrary.simpleMessage(
       "Could not start a new traffic period. Try again later.",
+    ),
+    "xboardNewPeriodInsufficientDuration": MessageLookupByLibrary.simpleMessage(
+      "Your plan does not have enough remaining time to start a new traffic period.",
+    ),
+    "xboardNewPeriodNotAllowed": MessageLookupByLibrary.simpleMessage(
+      "This plan does not allow starting a new traffic period.",
     ),
     "xboardNewPeriodResultUncertainContent": MessageLookupByLibrary.simpleMessage(
       "The network response was interrupted, so the new traffic period cannot be confirmed yet. Check the result instead of submitting again.",
@@ -2770,11 +2798,32 @@ class MessageLookup extends MessageLookupByLibrary {
     "xboardServiceConnectionDegraded": MessageLookupByLibrary.simpleMessage(
       "Service connection unstable",
     ),
+    "xboardServiceDegradedTooltip": MessageLookupByLibrary.simpleMessage(
+      "A business request failed. The client is checking the local network and business gateways.",
+    ),
+    "xboardServiceNetworkRestricted": MessageLookupByLibrary.simpleMessage(
+      "Network access restricted",
+    ),
+    "xboardServiceNetworkRestrictedTooltip": MessageLookupByLibrary.simpleMessage(
+      "A network interface is present, but both public internet checks and business gateways are unreachable. The proxy may not work. Check network restrictions or DNS, or run network diagnostics.",
+    ),
+    "xboardServiceNoNetwork": MessageLookupByLibrary.simpleMessage(
+      "Local network unavailable",
+    ),
+    "xboardServiceNoNetworkTooltip": MessageLookupByLibrary.simpleMessage(
+      "This device has no usable network connection, so the proxy cannot work either. Check Wi-Fi, mobile data, or Ethernet.",
+    ),
     "xboardServiceOfflineCacheMode": MessageLookupByLibrary.simpleMessage(
       "Offline cache mode",
     ),
+    "xboardServiceOfflineCacheTooltip": MessageLookupByLibrary.simpleMessage(
+      "The local internet connection is working, but the business service is temporarily unreachable. The proxy can continue using cached subscriptions and nodes, while login, plans, and payments may be unavailable. Offline cache mode ends automatically after recovery.",
+    ),
     "xboardServiceRecovering": MessageLookupByLibrary.simpleMessage(
       "Restoring connection",
+    ),
+    "xboardServiceRecoveringTooltip": MessageLookupByLibrary.simpleMessage(
+      "The network has recovered. The client is confirming business gateway availability.",
     ),
     "xboardSetup": MessageLookupByLibrary.simpleMessage("Setup"),
     "xboardSixMonthCycle": MessageLookupByLibrary.simpleMessage(

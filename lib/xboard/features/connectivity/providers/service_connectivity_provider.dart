@@ -13,6 +13,11 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../models/service_connectivity_state.dart';
 
 const _logger = FileLogger('service_connectivity_provider.dart');
+const _baseNetworkProbeUrls = <String>[
+  'https://connect.rom.miui.com/generate_204',
+  'https://wifi.vivo.com.cn/generate_204',
+  'https://connectivitycheck.platform.hicloud.com/generate_204',
+];
 
 class ServiceConnectivityNotifier
     extends StateNotifier<ServiceConnectivityState> {
@@ -45,7 +50,13 @@ class ServiceConnectivityNotifier
     InitializationState next,
   ) {
     if (next.isFailed) {
-      _setOffline(next.errorMessage ?? 'initialization_failed');
+      _setOffline(
+        next.errorMessage ?? 'initialization_failed',
+        cause: ServiceConnectivityCause.initializationFailed,
+      );
+      unawaited(_refineOfflineCause(
+        next.errorMessage ?? 'initialization_failed',
+      ));
       _scheduleRetry();
       return;
     }
@@ -64,7 +75,10 @@ class ServiceConnectivityNotifier
       _recoveryDebounce?.cancel();
       _retryTimer?.cancel();
       _onlineConfirmationTimer?.cancel();
-      _setOffline('no_network');
+      _setOffline(
+        'no_network',
+        cause: ServiceConnectivityCause.noNetwork,
+      );
       return;
     }
 
@@ -89,9 +103,12 @@ class ServiceConnectivityNotifier
       }
       final refreshedState = ref.read(initializationProvider);
       if (refreshedState.isFailed) {
+        final reason = refreshedState.errorMessage ?? 'initialization_failed';
         _setOffline(
-          refreshedState.errorMessage ?? 'initialization_failed',
+          reason,
+          cause: ServiceConnectivityCause.initializationFailed,
         );
+        unawaited(_refineOfflineCause(reason));
         _scheduleRetry();
         return;
       }
@@ -107,7 +124,10 @@ class ServiceConnectivityNotifier
       final hasNetwork = results.isNotEmpty &&
           !results.every((result) => result == ConnectivityResult.none);
       if (!hasNetwork) {
-        _setOffline('no_network');
+        _setOffline(
+          'no_network',
+          cause: ServiceConnectivityCause.noNetwork,
+        );
         return false;
       }
 
@@ -119,10 +139,20 @@ class ServiceConnectivityNotifier
         reportRequestSuccess();
         return true;
       }
-      _recordFailure('service_probe_failed');
+      final baseNetworkReachable = await _probeBaseNetwork();
+      _recordFailure(
+        'service_probe_failed',
+        cause: classifyServiceConnectivityFailure(
+          hasNetworkInterface: true,
+          baseNetworkReachable: baseNetworkReachable,
+        ),
+      );
       return false;
     } catch (error) {
-      _recordFailure(error.toString());
+      _recordFailure(
+        error.toString(),
+        cause: ServiceConnectivityCause.networkRestricted,
+      );
       return false;
     } finally {
       _isChecking = false;
@@ -139,6 +169,7 @@ class ServiceConnectivityNotifier
         lastOnlineAt: now,
         lastCheckedAt: now,
         clearReason: true,
+        clearCause: true,
       );
       return;
     }
@@ -157,6 +188,7 @@ class ServiceConnectivityNotifier
       lastOnlineAt: confirmedOnline ? now : state.lastOnlineAt,
       lastCheckedAt: now,
       clearReason: true,
+      clearCause: confirmedOnline,
     );
     if (!confirmedOnline) {
       _onlineConfirmationTimer?.cancel();
@@ -177,7 +209,11 @@ class ServiceConnectivityNotifier
     unawaited(verifyNow());
   }
 
-  void _recordFailure(String reason) {
+  void _recordFailure(
+    String reason, {
+    ServiceConnectivityCause cause =
+        ServiceConnectivityCause.gatewayUnavailable,
+  }) {
     final failures = state.consecutiveFailures + 1;
     state = state.copyWith(
       status: failures >= 2
@@ -187,11 +223,15 @@ class ServiceConnectivityNotifier
       consecutiveSuccesses: 0,
       lastCheckedAt: DateTime.now(),
       reason: reason,
+      cause: cause,
     );
     _scheduleRetry();
   }
 
-  void _setOffline(String reason) {
+  void _setOffline(
+    String reason, {
+    required ServiceConnectivityCause cause,
+  }) {
     _onlineConfirmationTimer?.cancel();
     state = state.copyWith(
       status: ServiceConnectivityStatus.offline,
@@ -200,6 +240,7 @@ class ServiceConnectivityNotifier
       consecutiveSuccesses: 0,
       lastCheckedAt: DateTime.now(),
       reason: reason,
+      cause: cause,
     );
   }
 
@@ -211,8 +252,7 @@ class ServiceConnectivityNotifier
       <= 1 => const Duration(seconds: 5),
       2 => const Duration(seconds: 15),
       3 => const Duration(seconds: 30),
-      4 => const Duration(minutes: 1),
-      _ => const Duration(minutes: 5),
+      _ => const Duration(minutes: 1),
     };
     _retryTimer = Timer(delay, recover);
   }
@@ -246,6 +286,72 @@ class ServiceConnectivityNotifier
       const Duration(seconds: 6),
       onTimeout: () => false,
     );
+  }
+
+  Future<void> _refineOfflineCause(String reason) async {
+    try {
+      final results = await Connectivity().checkConnectivity();
+      final hasNetworkInterface = results.isNotEmpty &&
+          !results.every((result) => result == ConnectivityResult.none);
+      final baseNetworkReachable =
+          hasNetworkInterface && await _probeBaseNetwork();
+      if (!state.isOffline || state.reason != reason) return;
+      _setOffline(
+        reason,
+        cause: classifyServiceConnectivityFailure(
+          hasNetworkInterface: hasNetworkInterface,
+          baseNetworkReachable: baseNetworkReachable,
+        ),
+      );
+    } catch (error) {
+      _logger.warning('[ServiceConnectivity] 离线原因复核失败: $error');
+      if (!state.isOffline || state.reason != reason) return;
+      _setOffline(
+        reason,
+        cause: ServiceConnectivityCause.networkRestricted,
+      );
+    }
+  }
+
+  Future<bool> _probeBaseNetwork() async {
+    final completer = Completer<bool>();
+    var remaining = _baseNetworkProbeUrls.length;
+    for (final url in _baseNetworkProbeUrls) {
+      unawaited(_probeBaseEndpoint(url).then((reachable) {
+        if (reachable && !completer.isCompleted) {
+          completer.complete(true);
+          return;
+        }
+        remaining--;
+        if (remaining == 0 && !completer.isCompleted) {
+          completer.complete(false);
+        }
+      }));
+    }
+    return completer.future.timeout(
+      const Duration(seconds: 6),
+      onTimeout: () => false,
+    );
+  }
+
+  Future<bool> _probeBaseEndpoint(String url) async {
+    HttpClient? client;
+    try {
+      client = HttpClient();
+      client.findProxy = (_) => 'DIRECT';
+      client.connectionTimeout = const Duration(seconds: 4);
+      final request = await client.getUrl(Uri.parse(url));
+      request.headers.set(HttpHeaders.userAgentHeader, globalState.ua);
+      final response = await request.close().timeout(
+            const Duration(seconds: 5),
+          );
+      await response.drain<void>();
+      return response.statusCode >= 200 && response.statusCode < 500;
+    } catch (_) {
+      return false;
+    } finally {
+      client?.close(force: true);
+    }
   }
 
   Future<bool> _probeEndpoint(String baseUrl, String apiPrefix) async {

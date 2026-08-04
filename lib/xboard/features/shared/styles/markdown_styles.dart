@@ -1,3 +1,4 @@
+import 'package:fl_clash/xboard/features/shared/styles/font_weights.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_markdown/flutter_markdown.dart';
 
@@ -5,7 +6,7 @@ import 'package:flutter_markdown/flutter_markdown.dart';
 /// 用于统一管理应用内Markdown内容的显示样式
 class NoticeMarkdownStyles {
   /// 获取通知内容的Markdown样式
-  /// 
+  ///
   /// 样式设计原则：
   /// - H1-H6: 降级处理，因为通知标题已在顶部显示
   /// - 正文: 适中的行高和字体大小，保持可读性
@@ -27,7 +28,7 @@ class NoticeMarkdownStyles {
       // ========== 标题层级 (降级处理) ==========
       // H1: 正文主标题 - 使用 titleLarge
       h1: textTheme.titleLarge?.copyWith(
-        fontWeight: FontWeight.bold,
+        fontWeight: XbFontWeight.bold,
         color: colorScheme.onSurface,
         height: 1.3,
         letterSpacing: 0.15,
@@ -35,7 +36,7 @@ class NoticeMarkdownStyles {
 
       // H2: 二级标题 - 使用 titleMedium
       h2: textTheme.titleMedium?.copyWith(
-        fontWeight: FontWeight.bold,
+        fontWeight: XbFontWeight.bold,
         color: colorScheme.onSurface,
         height: 1.3,
         letterSpacing: 0.15,
@@ -43,7 +44,7 @@ class NoticeMarkdownStyles {
 
       // H3: 三级标题 - 使用 bodyLarge
       h3: textTheme.bodyLarge?.copyWith(
-        fontWeight: FontWeight.bold,
+        fontWeight: XbFontWeight.bold,
         color: colorScheme.onSurface,
         height: 1.3,
         letterSpacing: 0.15,
@@ -51,7 +52,7 @@ class NoticeMarkdownStyles {
 
       // H4: 四级标题 - 使用 bodyMedium + bold
       h4: textTheme.bodyMedium?.copyWith(
-        fontWeight: FontWeight.bold,
+        fontWeight: XbFontWeight.bold,
         color: colorScheme.onSurface,
         height: 1.3,
         letterSpacing: 0.1,
@@ -59,7 +60,7 @@ class NoticeMarkdownStyles {
 
       // H5: 五级标题 - 使用 bodyMedium + semibold
       h5: textTheme.bodyMedium?.copyWith(
-        fontWeight: FontWeight.w600,
+        fontWeight: XbFontWeight.semibold,
         color: colorScheme.onSurface,
         height: 1.3,
         letterSpacing: 0.1,
@@ -76,7 +77,7 @@ class NoticeMarkdownStyles {
       // ========== 文本样式 ==========
       // 粗体
       strong: textTheme.bodyMedium?.copyWith(
-        fontWeight: FontWeight.bold,
+        fontWeight: XbFontWeight.bold,
         color: colorScheme.onSurface,
       ),
 
@@ -102,7 +103,7 @@ class NoticeMarkdownStyles {
       // ========== 列表 ==========
       listBullet: textTheme.bodyMedium?.copyWith(
         color: colorScheme.primary,
-        fontWeight: FontWeight.bold,
+        fontWeight: XbFontWeight.bold,
       ),
 
       // ========== 代码 ==========
@@ -156,7 +157,7 @@ class NoticeMarkdownStyles {
 
       // ========== 表格 ==========
       tableHead: textTheme.bodyMedium?.copyWith(
-        fontWeight: FontWeight.bold,
+        fontWeight: XbFontWeight.bold,
         color: colorScheme.onSurface,
       ),
 
@@ -186,4 +187,3 @@ class NoticeMarkdownStyles {
     return getNoticeContentStyle(context);
   }
 }
-

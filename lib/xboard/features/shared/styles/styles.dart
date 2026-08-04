@@ -4,4 +4,4 @@ library;
 export 'markdown_styles.dart';
 export 'html_styles.dart';
 export 'ui_tokens.dart';
-
+export 'font_weights.dart';

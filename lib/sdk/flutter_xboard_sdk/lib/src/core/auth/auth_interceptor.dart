@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:dio/dio.dart';
 import 'token_manager.dart';
 import 'auth_events.dart';
@@ -8,6 +10,7 @@ import '../logging/sdk_logger.dart';
 class AuthInterceptor extends Interceptor {
   final TokenManager _tokenManager;
   final Set<String> _publicEndpoints;
+
   /// 是否在 Authorization 头中使用 Bearer 前缀。
   /// XBoard 使用 Bearer，v2board 需要裸 JWT（无前缀）。
   final bool useBearerPrefix;
@@ -29,7 +32,8 @@ class AuthInterceptor extends Interceptor {
   };
 
   @override
-  void onRequest(RequestOptions options, RequestInterceptorHandler handler) async {
+  void onRequest(
+      RequestOptions options, RequestInterceptorHandler handler) async {
     try {
       // 检查是否为公开端点
       if (_isPublicEndpoint(options.path)) {
@@ -57,10 +61,51 @@ class AuthInterceptor extends Interceptor {
     final statusCode = err.response?.statusCode;
     // Xboard 用 403 表示 token 过期/无效，与 401 同等处理
     if (statusCode == 401 || statusCode == 403) {
-      SdkLogger.w('[AuthInterceptor] $statusCode Unauthorized: ${err.requestOptions.path}');
-      XBoardAuthEvents.notifyUnauthorized();
+      SdkLogger.w(
+          '[AuthInterceptor] $statusCode Unauthorized: ${err.requestOptions.path}');
+      final responseData = _parseResponseData(err.response?.data);
+      final code = responseData?['code']?.toString();
+      final message = responseData?['message']?.toString();
+      final reason = switch (code) {
+        'DEVICE_KICKED_BY_NEW_LOGIN' =>
+          AuthFailureReason.deviceKickedByNewLogin,
+        'DEVICE_REVOKED' => AuthFailureReason.deviceRevoked,
+        'DEVICE_SESSION_EXPIRED' => AuthFailureReason.deviceSessionExpired,
+        'TOKEN_EXPIRED' => AuthFailureReason.tokenExpired,
+        _ => AuthFailureReason.unauthorized,
+      };
+      XBoardAuthEvents.notifyUnauthorized(
+        AuthFailureEvent(reason: reason, code: code, message: message),
+      );
     }
     handler.next(err);
+  }
+
+  /// HttpService 使用 plain 响应类型，错误响应到达认证拦截器时可能仍是
+  /// JSON 字符串。统一解析后才能保留设备被挤下线、后台移除等具体原因。
+  Map<String, dynamic>? _parseResponseData(dynamic data) {
+    if (data is Map<String, dynamic>) {
+      return data;
+    }
+    if (data is Map) {
+      return data.map((key, value) => MapEntry(key.toString(), value));
+    }
+    if (data is List<int>) {
+      data = utf8.decode(data, allowMalformed: true);
+    }
+    if (data is String && data.trim().isNotEmpty) {
+      try {
+        final decoded = jsonDecode(data);
+        if (decoded is Map) {
+          return decoded.map(
+            (key, value) => MapEntry(key.toString(), value),
+          );
+        }
+      } on FormatException {
+        return null;
+      }
+    }
+    return null;
   }
 
   /// 检查是否为公开端点
@@ -69,7 +114,8 @@ class AuthInterceptor extends Interceptor {
   /// 实际请求路径含前缀（如 '/api/v1/passport/auth/login'），用 endsWith 匹配。
   bool _isPublicEndpoint(String path) {
     // 去掉查询参数部分
-    final pathWithoutQuery = path.contains('?') ? path.substring(0, path.indexOf('?')) : path;
+    final pathWithoutQuery =
+        path.contains('?') ? path.substring(0, path.indexOf('?')) : path;
 
     for (final endpoint in _publicEndpoints) {
       if (pathWithoutQuery.endsWith(endpoint)) {

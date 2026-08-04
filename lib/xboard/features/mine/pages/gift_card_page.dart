@@ -72,7 +72,7 @@ class _GiftCardPageState extends ConsumerState<GiftCardPage> {
             children: [
               Center(
                 child: ConstrainedBox(
-                  constraints: const BoxConstraints(maxWidth: 560),
+                  constraints: const BoxConstraints(maxWidth: 700),
                   child: Card(
                     elevation: isDark ? 0 : 1,
                     margin: EdgeInsets.zero,

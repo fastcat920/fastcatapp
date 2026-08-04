@@ -2,14 +2,18 @@ package main
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
+	"log"
 	"net/http"
 	"net/http/httptest"
 	"os"
 	"path/filepath"
 	"strings"
+	"sync"
 	"testing"
 	"time"
 )
@@ -46,6 +50,67 @@ func TestClientIPFallsBackToRemoteAddrWhenUntrusted(t *testing.T) {
 
 	if got := server.clientIP(req); got != "127.0.0.1" {
 		t.Fatalf("clientIP() = %q, want remote addr", got)
+	}
+}
+
+func TestSessionAuthorizationErrorDistinguishesTerminationReason(t *testing.T) {
+	store, _, err := LoadStore(filepath.Join(t.TempDir(), "store.json"), "")
+	if err != nil {
+		t.Fatal(err)
+	}
+	now := time.Now().UTC()
+	server := &Server{store: store}
+
+	tests := []struct {
+		name      string
+		status    string
+		revokedBy string
+		expiresAt time.Time
+		wantCode  string
+	}{
+		{
+			name:      "kicked by a newer device login",
+			status:    statusRevoked,
+			revokedBy: "system:kick_oldest",
+			expiresAt: now,
+			wantCode:  "DEVICE_KICKED_BY_NEW_LOGIN",
+		},
+		{
+			name:      "removed by the user",
+			status:    statusRevoked,
+			revokedBy: "user",
+			expiresAt: now,
+			wantCode:  "DEVICE_REVOKED",
+		},
+		{
+			name:      "session expired naturally",
+			status:    statusExpired,
+			expiresAt: now.Add(-time.Minute),
+			wantCode:  "DEVICE_SESSION_EXPIRED",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			store.Devices["dev_test"] = &DeviceRecord{
+				ID:        "dev_test",
+				Status:    tt.status,
+				RevokedBy: tt.revokedBy,
+			}
+			session := &SessionRecord{
+				DeviceID:  "dev_test",
+				Status:    tt.status,
+				ExpiresAt: tt.expiresAt,
+			}
+			got := server.sessionAuthorizationErrorLocked(session, now)
+			var authErr *sessionAuthorizationError
+			if !errors.As(got, &authErr) {
+				t.Fatalf("error type = %T, want *sessionAuthorizationError", got)
+			}
+			if authErr.code != tt.wantCode {
+				t.Fatalf("code = %q, want %q", authErr.code, tt.wantCode)
+			}
+		})
 	}
 }
 
@@ -158,6 +223,17 @@ func TestDeviceLimitAndSubscriptionRewrite(t *testing.T) {
 	authToken := stringFromNested(firstBody, "data", "auth_data")
 	if !strings.HasPrefix(authToken, "Bearer dg_") {
 		t.Fatalf("expected gateway auth token, got %q", authToken)
+	}
+	if policy := stringFromNested(firstBody, "data", "device_policy"); policy != policyStrict {
+		t.Fatalf("login device_policy = %q, want %q", policy, policyStrict)
+	}
+
+	heartbeatResp, heartbeatBody := postJSON(t, gateway.URL+"/api/v1/user/devices/heartbeat", []byte("{}"), authToken)
+	if heartbeatResp.StatusCode != http.StatusOK {
+		t.Fatalf("heartbeat status = %d body=%s", heartbeatResp.StatusCode, heartbeatBody)
+	}
+	if policy := stringFromNested(heartbeatBody, "data", "device_policy"); policy != policyStrict {
+		t.Fatalf("heartbeat device_policy = %q, want %q", policy, policyStrict)
 	}
 
 	subResp, subBody := getJSON(t, gateway.URL+"/api/v1/user/getSubscribe", authToken)
@@ -559,6 +635,136 @@ func TestAdminAuditLogsPagination(t *testing.T) {
 		pagination["page_size"].(float64) != 30 ||
 		pagination["total_pages"].(float64) != 3 {
 		t.Fatalf("unexpected audit pagination: %#v", pagination)
+	}
+}
+
+func TestBusinessFailoverRetriesSafeRequestOnServerError(t *testing.T) {
+	firstCalls := 0
+	first := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		firstCalls++
+		w.WriteHeader(http.StatusBadGateway)
+	}))
+	defer first.Close()
+
+	secondCalls := 0
+	second := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		secondCalls++
+		w.WriteHeader(http.StatusOK)
+		_, _ = w.Write([]byte("ok"))
+	}))
+	defer second.Close()
+
+	server := &Server{
+		cfg:    Config{BusinessBaseURLs: []string{first.URL, second.URL}},
+		client: &http.Client{Timeout: time.Second},
+		log:    log.New(io.Discard, "", 0),
+	}
+	resp, err := server.tryBusinessURLs(context.Background(), func(baseURL string) (*http.Request, error) {
+		return http.NewRequest(http.MethodGet, baseURL+"/api/v1/user/info", nil)
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer resp.Body.Close()
+	if resp.StatusCode != http.StatusOK || firstCalls != 1 || secondCalls != 1 {
+		t.Fatalf("status=%d firstCalls=%d secondCalls=%d", resp.StatusCode, firstCalls, secondCalls)
+	}
+}
+
+func TestBusinessFailoverDoesNotRetryUnsafeRequestOnServerError(t *testing.T) {
+	first := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(http.StatusInternalServerError)
+	}))
+	defer first.Close()
+
+	secondCalls := 0
+	second := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		secondCalls++
+		w.WriteHeader(http.StatusOK)
+	}))
+	defer second.Close()
+
+	server := &Server{
+		cfg:    Config{BusinessBaseURLs: []string{first.URL, second.URL}},
+		client: &http.Client{Timeout: time.Second},
+		log:    log.New(io.Discard, "", 0),
+	}
+	resp, err := server.tryBusinessURLs(context.Background(), func(baseURL string) (*http.Request, error) {
+		return http.NewRequest(http.MethodPost, baseURL+"/api/v1/user/order/save", strings.NewReader("{}"))
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer resp.Body.Close()
+	if resp.StatusCode != http.StatusInternalServerError || secondCalls != 0 {
+		t.Fatalf("status=%d secondCalls=%d", resp.StatusCode, secondCalls)
+	}
+}
+
+func TestConcurrentAdminReadsDoNotBlockDeviceUpdates(t *testing.T) {
+	store, _, err := LoadStore(filepath.Join(t.TempDir(), "store.json"), "")
+	if err != nil {
+		t.Fatal(err)
+	}
+	now := time.Now().UTC()
+	for i := 0; i < 50; i++ {
+		userID := fmt.Sprintf("usr_%d", i)
+		deviceID := fmt.Sprintf("dev_%d", i)
+		store.Users[userID] = &UserCache{ID: userID, Email: fmt.Sprintf("user%d@example.com", i), CreatedAt: now, UpdatedAt: now}
+		store.Devices[deviceID] = &DeviceRecord{ID: deviceID, UserID: userID, Status: statusActive, CreatedAt: now, LastSeenAt: now}
+	}
+	server := &Server{
+		cfg:   Config{APIPrefix: "/api/v1", AdminToken: "admin-token", DefaultDeviceLimit: 1},
+		store: store,
+		log:   log.New(io.Discard, "", 0),
+	}
+	gateway := httptest.NewServer(server.routes())
+	defer gateway.Close()
+
+	const readers = 12
+	const requestsPerReader = 20
+	errs := make(chan error, readers+1)
+	var wg sync.WaitGroup
+	for i := 0; i < readers; i++ {
+		wg.Add(1)
+		go func() {
+			defer wg.Done()
+			for j := 0; j < requestsPerReader; j++ {
+				req, err := http.NewRequest(http.MethodGet, gateway.URL+"/api/v1/admin/users?page=1&page_size=30", nil)
+				if err != nil {
+					errs <- err
+					return
+				}
+				req.Header.Set("X-Admin-Token", "admin-token")
+				resp, err := http.DefaultClient.Do(req)
+				if err != nil {
+					errs <- err
+					return
+				}
+				_, _ = io.Copy(io.Discard, resp.Body)
+				_ = resp.Body.Close()
+				if resp.StatusCode != http.StatusOK {
+					errs <- fmt.Errorf("admin status %d", resp.StatusCode)
+					return
+				}
+			}
+		}()
+	}
+	wg.Add(1)
+	go func() {
+		defer wg.Done()
+		for i := 0; i < readers*requestsPerReader; i++ {
+			store.mu.Lock()
+			store.Devices["dev_0"].LastSeenAt = time.Now().UTC()
+			store.mu.Unlock()
+		}
+	}()
+	wg.Wait()
+	close(errs)
+	for err := range errs {
+		if err != nil {
+			t.Fatal(err)
+		}
 	}
 }
 

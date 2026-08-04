@@ -192,7 +192,7 @@ class _SubscriptionStatusDialogState extends State<SubscriptionStatusDialog> {
           Text(
             AppLocalizations.of(context).xboardAfterPurchasingPlan,
             style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                  fontWeight: FontWeight.w600,
+                  fontWeight: XbFontWeight.semibold,
                   color: Theme.of(context).colorScheme.primary,
                 ),
           ),
@@ -262,7 +262,7 @@ class _SubscriptionStatusDialogState extends State<SubscriptionStatusDialog> {
               Text(
                 title,
                 style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                      fontWeight: FontWeight.w600,
+                      fontWeight: XbFontWeight.semibold,
                     ),
               ),
               Text(
@@ -295,7 +295,9 @@ class _SubscriptionStatusDialogState extends State<SubscriptionStatusDialog> {
                     setState(() => _isRefreshing = true);
                     try {
                       await onRefresh?.call();
-                      if (mounted) Navigator.of(context).pop('refresh');
+                      if (context.mounted) {
+                        Navigator.of(context).pop('refresh');
+                      }
                     } finally {
                       if (mounted) setState(() => _isRefreshing = false);
                     }

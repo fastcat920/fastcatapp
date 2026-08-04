@@ -1,6 +1,8 @@
 import 'package:fl_clash/common/common.dart';
 import 'package:fl_clash/l10n/l10n.dart';
 import 'package:fl_clash/widgets/widgets.dart';
+import 'package:fl_clash/xboard/features/update_check/providers/update_check_provider.dart';
+import 'package:fl_clash/xboard/features/shared/styles/font_weights.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -23,6 +25,9 @@ class DesktopNavigationRail extends ConsumerWidget {
     final colorScheme = Theme.of(context).colorScheme;
     final isDark = colorScheme.brightness == Brightness.dark;
     final backgroundColor = isDark ? colorScheme.surface : Colors.white;
+    final hasUpdate = ref.watch(
+      updateCheckProvider.select((state) => state.hasUpdate),
+    );
 
     // Material 祖先必须存在，否则 InkWell 的 Material.of 会抛出异常。
     return Material(
@@ -46,7 +51,12 @@ class DesktopNavigationRail extends ConsumerWidget {
 
             // 导航项（含底部齿轮，统一均匀排列）
             Expanded(
-              child: _buildNavigationItems(context, colorScheme, isDark),
+              child: _buildNavigationItems(
+                context,
+                colorScheme,
+                isDark,
+                hasUpdate,
+              ),
             ),
 
             const SizedBox(height: 8),
@@ -56,13 +66,13 @@ class DesktopNavigationRail extends ConsumerWidget {
     ); // Material
   }
 
-  Widget _buildNavigationItems(
-      BuildContext context, ColorScheme colorScheme, bool isDark) {
+  Widget _buildNavigationItems(BuildContext context, ColorScheme colorScheme,
+      bool isDark, bool hasUpdate) {
     final appLocalizations = AppLocalizations.of(context);
 
     Widget buildItem(
         int index, IconData icon, IconData selectedIcon, String label,
-        {VoidCallback? onTap}) {
+        {VoidCallback? onTap, bool showBadge = false}) {
       final isSelected = onTap == null && index == selectedIndex;
       final itemChild = SizedBox(
         width: 80,
@@ -71,30 +81,53 @@ class DesktopNavigationRail extends ConsumerWidget {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              AnimatedContainer(
-                duration: const Duration(milliseconds: 200),
-                padding: const EdgeInsets.all(8),
-                decoration: BoxDecoration(
-                  color: isSelected
-                      ? colorScheme.primary
-                          .withValues(alpha: isDark ? 0.22 : 0.12)
-                      : Colors.transparent,
-                  borderRadius: BorderRadius.circular(14),
-                ),
-                child: Icon(
-                  isSelected ? selectedIcon : icon,
-                  color: isSelected
-                      ? colorScheme.primary
-                      : colorScheme.onSurfaceVariant,
-                  size: 24,
-                ),
+              Stack(
+                clipBehavior: Clip.none,
+                children: [
+                  AnimatedContainer(
+                    duration: const Duration(milliseconds: 200),
+                    padding: const EdgeInsets.all(8),
+                    decoration: BoxDecoration(
+                      color: isSelected
+                          ? colorScheme.primary
+                              .withValues(alpha: isDark ? 0.22 : 0.12)
+                          : Colors.transparent,
+                      borderRadius: BorderRadius.circular(14),
+                    ),
+                    child: Icon(
+                      isSelected ? selectedIcon : icon,
+                      color: isSelected
+                          ? colorScheme.primary
+                          : colorScheme.onSurfaceVariant,
+                      size: 24,
+                    ),
+                  ),
+                  if (showBadge)
+                    Positioned(
+                      top: -1,
+                      right: -1,
+                      child: Container(
+                        width: 9,
+                        height: 9,
+                        decoration: BoxDecoration(
+                          color: Colors.redAccent,
+                          shape: BoxShape.circle,
+                          border: Border.all(
+                            color: isDark ? colorScheme.surface : Colors.white,
+                            width: 1.5,
+                          ),
+                        ),
+                      ),
+                    ),
+                ],
               ),
               const SizedBox(height: 3),
               Text(
                 label,
                 style: TextStyle(
                   fontSize: 11,
-                  fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
+                  fontWeight:
+                      isSelected ? XbFontWeight.semibold : FontWeight.normal,
                   color: isSelected
                       ? colorScheme.primary
                       : colorScheme.onSurfaceVariant,
@@ -137,7 +170,8 @@ class DesktopNavigationRail extends ConsumerWidget {
           buildItem(inviteIdx, Icons.group_add_outlined, Icons.group_add,
               appLocalizations.invite),
           buildItem(mineIdx, Icons.person_outline, Icons.person,
-              appLocalizations.xboardMine),
+              appLocalizations.xboardMine,
+              showBadge: hasUpdate),
           if (logCapture)
             buildItem(logsIdx, Icons.list_alt_outlined, Icons.list_alt,
                 appLocalizations.logs),

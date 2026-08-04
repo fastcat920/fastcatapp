@@ -9,7 +9,7 @@ extension TextStyleExtension on TextStyle {
 
   TextStyle get toSoftBold => copyWith(fontWeight: FontWeight.w500);
 
-  TextStyle get toBold => copyWith(fontWeight: FontWeight.bold);
+  TextStyle get toBold => copyWith(fontWeight: FontWeight.w500);
 
   TextStyle get toJetBrainsMono => copyWith(
         fontFamily: FontFamily.jetBrainsMono.value,

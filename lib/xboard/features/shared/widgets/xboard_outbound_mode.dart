@@ -3,6 +3,7 @@ import 'package:fl_clash/enum/enum.dart';
 import 'package:fl_clash/providers/providers.dart';
 import 'package:fl_clash/state.dart';
 import 'package:fl_clash/widgets/widgets.dart';
+import 'package:fl_clash/xboard/features/shared/styles/font_weights.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:fl_clash/xboard/core/core.dart';
@@ -24,8 +25,8 @@ class XBoardOutboundMode extends StatelessWidget {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     return Consumer(
       builder: (context, ref, child) {
-        final mode = ref.watch(
-            patchClashConfigProvider.select((state) => state.mode));
+        final mode =
+            ref.watch(patchClashConfigProvider.select((state) => state.mode));
         final selectedMode = mode == Mode.global ? Mode.global : Mode.rule;
         final l10n = AppLocalizations.of(context);
 
@@ -109,13 +110,10 @@ class _SegmentItem extends StatelessWidget {
         label,
         style: TextStyle(
           fontSize: 13,
-          fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
+          fontWeight: isSelected ? XbFontWeight.semibold : FontWeight.w500,
           color: isSelected
               ? Theme.of(context).colorScheme.onSurface
-              : Theme.of(context)
-                  .colorScheme
-                  .onSurface
-                  .withValues(alpha: 0.45),
+              : Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.45),
         ),
       ),
     );

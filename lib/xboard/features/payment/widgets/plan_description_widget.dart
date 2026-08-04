@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_markdown/flutter_markdown.dart';
 import 'package:flutter_widget_from_html/flutter_widget_from_html.dart';
+import 'package:fl_clash/xboard/features/shared/styles/font_weights.dart';
 
 class PlanDescriptionWidget extends StatelessWidget {
   final String content;
@@ -26,11 +27,27 @@ class PlanDescriptionWidget extends StatelessWidget {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 4),
       child: _isHtml
-          ? HtmlWidget(content, textStyle: textStyle)
+          ? HtmlWidget(
+              content,
+              textStyle: textStyle,
+              customStylesBuilder: (element) {
+                final tag = element.localName;
+                final inlineStyle = element.attributes['style'] ?? '';
+                final declaresBold = RegExp(
+                  r'font-weight\s*:\s*(?:bold|[7-9]00)',
+                  caseSensitive: false,
+                ).hasMatch(inlineStyle);
+                if (tag == 'b' || tag == 'strong' || declaresBold) {
+                  return const {'font-weight': '500'};
+                }
+                return null;
+              },
+            )
           : MarkdownBody(
               data: content,
               styleSheet: MarkdownStyleSheet(
                 p: textStyle,
+                strong: textStyle.copyWith(fontWeight: XbFontWeight.semibold),
                 textAlign: WrapAlignment.center,
               ),
             ),

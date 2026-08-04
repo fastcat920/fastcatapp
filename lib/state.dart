@@ -41,6 +41,7 @@ class GlobalState {
   Color configuredThemeColor = const Color(defaultPrimaryColor);
   DateTime? startTime;
   final isCoreSwitchingNotifier = ValueNotifier<bool>(false);
+  final coreStatusReadyNotifier = ValueNotifier<bool>(false);
   final coreSwitchStatusNotifier =
       ValueNotifier<CoreSwitchStatus>(CoreSwitchStatus.idle);
 
@@ -160,7 +161,7 @@ class GlobalState {
           throw StateError('系统 VPN 返回启动失败');
         }
       }
-      startTime = DateTime.now();
+      startTime ??= DateTime.now();
       startUpdateTasks(tasks);
       return true;
     } catch (e) {

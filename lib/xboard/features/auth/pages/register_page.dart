@@ -236,7 +236,7 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
                     appLocalizations.createAccount,
                     style: Theme.of(context).textTheme.headlineMedium?.copyWith(
                           color: colorScheme.onSurface,
-                          fontWeight: FontWeight.bold,
+                          fontWeight: XbFontWeight.bold,
                         ),
                   ),
                 ],
@@ -421,7 +421,7 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
                                     appLocalizations.registerAccount,
                                     style: TextStyle(
                                       fontSize: 16,
-                                      fontWeight: FontWeight.w600,
+                                      fontWeight: XbFontWeight.semibold,
                                     ),
                                   ),
                                 ),
@@ -445,7 +445,7 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
                                 appLocalizations.loginNow,
                                 style: TextStyle(
                                   color: colorScheme.primary,
-                                  fontWeight: FontWeight.w600,
+                                  fontWeight: XbFontWeight.semibold,
                                 ),
                               ),
                             ),

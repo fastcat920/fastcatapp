@@ -253,7 +253,7 @@ class _PlansViewState extends ConsumerState<PlansView> {
                       '¥ ',
                       style: TextStyle(
                         fontSize: 16,
-                        fontWeight: FontWeight.bold,
+                        fontWeight: XbFontWeight.bold,
                         color: theme.colorScheme.primary,
                       ),
                     ),
@@ -261,7 +261,7 @@ class _PlansViewState extends ConsumerState<PlansView> {
                       priceText.replaceFirst('¥', ''),
                       style: TextStyle(
                         fontSize: 28,
-                        fontWeight: FontWeight.bold,
+                        fontWeight: XbFontWeight.bold,
                         color: theme.colorScheme.primary,
                         height: 1,
                       ),
@@ -353,7 +353,7 @@ class _PlansViewState extends ConsumerState<PlansView> {
               value,
               style: TextStyle(
                 fontSize: 13,
-                fontWeight: FontWeight.bold,
+                fontWeight: XbFontWeight.bold,
                 color: Theme.of(context).colorScheme.onSurface,
               ),
               textAlign: TextAlign.center,

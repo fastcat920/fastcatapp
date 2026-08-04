@@ -29,6 +29,9 @@ class RechargePage extends ConsumerStatefulWidget {
 }
 
 class _RechargePageState extends ConsumerState<RechargePage> {
+  static const _depositConfigCacheTtl = Duration(minutes: 5);
+  static final Map<String, _RechargeConfigSnapshot> _configCacheByAccount = {};
+
   final _amountController = TextEditingController();
   List<DepositBonusOption> _depositBonusOptions = const [];
   int? _selectedPresetAmountInCents;
@@ -42,13 +45,20 @@ class _RechargePageState extends ConsumerState<RechargePage> {
   @override
   void initState() {
     super.initState();
-    // 先初始化支付 provider，再后台强刷可用支付方式，避免后台开关变化滞后。
+    // 支付方式由 provider 的 10 分钟缓存兜底，不在每次进入页面时强制刷新。
     final paymentNotifier = ref.read(xboardPaymentProvider.notifier);
-    unawaited(
-      paymentNotifier.loadPaymentMethods(forceRefresh: true),
-    );
+    unawaited(paymentNotifier.loadPaymentMethods());
     unawaited(paymentNotifier.loadPendingOrders(updateUiState: false));
-    unawaited(_loadDepositBonusOptions());
+
+    final cachedConfig = _readCachedConfig();
+    if (cachedConfig == null) {
+      unawaited(_loadDepositBonusOptions());
+    } else {
+      _applyCachedConfig(cachedConfig);
+      if (cachedConfig.isExpired(_depositConfigCacheTtl)) {
+        unawaited(_loadDepositBonusOptions(showLoading: false));
+      }
+    }
   }
 
   @override
@@ -70,8 +80,46 @@ class _RechargePageState extends ConsumerState<RechargePage> {
     return (value * 100).round();
   }
 
-  Future<void> _loadDepositBonusOptions() async {
-    if (mounted) {
+  String? get _accountCacheKey {
+    final userState = ref.read(xboardUserProvider);
+    final email =
+        (userState.email ?? userState.userInfo?.email)?.trim().toLowerCase();
+    return email == null || email.isEmpty ? null : email;
+  }
+
+  _RechargeConfigSnapshot? _readCachedConfig() {
+    final key = _accountCacheKey;
+    return key == null ? null : _configCacheByAccount[key];
+  }
+
+  void _applyCachedConfig(_RechargeConfigSnapshot snapshot) {
+    _depositBonusOptions = snapshot.options;
+    _currencySymbol = snapshot.currencySymbol;
+    _isLoadingDepositBonusOptions = false;
+    _depositBonusOptionsLoadFailed = false;
+  }
+
+  bool _isSameConfig(
+    List<DepositBonusOption> options,
+    String currencySymbol,
+  ) {
+    if (_currencySymbol != currencySymbol ||
+        _depositBonusOptions.length != options.length) {
+      return false;
+    }
+    for (var i = 0; i < options.length; i++) {
+      final current = _depositBonusOptions[i];
+      final next = options[i];
+      if (current.amountInCents != next.amountInCents ||
+          current.bonusInCents != next.bonusInCents) {
+        return false;
+      }
+    }
+    return true;
+  }
+
+  Future<void> _loadDepositBonusOptions({bool showLoading = true}) async {
+    if (mounted && showLoading) {
       setState(() {
         _isLoadingDepositBonusOptions = true;
         _depositBonusOptionsLoadFailed = false;
@@ -100,10 +148,25 @@ class _RechargePageState extends ConsumerState<RechargePage> {
 
       if (!mounted) return;
       final configuredCurrency = data['currency_symbol']?.toString().trim();
+      final currencySymbol =
+          configuredCurrency?.isNotEmpty == true ? configuredCurrency! : '¥';
+      final key = _accountCacheKey;
+      if (key != null) {
+        _configCacheByAccount[key] = _RechargeConfigSnapshot(
+          options: List<DepositBonusOption>.unmodifiable(options),
+          currencySymbol: currencySymbol,
+          savedAt: DateTime.now(),
+        );
+      }
+      final configChanged = !_isSameConfig(options, currencySymbol);
+      if (!configChanged &&
+          !_isLoadingDepositBonusOptions &&
+          !_depositBonusOptionsLoadFailed) {
+        return;
+      }
       setState(() {
         _depositBonusOptions = options;
-        _currencySymbol =
-            configuredCurrency?.isNotEmpty == true ? configuredCurrency! : '¥';
+        _currencySymbol = currencySymbol;
         _isLoadingDepositBonusOptions = false;
         _depositBonusOptionsLoadFailed = false;
         if (_selectedPresetAmountInCents != null &&
@@ -115,10 +178,11 @@ class _RechargePageState extends ConsumerState<RechargePage> {
     } catch (_) {
       if (!mounted) return;
       setState(() {
-        _depositBonusOptions = const [];
-        _selectedPresetAmountInCents = null;
         _isLoadingDepositBonusOptions = false;
-        _depositBonusOptionsLoadFailed = true;
+        if (_readCachedConfig() == null && _depositBonusOptions.isEmpty) {
+          _selectedPresetAmountInCents = null;
+          _depositBonusOptionsLoadFailed = true;
+        }
       });
     }
   }
@@ -144,6 +208,7 @@ class _RechargePageState extends ConsumerState<RechargePage> {
       }
 
       if (!mounted) return;
+      var paymentSucceeded = false;
       await Navigator.of(context).push(
         MaterialPageRoute(
           builder: (_) => OrderDetailPage(
@@ -152,10 +217,11 @@ class _RechargePageState extends ConsumerState<RechargePage> {
             originalPrice: amountCents / 100,
             finalPrice: amountCents / 100,
             balanceUsed: 0,
+            onPaymentSuccess: () => paymentSucceeded = true,
           ),
         ),
       );
-      if (mounted) {
+      if (mounted && paymentSucceeded) {
         unawaited(_refreshUserInfo());
       }
     } catch (e) {
@@ -187,7 +253,7 @@ class _RechargePageState extends ConsumerState<RechargePage> {
         ref
             .read(xboardPaymentProvider.notifier)
             .loadPaymentMethods(forceRefresh: true),
-        _loadDepositBonusOptions(),
+        _loadDepositBonusOptions(showLoading: false),
       ]);
     } finally {
       if (mounted) setState(() => _isRefreshingPage = false);
@@ -316,7 +382,7 @@ class _RechargePageState extends ConsumerState<RechargePage> {
                                   : theme.colorScheme.primary
                                       .withValues(alpha: 0.96),
                               fontSize: 28,
-                              fontWeight: FontWeight.bold,
+                              fontWeight: XbFontWeight.bold,
                             ),
                           ),
                         ),
@@ -339,7 +405,7 @@ class _RechargePageState extends ConsumerState<RechargePage> {
                                 maxLines: 1,
                                 overflow: TextOverflow.ellipsis,
                                 style: theme.textTheme.titleSmall?.copyWith(
-                                  fontWeight: FontWeight.w600,
+                                  fontWeight: XbFontWeight.semibold,
                                   color: balanceContentColor,
                                 ),
                               ),
@@ -393,7 +459,7 @@ class _RechargePageState extends ConsumerState<RechargePage> {
         // 快捷金额
         Text(l10n.xboardSelectRechargeAmount,
             style: theme.textTheme.titleMedium
-                ?.copyWith(fontWeight: FontWeight.bold)),
+                ?.copyWith(fontWeight: XbFontWeight.bold)),
         const SizedBox(height: 12),
         if (_isLoadingDepositBonusOptions)
           const SizedBox(
@@ -466,7 +532,7 @@ class _RechargePageState extends ConsumerState<RechargePage> {
                               '$_currencySymbol${option.amountLabel}',
                               style: TextStyle(
                                 fontSize: 18,
-                                fontWeight: FontWeight.w600,
+                                fontWeight: XbFontWeight.semibold,
                                 color: selected
                                     ? Colors.white
                                     : theme.colorScheme.onSurface,
@@ -498,7 +564,7 @@ class _RechargePageState extends ConsumerState<RechargePage> {
                                 style: const TextStyle(
                                   color: Colors.white,
                                   fontSize: 11,
-                                  fontWeight: FontWeight.w700,
+                                  fontWeight: XbFontWeight.bold,
                                 ),
                               ),
                             ),
@@ -514,7 +580,7 @@ class _RechargePageState extends ConsumerState<RechargePage> {
         // 自定义金额输入
         Text(l10n.xboardCustomRechargeAmount,
             style: theme.textTheme.titleMedium
-                ?.copyWith(fontWeight: FontWeight.bold)),
+                ?.copyWith(fontWeight: XbFontWeight.bold)),
         const SizedBox(height: 12),
         TVDeferredInput(
           borderRadius: BorderRadius.circular(14),
@@ -581,11 +647,7 @@ class _RechargePageState extends ConsumerState<RechargePage> {
                       const Icon(Icons.account_balance_wallet_outlined,
                           size: 19),
                       const SizedBox(width: 8),
-                      Text(
-                        l10n.xboardRechargeNow,
-                        style: const TextStyle(
-                            fontSize: 16, fontWeight: FontWeight.w600),
-                      ),
+                      Text(l10n.xboardRechargeNow),
                     ],
                   ),
           ),
@@ -637,6 +699,20 @@ class _RechargePageState extends ConsumerState<RechargePage> {
       ),
     );
   }
+}
+
+class _RechargeConfigSnapshot {
+  final List<DepositBonusOption> options;
+  final String currencySymbol;
+  final DateTime savedAt;
+
+  const _RechargeConfigSnapshot({
+    required this.options,
+    required this.currencySymbol,
+    required this.savedAt,
+  });
+
+  bool isExpired(Duration ttl) => DateTime.now().difference(savedAt) > ttl;
 }
 
 class DepositBonusOption {

@@ -79,7 +79,7 @@ class _WithdrawDialogState extends ConsumerState<WithdrawDialog> {
                     appLocalizations.withdrawRequestSubmitted,
                     style: const TextStyle(
                       fontSize: 18,
-                      fontWeight: FontWeight.bold,
+                      fontWeight: XbFontWeight.bold,
                       color: Colors.green,
                     ),
                     key: const ValueKey('success-text'),
@@ -89,7 +89,7 @@ class _WithdrawDialogState extends ConsumerState<WithdrawDialog> {
                         appLocalizations.xboardSubmitting,
                         style: const TextStyle(
                           fontSize: 20,
-                          fontWeight: FontWeight.bold,
+                          fontWeight: XbFontWeight.bold,
                         ),
                         key: const ValueKey('loading-text'),
                       )
@@ -98,7 +98,7 @@ class _WithdrawDialogState extends ConsumerState<WithdrawDialog> {
                             '¥${availableAmount.toStringAsFixed(2)}'),
                         style: const TextStyle(
                           fontSize: 20,
-                          fontWeight: FontWeight.bold,
+                          fontWeight: XbFontWeight.bold,
                         ),
                         key: const ValueKey('balance-text'),
                       ),

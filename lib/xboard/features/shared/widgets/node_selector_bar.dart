@@ -320,7 +320,7 @@ class _NodeSelectorBarState extends ConsumerState<NodeSelectorBar> {
                       Text(
                         displayName ?? proxy.name,
                         style: theme.textTheme.titleSmall?.copyWith(
-                          fontWeight: FontWeight.w600,
+                          fontWeight: XbFontWeight.semibold,
                           color: colorScheme.primary,
                         ),
                         maxLines: 1,
@@ -377,7 +377,7 @@ class _NodeSelectorBarState extends ConsumerState<NodeSelectorBar> {
                 Text(
                   AppLocalizations.of(context).xboardImportingSubscription,
                   style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                        fontWeight: FontWeight.w600,
+                        fontWeight: XbFontWeight.semibold,
                         color: Theme.of(context).colorScheme.onSurface,
                       ),
                 ),
@@ -431,7 +431,7 @@ class _NodeSelectorBarState extends ConsumerState<NodeSelectorBar> {
                 Text(
                   AppLocalizations.of(context).xboardNoAvailableNodes,
                   style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                        fontWeight: FontWeight.w600,
+                        fontWeight: XbFontWeight.semibold,
                         color: Theme.of(context).colorScheme.onSurface,
                       ),
                 ),
@@ -473,8 +473,9 @@ class _NodeSelectorBarState extends ConsumerState<NodeSelectorBar> {
   }
 
   Future<void> _reloadNodes() async {
-    if (_isReloadingNodes || ref.read(profileImportProvider).isImporting)
+    if (_isReloadingNodes || ref.read(profileImportProvider).isImporting) {
       return;
+    }
     setState(() => _isReloadingNodes = true);
     try {
       final subscriptionUrl = ref.read(subscriptionInfoProvider)?.subscribeUrl;
@@ -644,7 +645,7 @@ class _DelayBadge extends ConsumerWidget {
         '${delay}ms',
         style: TextStyle(
           fontSize: 11,
-          fontWeight: FontWeight.w600,
+          fontWeight: XbFontWeight.semibold,
           color: color,
         ),
       ),

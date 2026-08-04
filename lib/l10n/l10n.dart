@@ -3445,6 +3445,46 @@ class AppLocalizations {
     );
   }
 
+  /// `Device Signed Out`
+  String get xboardDeviceKickedTitle {
+    return Intl.message(
+      'Device Signed Out',
+      name: 'xboardDeviceKickedTitle',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `This account signed in on another device, so this device has been disconnected. Sign in again or manage your devices to continue.`
+  String get xboardDeviceKickedContent {
+    return Intl.message(
+      'This account signed in on another device, so this device has been disconnected. Sign in again or manage your devices to continue.',
+      name: 'xboardDeviceKickedContent',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Device Removed`
+  String get xboardDeviceSessionRevokedTitle {
+    return Intl.message(
+      'Device Removed',
+      name: 'xboardDeviceSessionRevokedTitle',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `This device's login access was removed and its connection was stopped. Sign in again to continue.`
+  String get xboardDeviceSessionRevokedContent {
+    return Intl.message(
+      'This device\'s login access was removed and its connection was stopped. Sign in again to continue.',
+      name: 'xboardDeviceSessionRevokedContent',
+      desc: '',
+      args: [],
+    );
+  }
+
   /// `Login Again`
   String get xboardRelogin {
     return Intl.message(
@@ -8145,6 +8185,26 @@ class AppLocalizations {
     );
   }
 
+  /// `Your plan does not have enough remaining time to start a new traffic period.`
+  String get xboardNewPeriodInsufficientDuration {
+    return Intl.message(
+      'Your plan does not have enough remaining time to start a new traffic period.',
+      name: 'xboardNewPeriodInsufficientDuration',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `This plan does not allow starting a new traffic period.`
+  String get xboardNewPeriodNotAllowed {
+    return Intl.message(
+      'This plan does not allow starting a new traffic period.',
+      name: 'xboardNewPeriodNotAllowed',
+      desc: '',
+      args: [],
+    );
+  }
+
   /// `Your plan traffic is used up. You can start the next traffic period early.`
   String get xboardNewPeriodTrafficExhaustedDetail {
     return Intl.message(
@@ -10745,6 +10805,16 @@ class AppLocalizations {
     );
   }
 
+  /// `This device has no usable network connection. The proxy core is running, but the local network or internet is unreachable. Check Wi-Fi, Ethernet, or system network settings.`
+  String get xboardNetworkDiagnosticsConclusionNoNetwork {
+    return Intl.message(
+      'This device has no usable network connection. The proxy core is running, but the local network or internet is unreachable. Check Wi-Fi, Ethernet, or system network settings.',
+      name: 'xboardNetworkDiagnosticsConclusionNoNetwork',
+      desc: '',
+      args: [],
+    );
+  }
+
   /// `Network type`
   String get xboardNetworkDiagnosticsNetworkType {
     return Intl.message(
@@ -11355,6 +11425,26 @@ class AppLocalizations {
     );
   }
 
+  /// `Check Wi-Fi, Ethernet, or system network settings first, then rerun diagnostics after connectivity is restored.`
+  String get xboardDiagnosticSuggestionNetwork {
+    return Intl.message(
+      'Check Wi-Fi, Ethernet, or system network settings first, then rerun diagnostics after connectivity is restored.',
+      name: 'xboardDiagnosticSuggestionNetwork',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `The local network is available, but the current node route is unhealthy. Switch nodes and rerun diagnostics.`
+  String get xboardDiagnosticSuggestionNode {
+    return Intl.message(
+      'The local network is available, but the current node route is unhealthy. Switch nodes and rerun diagnostics.',
+      name: 'xboardDiagnosticSuggestionNode',
+      desc: '',
+      args: [],
+    );
+  }
+
   /// `Latest network connectivity check`
   String get xboardDiagnosticLatestNetwork {
     return Intl.message(
@@ -11585,6 +11675,26 @@ class AppLocalizations {
     );
   }
 
+  /// `Local network unavailable`
+  String get xboardServiceNoNetwork {
+    return Intl.message(
+      'Local network unavailable',
+      name: 'xboardServiceNoNetwork',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Network access restricted`
+  String get xboardServiceNetworkRestricted {
+    return Intl.message(
+      'Network access restricted',
+      name: 'xboardServiceNetworkRestricted',
+      desc: '',
+      args: [],
+    );
+  }
+
   /// `Service connection unstable`
   String get xboardServiceConnectionDegraded {
     return Intl.message(
@@ -11600,6 +11710,56 @@ class AppLocalizations {
     return Intl.message(
       'Restoring connection',
       name: 'xboardServiceRecovering',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `The local internet connection is working, but the business service is temporarily unreachable. The proxy can continue using cached subscriptions and nodes, while login, plans, and payments may be unavailable. Offline cache mode ends automatically after recovery.`
+  String get xboardServiceOfflineCacheTooltip {
+    return Intl.message(
+      'The local internet connection is working, but the business service is temporarily unreachable. The proxy can continue using cached subscriptions and nodes, while login, plans, and payments may be unavailable. Offline cache mode ends automatically after recovery.',
+      name: 'xboardServiceOfflineCacheTooltip',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `This device has no usable network connection, so the proxy cannot work either. Check Wi-Fi, mobile data, or Ethernet.`
+  String get xboardServiceNoNetworkTooltip {
+    return Intl.message(
+      'This device has no usable network connection, so the proxy cannot work either. Check Wi-Fi, mobile data, or Ethernet.',
+      name: 'xboardServiceNoNetworkTooltip',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `A network interface is present, but both public internet checks and business gateways are unreachable. The proxy may not work. Check network restrictions or DNS, or run network diagnostics.`
+  String get xboardServiceNetworkRestrictedTooltip {
+    return Intl.message(
+      'A network interface is present, but both public internet checks and business gateways are unreachable. The proxy may not work. Check network restrictions or DNS, or run network diagnostics.',
+      name: 'xboardServiceNetworkRestrictedTooltip',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `A business request failed. The client is checking the local network and business gateways.`
+  String get xboardServiceDegradedTooltip {
+    return Intl.message(
+      'A business request failed. The client is checking the local network and business gateways.',
+      name: 'xboardServiceDegradedTooltip',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `The network has recovered. The client is confirming business gateway availability.`
+  String get xboardServiceRecoveringTooltip {
+    return Intl.message(
+      'The network has recovered. The client is confirming business gateway availability.',
+      name: 'xboardServiceRecoveringTooltip',
       desc: '',
       args: [],
     );

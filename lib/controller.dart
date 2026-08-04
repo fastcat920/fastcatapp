@@ -911,30 +911,35 @@ class AppController {
   }
 
   init() async {
-    await bootDiagLog('AppController.init begin');
-    FlutterError.onError = (details) {
-      commonPrint.log(details.stack.toString());
-    };
-    updateTray(true);
-    await _syncLaunchWindowVisibility();
-    await bootDiagLog('launch window visibility synced');
-    await _initCore();
-    await bootDiagLog('core init complete');
-    await _initStatus();
-    await bootDiagLog('status init complete');
-    autoLaunch?.updateStatus(
-      _ref.read(appSettingProvider).autoLaunch,
-    );
-    autoUpdateProfiles();
-    if (!_ref.read(appSettingProvider).silentLaunch) {
-      window?.show();
-    } else {
-      window?.hide();
+    globalState.coreStatusReadyNotifier.value = false;
+    try {
+      await bootDiagLog('AppController.init begin');
+      FlutterError.onError = (details) {
+        commonPrint.log(details.stack.toString());
+      };
+      updateTray(true);
+      await _syncLaunchWindowVisibility();
+      await bootDiagLog('launch window visibility synced');
+      await _initCore();
+      await bootDiagLog('core init complete');
+      await _initStatus();
+      await bootDiagLog('status init complete');
+      autoLaunch?.updateStatus(
+        _ref.read(appSettingProvider).autoLaunch,
+      );
+      autoUpdateProfiles();
+      if (!_ref.read(appSettingProvider).silentLaunch) {
+        window?.show();
+      } else {
+        window?.hide();
+      }
+      await _handlePreference();
+      await _handlerDisclaimer();
+      _ref.read(initProvider.notifier).value = true;
+      await bootDiagLog('AppController.init complete');
+    } finally {
+      globalState.coreStatusReadyNotifier.value = true;
     }
-    await _handlePreference();
-    await _handlerDisclaimer();
-    _ref.read(initProvider.notifier).value = true;
-    await bootDiagLog('AppController.init complete');
   }
 
   Future<void> _syncLaunchWindowVisibility() async {
@@ -947,12 +952,13 @@ class AppController {
   }
 
   _initStatus() async {
-    // 所有平台启动时先尝试从核心恢复真实运行时间，
-    // 避免“连接状态已恢复但计时从 0 重新开始”的错位。
+    // 所有平台启动时先尝试从核心恢复真实运行时间。
+    // handleStart 会保留这个时间，因此接管已有连接时不会重新从 0 计时。
     await globalState.updateStartTime();
-    final status = globalState.isStart == true
-        ? true
-        : _ref.read(appSettingProvider).autoRun;
+    if (globalState.isStart) {
+      updateRunTime();
+    }
+    final status = globalState.isStart || _ref.read(appSettingProvider).autoRun;
 
     await updateStatus(status);
     if (!status) {

@@ -5,6 +5,7 @@ import 'package:flutter_xboard_sdk/flutter_xboard_sdk.dart';
 import 'package:fl_clash/l10n/l10n.dart';
 import 'package:fl_clash/xboard/adapter/initialization/sdk_provider.dart';
 import 'package:fl_clash/xboard/adapter/state/order_state.dart';
+import 'package:fl_clash/xboard/features/auth/providers/xboard_user_provider.dart';
 import 'package:fl_clash/xboard/features/payment/pages/order_detail_page.dart';
 import 'package:fl_clash/xboard/features/shared/styles/styles.dart';
 import 'package:fl_clash/common/common.dart';
@@ -18,9 +19,13 @@ class OrderPage extends ConsumerStatefulWidget {
 }
 
 class _OrderPageState extends ConsumerState<OrderPage> {
+  static const _cacheTtl = Duration(seconds: 60);
+  static final Map<String, _OrderListSnapshot> _cacheByAccount = {};
+
   final _scrollController = ScrollController();
   final _orders = <OrderModel>[];
   bool _isLoading = true;
+  bool _isRefreshing = false;
   bool _isLoadingMore = false;
   bool _hasMore = true;
   int _currentPage = 1;
@@ -32,7 +37,15 @@ class _OrderPageState extends ConsumerState<OrderPage> {
   void initState() {
     super.initState();
     _scrollController.addListener(_onScroll);
-    _loadFirstPage();
+    final snapshot = _readCache();
+    if (snapshot == null) {
+      _loadFirstPage();
+    } else {
+      _restoreSnapshot(snapshot);
+      if (snapshot.isExpired(_cacheTtl)) {
+        _loadFirstPage(showLoading: false);
+      }
+    }
   }
 
   @override
@@ -42,7 +55,7 @@ class _OrderPageState extends ConsumerState<OrderPage> {
   }
 
   void _onScroll() {
-    if (_isLoadingMore || !_hasMore) return;
+    if (_isRefreshing || _isLoadingMore || !_hasMore) return;
     final maxScroll = _scrollController.position.maxScrollExtent;
     final currentScroll = _scrollController.position.pixels;
     if (maxScroll - currentScroll < 200) {
@@ -50,9 +63,45 @@ class _OrderPageState extends ConsumerState<OrderPage> {
     }
   }
 
-  Future<void> _loadFirstPage() async {
+  String? get _accountCacheKey {
+    final userState = ref.read(xboardUserProvider);
+    final email =
+        (userState.email ?? userState.userInfo?.email)?.trim().toLowerCase();
+    return email == null || email.isEmpty ? null : email;
+  }
+
+  _OrderListSnapshot? _readCache() {
+    final key = _accountCacheKey;
+    return key == null ? null : _cacheByAccount[key];
+  }
+
+  void _restoreSnapshot(_OrderListSnapshot snapshot) {
+    _orders
+      ..clear()
+      ..addAll(snapshot.orders);
+    _currentPage = snapshot.currentPage;
+    _total = snapshot.total;
+    _hasMore = _orders.length < _total;
+    _isLoading = false;
+    _error = null;
+  }
+
+  void _saveCache() {
+    final key = _accountCacheKey;
+    if (key == null) return;
+    _cacheByAccount[key] = _OrderListSnapshot(
+      orders: List<OrderModel>.unmodifiable(_orders),
+      currentPage: _currentPage,
+      total: _total,
+      savedAt: DateTime.now(),
+    );
+  }
+
+  Future<void> _loadFirstPage({bool showLoading = true}) async {
+    if (_isRefreshing) return;
     setState(() {
-      _isLoading = true;
+      _isRefreshing = true;
+      if (showLoading) _isLoading = true;
       _error = null;
     });
     try {
@@ -67,19 +116,24 @@ class _OrderPageState extends ConsumerState<OrderPage> {
         _total = result.total;
         _hasMore = _orders.length < _total;
         _isLoading = false;
+        _isRefreshing = false;
       });
+      _saveCache();
     } catch (e) {
       if (!mounted) return;
       setState(() {
-        _error = BackendMessageMapper.mapError(e,
-            context: BackendMessageContext.order);
+        if (_orders.isEmpty) {
+          _error = BackendMessageMapper.mapError(e,
+              context: BackendMessageContext.order);
+        }
         _isLoading = false;
+        _isRefreshing = false;
       });
     }
   }
 
   Future<void> _loadNextPage() async {
-    if (_isLoadingMore || !_hasMore) return;
+    if (_isRefreshing || _isLoadingMore || !_hasMore) return;
     setState(() => _isLoadingMore = true);
     try {
       final sdk = await ref.read(xboardSdkProvider.future);
@@ -91,9 +145,11 @@ class _OrderPageState extends ConsumerState<OrderPage> {
       setState(() {
         _orders.addAll(result.orders);
         _currentPage++;
+        _total = result.total;
         _hasMore = _orders.length < result.total;
         _isLoadingMore = false;
       });
+      _saveCache();
     } catch (e) {
       if (!mounted) return;
       setState(() => _isLoadingMore = false);
@@ -102,10 +158,11 @@ class _OrderPageState extends ConsumerState<OrderPage> {
 
   Future<void> _doRefresh() async {
     clearGetOrdersCache();
-    await _loadFirstPage();
+    await _loadFirstPage(showLoading: false);
   }
 
   Future<void> _navigateToOrderDetail(OrderModel order) async {
+    var orderChanged = false;
     await Navigator.of(context).push(
       MaterialPageRoute(
         builder: (_) => OrderDetailPage(
@@ -115,12 +172,13 @@ class _OrderPageState extends ConsumerState<OrderPage> {
               : order.discountAmount != null
                   ? order.discountAmount! / 100
                   : null,
+          onOrderChanged: () => orderChanged = true,
         ),
       ),
     );
-    // 从订单详情返回后自动刷新列表
+    if (!mounted || !orderChanged) return;
     clearGetOrdersCache();
-    await _loadFirstPage();
+    await _loadFirstPage(showLoading: false);
   }
 
   @override
@@ -182,6 +240,22 @@ class _OrderPageState extends ConsumerState<OrderPage> {
       ),
     );
   }
+}
+
+class _OrderListSnapshot {
+  final List<OrderModel> orders;
+  final int currentPage;
+  final int total;
+  final DateTime savedAt;
+
+  const _OrderListSnapshot({
+    required this.orders,
+    required this.currentPage,
+    required this.total,
+    required this.savedAt,
+  });
+
+  bool isExpired(Duration ttl) => DateTime.now().difference(savedAt) > ttl;
 }
 
 class _LoadingMoreIndicator extends StatelessWidget {
@@ -364,7 +438,7 @@ class _OrderCard extends StatelessWidget {
                           statusLabel,
                           style: theme.textTheme.labelSmall?.copyWith(
                             color: statusColor,
-                            fontWeight: FontWeight.w600,
+                            fontWeight: XbFontWeight.semibold,
                           ),
                         ),
                       ),
@@ -372,7 +446,7 @@ class _OrderCard extends StatelessWidget {
                       Text(
                         '¥${amount.toStringAsFixed(2)}',
                         style: theme.textTheme.titleSmall?.copyWith(
-                          fontWeight: FontWeight.bold,
+                          fontWeight: XbFontWeight.bold,
                           color: theme.colorScheme.primary,
                         ),
                       ),

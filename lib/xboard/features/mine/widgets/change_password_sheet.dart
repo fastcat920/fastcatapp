@@ -121,7 +121,7 @@ class _ChangePasswordSheetState extends ConsumerState<_ChangePasswordSheet> {
               Text(
                 l10n.xboardChangePassword,
                 style: theme.textTheme.titleMedium
-                    ?.copyWith(fontWeight: FontWeight.bold),
+                    ?.copyWith(fontWeight: XbFontWeight.bold),
               ),
               const Spacer(),
               IconButton(

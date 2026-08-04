@@ -1197,6 +1197,10 @@ class MessageLookup extends MessageLookupByLibrary {
     "xboardDeviceHistoryHint": MessageLookupByLibrary.simpleMessage(
       "仅保留 90 天内的移除记录，超期设备将自动清理",
     ),
+    "xboardDeviceKickedContent": MessageLookupByLibrary.simpleMessage(
+      "当前账号已在其他设备登录，本设备已断开连接。请重新登录或前往设备管理处理。",
+    ),
+    "xboardDeviceKickedTitle": MessageLookupByLibrary.simpleMessage("本设备已下线"),
     "xboardDeviceLabelId": MessageLookupByLibrary.simpleMessage("设备标识"),
     "xboardDeviceLabelLastIp": MessageLookupByLibrary.simpleMessage("最近 IP"),
     "xboardDeviceLabelLastOnline": MessageLookupByLibrary.simpleMessage("最后在线"),
@@ -1217,6 +1221,12 @@ class MessageLookup extends MessageLookupByLibrary {
     "xboardDeviceRemoveTitle": MessageLookupByLibrary.simpleMessage("移除设备"),
     "xboardDeviceRemoved": MessageLookupByLibrary.simpleMessage("设备已移除"),
     "xboardDeviceRevoked": MessageLookupByLibrary.simpleMessage("已移除"),
+    "xboardDeviceSessionRevokedContent": MessageLookupByLibrary.simpleMessage(
+      "本设备的登录权限已被移除，连接已断开。请重新登录以继续使用。",
+    ),
+    "xboardDeviceSessionRevokedTitle": MessageLookupByLibrary.simpleMessage(
+      "设备已被移除",
+    ),
     "xboardDeviceSummary": m38,
     "xboardDeviceUnit": m39,
     "xboardDeviceUnknown": MessageLookupByLibrary.simpleMessage("未知"),
@@ -1301,6 +1311,12 @@ class MessageLookup extends MessageLookupByLibrary {
       "服务状态",
     ),
     "xboardDiagnosticSuggestion": MessageLookupByLibrary.simpleMessage("建议"),
+    "xboardDiagnosticSuggestionNetwork": MessageLookupByLibrary.simpleMessage(
+      "请先检查 Wi-Fi、网线或系统网络设置，恢复网络后重新检测。",
+    ),
+    "xboardDiagnosticSuggestionNode": MessageLookupByLibrary.simpleMessage(
+      "本地网络可用，但当前节点链路异常；请切换节点后重新检测。",
+    ),
     "xboardDiagnosticSuggestionNone": MessageLookupByLibrary.simpleMessage(
       "当前连接工作正常，无需处理。",
     ),
@@ -1536,6 +1552,10 @@ class MessageLookup extends MessageLookupByLibrary {
         MessageLookupByLibrary.simpleMessage("DNS 与网络链路工作正常。"),
     "xboardNetworkDiagnosticsConclusionNetwork":
         MessageLookupByLibrary.simpleMessage("本地网络可能异常或无法连接外网。"),
+    "xboardNetworkDiagnosticsConclusionNoNetwork":
+        MessageLookupByLibrary.simpleMessage(
+          "当前设备没有可用网络连接。代理内核虽然正在运行，但无法访问本地网络或互联网；请检查 Wi-Fi、网线或系统网络设置。",
+        ),
     "xboardNetworkDiagnosticsConclusionNodeDns":
         MessageLookupByLibrary.simpleMessage("当前网络无法解析所选节点的入口域名。"),
     "xboardNetworkDiagnosticsConclusionNodeUnknown":
@@ -1723,6 +1743,12 @@ class MessageLookup extends MessageLookupByLibrary {
     ),
     "xboardNewPeriodFailed": MessageLookupByLibrary.simpleMessage(
       "开启新的流量周期失败，请稍后重试",
+    ),
+    "xboardNewPeriodInsufficientDuration": MessageLookupByLibrary.simpleMessage(
+      "套餐剩余时长不足，无法开启新周期",
+    ),
+    "xboardNewPeriodNotAllowed": MessageLookupByLibrary.simpleMessage(
+      "当前套餐不支持开启新周期",
     ),
     "xboardNewPeriodResultUncertainContent":
         MessageLookupByLibrary.simpleMessage(
@@ -2000,10 +2026,30 @@ class MessageLookup extends MessageLookupByLibrary {
     "xboardServiceConnectionDegraded": MessageLookupByLibrary.simpleMessage(
       "服务连接不稳定",
     ),
+    "xboardServiceDegradedTooltip": MessageLookupByLibrary.simpleMessage(
+      "业务请求出现异常，客户端正在确认本地网络和业务网关状态。",
+    ),
+    "xboardServiceNetworkRestricted": MessageLookupByLibrary.simpleMessage(
+      "网络连接受限",
+    ),
+    "xboardServiceNetworkRestrictedTooltip":
+        MessageLookupByLibrary.simpleMessage(
+          "检测到网络接口，但公网基准和业务网关均不可达，当前代理可能无法使用。请检查网络限制、DNS 或运行网络诊断。",
+        ),
+    "xboardServiceNoNetwork": MessageLookupByLibrary.simpleMessage("本地网络不可用"),
+    "xboardServiceNoNetworkTooltip": MessageLookupByLibrary.simpleMessage(
+      "当前设备没有可用的网络连接，代理也无法正常使用。请检查 Wi-Fi、移动数据或有线网络。",
+    ),
     "xboardServiceOfflineCacheMode": MessageLookupByLibrary.simpleMessage(
       "离线缓存模式",
     ),
+    "xboardServiceOfflineCacheTooltip": MessageLookupByLibrary.simpleMessage(
+      "本地网络正常，但暂时无法连接业务服务器。当前代理可继续使用已缓存的订阅和节点，登录、套餐、支付等功能可能暂不可用。网络或网关恢复后会自动退出离线缓存模式。",
+    ),
     "xboardServiceRecovering": MessageLookupByLibrary.simpleMessage("正在恢复连接"),
+    "xboardServiceRecoveringTooltip": MessageLookupByLibrary.simpleMessage(
+      "网络已恢复，客户端正在重新确认业务网关状态。",
+    ),
     "xboardSetup": MessageLookupByLibrary.simpleMessage("设置"),
     "xboardSixMonthCycle": MessageLookupByLibrary.simpleMessage("6个月周期"),
     "xboardSmartLatencyStarted": MessageLookupByLibrary.simpleMessage(
@@ -2012,7 +2058,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "xboardSmartRouting": MessageLookupByLibrary.simpleMessage("智能分流"),
     "xboardSoftwareSettings": MessageLookupByLibrary.simpleMessage("软件设置"),
     "xboardSpeedLimit": MessageLookupByLibrary.simpleMessage("限速"),
-    "xboardStartNewPeriod": MessageLookupByLibrary.simpleMessage("提前开启流量周期"),
+    "xboardStartNewPeriod": MessageLookupByLibrary.simpleMessage("开启新周期"),
     "xboardStartProxy": MessageLookupByLibrary.simpleMessage("启动代理"),
     "xboardStop": MessageLookupByLibrary.simpleMessage("停止"),
     "xboardStopProxy": MessageLookupByLibrary.simpleMessage("停止代理"),

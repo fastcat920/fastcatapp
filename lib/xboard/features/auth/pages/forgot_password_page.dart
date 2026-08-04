@@ -195,7 +195,7 @@ class _ForgotPasswordPageState extends ConsumerState<ForgotPasswordPage> {
                     AppLocalizations.of(context).sendVerificationCode,
                     style: TextStyle(
                       fontSize: 16,
-                      fontWeight: FontWeight.w600,
+                      fontWeight: XbFontWeight.semibold,
                     ),
                   ),
                 ),
@@ -324,7 +324,7 @@ class _ForgotPasswordPageState extends ConsumerState<ForgotPasswordPage> {
                     AppLocalizations.of(context).resetPassword,
                     style: TextStyle(
                       fontSize: 16,
-                      fontWeight: FontWeight.w600,
+                      fontWeight: XbFontWeight.semibold,
                     ),
                   ),
                 ),
@@ -336,7 +336,7 @@ class _ForgotPasswordPageState extends ConsumerState<ForgotPasswordPage> {
             AppLocalizations.of(context).resendVerificationCode,
             style: TextStyle(
               color: Theme.of(context).colorScheme.primary,
-              fontWeight: FontWeight.w600,
+              fontWeight: XbFontWeight.semibold,
             ),
           ),
         ),
@@ -378,7 +378,7 @@ class _ForgotPasswordPageState extends ConsumerState<ForgotPasswordPage> {
                         : AppLocalizations.of(context).setNewPassword,
                     style: Theme.of(context).textTheme.headlineMedium?.copyWith(
                           color: colorScheme.onSurface,
-                          fontWeight: FontWeight.bold,
+                          fontWeight: XbFontWeight.bold,
                         ),
                   ),
                 ],
@@ -425,7 +425,7 @@ class _ForgotPasswordPageState extends ConsumerState<ForgotPasswordPage> {
                                 AppLocalizations.of(context).backToLogin,
                                 style: TextStyle(
                                   color: colorScheme.primary,
-                                  fontWeight: FontWeight.w600,
+                                  fontWeight: XbFontWeight.semibold,
                                 ),
                               ),
                             ),

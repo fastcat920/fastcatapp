@@ -103,7 +103,7 @@ class TunIntroductionDialog extends StatelessWidget {
                       Text(
                         l10n.xboardTunRecommendedUsage,
                         style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                              fontWeight: FontWeight.w600,
+                              fontWeight: XbFontWeight.semibold,
                               color: Colors.amber.shade700,
                             ),
                       ),
@@ -203,7 +203,7 @@ class TunIntroductionDialog extends StatelessWidget {
                 Text(
                   title,
                   style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                        fontWeight: FontWeight.w600,
+                        fontWeight: XbFontWeight.semibold,
                       ),
                 ),
                 Text(

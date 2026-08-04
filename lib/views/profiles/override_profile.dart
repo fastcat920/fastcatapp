@@ -612,10 +612,7 @@ class RuleContent extends ConsumerWidget {
       },
       proxyDecorator: proxyDecorator,
       itemCount: rules.length,
-      onReorder: (oldIndex, newIndex) {
-        if (oldIndex < newIndex) {
-          newIndex -= 1;
-        }
+      onReorderItem: (oldIndex, newIndex) {
         final newRules = List<Rule>.from(rules);
         final item = newRules.removeAt(oldIndex);
         newRules.insert(newIndex, item);

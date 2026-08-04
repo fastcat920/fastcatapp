@@ -13,8 +13,44 @@ import 'package:fl_clash/xboard/config/utils/website_url_resolver.dart';
 import 'package:fl_clash/xboard/adapter/initialization/sdk_provider.dart';
 import 'package:fl_clash/xboard/utils/backend_message_mapper.dart';
 import 'package:fl_clash/xboard/utils/xboard_notification.dart';
+import 'package:fl_clash/xboard/features/auth/utils/login_validation.dart';
+import 'package:flutter/services.dart';
 
 const _gatewayOverrideUrl = String.fromEnvironment('XBOARD_GATEWAY_URL');
+
+class LoginResponsiveScaffold extends StatelessWidget {
+  const LoginResponsiveScaffold({
+    super.key,
+    required this.appBar,
+    required this.body,
+    this.isDesktop,
+  });
+
+  static const fullLayoutMinHeight = 640.0;
+
+  final PreferredSizeWidget appBar;
+  final Widget body;
+  final bool? isDesktop;
+
+  @override
+  Widget build(BuildContext context) {
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final showPageActions = (isDesktop ?? system.isDesktop) ||
+            constraints.maxHeight >= fullLayoutMinHeight;
+
+        return Scaffold(
+          appBar: showPageActions ? appBar : null,
+          extendBodyBehindAppBar: showPageActions,
+          body: SafeArea(
+            top: !showPageActions,
+            child: body,
+          ),
+        );
+      },
+    );
+  }
+}
 
 class LoginPage extends ConsumerStatefulWidget {
   const LoginPage({super.key});
@@ -26,9 +62,16 @@ class _LoginPageState extends ConsumerState<LoginPage> {
   final _formKey = GlobalKey<FormState>();
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
+  late final FocusNode _emailFocusNode;
+  late final FocusNode _passwordFocusNode;
+  late final FocusNode _rememberFocusNode;
+  late final FocusNode _loginFocusNode;
+  late final FocusNode _registerFocusNode;
+  late final FocusNode _forgotPasswordFocusNode;
   bool _rememberPassword = true;
   bool _isPasswordVisible = false;
   bool _isCheckingWebsite = false;
+  bool _hasAttemptedLogin = false;
   late XBoardStorageService _storageService;
 
   static const String _appWebsite = '';
@@ -36,6 +79,32 @@ class _LoginPageState extends ConsumerState<LoginPage> {
   @override
   void initState() {
     super.initState();
+    _emailFocusNode = FocusNode(debugLabel: 'login-email');
+    _passwordFocusNode = FocusNode(debugLabel: 'login-password');
+    _rememberFocusNode = FocusNode(debugLabel: 'login-remember-password');
+    _loginFocusNode = FocusNode(debugLabel: 'login-submit');
+    _registerFocusNode = FocusNode(debugLabel: 'login-register');
+    _forgotPasswordFocusNode = FocusNode(debugLabel: 'login-forgot-password');
+    _rememberFocusNode.onKeyEvent = (_, event) => _moveTvFocus(
+          event,
+          up: _passwordFocusNode,
+          down: _loginFocusNode,
+        );
+    _loginFocusNode.onKeyEvent = (_, event) => _moveTvFocus(
+          event,
+          up: _rememberFocusNode,
+          down: _registerFocusNode,
+        );
+    _registerFocusNode.onKeyEvent = (_, event) => _moveTvFocus(
+          event,
+          up: _loginFocusNode,
+          right: _forgotPasswordFocusNode,
+        );
+    _forgotPasswordFocusNode.onKeyEvent = (_, event) => _moveTvFocus(
+          event,
+          up: _loginFocusNode,
+          left: _registerFocusNode,
+        );
     _storageService = ref.read(storageServiceProvider);
     _loadSavedCredentials();
     // 根 Application 已在首帧后预热初始化；这里仅在非网关调试模式下兜底。
@@ -44,6 +113,9 @@ class _LoginPageState extends ConsumerState<LoginPage> {
     }
     WidgetsBinding.instance.addPostFrameCallback((_) {
       CustomerServiceHelper.prewarm();
+      if (system.isTV && _emailFocusNode.canRequestFocus) {
+        _emailFocusNode.requestFocus();
+      }
     });
   }
 
@@ -51,7 +123,37 @@ class _LoginPageState extends ConsumerState<LoginPage> {
   void dispose() {
     _emailController.dispose();
     _passwordController.dispose();
+    _emailFocusNode.dispose();
+    _passwordFocusNode.dispose();
+    _rememberFocusNode.dispose();
+    _loginFocusNode.dispose();
+    _registerFocusNode.dispose();
+    _forgotPasswordFocusNode.dispose();
     super.dispose();
+  }
+
+  KeyEventResult _moveTvFocus(
+    KeyEvent event, {
+    FocusNode? up,
+    FocusNode? down,
+    FocusNode? left,
+    FocusNode? right,
+  }) {
+    if (!system.isTV || event is! KeyDownEvent) {
+      return KeyEventResult.ignored;
+    }
+    final target = switch (event.logicalKey) {
+      LogicalKeyboardKey.arrowUp => up,
+      LogicalKeyboardKey.arrowDown => down,
+      LogicalKeyboardKey.arrowLeft => left,
+      LogicalKeyboardKey.arrowRight => right,
+      _ => null,
+    };
+    if (target == null || !target.canRequestFocus) {
+      return KeyEventResult.ignored;
+    }
+    target.requestFocus();
+    return KeyEventResult.handled;
   }
 
   /// 初始化 XBoard（统一入口）
@@ -96,6 +198,9 @@ class _LoginPageState extends ConsumerState<LoginPage> {
   }
 
   Future<void> _login() async {
+    if (!_hasAttemptedLogin) {
+      setState(() => _hasAttemptedLogin = true);
+    }
     if (_formKey.currentState!.validate()) {
       final email = _emailController.text.trim();
       final password = _passwordController.text;
@@ -293,8 +398,9 @@ class _LoginPageState extends ConsumerState<LoginPage> {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final isIniting = !initState.isReady && !initState.isFailed;
 
-    return Scaffold(
+    return LoginResponsiveScaffold(
       appBar: AppBar(
+        key: const Key('login-page-app-bar'),
         backgroundColor: isDark ? null : Colors.white,
         elevation: 0,
         automaticallyImplyLeading: false,
@@ -344,13 +450,14 @@ class _LoginPageState extends ConsumerState<LoginPage> {
           ],
         ),
       ),
-      extendBodyBehindAppBar: true,
       body: Container(
         color: isDark ? colorScheme.surface : const Color(0xFFFAFBFD),
         child: Center(
           child: SingleChildScrollView(
-            padding:
-                const EdgeInsets.symmetric(horizontal: 32.0, vertical: 16.0),
+            padding: const EdgeInsets.symmetric(
+              horizontal: 32.0,
+              vertical: 16.0,
+            ),
             child: ConstrainedBox(
               constraints: const BoxConstraints(maxWidth: 400),
               child: Form(
@@ -368,7 +475,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                             localizedAppName,
                             style: textTheme.headlineMedium?.copyWith(
                               color: colorScheme.onSurface,
-                              fontWeight: FontWeight.bold,
+                              fontWeight: XbFontWeight.bold,
                             ),
                           ),
                           if (_appWebsite.isNotEmpty) ...[
@@ -385,6 +492,11 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                     ),
                     const SizedBox(height: 24),
                     XBInputField(
+                      focusNode: _emailFocusNode,
+                      onKeyEvent: (_, event) => _moveTvFocus(
+                        event,
+                        down: _passwordFocusNode,
+                      ),
                       controller: _emailController,
                       labelText: appLocalizations.xboardEmail,
                       hintText: appLocalizations.xboardEmail,
@@ -402,6 +514,12 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                     ),
                     const SizedBox(height: 16),
                     XBInputField(
+                      focusNode: _passwordFocusNode,
+                      onKeyEvent: (_, event) => _moveTvFocus(
+                        event,
+                        up: _emailFocusNode,
+                        down: _rememberFocusNode,
+                      ),
                       controller: _passwordController,
                       labelText: appLocalizations.xboardPassword,
                       hintText: appLocalizations.xboardPassword,
@@ -413,6 +531,9 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                         }
                       },
                       obscureText: !_isPasswordVisible,
+                      autovalidateMode: _hasAttemptedLogin
+                          ? AutovalidateMode.onUserInteraction
+                          : AutovalidateMode.disabled,
                       suffixIcon: IconButton(
                         icon: Icon(
                           _isPasswordVisible
@@ -426,10 +547,13 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                         },
                       ),
                       validator: (value) {
-                        if (value == null || value.isEmpty) {
-                          return appLocalizations.xboardPassword;
-                        }
-                        return null;
+                        return switch (validateLoginPassword(value)) {
+                          LoginPasswordIssue.empty =>
+                            appLocalizations.xboardPassword,
+                          LoginPasswordIssue.tooShort =>
+                            appLocalizations.passwordMin8Chars,
+                          null => null,
+                        };
                       },
                     ),
                     const SizedBox(height: 16),
@@ -452,6 +576,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                                   width: 24,
                                   height: 24,
                                   child: Checkbox(
+                                    focusNode: _rememberFocusNode,
                                     value: _rememberPassword,
                                     onChanged: (value) {
                                       setState(() {
@@ -537,6 +662,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                     ],
                     SizedBox(
                       child: FilledButton(
+                        focusNode: _loginFocusNode,
                         onPressed:
                             (isIniting || userState.isLoading) ? null : _login,
                         style: XbUiButton.filledPrimary(
@@ -596,27 +722,24 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
                         TextButton.icon(
-                          onPressed: _navigateToRegister,
-                          icon: Icon(Icons.person_add_outlined,
-                              size: 18, color: colorScheme.primary),
-                          label: Text(
-                            appLocalizations.xboardRegister,
-                            style: TextStyle(
-                              color: colorScheme.primary,
-                            ),
+                          focusNode: _registerFocusNode,
+                          onPressed: isIniting ? null : _navigateToRegister,
+                          icon: const Icon(
+                            Icons.person_add_outlined,
+                            size: 18,
                           ),
+                          label: Text(appLocalizations.xboardRegister),
                         ),
                         const SizedBox(width: 16),
                         TextButton.icon(
-                          onPressed: _navigateToForgotPassword,
-                          icon: Icon(Icons.help_outline,
-                              size: 18, color: colorScheme.primary),
-                          label: Text(
-                            appLocalizations.xboardForgotPassword,
-                            style: TextStyle(
-                              color: colorScheme.primary,
-                            ),
+                          focusNode: _forgotPasswordFocusNode,
+                          onPressed:
+                              isIniting ? null : _navigateToForgotPassword,
+                          icon: const Icon(
+                            Icons.help_outline,
+                            size: 18,
                           ),
+                          label: Text(appLocalizations.xboardForgotPassword),
                         ),
                       ],
                     ),

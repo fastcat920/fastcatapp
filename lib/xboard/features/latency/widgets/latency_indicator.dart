@@ -1,5 +1,6 @@
 import 'package:fl_clash/common/utils.dart';
 import 'package:fl_clash/l10n/l10n.dart';
+import 'package:fl_clash/xboard/features/shared/styles/font_weights.dart';
 import 'package:flutter/material.dart';
 
 class LatencyIndicator extends StatelessWidget {
@@ -128,7 +129,7 @@ class LatencyIndicator extends StatelessWidget {
             delayValue! < 0 ? timeoutText : '$delayValue',
             style: Theme.of(context).textTheme.labelSmall?.copyWith(
                   color: color,
-                  fontWeight: FontWeight.w600,
+                  fontWeight: XbFontWeight.semibold,
                   fontSize: 10,
                 ),
           ),
@@ -161,7 +162,7 @@ class LatencyIndicator extends StatelessWidget {
             displayText,
             style: Theme.of(context).textTheme.labelSmall?.copyWith(
                   color: color,
-                  fontWeight: FontWeight.w600,
+                  fontWeight: XbFontWeight.semibold,
                 ),
           ),
         ],
