@@ -730,7 +730,9 @@ class _NetCheckPageState extends ConsumerState<NetCheckPage> {
         includeNetworkDiagnostics: false,
         includeMetadata: false,
       );
-      final report = '$networkReport\n$serviceReport';
+      final latencyReport =
+          DiagnosticBundleService.buildCurrentNodeLatencyReport(ref);
+      final report = '$networkReport\n$serviceReport\n$latencyReport';
       await Clipboard.setData(ClipboardData(text: report));
       XBoardNotification.showSuccess(l10n.xboardNetworkDiagnosticsCopied);
     } finally {

@@ -382,6 +382,45 @@ class DiagnosticBundleService {
     await Clipboard.setData(ClipboardData(text: text));
   }
 
+  static String buildCurrentNodeLatencyReport(WidgetRef ref) {
+    final groups = ref.read(groupsProvider);
+    if (groups.isEmpty) {
+      return '[node_latency_snapshot]\nstatus: no_available_group\n';
+    }
+    final currentGroupName =
+        globalState.appController.getCurrentGroupName()?.toString();
+    final group = groups.firstWhere(
+      (item) => item.name == currentGroupName,
+      orElse: () => groups.firstWhere(
+        (item) => item.hidden != true && item.name != GroupName.GLOBAL.name,
+        orElse: () => groups.first,
+      ),
+    );
+    final delayMap = globalState.appState.delayMap;
+    final seen = <String>{};
+    final buffer = StringBuffer()
+      ..writeln('[node_latency_snapshot]')
+      ..writeln('source: latest_client_result (no_retest)')
+      ..writeln('group: ${group.name}');
+    for (final proxy in group.all) {
+      final state = globalState.appController.getProxyCardState(proxy.name);
+      final name = state.proxyName.isEmpty ? proxy.name : state.proxyName;
+      if (!seen.add(name)) continue;
+      final testUrl = globalState.appController.getRealTestUrl(
+        state.testUrl ?? group.testUrl,
+      );
+      final delay = delayMap[testUrl]?[name];
+      final value = delay == null
+          ? 'not_tested'
+          : delay < 0
+              ? 'timeout'
+              : '${delay}ms';
+      buffer.writeln('- $name: $value');
+    }
+    if (seen.isEmpty) buffer.writeln('status: no_available_nodes');
+    return buffer.toString();
+  }
+
   static void _writeNetworkSummary(
     StringBuffer buffer,
     NetworkDiagnosticSnapshot snapshot,

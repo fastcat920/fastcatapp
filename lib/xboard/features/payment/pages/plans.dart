@@ -34,7 +34,7 @@ class _PlansViewState extends ConsumerState<PlansView> {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       final subscriptionNotifier =
           ref.read(xboardSubscriptionProvider.notifier);
-      subscriptionNotifier.autoRefreshIfNeeded();
+      subscriptionNotifier.refreshPlans();
 
       // 检查URL参数中是否有planId
       _checkUrlParams();

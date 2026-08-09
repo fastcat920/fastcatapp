@@ -151,6 +151,11 @@ class Build {
 
   static String get coreName => "fastcatCore";
 
+  // Keep the runtime-reported mihomo version aligned with the vendored source.
+  // mihomo's release workflow normally injects this value through ldflags, while
+  // FastCat builds the embedded core directly.
+  static const mihomoVersion = "v1.19.29";
+
   static String get libName => "libclash";
 
   static String get outDir => join(current, libName);
@@ -329,7 +334,7 @@ class Build {
       final execLines = [
         "go",
         "build",
-        "-ldflags=-w -s",
+        "-ldflags=-w -s -X github.com/metacubex/mihomo/constant.Version=$mihomoVersion",
         "-tags=$tags",
         if (isLib) "-buildmode=c-shared",
         "-o",

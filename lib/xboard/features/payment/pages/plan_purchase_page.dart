@@ -10,6 +10,7 @@ import 'package:flutter_xboard_sdk/flutter_xboard_sdk.dart'
 import 'package:fl_clash/xboard/core/core.dart';
 import 'package:fl_clash/xboard/features/auth/providers/xboard_user_provider.dart';
 import 'package:fl_clash/xboard/features/payment/providers/xboard_payment_provider.dart';
+import 'package:fl_clash/xboard/features/subscription/providers/xboard_subscription_provider.dart';
 import 'package:fl_clash/xboard/features/shared/styles/styles.dart';
 import 'package:fl_clash/xboard/utils/backend_message_mapper.dart';
 import 'order_detail_page.dart';
@@ -43,6 +44,7 @@ class PlanPurchasePage extends ConsumerStatefulWidget {
 
 class _PlanPurchasePageState extends ConsumerState<PlanPurchasePage> {
   bool _isRefreshing = false;
+  late DomainPlan _plan;
   // 周期选择
   String? _selectedPeriod;
 
@@ -61,6 +63,7 @@ class _PlanPurchasePageState extends ConsumerState<PlanPurchasePage> {
   @override
   void initState() {
     super.initState();
+    _plan = widget.plan;
     // 确保 PaymentProvider 被初始化，并后台预加载支付方式和待支付订单
     // 这样用户点击"提交订单"时 cancelPendingOrders 命中缓存，省去一次网络请求
     final paymentNotifier = ref.read(xboardPaymentProvider.notifier);
@@ -78,6 +81,7 @@ class _PlanPurchasePageState extends ConsumerState<PlanPurchasePage> {
           _selectedPeriod = hasInitial ? initial : periods.first['period'];
         });
       }
+      _refreshPlan(showLoading: false);
     });
   }
 
@@ -91,7 +95,7 @@ class _PlanPurchasePageState extends ConsumerState<PlanPurchasePage> {
 
   List<Map<String, dynamic>> _getAvailablePeriods(BuildContext context) {
     final List<Map<String, dynamic>> periods = [];
-    final plan = widget.plan;
+    final plan = _plan;
     final l10n = AppLocalizations.of(context);
 
     if (plan.monthlyPrice != null) {
@@ -190,7 +194,7 @@ class _PlanPurchasePageState extends ConsumerState<PlanPurchasePage> {
       // TODO: 将来添加到 PaymentRepository，目前保留使用 SDK
       final couponData = await XBoardSDK.instance.order.checkCoupon(
         _couponController.text.trim(),
-        widget.plan.id,
+        _plan.id,
       );
 
       if (couponData != null && mounted) {
@@ -274,15 +278,14 @@ class _PlanPurchasePageState extends ConsumerState<PlanPurchasePage> {
     }
 
     try {
-      _logger
-          .debug('[购买] 开始购买流程，套餐ID: ${widget.plan.id}, 周期: $_selectedPeriod');
+      _logger.debug('[购买] 开始购买流程，套餐ID: ${_plan.id}, 周期: $_selectedPeriod');
 
       // 创建订单
       _logger.debug('[购买] 创建订单');
 
       final paymentNotifier = ref.read(xboardPaymentProvider.notifier);
       final tradeNo = await paymentNotifier.createOrder(
-        planId: widget.plan.id,
+        planId: _plan.id,
         period: _selectedPeriod!,
         couponCode: _couponCode,
       );
@@ -305,7 +308,7 @@ class _PlanPurchasePageState extends ConsumerState<PlanPurchasePage> {
         MaterialPageRoute(
           builder: (_) => OrderDetailPage(
             tradeNo: tradeNo,
-            plan: widget.plan,
+            plan: _plan,
             period: _selectedPeriod,
             originalPrice: currentPrice,
             finalPrice: displayFinalPrice,
@@ -333,10 +336,29 @@ class _PlanPurchasePageState extends ConsumerState<PlanPurchasePage> {
     if (_isRefreshing) return;
     setState(() => _isRefreshing = true);
     try {
-      await ref.read(xboardUserAuthProvider.notifier).refreshUserInfo();
+      await Future.wait([
+        ref.read(xboardUserAuthProvider.notifier).refreshUserInfo(),
+        _refreshPlan(showLoading: false),
+      ]);
     } catch (_) {
     } finally {
       if (mounted) setState(() => _isRefreshing = false);
+    }
+  }
+
+  Future<void> _refreshPlan({required bool showLoading}) async {
+    if (showLoading && mounted) setState(() => _isRefreshing = true);
+    try {
+      final latest = await ref
+          .read(xboardSubscriptionProvider.notifier)
+          .refreshPlanById(_plan.id);
+      if (latest != null && mounted) {
+        setState(() => _plan = latest);
+      }
+    } catch (error) {
+      _logger.warning('刷新套餐详情失败，继续使用当前快照: $error');
+    } finally {
+      if (showLoading && mounted) setState(() => _isRefreshing = false);
     }
   }
 
@@ -356,7 +378,7 @@ class _PlanPurchasePageState extends ConsumerState<PlanPurchasePage> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           // 套餐信息卡片
-          PlanHeaderCard(plan: widget.plan),
+          PlanHeaderCard(plan: _plan),
           const SizedBox(height: 16),
 
           // 周期选择器

@@ -49,7 +49,7 @@ func handleStreamingProbe(paramsString string) string {
 		result.Error = err.Error()
 		return finish()
 	}
-	proxy := tunnel.ProxiesWithProviders()[params.ProxyName]
+	proxy := tunnel.Proxies()[params.ProxyName]
 	if proxy == nil {
 		result.Error = "proxy not found"
 		return finish()

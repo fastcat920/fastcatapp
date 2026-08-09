@@ -178,8 +178,25 @@ class XBoardSubscriptionNotifier extends Notifier<List<DomainPlan>> {
     // 清除 lastUpdated，确保 loadPlans 跳过 10 分钟缓存检查
     ref.read(userUIStateProvider.notifier).state = const UIState();
     clearGetPlansCache();
+    clearAllGetPlanCaches();
+    _planDetailCache.clear();
     ref.invalidate(getPlansProvider);
     await loadPlans();
+  }
+
+  Future<DomainPlan?> refreshPlanById(int planId) async {
+    clearGetPlanCache(planId);
+    _planDetailCache.remove(planId);
+    ref.invalidate(getPlanProvider(planId));
+    final planModel = await ref.read(getPlanProvider(planId).future);
+    if (planModel == null) return null;
+    final plan = _mapPlan(planModel);
+    _planDetailCache[planId] = plan;
+    final index = state.indexWhere((item) => item.id == planId);
+    if (index != -1) {
+      state = [...state]..[index] = plan;
+    }
+    return plan;
   }
 
   DomainPlan? getPlanById(int planId) {

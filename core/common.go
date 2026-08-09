@@ -14,7 +14,6 @@ import (
 	"github.com/metacubex/mihomo/component/resolver"
 	"github.com/metacubex/mihomo/config"
 	"github.com/metacubex/mihomo/constant"
-	"github.com/metacubex/mihomo/constant/features"
 	cp "github.com/metacubex/mihomo/constant/provider"
 	"github.com/metacubex/mihomo/hub"
 	"github.com/metacubex/mihomo/hub/route"
@@ -23,6 +22,7 @@ import (
 	rp "github.com/metacubex/mihomo/rules/provider"
 	"github.com/metacubex/mihomo/tunnel"
 	"os"
+	"runtime"
 	"sync"
 )
 
@@ -30,6 +30,7 @@ var (
 	currentConfig *config.Config
 	version       = 0
 	isRunning     = false
+	testURL       = constant.DefaultTestURL
 	runLock       sync.Mutex
 	mBatch, _     = batch.New[bool](context.Background(), batch.WithConcurrencyNum[bool](50))
 )
@@ -66,7 +67,7 @@ func toExternalProvider(p cp.Provider) (*ExternalProvider, error) {
 			Count:            psp.Count(),
 			UpdateAt:         psp.UpdatedAt(),
 			Path:             psp.Vehicle().Path(),
-			SubscriptionInfo: psp.GetSubscriptionInfo(),
+			SubscriptionInfo: proxySetSubscriptionInfo(psp),
 		}, nil
 	case *rp.RuleSetProvider:
 		rsp := p.(*rp.RuleSetProvider)
@@ -81,6 +82,18 @@ func toExternalProvider(p cp.Provider) (*ExternalProvider, error) {
 	default:
 		return nil, errors.New("not external provider")
 	}
+}
+
+// mihomo v1.19 exposes subscription details through the provider's API JSON,
+// rather than a public getter on ProxySetProvider.
+func proxySetSubscriptionInfo(psp *provider.ProxySetProvider) *provider.SubscriptionInfo {
+	var info struct {
+		SubscriptionInfo *provider.SubscriptionInfo `json:"subscriptionInfo"`
+	}
+	if data, err := json.Marshal(psp); err == nil {
+		_ = json.Unmarshal(data, &info)
+	}
+	return info.SubscriptionInfo
 }
 
 func sideUpdateExternalProvider(p cp.Provider, bytes []byte) error {
@@ -127,17 +140,20 @@ func updateListeners() {
 	listener.ReCreateShadowSocks(general.ShadowSocksConfig, tunnel.Tunnel)
 	listener.ReCreateVmess(general.VmessConfig, tunnel.Tunnel)
 	listener.ReCreateTuic(general.TuicServer, tunnel.Tunnel)
-	if !features.Android {
+	if runtime.GOOS != "android" {
 		listener.ReCreateTun(general.Tun, tunnel.Tunnel)
 	}
 }
 
 func stopListeners() {
-	listener.StopListener()
+	for _, inboundListener := range tunnel.Listeners() {
+		_ = inboundListener.Close()
+	}
+	tunnel.UpdateListeners(map[string]constant.InboundListener{})
 }
 
 func patchSelectGroup(mapping map[string]string) {
-	for name, proxy := range tunnel.ProxiesWithProviders() {
+	for name, proxy := range tunnel.Proxies() {
 		outbound, ok := proxy.(*adapter.Proxy)
 		if !ok {
 			continue
@@ -239,7 +255,11 @@ func setupConfig(params *SetupParams) error {
 	runLock.Lock()
 	defer runLock.Unlock()
 	var err error
-	constant.DefaultTestURL = params.TestURL
+	if params.TestURL != "" {
+		testURL = params.TestURL
+	} else {
+		testURL = constant.DefaultTestURL
+	}
 	currentConfig, err = config.ParseRawConfig(params.Config)
 	if err != nil {
 		currentConfig, _ = config.ParseRawConfig(config.DefaultRawConfig())

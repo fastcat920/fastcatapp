@@ -37,3 +37,7 @@ void clearGetPlansCache() {
 void clearGetPlanCache(int id) {
   ApiRequestCache.invalidate('xboard:plan:$id');
 }
+
+void clearAllGetPlanCaches() {
+  ApiRequestCache.invalidatePrefix('xboard:plan:');
+}

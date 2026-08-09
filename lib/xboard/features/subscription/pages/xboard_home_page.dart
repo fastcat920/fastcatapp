@@ -730,6 +730,8 @@ class _HomeBrandHeader extends ConsumerWidget {
     final userState = ref.watch(xboardUserProvider);
     final showServiceBadge = userState.isAuthenticated &&
         !connectivityState.isOnline &&
+        (!connectivityState.isDegraded ||
+            connectivityState.consecutiveFailures >= 2) &&
         (!connectivityState.isRecovering ||
             connectivityState.consecutiveFailures >= 2);
     final badgeLabel = switch (connectivityState.status) {

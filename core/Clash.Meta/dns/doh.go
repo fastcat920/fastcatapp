@@ -14,6 +14,7 @@ import (
 	"time"
 
 	"github.com/metacubex/mihomo/component/ca"
+	"github.com/metacubex/mihomo/component/resolver"
 	C "github.com/metacubex/mihomo/constant"
 	"github.com/metacubex/mihomo/log"
 
@@ -27,9 +28,9 @@ import (
 
 // Values to configure HTTP and HTTP/2 transport.
 const (
-	// transportDefaultReadIdleTimeout is the default timeout for pinging
+	// transportDefaultSendPingTimeout is the default timeout for pinging
 	// idle connections in HTTP/2 transport.
-	transportDefaultReadIdleTimeout = 30 * time.Second
+	transportDefaultSendPingTimeout = 30 * time.Second
 
 	// transportDefaultIdleConnTimeout is the default timeout for idle
 	// connections in HTTP transport.
@@ -68,13 +69,14 @@ type dnsOverHTTPS struct {
 	dialer         *dnsDialer
 	addr           string
 	skipCertVerify bool
+	nameCertVerify string
 }
 
 // type check
 var _ dnsClient = (*dnsOverHTTPS)(nil)
 
 // newDoH returns the DNS-over-HTTPS Upstream.
-func newDoHClient(urlString string, r *Resolver, preferH3 bool, params map[string]string, proxyAdapter C.ProxyAdapter, proxyName string) dnsClient {
+func newDoHClient(urlString string, r resolver.Resolver, preferH3 bool, params map[string]string, proxyAdapter C.ProxyAdapter, proxyName string) dnsClient {
 	u, _ := url.Parse(urlString)
 	httpVersions := DefaultHTTPVersions
 	if preferH3 {
@@ -99,6 +101,7 @@ func newDoHClient(urlString string, r *Resolver, preferH3 bool, params map[strin
 	if params["skip-cert-verify"] == "true" {
 		doh.skipCertVerify = true
 	}
+	doh.nameCertVerify = params["name-cert-verify"]
 
 	runtime.SetFinalizer(doh, (*dnsOverHTTPS).Close)
 
@@ -190,6 +193,10 @@ func (doh *dnsOverHTTPS) ResetConnection() {
 // closeClient cleans up resources used by client if necessary.
 func (doh *dnsOverHTTPS) closeClient(client *http.Client) (err error) {
 	client.CloseIdleConnections()
+
+	if tr, ok := client.Transport.(*http.Transport); ok { // HTTP/2 may leak due to keep-alive connections.
+		tr.CloseHttp2Connections()
+	}
 
 	if isHTTP3(client) { // HTTP/3 may leak due to keep-alive connections.
 		return client.Transport.(io.Closer).Close()
@@ -401,6 +408,7 @@ func (doh *dnsOverHTTPS) createTransport(ctx context.Context) (t http.RoundTripp
 			MinVersion:             tls.VersionTLS12,
 			SessionTicketsDisabled: false,
 		},
+		NameCertVerify: doh.nameCertVerify,
 	})
 	if err != nil {
 		return nil, err
@@ -434,17 +442,10 @@ func (doh *dnsOverHTTPS) createTransport(ctx context.Context) (t http.RoundTripp
 	// only be used when negotiated on the TLS level.
 	transport.ForceAttemptHTTP2 = true
 
-	// Explicitly configure transport to use HTTP/2.
-	//
-	// See https://github.com/AdguardTeam/dnsproxy/issues/11.
-	var transportH2 *http.Http2Transport
-	transportH2, err = http.Http2ConfigureTransports(transport)
-	if err != nil {
-		return nil, err
-	}
-
 	// Enable HTTP/2 pings on idle connections.
-	transportH2.ReadIdleTimeout = transportDefaultReadIdleTimeout
+	transport.HTTP2 = &http.HTTP2Config{
+		SendPingTimeout: transportDefaultSendPingTimeout,
+	}
 
 	return transport, nil
 }
@@ -554,11 +555,11 @@ func (doh *dnsOverHTTPS) dialQuic(ctx context.Context, addr string, tlsCfg *tls.
 		IP:   net.ParseIP(ip),
 		Port: portInt,
 	}
-	conn, err := doh.dialer.ListenPacket(ctx, "udp", addr)
+	packetConn, err := doh.dialer.ListenPacket(ctx, "udp", addr)
 	if err != nil {
 		return nil, err
 	}
-	transport := quic.Transport{Conn: conn}
+	transport := quic.Transport{Conn: packetConn}
 	transport.SetCreatedConn(true) // auto close conn
 	transport.SetSingleUse(true)   // auto close transport
 	tlsCfg = tlsCfg.Clone()
@@ -568,7 +569,12 @@ func (doh *dnsOverHTTPS) dialQuic(ctx context.Context, addr string, tlsCfg *tls.
 		// It's ok if net.SplitHostPort returns an error - it could be a hostname/IP address without a port.
 		tlsCfg.ServerName = doh.url.Host
 	}
-	return transport.DialEarly(ctx, &udpAddr, tlsCfg, cfg)
+	quicConn, err := transport.DialEarly(ctx, &udpAddr, tlsCfg, cfg)
+	if err != nil {
+		_ = packetConn.Close()
+		return nil, err
+	}
+	return quicConn, nil
 }
 
 // probeH3 runs a test to check whether QUIC is faster than TLS for this
@@ -725,16 +731,12 @@ func (doh *dnsOverHTTPS) tlsDial(ctx context.Context, network string, config *tl
 	// TLS handshake dialTimeout will be used as connection deadLine.
 	conn := tls.Client(rawConn, config)
 
-	err = conn.SetDeadline(time.Now().Add(dialTimeout))
-	if err != nil {
-		// Must not happen in normal circumstances.
-		log.Errorln("cannot set deadline: %v", err)
-		return nil, err
-	}
+	ctx, cancel := context.WithTimeout(ctx, dialTimeout)
+	defer cancel()
 
-	err = conn.Handshake()
+	err = conn.HandshakeContext(ctx)
 	if err != nil {
-		defer conn.Close()
+		_ = rawConn.Close()
 		return nil, err
 	}
 

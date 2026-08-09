@@ -6,6 +6,7 @@ import 'dart:typed_data';
 import 'package:fl_clash/clash/core.dart';
 import 'package:fl_clash/common/common.dart';
 import 'package:fl_clash/enum/enum.dart';
+import 'package:fl_clash/xboard/config/xboard_config.dart';
 import 'package:fl_clash/xboard/features/subscription/utils/subscription_url_helper.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:flutter_xboard_sdk/flutter_xboard_sdk.dart';
@@ -170,17 +171,32 @@ extension ProfileExtension on Profile {
   }
 
   Future<Profile> update() async {
-    // 动态获取最新的订阅URL（支持API域名切换场景）
-    // 当OSS配置的API域名发生变化后，SDK会使用新域名，
-    // 通过getSubscribeUrl()获取新域名下的订阅链接，
-    // 旧域名被墙时也能从新域名拉取节点
+    // 动态获取最新的订阅 URL，并在远程配置提供多个订阅域名时
+    // 并发竞速选择最快的可用地址。
     String updateUrl = url;
     if (url.isNotEmpty) {
       try {
         final sdk = XBoardSDK.instance;
-        final freshUrl = await sdk.subscription.getSubscribeUrl();
-        if (freshUrl.isNotEmpty) {
-          updateUrl = freshUrl;
+        final subscription = await sdk.subscription.getSubscription();
+        final token = subscription.token;
+
+        if (token != null &&
+            token.isNotEmpty &&
+            XBoardConfig.subscriptionUrlList.length > 1) {
+          final fastestUrl = await XBoardConfig.getFastestSubscriptionUrl(
+            token,
+            preferEncrypt: true,
+          );
+          if (fastestUrl != null && fastestUrl.isNotEmpty) {
+            updateUrl = fastestUrl;
+          }
+        }
+
+        // 竞速未配置、没有可用结果或只有一个订阅域名时，使用面板返回地址。
+        if (updateUrl == url &&
+            subscription.subscribeUrl != null &&
+            subscription.subscribeUrl!.isNotEmpty) {
+          updateUrl = subscription.subscribeUrl!;
         }
       } catch (_) {
         // SDK未初始化或获取失败时，回退使用原URL
@@ -188,7 +204,8 @@ extension ProfileExtension on Profile {
       }
     }
 
-    final response = await request.getFileResponseForUrl(SubscriptionUrlHelper.ensureMetaFlag(updateUrl));
+    final response = await request
+        .getFileResponseForUrl(SubscriptionUrlHelper.ensureMetaFlag(updateUrl));
     final disposition = response.headers.value("content-disposition");
     final userinfo = response.headers.value('subscription-userinfo');
     return await copyWith(

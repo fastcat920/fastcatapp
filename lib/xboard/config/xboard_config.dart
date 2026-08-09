@@ -157,6 +157,8 @@ class XBoardConfig {
 
   // 磁盘缓存配置
   static const _kRacingCacheKey = 'xboard_racing_cache';
+  static const _kSubscriptionRacingCacheKey =
+      'xboard_subscription_racing_cache';
   // 缓存有效期：10 分钟。命中时立即返回，同时后台刷新以备下次使用
   static const _kRacingCacheTtlMs = 10 * 60 * 1000;
 
@@ -223,6 +225,7 @@ class XBoardConfig {
     try {
       final prefs = await SharedPreferences.getInstance();
       await prefs.remove(_kRacingCacheKey);
+      await prefs.remove(_kSubscriptionRacingCacheKey);
     } catch (_) {}
   }
 
@@ -515,6 +518,18 @@ class XBoardConfig {
 
     if (subscriptionUrls.isEmpty) return null;
 
+    // 订阅链接包含用户 token，缓存时只保存将 token 替换为占位符后的
+    // 地址模板；命中缓存后再使用本次 token 还原，避免落盘保存凭证。
+    final subscriptionTemplates = subscriptionUrls
+        .map((url) => url.replaceAll(token, '{token}'))
+        .toList(growable: false);
+    final cachedTemplate = await _loadCachedSubscriptionTemplate(
+      subscriptionTemplates,
+    );
+    if (cachedTemplate != null) {
+      return cachedTemplate.replaceAll('{token}', token);
+    }
+
     // 获取所有代理
     final proxyUrls = allProxyUrls;
 
@@ -525,7 +540,67 @@ class XBoardConfig {
       proxyUrls: proxyUrls,
     );
 
-    return racingResult?.domain;
+    final fastestUrl = racingResult?.domain;
+    if (fastestUrl == null || fastestUrl.isEmpty) return null;
+
+    await _saveSubscriptionTemplate(
+      fastestUrl.replaceAll(token, '{token}'),
+      subscriptionTemplates,
+    );
+    return fastestUrl;
+  }
+
+  /// 读取有效的订阅竞速缓存。缓存仅在订阅地址模板集合未变化时命中，
+  /// 防止面板更新订阅域名后继续使用旧地址。
+  static Future<String?> _loadCachedSubscriptionTemplate(
+    List<String> currentTemplates,
+  ) async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final value = prefs.getString(_kSubscriptionRacingCacheKey);
+      if (value == null) return null;
+
+      final data = jsonDecode(value) as Map<String, dynamic>;
+      final timestamp = data['timestamp'] as int?;
+      final template = data['template'] as String?;
+      final cachedTemplates =
+          (data['templates'] as List?)?.whereType<String>().toSet();
+      if (timestamp == null || template == null || cachedTemplates == null) {
+        return null;
+      }
+
+      final age = DateTime.now().millisecondsSinceEpoch - timestamp;
+      if (age > _kRacingCacheTtlMs || !currentTemplates.contains(template)) {
+        return null;
+      }
+      if (cachedTemplates.length != currentTemplates.toSet().length ||
+          !cachedTemplates.containsAll(currentTemplates)) {
+        return null;
+      }
+      return template;
+    } catch (_) {
+      return null;
+    }
+  }
+
+  /// 持久化订阅竞速结果；不保存 token，只保存地址模板。
+  static Future<void> _saveSubscriptionTemplate(
+    String template,
+    List<String> templates,
+  ) async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setString(
+        _kSubscriptionRacingCacheKey,
+        jsonEncode({
+          'template': template,
+          'templates': templates,
+          'timestamp': DateTime.now().millisecondsSinceEpoch,
+        }),
+      );
+    } catch (_) {
+      // 写缓存失败不影响订阅更新。
+    }
   }
 
   /// 获取所有面板URL列表

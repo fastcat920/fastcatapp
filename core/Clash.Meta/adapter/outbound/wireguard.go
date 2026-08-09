@@ -77,8 +77,8 @@ type WireGuardOption struct {
 }
 
 type WireGuardPeerOption struct {
-	Server       string   `proxy:"server"`
-	Port         int      `proxy:"port"`
+	Server       string   `proxy:"server,omitempty"`
+	Port         int      `proxy:"port,omitempty"`
 	PublicKey    string   `proxy:"public-key,omitempty"`
 	PreSharedKey string   `proxy:"pre-shared-key,omitempty"`
 	Reserved     []uint8  `proxy:"reserved,omitempty"`
@@ -166,19 +166,19 @@ func (option WireGuardOption) Prefixes() ([]netip.Prefix, error) {
 
 func NewWireGuard(option WireGuardOption) (*WireGuard, error) {
 	outbound := &WireGuard{
-		Base: &Base{
-			name:   option.Name,
-			addr:   net.JoinHostPort(option.Server, strconv.Itoa(option.Port)),
-			tp:     C.WireGuard,
-			pdName: option.ProviderName,
-			udp:    option.UDP,
-			iface:  option.Interface,
-			rmark:  option.RoutingMark,
-			prefer: option.IPVersion,
-		},
+		Base: NewBase(BaseOption{
+			Name:         option.Name,
+			Addr:         net.JoinHostPort(option.Server, strconv.Itoa(option.Port)),
+			Type:         C.WireGuard,
+			ProviderName: option.ProviderName,
+			UDP:          option.UDP,
+			Interface:    option.Interface,
+			RoutingMark:  option.RoutingMark,
+			Prefer:       option.IPVersion,
+		}),
 	}
 	outbound.dialer = option.NewDialer(outbound.DialOptions())
-	singDialer := proxydialer.NewSlowDownSingDialer(proxydialer.NewSingDialer(outbound.dialer), slowdown.New())
+	singDialer := proxydialer.NewSingDialer(proxydialer.NewSlowDownDialer(outbound.dialer, slowdown.New()))
 
 	var reserved [3]uint8
 	if len(option.Reserved) > 0 {
@@ -482,7 +482,7 @@ func (w *WireGuard) genIpcConf(ctx context.Context, updateOnly bool) (string, er
 			ipcConf += "endpoint=" + destination.String() + "\n"
 			if len(peer.Reserved) > 0 {
 				var reserved [3]uint8
-				copy(reserved[:], w.option.Reserved)
+				copy(reserved[:], peer.Reserved)
 				w.bind.SetReservedForEndpoint(destination, reserved)
 			}
 			if updateOnly {
@@ -591,7 +591,7 @@ func (w *WireGuard) ListenPacketContext(ctx context.Context, metadata *C.Metadat
 	if pc == nil {
 		return nil, E.New("packetConn is nil")
 	}
-	return newPacketConn(pc, w), nil
+	return NewPacketConn(pc, w), nil
 }
 
 func (w *WireGuard) ResolveUDP(ctx context.Context, metadata *C.Metadata) error {
@@ -600,7 +600,7 @@ func (w *WireGuard) ResolveUDP(ctx context.Context, metadata *C.Metadata) error 
 		if w.resolver != nil {
 			r = w.resolver
 		}
-		ip, err := resolver.ResolveIPWithResolver(ctx, metadata.Host, r)
+		ip, err := resolveIPWithResolver(ctx, metadata.Host, w.prefer, r)
 		if err != nil {
 			return fmt.Errorf("can't resolve ip: %w", err)
 		}

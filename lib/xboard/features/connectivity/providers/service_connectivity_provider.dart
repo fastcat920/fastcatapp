@@ -3,6 +3,7 @@ import 'dart:io';
 
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:fl_clash/state.dart';
+import 'package:fl_clash/services/core_switch_status.dart';
 import 'package:fl_clash/xboard/config/gateway_config.dart';
 import 'package:fl_clash/xboard/config/xboard_config.dart';
 import 'package:fl_clash/xboard/core/core.dart';
@@ -36,6 +37,7 @@ class ServiceConnectivityNotifier
   final Ref ref;
   StreamSubscription<List<ConnectivityResult>>? _connectivitySubscription;
   Timer? _recoveryDebounce;
+  Timer? _networkLossDebounce;
   Timer? _retryTimer;
   Timer? _onlineConfirmationTimer;
   bool _isChecking = false;
@@ -75,13 +77,25 @@ class ServiceConnectivityNotifier
       _recoveryDebounce?.cancel();
       _retryTimer?.cancel();
       _onlineConfirmationTimer?.cancel();
-      _setOffline(
-        'no_network',
-        cause: ServiceConnectivityCause.noNetwork,
+      _networkLossDebounce?.cancel();
+      state = state.copyWith(
+        status: ServiceConnectivityStatus.recovering,
+        consecutiveFailures: 0,
+        consecutiveSuccesses: 0,
+        reason: 'network_transition',
+        clearCause: true,
+      );
+      final isVpnTransition = globalState.isCoreSwitchingNotifier.value ||
+          globalState.coreSwitchStatusNotifier.value.stage ==
+              CoreSwitchStage.stopping;
+      _networkLossDebounce = Timer(
+        Duration(seconds: isVpnTransition ? 5 : 3),
+        _confirmNetworkLoss,
       );
       return;
     }
 
+    _networkLossDebounce?.cancel();
     if (state.isOnline && state.consecutiveFailures == 0) return;
     _recoveryDebounce?.cancel();
     if (!debounce) {
@@ -90,6 +104,20 @@ class ServiceConnectivityNotifier
     }
     state = state.copyWith(status: ServiceConnectivityStatus.recovering);
     _recoveryDebounce = Timer(const Duration(seconds: 2), recover);
+  }
+
+  Future<void> _confirmNetworkLoss() async {
+    final results = await Connectivity().checkConnectivity();
+    final hasNetwork = results.isNotEmpty &&
+        !results.every((result) => result == ConnectivityResult.none);
+    if (hasNetwork) {
+      await recover();
+      return;
+    }
+    _setOffline(
+      'no_network',
+      cause: ServiceConnectivityCause.noNetwork,
+    );
   }
 
   Future<void> recover() async {
@@ -124,10 +152,7 @@ class ServiceConnectivityNotifier
       final hasNetwork = results.isNotEmpty &&
           !results.every((result) => result == ConnectivityResult.none);
       if (!hasNetwork) {
-        _setOffline(
-          'no_network',
-          cause: ServiceConnectivityCause.noNetwork,
-        );
+        await handleConnectivityChanged(results);
         return false;
       }
 
@@ -385,6 +410,7 @@ class ServiceConnectivityNotifier
   @override
   void dispose() {
     _recoveryDebounce?.cancel();
+    _networkLossDebounce?.cancel();
     _retryTimer?.cancel();
     _onlineConfirmationTimer?.cancel();
     _connectivitySubscription?.cancel();
