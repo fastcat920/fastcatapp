@@ -335,7 +335,7 @@ class Build {
         "go",
         "build",
         "-ldflags=-w -s -X github.com/metacubex/mihomo/constant.Version=$mihomoVersion",
-        "-tags=$tags",
+        "-tags=${item.target == Target.android ? '$tags,cmfa' : tags}",
         if (isLib) "-buildmode=c-shared",
         "-o",
         outPath,
