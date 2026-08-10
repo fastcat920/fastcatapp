@@ -7,7 +7,7 @@ import 'package:fl_clash/providers/providers.dart';
 import 'package:fl_clash/state.dart';
 import 'package:fl_clash/xboard/features/auth/providers/xboard_user_provider.dart';
 import 'package:fl_clash/xboard/features/auth/models/session_termination.dart';
-import 'package:fl_clash/views/config/network.dart';
+import 'package:fl_clash/xboard/features/settings/widgets/fastcat_tun_toggle.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -431,8 +431,8 @@ class _XBoardHomePageState extends ConsumerState<XBoardHomePage>
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  TUNItem(
-                    onClose: () {
+                  FastCatTunToggle(
+                    onChanged: () {
                       if (rootNavigator.mounted) {
                         rootNavigator.maybePop();
                       }
@@ -951,69 +951,73 @@ class _HomeNoticeCardState extends ConsumerState<_HomeNoticeCard> {
                 ),
               ],
       ),
-      child: Material(
-        color: Colors.transparent,
-        child: InkWell(
-          borderRadius: BorderRadius.circular(20),
-          onTap: notices.isEmpty
-              ? null
-              : () {
-                  final notice = notices[_index];
-                  showDialog(
-                    context: context,
-                    builder: (_) => NoticeDetailDialog(
-                      notices: [notice],
-                    ),
-                  );
-                },
-          child: SizedBox(
-            height: 136,
-            child: Stack(
-              children: [
-                notices.isEmpty
-                    ? Padding(
-                        padding: const EdgeInsets.fromLTRB(16, 12, 16, 12),
-                        child: _NoticeCardContent(
-                          title: '暂无公告',
-                          content: '当前没有最新公告',
-                          isLoading: noticeState.isLoading,
-                          colorScheme: colorScheme,
-                          theme: theme,
-                        ),
-                      )
-                    : PageView.builder(
-                        controller: _pageController,
-                        itemCount: notices.length,
-                        onPageChanged: (index) =>
-                            setState(() => _index = index),
-                        itemBuilder: (context, index) {
-                          final notice = notices[index];
-                          return Padding(
-                            padding: const EdgeInsets.fromLTRB(16, 12, 16, 12),
-                            child: _NoticeCardContent(
-                              title: notice.title.trim().isNotEmpty
-                                  ? notice.title
-                                  : '暂无公告',
-                              content: _plainNoticeContent(notice.content),
-                              dateText: _formatNoticeDate(notice.createdAt),
-                              colorScheme: colorScheme,
-                              theme: theme,
-                            ),
-                          );
-                        },
+      child: XbPointerCursor(
+        enabled: notices.isNotEmpty,
+        child: Material(
+          color: Colors.transparent,
+          child: InkWell(
+            borderRadius: BorderRadius.circular(20),
+            onTap: notices.isEmpty
+                ? null
+                : () {
+                    final notice = notices[_index];
+                    showDialog(
+                      context: context,
+                      builder: (_) => NoticeDetailDialog(
+                        notices: [notice],
                       ),
-                if (notices.length > 1)
-                  Positioned(
-                    left: 0,
-                    right: 0,
-                    bottom: 8,
-                    child: _buildNoticeIndicators(
-                      count: notices.length,
-                      activeIndex: _index,
-                      colorScheme: colorScheme,
+                    );
+                  },
+            child: SizedBox(
+              height: 136,
+              child: Stack(
+                children: [
+                  notices.isEmpty
+                      ? Padding(
+                          padding: const EdgeInsets.fromLTRB(16, 12, 16, 12),
+                          child: _NoticeCardContent(
+                            title: '暂无公告',
+                            content: '当前没有最新公告',
+                            isLoading: noticeState.isLoading,
+                            colorScheme: colorScheme,
+                            theme: theme,
+                          ),
+                        )
+                      : PageView.builder(
+                          controller: _pageController,
+                          itemCount: notices.length,
+                          onPageChanged: (index) =>
+                              setState(() => _index = index),
+                          itemBuilder: (context, index) {
+                            final notice = notices[index];
+                            return Padding(
+                              padding:
+                                  const EdgeInsets.fromLTRB(16, 12, 16, 12),
+                              child: _NoticeCardContent(
+                                title: notice.title.trim().isNotEmpty
+                                    ? notice.title
+                                    : '暂无公告',
+                                content: _plainNoticeContent(notice.content),
+                                dateText: _formatNoticeDate(notice.createdAt),
+                                colorScheme: colorScheme,
+                                theme: theme,
+                              ),
+                            );
+                          },
+                        ),
+                  if (notices.length > 1)
+                    Positioned(
+                      left: 0,
+                      right: 0,
+                      bottom: 8,
+                      child: _buildNoticeIndicators(
+                        count: notices.length,
+                        activeIndex: _index,
+                        colorScheme: colorScheme,
+                      ),
                     ),
-                  ),
-              ],
+                ],
+              ),
             ),
           ),
         ),

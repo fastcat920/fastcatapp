@@ -3,7 +3,7 @@ import 'package:fl_clash/enum/enum.dart';
 import 'package:fl_clash/models/models.dart';
 import 'package:fl_clash/providers/providers.dart';
 import 'package:fl_clash/state.dart';
-import 'package:fl_clash/views/proxies/proxies.dart';
+import 'package:fl_clash/xboard/features/nodes/pages/fastcat_nodes_page.dart';
 import 'package:fl_clash/widgets/widgets.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -260,8 +260,10 @@ class _NodeSelectorBarState extends ConsumerState<NodeSelectorBar> {
     }
 
     _checkNodeChange(currentProxy);
-    // 自动选择时显示组名（如"自动选择"），延迟用实际节点的
-    final displayName = isAutoSelect ? currentGroup.name : currentProxy.name;
+    // 自动组尚未手动选择时显示组名；用户选定节点后立即显示具体节点。
+    final displayName = isAutoSelect && selectedProxyName.isEmpty
+        ? currentGroup.name
+        : currentProxy.name;
     return _buildProxyDisplay(context, currentGroup, currentProxy,
         displayName: displayName);
   }
@@ -273,69 +275,71 @@ class _NodeSelectorBarState extends ConsumerState<NodeSelectorBar> {
     final cardRadius = BorderRadius.circular(XbUiTokens.radiusCard);
     return TVFocusable(
       borderRadius: cardRadius,
-      onPressed: () => _handleOpenProxiesView(context),
-      child: Material(
-        color: XbUiCardStyle.background(context),
-        borderRadius: cardRadius,
-        clipBehavior: Clip.antiAlias,
-        child: InkWell(
-          onTap: () => _handleOpenProxiesView(context),
+      onPressed: () => _handleOpenProxiesView(context, group.name),
+      child: XbPointerCursor(
+        child: Material(
+          color: XbUiCardStyle.background(context),
           borderRadius: cardRadius,
-          child: Container(
-            decoration: BoxDecoration(
-              borderRadius: cardRadius,
-              border: Border.all(
-                color: XbUiCardStyle.shape(context).side.color,
+          clipBehavior: Clip.antiAlias,
+          child: InkWell(
+            onTap: () => _handleOpenProxiesView(context, group.name),
+            borderRadius: cardRadius,
+            child: Container(
+              decoration: BoxDecoration(
+                borderRadius: cardRadius,
+                border: Border.all(
+                  color: XbUiCardStyle.shape(context).side.color,
+                ),
               ),
-            ),
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-            child: Row(
-              children: [
-                Container(
-                  width: 40,
-                  height: 40,
-                  decoration: BoxDecoration(
-                    color: colorScheme.primary.withValues(alpha: 0.14),
-                    shape: BoxShape.circle,
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+              child: Row(
+                children: [
+                  Container(
+                    width: 40,
+                    height: 40,
+                    decoration: BoxDecoration(
+                      color: colorScheme.primary.withValues(alpha: 0.14),
+                      shape: BoxShape.circle,
+                    ),
+                    child: Icon(
+                      Icons.language,
+                      size: 20,
+                      color: colorScheme.primary,
+                    ),
                   ),
-                  child: Icon(
-                    Icons.language,
-                    size: 20,
-                    color: colorScheme.primary,
-                  ),
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        AppLocalizations.of(context).xboardNodeSelection,
-                        style: theme.textTheme.bodySmall?.copyWith(
-                          color: colorScheme.onSurfaceVariant,
-                          fontSize: 12,
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          AppLocalizations.of(context).xboardNodeSelection,
+                          style: theme.textTheme.bodySmall?.copyWith(
+                            color: colorScheme.onSurfaceVariant,
+                            fontSize: 12,
+                          ),
                         ),
-                      ),
-                      const SizedBox(height: 2),
-                      Text(
-                        displayName ?? proxy.name,
-                        style: theme.textTheme.titleSmall?.copyWith(
-                          fontWeight: XbFontWeight.semibold,
-                          color: colorScheme.primary,
+                        const SizedBox(height: 2),
+                        Text(
+                          displayName ?? proxy.name,
+                          style: theme.textTheme.titleSmall?.copyWith(
+                            fontWeight: XbFontWeight.semibold,
+                            color: colorScheme.primary,
+                          ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
                         ),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                    ],
+                      ],
+                    ),
                   ),
-                ),
-                _DelayBadge(proxyName: proxy.name),
-                Icon(
-                  Icons.chevron_right,
-                  color: Theme.of(context).colorScheme.onSurfaceVariant,
-                  size: 22,
-                ),
-              ],
+                  _DelayBadge(proxyName: proxy.name),
+                  Icon(
+                    Icons.chevron_right,
+                    color: Theme.of(context).colorScheme.onSurfaceVariant,
+                    size: 22,
+                  ),
+                ],
+              ),
             ),
           ),
         ),
@@ -495,62 +499,16 @@ class _NodeSelectorBarState extends ConsumerState<NodeSelectorBar> {
     }
   }
 
-  void _openProxiesView(BuildContext context) {
+  void _openProxiesView(BuildContext context, [String? groupName]) {
     Navigator.of(context).push(
       MaterialPageRoute(
-        builder: (ctx) {
-          final isDark = Theme.of(ctx).brightness == Brightness.dark;
-          return CommonScaffold(
-            backgroundColor: isDark ? null : XbUiTokens.pageBackgroundLight,
-            title: AppLocalizations.of(ctx).xboardNodeSelection,
-            actions: [
-              Consumer(
-                builder: (_, ref, __) {
-                  final isImporting =
-                      ref.watch(profileImportProvider).isImporting;
-                  return TextButton.icon(
-                    onPressed: isImporting
-                        ? null
-                        : () {
-                            final url = ref
-                                .read(subscriptionInfoProvider)
-                                ?.subscribeUrl;
-                            if (url != null && url.isNotEmpty) {
-                              ref
-                                  .read(profileImportProvider.notifier)
-                                  .importSubscription(url, forceRefresh: true);
-                            }
-                          },
-                    icon: isImporting
-                        ? const SizedBox(
-                            width: 20,
-                            height: 20,
-                            child: CircularProgressIndicator(strokeWidth: 2),
-                          )
-                        : const Icon(Icons.refresh),
-                    label: Text(AppLocalizations.of(ctx).xboardUpdateNodes),
-                  );
-                },
-              ),
-              TextButton.icon(
-                onPressed: () {
-                  autoLatencyService.testCurrentGroupNodes(maxNodes: 999);
-                },
-                icon: const Icon(Icons.network_check),
-                label: Text(AppLocalizations.of(ctx).xboardTestLatency),
-              ),
-            ],
-            body: Container(
-              color: isDark ? null : XbUiTokens.pageBackgroundLight,
-              child: const _AutoPopProxiesView(),
-            ),
-          );
-        },
+        builder: (_) => FastCatNodesPage(initialGroupName: groupName),
       ),
     );
   }
 
-  Future<void> _handleOpenProxiesView(BuildContext context) async {
+  Future<void> _handleOpenProxiesView(BuildContext context,
+      [String? groupName]) async {
     final blockStatus = subscriptionGuardService.checkBeforeConnect();
     if (blockStatus != null &&
         (blockStatus.type == SubscriptionStatusType.noSubscription ||
@@ -571,7 +529,7 @@ class _NodeSelectorBarState extends ConsumerState<NodeSelectorBar> {
       return;
     }
     if (!context.mounted) return;
-    _openProxiesView(context);
+    _openProxiesView(context, groupName);
   }
 
   void _checkNodeChange(Proxy currentProxy) {
@@ -584,36 +542,6 @@ class _NodeSelectorBarState extends ConsumerState<NodeSelectorBar> {
       _lastProxyName = currentProxy.name;
       autoLatencyService.onNodeChanged();
     }
-  }
-}
-
-/// 节点列表视图：选择节点后自动返回上一页
-class _AutoPopProxiesView extends ConsumerStatefulWidget {
-  const _AutoPopProxiesView();
-
-  @override
-  ConsumerState<_AutoPopProxiesView> createState() =>
-      _AutoPopProxiesViewState();
-}
-
-class _AutoPopProxiesViewState extends ConsumerState<_AutoPopProxiesView> {
-  @override
-  void initState() {
-    super.initState();
-    ref.listenManual(selectedMapProvider, (previous, next) {
-      if (previous != null && previous != next) {
-        WidgetsBinding.instance.addPostFrameCallback((_) {
-          if (mounted && Navigator.of(context).canPop()) {
-            Navigator.of(context).pop();
-          }
-        });
-      }
-    });
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return const ProxiesView();
   }
 }
 

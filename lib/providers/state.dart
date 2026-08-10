@@ -296,17 +296,6 @@ HomeState homeState(Ref ref) {
 }
 
 @riverpod
-DashboardState dashboardState(Ref ref) {
-  final dashboardWidgets =
-      ref.watch(appSettingProvider.select((state) => state.dashboardWidgets));
-  final viewWidth = ref.watch(viewWidthProvider);
-  return DashboardState(
-    dashboardWidgets: dashboardWidgets,
-    viewWidth: viewWidth,
-  );
-}
-
-@riverpod
 ProxiesActionsState proxiesActionsState(Ref ref) {
   final pageLabel = ref.watch(currentPageLabelProvider);
   final hasProviders = ref.watch(providersProvider.select(
@@ -667,15 +656,9 @@ VM2? layoutChange(Ref ref) {
 @riverpod
 VM2<int, bool> checkIp(Ref ref) {
   final checkIpNum = ref.watch(checkIpNumProvider);
-  final containsDetection = ref.watch(
-    dashboardStateProvider.select(
-      (state) =>
-          state.dashboardWidgets.contains(DashboardWidget.networkDetection),
-    ),
-  );
   return VM2(
     a: checkIpNum,
-    b: containsDetection,
+    b: true,
   );
 }
 

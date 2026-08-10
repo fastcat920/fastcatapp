@@ -33,43 +33,46 @@ class XBCard extends StatelessWidget {
             ? colorScheme.primaryContainer
             : XbUiCardStyle.background(context));
 
-    return Container(
-      margin: margin,
-      decoration: BoxDecoration(
-        borderRadius: borderRadius ?? defaultBorderRadius,
-        boxShadow: shadowColor == null
-            ? null
-            : [
-                BoxShadow(
-                  color: shadowColor,
-                  blurRadius: 16,
-                  offset: const Offset(0, 4),
-                ),
-              ],
-      ),
-      child: Material(
-        elevation: elevation ?? 0,
-        borderRadius: borderRadius ?? defaultBorderRadius,
-        color: bgColor,
-        clipBehavior: Clip.antiAlias,
-        child: InkWell(
-          onTap: onTap,
+    return XbPointerCursor(
+      enabled: onTap != null,
+      child: Container(
+        margin: margin,
+        decoration: BoxDecoration(
           borderRadius: borderRadius ?? defaultBorderRadius,
-          child: Container(
-            padding: padding,
-            decoration: BoxDecoration(
-              borderRadius: borderRadius ?? defaultBorderRadius,
-              border: isSelected
-                  ? Border.all(
-                      color: colorScheme.primary,
-                      width: 2,
-                    )
-                  : Border.all(
-                      color: shape.side.color,
-                      width: shape.side.width,
-                    ),
+          boxShadow: shadowColor == null
+              ? null
+              : [
+                  BoxShadow(
+                    color: shadowColor,
+                    blurRadius: 16,
+                    offset: const Offset(0, 4),
+                  ),
+                ],
+        ),
+        child: Material(
+          elevation: elevation ?? 0,
+          borderRadius: borderRadius ?? defaultBorderRadius,
+          color: bgColor,
+          clipBehavior: Clip.antiAlias,
+          child: InkWell(
+            onTap: onTap,
+            borderRadius: borderRadius ?? defaultBorderRadius,
+            child: Container(
+              padding: padding,
+              decoration: BoxDecoration(
+                borderRadius: borderRadius ?? defaultBorderRadius,
+                border: isSelected
+                    ? Border.all(
+                        color: colorScheme.primary,
+                        width: 2,
+                      )
+                    : Border.all(
+                        color: shape.side.color,
+                        width: shape.side.width,
+                      ),
+              ),
+              child: child,
             ),
-            child: child,
           ),
         ),
       ),

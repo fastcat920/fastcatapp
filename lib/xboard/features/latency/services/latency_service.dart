@@ -45,6 +45,7 @@ class LatencyService {
     return latencies;
   }
 }
+
 final latencyServiceProvider = Provider<LatencyService>((ref) {
   return LatencyService();
 });

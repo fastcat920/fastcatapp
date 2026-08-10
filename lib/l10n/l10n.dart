@@ -5215,20 +5215,20 @@ class AppLocalizations {
     );
   }
 
-  /// `Automatically select direct or proxy based on rules`
+  /// `Intelligently route traffic by destination region for acceleration (recommended)`
   String get xboardProxyModeRuleDescription {
     return Intl.message(
-      'Automatically select direct or proxy based on rules',
+      'Intelligently route traffic by destination region for acceleration (recommended)',
       name: 'xboardProxyModeRuleDescription',
       desc: '',
       args: [],
     );
   }
 
-  /// `All traffic goes through proxy server`
+  /// `Route all network traffic through the proxy (recommended when specific sites are inaccessible)`
   String get xboardProxyModeGlobalDescription {
     return Intl.message(
-      'All traffic goes through proxy server',
+      'Route all network traffic through the proxy (recommended when specific sites are inaccessible)',
       name: 'xboardProxyModeGlobalDescription',
       desc: '',
       args: [],

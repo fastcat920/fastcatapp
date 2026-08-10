@@ -17,7 +17,7 @@ enum UserAgentScenario {
 
 /// User-Agent 配置
 ///
-/// 订阅下载使用与主程序相同的 UA（含 clash-verge/meta/flclash 标识），
+/// 订阅下载使用与主程序相同的 UA，并保留面板兼容标识。
 /// 确保服务端正确匹配 ClashMeta 协议（支持 TUIC/Hysteria 等）。
 class UserAgentConfig {
   static Future<String> get(UserAgentScenario scenario) async {

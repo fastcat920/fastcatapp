@@ -16,6 +16,7 @@ import 'package:fl_clash/xboard/features/subscription/widgets/subscription_statu
 import 'package:fl_clash/xboard/utils/xboard_notification.dart';
 import 'package:fl_clash/xboard/features/connectivity/connectivity.dart';
 import 'package:fl_clash/xboard/features/shared/utils/tv_focus_restoration.dart';
+import 'package:fl_clash/xboard/features/shared/styles/styles.dart';
 
 class XBoardConnectButton extends ConsumerStatefulWidget {
   final bool isFloating; // 是否为浮动按钮模式
@@ -416,122 +417,87 @@ class _XBoardConnectButtonState extends ConsumerState<XBoardConnectButton>
                 focusNode: _tvFocusNode,
                 borderRadius: BorderRadius.circular(outerSize / 2),
                 onPressed: _isBusy ? null : handleSwitchStart,
-                child: GestureDetector(
-                  onTap: _isBusy ? null : handleSwitchStart,
-                  child: SizedBox(
-                    width: outerSize,
-                    height: outerSize,
-                    child: Center(
-                      child: AnimatedContainer(
-                        duration: const Duration(milliseconds: 250),
-                        width: outerSize,
-                        height: outerSize,
-                        decoration: BoxDecoration(
-                          shape: BoxShape.circle,
-                          color: isStart
-                              ? glowColor.withValues(
-                                  alpha: isDark ? 0.12 : 0.10)
-                              : Colors.transparent,
-                        ),
-                        child: Center(
-                          child: AnimatedContainer(
-                            duration: const Duration(milliseconds: 250),
-                            width: middleSize,
-                            height: middleSize,
-                            decoration: BoxDecoration(
-                              shape: BoxShape.circle,
-                              color: isStart
-                                  ? glowColor.withValues(
-                                      alpha: isDark ? 0.12 : 0.10)
-                                  : Colors.transparent,
-                            ),
-                            child: Center(
-                              child: AnimatedContainer(
-                                duration: const Duration(milliseconds: 250),
-                                width: btnSize,
-                                height: btnSize,
-                                decoration: BoxDecoration(
-                                  shape: BoxShape.circle,
-                                  color: isStart ? onBg : offBg,
-                                  boxShadow: [
-                                    BoxShadow(
-                                      color: isStart
-                                          ? glowColor.withValues(
-                                              alpha: isDark ? 0.36 : 0.30)
-                                          : Colors.black.withValues(
-                                              alpha: isDark ? 0.30 : 0.10),
-                                      blurRadius: isStart ? 18 : 12,
-                                      spreadRadius: isStart ? 1 : 0,
-                                      offset: const Offset(0, 4),
-                                    ),
-                                  ],
-                                ),
-                                child: AnimatedSwitcher(
+                child: XbPointerCursor(
+                  enabled: !_isBusy,
+                  child: GestureDetector(
+                    onTap: _isBusy ? null : handleSwitchStart,
+                    child: SizedBox(
+                      width: outerSize,
+                      height: outerSize,
+                      child: Center(
+                        child: AnimatedContainer(
+                          duration: const Duration(milliseconds: 250),
+                          width: outerSize,
+                          height: outerSize,
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            color: isStart
+                                ? glowColor.withValues(
+                                    alpha: isDark ? 0.12 : 0.10)
+                                : Colors.transparent,
+                          ),
+                          child: Center(
+                            child: AnimatedContainer(
+                              duration: const Duration(milliseconds: 250),
+                              width: middleSize,
+                              height: middleSize,
+                              decoration: BoxDecoration(
+                                shape: BoxShape.circle,
+                                color: isStart
+                                    ? glowColor.withValues(
+                                        alpha: isDark ? 0.12 : 0.10)
+                                    : Colors.transparent,
+                              ),
+                              child: Center(
+                                child: AnimatedContainer(
                                   duration: const Duration(milliseconds: 250),
-                                  child: _isBusy
-                                      ? Column(
-                                          key: const ValueKey('switching'),
-                                          mainAxisAlignment:
-                                              MainAxisAlignment.center,
-                                          children: [
-                                            SizedBox(
-                                              width: iconSize * 0.58,
-                                              height: iconSize * 0.58,
-                                              child: CircularProgressIndicator(
-                                                strokeWidth: 2.5,
-                                                color: iconColor,
+                                  width: btnSize,
+                                  height: btnSize,
+                                  decoration: BoxDecoration(
+                                    shape: BoxShape.circle,
+                                    color: isStart ? onBg : offBg,
+                                    boxShadow: [
+                                      BoxShadow(
+                                        color: isStart
+                                            ? glowColor.withValues(
+                                                alpha: isDark ? 0.36 : 0.30)
+                                            : Colors.black.withValues(
+                                                alpha: isDark ? 0.30 : 0.10),
+                                        blurRadius: isStart ? 18 : 12,
+                                        spreadRadius: isStart ? 1 : 0,
+                                        offset: const Offset(0, 4),
+                                      ),
+                                    ],
+                                  ),
+                                  child: AnimatedSwitcher(
+                                    duration: const Duration(milliseconds: 250),
+                                    child: _isBusy
+                                        ? Column(
+                                            key: const ValueKey('switching'),
+                                            mainAxisAlignment:
+                                                MainAxisAlignment.center,
+                                            children: [
+                                              SizedBox(
+                                                width: iconSize * 0.58,
+                                                height: iconSize * 0.58,
+                                                child:
+                                                    CircularProgressIndicator(
+                                                  strokeWidth: 2.5,
+                                                  color: iconColor,
+                                                ),
                                               ),
-                                            ),
-                                            SizedBox(
-                                                height:
-                                                    (outerSize * 0.035).clamp(
-                                              2.0,
-                                              5.0,
-                                            )),
-                                            Padding(
-                                              padding:
-                                                  const EdgeInsets.symmetric(
-                                                      horizontal: 8),
-                                              child: _LeftScrollingText(
-                                                text: _busyLabel(context),
-                                                style: Theme.of(context)
-                                                    .textTheme
-                                                    .labelSmall
-                                                    ?.copyWith(
-                                                      color: iconColor,
-                                                      fontSize:
-                                                          (outerSize * 0.07)
-                                                              .clamp(9.0, 12.0),
-                                                    ),
-                                              ),
-                                            ),
-                                          ],
-                                        )
-                                      : Column(
-                                          key: ValueKey(isStart),
-                                          mainAxisAlignment:
-                                              MainAxisAlignment.center,
-                                          children: [
-                                            Icon(
-                                              btnIcon,
-                                              size: iconSize * 0.75,
-                                              color: iconColor,
-                                            ),
-                                            SizedBox(
-                                                height: (outerSize * 0.03)
-                                                    .clamp(2.0, 4.0)),
-                                            Consumer(
-                                              builder: (_, ref, __) {
-                                                final runTime =
-                                                    ref.watch(runTimeProvider);
-                                                final l10n =
-                                                    AppLocalizations.of(
-                                                        context);
-                                                final label = isStart
-                                                    ? utils.getTimeText(runTime)
-                                                    : l10n.tapToConnect;
-                                                return _LeftScrollingText(
-                                                  text: label,
+                                              SizedBox(
+                                                  height:
+                                                      (outerSize * 0.035).clamp(
+                                                2.0,
+                                                5.0,
+                                              )),
+                                              Padding(
+                                                padding:
+                                                    const EdgeInsets.symmetric(
+                                                        horizontal: 8),
+                                                child: _LeftScrollingText(
+                                                  text: _busyLabel(context),
                                                   style: Theme.of(context)
                                                       .textTheme
                                                       .labelSmall
@@ -541,11 +507,51 @@ class _XBoardConnectButtonState extends ConsumerState<XBoardConnectButton>
                                                                 0.07)
                                                             .clamp(9.0, 12.0),
                                                       ),
-                                                );
-                                              },
-                                            ),
-                                          ],
-                                        ),
+                                                ),
+                                              ),
+                                            ],
+                                          )
+                                        : Column(
+                                            key: ValueKey(isStart),
+                                            mainAxisAlignment:
+                                                MainAxisAlignment.center,
+                                            children: [
+                                              Icon(
+                                                btnIcon,
+                                                size: iconSize * 0.75,
+                                                color: iconColor,
+                                              ),
+                                              SizedBox(
+                                                  height: (outerSize * 0.03)
+                                                      .clamp(2.0, 4.0)),
+                                              Consumer(
+                                                builder: (_, ref, __) {
+                                                  final runTime = ref
+                                                      .watch(runTimeProvider);
+                                                  final l10n =
+                                                      AppLocalizations.of(
+                                                          context);
+                                                  final label = isStart
+                                                      ? utils
+                                                          .getTimeText(runTime)
+                                                      : l10n.tapToConnect;
+                                                  return _LeftScrollingText(
+                                                    text: label,
+                                                    style: Theme.of(context)
+                                                        .textTheme
+                                                        .labelSmall
+                                                        ?.copyWith(
+                                                          color: iconColor,
+                                                          fontSize: (outerSize *
+                                                                  0.07)
+                                                              .clamp(9.0, 12.0),
+                                                        ),
+                                                  );
+                                                },
+                                              ),
+                                            ],
+                                          ),
+                                  ),
                                 ),
                               ),
                             ),

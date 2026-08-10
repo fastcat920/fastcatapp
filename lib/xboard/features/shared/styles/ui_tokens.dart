@@ -1,6 +1,25 @@
 import 'package:fl_clash/xboard/features/shared/styles/font_weights.dart';
 import 'package:flutter/material.dart';
 
+class XbPointerCursor extends StatelessWidget {
+  const XbPointerCursor({
+    super.key,
+    required this.child,
+    this.enabled = true,
+  });
+
+  final Widget child;
+  final bool enabled;
+
+  @override
+  Widget build(BuildContext context) {
+    return MouseRegion(
+      cursor: enabled ? SystemMouseCursors.click : SystemMouseCursors.basic,
+      child: child,
+    );
+  }
+}
+
 /// XBoard UI tokens for visual consistency across pages.
 class XbUiTokens {
   XbUiTokens._();

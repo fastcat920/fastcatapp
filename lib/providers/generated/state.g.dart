@@ -174,23 +174,6 @@ final homeStateProvider = AutoDisposeProvider<HomeState>.internal(
 @Deprecated('Will be removed in 3.0. Use Ref instead')
 // ignore: unused_element
 typedef HomeStateRef = AutoDisposeProviderRef<HomeState>;
-String _$dashboardStateHash() => r'4434206df2753d7df9eb5223c07ddead4ed170fa';
-
-/// See also [dashboardState].
-@ProviderFor(dashboardState)
-final dashboardStateProvider = AutoDisposeProvider<DashboardState>.internal(
-  dashboardState,
-  name: r'dashboardStateProvider',
-  debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
-      ? null
-      : _$dashboardStateHash,
-  dependencies: null,
-  allTransitiveDependencies: null,
-);
-
-@Deprecated('Will be removed in 3.0. Use Ref instead')
-// ignore: unused_element
-typedef DashboardStateRef = AutoDisposeProviderRef<DashboardState>;
 String _$proxiesActionsStateHash() =>
     r'84f8a94706233ff5d4b8a456291a4e66c1381c62';
 

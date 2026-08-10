@@ -66,7 +66,7 @@ class SubscriptionDownloader {
 
         if (isLikelyBase64 || isLikelyUriList) {
           _logger.error('❌ 服务端返回了通用订阅格式（Base64/URI列表），而非 Clash YAML 配置！');
-          _logger.error('   这通常是因为服务端未识别客户端 UA 中的 meta/flclash 标识。');
+          _logger.error('   这通常是因为服务端未识别客户端的 Mihomo 兼容标识。');
           _logger.error(
               '   当前 UA: ${await UserAgentConfig.get(UserAgentScenario.subscription)}');
           _logger.error(

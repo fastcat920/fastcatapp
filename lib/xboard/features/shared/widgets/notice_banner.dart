@@ -10,6 +10,7 @@ import 'package:flutter_markdown/flutter_markdown.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:fl_clash/xboard/features/notice/notice.dart';
 import '../styles/markdown_styles.dart';
+import '../styles/ui_tokens.dart';
 import '../styles/html_styles.dart';
 import '../utils/tv_focus_restoration.dart';
 
@@ -167,23 +168,25 @@ class _NoticeBannerState extends ConsumerState<NoticeBanner>
             ),
           ),
           Expanded(
-            child: GestureDetector(
-              onTap: () => _showNoticeDialog(),
-              child: ClipRect(
-                child: SlideTransition(
-                  position: _slideAnimation,
-                  child: Container(
-                    height: bannerHeight,
-                    alignment: Alignment.centerLeft,
-                    child: notices.isEmpty
-                        ? const SizedBox.shrink()
-                        : MarkdownBody(
-                            data: notices[_currentIndex % notices.length],
-                            styleSheet: MarkdownStyleSheet(
-                              p: textStyle,
-                              textAlign: WrapAlignment.start,
+            child: XbPointerCursor(
+              child: GestureDetector(
+                onTap: () => _showNoticeDialog(),
+                child: ClipRect(
+                  child: SlideTransition(
+                    position: _slideAnimation,
+                    child: Container(
+                      height: bannerHeight,
+                      alignment: Alignment.centerLeft,
+                      child: notices.isEmpty
+                          ? const SizedBox.shrink()
+                          : MarkdownBody(
+                              data: notices[_currentIndex % notices.length],
+                              styleSheet: MarkdownStyleSheet(
+                                p: textStyle,
+                                textAlign: WrapAlignment.start,
+                              ),
                             ),
-                          ),
+                    ),
                   ),
                 ),
               ),
@@ -449,25 +452,27 @@ class _NoticeDetailDialogState extends State<NoticeDetailDialog>
             ),
           ),
           const SizedBox(width: 8),
-          Material(
-            color: Colors.transparent,
-            child: InkWell(
-              onTap: () {
-                if (!system.isTV) {
-                  FocusScope.of(context).unfocus();
-                }
-                Navigator.of(context).pop();
-              },
-              borderRadius: BorderRadius.circular(12),
-              child: Padding(
-                padding: const EdgeInsets.all(6.0),
-                child: Icon(
-                  Icons.close_rounded,
-                  color: Theme.of(context)
-                      .colorScheme
-                      .onSurface
-                      .withValues(alpha: 0.6),
-                  size: 20,
+          XbPointerCursor(
+            child: Material(
+              color: Colors.transparent,
+              child: InkWell(
+                onTap: () {
+                  if (!system.isTV) {
+                    FocusScope.of(context).unfocus();
+                  }
+                  Navigator.of(context).pop();
+                },
+                borderRadius: BorderRadius.circular(12),
+                child: Padding(
+                  padding: const EdgeInsets.all(6.0),
+                  child: Icon(
+                    Icons.close_rounded,
+                    color: Theme.of(context)
+                        .colorScheme
+                        .onSurface
+                        .withValues(alpha: 0.6),
+                    size: 20,
+                  ),
                 ),
               ),
             ),
@@ -579,6 +584,7 @@ class _NoticeDetailDialogState extends State<NoticeDetailDialog>
   Widget _buildMarkdownContent(String content) {
     return MarkdownBody(
       data: _processMarkdownForDialog(content),
+      softLineBreak: true,
       styleSheet: NoticeMarkdownStyles.getNoticeContentStyle(context),
       onTapLink: (text, href, title) => _handleLinkTap(href),
     );
@@ -594,7 +600,7 @@ class _NoticeDetailDialogState extends State<NoticeDetailDialog>
   }
 
   String _processMarkdownForDialog(String markdownText) {
-    return markdownText.trim();
+    return markdownText.replaceAll(RegExp(r'\r\n?'), '\n').trim();
   }
 
   String _processHtmlForDialog(String htmlText) {

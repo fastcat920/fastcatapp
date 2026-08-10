@@ -280,143 +280,158 @@ class _StreamingCheckPageState extends ConsumerState<StreamingCheckPage> {
       unawaited(_verifyStoredNode());
     });
 
-    return ListView(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
-      children: [
-        _Panel(
-          child: Padding(
-            padding: const EdgeInsets.all(16),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                _StatusLine(
-                  connected: connected,
-                  nodeName: _nodeName,
+    return Scaffold(
+      backgroundColor: XbUiTokens.pageBackground(context),
+      appBar: AppBar(
+        title: Text(l10n.xboardStreamingCheck),
+        backgroundColor: XbUiTokens.pageBackground(context),
+        surfaceTintColor: Colors.transparent,
+      ),
+      body: Center(
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 1040),
+          child: ListView(
+            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
+            children: [
+              _Panel(
+                child: Padding(
+                  padding: const EdgeInsets.all(16),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      _StatusLine(
+                        connected: connected,
+                        nodeName: _nodeName,
+                      ),
+                      const SizedBox(height: 14),
+                      Wrap(
+                        spacing: 12,
+                        runSpacing: 8,
+                        children: [
+                          FilledButton.icon(
+                            onPressed: !connected || _running ? null : _start,
+                            style: XbUiButton.filledPrimary(
+                              context,
+                              busy: _running,
+                            ),
+                            icon: _running
+                                ? SizedBox.square(
+                                    dimension: 18,
+                                    child: CircularProgressIndicator(
+                                      strokeWidth: 2,
+                                      color: Theme.of(context)
+                                          .colorScheme
+                                          .onPrimary,
+                                    ),
+                                  )
+                                : const Icon(Icons.play_arrow),
+                            label: Text(
+                              _running
+                                  ? l10n.xboardStreamingChecking
+                                  : _results.isEmpty
+                                      ? l10n.xboardStreamingStart
+                                      : l10n.xboardStreamingRetest,
+                            ),
+                          ),
+                          OutlinedButton.icon(
+                            onPressed: _running || _copying || _results.isEmpty
+                                ? null
+                                : _copyReport,
+                            icon: _copying
+                                ? const SizedBox.square(
+                                    dimension: 18,
+                                    child: CircularProgressIndicator(
+                                        strokeWidth: 2),
+                                  )
+                                : const Icon(Icons.copy_outlined),
+                            label: Text(l10n.xboardStreamingCopyReport),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
                 ),
-                const SizedBox(height: 14),
-                Wrap(
-                  spacing: 12,
-                  runSpacing: 8,
-                  children: [
-                    FilledButton.icon(
-                      onPressed: !connected || _running ? null : _start,
-                      style: XbUiButton.filledPrimary(
-                        context,
-                        busy: _running,
-                      ),
-                      icon: _running
-                          ? SizedBox.square(
-                              dimension: 18,
-                              child: CircularProgressIndicator(
-                                strokeWidth: 2,
-                                color: Theme.of(context).colorScheme.onPrimary,
-                              ),
-                            )
-                          : const Icon(Icons.play_arrow),
-                      label: Text(
-                        _running
-                            ? l10n.xboardStreamingChecking
-                            : _results.isEmpty
-                                ? l10n.xboardStreamingStart
-                                : l10n.xboardStreamingRetest,
-                      ),
-                    ),
-                    OutlinedButton.icon(
-                      onPressed: _running || _copying || _results.isEmpty
-                          ? null
-                          : _copyReport,
-                      icon: _copying
-                          ? const SizedBox.square(
-                              dimension: 18,
-                              child: CircularProgressIndicator(strokeWidth: 2),
-                            )
-                          : const Icon(Icons.copy_outlined),
-                      label: Text(l10n.xboardStreamingCopyReport),
-                    ),
-                  ],
+              ),
+              if (!connected || _message != null) ...[
+                const SizedBox(height: 12),
+                _MessageCard(
+                  message: _message ?? l10n.xboardStreamingConnectFirst,
                 ),
               ],
-            ),
-          ),
-        ),
-        if (!connected || _message != null) ...[
-          const SizedBox(height: 12),
-          _MessageCard(
-            message: _message ?? l10n.xboardStreamingConnectFirst,
-            warning: _invalidated || connected,
-          ),
-        ],
-        if (_nodeName != null) ...[
-          const SizedBox(height: 16),
-          Text(
-            l10n.xboardStreamingSummary,
-            style: theme.textTheme.titleSmall?.copyWith(
-              fontWeight: XbFontWeight.bold,
-              color: theme.colorScheme.onSurfaceVariant,
-            ),
-          ),
-          const SizedBox(height: 10),
-          _SummaryCard(
-            nodeName: _nodeName!,
-            region: _region,
-            completed: _results.length,
-            accessible: _accessibleCount,
-            total: StreamingCheckService.targets.length,
-          ),
-        ],
-        if (_results.isNotEmpty) ...[
-          const SizedBox(height: 16),
-          Text(
-            l10n.xboardStreamingResults,
-            style: theme.textTheme.titleSmall?.copyWith(
-              fontWeight: XbFontWeight.bold,
-              color: theme.colorScheme.onSurfaceVariant,
-            ),
-          ),
-          const SizedBox(height: 10),
-          LayoutBuilder(
-            builder: (context, constraints) {
-              final columns = constraints.maxWidth >= 760 ? 2 : 1;
-              final width = columns == 2
-                  ? (constraints.maxWidth - 12) / 2
-                  : constraints.maxWidth;
-              return Wrap(
-                spacing: 12,
-                runSpacing: 10,
-                children: [
-                  for (final result in _results)
-                    SizedBox(
-                      width: width,
-                      child: _ResultCard(
-                        result: result,
-                        icon: _serviceIcon(result.target.id),
-                        statusText: _statusText(l10n, result.status),
-                      ),
-                    ),
+              if (_nodeName != null) ...[
+                const SizedBox(height: 16),
+                Text(
+                  l10n.xboardStreamingSummary,
+                  style: theme.textTheme.titleSmall?.copyWith(
+                    fontWeight: XbFontWeight.bold,
+                    color: theme.colorScheme.onSurfaceVariant,
+                  ),
+                ),
+                const SizedBox(height: 10),
+                _SummaryCard(
+                  nodeName: _nodeName!,
+                  region: _region,
+                  completed: _results.length,
+                  accessible: _accessibleCount,
+                  total: StreamingCheckService.targets.length,
+                ),
+              ],
+              if (_results.isNotEmpty) ...[
+                const SizedBox(height: 16),
+                Text(
+                  l10n.xboardStreamingResults,
+                  style: theme.textTheme.titleSmall?.copyWith(
+                    fontWeight: XbFontWeight.bold,
+                    color: theme.colorScheme.onSurfaceVariant,
+                  ),
+                ),
+                const SizedBox(height: 10),
+                LayoutBuilder(
+                  builder: (context, constraints) {
+                    final columns = constraints.maxWidth >= 760 ? 2 : 1;
+                    final width = columns == 2
+                        ? (constraints.maxWidth - 12) / 2
+                        : constraints.maxWidth;
+                    return Wrap(
+                      spacing: 12,
+                      runSpacing: 10,
+                      children: [
+                        for (final result in _results)
+                          SizedBox(
+                            width: width,
+                            child: _ResultCard(
+                              result: result,
+                              icon: _serviceIcon(result.target.id),
+                              statusText: _statusText(l10n, result.status),
+                            ),
+                          ),
+                      ],
+                    );
+                  },
+                ),
+                if (_running) ...[
+                  const SizedBox(height: 12),
+                  const _CheckingMoreIndicator(),
                 ],
-              );
-            },
-          ),
-          if (_running) ...[
-            const SizedBox(height: 12),
-            const _CheckingMoreIndicator(),
-          ],
-        ],
-        const SizedBox(height: 16),
-        DecoratedBox(
-          decoration: BoxDecoration(
-            color: theme.colorScheme.surfaceContainerLow,
-            borderRadius: BorderRadius.circular(8),
-          ),
-          child: Padding(
-            padding: const EdgeInsets.all(12),
-            child: Text(
-              l10n.xboardStreamingDisclaimer,
-              style: theme.textTheme.bodySmall?.copyWith(height: 1.6),
-            ),
+              ],
+              const SizedBox(height: 16),
+              DecoratedBox(
+                decoration: BoxDecoration(
+                  color: theme.colorScheme.surfaceContainerLow,
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Padding(
+                  padding: const EdgeInsets.all(12),
+                  child: Text(
+                    l10n.xboardStreamingDisclaimer,
+                    style: theme.textTheme.bodySmall?.copyWith(height: 1.6),
+                  ),
+                ),
+              ),
+            ],
           ),
         ),
-      ],
+      ),
     );
   }
 }
@@ -428,15 +443,13 @@ class _Panel extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    return Container(
-      decoration: BoxDecoration(
-        color: theme.colorScheme.surfaceContainerHighest.withValues(alpha: 0.4),
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(
-          color: theme.colorScheme.outline.withValues(alpha: 0.12),
-        ),
-      ),
+    return Card(
+      margin: EdgeInsets.zero,
+      elevation: XbUiCardStyle.elevation(context),
+      shadowColor: XbUiCardStyle.shadowColor(context),
+      color: XbUiCardStyle.background(context),
+      shape: XbUiCardStyle.shape(context, radius: 16),
+      clipBehavior: Clip.antiAlias,
       child: child,
     );
   }
@@ -525,16 +538,13 @@ class _StatusLine extends StatelessWidget {
 }
 
 class _MessageCard extends StatelessWidget {
-  const _MessageCard({required this.message, required this.warning});
+  const _MessageCard({required this.message});
 
   final String message;
-  final bool warning;
 
   @override
   Widget build(BuildContext context) {
-    final color = warning
-        ? XbUiStatusColor.pending(context)
-        : Theme.of(context).colorScheme.onSurfaceVariant;
+    final color = XbUiStatusColor.pending(context);
     return Container(
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
@@ -655,11 +665,9 @@ class _ResultCard extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: theme.colorScheme.surfaceContainerHighest.withValues(alpha: 0.4),
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(
-          color: theme.colorScheme.outline.withValues(alpha: 0.12),
-        ),
+        color: XbUiCardStyle.background(context),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: XbUiTokens.cardBorder(context)),
       ),
       child: Row(
         children: [

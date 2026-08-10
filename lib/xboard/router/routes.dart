@@ -8,7 +8,7 @@ import 'package:fl_clash/xboard/features/mine/pages/device_page.dart';
 import 'package:fl_clash/xboard/features/mine/pages/gift_card_page.dart';
 import 'package:fl_clash/xboard/features/mine/pages/order_page.dart';
 import 'package:fl_clash/xboard/features/auth/pages/login_page.dart';
-import 'package:fl_clash/views/logs.dart';
+import 'package:fl_clash/xboard/features/logs/pages/fastcat_logs_page.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
@@ -134,7 +134,7 @@ final List<RouteBase> routes = [
             path: '/logs',
             name: 'logs',
             pageBuilder: (context, state) => const NoTransitionPage(
-              child: LogsPage(),
+              child: FastCatLogsPage(),
             ),
           ),
         ],

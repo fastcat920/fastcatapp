@@ -244,14 +244,6 @@ class ClashConfigState with _$ClashConfigState {
 }
 
 @freezed
-class DashboardState with _$DashboardState {
-  const factory DashboardState({
-    required List<DashboardWidget> dashboardWidgets,
-    required double viewWidth,
-  }) = _DashboardState;
-}
-
-@freezed
 class ProxyCardState with _$ProxyCardState {
   const factory ProxyCardState({
     required String proxyName,

@@ -1,5 +1,5 @@
 /// 配置设置
-/// 
+///
 /// 包含模块的各种配置参数
 class ConfigSettings {
   final String currentProvider;
@@ -10,7 +10,7 @@ class ConfigSettings {
   final Map<String, bool> features;
 
   const ConfigSettings({
-    this.currentProvider = 'Flclash',
+    this.currentProvider = 'FastCat',
     this.apiPrefix = '/api/v1',
     this.remoteConfig = const RemoteConfigSettings(),
     this.subscription = const SubscriptionSettings(),
@@ -21,17 +21,13 @@ class ConfigSettings {
   /// 从JSON创建配置
   factory ConfigSettings.fromJson(Map<String, dynamic> json) {
     return ConfigSettings(
-      currentProvider: json['currentProvider'] as String? ?? 'Flclash',
+      currentProvider: json['currentProvider'] as String? ?? 'FastCat',
       apiPrefix: json['apiPrefix'] as String? ?? '/api/v1',
       remoteConfig: RemoteConfigSettings.fromJson(
-        json['remoteConfig'] as Map<String, dynamic>? ?? {}
-      ),
+          json['remoteConfig'] as Map<String, dynamic>? ?? {}),
       subscription: SubscriptionSettings.fromJson(
-        json['subscription'] as Map<String, dynamic>? ?? {}
-      ),
-      log: LogSettings.fromJson(
-        json['log'] as Map<String, dynamic>? ?? {}
-      ),
+          json['subscription'] as Map<String, dynamic>? ?? {}),
+      log: LogSettings.fromJson(json['log'] as Map<String, dynamic>? ?? {}),
     );
   }
 
@@ -45,8 +41,6 @@ class ConfigSettings {
       'log': log.toJson(),
     };
   }
-
-
 
   /// 验证配置
   bool validate() {
@@ -92,7 +86,8 @@ class RemoteConfigSettings {
   factory RemoteConfigSettings.fromJson(Map<String, dynamic> json) {
     final sourcesList = json['sources'] as List<dynamic>? ?? [];
     final sources = sourcesList
-        .map((item) => RemoteSourceConfig.fromJson(item as Map<String, dynamic>))
+        .map(
+            (item) => RemoteSourceConfig.fromJson(item as Map<String, dynamic>))
         .toList();
 
     return RemoteConfigSettings(
@@ -113,10 +108,10 @@ class RemoteConfigSettings {
   }
 
   bool validate() {
-    return sources.isNotEmpty && 
-           maxRetries >= 0 &&
-           timeout.inSeconds > 0 && 
-           retryDelay.inSeconds >= 0;
+    return sources.isNotEmpty &&
+        maxRetries >= 0 &&
+        timeout.inSeconds > 0 &&
+        retryDelay.inSeconds >= 0;
   }
 
   List<String> getValidationErrors() {
@@ -165,7 +160,8 @@ class RemoteSourceConfig {
       name: json['name'] as String? ?? '',
       url: json['url'] as String? ?? '',
       headers: headersData?.cast<String, String>(),
-      timeout: timeoutSeconds != null ? Duration(seconds: timeoutSeconds) : null,
+      timeout:
+          timeoutSeconds != null ? Duration(seconds: timeoutSeconds) : null,
     );
   }
 
@@ -213,7 +209,9 @@ class SubscriptionSettings {
 
   factory SubscriptionSettings.fromJson(Map<String, dynamic> json) {
     return SubscriptionSettings(
-      preferEncrypt: json['preferEncrypt'] as bool? ?? json['prefer_encrypt'] as bool? ?? false,
+      preferEncrypt: json['preferEncrypt'] as bool? ??
+          json['prefer_encrypt'] as bool? ??
+          false,
     );
   }
 

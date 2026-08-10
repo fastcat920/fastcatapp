@@ -15,7 +15,7 @@ import 'package:fl_clash/xboard/utils/backend_message_mapper.dart';
 import 'package:fl_clash/xboard/utils/xboard_notification.dart';
 import 'package:fl_clash/xboard/features/auth/utils/login_validation.dart';
 import 'package:fl_clash/state.dart';
-import 'package:fl_clash/views/about.dart';
+import 'package:fl_clash/xboard/features/about/pages/fastcat_about_page.dart';
 import 'package:flutter/services.dart';
 
 const _gatewayOverrideUrl = String.fromEnvironment('XBOARD_GATEWAY_URL');
@@ -751,11 +751,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                         borderRadius: BorderRadius.circular(16),
                         onTap: () => Navigator.of(context).push(
                           MaterialPageRoute(
-                            builder: (_) => Scaffold(
-                              appBar:
-                                  AppBar(title: Text(appLocalizations.about)),
-                              body: const AboutView(),
-                            ),
+                            builder: (_) => const FastCatAboutPage(),
                           ),
                         ),
                         child: Padding(

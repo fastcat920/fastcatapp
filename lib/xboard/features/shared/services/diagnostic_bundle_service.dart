@@ -4,6 +4,7 @@ import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:fl_clash/common/common.dart';
 import 'package:fl_clash/enum/enum.dart';
 import 'package:fl_clash/l10n/l10n.dart';
+import 'package:fl_clash/mihomo/mihomo.dart';
 import 'package:fl_clash/models/models.dart';
 import 'package:fl_clash/providers/providers.dart';
 import 'package:fl_clash/state.dart';
@@ -383,33 +384,28 @@ class DiagnosticBundleService {
   }
 
   static String buildCurrentNodeLatencyReport(WidgetRef ref) {
-    final groups = ref.read(groupsProvider);
+    final gateway = ref.read(coreGatewayProvider);
+    final groups = gateway.getGroups();
     if (groups.isEmpty) {
       return '[node_latency_snapshot]\nstatus: no_available_group\n';
     }
-    final currentGroupName =
-        globalState.appController.getCurrentGroupName()?.toString();
+    final currentGroupName = gateway.getCurrentGroupName();
     final group = groups.firstWhere(
       (item) => item.name == currentGroupName,
       orElse: () => groups.firstWhere(
-        (item) => item.hidden != true && item.name != GroupName.GLOBAL.name,
+        (item) => !item.hidden && item.name != 'GLOBAL',
         orElse: () => groups.first,
       ),
     );
-    final delayMap = globalState.appState.delayMap;
     final seen = <String>{};
     final buffer = StringBuffer()
       ..writeln('[node_latency_snapshot]')
       ..writeln('source: latest_client_result (no_retest)')
       ..writeln('group: ${group.name}');
-    for (final proxy in group.all) {
-      final state = globalState.appController.getProxyCardState(proxy.name);
-      final name = state.proxyName.isEmpty ? proxy.name : state.proxyName;
+    for (final node in group.nodes) {
+      final name = node.name;
       if (!seen.add(name)) continue;
-      final testUrl = globalState.appController.getRealTestUrl(
-        state.testUrl ?? group.testUrl,
-      );
-      final delay = delayMap[testUrl]?[name];
+      final delay = node.delayMs;
       final value = delay == null
           ? 'not_tested'
           : delay < 0

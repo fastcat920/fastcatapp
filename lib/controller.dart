@@ -9,7 +9,6 @@ import 'package:fl_clash/enum/enum.dart';
 import 'package:fl_clash/plugins/app.dart';
 import 'package:fl_clash/plugins/service.dart';
 import 'package:fl_clash/providers/providers.dart';
-import 'package:fl_clash/services/app_backup_service.dart';
 import 'package:fl_clash/services/app_exit_service.dart';
 import 'package:fl_clash/services/app_profile_controller.dart';
 import 'package:fl_clash/services/core_switch_status.dart';
@@ -25,7 +24,6 @@ import 'package:path/path.dart';
 import 'common/common.dart';
 import 'common/boot_diag.dart';
 import 'models/models.dart';
-import 'views/profiles/override_profile.dart';
 
 class _TunAdminResult {
   const _TunAdminResult({
@@ -59,12 +57,10 @@ class AppController {
   final BuildContext context;
   final WidgetRef _ref;
   late final AppExitService _exitService;
-  late final AppBackupService _backupService;
   late final AppProfileController _profileController;
 
   AppController(this.context, WidgetRef ref) : _ref = ref {
     _exitService = const AppExitService();
-    _backupService = AppBackupService(_ref);
     _profileController = AppProfileController(
       _ref,
       applyProfileDebounce: applyProfileDebounce,
@@ -646,10 +642,10 @@ class AppController {
             groups.any((g) => g.name == nowName && g.type.isComputedSelected);
         if (!isNowComputed) {
           final computedProxy = group.all.cast<Proxy?>().firstWhere(
-            (p) => groups.any(
-                (g) => g.name == p!.name && g.type.isComputedSelected),
-            orElse: () => null,
-          );
+                (p) => groups
+                    .any((g) => g.name == p!.name && g.type.isComputedSelected),
+                orElse: () => null,
+              );
           if (computedProxy != null) {
             groups[i] = group.copyWith(now: computedProxy.name);
           }
@@ -1096,12 +1092,6 @@ class AppController {
     }
   }
 
-  addProfileFormQrCode() async {
-    final url = await globalState.safeRun(picker.pickerConfigQRCode);
-    if (url == null) return;
-    addProfileFormURL(url);
-  }
-
   updateViewSize(Size size) {
     _ref.read(viewSizeProvider.notifier).value = size;
   }
@@ -1288,10 +1278,10 @@ class AppController {
         if (validProxies.isEmpty) return group;
         // 优先选择 URLTest/Fallback 计算组（如自动选择、故障转移）
         final computedProxy = validProxies.cast<Proxy?>().firstWhere(
-          (p) =>
-              groups.any((g) => g.name == p!.name && g.type.isComputedSelected),
-          orElse: () => null,
-        );
+              (p) => groups
+                  .any((g) => g.name == p!.name && g.type.isComputedSelected),
+              orElse: () => null,
+            );
         return group.copyWith(now: (computedProxy ?? validProxies.first).name);
       }
       return group;
@@ -1318,10 +1308,10 @@ class AppController {
         if (validProxies.isEmpty) continue;
         // 优先选择 URLTest/Fallback 计算组（如自动选择、故障转移）
         final computedProxy = validProxies.cast<Proxy?>().firstWhere(
-          (p) =>
-              groups.any((g) => g.name == p!.name && g.type.isComputedSelected),
-          orElse: () => null,
-        );
+              (p) => groups
+                  .any((g) => g.name == p!.name && g.type.isComputedSelected),
+              orElse: () => null,
+            );
         final proxyName = (computedProxy ?? validProxies.first).name;
         changeProxyDebounce(group.name, proxyName);
         updateCurrentSelectedMap(group.name, proxyName);
@@ -1361,38 +1351,6 @@ class AppController {
     );
   }
 
-  handleAddOrUpdate(WidgetRef ref, [Rule? rule]) async {
-    final res = await globalState.showCommonDialog<Rule>(
-      child: AddRuleDialog(
-        rule: rule,
-        snippet: ref.read(
-          profileOverrideStateProvider.select(
-            (state) => state.snippet!,
-          ),
-        ),
-      ),
-    );
-    if (res == null) {
-      return;
-    }
-    ref.read(profileOverrideStateProvider.notifier).updateState(
-      (state) {
-        final model = state.copyWith.overrideData!(
-          rule: state.overrideData!.rule.updateRules(
-            (rules) {
-              final index = rules.indexWhere((item) => item.id == res.id);
-              if (index == -1) {
-                return List.from([res, ...rules]);
-              }
-              return List.from(rules)..[index] = res;
-            },
-          ),
-        );
-        return model;
-      },
-    );
-  }
-
   Future<bool> exportLogs() async {
     final logsRaw = _ref.read(logsProvider).list.map(
           (item) => SensitiveMasker.maskText(item),
@@ -1408,17 +1366,9 @@ class AppController {
         null;
   }
 
-  Future<List<int>> backupData() => _backupService.backupData();
-
   updateTray([bool focus = false]) async {
     tray.update(
       trayState: _ref.read(trayStateProvider),
     );
   }
-
-  recoveryData(
-    List<int> data,
-    RecoveryOption recoveryOption,
-  ) =>
-      _backupService.recoveryData(data, recoveryOption);
 }

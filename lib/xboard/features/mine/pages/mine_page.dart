@@ -13,7 +13,7 @@ import 'package:fl_clash/xboard/features/auth/utils/customer_service_helper.dart
 import 'package:fl_clash/xboard/domain/domain.dart';
 import 'package:fl_clash/xboard/config/xboard_config.dart';
 import 'package:url_launcher/url_launcher.dart';
-import 'package:fl_clash/views/tools.dart';
+import 'package:fl_clash/xboard/features/settings/pages/fastcat_settings_page.dart';
 import 'package:fl_clash/xboard/adapter/initialization/sdk_provider.dart';
 import 'package:fl_clash/xboard/features/mine/services/gift_card_redeem_service.dart';
 import 'package:fl_clash/xboard/features/subscription/widgets/subscription_usage_card.dart';
@@ -24,7 +24,7 @@ import 'ticket_page.dart';
 import 'package:fl_clash/xboard/features/docs/pages/docs_page.dart';
 import 'package:fl_clash/xboard/features/payment/pages/recharge_page.dart';
 import 'package:fl_clash/xboard/features/update_check/providers/update_check_provider.dart';
-import 'package:fl_clash/views/about.dart';
+import 'package:fl_clash/xboard/features/about/pages/fastcat_about_page.dart';
 
 class MinePage extends ConsumerStatefulWidget {
   const MinePage({super.key});
@@ -320,39 +320,38 @@ class _MinePageState extends ConsumerState<MinePage>
   }) {
     final theme = Theme.of(context);
     return Center(
-      child: InkWell(
-        borderRadius: BorderRadius.circular(16),
-        onTap: () => Navigator.of(context).push(
-          MaterialPageRoute(
-            builder: (_) => Scaffold(
-              appBar: AppBar(title: Text(appLocalizations.about)),
-              body: const AboutView(),
+      child: XbPointerCursor(
+        child: InkWell(
+          borderRadius: BorderRadius.circular(16),
+          onTap: () => Navigator.of(context).push(
+            MaterialPageRoute(
+              builder: (_) => const FastCatAboutPage(),
             ),
           ),
-        ),
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Text(
-                appLocalizations.updateCheckCurrentVersion('V$version'),
-                style: theme.textTheme.bodySmall?.copyWith(
-                  color: theme.colorScheme.onSurfaceVariant,
-                ),
-              ),
-              if (hasUpdate) ...[
-                const SizedBox(width: 6),
-                Container(
-                  width: 7,
-                  height: 7,
-                  decoration: const BoxDecoration(
-                    color: Colors.redAccent,
-                    shape: BoxShape.circle,
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  appLocalizations.updateCheckCurrentVersion('V$version'),
+                  style: theme.textTheme.bodySmall?.copyWith(
+                    color: theme.colorScheme.onSurfaceVariant,
                   ),
                 ),
+                if (hasUpdate) ...[
+                  const SizedBox(width: 6),
+                  Container(
+                    width: 7,
+                    height: 7,
+                    decoration: const BoxDecoration(
+                      color: Colors.redAccent,
+                      shape: BoxShape.circle,
+                    ),
+                  ),
+                ],
               ],
-            ],
+            ),
           ),
         ),
       ),
@@ -507,11 +506,7 @@ class _MinePageState extends ConsumerState<MinePage>
             iconBgColor: theme.colorScheme.primary.withValues(alpha: 0.1),
             onTap: () => Navigator.of(context).push(
               MaterialPageRoute(
-                builder: (_) => Scaffold(
-                  appBar:
-                      AppBar(title: Text(appLocalizations.xboardToolsSettings)),
-                  body: const ToolsView(),
-                ),
+                builder: (_) => const FastCatSettingsPage(),
               ),
             ),
           ),
@@ -615,41 +610,43 @@ class _MinePageState extends ConsumerState<MinePage>
     } else {
       leadingWidget = Icon(icon, color: effectiveIconColor);
     }
-    return ListTile(
-      visualDensity: const VisualDensity(vertical: -1.5),
-      leading: leadingWidget,
-      title: Text(label, style: TextStyle(color: labelColor)),
-      subtitle: subtitle == null
-          ? null
-          : Text(
-              subtitle,
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-            ),
-      trailing: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          if (trailingText != null) ...[
-            Text(
-              trailingText,
-              style: theme.textTheme.bodySmall?.copyWith(
-                color: theme.colorScheme.onSurfaceVariant,
+    return XbPointerCursor(
+      child: ListTile(
+        visualDensity: const VisualDensity(vertical: -1.5),
+        leading: leadingWidget,
+        title: Text(label, style: TextStyle(color: labelColor)),
+        subtitle: subtitle == null
+            ? null
+            : Text(
+                subtitle,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
               ),
-            ),
-            const SizedBox(width: 4),
+        trailing: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            if (trailingText != null) ...[
+              Text(
+                trailingText,
+                style: theme.textTheme.bodySmall?.copyWith(
+                  color: theme.colorScheme.onSurfaceVariant,
+                ),
+              ),
+              const SizedBox(width: 4),
+            ],
+            if (iconColor == null || iconBgColor != null)
+              Icon(
+                Icons.chevron_right,
+                size: 20,
+                color: isDark
+                    ? theme.colorScheme.onSurfaceVariant
+                    : XbUiTokens.chevronLight,
+              ),
           ],
-          if (iconColor == null || iconBgColor != null)
-            Icon(
-              Icons.chevron_right,
-              size: 20,
-              color: isDark
-                  ? theme.colorScheme.onSurfaceVariant
-                  : XbUiTokens.chevronLight,
-            ),
-        ],
+        ),
+        onTap: onTap,
+        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 2),
       ),
-      onTap: onTap,
-      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 2),
     );
   }
 

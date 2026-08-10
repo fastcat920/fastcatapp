@@ -183,7 +183,7 @@ class Notice {
 
 ---
 
-**维护者**: FlClash Team  
+**维护者**: FastCat Team
 **最后更新**: 2025-10-15  
 **模块类型**: 数据服务型
 

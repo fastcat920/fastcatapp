@@ -978,15 +978,12 @@ class _DiagnosticPanel extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
     return Container(
       margin: const EdgeInsets.only(bottom: 10),
       decoration: BoxDecoration(
-        color: theme.colorScheme.surfaceContainerHighest.withValues(alpha: 0.4),
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(
-          color: theme.colorScheme.outline.withValues(alpha: 0.12),
-        ),
+        color: XbUiCardStyle.background(context),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: XbUiTokens.cardBorder(context)),
       ),
       child: child,
     );
@@ -1045,11 +1042,9 @@ class _DiagnosticStatusRow extends StatelessWidget {
       margin: const EdgeInsets.only(bottom: 10),
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: theme.colorScheme.surfaceContainerHighest.withValues(alpha: 0.4),
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(
-          color: theme.colorScheme.outline.withValues(alpha: 0.12),
-        ),
+        color: XbUiCardStyle.background(context),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: XbUiTokens.cardBorder(context)),
       ),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,

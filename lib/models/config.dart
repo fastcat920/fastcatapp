@@ -40,36 +40,10 @@ final defaultThemeProps = ThemeProps(
   primaryColor: defaultPrimaryColor,
 );
 
-const List<DashboardWidget> defaultDashboardWidgets = [
-  DashboardWidget.networkSpeed,
-  DashboardWidget.systemProxyButton,
-  DashboardWidget.tunButton,
-  DashboardWidget.outboundMode,
-  DashboardWidget.networkDetection,
-  DashboardWidget.trafficUsage,
-  DashboardWidget.intranetIp,
-];
-
-List<DashboardWidget> dashboardWidgetsSafeFormJson(
-  List<dynamic>? dashboardWidgets,
-) {
-  try {
-    return dashboardWidgets
-            ?.map((e) => $enumDecode(_$DashboardWidgetEnumMap, e))
-            .toList() ??
-        defaultDashboardWidgets;
-  } catch (_) {
-    return defaultDashboardWidgets;
-  }
-}
-
 @freezed
 class AppSettingProps with _$AppSettingProps {
   const factory AppSettingProps({
     String? locale,
-    @Default(defaultDashboardWidgets)
-    @JsonKey(fromJson: dashboardWidgetsSafeFormJson)
-    List<DashboardWidget> dashboardWidgets,
     @Default(false) bool onlyStatisticsProxy,
     @Default(false) bool autoLaunch,
     @Default(false) bool silentLaunch,

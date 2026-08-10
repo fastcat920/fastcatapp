@@ -2,7 +2,7 @@ import 'dart:async';
 import 'package:fl_clash/enum/enum.dart';
 import 'package:fl_clash/models/models.dart';
 import 'package:fl_clash/providers/providers.dart';
-import 'package:fl_clash/views/proxies/common.dart' as proxies_common;
+import 'package:fl_clash/xboard/features/latency/services/mihomo_latency_runner.dart';
 // operation_coordinator已废弃，移除相关代码
 import 'package:fl_clash/xboard/core/core.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -116,7 +116,7 @@ class AutoLatencyService {
 
       _logger.info('开始测试节点延迟: ${currentProxy.name}');
       final testUrl = _ref!.read(appSettingProvider).testUrl;
-      await proxies_common.proxyDelayTest(currentProxy, testUrl);
+      await testNodeLatency(currentProxy, testUrl);
       _lastTestedProxy = currentProxy.name;
       _lastTestTime = DateTime.now();
       _proxyTestCache[currentProxy.name] = DateTime.now();
@@ -145,7 +145,7 @@ class AutoLatencyService {
 
       _logger.info('开始测试指定节点延迟: ${proxy.name}');
       final testUrl = _ref!.read(appSettingProvider).testUrl;
-      await proxies_common.proxyDelayTest(proxy, testUrl);
+      await testNodeLatency(proxy, testUrl);
       _proxyTestCache[proxy.name] = DateTime.now();
       _logger.info('指定节点延迟测试完成: ${proxy.name}');
     } catch (e) {
@@ -173,7 +173,7 @@ class AutoLatencyService {
       _logger.debug('AutoLatencyService',
           '测试节点列表: ${nodesToTest.map((p) => p.name).join(', ')}');
       final testUrl = _ref!.read(appSettingProvider).testUrl;
-      await proxies_common.delayTest(nodesToTest, testUrl);
+      await testNodesLatency(nodesToTest, testUrl);
       _logger.info('批量延迟测试完成');
     } catch (e) {
       _logger.error('批量延迟测试失败', e);
@@ -205,6 +205,7 @@ class AutoLatencyService {
       testCurrentNode();
     });
   }
+
   bool _shouldTestProxy(String proxyName) {
     final lastTestTime = _proxyTestCache[proxyName];
     if (lastTestTime == null) {

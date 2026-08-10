@@ -2630,10 +2630,10 @@ class MessageLookup extends MessageLookupByLibrary {
       "All traffic connects directly without proxy",
     ),
     "xboardProxyModeGlobalDescription": MessageLookupByLibrary.simpleMessage(
-      "All traffic goes through proxy server",
+      "Route all network traffic through the proxy (recommended when specific sites are inaccessible)",
     ),
     "xboardProxyModeRuleDescription": MessageLookupByLibrary.simpleMessage(
-      "Automatically select direct or proxy based on rules",
+      "Intelligently route traffic by destination region for acceleration (recommended)",
     ),
     "xboardProxyNotListening": MessageLookupByLibrary.simpleMessage(
       "Not listening",

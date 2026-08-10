@@ -1898,10 +1898,10 @@ class MessageLookup extends MessageLookupByLibrary {
       "所有流量都直接连接，不使用代理",
     ),
     "xboardProxyModeGlobalDescription": MessageLookupByLibrary.simpleMessage(
-      "所有流量都通过代理服务器",
+      "全球网络均通过代理进行访问（建议特殊网址无法访问时使用）",
     ),
     "xboardProxyModeRuleDescription": MessageLookupByLibrary.simpleMessage(
-      "根据规则自动选择直连或代理",
+      "智能区分目标网络地区实现加速（推荐使用）",
     ),
     "xboardProxyNotListening": MessageLookupByLibrary.simpleMessage("未监听"),
     "xboardProxyRepairCoreNotRunning": MessageLookupByLibrary.simpleMessage(

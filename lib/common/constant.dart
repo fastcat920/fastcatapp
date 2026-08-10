@@ -21,6 +21,7 @@ String get localizedAppName {
   final locale = Platform.localeName;
   return locale.startsWith('zh') ? appName : appNameEn;
 }
+
 const appHelperService = "fastcatHelperService";
 const coreName = "clash.meta";
 const packageName = "com.fastcat.app";
@@ -57,7 +58,7 @@ const configKey = "config";
 const closeConnectionsDefaultMigratedKey = 'close_connections_default_migrated';
 const dnsDefaultsMigratedKey = 'dns_defaults_migrated_v2';
 const double dialogCommonWidth = 300;
-const repository = "chen08209/FlClash";
+const repository = "fastcat920/fastcatapp";
 const defaultExternalController = "127.0.0.1:9090";
 const maxMobileWidth = 600;
 const maxLaptopWidth = 840;

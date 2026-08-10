@@ -21,6 +21,7 @@ class Window {
       protocol.register("clash");
       protocol.register("clashmeta");
       protocol.register("flclash");
+      protocol.register("fastcat");
     }
     await windowManager.ensureInitialized().timeout(
           const Duration(seconds: 8),

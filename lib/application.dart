@@ -90,6 +90,13 @@ class ApplicationState extends ConsumerState<Application>
     };
   }
 
+  WidgetStateProperty<MouseCursor?> get _clickableMouseCursor =>
+      WidgetStateProperty.resolveWith((states) {
+        return states.contains(WidgetState.disabled)
+            ? SystemMouseCursors.basic
+            : SystemMouseCursors.click;
+      });
+
   @override
   void initState() {
     super.initState();
@@ -659,7 +666,7 @@ class ApplicationState extends ConsumerState<Application>
                     ),
                     padding: const EdgeInsets.symmetric(
                         vertical: 14, horizontal: 24),
-                  ),
+                  ).copyWith(mouseCursor: _clickableMouseCursor),
                 ),
                 elevatedButtonTheme: ElevatedButtonThemeData(
                   style: ElevatedButton.styleFrom(
@@ -667,14 +674,29 @@ class ApplicationState extends ConsumerState<Application>
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(14),
                     ),
-                  ),
+                  ).copyWith(mouseCursor: _clickableMouseCursor),
                 ),
                 outlinedButtonTheme: OutlinedButtonThemeData(
                   style: OutlinedButton.styleFrom(
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(14),
                     ),
-                  ),
+                  ).copyWith(mouseCursor: _clickableMouseCursor),
+                ),
+                textButtonTheme: TextButtonThemeData(
+                  style: ButtonStyle(mouseCursor: _clickableMouseCursor),
+                ),
+                iconButtonTheme: IconButtonThemeData(
+                  style: ButtonStyle(mouseCursor: _clickableMouseCursor),
+                ),
+                switchTheme: SwitchThemeData(
+                  mouseCursor: _clickableMouseCursor,
+                ),
+                checkboxTheme: CheckboxThemeData(
+                  mouseCursor: _clickableMouseCursor,
+                ),
+                radioTheme: RadioThemeData(
+                  mouseCursor: _clickableMouseCursor,
                 ),
                 inputDecorationTheme: InputDecorationTheme(
                   filled: true,
@@ -710,6 +732,30 @@ class ApplicationState extends ConsumerState<Application>
                 ),
                 appBarTheme: const AppBarTheme(
                   centerTitle: false,
+                ),
+                filledButtonTheme: FilledButtonThemeData(
+                  style: ButtonStyle(mouseCursor: _clickableMouseCursor),
+                ),
+                elevatedButtonTheme: ElevatedButtonThemeData(
+                  style: ButtonStyle(mouseCursor: _clickableMouseCursor),
+                ),
+                outlinedButtonTheme: OutlinedButtonThemeData(
+                  style: ButtonStyle(mouseCursor: _clickableMouseCursor),
+                ),
+                textButtonTheme: TextButtonThemeData(
+                  style: ButtonStyle(mouseCursor: _clickableMouseCursor),
+                ),
+                iconButtonTheme: IconButtonThemeData(
+                  style: ButtonStyle(mouseCursor: _clickableMouseCursor),
+                ),
+                switchTheme: SwitchThemeData(
+                  mouseCursor: _clickableMouseCursor,
+                ),
+                checkboxTheme: CheckboxThemeData(
+                  mouseCursor: _clickableMouseCursor,
+                ),
+                radioTheme: RadioThemeData(
+                  mouseCursor: _clickableMouseCursor,
                 ),
               ),
             );
