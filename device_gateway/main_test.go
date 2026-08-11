@@ -701,6 +701,136 @@ func TestBusinessFailoverDoesNotRetryUnsafeRequestOnServerError(t *testing.T) {
 	}
 }
 
+func TestBusinessFailoverPromotesSuccessfulBackup(t *testing.T) {
+	firstCalls := 0
+	first := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		firstCalls++
+		w.WriteHeader(http.StatusBadGateway)
+	}))
+	defer first.Close()
+
+	secondCalls := 0
+	second := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		secondCalls++
+		w.WriteHeader(http.StatusOK)
+	}))
+	defer second.Close()
+
+	server := &Server{
+		cfg: Config{
+			BusinessBaseURLs:         []string{first.URL, second.URL},
+			BusinessFailureThreshold: 2,
+			BusinessCircuitBreak:     time.Minute,
+		},
+		client:        &http.Client{Timeout: time.Second},
+		log:           log.New(io.Discard, "", 0),
+		backendStates: make(map[string]*BusinessBackendState),
+	}
+	server.syncBusinessBackends(server.cfg.BusinessBaseURLs)
+
+	for range 2 {
+		resp, err := server.tryBusinessURLs(context.Background(), func(baseURL string) (*http.Request, error) {
+			return http.NewRequest(http.MethodGet, baseURL+"/api/v1/user/info", nil)
+		})
+		if err != nil {
+			t.Fatal(err)
+		}
+		_ = resp.Body.Close()
+	}
+
+	if firstCalls != 1 || secondCalls != 2 {
+		t.Fatalf("firstCalls=%d secondCalls=%d, want 1 and 2", firstCalls, secondCalls)
+	}
+}
+
+func TestBusinessFailoverSkipsBackendWhileCircuitIsOpen(t *testing.T) {
+	server := &Server{
+		cfg: Config{
+			BusinessBaseURLs:         []string{"https://primary.example", "https://backup.example"},
+			BusinessFailureThreshold: 2,
+			BusinessCircuitBreak:     time.Minute,
+		},
+		log:           log.New(io.Discard, "", 0),
+		backendStates: make(map[string]*BusinessBackendState),
+	}
+	server.syncBusinessBackends(server.cfg.BusinessBaseURLs)
+	server.markBusinessFailure("https://primary.example")
+	server.markBusinessFailure("https://primary.example")
+
+	urls := server.businessURLs()
+	if len(urls) != 1 || urls[0] != "https://backup.example" {
+		t.Fatalf("businessURLs() = %v, want only backup", urls)
+	}
+}
+
+func TestBusinessRecoveryFailsBackAfterConsecutiveHealthyProbes(t *testing.T) {
+	primary := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(http.StatusOK)
+	}))
+	defer primary.Close()
+	backup := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(http.StatusOK)
+	}))
+	defer backup.Close()
+
+	server := &Server{
+		cfg: Config{
+			BusinessBaseURLs:        []string{primary.URL, backup.URL},
+			APIPrefix:               "/api/v1",
+			BusinessRecoverySuccess: 3,
+			BusinessBackupMinHold:   time.Minute,
+		},
+		client:        &http.Client{Timeout: time.Second},
+		log:           log.New(io.Discard, "", 0),
+		backendStates: make(map[string]*BusinessBackendState),
+	}
+	server.syncBusinessBackends(server.cfg.BusinessBaseURLs)
+	server.markBusinessSuccess(backup.URL)
+	server.backendMu.Lock()
+	server.activeBusinessSince = time.Now().Add(-2 * time.Minute)
+	server.backendMu.Unlock()
+
+	server.checkBusinessRecovery(context.Background())
+	server.checkBusinessRecovery(context.Background())
+	if got := server.businessURLs()[0]; got != backup.URL {
+		t.Fatalf("active backend changed before threshold: %s", got)
+	}
+	server.checkBusinessRecovery(context.Background())
+	if got := server.businessURLs()[0]; got != primary.URL {
+		t.Fatalf("active backend = %s, want recovered primary", got)
+	}
+}
+
+func TestBusinessRecoveryHonorsBackupMinimumHold(t *testing.T) {
+	primary := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(http.StatusOK)
+	}))
+	defer primary.Close()
+	backup := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(http.StatusOK)
+	}))
+	defer backup.Close()
+
+	server := &Server{
+		cfg: Config{
+			BusinessBaseURLs:        []string{primary.URL, backup.URL},
+			APIPrefix:               "/api/v1",
+			BusinessRecoverySuccess: 1,
+			BusinessBackupMinHold:   time.Hour,
+		},
+		client:        &http.Client{Timeout: time.Second},
+		log:           log.New(io.Discard, "", 0),
+		backendStates: make(map[string]*BusinessBackendState),
+	}
+	server.syncBusinessBackends(server.cfg.BusinessBaseURLs)
+	server.markBusinessSuccess(backup.URL)
+	server.checkBusinessRecovery(context.Background())
+
+	if got := server.businessURLs()[0]; got != backup.URL {
+		t.Fatalf("active backend = %s, want backup during minimum hold", got)
+	}
+}
+
 func TestConcurrentAdminReadsDoNotBlockDeviceUpdates(t *testing.T) {
 	store, _, err := LoadStore(filepath.Join(t.TempDir(), "store.json"), "")
 	if err != nil {

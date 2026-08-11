@@ -1,6 +1,7 @@
 import 'dart:io';
 import 'dart:convert';
 import 'dart:typed_data';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../core/config_settings.dart';
 import '../../core/core.dart';
 
@@ -33,7 +34,8 @@ String _smartDecrypt(String content) {
   }
   final isDefaultKey = _xorKey == 'CHANGE_ME_TO_YOUR_SECRET_KEY_32C';
   if (isDefaultKey) {
-    _logger.warning('[smartDecrypt] ⚠️ XOR_KEY 为默认占位符！CI 可能未传入 --dart-define=XOR_KEY');
+    _logger.warning(
+        '[smartDecrypt] ⚠️ XOR_KEY 为默认占位符！CI 可能未传入 --dart-define=XOR_KEY');
   }
   try {
     final keyBytes = utf8.encode(_xorKey);
@@ -52,7 +54,8 @@ String _smartDecrypt(String content) {
         ? '默认占位符（CI未注入XOR_KEY，请检查打包配置）'
         : '已注入${_xorKey.length}字符（与OSS配置加密密钥不匹配）';
     _logger.error('[smartDecrypt] ❌ XOR解密失败 [$keyInfo]: $e');
-    _logger.error('[smartDecrypt] 诊断: 数据长度=${trimmed.length}, 前20字符=${trimmed.length > 20 ? trimmed.substring(0, 20) : trimmed}...');
+    _logger.error(
+        '[smartDecrypt] 诊断: 数据长度=${trimmed.length}, 前20字符=${trimmed.length > 20 ? trimmed.substring(0, 20) : trimmed}...');
     return content;
   }
 }
@@ -101,7 +104,8 @@ class MultiConfigResult {
   final ConfigResult<Map<String, dynamic>> primaryResult;
   final ConfigResult<Map<String, dynamic>> backupResult;
 
-  const MultiConfigResult({required this.primaryResult, required this.backupResult});
+  const MultiConfigResult(
+      {required this.primaryResult, required this.backupResult});
 
   bool get hasSuccess => primaryResult.isSuccess || backupResult.isSuccess;
 
@@ -112,7 +116,9 @@ class MultiConfigResult {
       primaryResult.isSuccess ? primaryResult.source : backupResult.source;
 
   ConfigResult<Map<String, dynamic>>? get firstSuccessful =>
-      primaryResult.isSuccess ? primaryResult : (backupResult.isSuccess ? backupResult : null);
+      primaryResult.isSuccess
+          ? primaryResult
+          : (backupResult.isSuccess ? backupResult : null);
 
   @override
   String toString() =>
@@ -192,7 +198,8 @@ class OssConfigSource implements ConfigSource {
   Future<ConfigResult<Map<String, dynamic>>> fetchConfig() async {
     try {
       // 只打印域名部分，避免日志泄露完整 OSS URL
-      final maskedUrl = Uri.tryParse(url)?.host ?? url.substring(0, url.length.clamp(0, 20));
+      final maskedUrl =
+          Uri.tryParse(url)?.host ?? url.substring(0, url.length.clamp(0, 20));
       _logger.info('获取 OSS 配置 ($name): $maskedUrl');
       final rawData = await _httpClient.getString(url, timeout: timeout);
       if (rawData == null || rawData.trim().isEmpty) {
@@ -207,7 +214,8 @@ class OssConfigSource implements ConfigSource {
       String detail;
       if (errStr.contains('FormatException')) {
         detail = 'OSS 配置解密/解析失败（XOR密钥不匹配或文件内容异常）';
-      } else if (errStr.contains('SocketException') || errStr.contains('Connection')) {
+      } else if (errStr.contains('SocketException') ||
+          errStr.contains('Connection')) {
         detail = 'OSS 地址不可达（请检查网络或URL是否正确）';
       } else {
         detail = 'OSS 配置源异常: $e';
@@ -223,6 +231,8 @@ class OssConfigSource implements ConfigSource {
 // ─────────────────────────────────────────────────────────────
 
 class RemoteConfigManager {
+  static const _lastSuccessfulSourceKey =
+      'xboard_remote_config_last_successful_source';
   final List<ConfigSource> _configSources;
   final int _maxRetries;
   final Duration _retryDelay;
@@ -250,6 +260,89 @@ class RemoteConfigManager {
       maxRetries: settings.maxRetries,
       retryDelay: settings.retryDelay,
     );
+  }
+
+  /// Concurrently fetches all sources and returns the first response that can
+  /// actually be parsed and accepted by the caller.
+  ///
+  /// The last successful source is started first on the next launch, while all
+  /// other sources still run concurrently so a dead preferred source does not
+  /// delay startup by its full timeout.
+  Future<ConfigResult<Map<String, dynamic>>> fetchFirstUsableConfig(
+    bool Function(Map<String, dynamic> data) isUsable,
+  ) async {
+    if (_configSources.isEmpty) {
+      throw Exception('没有可用的配置源，请在 config.yaml 中配置 remote_config.sources');
+    }
+
+    final orderedSources = await _sourcesWithLastSuccessFirst();
+    final pending = <int, Future<(int, ConfigResult<Map<String, dynamic>>)>>{};
+    for (var i = 0; i < orderedSources.length; i++) {
+      final source = orderedSources[i];
+      pending[i] = source.fetchConfig().then((result) => (i, result));
+    }
+
+    final errors = <String>[];
+    while (pending.isNotEmpty) {
+      final completed = await Future.any(pending.values);
+      pending.remove(completed.$1);
+      final result = completed.$2;
+      if (!result.isSuccess || result.data == null) {
+        errors.add('${result.source}: ${result.error}');
+        continue;
+      }
+      if (!isUsable(result.data!)) {
+        errors.add('${result.source}: 配置内容校验失败');
+        _logger.warning(
+          '[RemoteConfigManager] ${result.source} 请求成功但配置不可用，继续接管源',
+        );
+        continue;
+      }
+      await _persistLastSuccessfulSource(result.source);
+      _logger.info('[RemoteConfigManager] ✅ 使用可解析配置源: ${result.source}');
+      return result;
+    }
+
+    // Concurrent first pass failed. Retry the remembered source (or the first
+    // configured source) to tolerate a short network transition at startup.
+    final retrySource = orderedSources.first;
+    final retryResult = await _fetchWithRetry(retrySource);
+    if (retryResult.isSuccess &&
+        retryResult.data != null &&
+        isUsable(retryResult.data!)) {
+      await _persistLastSuccessfulSource(retryResult.source);
+      return retryResult;
+    }
+    errors.add('${retryResult.source}: ${retryResult.error ?? '配置内容校验失败'}');
+    return ConfigResult.failure(errors.join('; '), 'all');
+  }
+
+  Future<List<ConfigSource>> _sourcesWithLastSuccessFirst() async {
+    String? preferred;
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      preferred = prefs.getString(_lastSuccessfulSourceKey);
+    } catch (_) {}
+    if (preferred == null || preferred.isEmpty) {
+      return List<ConfigSource>.from(_configSources);
+    }
+    final ordered = List<ConfigSource>.from(_configSources);
+    final index =
+        ordered.indexWhere((source) => source.sourceName == preferred);
+    if (index > 0) {
+      final source = ordered.removeAt(index);
+      ordered.insert(0, source);
+    }
+    return ordered;
+  }
+
+  Future<void> _persistLastSuccessfulSource(String sourceName) async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setString(_lastSuccessfulSourceKey, sourceName);
+    } catch (_) {
+      // Persistence is an optimization and must never block configuration.
+    }
   }
 
   /// 按顺序尝试所有配置源，第一个成功即返回
@@ -280,7 +373,8 @@ class RemoteConfigManager {
         }
       } else {
         errors.add('${source.sourceName}: ${result.error}');
-        _logger.warning('[RemoteConfigManager] ❌ ${source.sourceName} 失败: ${result.error}');
+        _logger.warning(
+            '[RemoteConfigManager] ❌ ${source.sourceName} 失败: ${result.error}');
       }
     }
 
@@ -294,7 +388,8 @@ class RemoteConfigManager {
       _logger.warning('[RemoteConfigManager] 所有配置源均失败: $errors');
     }
 
-    return MultiConfigResult(primaryResult: primary ?? empty, backupResult: backup ?? empty);
+    return MultiConfigResult(
+        primaryResult: primary ?? empty, backupResult: backup ?? empty);
   }
 
   /// 获取第一个成功的配置（遍历所有源，每个源带重试）
@@ -315,12 +410,15 @@ class RemoteConfigManager {
 
   /// 兼容旧接口：获取备用源
   Future<ConfigResult<Map<String, dynamic>>> getGiteeConfig() async {
-    if (_configSources.length < 2) return ConfigResult.failure('无备用配置源', 'backup');
+    if (_configSources.length < 2) {
+      return ConfigResult.failure('无备用配置源', 'backup');
+    }
     return _fetchWithRetry(_configSources[1]);
   }
 
   /// 按名称获取指定源
-  Future<ConfigResult<Map<String, dynamic>>> fetchFromSource(String sourceName) async {
+  Future<ConfigResult<Map<String, dynamic>>> fetchFromSource(
+      String sourceName) async {
     final source = _configSources.firstWhere(
       (s) => s.sourceName == sourceName,
       orElse: () => throw ArgumentError('未知配置源: $sourceName'),
@@ -328,7 +426,8 @@ class RemoteConfigManager {
     return _fetchWithRetry(source);
   }
 
-  Future<ConfigResult<Map<String, dynamic>>> _fetchWithRetry(ConfigSource source) async {
+  Future<ConfigResult<Map<String, dynamic>>> _fetchWithRetry(
+      ConfigSource source) async {
     ConfigResult<Map<String, dynamic>>? last;
     for (int i = 0; i <= _maxRetries; i++) {
       last = await source.fetchConfig();
@@ -339,7 +438,9 @@ class RemoteConfigManager {
   }
 
   void addSource(ConfigSource source) => _configSources.add(source);
-  void removeSource(String name) => _configSources.removeWhere((s) => s.sourceName == name);
-  List<String> get sourceNames => _configSources.map((s) => s.sourceName).toList();
+  void removeSource(String name) =>
+      _configSources.removeWhere((s) => s.sourceName == name);
+  List<String> get sourceNames =>
+      _configSources.map((s) => s.sourceName).toList();
   int get sourceCount => _configSources.length;
 }

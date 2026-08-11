@@ -23,6 +23,7 @@ class AutoLatencyService {
   static const int _cacheMinutes = 2;
   static const Duration _nodeChangeDebounce = Duration(milliseconds: 800);
   static const Duration _periodicInterval = Duration(minutes: 10);
+  int _connectionGeneration = 0;
 
   // 操作协调器已废弃
   // final OperationCoordinator _coordinator = OperationCoordinator();
@@ -190,8 +191,14 @@ class AutoLatencyService {
   }
 
   void onConnectionStatusChanged(bool isConnected) {
-    if (!isConnected) return;
+    final generation = ++_connectionGeneration;
+    if (!isConnected) {
+      _nodeChangeTimer?.cancel();
+      _nodeChangeTimer = null;
+      return;
+    }
     Future.delayed(const Duration(seconds: 2), () {
+      if (generation != _connectionGeneration) return;
       testCurrentNode();
     });
   }

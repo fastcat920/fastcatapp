@@ -43,6 +43,7 @@ class AppController {
   /// 解决非管理员运行时反复弹 UAC 的问题。
   bool _tunAdminDenied = true;
   bool _isCoreSwitching = false;
+  Future<void>? _disconnectCleanupFuture;
 
   bool get isCoreSwitching => _isCoreSwitching;
 
@@ -158,6 +159,13 @@ class AppController {
     ));
     try {
       if (isStart) {
+        final pendingCleanup = _disconnectCleanupFuture;
+        if (pendingCleanup != null) {
+          globalState.updateCoreSwitchStatus(
+            CoreSwitchStage.coreConnecting,
+          );
+          await pendingCleanup;
+        }
         globalState.updateCoreSwitchStatus(
           CoreSwitchStage.coreConnecting,
         );
@@ -217,6 +225,13 @@ class AppController {
         globalState.updateCoreSwitchStatus(
           CoreSwitchStage.stopping,
         );
+        if (Platform.isAndroid || Platform.isIOS) {
+          await _stopMobileRouting();
+          _ref.read(runTimeProvider.notifier).value = null;
+          addCheckIpNumDebounce();
+          _startDisconnectCleanup();
+          return true;
+        }
         await globalState.handleStop();
         await clashCore.resetTraffic();
         _ref.read(trafficsProvider.notifier).clear();
@@ -239,6 +254,54 @@ class AppController {
           CoreSwitchStage.failed) {
         globalState.resetCoreSwitchStatus();
       }
+    }
+  }
+
+  Future<void> _stopMobileRouting() async {
+    globalState.isDisconnectCleanup = true;
+    globalState.suppressConnectionCleanupUntil =
+        DateTime.now().add(const Duration(seconds: 3));
+    globalState.startTime = null;
+    globalState.stopUpdateTasks();
+    try {
+      await service?.stopVpn();
+    } catch (_) {
+      globalState.isDisconnectCleanup = false;
+      rethrow;
+    }
+  }
+
+  void _startDisconnectCleanup() {
+    late final Future<void> cleanup;
+    cleanup = _finishDisconnectCleanup().whenComplete(() {
+      if (identical(_disconnectCleanupFuture, cleanup)) {
+        _disconnectCleanupFuture = null;
+      }
+    });
+    _disconnectCleanupFuture = cleanup;
+    unawaited(cleanup);
+  }
+
+  Future<void> _finishDisconnectCleanup() async {
+    try {
+      if (Platform.isAndroid) {
+        while (clashLib?.getRunTime() != null) {
+          await Future<void>.delayed(const Duration(milliseconds: 50));
+        }
+        // getAndroidVpnOptions uses the same tunLock as handleStopTun. Reading
+        // it here is a completion barrier: it only returns after the old TUN
+        // handler and its file descriptor have been fully released.
+        await clashLib?.getAndroidVpnOptions();
+        await clashCore.stopListener();
+      }
+      await clashCore.resetTraffic();
+      _ref.read(trafficsProvider.notifier).clear();
+      _ref.read(totalTrafficProvider.notifier).value = Traffic();
+      await tray.updateTrayTitle();
+    } catch (error) {
+      commonPrint.log('disconnect cleanup failed: $error');
+    } finally {
+      globalState.isDisconnectCleanup = false;
     }
   }
 

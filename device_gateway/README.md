@@ -50,6 +50,21 @@ future subscription refreshes.
 Set `DG_PUBLIC_BASE_URL` to the public URL of this gateway. If it is empty, the
 gateway infers the URL from the incoming request.
 
+For independent business API failover, configure comma-separated backends with
+`DG_BUSINESS_BASE_URLS`. It takes precedence over the legacy single
+`DG_BUSINESS_BASE_URL`. The gateway promotes a successful backend, opens its
+circuit after `DG_BUSINESS_FAILURE_THRESHOLD` consecutive failures (default 2),
+and retries it after `DG_BUSINESS_CIRCUIT_SECONDS` (default 90). Safe requests
+are retried on the next healthy backend; state-changing requests are never
+replayed after an HTTP response has been received.
+
+While a backup is active, higher-priority backends are probed every
+`DG_BUSINESS_HEALTH_INTERVAL_SECONDS` (default 30). A recovered backend becomes
+active for new requests only after `DG_BUSINESS_RECOVERY_SUCCESSES` consecutive
+successful probes (default 3) and after the backup has been held for at least
+`DG_BUSINESS_BACKUP_MIN_HOLD_SECONDS` (default 180). In-flight requests are not
+cancelled or replayed during failback.
+
 ## IP location database
 
 Device IP location and ISP are resolved locally with an offline ip2region

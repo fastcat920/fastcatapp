@@ -45,31 +45,48 @@ const (
 )
 
 type Config struct {
-	ListenAddr         string
-	BusinessBaseURLs   []string
-	PublicBaseURL      string
-	GatewayURLs        []string
-	APIPrefix          string
-	DataFile           string
-	AdminToken         string
-	TokenSecret        string
-	SessionTTL         time.Duration
-	DevicePolicy       string
-	DefaultDeviceLimit int
-	HTTPTimeout        time.Duration
-	TrustForwardedFor  bool
-	IPRegionDB         string
-	PostgresDSN        string
+	ListenAddr               string
+	BusinessBaseURLs         []string
+	PublicBaseURL            string
+	GatewayURLs              []string
+	APIPrefix                string
+	DataFile                 string
+	AdminToken               string
+	TokenSecret              string
+	SessionTTL               time.Duration
+	DevicePolicy             string
+	DefaultDeviceLimit       int
+	HTTPTimeout              time.Duration
+	BusinessFailureThreshold int
+	BusinessCircuitBreak     time.Duration
+	BusinessHealthInterval   time.Duration
+	BusinessRecoverySuccess  int
+	BusinessBackupMinHold    time.Duration
+	TrustForwardedFor        bool
+	IPRegionDB               string
+	PostgresDSN              string
 }
 
 type Server struct {
-	cfg    Config
-	store  *Store
-	client *http.Client
-	key    []byte
-	log    *log.Logger
-	ossMu  sync.RWMutex
-	ipGeo  *IPRegionResolver
+	cfg                 Config
+	store               *Store
+	client              *http.Client
+	key                 []byte
+	log                 *log.Logger
+	ossMu               sync.RWMutex
+	backendMu           sync.Mutex
+	backendStates       map[string]*BusinessBackendState
+	activeBusinessURL   string
+	activeBusinessSince time.Time
+	ipGeo               *IPRegionResolver
+}
+
+type BusinessBackendState struct {
+	FailureCount         int
+	DisabledUntil        time.Time
+	LastSuccessAt        time.Time
+	LastFailureAt        time.Time
+	RecoverySuccessCount int
 }
 
 type Store struct {
@@ -233,9 +250,11 @@ func main() {
 				ResponseHeaderTimeout: 5 * time.Second,
 			},
 		},
-		key: deriveKey(cfg.TokenSecret),
-		log: logger,
+		key:           deriveKey(cfg.TokenSecret),
+		log:           logger,
+		backendStates: make(map[string]*BusinessBackendState),
 	}
+	server.syncBusinessBackends(cfg.BusinessBaseURLs)
 	if cfg.IPRegionDB != "" {
 		if resolver, err := NewIPRegionResolver(cfg.IPRegionDB); err != nil {
 			logger.Printf("IP region database unavailable (%s): %v", cfg.IPRegionDB, err)
@@ -258,6 +277,7 @@ func main() {
 		go syncPostgresLoop(store, time.Duration(syncInterval)*time.Second, logger)
 	}
 	go server.periodicCleanup()
+	server.startBusinessRecoveryChecker()
 
 	server.startOSSRefresher(envInt("DG_OSS_REFRESH_MINUTES", 30))
 	if err := http.ListenAndServe(cfg.ListenAddr, server.routes()); err != nil {
@@ -425,7 +445,9 @@ func loadConfig(logger *log.Logger) (Config, error) {
 	var ossGatewayURLs []string
 
 	var baseURLs []string
-	if envURL := strings.TrimRight(env("DG_BUSINESS_BASE_URL", ""), "/"); envURL != "" {
+	if envURLs := env("DG_BUSINESS_BASE_URLS", ""); envURLs != "" {
+		baseURLs = splitAndNormalizeURLs(envURLs)
+	} else if envURL := strings.TrimRight(env("DG_BUSINESS_BASE_URL", ""), "/"); envURL != "" {
 		baseURLs = []string{envURL}
 	} else {
 		logger.Printf("DG_BUSINESS_BASE_URL not set, fetching from OSS remote config...")
@@ -455,22 +477,44 @@ func loadConfig(logger *log.Logger) (Config, error) {
 	}
 
 	return Config{
-		ListenAddr:         env("DG_LISTEN_ADDR", ":8787"),
-		BusinessBaseURLs:   baseURLs,
-		PublicBaseURL:      publicBaseURL,
-		GatewayURLs:        ossGatewayURLs,
-		APIPrefix:          apiPrefix,
-		DataFile:           env("DG_DATA_FILE", "./data/device-gateway.json"),
-		AdminToken:         adminToken,
-		TokenSecret:        tokenSecret,
-		SessionTTL:         time.Duration(sessionHours) * time.Hour,
-		DevicePolicy:       policy,
-		DefaultDeviceLimit: envInt("DG_DEFAULT_DEVICE_LIMIT", 1),
-		HTTPTimeout:        time.Duration(timeoutSeconds) * time.Second,
-		TrustForwardedFor:  envBool("DG_TRUST_FORWARDED_FOR", false),
-		IPRegionDB:         env("DG_IP_REGION_DB", "./data/ip2region.db"),
-		PostgresDSN:        env("DG_POSTGRES_DSN", ""),
+		ListenAddr:               env("DG_LISTEN_ADDR", ":8787"),
+		BusinessBaseURLs:         baseURLs,
+		PublicBaseURL:            publicBaseURL,
+		GatewayURLs:              ossGatewayURLs,
+		APIPrefix:                apiPrefix,
+		DataFile:                 env("DG_DATA_FILE", "./data/device-gateway.json"),
+		AdminToken:               adminToken,
+		TokenSecret:              tokenSecret,
+		SessionTTL:               time.Duration(sessionHours) * time.Hour,
+		DevicePolicy:             policy,
+		DefaultDeviceLimit:       envInt("DG_DEFAULT_DEVICE_LIMIT", 1),
+		HTTPTimeout:              time.Duration(timeoutSeconds) * time.Second,
+		BusinessFailureThreshold: envInt("DG_BUSINESS_FAILURE_THRESHOLD", 2),
+		BusinessCircuitBreak:     time.Duration(envInt("DG_BUSINESS_CIRCUIT_SECONDS", 90)) * time.Second,
+		BusinessHealthInterval:   time.Duration(envInt("DG_BUSINESS_HEALTH_INTERVAL_SECONDS", 30)) * time.Second,
+		BusinessRecoverySuccess:  envInt("DG_BUSINESS_RECOVERY_SUCCESSES", 3),
+		BusinessBackupMinHold:    time.Duration(envInt("DG_BUSINESS_BACKUP_MIN_HOLD_SECONDS", 180)) * time.Second,
+		TrustForwardedFor:        envBool("DG_TRUST_FORWARDED_FOR", false),
+		IPRegionDB:               env("DG_IP_REGION_DB", "./data/ip2region.db"),
+		PostgresDSN:              env("DG_POSTGRES_DSN", ""),
 	}, nil
+}
+
+func splitAndNormalizeURLs(raw string) []string {
+	result := make([]string, 0)
+	seen := make(map[string]struct{})
+	for _, item := range strings.Split(raw, ",") {
+		item = strings.TrimRight(strings.TrimSpace(item), "/")
+		if item == "" {
+			continue
+		}
+		if _, exists := seen[item]; exists {
+			continue
+		}
+		seen[item] = struct{}{}
+		result = append(result, item)
+	}
+	return result
 }
 
 func (s *Server) routes() http.Handler {
@@ -522,6 +566,7 @@ func (s *Server) refreshOSSConfig() {
 		s.cfg.GatewayURLs = gatewayURLs
 	}
 	s.ossMu.Unlock()
+	s.syncBusinessBackends(domains)
 	s.log.Printf("OSS refreshed: business URLs=%v, gateway URLs=%v", domains, gatewayURLs)
 }
 
@@ -1889,8 +1934,229 @@ func (s *Server) addAuditLocked(action, userID, deviceID, actor, ip, userAgent s
 
 func (s *Server) businessURLs() []string {
 	s.ossMu.RLock()
-	defer s.ossMu.RUnlock()
-	return s.cfg.BusinessBaseURLs
+	configured := append([]string(nil), s.cfg.BusinessBaseURLs...)
+	s.ossMu.RUnlock()
+
+	s.backendMu.Lock()
+	defer s.backendMu.Unlock()
+	now := time.Now()
+	ordered := make([]string, 0, len(configured))
+	if s.activeBusinessURL != "" && containsString(configured, s.activeBusinessURL) {
+		if state := s.backendStates[s.activeBusinessURL]; state == nil || !state.DisabledUntil.After(now) {
+			ordered = append(ordered, s.activeBusinessURL)
+		}
+	}
+	for _, baseURL := range configured {
+		if containsString(ordered, baseURL) {
+			continue
+		}
+		state := s.backendStates[baseURL]
+		if state != nil && state.DisabledUntil.After(now) {
+			continue
+		}
+		ordered = append(ordered, baseURL)
+	}
+	// If every backend is in its cooling period, allow one recovery attempt
+	// instead of making the gateway unavailable until a timer expires.
+	if len(ordered) == 0 && len(configured) > 0 {
+		ordered = append(ordered, configured[0])
+	}
+	return ordered
+}
+
+func containsString(values []string, target string) bool {
+	for _, value := range values {
+		if value == target {
+			return true
+		}
+	}
+	return false
+}
+
+func (s *Server) syncBusinessBackends(urls []string) {
+	s.backendMu.Lock()
+	defer s.backendMu.Unlock()
+	if s.backendStates == nil {
+		s.backendStates = make(map[string]*BusinessBackendState)
+	}
+	valid := make(map[string]struct{}, len(urls))
+	for _, baseURL := range urls {
+		valid[baseURL] = struct{}{}
+		if s.backendStates[baseURL] == nil {
+			s.backendStates[baseURL] = &BusinessBackendState{}
+		}
+	}
+	for baseURL := range s.backendStates {
+		if _, ok := valid[baseURL]; !ok {
+			delete(s.backendStates, baseURL)
+		}
+	}
+	if !containsString(urls, s.activeBusinessURL) {
+		s.activeBusinessURL = ""
+	}
+}
+
+func (s *Server) markBusinessSuccess(baseURL string) {
+	s.backendMu.Lock()
+	defer s.backendMu.Unlock()
+	if s.backendStates == nil {
+		s.backendStates = make(map[string]*BusinessBackendState)
+	}
+	state := s.backendStates[baseURL]
+	if state == nil {
+		state = &BusinessBackendState{}
+		s.backendStates[baseURL] = state
+	}
+	state.FailureCount = 0
+	state.DisabledUntil = time.Time{}
+	state.LastSuccessAt = time.Now()
+	state.RecoverySuccessCount = 0
+	if s.activeBusinessURL != baseURL {
+		s.activeBusinessURL = baseURL
+		s.activeBusinessSince = time.Now()
+	}
+}
+
+func (s *Server) markBusinessFailure(baseURL string) {
+	s.backendMu.Lock()
+	defer s.backendMu.Unlock()
+	if s.backendStates == nil {
+		s.backendStates = make(map[string]*BusinessBackendState)
+	}
+	state := s.backendStates[baseURL]
+	if state == nil {
+		state = &BusinessBackendState{}
+		s.backendStates[baseURL] = state
+	}
+	state.FailureCount++
+	state.RecoverySuccessCount = 0
+	state.LastFailureAt = time.Now()
+	threshold := s.cfg.BusinessFailureThreshold
+	if threshold < 1 {
+		threshold = 2
+	}
+	if state.FailureCount >= threshold {
+		cooldown := s.cfg.BusinessCircuitBreak
+		if cooldown <= 0 {
+			cooldown = 90 * time.Second
+		}
+		state.DisabledUntil = time.Now().Add(cooldown)
+		if s.activeBusinessURL == baseURL {
+			s.activeBusinessURL = ""
+		}
+		if s.log != nil {
+			s.log.Printf("business backend %s circuit opened for %s after %d failures", baseURL, cooldown, state.FailureCount)
+		}
+	}
+}
+
+func (s *Server) startBusinessRecoveryChecker() {
+	if s.cfg.BusinessHealthInterval <= 0 {
+		return
+	}
+	go func() {
+		ticker := time.NewTicker(s.cfg.BusinessHealthInterval)
+		defer ticker.Stop()
+		for range ticker.C {
+			s.checkBusinessRecovery(context.Background())
+		}
+	}()
+}
+
+// checkBusinessRecovery probes only backends with a higher configured
+// priority than the current active backend. It never touches in-flight
+// requests; after the recovery threshold is met only new requests use the
+// recovered backend.
+func (s *Server) checkBusinessRecovery(ctx context.Context) {
+	s.ossMu.RLock()
+	configured := append([]string(nil), s.cfg.BusinessBaseURLs...)
+	s.ossMu.RUnlock()
+	if len(configured) < 2 {
+		return
+	}
+
+	s.backendMu.Lock()
+	active := s.activeBusinessURL
+	activeSince := s.activeBusinessSince
+	s.backendMu.Unlock()
+	activeIndex := -1
+	for i, baseURL := range configured {
+		if baseURL == active {
+			activeIndex = i
+			break
+		}
+	}
+	if activeIndex <= 0 {
+		return
+	}
+
+	for _, candidate := range configured[:activeIndex] {
+		s.backendMu.Lock()
+		state := s.backendStates[candidate]
+		if state != nil && state.DisabledUntil.After(time.Now()) {
+			s.backendMu.Unlock()
+			continue
+		}
+		s.backendMu.Unlock()
+
+		if !s.probeBusinessBackend(ctx, candidate) {
+			s.backendMu.Lock()
+			if state := s.backendStates[candidate]; state != nil {
+				state.RecoverySuccessCount = 0
+			}
+			s.backendMu.Unlock()
+			continue
+		}
+
+		s.backendMu.Lock()
+		state = s.backendStates[candidate]
+		if state == nil {
+			state = &BusinessBackendState{}
+			s.backendStates[candidate] = state
+		}
+		state.RecoverySuccessCount++
+		requiredSuccesses := s.cfg.BusinessRecoverySuccess
+		if requiredSuccesses < 1 {
+			requiredSuccesses = 3
+		}
+		minHold := s.cfg.BusinessBackupMinHold
+		ready := state.RecoverySuccessCount >= requiredSuccesses &&
+			(activeSince.IsZero() || time.Since(activeSince) >= minHold)
+		s.backendMu.Unlock()
+		if ready {
+			s.markBusinessSuccess(candidate)
+			if s.log != nil {
+				s.log.Printf("business backend automatically failed back to %s", candidate)
+			}
+			return
+		}
+		// Only the highest-priority reachable candidate needs recovery votes.
+		return
+	}
+}
+
+func (s *Server) probeBusinessBackend(ctx context.Context, baseURL string) bool {
+	targetURL, err := s.businessURLFor(baseURL, s.cfg.APIPrefix+"/guest/comm/config", "")
+	if err != nil {
+		return false
+	}
+	timeout := 5 * time.Second
+	if s.cfg.BusinessHealthInterval > 0 && s.cfg.BusinessHealthInterval < timeout {
+		timeout = s.cfg.BusinessHealthInterval
+	}
+	probeCtx, cancel := context.WithTimeout(ctx, timeout)
+	defer cancel()
+	req, err := http.NewRequestWithContext(probeCtx, http.MethodGet, targetURL, nil)
+	if err != nil {
+		return false
+	}
+	resp, err := s.client.Do(req)
+	if err != nil {
+		return false
+	}
+	defer resp.Body.Close()
+	_, _ = io.Copy(io.Discard, io.LimitReader(resp.Body, 4096))
+	return resp.StatusCode >= 200 && resp.StatusCode < 300
 }
 
 func (s *Server) ossGatewayURLs() []string {
@@ -1941,6 +2207,7 @@ func (s *Server) tryBusinessURLs(ctx context.Context, makeReq func(baseURL strin
 		}
 		resp, err := s.client.Do(req)
 		if err != nil {
+			s.markBusinessFailure(baseURL)
 			s.log.Printf("business request to %s failed (%d/%d): %v", baseURL, i+1, len(urls), err)
 			lastErr = err
 			continue
@@ -1948,12 +2215,18 @@ func (s *Server) tryBusinessURLs(ctx context.Context, makeReq func(baseURL strin
 		// A reachable reverse proxy may still return 5xx while another business
 		// backend is healthy. Retry only requests that are safe to repeat; avoid
 		// duplicating state-changing operations such as orders and payments.
+		if resp.StatusCode >= 500 {
+			s.markBusinessFailure(baseURL)
+		}
 		if resp.StatusCode >= 500 && i+1 < len(urls) && safeBusinessRetry(req) {
 			_, _ = io.Copy(io.Discard, io.LimitReader(resp.Body, 4096))
 			_ = resp.Body.Close()
 			s.log.Printf("business request to %s returned HTTP %d (%d/%d), trying next backend", baseURL, resp.StatusCode, i+1, len(urls))
 			lastErr = fmt.Errorf("business backend %s returned HTTP %d", baseURL, resp.StatusCode)
 			continue
+		}
+		if resp.StatusCode < 500 {
+			s.markBusinessSuccess(baseURL)
 		}
 		return resp, nil
 	}

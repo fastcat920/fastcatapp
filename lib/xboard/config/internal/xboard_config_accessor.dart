@@ -162,14 +162,22 @@ class XBoardConfigAccessor {
     _lastError = null;
 
     try {
-      // 直接从远程获取最新配置
-      final multiResult = await _remoteManager.fetchAllConfigs();
-      if (multiResult.hasSuccess && multiResult.firstSuccessfulData != null) {
-        final configData = _parser
-            .extractConfigFromRemoteResult(multiResult.firstSuccessfulData!);
+      // 并发获取所有远程源。只有能完成结构提取和完整解析的响应才
+      // 算成功，避免 HTTP 200 但内容损坏的主源阻止备用源接管。
+      final result = await _remoteManager.fetchFirstUsableConfig((data) {
+        try {
+          final extracted = _parser.extractConfigFromRemoteResult(data);
+          if (extracted == null) return false;
+          _parser.parseFromJson(extracted, _currentProvider);
+          return true;
+        } catch (_) {
+          return false;
+        }
+      });
+      if (result.isSuccess && result.data != null) {
+        final configData = _parser.extractConfigFromRemoteResult(result.data!);
         if (configData != null) {
-          await _processConfigData(
-              configData, multiResult.firstSuccessfulSource ?? 'remote');
+          await _processConfigData(configData, result.source);
           return;
         }
       }

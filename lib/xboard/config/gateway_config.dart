@@ -561,7 +561,9 @@ class GatewayRuntimeService {
     if (preferCurrent && _activeConfig != null) {
       queue.add(_activeConfig!);
     }
-    for (final candidate in _candidates) {
+    final sourceCandidates =
+        preferCurrent ? _candidates : _candidatesInConfiguredPriorityOrder();
+    for (final candidate in sourceCandidates) {
       if (queue.any((item) => item.baseUrl == candidate.baseUrl)) continue;
       queue.add(candidate);
     }
@@ -620,6 +622,41 @@ class GatewayRuntimeService {
       },
     );
     return null;
+  }
+
+  /// Returns candidates in the fixed priority declared by the build override
+  /// and remote gateway_urls. Runtime promotion is intentionally ignored so a
+  /// new app launch can fail back to a recovered higher-priority gateway.
+  List<GatewayEndpointConfig> _candidatesInConfiguredPriorityOrder() {
+    final orderedUrls = <String>[];
+    void add(String raw) {
+      final normalized = _normalizeBaseUrl(raw);
+      if (normalized.isNotEmpty && !orderedUrls.contains(normalized)) {
+        orderedUrls.add(normalized);
+      }
+    }
+
+    add(_overrideUrl);
+    try {
+      if (XBoardConfig.isInitialized) {
+        for (final url in XBoardConfig.gatewayUrls) {
+          add(url);
+        }
+      }
+    } catch (_) {}
+    add(productionGatewayUrl);
+
+    final result = <GatewayEndpointConfig>[];
+    for (final url in orderedUrls) {
+      final match = _candidates.where((item) => item.baseUrl == url);
+      if (match.isNotEmpty) result.add(match.first);
+    }
+    for (final candidate in _candidates) {
+      if (!result.any((item) => item.baseUrl == candidate.baseUrl)) {
+        result.add(candidate);
+      }
+    }
+    return result;
   }
 
   Future<GatewayEndpointConfig?> forceReverifyCandidates({

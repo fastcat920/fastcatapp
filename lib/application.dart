@@ -460,7 +460,8 @@ class ApplicationState extends ConsumerState<Application>
       child: ClashManager(
         child: ConnectivityManager(
           onConnectivityChanged: (results) async {
-            if (!results.contains(ConnectivityResult.vpn)) {
+            if (!results.contains(ConnectivityResult.vpn) &&
+                !globalState.shouldSuppressConnectionCleanup) {
               await clashCore.closeConnections();
             }
             globalState.appController.updateLocalIp();

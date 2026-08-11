@@ -184,7 +184,9 @@ class XBoardInitializationNotifier extends StateNotifier<InitializationState> {
       await gatewayRuntime.bootstrapFromCurrentConfig();
       await gatewayRuntime.verifyAndActivateBestCandidate(
         userAgent: globalState.ua,
-        preferCurrent: true,
+        // New launches re-check the fixed gateway_urls priority so a recovered
+        // primary can be selected without switching gateways mid-session.
+        preferCurrent: false,
       );
 
       // ========== 步骤 2: 选择可用域名（逐个尝试，不竞速） ==========

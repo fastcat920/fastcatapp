@@ -41,6 +41,8 @@ class GlobalState {
   Color configuredThemeColor = const Color(defaultPrimaryColor);
   DateTime? startTime;
   final isCoreSwitchingNotifier = ValueNotifier<bool>(false);
+  bool isDisconnectCleanup = false;
+  DateTime? suppressConnectionCleanupUntil;
   final coreStatusReadyNotifier = ValueNotifier<bool>(false);
   final coreSwitchStatusNotifier =
       ValueNotifier<CoreSwitchStatus>(CoreSwitchStatus.idle);
@@ -52,6 +54,10 @@ class GlobalState {
   bool isInit = false;
 
   bool get isStart => startTime != null && startTime!.isBeforeNow;
+
+  bool get shouldSuppressConnectionCleanup =>
+      isDisconnectCleanup ||
+      (suppressConnectionCleanupUntil?.isAfter(DateTime.now()) ?? false);
 
   AppController get appController => _appController!;
 
