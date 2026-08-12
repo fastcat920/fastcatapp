@@ -1046,6 +1046,9 @@ class MessageLookup extends MessageLookupByLibrary {
     "xboardAutoRenewalUpdateFailed": MessageLookupByLibrary.simpleMessage(
       "自动续费设置更新失败，请稍后重试",
     ),
+    "xboardAutoRunDescription": MessageLookupByLibrary.simpleMessage(
+      "应用打开自动连接代理",
+    ),
     "xboardAutoTesting": MessageLookupByLibrary.simpleMessage("自动测试中"),
     "xboardBack": MessageLookupByLibrary.simpleMessage("返回"),
     "xboardBalancePay": MessageLookupByLibrary.simpleMessage("余额支付"),
@@ -2060,6 +2063,10 @@ class MessageLookup extends MessageLookupByLibrary {
     "xboardSpeedLimit": MessageLookupByLibrary.simpleMessage("限速"),
     "xboardStartNewPeriod": MessageLookupByLibrary.simpleMessage("开启新周期"),
     "xboardStartProxy": MessageLookupByLibrary.simpleMessage("启动代理"),
+    "xboardStartup": MessageLookupByLibrary.simpleMessage("自启动"),
+    "xboardStartupDescription": MessageLookupByLibrary.simpleMessage(
+      "开启启动与自动连接代理",
+    ),
     "xboardStop": MessageLookupByLibrary.simpleMessage("停止"),
     "xboardStopProxy": MessageLookupByLibrary.simpleMessage("停止代理"),
     "xboardStreamingAccessible": MessageLookupByLibrary.simpleMessage("可访问"),

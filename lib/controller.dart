@@ -285,14 +285,25 @@ class AppController {
   Future<void> _finishDisconnectCleanup() async {
     try {
       if (Platform.isAndroid) {
-        while (clashLib?.getRunTime() != null) {
+        final deadline = DateTime.now().add(const Duration(seconds: 5));
+        while (
+            await clashLib?.getRunTime().timeout(const Duration(seconds: 1)) !=
+                null) {
+          if (DateTime.now().isAfter(deadline)) {
+            commonPrint.log(
+              'Android disconnect cleanup timed out waiting for TUN to stop',
+            );
+            break;
+          }
           await Future<void>.delayed(const Duration(milliseconds: 50));
         }
         // getAndroidVpnOptions uses the same tunLock as handleStopTun. Reading
         // it here is a completion barrier: it only returns after the old TUN
         // handler and its file descriptor have been fully released.
-        await clashLib?.getAndroidVpnOptions();
-        await clashCore.stopListener();
+        await clashLib
+            ?.getAndroidVpnOptions()
+            .timeout(const Duration(seconds: 3));
+        await clashCore.stopListener().timeout(const Duration(seconds: 3));
       }
       await clashCore.resetTraffic();
       _ref.read(trafficsProvider.notifier).clear();

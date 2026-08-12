@@ -430,6 +430,31 @@ class AppLocalizations {
     );
   }
 
+  /// `Startup`
+  String get xboardStartup {
+    return Intl.message('Startup', name: 'xboardStartup', desc: '', args: []);
+  }
+
+  /// `Launch at startup and connect to the proxy automatically`
+  String get xboardStartupDescription {
+    return Intl.message(
+      'Launch at startup and connect to the proxy automatically',
+      name: 'xboardStartupDescription',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Connect to the proxy automatically when the app opens`
+  String get xboardAutoRunDescription {
+    return Intl.message(
+      'Connect to the proxy automatically when the app opens',
+      name: 'xboardAutoRunDescription',
+      desc: '',
+      args: [],
+    );
+  }
+
   /// `Logcat`
   String get logcat {
     return Intl.message('Logcat', name: 'logcat', desc: '', args: []);

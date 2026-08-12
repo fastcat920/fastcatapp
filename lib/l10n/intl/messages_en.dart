@@ -1484,6 +1484,9 @@ class MessageLookup extends MessageLookupByLibrary {
     "xboardAutoRenewalUpdateFailed": MessageLookupByLibrary.simpleMessage(
       "Could not update auto renewal. Try again later.",
     ),
+    "xboardAutoRunDescription": MessageLookupByLibrary.simpleMessage(
+      "Connect to the proxy automatically when the app opens",
+    ),
     "xboardAutoTesting": MessageLookupByLibrary.simpleMessage("Auto testing"),
     "xboardBack": MessageLookupByLibrary.simpleMessage("Back"),
     "xboardBalancePay": MessageLookupByLibrary.simpleMessage(
@@ -2841,6 +2844,10 @@ class MessageLookup extends MessageLookupByLibrary {
       "Start next traffic period",
     ),
     "xboardStartProxy": MessageLookupByLibrary.simpleMessage("Start Proxy"),
+    "xboardStartup": MessageLookupByLibrary.simpleMessage("Startup"),
+    "xboardStartupDescription": MessageLookupByLibrary.simpleMessage(
+      "Launch at startup and connect to the proxy automatically",
+    ),
     "xboardStop": MessageLookupByLibrary.simpleMessage("Stop"),
     "xboardStopProxy": MessageLookupByLibrary.simpleMessage("Stop Proxy"),
     "xboardStreamingAccessible": MessageLookupByLibrary.simpleMessage(

@@ -19,7 +19,7 @@ class FastCatAutoStartSettingsPage extends ConsumerWidget {
     return Scaffold(
       backgroundColor: XbUiTokens.pageBackground(context),
       appBar: AppBar(
-        title: Text(_isChinese(context) ? '自启动' : 'Startup'),
+        title: Text(l10n.xboardStartup),
         backgroundColor: XbUiTokens.pageBackground(context),
         surfaceTintColor: Colors.transparent,
       ),
@@ -68,7 +68,7 @@ class FastCatAutoStartSettingsPage extends ConsumerWidget {
                     SwitchListTile(
                       secondary: const _StartupIcon(Icons.play_circle_outline),
                       title: Text(l10n.autoRun),
-                      subtitle: Text(l10n.autoRunDesc),
+                      subtitle: Text(l10n.xboardAutoRunDescription),
                       value: appSetting.autoRun,
                       onChanged: (value) =>
                           ref.read(appSettingProvider.notifier).updateState(
@@ -76,17 +76,6 @@ class FastCatAutoStartSettingsPage extends ConsumerWidget {
                               ),
                     ),
                   ],
-                ),
-              ),
-              Padding(
-                padding: const EdgeInsets.fromLTRB(4, 14, 4, 0),
-                child: Text(
-                  _isChinese(context)
-                      ? '自动运行表示应用启动后自动连接代理，与开机启动是两个独立选项。'
-                      : 'Auto run connects the proxy after the app opens. It is independent of start on boot.',
-                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                        color: Theme.of(context).colorScheme.onSurfaceVariant,
-                      ),
                 ),
               ),
             ],

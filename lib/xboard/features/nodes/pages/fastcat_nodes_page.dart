@@ -19,7 +19,8 @@ class FastCatNodesPage extends ConsumerStatefulWidget {
 }
 
 class _FastCatNodesPageState extends ConsumerState<FastCatNodesPage> {
-  static const double _itemExtent = 84;
+  // 66px visible card + 8px spacing between rows.
+  static const double _itemExtent = 74;
   final ScrollController _scrollController = ScrollController();
   bool _selecting = false;
   bool _updating = false;
@@ -90,12 +91,7 @@ class _FastCatNodesPageState extends ConsumerState<FastCatNodesPage> {
           : Center(
               child: ConstrainedBox(
                 constraints: const BoxConstraints(maxWidth: 760),
-                child: Column(
-                  children: [
-                    _buildOverview(context, mode),
-                    Expanded(child: _buildNodes(group)),
-                  ],
-                ),
+                child: _buildNodes(group, mode),
               ),
             ),
     );
@@ -170,7 +166,7 @@ class _FastCatNodesPageState extends ConsumerState<FastCatNodesPage> {
     );
   }
 
-  Widget _buildNodes(MihomoGroup group) {
+  Widget _buildNodes(MihomoGroup group, Mode mode) {
     final l10n = AppLocalizations.of(context);
     final nodes = group.nodes.toList();
     final selectedIndex =
@@ -182,112 +178,124 @@ class _FastCatNodesPageState extends ConsumerState<FastCatNodesPage> {
                 ? 2
                 : 1;
         _centerSelectedNode(selectedIndex, constraints.maxHeight, columns);
-        return GridView.builder(
+        return CustomScrollView(
           controller: _scrollController,
-          padding: const EdgeInsets.fromLTRB(16, 0, 16, 24),
-          gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-            crossAxisCount: columns,
-            mainAxisExtent: _itemExtent,
-            crossAxisSpacing: 10,
-          ),
-          itemCount: nodes.length,
-          itemBuilder: (context, index) {
-            final node = nodes[index];
-            final selected = node.name == group.selected;
-            final primary = Theme.of(context).colorScheme.primary;
-            return Padding(
-              padding: const EdgeInsets.only(bottom: 8),
-              child: Material(
-                color: selected
-                    ? primary.withValues(alpha: 0.08)
-                    : XbUiCardStyle.background(context),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(16),
-                  side: BorderSide(
-                    color: selected
-                        ? primary.withValues(alpha: 0.65)
-                        : XbUiTokens.cardBorder(context),
-                    width: selected ? 1.4 : 1,
-                  ),
+          slivers: [
+            SliverToBoxAdapter(child: _buildOverview(context, mode)),
+            SliverPadding(
+              padding: const EdgeInsets.fromLTRB(16, 0, 16, 24),
+              sliver: SliverGrid(
+                gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                  crossAxisCount: columns,
+                  mainAxisExtent: _itemExtent,
+                  crossAxisSpacing: 10,
                 ),
-                clipBehavior: Clip.antiAlias,
-                child: XbPointerCursor(
-                  enabled: !selected &&
-                      !_selecting &&
-                      !_testingNodes.contains(node.name),
-                  child: InkWell(
-                    onTap: selected ||
-                            _selecting ||
-                            _testingNodes.contains(node.name)
-                        ? null
-                        : () => _selectNode(group.name, node.name),
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 14),
-                      child: Row(
-                        children: [
-                          Icon(
-                            selected
-                                ? Icons.check_circle
-                                : Icons.circle_outlined,
-                            size: 21,
+                delegate: SliverChildBuilderDelegate(
+                  (context, index) {
+                    final node = nodes[index];
+                    final selected = node.name == group.selected;
+                    final primary = Theme.of(context).colorScheme.primary;
+                    return Padding(
+                      padding: const EdgeInsets.only(bottom: 8),
+                      child: Material(
+                        color: selected
+                            ? primary.withValues(alpha: 0.08)
+                            : XbUiCardStyle.background(context),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(16),
+                          side: BorderSide(
                             color: selected
-                                ? primary
-                                : Theme.of(context).colorScheme.outline,
+                                ? primary.withValues(alpha: 0.65)
+                                : XbUiTokens.cardBorder(context),
+                            width: selected ? 1.4 : 1,
                           ),
-                          const SizedBox(width: 11),
-                          Expanded(
-                            child: Column(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  node.name,
-                                  maxLines: 1,
-                                  overflow: TextOverflow.ellipsis,
-                                  style: Theme.of(context)
-                                      .textTheme
-                                      .bodyMedium
-                                      ?.copyWith(
-                                        fontWeight: selected
-                                            ? XbFontWeight.semibold
-                                            : null,
-                                      ),
-                                ),
-                                const SizedBox(height: 5),
-                                Row(
-                                  children: [
-                                    _SmallTag(label: node.type),
-                                    if (selected) ...[
-                                      const SizedBox(width: 6),
-                                      _SmallTag(
-                                        label: l10n.xboardCurrentNode,
-                                        color: primary,
-                                      ),
-                                    ],
-                                  ],
-                                ),
-                              ],
+                        ),
+                        clipBehavior: Clip.antiAlias,
+                        child: XbPointerCursor(
+                          enabled: !selected &&
+                              !_selecting &&
+                              !_testingNodes.contains(node.name),
+                          child: InkWell(
+                            onTap: selected ||
+                                    _selecting ||
+                                    _testingNodes.contains(node.name)
+                                ? null
+                                : () => _selectNode(group.name, node.name),
+                            child: Padding(
+                              padding:
+                                  const EdgeInsets.symmetric(horizontal: 14),
+                              child: Row(
+                                children: [
+                                  Icon(
+                                    selected
+                                        ? Icons.check_circle
+                                        : Icons.circle_outlined,
+                                    size: 21,
+                                    color: selected
+                                        ? primary
+                                        : Theme.of(context).colorScheme.outline,
+                                  ),
+                                  const SizedBox(width: 11),
+                                  Expanded(
+                                    child: Column(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.center,
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        Text(
+                                          node.name,
+                                          maxLines: 1,
+                                          overflow: TextOverflow.ellipsis,
+                                          style: Theme.of(context)
+                                              .textTheme
+                                              .bodyMedium
+                                              ?.copyWith(
+                                                fontWeight: selected
+                                                    ? XbFontWeight.semibold
+                                                    : null,
+                                              ),
+                                        ),
+                                        const SizedBox(height: 5),
+                                        Row(
+                                          children: [
+                                            _SmallTag(label: node.type),
+                                            if (selected) ...[
+                                              const SizedBox(width: 6),
+                                              _SmallTag(
+                                                label: l10n.xboardCurrentNode,
+                                                color: primary,
+                                              ),
+                                            ],
+                                          ],
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                  const SizedBox(width: 10),
+                                  _DelayBadge(
+                                    node: node,
+                                    testing: _testingNodes.contains(node.name),
+                                    onTap: _testing || _updating
+                                        ? null
+                                        : () => _runSingleNodeLatencyTest(
+                                              group.name,
+                                              node.name,
+                                            ),
+                                  ),
+                                ],
+                              ),
                             ),
                           ),
-                          const SizedBox(width: 10),
-                          _DelayBadge(
-                            node: node,
-                            testing: _testingNodes.contains(node.name),
-                            onTap: _testing || _updating
-                                ? null
-                                : () => _runSingleNodeLatencyTest(
-                                      group.name,
-                                      node.name,
-                                    ),
-                          ),
-                        ],
+                        ),
                       ),
-                    ),
-                  ),
+                    );
+                  },
+                  childCount: nodes.length,
                 ),
               ),
-            );
-          },
+            ),
+          ],
         );
       },
     );

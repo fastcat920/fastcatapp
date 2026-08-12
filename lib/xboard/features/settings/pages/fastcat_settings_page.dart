@@ -52,10 +52,8 @@ class FastCatSettingsPage extends ConsumerWidget {
                   _navigationTile(
                     context,
                     icon: Icons.power_settings_new_outlined,
-                    title: _isChinese(context) ? '自启动' : 'Startup',
-                    subtitle: _isChinese(context)
-                        ? '开机启动与应用打开后自动运行'
-                        : 'Start on boot and connect automatically',
+                    title: l10n.xboardStartup,
+                    subtitle: l10n.xboardStartupDescription,
                     onTap: () =>
                         _open(context, const FastCatAutoStartSettingsPage()),
                   ),
@@ -140,9 +138,6 @@ class FastCatSettingsPage extends ConsumerWidget {
           onTap: onTap,
         ),
       );
-
-  bool _isChinese(BuildContext context) =>
-      Localizations.localeOf(context).languageCode == 'zh';
 
   String _languageLabel(String? locale, AppLocalizations l10n) {
     return switch (locale) {

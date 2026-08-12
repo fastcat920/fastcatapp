@@ -82,11 +82,6 @@ class FastCatAboutPage extends ConsumerWidget {
                           ? null
                           : () => _checkUpdate(context, ref),
                     ),
-                    const Divider(height: 1),
-                    ListTile(
-                      leading: const Icon(Icons.memory_outlined),
-                      title: Text('${l10n.core} $mihomoVersion'),
-                    ),
                   ],
                 ),
               ),
