@@ -986,6 +986,12 @@ class BuildCommand extends Command {
   String get _dartDefinesArgs {
     const keys = [
       'XOR_KEY',
+      'FASTCAT_KEY_CURRENT_ID',
+      'FASTCAT_KEY_CURRENT',
+      'FASTCAT_KEY_NEXT_ID',
+      'FASTCAT_KEY_NEXT',
+      'FASTCAT_SUBSCRIPTION_FLAG',
+      'FASTCAT_REQUIRE_ENCRYPTION',
       'OSS_URL_1',
       'OSS_URL_2',
       'OSS_URL_3',
@@ -1011,7 +1017,9 @@ class BuildCommand extends Command {
         }
         sb.write(' --build-dart-define=$key=$val');
         // 打印已注入的 key（隐藏敏感值）
-        final masked = key == 'XOR_KEY'
+        final masked = key == 'XOR_KEY' ||
+                key == 'FASTCAT_KEY_CURRENT' ||
+                key == 'FASTCAT_KEY_NEXT'
             ? '***${val.length}chars***'
             : (val.length > 20 ? '${val.substring(0, 20)}...' : val);
         print('[setup.dart] dart-define: $key=$masked');
@@ -1028,6 +1036,12 @@ class BuildCommand extends Command {
   List<String> _dartDefineList(String env) {
     const keys = [
       'XOR_KEY',
+      'FASTCAT_KEY_CURRENT_ID',
+      'FASTCAT_KEY_CURRENT',
+      'FASTCAT_KEY_NEXT_ID',
+      'FASTCAT_KEY_NEXT',
+      'FASTCAT_SUBSCRIPTION_FLAG',
+      'FASTCAT_REQUIRE_ENCRYPTION',
       'OSS_URL_1',
       'OSS_URL_2',
       'OSS_URL_3',

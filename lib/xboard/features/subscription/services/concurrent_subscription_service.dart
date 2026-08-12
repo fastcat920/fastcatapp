@@ -9,6 +9,7 @@ import 'package:fl_clash/common/sensitive_masker.dart';
 import 'package:fl_clash/xboard/infrastructure/infrastructure.dart';
 import 'package:fl_clash/xboard/infrastructure/http/user_agent_config.dart';
 import 'package:fl_clash/xboard/features/subscription/utils/subscription_url_helper.dart';
+import 'package:fl_clash/xboard/security/fastcat_subscription_decoder.dart';
 import 'encrypted_subscription_service.dart';
 
 // 初始化文件级日志器
@@ -275,19 +276,13 @@ class ConcurrentSubscriptionService {
 
       _logger.debug('[竞速订阅] 获取到数据，长度: ${dataResult.data!.length}');
 
-      // 2. 解密数据（使用内置 XOR 密钥自动解密）
-      final decryptResult = XBoardDecryptHelper.smartDecrypt(
-        dataResult.data!,
-        tryFallback: true,
-      );
-      if (!decryptResult.success) {
-        return SubscriptionResult.failure('解密失败: ${decryptResult.message}');
-      }
+      // 2. 统一验证并解密 FastCat AES-GCM 信封。
+      final decoded = FastCatSubscriptionDecoder.decode(dataResult.data!);
 
       return SubscriptionResult.success(
-        content: decryptResult.content,
+        content: decoded,
         encryptionUsed: true,
-        keyUsed: decryptResult.keyUsed,
+        keyUsed: null,
         originalUrl: url,
         subscriptionUserInfo: dataResult.subscriptionUserInfo,
       );
@@ -303,7 +298,7 @@ class ConcurrentSubscriptionService {
       client.findProxy = (_) => 'DIRECT';
       client.connectionTimeout = requestTimeout;
 
-      final uri = Uri.parse(SubscriptionUrlHelper.ensureMetaFlag(url));
+      final uri = Uri.parse(SubscriptionUrlHelper.ensureFastCatFlag(url));
       final request = await client.getUrl(uri);
 
       // 设置请求头
@@ -320,18 +315,7 @@ class ConcurrentSubscriptionService {
             response.headers.value('subscription-userinfo');
         client.close();
 
-        // 尝试解析JSON响应
-        try {
-          final jsonData = jsonDecode(responseBody);
-          if (jsonData is Map<String, dynamic> &&
-              jsonData.containsKey('data')) {
-            return DataResult.success(jsonData['data'] as String,
-                subscriptionUserInfo: subscriptionUserInfo);
-          }
-        } catch (e) {
-          // 如果不是JSON，直接返回响应体
-        }
-
+        // 保留完整版本化信封，由统一解码器认证并解密。
         return DataResult.success(responseBody,
             subscriptionUserInfo: subscriptionUserInfo);
       } else {

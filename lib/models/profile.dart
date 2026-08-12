@@ -8,6 +8,7 @@ import 'package:fl_clash/common/common.dart';
 import 'package:fl_clash/enum/enum.dart';
 import 'package:fl_clash/xboard/config/xboard_config.dart';
 import 'package:fl_clash/xboard/features/subscription/utils/subscription_url_helper.dart';
+import 'package:fl_clash/xboard/security/fastcat_subscription_decoder.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:flutter_xboard_sdk/flutter_xboard_sdk.dart';
 
@@ -204,15 +205,17 @@ extension ProfileExtension on Profile {
       }
     }
 
-    final response = await request
-        .getFileResponseForUrl(SubscriptionUrlHelper.ensureMetaFlag(updateUrl));
+    final response = await request.getFileResponseForUrl(
+        SubscriptionUrlHelper.ensureFastCatFlag(updateUrl));
     final disposition = response.headers.value("content-disposition");
     final userinfo = response.headers.value('subscription-userinfo');
     return await copyWith(
       url: updateUrl, // 同步更新存储的URL为最新的
       label: label ?? utils.getFileNameForDisposition(disposition) ?? id,
       subscriptionInfo: SubscriptionInfo.formHString(userinfo),
-    ).saveFile(response.data);
+    ).saveFile(Uint8List.fromList(utf8.encode(
+      FastCatSubscriptionDecoder.decode(utf8.decode(response.data)),
+    )));
   }
 
   Future<Profile> saveFile(Uint8List bytes) async {

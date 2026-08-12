@@ -6,6 +6,7 @@ import 'package:fl_clash/xboard/core/core.dart';
 import 'package:fl_clash/common/sensitive_masker.dart';
 import 'package:fl_clash/xboard/infrastructure/http/user_agent_config.dart';
 import 'package:fl_clash/xboard/features/subscription/utils/subscription_url_helper.dart';
+import 'package:fl_clash/xboard/security/fastcat_subscription_decoder.dart';
 import 'package:socks5_proxy/socks_client.dart';
 
 // 初始化文件级日志器
@@ -40,15 +41,17 @@ class SubscriptionDownloader {
       _logger.info(
           '✅ HTTP 下载完成，耗时 ${sw.elapsedMilliseconds}ms，大小 ${result.bytes.length} bytes');
 
+      final decodedContent = FastCatSubscriptionDecoder.decode(result.content);
+
       // 直接写文件，跳过 saveFileWithString 内部的 validateConfig IPC 调用。
       // 桌面端 ClashCore.exe 进程未就绪时 validateConfig 默认等 30s，是导入卡死的根因。
       // 配置格式合法性由 applyProfile → setupConfig 阶段的 ClashCore 权威验证。
       _logger.info('💾 写入配置文件（跳过 validateConfig IPC）...');
 
       // 🔍 诊断：检查下载的配置内容是否为有效的 Clash YAML 格式
-      final contentLines = result.content.split('\n');
-      final hasProxies = result.content.contains('proxies:');
-      final hasProxyGroups = result.content.contains('proxy-groups:');
+      final contentLines = decodedContent.split('\n');
+      final hasProxies = decodedContent.contains('proxies:');
+      final hasProxyGroups = decodedContent.contains('proxy-groups:');
       _logger.info(
           '🔍 配置内容诊断: 总行数=${contentLines.length}, hasProxies=$hasProxies, hasProxyGroups=$hasProxyGroups');
 
@@ -56,7 +59,7 @@ class SubscriptionDownloader {
       // 这通常是因为服务端未识别到客户端的 User-Agent 中的 Clash Meta 标识，
       // 从而使用了通用协议（返回 ss://、trojan:// 等 URI 的 Base64 编码）。
       if (!hasProxies && !hasProxyGroups) {
-        final trimmedContent = result.content.trim();
+        final trimmedContent = decodedContent.trim();
         final isLikelyBase64 = !trimmedContent.contains(':') ||
             RegExp(r'^[A-Za-z0-9+/=\r\n]+$').hasMatch(trimmedContent);
         final isLikelyUriList = trimmedContent.contains('ss://') ||
@@ -77,8 +80,7 @@ class SubscriptionDownloader {
               '2. 订阅链接是否正确（可尝试在 URL 后加 &flag=meta）');
         }
 
-        _logger.error(
-            '⚠️ 警告: 下载的配置文件中没有找到 proxies 字段！前100字符: ${result.content.substring(0, result.content.length > 100 ? 100 : result.content.length)}');
+        _logger.error('⚠️ 警告: 下载的配置文件中没有找到 proxies 字段！');
       }
 
       if (token.isCancelled) {
@@ -87,7 +89,7 @@ class SubscriptionDownloader {
 
       final profile = Profile.normal(url: url);
       final profileFile = await profile.getFile();
-      await profileFile.writeAsString(result.content);
+      await profileFile.writeAsString(decodedContent);
       final savedProfile = profile.copyWith(lastUpdateDate: DateTime.now());
       _logger.info('✅ 配置文件写入完成，总耗时 ${sw.elapsedMilliseconds}ms');
 
@@ -208,7 +210,7 @@ class SubscriptionDownloader {
       }
 
       // 发起请求（追加 flag=meta 确保后端返回 ClashMeta 格式）
-      final uri = Uri.parse(SubscriptionUrlHelper.ensureMetaFlag(url));
+      final uri = Uri.parse(SubscriptionUrlHelper.ensureFastCatFlag(url));
       final request = await client.getUrl(uri);
 
       // 检查是否已取消

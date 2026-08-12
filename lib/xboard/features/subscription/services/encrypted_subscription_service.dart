@@ -9,6 +9,7 @@ import 'package:fl_clash/common/sensitive_masker.dart';
 import 'package:fl_clash/xboard/infrastructure/infrastructure.dart';
 import 'package:fl_clash/xboard/infrastructure/http/user_agent_config.dart';
 import 'package:fl_clash/xboard/features/subscription/utils/subscription_url_helper.dart';
+import 'package:fl_clash/xboard/security/fastcat_subscription_decoder.dart';
 import 'concurrent_subscription_service.dart';
 
 // 初始化文件级日志器
@@ -152,30 +153,21 @@ class EncryptedSubscriptionService {
 
       _logger.debug('[订阅服务] 获取到加密数据，长度: ${encryptedData.data!.length}');
 
-      // 4. 解密数据（使用内置 XOR 密钥自动解密）
+      // 4. 统一验证并解密 FastCat AES-GCM 信封。
       _logger.info('[订阅服务] 🔐 开始解密获取到的加密数据...');
-      final decryptResult = XBoardDecryptHelper.smartDecrypt(
-        encryptedData.data!,
-        tryFallback: true,
-      );
-      if (!decryptResult.success) {
-        _logger.error('[订阅服务] 💥 解密失败: ${decryptResult.message}');
-        return SubscriptionResult.failure('解密失败: ${decryptResult.message}');
-      }
-
-      _logger.info(
-          '[订阅服务] 🎉 解密成功！使用密钥: ${decryptResult.keyUsed?.substring(0, 8)}..., 解密内容长度: ${decryptResult.content.length}');
+      final decoded = FastCatSubscriptionDecoder.decode(encryptedData.data!);
+      _logger.info('[订阅服务] 🎉 解密认证成功，内容长度: ${decoded.length}');
 
       // 记录解密内容的基本统计信息
-      final lines = decryptResult.content.split('\n');
+      final lines = decoded.split('\n');
       final nonEmptyLines =
           lines.where((line) => line.trim().isNotEmpty).length;
       _logger.debug('[订阅服务] 解密内容统计: 总行数 ${lines.length}, 非空行数 $nonEmptyLines');
 
       return SubscriptionResult.success(
-        content: decryptResult.content,
+        content: decoded,
         encryptionUsed: true,
-        keyUsed: decryptResult.keyUsed,
+        keyUsed: null,
         originalUrl: subscriptionUrl,
         subscriptionUserInfo: encryptedData.subscriptionUserInfo,
       );
@@ -201,7 +193,7 @@ class EncryptedSubscriptionService {
         client.findProxy = (_) => 'DIRECT';
         client.connectionTimeout = requestTimeout;
 
-        final uri = Uri.parse(SubscriptionUrlHelper.ensureMetaFlag(url));
+        final uri = Uri.parse(SubscriptionUrlHelper.ensureFastCatFlag(url));
         final request = await client.getUrl(uri);
 
         // 设置请求头
@@ -225,23 +217,7 @@ class EncryptedSubscriptionService {
             _logger.debug('[数据获取] 📊 获取到订阅信息: $subscriptionUserInfo');
           }
 
-          // 尝试解析JSON响应
-          try {
-            final jsonData = jsonDecode(responseBody);
-            if (jsonData is Map<String, dynamic> &&
-                jsonData.containsKey('data')) {
-              _logger.debug('[数据获取] 📄 检测到JSON格式响应，提取data字段');
-              final dataContent = jsonData['data'] as String;
-              _logger.debug('[数据获取] 🔐 提取到加密数据长度: ${dataContent.length}');
-              return DataResult.success(dataContent,
-                  subscriptionUserInfo: subscriptionUserInfo);
-            }
-          } catch (e) {
-            _logger.debug('[数据获取] 📄 非JSON格式响应，直接返回原始内容');
-            // 如果不是JSON，直接返回响应体
-          }
-
-          _logger.debug('[数据获取] 🔐 返回原始响应内容作为加密数据');
+          // 保留完整版本化信封，由统一解码器认证并解密。
           return DataResult.success(responseBody,
               subscriptionUserInfo: subscriptionUserInfo);
         } else {
