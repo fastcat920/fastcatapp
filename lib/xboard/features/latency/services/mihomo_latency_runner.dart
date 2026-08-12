@@ -15,6 +15,7 @@ Future<void> testNodeLatency(Proxy proxy, [String? testUrl]) async {
 Future<void> testNodesLatency(
   List<Proxy> proxies, [
   String? testUrl,
+  void Function(String proxyName)? onResult,
 ]) async {
   final controller = globalState.appController;
   final names = proxies.map((proxy) => proxy.name).toSet();
@@ -24,6 +25,7 @@ Future<void> testNodesLatency(
     if (state.proxyName.isEmpty) return;
     controller.setDelay(Delay(url: url, name: state.proxyName, value: 0));
     controller.setDelay(await clashCore.getDelay(url, state.proxyName));
+    onResult?.call(state.proxyName);
   }).toList();
   for (final batch in tests.batch(100)) {
     await Future.wait(batch);

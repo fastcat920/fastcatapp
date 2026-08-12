@@ -107,15 +107,10 @@ class _StartupIcon extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final primary = Theme.of(context).colorScheme.primary;
-    return Container(
-      width: 40,
-      height: 40,
-      decoration: BoxDecoration(
-        color: primary.withValues(alpha: 0.10),
-        borderRadius: BorderRadius.circular(12),
-      ),
-      child: Icon(icon, size: 21, color: primary),
+    return Icon(
+      icon,
+      size: 22,
+      color: Theme.of(context).colorScheme.onSurfaceVariant,
     );
   }
 }

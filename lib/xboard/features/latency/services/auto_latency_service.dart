@@ -154,7 +154,10 @@ class AutoLatencyService {
     }
   }
 
-  Future<void> testCurrentGroupNodes({int maxNodes = 5}) async {
+  Future<void> testCurrentGroupNodes({
+    int maxNodes = 5,
+    void Function(String proxyName)? onResult,
+  }) async {
     if (!_ensureServiceActive()) {
       return;
     }
@@ -174,7 +177,7 @@ class AutoLatencyService {
       _logger.debug('AutoLatencyService',
           '测试节点列表: ${nodesToTest.map((p) => p.name).join(', ')}');
       final testUrl = _ref!.read(appSettingProvider).testUrl;
-      await testNodesLatency(nodesToTest, testUrl);
+      await testNodesLatency(nodesToTest, testUrl, onResult);
       _logger.info('批量延迟测试完成');
     } catch (e) {
       _logger.error('批量延迟测试失败', e);

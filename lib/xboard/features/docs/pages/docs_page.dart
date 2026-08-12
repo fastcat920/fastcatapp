@@ -422,12 +422,13 @@ class _ArticleDetailPageState extends ConsumerState<_ArticleDetailPage> {
         ? fallbackBackground
         : '#${(backgroundArgb & 0xFFFFFF).toRadixString(16).padLeft(6, '0')}';
     final colorScheme = isDark ? 'dark' : 'light';
+    final themeClass = isDark ? ' class="dark-theme"' : '';
     final codeBg = isDark ? '#2d2d2d' : '#f4f4f4';
     final hrColor = isDark ? '#444' : '#e0e0e0';
     final baseTag = baseUrl == null || baseUrl.isEmpty
         ? ''
         : '<base href="${const HtmlEscape(HtmlEscapeMode.attribute).convert(baseUrl)}">';
-    return '''<!DOCTYPE html><html data-fastcat-document="true"><head>
+    return '''<!DOCTYPE html><html data-fastcat-document="true"$themeClass><head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="color-scheme" content="$colorScheme">
@@ -466,7 +467,7 @@ p{margin:8px 0}
     reportRendered();
   }
 })();
-</script></head><body>$renderedContent</body></html>''';
+</script></head><body$themeClass>$renderedContent</body></html>''';
   }
 
   /// Windows 缺少 WebView2 时，将已经转换好的正文交给

@@ -13,6 +13,7 @@ class FastCatDnsSettingsPage extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context);
     final overrideDns = ref.watch(overrideDnsProvider);
+    final vpnSetting = ref.watch(vpnSettingProvider);
     final dns =
         ref.watch(patchClashConfigProvider.select((state) => state.dns));
     if (overrideDns && !dns.enable) {
@@ -41,6 +42,18 @@ class FastCatDnsSettingsPage extends ConsumerWidget {
               _section(context, l10n.options),
               _DnsCard(
                 children: [
+                  SwitchListTile(
+                    secondary: const _DnsIcon(Icons.public_outlined),
+                    title:
+                        Text(_isChinese(context) ? 'IPv6 流量' : 'IPv6 traffic'),
+                    subtitle: Text(_isChinese(context)
+                        ? '允许 VPN/TUN 接收并转发 IPv6 流量'
+                        : 'Allow VPN/TUN to receive and forward IPv6 traffic'),
+                    value: vpnSetting.ipv6,
+                    onChanged: (value) => ref
+                        .read(vpnSettingProvider.notifier)
+                        .updateState((state) => state.copyWith(ipv6: value)),
+                  ),
                   SwitchListTile(
                     secondary: const _DnsIcon(Icons.layers_outlined),
                     title: Text(l10n.overrideDns),
@@ -363,15 +376,10 @@ class _DnsIcon extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final primary = Theme.of(context).colorScheme.primary;
-    return Container(
-      width: 40,
-      height: 40,
-      decoration: BoxDecoration(
-        color: primary.withValues(alpha: 0.10),
-        borderRadius: BorderRadius.circular(12),
-      ),
-      child: Icon(icon, size: 21, color: primary),
+    return Icon(
+      icon,
+      size: 22,
+      color: Theme.of(context).colorScheme.onSurfaceVariant,
     );
   }
 }

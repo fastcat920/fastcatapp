@@ -71,18 +71,6 @@ class FastCatSettingsPage extends ConsumerWidget {
                     subtitle: l10n.dnsDesc,
                     onTap: () => _open(context, const FastCatDnsSettingsPage()),
                   ),
-                  _switchTile(
-                    context,
-                    icon: Icons.public_outlined,
-                    title: _isChinese(context) ? 'IPv6 流量' : 'IPv6 traffic',
-                    subtitle: _isChinese(context)
-                        ? '开启后允许 VPN/TUN 接收并转发 IPv6 流量'
-                        : 'Allow VPN/TUN to receive and forward IPv6 traffic',
-                    value: ref.watch(vpnSettingProvider).ipv6,
-                    onChanged: (value) => ref
-                        .read(vpnSettingProvider.notifier)
-                        .updateState((state) => state.copyWith(ipv6: value)),
-                  ),
                   _navigationTile(
                     context,
                     icon: Icons.monitor_heart_outlined,
@@ -151,22 +139,6 @@ class FastCatSettingsPage extends ConsumerWidget {
               color: Theme.of(context).colorScheme.outline),
           onTap: onTap,
         ),
-      );
-
-  Widget _switchTile(
-    BuildContext context, {
-    required IconData icon,
-    required String title,
-    required String subtitle,
-    required bool value,
-    required ValueChanged<bool> onChanged,
-  }) =>
-      SwitchListTile(
-        secondary: _SettingsIcon(icon: icon),
-        title: Text(title),
-        subtitle: Text(subtitle),
-        value: value,
-        onChanged: onChanged,
       );
 
   bool _isChinese(BuildContext context) =>
@@ -303,10 +275,8 @@ class _ChoiceTile<T> extends StatelessWidget {
       child: ListTile(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
         selected: selected,
-        selectedTileColor: Theme.of(context)
-            .colorScheme
-            .primaryContainer
-            .withValues(alpha: 0.5),
+        selectedTileColor:
+            Theme.of(context).colorScheme.primary.withValues(alpha: 0.08),
         leading: Icon(
           selected ? Icons.radio_button_checked : Icons.radio_button_off,
           color: selected ? Theme.of(context).colorScheme.primary : null,
@@ -360,15 +330,10 @@ class _SettingsIcon extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final primary = Theme.of(context).colorScheme.primary;
-    return Container(
-      width: 40,
-      height: 40,
-      decoration: BoxDecoration(
-        color: primary.withValues(alpha: 0.10),
-        borderRadius: BorderRadius.circular(12),
-      ),
-      child: Icon(icon, size: 21, color: primary),
+    return Icon(
+      icon,
+      size: 22,
+      color: Theme.of(context).colorScheme.onSurfaceVariant,
     );
   }
 }

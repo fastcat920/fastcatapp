@@ -197,6 +197,7 @@ type SubscriptionSnapshot struct {
 	PlanID         int
 	PlanName       string
 	DeviceLimit    *int
+	DeviceLimitSet bool
 	SubscribeURL   string
 	SubscribeToken string
 }
@@ -656,8 +657,9 @@ func (s *Server) handleLogin(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		s.log.Printf("subscription sync failed after login, using fallback limit: %v", err)
 		snapshot = SubscriptionSnapshot{
-			Email:       req.Email,
-			DeviceLimit: intPtr(s.cfg.DefaultDeviceLimit),
+			Email:          req.Email,
+			DeviceLimit:    intPtr(s.cfg.DefaultDeviceLimit),
+			DeviceLimitSet: true,
 		}
 	}
 	if snapshot.Email == "" {
@@ -1730,8 +1732,8 @@ func (s *Server) rewriteSubscriptionResponse(r *http.Request, sessionCtx *Sessio
 	if snapshot.PlanName != "" {
 		user.PlanName = snapshot.PlanName
 	}
-	if snapshot.DeviceLimit != nil {
-		user.DeviceLimit = snapshot.DeviceLimit
+	if snapshot.hasDeviceLimit() {
+		user.DeviceLimit = normalizedDeviceLimit(snapshot.DeviceLimit)
 	}
 	user.LastSyncedAt = now
 	user.UpdatedAt = now
@@ -1772,16 +1774,14 @@ func parseSubscriptionSnapshot(body []byte) (SubscriptionSnapshot, error) {
 	}
 
 	plan := mapFromAny(data["plan"])
-	limit := intPtrFromAny(data["device_limit"])
-	if limit == nil && plan != nil {
-		limit = intPtrFromAny(plan["device_limit"])
-	}
+	limit, limitSet := subscriptionDeviceLimit(data, plan)
 
 	snapshot := SubscriptionSnapshot{
 		Email:          stringFromAny(data["email"]),
 		UUID:           stringFromAny(data["uuid"]),
 		PlanID:         intFromAny(data["plan_id"]),
 		DeviceLimit:    limit,
+		DeviceLimitSet: limitSet,
 		SubscribeURL:   stringFromAny(data["subscribe_url"]),
 		SubscribeToken: stringFromAny(data["token"]),
 	}
@@ -1792,6 +1792,32 @@ func parseSubscriptionSnapshot(body []byte) (SubscriptionSnapshot, error) {
 		snapshot.PlanName = stringFromAny(plan["name"])
 	}
 	return snapshot, nil
+}
+
+// subscriptionDeviceLimit preserves the distinction between an absent limit
+// and an explicitly null limit. XBoard uses null (and non-positive values) for
+// unlimited devices; an absent field means the gateway default still applies.
+func subscriptionDeviceLimit(data, plan map[string]any) (*int, bool) {
+	if value, ok := data["device_limit"]; ok {
+		return intPtrFromAny(value), true
+	}
+	if plan != nil {
+		if value, ok := plan["device_limit"]; ok {
+			return intPtrFromAny(value), true
+		}
+	}
+	return nil, false
+}
+
+func (snapshot SubscriptionSnapshot) hasDeviceLimit() bool {
+	return snapshot.DeviceLimitSet || snapshot.DeviceLimit != nil
+}
+
+func normalizedDeviceLimit(limit *int) *int {
+	if limit == nil || *limit <= 0 {
+		return intPtr(0)
+	}
+	return limit
 }
 
 func (s *Server) upsertUserLocked(snapshot SubscriptionSnapshot, fallbackEmail string, now time.Time) *UserCache {
@@ -1824,8 +1850,8 @@ func (s *Server) upsertUserLocked(snapshot SubscriptionSnapshot, fallbackEmail s
 	user.BusinessUserID = businessID
 	user.PlanID = snapshot.PlanID
 	user.PlanName = snapshot.PlanName
-	if snapshot.DeviceLimit != nil {
-		user.DeviceLimit = snapshot.DeviceLimit
+	if snapshot.hasDeviceLimit() {
+		user.DeviceLimit = normalizedDeviceLimit(snapshot.DeviceLimit)
 	}
 	if user.DeviceLimit == nil {
 		user.DeviceLimit = intPtr(s.cfg.DefaultDeviceLimit)

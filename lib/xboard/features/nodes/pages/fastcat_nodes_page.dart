@@ -272,8 +272,7 @@ class _FastCatNodesPageState extends ConsumerState<FastCatNodesPage> {
                           const SizedBox(width: 10),
                           _DelayBadge(
                             node: node,
-                            testing:
-                                _testing || _testingNodes.contains(node.name),
+                            testing: _testingNodes.contains(node.name),
                             onTap: _testing || _updating
                                 ? null
                                 : () => _runSingleNodeLatencyTest(
@@ -350,11 +349,34 @@ class _FastCatNodesPageState extends ConsumerState<FastCatNodesPage> {
   }
 
   Future<void> _runLatencyTest() async {
-    setState(() => _testing = true);
+    final group = ref.read(mihomoGroupsProvider).where((item) {
+      final mode = ref.read(patchClashConfigProvider).mode;
+      final currentName = mode == Mode.global
+          ? 'GLOBAL'
+          : widget.initialGroupName ??
+              ref.read(coreGatewayProvider).getCurrentGroupName();
+      return item.name == currentName;
+    }).firstOrNull;
+    final names = group?.nodes.map((node) => node.name).toSet() ?? <String>{};
+    setState(() {
+      _testing = true;
+      _testingNodes.addAll(names);
+    });
     try {
-      await autoLatencyService.testCurrentGroupNodes(maxNodes: 999);
+      await autoLatencyService.testCurrentGroupNodes(
+        maxNodes: 999,
+        onResult: (nodeName) {
+          if (!mounted) return;
+          setState(() => _testingNodes.remove(nodeName));
+        },
+      );
     } finally {
-      if (mounted) setState(() => _testing = false);
+      if (mounted) {
+        setState(() {
+          _testing = false;
+          _testingNodes.clear();
+        });
+      }
     }
   }
 

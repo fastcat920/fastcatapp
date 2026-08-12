@@ -300,16 +300,22 @@ class _NetCheckPageState extends ConsumerState<NetCheckPage> {
       results.add(_StepResult(
         label: l10n.xboardNetworkDiagnosticsNodeEndpoint,
         ok: true,
-        detail: '$type · $network · ${_maskHost(host)}:$port',
+        detail: '$type · $network · ${_maskHost(host)}:${_maskPort(port)}',
       ));
     }
 
     final dnsStatus = data['dns-status']?.toString();
+    final resolvedIps = (data['resolved-ips'] as List<dynamic>? ?? const [])
+        .map((value) => _maskIp(value.toString()))
+        .where((value) => value.isNotEmpty)
+        .join(', ');
     results.add(_StepResult(
       label: l10n.xboardNetworkDiagnosticsNodeDns,
       ok: dnsStatus == 'success',
       detail: dnsStatus == 'success'
-          ? l10n.xboardNetworkDiagnosticsNodeDnsSuccess
+          ? resolvedIps.isEmpty
+              ? l10n.xboardNetworkDiagnosticsNodeDnsSuccess
+              : '${l10n.xboardNetworkDiagnosticsNodeDnsSuccess} · $resolvedIps'
           : l10n.xboardNetworkDiagnosticsNodeDnsFailed,
       elapsedMs: _asInt(data['dns-elapsed-ms']),
     ));
@@ -381,11 +387,35 @@ class _NetCheckPageState extends ConsumerState<NetCheckPage> {
   int _asInt(dynamic value) => value is num ? value.toInt() : 0;
 
   String _maskHost(String host) {
-    if (InternetAddress.tryParse(host) != null) return '[masked-ip]';
+    if (InternetAddress.tryParse(host) != null) return _maskIp(host);
     final parts = host.split('.');
-    return parts.length > 2
-        ? '***.${parts.sublist(parts.length - 2).join('.')}'
-        : '[masked-host]';
+    if (parts.isEmpty) return '[masked-host]';
+    return parts.map(_maskDomainPart).join('.');
+  }
+
+  String _maskDomainPart(String value) {
+    if (value.isEmpty) return '*';
+    if (value.length == 1) return '*';
+    if (value.length == 2) return '${value[0]}*';
+    return '${value[0]}${'*' * (value.length - 2)}${value[value.length - 1]}';
+  }
+
+  String _maskPort(String value) {
+    if (value.isEmpty) return '*';
+    if (value.length == 1) return '*';
+    if (value.length == 2) return '${value[0]}*';
+    return '${value[0]}${'*' * (value.length - 2)}${value[value.length - 1]}';
+  }
+
+  String _maskIp(String value) {
+    final address = InternetAddress.tryParse(value);
+    if (address == null) return '';
+    if (address.type == InternetAddressType.IPv4) {
+      final parts = address.address.split('.');
+      return '${parts.first}.***.***.${parts.last}';
+    }
+    final parts = address.address.split(':');
+    return '${parts.first}:***:***:${parts.last}';
   }
 
   Future<List<_StepResult>> _checkDns(

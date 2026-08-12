@@ -3,6 +3,7 @@ import 'package:fl_clash/enum/enum.dart';
 import 'package:fl_clash/l10n/l10n.dart';
 import 'package:fl_clash/models/models.dart';
 import 'package:fl_clash/providers/providers.dart';
+import 'package:fl_clash/state.dart';
 import 'package:fl_clash/xboard/features/shared/styles/styles.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -25,9 +26,20 @@ class _FastCatLogsPageState extends ConsumerState<FastCatLogsPage> {
   @override
   void initState() {
     super.initState();
-    final configuredLevel = ref.read(patchClashConfigProvider).logLevel;
-    _selectedLevels = {configuredLevel, LogLevel.app};
+    _selectedLevels = LogLevel.values.toSet();
     _restoreLevelFilter();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      // 日志页负责展示筛选，核心始终采集完整等级，避免选择了等级却
+      // 因核心仍处于 error/app 等级而没有对应日志可显示。
+      final config = ref.read(patchClashConfigProvider);
+      if (config.logLevel != LogLevel.debug) {
+        ref
+            .read(patchClashConfigProvider.notifier)
+            .updateState((state) => state.copyWith(logLevel: LogLevel.debug));
+        globalState.appController.updateClashConfigDebounce();
+      }
+    });
   }
 
   Future<void> _restoreLevelFilter() async {
@@ -163,21 +175,27 @@ class _FastCatLogsPageState extends ConsumerState<FastCatLogsPage> {
                     }),
                   ),
                   const Divider(height: 1),
-                  for (final level in LogLevel.values)
-                    CheckboxListTile(
-                      value: draft.contains(level),
-                      title: Text(_levelLabel(context, level)),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      onChanged: (selected) => setDialogState(() {
-                        if (selected == true) {
-                          draft.add(level);
-                        } else {
-                          draft.remove(level);
-                        }
-                      }),
+                  RadioGroup<LogLevel>(
+                    groupValue: draft.length == 1 ? draft.single : null,
+                    onChanged: (level) => setDialogState(() {
+                      if (level == null) return;
+                      draft
+                        ..clear()
+                        ..add(level);
+                    }),
+                    child: Column(
+                      children: [
+                        for (final level in LogLevel.values)
+                          RadioListTile<LogLevel>(
+                            value: level,
+                            title: Text(_levelLabel(context, level)),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                          ),
+                      ],
                     ),
+                  ),
                 ],
               ),
             ),

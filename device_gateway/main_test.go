@@ -263,6 +263,65 @@ func TestDeviceLimitAndSubscriptionRewrite(t *testing.T) {
 	}
 }
 
+func TestSubscriptionDeviceLimitSemantics(t *testing.T) {
+	tests := []struct {
+		name      string
+		body      string
+		set       bool
+		wantLimit *int
+	}{
+		{name: "explicit null is unlimited", body: `{"data":{"device_limit":null}}`, set: true, wantLimit: nil},
+		{name: "explicit zero is unlimited", body: `{"data":{"device_limit":0}}`, set: true, wantLimit: intPtr(0)},
+		{name: "missing uses gateway default", body: `{"data":{}}`, set: false, wantLimit: nil},
+		{name: "plan limit fallback", body: `{"data":{"plan":{"device_limit":3}}}`, set: true, wantLimit: intPtr(3)},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			snapshot, err := parseSubscriptionSnapshot([]byte(tt.body))
+			if err != nil {
+				t.Fatal(err)
+			}
+			if snapshot.DeviceLimitSet != tt.set {
+				t.Fatalf("DeviceLimitSet = %v, want %v", snapshot.DeviceLimitSet, tt.set)
+			}
+			if (snapshot.DeviceLimit == nil) != (tt.wantLimit == nil) {
+				t.Fatalf("DeviceLimit = %v, want %v", snapshot.DeviceLimit, tt.wantLimit)
+			}
+			if snapshot.DeviceLimit != nil && *snapshot.DeviceLimit != *tt.wantLimit {
+				t.Fatalf("DeviceLimit = %d, want %d", *snapshot.DeviceLimit, *tt.wantLimit)
+			}
+		})
+	}
+}
+
+func TestUnlimitedDeviceLimitReplacesCachedDefault(t *testing.T) {
+	server := &Server{
+		cfg: Config{DefaultDeviceLimit: 1},
+		store: &Store{Users: map[string]*UserCache{
+			"user-1": {
+				ID:             "user-1",
+				BusinessUserID: "business-user-1",
+				Email:          "user@example.com",
+				DeviceLimit:    intPtr(1),
+			},
+		}},
+	}
+
+	user := server.upsertUserLocked(SubscriptionSnapshot{
+		Email:          "user@example.com",
+		UUID:           "business-user-1",
+		DeviceLimitSet: true,
+	}, "", time.Now().UTC())
+
+	if user.DeviceLimit == nil || *user.DeviceLimit != 0 {
+		t.Fatalf("DeviceLimit = %v, want unlimited (0)", user.DeviceLimit)
+	}
+	if got := server.effectiveLimitLocked(user); got != 0 {
+		t.Fatalf("effective limit = %d, want unlimited (0)", got)
+	}
+}
+
 func TestKickOldestRevokesUntilWithinLimit(t *testing.T) {
 	var business *httptest.Server
 	business = httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
