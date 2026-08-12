@@ -2,6 +2,10 @@ name: Build Client
 
 env:
   FLUTTER_VERSION: "3.44.7"
+  FASTCAT_KEY_CURRENT_ID: ${{ vars.FASTCAT_KEY_CURRENT_ID }}
+  FASTCAT_KEY_NEXT_ID: ${{ vars.FASTCAT_KEY_NEXT_ID }}
+  FASTCAT_SUBSCRIPTION_FLAG: ${{ vars.FASTCAT_SUBSCRIPTION_FLAG }}
+  FASTCAT_REQUIRE_ENCRYPTION: ${{ vars.FASTCAT_REQUIRE_ENCRYPTION }}
 
 on:
   workflow_dispatch:
@@ -123,6 +127,8 @@ jobs:
       - name: Build APK
         env:
           XOR_KEY: ${{ secrets.XOR_KEY }}
+          FASTCAT_KEY_CURRENT: ${{ secrets.FASTCAT_KEY_CURRENT }}
+          FASTCAT_KEY_NEXT: ${{ secrets.FASTCAT_KEY_NEXT }}
         run: bash scripts/package_apk.sh
 
       - name: Upload APK
@@ -258,6 +264,8 @@ jobs:
         shell: pwsh
         env:
           XOR_KEY: ${{ secrets.XOR_KEY }}
+          FASTCAT_KEY_CURRENT: ${{ secrets.FASTCAT_KEY_CURRENT }}
+          FASTCAT_KEY_NEXT: ${{ secrets.FASTCAT_KEY_NEXT }}
         run: dart run setup.dart windows --arch amd64 --out app --env stable
 
       - name: Build Windows exe installer
@@ -500,6 +508,8 @@ jobs:
         shell: pwsh
         env:
           XOR_KEY: ${{ secrets.XOR_KEY }}
+          FASTCAT_KEY_CURRENT: ${{ secrets.FASTCAT_KEY_CURRENT }}
+          FASTCAT_KEY_NEXT: ${{ secrets.FASTCAT_KEY_NEXT }}
         run: dart run setup.dart windows --arch arm64 --out app --env stable
 
       - name: Verify ARM64 binaries
@@ -798,6 +808,8 @@ jobs:
       - name: Build IPA
         env:
           XOR_KEY: ${{ secrets.XOR_KEY }}
+          FASTCAT_KEY_CURRENT: ${{ secrets.FASTCAT_KEY_CURRENT }}
+          FASTCAT_KEY_NEXT: ${{ secrets.FASTCAT_KEY_NEXT }}
         run: bash scripts/package_ipa.sh
 
       - name: Upload IPA
@@ -874,6 +886,8 @@ jobs:
       - name: Build Linux packages
         env:
           XOR_KEY: ${{ secrets.XOR_KEY }}
+          FASTCAT_KEY_CURRENT: ${{ secrets.FASTCAT_KEY_CURRENT }}
+          FASTCAT_KEY_NEXT: ${{ secrets.FASTCAT_KEY_NEXT }}
         run: dart run setup.dart linux --arch ${{ matrix.arch }} --out app --env stable
 
       - name: List dist contents
@@ -936,6 +950,8 @@ jobs:
       - name: Build macOS universal DMG
         env:
           XOR_KEY: ${{ secrets.XOR_KEY }}
+          FASTCAT_KEY_CURRENT: ${{ secrets.FASTCAT_KEY_CURRENT }}
+          FASTCAT_KEY_NEXT: ${{ secrets.FASTCAT_KEY_NEXT }}
         run: dart run setup.dart macos --arch universal --out app --env stable
 
       - name: Verify macOS bundle

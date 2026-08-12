@@ -7,6 +7,13 @@ if [ -z "${XOR_KEY:-}" ]; then
   exit 1
 fi
 
+: "${FASTCAT_KEY_CURRENT_ID:?FASTCAT_KEY_CURRENT_ID is required}"
+: "${FASTCAT_KEY_CURRENT:?FASTCAT_KEY_CURRENT is required}"
+: "${FASTCAT_KEY_NEXT_ID:?FASTCAT_KEY_NEXT_ID is required}"
+: "${FASTCAT_KEY_NEXT:?FASTCAT_KEY_NEXT is required}"
+: "${FASTCAT_SUBSCRIPTION_FLAG:=fastcat-v1}"
+: "${FASTCAT_REQUIRE_ENCRYPTION:=true}"
+
 VER=$(grep '^version:' pubspec.yaml | awk '{print $2}')
 VERSION="${VER%+*}"
 
@@ -26,7 +33,14 @@ mkdir -p dist
 /usr/libexec/PlistBuddy -c "Set :CFBundleDisplayName ${APP_NAME}" ios/Runner/Info.plist
 /usr/libexec/PlistBuddy -c "Set :CFBundleName ${APP_NAME_EN}" ios/Runner/Info.plist
 
-flutter build ipa --release --no-codesign --dart-define=XOR_KEY="${XOR_KEY}"
+flutter build ipa --release --no-codesign \
+  --dart-define=XOR_KEY="${XOR_KEY}" \
+  --dart-define=FASTCAT_KEY_CURRENT_ID="${FASTCAT_KEY_CURRENT_ID}" \
+  --dart-define=FASTCAT_KEY_CURRENT="${FASTCAT_KEY_CURRENT}" \
+  --dart-define=FASTCAT_KEY_NEXT_ID="${FASTCAT_KEY_NEXT_ID}" \
+  --dart-define=FASTCAT_KEY_NEXT="${FASTCAT_KEY_NEXT}" \
+  --dart-define=FASTCAT_SUBSCRIPTION_FLAG="${FASTCAT_SUBSCRIPTION_FLAG}" \
+  --dart-define=FASTCAT_REQUIRE_ENCRYPTION="${FASTCAT_REQUIRE_ENCRYPTION}"
 
 echo "→ Packaging IPA from xcarchive..."
 cd build/ios
