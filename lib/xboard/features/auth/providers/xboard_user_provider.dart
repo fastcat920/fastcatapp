@@ -1356,7 +1356,10 @@ class XBoardUserAuthNotifier extends Notifier<UserAuthState> {
     return null;
   }
 
-  Future<void> logout({bool allowWhenServiceUnavailable = false}) async {
+  Future<void> logout({
+    bool allowWhenServiceUnavailable = false,
+    bool preserveSavedCredentials = true,
+  }) async {
     final connectivity = ref.read(serviceConnectivityProvider);
     if (!allowWhenServiceUnavailable && !connectivity.isOnline) {
       throw const LogoutProtectedException();
@@ -1389,7 +1392,9 @@ class XBoardUserAuthNotifier extends Notifier<UserAuthState> {
     }
     try {
       await _storageService.clearAuthData();
-      if (rememberPassword &&
+      if (!preserveSavedCredentials) {
+        await _storageService.saveCredentials('', '', false);
+      } else if (rememberPassword &&
           (savedEmail?.isNotEmpty == true ||
               savedPassword?.isNotEmpty == true)) {
         await _storageService.saveCredentials(

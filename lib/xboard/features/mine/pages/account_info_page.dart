@@ -2,6 +2,7 @@ import 'package:fl_clash/l10n/l10n.dart';
 import 'package:fl_clash/xboard/features/auth/auth.dart';
 import 'package:fl_clash/xboard/features/invite/dialogs/logout_dialog.dart';
 import 'package:fl_clash/xboard/features/mine/widgets/change_password_sheet.dart';
+import 'package:fl_clash/xboard/features/mine/widgets/change_email_sheet.dart';
 import 'package:fl_clash/xboard/utils/xboard_notification.dart';
 import 'package:flutter/material.dart';
 import 'package:fl_clash/xboard/features/shared/shared.dart';
@@ -150,12 +151,37 @@ class _AccountInfoPageState extends ConsumerState<AccountInfoPage> {
           ),
           const SizedBox(height: 12),
           _buildCard(
-            child: ListTile(
-              leading:
-                  Icon(Icons.lock_outline, color: theme.colorScheme.primary),
-              title: Text(l10n.xboardChangePassword),
-              trailing: const Icon(Icons.chevron_right),
-              onTap: () => showChangePasswordSheet(context, ref),
+            child: Column(
+              children: [
+                ListTile(
+                  leading: Icon(
+                    Icons.alternate_email_outlined,
+                    color: theme.colorScheme.primary,
+                  ),
+                  title: Text(
+                    Localizations.localeOf(context).languageCode == 'zh'
+                        ? '修改邮箱'
+                        : 'Change email',
+                  ),
+                  trailing: const Icon(Icons.chevron_right),
+                  onTap: () => showChangeEmailSheet(context, ref, email),
+                ),
+                Divider(
+                  height: 1,
+                  indent: 56,
+                  endIndent: 16,
+                  color: isDark ? null : XbUiTokens.dividerLight,
+                ),
+                ListTile(
+                  leading: Icon(
+                    Icons.lock_outline,
+                    color: theme.colorScheme.primary,
+                  ),
+                  title: Text(l10n.xboardChangePassword),
+                  trailing: const Icon(Icons.chevron_right),
+                  onTap: () => showChangePasswordSheet(context, ref),
+                ),
+              ],
             ),
           ),
           const SizedBox(height: 12),

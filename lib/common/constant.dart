@@ -24,6 +24,9 @@ String get localizedAppName {
 
 const appHelperService = "fastcatHelperService";
 const coreName = "clash.meta";
+
+/// 与 setup.dart 构建内核时通过 ldflags 注入的 Mihomo 版本保持一致。
+const mihomoVersion = "v1.19.29";
 const packageName = "com.fastcat.app";
 final unixSocketPath = "/tmp/fastcatSocket_${Random().nextInt(10000)}.sock";
 const helperPort = 47890;

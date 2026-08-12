@@ -1,6 +1,7 @@
 import 'package:fl_clash/enum/enum.dart';
 import 'package:fl_clash/l10n/l10n.dart';
 import 'package:fl_clash/models/clash_config.dart';
+import 'package:fl_clash/models/config.dart';
 import 'package:fl_clash/providers/providers.dart';
 import 'package:fl_clash/xboard/features/shared/styles/styles.dart';
 import 'package:flutter/material.dart';
@@ -32,6 +33,14 @@ class FastCatDnsSettingsPage extends ConsumerWidget {
         title: const Text('DNS'),
         backgroundColor: XbUiTokens.pageBackground(context),
         surfaceTintColor: Colors.transparent,
+        actions: [
+          TextButton.icon(
+            onPressed: () => _confirmReset(context, ref),
+            icon: const Icon(Icons.restart_alt_outlined),
+            label: Text(_isChinese(context) ? '重置' : 'Reset'),
+          ),
+          const SizedBox(width: 8),
+        ],
       ),
       body: Center(
         child: ConstrainedBox(
@@ -184,6 +193,53 @@ class FastCatDnsSettingsPage extends ConsumerWidget {
     ClashConfig Function(ClashConfig state) update,
   ) {
     ref.read(patchClashConfigProvider.notifier).updateState(update);
+  }
+
+  static Future<void> _confirmReset(
+    BuildContext context,
+    WidgetRef ref,
+  ) async {
+    final l10n = AppLocalizations.of(context);
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        shape: XbUiDialog.shape(),
+        backgroundColor: XbUiDialog.background(dialogContext),
+        title: Text(_isChinese(context) ? '恢复初始设置？' : 'Restore defaults?'),
+        content: Text(
+          _isChinese(context)
+              ? '将重置 IPv6 流量、DNS 覆盖开关、DNS IPv6、解析模式和全部 DNS 服务器地址。'
+              : 'This resets IPv6 traffic, DNS override, DNS IPv6, DNS mode, and all DNS server addresses.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(dialogContext, false),
+            child: Text(l10n.cancel),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.pop(dialogContext, true),
+            child: Text(_isChinese(context) ? '确认恢复' : 'Restore'),
+          ),
+        ],
+      ),
+    );
+    if (confirmed != true || !context.mounted) return;
+
+    ref.read(vpnSettingProvider.notifier).updateState(
+          (state) => state.copyWith(ipv6: defaultVpnProps.ipv6),
+        );
+    ref.read(overrideDnsProvider.notifier).value = false;
+    _update(ref, (state) => state.copyWith(dns: defaultDns));
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(
+          _isChinese(context)
+              ? 'DNS 已恢复初始设置，重新连接后完整生效'
+              : 'DNS defaults restored. Reconnect to apply all changes.',
+        ),
+      ),
+    );
   }
 
   static String _modeLabel(DnsMode mode) => switch (mode) {

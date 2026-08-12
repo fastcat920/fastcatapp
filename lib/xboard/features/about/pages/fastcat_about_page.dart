@@ -85,8 +85,7 @@ class FastCatAboutPage extends ConsumerWidget {
                     const Divider(height: 1),
                     ListTile(
                       leading: const Icon(Icons.memory_outlined),
-                      title: Text(l10n.core),
-                      trailing: Text('${globalState.appState.version}'),
+                      title: Text('${l10n.core} $mihomoVersion'),
                     ),
                   ],
                 ),
