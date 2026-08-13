@@ -34,7 +34,10 @@ class Logs extends _$Logs with AutoDisposeNotifierMixin {
       globalState.appState = globalState.appState.copyWith(logs: value);
 
   void addLog(Log value) {
-    state = state.copyWith()..add(value);
+    final masked = value.copyWith(
+      payload: SensitiveMasker.maskText(value.payload),
+    );
+    state = state.copyWith()..add(masked);
   }
 
   void clear() {

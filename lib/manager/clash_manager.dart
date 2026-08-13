@@ -89,23 +89,25 @@ class _ClashContainerState extends ConsumerState<ClashManager>
     ref.read(logsProvider.notifier).addLog(log);
     if (log.logLevel == LogLevel.error || log.logLevel == LogLevel.warning) {
       final payload = log.payload;
+      final normalizedPayload = payload.toLowerCase();
       // 过滤延迟测试/代理拨测/连接测试产生的噪声日志:
       // 包含 URL、dial tcp/udp 的都是代理测速或健康检查,
       // 属于正常业务行为,不需要弹窗打扰用户。
-      final isTestNoise = payload.contains('http://') ||
-          payload.contains('https://') ||
-          payload.contains('dial tcp') ||
-          payload.contains('dial udp') ||
-          payload.contains('url test') ||
-          payload.contains('delay test') ||
-          payload.contains('health check') ||
-          payload.contains('proxied request') ||
-          payload.contains('connection refused') ||
-          payload.contains('i/o timeout') ||
-          payload.contains('connectex:') ||
-          payload.contains('no such host');
+      final isTestNoise = normalizedPayload.contains('http://') ||
+          normalizedPayload.contains('https://') ||
+          normalizedPayload.contains('dial ') ||
+          normalizedPayload.contains('connect error') ||
+          normalizedPayload.contains('context canceled') ||
+          normalizedPayload.contains('url test') ||
+          normalizedPayload.contains('delay test') ||
+          normalizedPayload.contains('health check') ||
+          normalizedPayload.contains('proxied request') ||
+          normalizedPayload.contains('connection refused') ||
+          normalizedPayload.contains('i/o timeout') ||
+          normalizedPayload.contains('connectex:') ||
+          normalizedPayload.contains('no such host');
       if (!isTestNoise) {
-        globalState.showNotifier(payload);
+        globalState.showNotifier(SensitiveMasker.maskText(payload));
       }
     }
     super.onLog(log);

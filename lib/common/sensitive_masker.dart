@@ -2,6 +2,10 @@ class SensitiveMasker {
   const SensitiveMasker._();
 
   static final RegExp _urlPattern = RegExp(r'https?://[^\s<>"\]\)]+');
+  static final RegExp _hostPortPattern = RegExp(
+    r'(?<![A-Za-z0-9_.-])((?:[A-Za-z0-9-]+\.)+[A-Za-z]{2,}|(?:\d{1,3}\.){3}\d{1,3}|localhost):(\d{1,5})(?!\d)',
+    caseSensitive: false,
+  );
   static final RegExp _emailPattern = RegExp(
     r'\b([A-Za-z0-9._%+\-])([A-Za-z0-9._%+\-]*)(@[A-Za-z0-9.\-]+\.[A-Za-z]{2,})\b',
   );
@@ -31,6 +35,9 @@ class SensitiveMasker {
 
     var masked = text.replaceAllMapped(_urlPattern, (match) {
       return _maskUrl(match.group(0)!);
+    });
+    masked = masked.replaceAllMapped(_hostPortPattern, (match) {
+      return '${_maskHost(match.group(1)!)}:[redacted-port]';
     });
     masked = masked.replaceAllMapped(_emailPattern, (match) {
       final first = match.group(1)!;
