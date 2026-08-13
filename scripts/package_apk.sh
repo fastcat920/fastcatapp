@@ -38,19 +38,31 @@ if [ -f "$STRINGS_XML" ]; then
 fi
 
 flutter clean
-set +e
-flutter build apk --release \
-  --split-per-abi \
-  --target-platform android-arm64,android-arm \
-  --dart-define=XOR_KEY="${XOR_KEY}" \
-  --dart-define=FASTCAT_KEY_CURRENT_ID="${FASTCAT_KEY_CURRENT_ID}" \
-  --dart-define=FASTCAT_KEY_CURRENT="${FASTCAT_KEY_CURRENT}" \
-  --dart-define=FASTCAT_KEY_NEXT_ID="${FASTCAT_KEY_NEXT_ID}" \
-  --dart-define=FASTCAT_KEY_NEXT="${FASTCAT_KEY_NEXT}" \
-  --dart-define=FASTCAT_SUBSCRIPTION_FLAG="${FASTCAT_SUBSCRIPTION_FLAG}" \
-  --dart-define=FASTCAT_REQUIRE_ENCRYPTION="${FASTCAT_REQUIRE_ENCRYPTION}"
-BUILD_EXIT=$?
-set -e
+BUILD_EXIT=1
+for attempt in 1 2 3; do
+  set +e
+  flutter build apk --release \
+    --split-per-abi \
+    --target-platform android-arm64,android-arm \
+    --dart-define=XOR_KEY="${XOR_KEY}" \
+    --dart-define=FASTCAT_KEY_CURRENT_ID="${FASTCAT_KEY_CURRENT_ID}" \
+    --dart-define=FASTCAT_KEY_CURRENT="${FASTCAT_KEY_CURRENT}" \
+    --dart-define=FASTCAT_KEY_NEXT_ID="${FASTCAT_KEY_NEXT_ID}" \
+    --dart-define=FASTCAT_KEY_NEXT="${FASTCAT_KEY_NEXT}" \
+    --dart-define=FASTCAT_SUBSCRIPTION_FLAG="${FASTCAT_SUBSCRIPTION_FLAG}" \
+    --dart-define=FASTCAT_REQUIRE_ENCRYPTION="${FASTCAT_REQUIRE_ENCRYPTION}"
+  BUILD_EXIT=$?
+  set -e
+
+  if [ "$BUILD_EXIT" -eq 0 ]; then
+    break
+  fi
+  if [ "$attempt" -lt 3 ]; then
+    wait_seconds=$((attempt * 30))
+    echo "i APK build attempt $attempt failed; retrying in ${wait_seconds}s..."
+    sleep "$wait_seconds"
+  fi
+done
 
 # List all APK files in the build tree for diagnostics
 echo "→ APK files produced:"
