@@ -87,7 +87,9 @@ class _ClashContainerState extends ConsumerState<ClashManager>
   @override
   void onLog(Log log) {
     ref.read(logsProvider.notifier).addLog(log);
-    if (log.logLevel == LogLevel.error || log.logLevel == LogLevel.warning) {
+    // Core warnings include configuration deprecations and transient network
+    // notices. Keep them in the log page instead of interrupting the user.
+    if (log.logLevel == LogLevel.error) {
       final payload = log.payload;
       final normalizedPayload = payload.toLowerCase();
       // 过滤延迟测试/代理拨测/连接测试产生的噪声日志:
