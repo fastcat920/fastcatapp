@@ -23,6 +23,8 @@ class _FastCatNodesPageState extends ConsumerState<FastCatNodesPage> {
   // 66px visible card + 8px spacing between rows.
   static const double _itemExtent = 74;
   final ScrollController _scrollController = ScrollController();
+  final FocusNode _selectedNodeFocusNode =
+      FocusNode(debugLabel: 'selected-node');
   bool _selecting = false;
   bool _updating = false;
   bool _testing = false;
@@ -31,6 +33,7 @@ class _FastCatNodesPageState extends ConsumerState<FastCatNodesPage> {
 
   @override
   void dispose() {
+    _selectedNodeFocusNode.dispose();
     _scrollController.dispose();
     super.dispose();
   }
@@ -215,9 +218,15 @@ class _FastCatNodesPageState extends ConsumerState<FastCatNodesPage> {
                         child: XbPointerCursor(
                           enabled: !selected && !_selecting,
                           child: InkWell(
-                            onTap: selected || _selecting
+                            focusNode: system.isTV && selected
+                                ? _selectedNodeFocusNode
+                                : null,
+                            autofocus: system.isTV && selected,
+                            onTap: _selecting
                                 ? null
-                                : () => _selectNode(group.name, node.name),
+                                : selected
+                                    ? (system.isTV ? () {} : null)
+                                    : () => _selectNode(group.name, node.name),
                             child: Padding(
                               padding:
                                   const EdgeInsets.symmetric(horizontal: 14),
@@ -313,6 +322,22 @@ class _FastCatNodesPageState extends ConsumerState<FastCatNodesPage> {
       _scrollController.jumpTo(
         target.clamp(0.0, _scrollController.position.maxScrollExtent),
       );
+      if (system.isTV) {
+        _requestSelectedNodeFocus();
+      }
+    });
+  }
+
+  void _requestSelectedNodeFocus([int attempt = 0]) {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted || !_selectedNodeFocusNode.canRequestFocus) return;
+      if (_selectedNodeFocusNode.context != null) {
+        _selectedNodeFocusNode.requestFocus();
+        return;
+      }
+      if (attempt < 2) {
+        _requestSelectedNodeFocus(attempt + 1);
+      }
     });
   }
 
