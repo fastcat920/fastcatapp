@@ -2051,10 +2051,6 @@ class MessageLookup extends MessageLookupByLibrary {
     ),
     "xboardServiceRecovering": MessageLookupByLibrary.simpleMessage("正在恢复连接"),
     "xboardInitializing": MessageLookupByLibrary.simpleMessage("正在初始化"),
-    "xboardExitAppTitle": MessageLookupByLibrary.simpleMessage("退出应用？"),
-    "xboardExitAppContent": MessageLookupByLibrary.simpleMessage(
-      "客户端将在保存当前设置后关闭，确定要退出吗？",
-    ),
     "xboardServiceRecoveringTooltip": MessageLookupByLibrary.simpleMessage(
       "网络已恢复，客户端正在重新确认业务网关状态。",
     ),

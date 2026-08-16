@@ -8,6 +8,7 @@ import 'package:fl_clash/state.dart';
 import 'package:fl_clash/xboard/features/auth/providers/xboard_user_provider.dart';
 import 'package:fl_clash/xboard/features/auth/models/session_termination.dart';
 import 'package:fl_clash/xboard/features/settings/widgets/fastcat_tun_toggle.dart';
+import 'package:fl_clash/xboard/features/invite/dialogs/logout_dialog.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -426,50 +427,25 @@ class _XBoardHomePageState extends ConsumerState<XBoardHomePage>
   Widget _buildCompactExitButton(BuildContext context) {
     final l10n = AppLocalizations.of(context);
     return XbPointerCursor(
-      child: FilledButton.tonalIcon(
-        onPressed: () => _confirmExit(context),
-        icon: const Icon(Icons.power_settings_new_rounded, size: 18),
-        label: Text(l10n.exit),
-        style: FilledButton.styleFrom(
-          minimumSize: const Size(0, 44),
-          padding: const EdgeInsets.symmetric(horizontal: 14),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(14),
+      child: TextButton.icon(
+        style: XbUiButton.textChipPrimary(context),
+        onPressed: () => showDialog<void>(
+          context: context,
+          builder: (_) => const LogoutDialog(),
+        ),
+        icon: Icon(
+          Icons.logout_outlined,
+          size: 18,
+          color: Theme.of(context).colorScheme.primary,
+        ),
+        label: Text(
+          l10n.xboardLogout,
+          style: TextStyle(
+            color: Theme.of(context).colorScheme.primary,
           ),
         ),
       ),
     );
-  }
-
-  Future<void> _confirmExit(BuildContext context) async {
-    final previousFocus = TvFocusRestoration.capture();
-    final l10n = AppLocalizations.of(context);
-    final confirmed = await showDialog<bool>(
-      context: context,
-      barrierDismissible: false,
-      builder: (dialogContext) => AlertDialog(
-        title: Text(l10n.xboardExitAppTitle),
-        content: Text(l10n.xboardExitAppContent),
-        actions: [
-          TextButton(
-            autofocus: true,
-            onPressed: () => Navigator.of(dialogContext).pop(false),
-            child: Text(l10n.cancel),
-          ),
-          FilledButton(
-            onPressed: () => Navigator.of(dialogContext).pop(true),
-            child: Text(l10n.exit),
-          ),
-        ],
-      ),
-    );
-    if (confirmed == true) {
-      await globalState.appController.handleExit();
-      return;
-    }
-    if (context.mounted) {
-      TvFocusRestoration.restore(context, previousFocus);
-    }
   }
 
   void _showVpnSheet(BuildContext context) {
