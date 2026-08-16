@@ -823,6 +823,12 @@ jobs:
           channel: stable
           cache: true
 
+      - name: Setup Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: "1.20.x"
+          cache-dependency-path: core/go.sum
+
       - name: Flutter doctor
         run: flutter doctor -v
 
@@ -831,6 +837,9 @@ jobs:
 
       - name: Get packages
         run: flutter pub get
+
+      - name: Build iOS native core
+        run: bash scripts/build_ios_core.sh
 
       - name: Build IPA
         env:

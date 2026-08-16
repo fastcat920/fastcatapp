@@ -69,18 +69,21 @@ class ClashCore {
 
   Future<bool> init() async {
     await initGeo();
-    if (globalState.config.appSetting.openLogs) {
-      clashCore.startLog();
-    } else {
-      clashCore.stopLog();
-    }
     final homeDirPath = await appPath.homeDirPath;
-    return await clashInterface.init(
+    final initialized = await clashInterface.init(
       InitParams(
         homeDir: homeDirPath,
         version: globalState.appState.version,
       ),
     );
+    // 日志订阅依赖已经初始化完成的内核消息通道。旧顺序会在 Android
+    // 冷启动时过早发送 startLog，且 openLogs 已为 true 时不会再补发。
+    if (globalState.config.appSetting.openLogs) {
+      clashCore.startLog();
+    } else {
+      clashCore.stopLog();
+    }
+    return initialized;
   }
 
   Future<bool> setState(CoreState state) async {
