@@ -26,19 +26,13 @@ class _FastCatLogsPageState extends ConsumerState<FastCatLogsPage> {
   @override
   void initState() {
     super.initState();
-    _selectedLevels = LogLevel.values.toSet();
+    // 首次打开只展示客户端自身日志。用户主动选择的等级会持久化，
+    // 后续仍恢复其上次选择，不因平台不同产生不一致的默认行为。
+    _selectedLevels = {LogLevel.app};
     _restoreLevelFilter();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
-      // 日志页负责展示筛选，核心始终采集完整等级，避免选择了等级却
-      // 因核心仍处于 error/app 等级而没有对应日志可显示。
-      final config = ref.read(patchClashConfigProvider);
-      if (config.logLevel != LogLevel.debug) {
-        ref
-            .read(patchClashConfigProvider.notifier)
-            .updateState((state) => state.copyWith(logLevel: LogLevel.debug));
-        globalState.appController.updateClashConfigDebounce();
-      }
+      _syncCoreLogLevel();
     });
   }
 
@@ -48,7 +42,26 @@ class _FastCatLogsPageState extends ConsumerState<FastCatLogsPage> {
     if (stored == null || !mounted) return;
     final restored =
         LogLevel.values.where((level) => stored.contains(level.name)).toSet();
+    // 空筛选仍是用户的有效选择；仅在没有历史设置时使用“应用”默认值。
     setState(() => _selectedLevels = restored);
+    _syncCoreLogLevel();
+  }
+
+  void _syncCoreLogLevel() {
+    if (!mounted) return;
+    final desiredLevel = _selectedLevels.contains(LogLevel.debug)
+        ? LogLevel.debug
+        : _selectedLevels.contains(LogLevel.info)
+            ? LogLevel.info
+            : _selectedLevels.contains(LogLevel.warning)
+                ? LogLevel.warning
+                : LogLevel.error;
+    final config = ref.read(patchClashConfigProvider);
+    if (config.logLevel == desiredLevel) return;
+    ref
+        .read(patchClashConfigProvider.notifier)
+        .updateState((state) => state.copyWith(logLevel: desiredLevel));
+    globalState.appController.updateClashConfigDebounce();
   }
 
   @override
@@ -229,6 +242,7 @@ class _FastCatLogsPageState extends ConsumerState<FastCatLogsPage> {
     );
     if (result == null || !mounted) return;
     setState(() => _selectedLevels = result);
+    _syncCoreLogLevel();
     final preferences = await SharedPreferences.getInstance();
     await preferences.setStringList(
       _levelFilterKey,

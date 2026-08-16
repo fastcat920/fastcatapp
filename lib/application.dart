@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:io';
 
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:fl_clash/clash/clash.dart';
@@ -57,6 +58,7 @@ class ApplicationState extends ConsumerState<Application>
 
   Timer? _autoUpdateProfilesTaskTimer;
   Timer? _customerServicePrewarmTimer;
+  Timer? _mobileLogRecoveryTimer;
   // Router 只创建一次，通过 refresh() 触发 redirect 重新求值
   // 避免每次 auth 状态变化都重建 GoRouter 导致 StatefulShellRoute 重置（Windows 空白屏）
   late final GoRouter _router;
@@ -353,7 +355,21 @@ class ApplicationState extends ConsumerState<Application>
           force: true,
         ),
       );
+      _restoreMobileCoreLogging();
     }
+  }
+
+  /// Android may suspend the isolate/core message callback while the app is in
+  /// the background. Re-arming the listener is idempotent and keeps non-app
+  /// log levels available when the user has selected them in the log page.
+  void _restoreMobileCoreLogging() {
+    if (!Platform.isAndroid || !ref.read(appSettingProvider).openLogs) return;
+    clashCore.startLog();
+    _mobileLogRecoveryTimer?.cancel();
+    _mobileLogRecoveryTimer = Timer(const Duration(seconds: 1), () {
+      if (!mounted || !ref.read(appSettingProvider).openLogs) return;
+      clashCore.startLog();
+    });
   }
 
   /// 使用新域名服务架构进行快速认证检查
@@ -788,6 +804,7 @@ class ApplicationState extends ConsumerState<Application>
       linkManager.destroy();
       _autoUpdateProfilesTaskTimer?.cancel();
       _customerServicePrewarmTimer?.cancel();
+      _mobileLogRecoveryTimer?.cancel();
 
       // 释放XBoard SDK资源
       try {
