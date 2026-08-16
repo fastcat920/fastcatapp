@@ -1,4 +1,5 @@
 import 'package:fl_clash/l10n/l10n.dart';
+import 'package:fl_clash/common/common.dart';
 import 'package:fl_clash/enum/enum.dart';
 import 'package:fl_clash/mihomo/mihomo.dart';
 import 'package:fl_clash/providers/providers.dart';
@@ -212,13 +213,9 @@ class _FastCatNodesPageState extends ConsumerState<FastCatNodesPage> {
                         ),
                         clipBehavior: Clip.antiAlias,
                         child: XbPointerCursor(
-                          enabled: !selected &&
-                              !_selecting &&
-                              !_testingNodes.contains(node.name),
+                          enabled: !selected && !_selecting,
                           child: InkWell(
-                            onTap: selected ||
-                                    _selecting ||
-                                    _testingNodes.contains(node.name)
+                            onTap: selected || _selecting
                                 ? null
                                 : () => _selectNode(group.name, node.name),
                             child: Padding(
@@ -276,7 +273,7 @@ class _FastCatNodesPageState extends ConsumerState<FastCatNodesPage> {
                                   _DelayBadge(
                                     node: node,
                                     testing: _testingNodes.contains(node.name),
-                                    onTap: _testing || _updating
+                                    onTap: system.isTV || _testing || _updating
                                         ? null
                                         : () => _runSingleNodeLatencyTest(
                                               group.name,
@@ -498,6 +495,15 @@ class _LatencyTapTarget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    if (system.isTV) {
+      return ExcludeFocus(
+        child: SizedBox(
+          width: 64,
+          height: 42,
+          child: Center(child: content),
+        ),
+      );
+    }
     return Tooltip(
       message: AppLocalizations.of(context).xboardTestLatency,
       child: MouseRegion(

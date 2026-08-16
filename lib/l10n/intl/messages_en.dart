@@ -2826,6 +2826,10 @@ class MessageLookup extends MessageLookupByLibrary {
       "Restoring connection",
     ),
     "xboardInitializing": MessageLookupByLibrary.simpleMessage("Initializing"),
+    "xboardExitAppTitle": MessageLookupByLibrary.simpleMessage("Exit application?"),
+    "xboardExitAppContent": MessageLookupByLibrary.simpleMessage(
+      "The client will close after saving its current settings. Are you sure you want to exit?",
+    ),
     "xboardServiceRecoveringTooltip": MessageLookupByLibrary.simpleMessage(
       "The network has recovered. The client is confirming business gateway availability.",
     ),

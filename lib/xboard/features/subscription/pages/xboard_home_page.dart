@@ -316,90 +316,104 @@ class _XBoardHomePageState extends ConsumerState<XBoardHomePage>
                     minBottomGap + (availableGap - adaptiveTopGap);
 
                 // 纯 Flex 布局：优先保留连接按钮、模式切换和线路选择。
-                return Center(
-                  child: ConstrainedBox(
-                    constraints: const BoxConstraints(
-                      maxWidth: contentMaxWidth,
-                    ),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.stretch,
-                      children: [
+                return Stack(
+                  children: [
+                    Center(
+                      child: ConstrainedBox(
+                        constraints: const BoxConstraints(
+                          maxWidth: contentMaxWidth,
+                        ),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.stretch,
+                          children: [
 // Desktop header is now rendered in the AppBar (stays fixed on scroll).
-                        // ── 未连接显示公告，已连接显示套餐信息。空间不足时隐藏，优先保留主操作区。 ──
-                        if (showTopInfo)
-                          if (isDesktop)
-                            Padding(
-                              padding: EdgeInsets.only(
-                                  left: horizontalPadding,
-                                  right: horizontalPadding,
-                                  top: topInfoTopGap),
-                              child: SizedBox(
-                                height: topInfoSlotHeight,
-                                child: Align(
-                                  alignment: Alignment.topCenter,
-                                  child: _buildTopInfoSection(),
+                            // ── 未连接显示公告，已连接显示套餐信息。空间不足时隐藏，优先保留主操作区。 ──
+                            if (showTopInfo)
+                              if (isDesktop)
+                                Padding(
+                                  padding: EdgeInsets.only(
+                                      left: horizontalPadding,
+                                      right: horizontalPadding,
+                                      top: topInfoTopGap),
+                                  child: SizedBox(
+                                    height: topInfoSlotHeight,
+                                    child: Align(
+                                      alignment: Alignment.topCenter,
+                                      child: _buildTopInfoSection(),
+                                    ),
+                                  ),
+                                )
+                              else
+                                Padding(
+                                  padding: EdgeInsets.only(
+                                    left: horizontalPadding,
+                                    right: horizontalPadding,
+                                    top: topInfoTopGap,
+                                  ),
+                                  child: SizedBox(
+                                    height: topInfoSlotHeight,
+                                    child: Align(
+                                      alignment: Alignment.topCenter,
+                                      child: _buildTopInfoSection(),
+                                    ),
+                                  ),
                                 ),
-                              ),
-                            )
-                          else
-                            Padding(
-                              padding: EdgeInsets.only(
-                                left: horizontalPadding,
-                                right: horizontalPadding,
-                                top: topInfoTopGap,
-                              ),
-                              child: SizedBox(
-                                height: topInfoSlotHeight,
-                                child: Align(
-                                  alignment: Alignment.topCenter,
-                                  child: _buildTopInfoSection(),
+                            // ── 主操作区按可用高度自适应，按钮中心不高于屏幕中线 ──
+                            SizedBox(height: adaptiveTopGap),
+                            // ── 连接按钮（仅圆圈，Flexible 自动缩放）──
+                            SizedBox(
+                              height: buttonSlotHeight,
+                              child: Center(
+                                child: SizedBox(
+                                  width: connectButtonSize,
+                                  height: connectButtonSize,
+                                  child: XBoardConnectButton(
+                                    isFloating: false,
+                                    outerSize: connectButtonSize,
+                                  ),
                                 ),
                               ),
                             ),
-                        // ── 主操作区按可用高度自适应，按钮中心不高于屏幕中线 ──
-                        SizedBox(height: adaptiveTopGap),
-                        // ── 连接按钮（仅圆圈，Flexible 自动缩放）──
-                        SizedBox(
-                          height: buttonSlotHeight,
-                          child: Center(
-                            child: SizedBox(
-                              width: connectButtonSize,
-                              height: connectButtonSize,
-                              child: XBoardConnectButton(
-                                isFloating: false,
-                                outerSize: connectButtonSize,
+                            const SizedBox(height: connectionStatusGap),
+                            // ── 状态文字（独立于按钮，固定高度不被 Flex 压缩）──
+                            _buildConnectionStatusRow(),
+                            // ── 模式选择：在状态文字和底部节点选择之间居中 ──
+                            SizedBox(height: adaptiveBottomGap / 2),
+                            const SizedBox(
+                              height: outboundModeHeight,
+                              child: Padding(
+                                padding: EdgeInsets.symmetric(
+                                    horizontal: horizontalPadding),
+                                child: XBoardOutboundMode(),
                               ),
                             ),
-                          ),
+                            SizedBox(height: adaptiveBottomGap / 2),
+                            // ── 节点选择器保持在下方，作为最后的线路切换入口 ──
+                            const SizedBox(height: sectionGap),
+                            const SizedBox(
+                              height: nodeSelectorHeight,
+                              child: Padding(
+                                padding: EdgeInsets.symmetric(
+                                    horizontal: horizontalPadding),
+                                child: NodeSelectorBar(),
+                              ),
+                            ),
+                            SizedBox(height: nodeBottomInset),
+                          ],
                         ),
-                        const SizedBox(height: connectionStatusGap),
-                        // ── 状态文字（独立于按钮，固定高度不被 Flex 压缩）──
-                        _buildConnectionStatusRow(),
-                        // ── 模式选择：在状态文字和底部节点选择之间居中 ──
-                        SizedBox(height: adaptiveBottomGap / 2),
-                        const SizedBox(
-                          height: outboundModeHeight,
-                          child: Padding(
-                            padding: EdgeInsets.symmetric(
-                                horizontal: horizontalPadding),
-                            child: XBoardOutboundMode(),
-                          ),
-                        ),
-                        SizedBox(height: adaptiveBottomGap / 2),
-                        // ── 节点选择器保持在下方，作为最后的线路切换入口 ──
-                        const SizedBox(height: sectionGap),
-                        const SizedBox(
-                          height: nodeSelectorHeight,
-                          child: Padding(
-                            padding: EdgeInsets.symmetric(
-                                horizontal: horizontalPadding),
-                            child: NodeSelectorBar(),
-                          ),
-                        ),
-                        SizedBox(height: nodeBottomInset),
-                      ],
+                      ),
                     ),
-                  ),
+                    if (isLandscapeHome && !showTopInfo)
+                      Positioned(
+                        top: 8,
+                        right: 16,
+                        child: SafeArea(
+                          bottom: false,
+                          left: false,
+                          child: _buildCompactExitButton(context),
+                        ),
+                      ),
+                  ],
                 );
               },
             ),
@@ -407,6 +421,55 @@ class _XBoardHomePageState extends ConsumerState<XBoardHomePage>
         },
       ),
     );
+  }
+
+  Widget _buildCompactExitButton(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+    return XbPointerCursor(
+      child: FilledButton.tonalIcon(
+        onPressed: () => _confirmExit(context),
+        icon: const Icon(Icons.power_settings_new_rounded, size: 18),
+        label: Text(l10n.exit),
+        style: FilledButton.styleFrom(
+          minimumSize: const Size(0, 44),
+          padding: const EdgeInsets.symmetric(horizontal: 14),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(14),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Future<void> _confirmExit(BuildContext context) async {
+    final previousFocus = TvFocusRestoration.capture();
+    final l10n = AppLocalizations.of(context);
+    final confirmed = await showDialog<bool>(
+      context: context,
+      barrierDismissible: false,
+      builder: (dialogContext) => AlertDialog(
+        title: Text(l10n.xboardExitAppTitle),
+        content: Text(l10n.xboardExitAppContent),
+        actions: [
+          TextButton(
+            autofocus: true,
+            onPressed: () => Navigator.of(dialogContext).pop(false),
+            child: Text(l10n.cancel),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.of(dialogContext).pop(true),
+            child: Text(l10n.exit),
+          ),
+        ],
+      ),
+    );
+    if (confirmed == true) {
+      await globalState.appController.handleExit();
+      return;
+    }
+    if (context.mounted) {
+      TvFocusRestoration.restore(context, previousFocus);
+    }
   }
 
   void _showVpnSheet(BuildContext context) {

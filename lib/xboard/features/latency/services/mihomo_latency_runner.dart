@@ -69,39 +69,85 @@ Future<void> testNodesLatency(
     );
   }
 
-  var results = await _runLatencyTargets(targets);
+  final publishedTargets = <int>{};
+  var results = await _runLatencyTargets(
+    targets,
+    onResult: (index, result) {
+      // During foreground recovery, defer transient failures until the whole
+      // first attempt is known. Successful nodes still appear immediately.
+      if (recoveringFromBackground && _isTimedOut(result)) return;
+      _publishTargetResult(
+        setDelay: controller.setDelay,
+        target: targets[index],
+        result: result,
+        onResult: onResult,
+      );
+      publishedTargets.add(index);
+    },
+  );
   if (recoveringFromBackground && _allTargetsTimedOut(results)) {
     await Future<void>.delayed(const Duration(milliseconds: 600));
     await _waitForLatencyCoreReady();
-    results = await _runLatencyTargets(targets);
+    results = await _runLatencyTargets(
+      targets,
+      onResult: (index, result) {
+        _publishTargetResult(
+          setDelay: controller.setDelay,
+          target: targets[index],
+          result: result,
+          onResult: onResult,
+        );
+        publishedTargets.add(index);
+      },
+    );
   }
 
   for (var index = 0; index < targets.length; index++) {
-    final target = targets[index];
-    try {
-      controller.setDelay(results[index]);
-    } finally {
-      for (final displayName in target.displayNames) {
-        onResult?.call(displayName);
-      }
-    }
+    if (publishedTargets.contains(index)) continue;
+    _publishTargetResult(
+      setDelay: controller.setDelay,
+      target: targets[index],
+      result: results[index],
+      onResult: onResult,
+    );
   }
   controller.addSortNum();
 }
 
-Future<List<Delay>> _runLatencyTargets(List<_LatencyTestTarget> targets) {
-  return Future.wait(targets.map((target) async {
+Future<List<Delay>> _runLatencyTargets(
+  List<_LatencyTestTarget> targets, {
+  required void Function(int index, Delay result) onResult,
+}) {
+  return Future.wait(targets.indexed.map((entry) async {
+    final index = entry.$1;
+    final target = entry.$2;
+    late final Delay result;
     try {
-      return await clashCore.getDelay(target.url, target.proxyName);
+      result = await clashCore.getDelay(target.url, target.proxyName);
     } catch (_) {
-      return Delay(url: target.url, name: target.proxyName, value: -1);
+      result = Delay(url: target.url, name: target.proxyName, value: -1);
     }
+    onResult(index, result);
+    return result;
   }));
 }
 
 bool _allTargetsTimedOut(List<Delay> results) {
-  return results.isNotEmpty &&
-      results.every((delay) => delay.value == null || delay.value! <= 0);
+  return results.isNotEmpty && results.every(_isTimedOut);
+}
+
+bool _isTimedOut(Delay delay) => delay.value == null || delay.value! <= 0;
+
+void _publishTargetResult({
+  required void Function(Delay delay) setDelay,
+  required _LatencyTestTarget target,
+  required Delay result,
+  required void Function(String proxyName)? onResult,
+}) {
+  setDelay(result);
+  for (final displayName in target.displayNames) {
+    onResult?.call(displayName);
+  }
 }
 
 Future<void> _waitForLatencyCoreReady() async {

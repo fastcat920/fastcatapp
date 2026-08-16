@@ -11750,6 +11750,26 @@ class AppLocalizations {
     );
   }
 
+  /// `Exit application?`
+  String get xboardExitAppTitle {
+    return Intl.message(
+      'Exit application?',
+      name: 'xboardExitAppTitle',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `The client will close after saving its current settings. Are you sure you want to exit?`
+  String get xboardExitAppContent {
+    return Intl.message(
+      'The client will close after saving its current settings. Are you sure you want to exit?',
+      name: 'xboardExitAppContent',
+      desc: '',
+      args: [],
+    );
+  }
+
   /// `The local internet connection is working, but the business service is temporarily unreachable. The proxy can continue using cached subscriptions and nodes, while login, plans, and payments may be unavailable. Offline cache mode ends automatically after recovery.`
   String get xboardServiceOfflineCacheTooltip {
     return Intl.message(
