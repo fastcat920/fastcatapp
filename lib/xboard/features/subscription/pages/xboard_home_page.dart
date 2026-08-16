@@ -542,13 +542,18 @@ class _XBoardHomePageState extends ConsumerState<XBoardHomePage>
         valueListenable: globalState.coreStatusReadyNotifier,
         builder: (context, isCoreStatusReady, _) {
           if (!isCoreStatusReady) {
-            return Center(
-              child: Text(
-                AppLocalizations.of(context).xboardServiceRecovering,
-                style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                      fontWeight: XbFontWeight.bold,
-                      color: Theme.of(context).colorScheme.onSurfaceVariant,
-                    ),
+            return ValueListenableBuilder<bool>(
+              valueListenable: globalState.coreStatusRecoveringNotifier,
+              builder: (context, isRecovering, _) => Center(
+                child: Text(
+                  isRecovering
+                      ? AppLocalizations.of(context).xboardServiceRecovering
+                      : AppLocalizations.of(context).xboardInitializing,
+                  style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                        fontWeight: XbFontWeight.bold,
+                        color: Theme.of(context).colorScheme.onSurfaceVariant,
+                      ),
+                ),
               ),
             );
           }

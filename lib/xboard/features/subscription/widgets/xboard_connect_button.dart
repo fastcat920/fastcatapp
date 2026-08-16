@@ -80,6 +80,7 @@ class _XBoardConnectButtonState extends ConsumerState<XBoardConnectButton>
     globalState.isCoreSwitchingNotifier.addListener(_handleCoreSwitching);
     globalState.coreSwitchStatusNotifier.addListener(_handleCoreSwitching);
     globalState.coreStatusReadyNotifier.addListener(_handleCoreSwitching);
+    globalState.coreStatusRecoveringNotifier.addListener(_handleCoreSwitching);
   }
 
   @override
@@ -89,6 +90,8 @@ class _XBoardConnectButtonState extends ConsumerState<XBoardConnectButton>
     globalState.isCoreSwitchingNotifier.removeListener(_handleCoreSwitching);
     globalState.coreSwitchStatusNotifier.removeListener(_handleCoreSwitching);
     globalState.coreStatusReadyNotifier.removeListener(_handleCoreSwitching);
+    globalState.coreStatusRecoveringNotifier
+        .removeListener(_handleCoreSwitching);
     _controller.dispose();
     super.dispose();
   }
@@ -177,7 +180,9 @@ class _XBoardConnectButtonState extends ConsumerState<XBoardConnectButton>
   String _busyLabel(BuildContext context) {
     final l10n = AppLocalizations.of(context);
     if (!globalState.coreStatusReadyNotifier.value) {
-      return l10n.xboardServiceRecovering;
+      return globalState.coreStatusRecoveringNotifier.value
+          ? l10n.xboardServiceRecovering
+          : l10n.xboardInitializing;
     }
     if (_isCheckingSubscription) {
       return _subscriptionCheckLabel ?? l10n.xboardCheckingSubscription;

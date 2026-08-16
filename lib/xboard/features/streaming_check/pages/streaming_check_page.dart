@@ -155,17 +155,19 @@ class _StreamingCheckPageState extends ConsumerState<StreamingCheckPage> {
       for (final result in _results) {
         final httpStatus =
             result.statusCode == null ? 'HTTP -' : 'HTTP ${result.statusCode}';
-        report.writeln(
-          '${result.target.name}: ${_statusText(l10n, result.status)} / '
-          '${result.region ?? '-'} / ${result.elapsedMs}ms / $httpStatus',
-        );
+        report
+          ..writeln('${result.target.name}:')
+          ..writeln(
+            '${_statusText(l10n, result.status)} / '
+            '${result.region ?? '-'} / ${result.elapsedMs}ms / $httpStatus',
+          );
         if (result.detail?.isNotEmpty == true) {
-          report.writeln(
-              '  ${l10n.xboardStreamingReportDetail}: ${result.detail}');
+          report
+              .writeln('${l10n.xboardStreamingReportDetail}: ${result.detail}');
         }
+        report.writeln();
       }
       report
-        ..writeln()
         ..writeln(
           '${l10n.xboardStreamingSummary}: '
           '${l10n.xboardStreamingSummaryAccessible} $_confirmedAccessibleCount / '

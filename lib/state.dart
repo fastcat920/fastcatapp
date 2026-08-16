@@ -40,10 +40,13 @@ class GlobalState {
   late CommonTheme theme;
   Color configuredThemeColor = const Color(defaultPrimaryColor);
   DateTime? startTime;
+  DateTime? appBackgroundedAt;
+  DateTime? latencyWarmupUntil;
   final isCoreSwitchingNotifier = ValueNotifier<bool>(false);
   bool isDisconnectCleanup = false;
   DateTime? suppressConnectionCleanupUntil;
   final coreStatusReadyNotifier = ValueNotifier<bool>(false);
+  final coreStatusRecoveringNotifier = ValueNotifier<bool>(false);
   final coreSwitchStatusNotifier =
       ValueNotifier<CoreSwitchStatus>(CoreSwitchStatus.idle);
 
@@ -58,6 +61,9 @@ class GlobalState {
   bool get shouldSuppressConnectionCleanup =>
       isDisconnectCleanup ||
       (suppressConnectionCleanupUntil?.isAfter(DateTime.now()) ?? false);
+
+  bool get shouldWarmUpLatencyAfterResume =>
+      latencyWarmupUntil?.isAfter(DateTime.now()) ?? false;
 
   AppController get appController => _appController!;
 

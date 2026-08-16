@@ -982,6 +982,7 @@ class AppController {
 
   init() async {
     globalState.coreStatusReadyNotifier.value = false;
+    globalState.coreStatusRecoveringNotifier.value = false;
     try {
       await bootDiagLog('AppController.init begin');
       FlutterError.onError = (details) {
@@ -1008,6 +1009,7 @@ class AppController {
       _ref.read(initProvider.notifier).value = true;
       await bootDiagLog('AppController.init complete');
     } finally {
+      globalState.coreStatusRecoveringNotifier.value = false;
       globalState.coreStatusReadyNotifier.value = true;
     }
   }
@@ -1025,14 +1027,21 @@ class AppController {
     // 所有平台启动时先尝试从核心恢复真实运行时间。
     // handleStart 会保留这个时间，因此接管已有连接时不会重新从 0 计时。
     await globalState.updateStartTime();
+    // “恢复连接”只用于核心中确实存在上一段运行状态的情况。
+    // 冷启动期间读取核心与 VPN 状态时仍属于普通初始化。
+    globalState.coreStatusRecoveringNotifier.value = globalState.isStart;
     if (globalState.isStart) {
       updateRunTime();
     }
     final status = globalState.isStart || _ref.read(appSettingProvider).autoRun;
 
-    await updateStatus(status);
-    if (!status) {
-      addCheckIpNumDebounce();
+    try {
+      await updateStatus(status);
+      if (!status) {
+        addCheckIpNumDebounce();
+      }
+    } finally {
+      globalState.coreStatusRecoveringNotifier.value = false;
     }
   }
 

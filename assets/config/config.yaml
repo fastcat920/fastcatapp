@@ -51,8 +51,8 @@ remote_config:
   sources:
 
     - name: "source_0"
-      url: https://cat922-1407081939.cos.ap-chengdu.myqcloud.com/cat.json
+      url: https://cat920-1457006933.cos.ap-chengdu.myqcloud.com/cat.json
     - name: "source_1"
       url: https://cat921.oss-cn-hongkong.aliyuncs.com/cat.json
     - name: "source_2"
-      url: https://162.14.118.116/os/cat.json
+      url: https://sdfsf.cn-bj.ufileos.com/cat.json

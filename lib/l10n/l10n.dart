@@ -11740,6 +11740,16 @@ class AppLocalizations {
     );
   }
 
+  /// `Initializing`
+  String get xboardInitializing {
+    return Intl.message(
+      'Initializing',
+      name: 'xboardInitializing',
+      desc: '',
+      args: [],
+    );
+  }
+
   /// `The local internet connection is working, but the business service is temporarily unreachable. The proxy can continue using cached subscriptions and nodes, while login, plans, and payments may be unavailable. Offline cache mode ends automatically after recovery.`
   String get xboardServiceOfflineCacheTooltip {
     return Intl.message(

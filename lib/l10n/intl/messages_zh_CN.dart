@@ -2050,6 +2050,7 @@ class MessageLookup extends MessageLookupByLibrary {
       "本地网络正常，但暂时无法连接业务服务器。当前代理可继续使用已缓存的订阅和节点，登录、套餐、支付等功能可能暂不可用。网络或网关恢复后会自动退出离线缓存模式。",
     ),
     "xboardServiceRecovering": MessageLookupByLibrary.simpleMessage("正在恢复连接"),
+    "xboardInitializing": MessageLookupByLibrary.simpleMessage("正在初始化"),
     "xboardServiceRecoveringTooltip": MessageLookupByLibrary.simpleMessage(
       "网络已恢复，客户端正在重新确认业务网关状态。",
     ),

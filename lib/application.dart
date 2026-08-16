@@ -328,7 +328,22 @@ class ApplicationState extends ConsumerState<Application>
 
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.paused ||
+        state == AppLifecycleState.hidden) {
+      globalState.appBackgroundedAt ??= DateTime.now();
+      return;
+    }
     if (state == AppLifecycleState.resumed) {
+      final backgroundedAt = globalState.appBackgroundedAt;
+      globalState.appBackgroundedAt = null;
+      if (backgroundedAt != null &&
+          DateTime.now().difference(backgroundedAt) >=
+              const Duration(seconds: 5)) {
+        // 移动系统可能已挂起网络、DNS 或 VPN IPC。给恢复后的首次测速
+        // 一个短暂的内核就绪保护窗口，避免整批误判超时。
+        globalState.latencyWarmupUntil =
+            DateTime.now().add(const Duration(seconds: 15));
+      }
       unawaited(
         ref.read(serviceConnectivityProvider.notifier).verifyNow(),
       );
