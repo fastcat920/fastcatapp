@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:fl_clash/l10n/l10n.dart';
 import 'package:fl_clash/common/common.dart';
 import 'package:fl_clash/enum/enum.dart';
@@ -22,6 +24,8 @@ class FastCatNodesPage extends ConsumerStatefulWidget {
 class _FastCatNodesPageState extends ConsumerState<FastCatNodesPage> {
   // 66px visible card + 8px spacing between rows.
   static const double _itemExtent = 74;
+  static const Duration _minimumTestingIndicatorDuration =
+      Duration(milliseconds: 200);
   final ScrollController _scrollController = ScrollController();
   final FocusNode _selectedNodeFocusNode =
       FocusNode(debugLabel: 'selected-node');
@@ -29,6 +33,9 @@ class _FastCatNodesPageState extends ConsumerState<FastCatNodesPage> {
   bool _updating = false;
   bool _testing = false;
   final Set<String> _testingNodes = {};
+  final Map<String, DateTime> _testingStartedAt = {};
+  final Map<String, int> _testingGenerations = {};
+  int _testingGeneration = 0;
   bool _didCenterSelectedNode = false;
 
   @override
@@ -388,24 +395,20 @@ class _FastCatNodesPageState extends ConsumerState<FastCatNodesPage> {
       return item.name == currentName;
     }).firstOrNull;
     final names = group?.nodes.map((node) => node.name).toSet() ?? <String>{};
-    setState(() {
-      _testing = true;
-      _testingNodes.addAll(names);
-    });
+    _testing = true;
+    _markNodesTesting(names);
+    // Android FFI can return before Flutter paints the next frame. Ensure the
+    // node delay area visibly enters its testing state first.
+    await WidgetsBinding.instance.endOfFrame;
     try {
       await autoLatencyService.testCurrentGroupNodes(
         maxNodes: 999,
-        onResult: (nodeName) {
-          if (!mounted) return;
-          setState(() => _testingNodes.remove(nodeName));
-        },
+        onResult: (nodeName) => unawaited(_finishNodeTesting(nodeName)),
       );
     } finally {
       if (mounted) {
-        setState(() {
-          _testing = false;
-          _testingNodes.clear();
-        });
+        await Future.wait(names.map(_finishNodeTesting));
+        if (mounted) setState(() => _testing = false);
       }
     }
   }
@@ -427,12 +430,42 @@ class _FastCatNodesPageState extends ConsumerState<FastCatNodesPage> {
         )
         .firstOrNull;
     if (proxy == null) return;
-    setState(() => _testingNodes.add(nodeName));
+    _markNodesTesting({nodeName});
+    await WidgetsBinding.instance.endOfFrame;
     try {
       await autoLatencyService.testProxy(proxy, forceTest: true);
     } finally {
-      if (mounted) setState(() => _testingNodes.remove(nodeName));
+      await _finishNodeTesting(nodeName);
     }
+  }
+
+  void _markNodesTesting(Set<String> names) {
+    final generation = ++_testingGeneration;
+    final startedAt = DateTime.now();
+    setState(() {
+      for (final name in names) {
+        _testingNodes.add(name);
+        _testingStartedAt[name] = startedAt;
+        _testingGenerations[name] = generation;
+      }
+    });
+  }
+
+  Future<void> _finishNodeTesting(String nodeName) async {
+    final generation = _testingGenerations[nodeName];
+    final startedAt = _testingStartedAt[nodeName];
+    if (generation == null || startedAt == null) return;
+    final remaining =
+        _minimumTestingIndicatorDuration - DateTime.now().difference(startedAt);
+    if (remaining > Duration.zero) {
+      await Future<void>.delayed(remaining);
+    }
+    if (!mounted || _testingGenerations[nodeName] != generation) return;
+    setState(() {
+      _testingNodes.remove(nodeName);
+      _testingStartedAt.remove(nodeName);
+      _testingGenerations.remove(nodeName);
+    });
   }
 }
 

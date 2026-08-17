@@ -13,12 +13,13 @@ Future<void> testNodeLatency(Proxy proxy, [String? testUrl]) async {
     await _waitForLatencyCoreReady();
   }
   controller.setDelay(Delay(url: url, name: state.proxyName, value: 0));
-  var result = await clashCore.getDelay(url, state.proxyName);
+  final target = _LatencyTestTarget(url: url, proxyName: state.proxyName);
+  var result = await _testTargetTwice(target);
   if (recoveringFromBackground &&
       (result.value == null || result.value! <= 0)) {
     await Future<void>.delayed(const Duration(milliseconds: 600));
     await _waitForLatencyCoreReady();
-    result = await clashCore.getDelay(url, state.proxyName);
+    result = await _testTargetTwice(target);
   }
   controller.setDelay(result);
 }
@@ -121,15 +122,44 @@ Future<List<Delay>> _runLatencyTargets(
   return Future.wait(targets.indexed.map((entry) async {
     final index = entry.$1;
     final target = entry.$2;
-    late final Delay result;
-    try {
-      result = await clashCore.getDelay(target.url, target.proxyName);
-    } catch (_) {
-      result = Delay(url: target.url, name: target.proxyName, value: -1);
-    }
+    final result = await _testTargetTwice(target);
     onResult(index, result);
     return result;
   }));
+}
+
+Future<Delay> _testTargetTwice(_LatencyTestTarget target) async {
+  // Both measurements run concurrently. This keeps batch testing fast while
+  // reducing one-off handshake and network-jitter spikes in the displayed
+  // result. A successful sample always wins over a timeout.
+  final samples = await Future.wait(
+    List.generate(2, (_) async {
+      try {
+        return await clashCore.getDelay(target.url, target.proxyName);
+      } catch (_) {
+        return Delay(url: target.url, name: target.proxyName, value: -1);
+      }
+    }),
+  );
+  return lowestSuccessfulDelay(
+    samples,
+    url: target.url,
+    proxyName: target.proxyName,
+  );
+}
+
+Delay lowestSuccessfulDelay(
+  List<Delay> samples, {
+  required String url,
+  required String proxyName,
+}) {
+  final successful = samples.where((sample) => (sample.value ?? -1) > 0);
+  if (successful.isEmpty) {
+    return Delay(url: url, name: proxyName, value: -1);
+  }
+  return successful.reduce(
+    (best, sample) => sample.value! < best.value! ? sample : best,
+  );
 }
 
 bool _allTargetsTimedOut(List<Delay> results) {
