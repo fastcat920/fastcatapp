@@ -16,7 +16,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter/foundation.dart';
 
 import 'controller.dart';
@@ -41,9 +40,6 @@ class Application extends ConsumerStatefulWidget {
 
 class ApplicationState extends ConsumerState<Application>
     with WidgetsBindingObserver {
-  static const _lastPromptedOptionalUpdateVersionKey =
-      'last_prompted_optional_update_version';
-
   static const _fontFamilyFallback = [
     'Noto Sans CJK SC',
     'Noto Sans CJK',
@@ -59,6 +55,12 @@ class ApplicationState extends ConsumerState<Application>
   Timer? _autoUpdateProfilesTaskTimer;
   Timer? _customerServicePrewarmTimer;
   Timer? _mobileLogRecoveryTimer;
+  Timer? _automaticUpdateRetryTimer;
+  StreamSubscription<Map<String, dynamic>>? _updateConfigSubscription;
+  bool _automaticUpdateCheckInFlight = false;
+  bool _automaticUpdateCheckPending = false;
+  int _automaticUpdateRetryIndex = 0;
+  String? _lastAutomaticUpdateSignature;
   // Router 只创建一次，通过 refresh() 触发 redirect 重新求值
   // 避免每次 auth 状态变化都重建 GoRouter 导致 StatefulShellRoute 重置（Windows 空白屏）
   late final GoRouter _router;
@@ -130,6 +132,7 @@ class ApplicationState extends ConsumerState<Application>
       },
     );
     _setupRootListeners();
+    unawaited(_restoreUpdateStateAndInitializeCheck());
 
     WidgetsBinding.instance.addPostFrameCallback((timeStamp) async {
       unawaited(bootDiagLog('flutter first frame callback reached'));
@@ -176,8 +179,6 @@ class ApplicationState extends ConsumerState<Application>
         }
       }
 
-      // 启动后检查更新
-      _checkForUpdates();
       _scheduleCustomerServicePrewarm();
     });
   }
@@ -355,6 +356,11 @@ class ApplicationState extends ConsumerState<Application>
           force: true,
         ),
       );
+      if (_updateConfigSubscription == null) {
+        unawaited(_initializeAutomaticUpdateCheck());
+      } else {
+        unawaited(_runAutomaticUpdateCheck(reason: 'app_resumed'));
+      }
       _restoreMobileCoreLogging();
     }
   }
@@ -387,77 +393,210 @@ class ApplicationState extends ConsumerState<Application>
     }());
   }
 
-  /// 检查应用更新
-  void _checkForUpdates() {
-    // 延迟5秒后检查更新，确保应用完全启动
-    Future.delayed(const Duration(seconds: 5), () async {
-      try {
-        if (!mounted) return;
-        if (!ref.read(appSettingProvider).autoCheckUpdate) {
-          debugPrint('[Application] 自动检查更新已关闭');
-          return;
-        }
+  Future<void> _restoreUpdateStateAndInitializeCheck() async {
+    try {
+      await ref.read(updateCheckProvider.notifier).restoreCachedUpdate();
+    } catch (error) {
+      debugPrint('[Application] 恢复本地更新提示失败: $error');
+    }
+    if (mounted) await _initializeAutomaticUpdateCheck();
+  }
 
-        debugPrint('[Application] 开始自动检查更新...');
-        final updateNotifier = ref.read(updateCheckProvider.notifier);
-        await updateNotifier.checkForUpdates();
+  /// 配置就绪后再检查更新，避免固定延时早于 OSS 配置加载完成。
+  Future<void> _initializeAutomaticUpdateCheck() async {
+    for (var attempt = 0;
+        mounted && !XBoardConfig.isInitialized && attempt < 100;
+        attempt++) {
+      await Future.delayed(const Duration(milliseconds: 200));
+    }
+    if (!mounted) return;
+    if (!XBoardConfig.isInitialized) {
+      debugPrint('[Application] 更新配置模块尚未初始化，安排兜底重试');
+      _scheduleAutomaticUpdateRetry('config_module_not_ready');
+      return;
+    }
 
-        // 检查是否有更新
-        final updateState = ref.read(updateCheckProvider);
-        if (!mounted) return;
-        if (updateState.hasUpdate) {
-          SharedPreferences? preferences;
-          var latestVersion = '';
-          if (!updateState.forceUpdate) {
-            latestVersion = updateState.latestVersion?.trim() ?? '';
-            preferences = await SharedPreferences.getInstance();
-            final lastPromptedVersion = preferences
-                .getString(_lastPromptedOptionalUpdateVersionKey)
-                ?.trim();
-            if (latestVersion.isNotEmpty &&
-                lastPromptedVersion == latestVersion) {
-              debugPrint(
-                '[Application] 普通更新 V$latestVersion 已提示过，仅保留红点',
-              );
-              return;
-            }
-          }
+    _updateConfigSubscription ??= XBoardConfig.configChangeStream.listen(
+      (_) {
+        _automaticUpdateRetryIndex = 0;
+        _automaticUpdateRetryTimer?.cancel();
+        unawaited(_runAutomaticUpdateCheck(reason: 'config_changed'));
+      },
+      onError: (Object error) {
+        debugPrint('[Application] 更新配置监听异常: $error');
+        _scheduleAutomaticUpdateRetry('config_stream_error');
+      },
+      onDone: () {
+        _updateConfigSubscription = null;
+        if (mounted) unawaited(_initializeAutomaticUpdateCheck());
+      },
+    );
 
-          if (!mounted) return;
-          final currentContext = globalState.navigatorKey.currentContext;
-          if (currentContext == null || !currentContext.mounted) return;
-          if (preferences != null && latestVersion.isNotEmpty) {
-            await preferences.setString(
-              _lastPromptedOptionalUpdateVersionKey,
-              latestVersion,
-            );
-          }
-          if (!mounted || !currentContext.mounted) return;
-          debugPrint(updateState.forceUpdate
-              ? '[Application] 发现强制更新，显示不可关闭弹窗'
-              : '[Application] 首次发现普通更新，显示一次更新弹窗');
-          final previousFocus = TvFocusRestoration.capture();
-          showDialog(
-            context: currentContext,
-            barrierDismissible: !updateState.forceUpdate,
-            builder: (context) => UpdateDialog(state: updateState),
-          ).whenComplete(() {
-            final restoreContext = globalState.navigatorKey.currentContext;
-            if (restoreContext != null && restoreContext.mounted) {
-              TvFocusRestoration.restore(restoreContext, previousFocus);
-            }
-          });
-        } else if (updateState.error != null) {
-          debugPrint('[Application] 自动更新检查失败，忽略错误: ${updateState.error}');
-          // 自动检查失败时静默处理，不打扰用户
-        } else {
-          debugPrint('[Application] 已是最新版本');
-        }
-      } catch (e) {
-        debugPrint('[Application] 自动更新检查异常: $e');
-        // 自动检查异常时静默处理，不影响应用正常使用
+    // 初始化模块可能在监听建立前已载入缓存或远程配置，立即检查一次。
+    await _runAutomaticUpdateCheck(reason: 'config_available');
+  }
+
+  String? _currentUpdateConfigSignature() {
+    final config = XBoardConfig.updateConfig;
+    if (config == null || config.isEmpty) return null;
+    final platform = switch (Platform.operatingSystem) {
+      'android' => 'android',
+      'ios' => 'ios',
+      'windows' => 'windows',
+      'macos' => 'macos',
+      'linux' => 'linux',
+      _ => 'unknown',
+    };
+    final info = config.platformInfo(platform);
+    if (info == null || info.version.trim().isEmpty) return null;
+    return [
+      platform,
+      info.version.trim(),
+      info.url.trim(),
+      info.force,
+      config.minVersion?.trim() ?? '',
+    ].join('|');
+  }
+
+  void _scheduleAutomaticUpdateRetry(String reason) {
+    if (!mounted || !ref.read(appSettingProvider).autoCheckUpdate) return;
+    const delays = [
+      Duration(seconds: 5),
+      Duration(seconds: 15),
+      Duration(seconds: 30),
+    ];
+    if (_automaticUpdateRetryIndex >= delays.length) {
+      debugPrint('[Application] 自动更新检查已达到重试上限: $reason');
+      return;
+    }
+    final delay = delays[_automaticUpdateRetryIndex++];
+    _automaticUpdateRetryTimer?.cancel();
+    debugPrint(
+      '[Application] ${delay.inSeconds} 秒后重试自动更新检查: $reason',
+    );
+    _automaticUpdateRetryTimer = Timer(delay, () {
+      if (!mounted) return;
+      if (_updateConfigSubscription == null) {
+        unawaited(_initializeAutomaticUpdateCheck());
+      } else {
+        unawaited(_runAutomaticUpdateCheck(reason: 'retry'));
       }
     });
+  }
+
+  Future<void> _runAutomaticUpdateCheck({required String reason}) async {
+    if (!mounted) return;
+    if (!ref.read(appSettingProvider).autoCheckUpdate) {
+      debugPrint('[Application] 自动检查更新已关闭');
+      return;
+    }
+    final updateNotifier = ref.read(updateCheckProvider.notifier);
+    if (updateNotifier.isInteractiveCheckInFlight) {
+      debugPrint('[Application] 手动更新检查正在进行，跳过本次自动检查');
+      return;
+    }
+    if (!XBoardConfig.isInitialized) {
+      _scheduleAutomaticUpdateRetry('config_module_not_ready');
+      return;
+    }
+
+    final signature = _currentUpdateConfigSignature();
+    if (signature == null) {
+      _scheduleAutomaticUpdateRetry('platform_update_config_not_ready');
+      return;
+    }
+    if (signature == _lastAutomaticUpdateSignature) return;
+    if (_automaticUpdateCheckInFlight) {
+      _automaticUpdateCheckPending = true;
+      return;
+    }
+
+    _automaticUpdateCheckInFlight = true;
+    try {
+      debugPrint('[Application] 开始自动检查更新: $reason');
+      await updateNotifier.checkForUpdates();
+      if (!mounted) return;
+      if (updateNotifier.isInteractiveCheckInFlight) {
+        debugPrint('[Application] 手动检查已接管更新结果展示');
+        return;
+      }
+
+      final updateState = ref.read(updateCheckProvider);
+      if (updateState.error != null) {
+        debugPrint('[Application] 自动更新检查失败: ${updateState.error}');
+        _scheduleAutomaticUpdateRetry('check_failed');
+        return;
+      }
+
+      if (!updateState.hasUpdate) {
+        _lastAutomaticUpdateSignature = signature;
+        _automaticUpdateRetryIndex = 0;
+        _automaticUpdateRetryTimer?.cancel();
+        debugPrint('[Application] 已是最新版本');
+        return;
+      }
+
+      final shown = await _showAutomaticUpdateDialog(updateState);
+      if (shown) {
+        _lastAutomaticUpdateSignature = signature;
+      }
+      if (!shown) {
+        _scheduleAutomaticUpdateRetry('dialog_context_not_ready');
+      } else {
+        _automaticUpdateRetryIndex = 0;
+        _automaticUpdateRetryTimer?.cancel();
+      }
+    } catch (error) {
+      debugPrint('[Application] 自动更新检查异常: $error');
+      _scheduleAutomaticUpdateRetry('unexpected_error');
+    } finally {
+      _automaticUpdateCheckInFlight = false;
+      if (_automaticUpdateCheckPending && mounted) {
+        _automaticUpdateCheckPending = false;
+        unawaited(_runAutomaticUpdateCheck(reason: 'pending_config_change'));
+      }
+    }
+  }
+
+  Future<bool> _showAutomaticUpdateDialog(UpdateCheckState updateState) async {
+    final cacheService = ref.read(updateCacheServiceProvider);
+    final latestVersion = updateState.latestVersion?.trim() ?? '';
+    if (!updateState.forceUpdate) {
+      final lastPromptedVersion =
+          await cacheService.getPromptedOptionalVersion();
+      if (latestVersion.isNotEmpty && lastPromptedVersion == latestVersion) {
+        debugPrint(
+          '[Application] 普通更新 V$latestVersion 已提示过，仅保留红点',
+        );
+        return true;
+      }
+    }
+
+    if (!mounted) return false;
+    final currentContext = globalState.navigatorKey.currentContext;
+    if (currentContext == null || !currentContext.mounted) return false;
+
+    debugPrint(updateState.forceUpdate
+        ? '[Application] 发现强制更新，显示不可关闭弹窗'
+        : '[Application] 首次发现普通更新，显示一次更新弹窗');
+    final previousFocus = TvFocusRestoration.capture();
+    final dialogFuture = showDialog<void>(
+      context: currentContext,
+      barrierDismissible: !updateState.forceUpdate,
+      builder: (context) => UpdateDialog(state: updateState),
+    );
+
+    // 路由成功入栈后才记录，避免上下文不可用时误标记为已提示。
+    if (!updateState.forceUpdate && latestVersion.isNotEmpty) {
+      await cacheService.markOptionalVersionPrompted(latestVersion);
+    }
+    unawaited(dialogFuture.whenComplete(() {
+      final restoreContext = globalState.navigatorKey.currentContext;
+      if (restoreContext != null && restoreContext.mounted) {
+        TvFocusRestoration.restore(restoreContext, previousFocus);
+      }
+    }));
+    return true;
   }
 
   _autoUpdateProfilesTask() {
@@ -805,6 +944,8 @@ class ApplicationState extends ConsumerState<Application>
       _autoUpdateProfilesTaskTimer?.cancel();
       _customerServicePrewarmTimer?.cancel();
       _mobileLogRecoveryTimer?.cancel();
+      _automaticUpdateRetryTimer?.cancel();
+      await _updateConfigSubscription?.cancel();
 
       // 释放XBoard SDK资源
       try {

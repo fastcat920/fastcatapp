@@ -151,14 +151,24 @@ class _FastCatAboutPageState extends ConsumerState<FastCatAboutPage> {
           : 'Logs menu enabled';
 
   Future<void> _checkUpdate(BuildContext context, WidgetRef ref) async {
-    await ref.read(updateCheckProvider.notifier).checkForUpdates();
+    await ref.read(updateCheckProvider.notifier).checkForUpdates(
+          refreshRemoteConfig: true,
+          interactive: true,
+        );
     if (!context.mounted) return;
     final state = ref.read(updateCheckProvider);
     if (state.hasUpdate) {
-      await showDialog<void>(
+      final dialogFuture = showDialog<void>(
         context: context,
         builder: (_) => UpdateDialog(state: state),
       );
+      final latestVersion = state.latestVersion?.trim() ?? '';
+      if (!state.forceUpdate && latestVersion.isNotEmpty) {
+        await ref
+            .read(updateCacheServiceProvider)
+            .markOptionalVersionPrompted(latestVersion);
+      }
+      await dialogFuture;
       return;
     }
     final text = state.error ?? AppLocalizations.of(context).checkUpdateError;

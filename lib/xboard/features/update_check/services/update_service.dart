@@ -6,13 +6,22 @@ import 'package:package_info_plus/package_info_plus.dart';
 // 初始化文件级日志器
 final _logger = FileLogger('update_service.dart');
 
+class UpdateConfigurationUnavailableException implements Exception {
+  const UpdateConfigurationUnavailableException(this.message);
+
+  final String message;
+
+  @override
+  String toString() => message;
+}
+
 class UpdateService {
   Future<String> getCurrentVersion() async {
     final packageInfo = await PackageInfo.fromPlatform();
     return packageInfo.version;
   }
 
-  String _getPlatformName() {
+  String getPlatformName() {
     if (Platform.isAndroid) return "android";
     if (Platform.isIOS) return "ios";
     if (Platform.isWindows) return "windows";
@@ -22,9 +31,21 @@ class UpdateService {
   }
 
   /// 比较语义版本，返回 latest > current
-  bool _isNewerVersion(String current, String latest) {
-    final c = current.split('.').map((s) => int.tryParse(s) ?? 0).toList();
-    final l = latest.split('.').map((s) => int.tryParse(s) ?? 0).toList();
+  bool isNewerVersion(String current, String latest) {
+    List<int> parse(String value) {
+      final normalized = value
+          .trim()
+          .replaceFirst(RegExp(r'^[vV]'), '')
+          .split(RegExp(r'[+-]'))
+          .first;
+      return normalized
+          .split('.')
+          .map((part) => int.tryParse(part) ?? 0)
+          .toList();
+    }
+
+    final c = parse(current);
+    final l = parse(latest);
     for (int i = 0; i < 3; i++) {
       final cv = i < c.length ? c[i] : 0;
       final lv = i < l.length ? l[i] : 0;
@@ -42,23 +63,27 @@ class UpdateService {
   Future<Map<String, dynamic>> checkForUpdatesWithFallback() async {
     final updateConfig = XBoardConfig.updateConfig;
     if (updateConfig == null || updateConfig.isEmpty) {
-      return {"hasUpdate": false};
+      throw const UpdateConfigurationUnavailableException(
+        'Update configuration is not ready',
+      );
     }
 
     final currentVersion = await getCurrentVersion();
-    final platform = _getPlatformName();
+    final platform = getPlatformName();
 
     final platformInfo = updateConfig.platformInfo(platform);
     if (platformInfo == null || platformInfo.version.isEmpty) {
-      return {"hasUpdate": false};
+      throw UpdateConfigurationUnavailableException(
+        'Update configuration is unavailable for $platform',
+      );
     }
 
-    final hasUpdate = _isNewerVersion(currentVersion, platformInfo.version);
+    final hasUpdate = isNewerVersion(currentVersion, platformInfo.version);
 
     // minVersion 强制更新逻辑：当前版本低于最低要求版本时强制更新
     final minVersion = updateConfig.minVersion ?? '';
     final belowMin =
-        minVersion.isNotEmpty && _isNewerVersion(currentVersion, minVersion);
+        minVersion.isNotEmpty && isNewerVersion(currentVersion, minVersion);
     final forceUpdate = platformInfo.force || belowMin;
 
     _logger.info(
