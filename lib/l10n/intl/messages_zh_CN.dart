@@ -1344,7 +1344,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "xboardDiscountAmount": MessageLookupByLibrary.simpleMessage("优惠金额"),
     "xboardDiscounted": MessageLookupByLibrary.simpleMessage("已优惠"),
     "xboardDiscountedPrice": MessageLookupByLibrary.simpleMessage("优惠后价格"),
-    "xboardDocsCenter": MessageLookupByLibrary.simpleMessage("文档中心"),
+    "xboardDocsCenter": MessageLookupByLibrary.simpleMessage("使用文档"),
     "xboardDownloadingConfig": MessageLookupByLibrary.simpleMessage("下载配置文件"),
     "xboardEmail": MessageLookupByLibrary.simpleMessage("邮箱"),
     "xboardEmailUnavailable": MessageLookupByLibrary.simpleMessage("邮箱不可用"),
@@ -1446,6 +1446,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "xboardImportingSubscription": MessageLookupByLibrary.simpleMessage(
       "正在导入订阅",
     ),
+    "xboardInitializing": MessageLookupByLibrary.simpleMessage("正在初始化"),
     "xboardInsufficientBalance": MessageLookupByLibrary.simpleMessage("余额不足"),
     "xboardInvalidCredentials": MessageLookupByLibrary.simpleMessage(
       "用户名或密码错误",
@@ -2050,7 +2051,6 @@ class MessageLookup extends MessageLookupByLibrary {
       "本地网络正常，但暂时无法连接业务服务器。当前代理可继续使用已缓存的订阅和节点，登录、套餐、支付等功能可能暂不可用。网络或网关恢复后会自动退出离线缓存模式。",
     ),
     "xboardServiceRecovering": MessageLookupByLibrary.simpleMessage("正在恢复连接"),
-    "xboardInitializing": MessageLookupByLibrary.simpleMessage("正在初始化"),
     "xboardServiceRecoveringTooltip": MessageLookupByLibrary.simpleMessage(
       "网络已恢复，客户端正在重新确认业务网关状态。",
     ),

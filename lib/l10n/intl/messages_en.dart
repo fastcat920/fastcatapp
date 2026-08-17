@@ -1890,7 +1890,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "xboardDiscountedPrice": MessageLookupByLibrary.simpleMessage(
       "Discounted price",
     ),
-    "xboardDocsCenter": MessageLookupByLibrary.simpleMessage("Docs center"),
+    "xboardDocsCenter": MessageLookupByLibrary.simpleMessage("User guide"),
     "xboardDownloadingConfig": MessageLookupByLibrary.simpleMessage(
       "Downloading configuration file",
     ),
@@ -2029,6 +2029,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "xboardImportingSubscription": MessageLookupByLibrary.simpleMessage(
       "Importing subscription",
     ),
+    "xboardInitializing": MessageLookupByLibrary.simpleMessage("Initializing"),
     "xboardInsufficientBalance": MessageLookupByLibrary.simpleMessage(
       "Insufficient balance",
     ),
@@ -2825,7 +2826,6 @@ class MessageLookup extends MessageLookupByLibrary {
     "xboardServiceRecovering": MessageLookupByLibrary.simpleMessage(
       "Restoring connection",
     ),
-    "xboardInitializing": MessageLookupByLibrary.simpleMessage("Initializing"),
     "xboardServiceRecoveringTooltip": MessageLookupByLibrary.simpleMessage(
       "The network has recovered. The client is confirming business gateway availability.",
     ),

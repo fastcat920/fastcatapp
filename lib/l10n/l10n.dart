@@ -7590,10 +7590,10 @@ class AppLocalizations {
     );
   }
 
-  /// `Docs center`
+  /// `User guide`
   String get xboardDocsCenter {
     return Intl.message(
-      'Docs center',
+      'User guide',
       name: 'xboardDocsCenter',
       desc: '',
       args: [],
