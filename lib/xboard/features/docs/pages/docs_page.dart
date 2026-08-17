@@ -361,6 +361,9 @@ class _ArticleDetailPage extends ConsumerStatefulWidget {
 }
 
 class _ArticleDetailPageState extends ConsumerState<_ArticleDetailPage> {
+  static const double _mobileRefreshThreshold = 80;
+  static const double _maximumMobilePullDistance = 112;
+
   String? _resolvedBody;
   String? _renderedBodyHtml;
   WebViewController? _webController;
@@ -381,7 +384,16 @@ class _ArticleDetailPageState extends ConsumerState<_ArticleDetailPage> {
   Timer? _webViewLoadingFallback;
   bool _isClosing = false;
   bool _allowPop = false;
+  bool _isRefreshingDetail = false;
+  int? _mobilePullPointer;
+  bool _mobilePullEnabled = false;
+  double _mobilePullDistance = 0;
   int _documentGeneration = 0;
+
+  bool get _isDesktop =>
+      Platform.isLinux || Platform.isWindows || Platform.isMacOS;
+
+  bool get _isMobile => Platform.isAndroid || Platform.isIOS;
 
   KnowledgeArticleDetailRequest get _detailRequest =>
       KnowledgeArticleDetailRequest(
@@ -587,13 +599,19 @@ p{margin:8px 0}
     return findBody(result);
   }
 
-  void _retryDetail() {
+  void _retryDetail() => unawaited(_refreshDetail());
+
+  Future<void> _refreshDetail() async {
+    if (_isRefreshingDetail) return;
+
     _documentGeneration++;
     final platformController = _webController?.platform;
     if (platformController is WindowsPlatformWebViewController) {
       unawaited(platformController.controller.dispose());
     }
     setState(() {
+      _isRefreshingDetail = true;
+      _mobilePullDistance = 0;
       _resolvedBody = null;
       _renderedBodyHtml = null;
       _webController = null;
@@ -613,10 +631,104 @@ p{margin:8px 0}
       _lastWebViewIsDark = false;
     });
     invalidateKnowledgeArticleDetailCache(_detailRequest);
+    try {
+      final _ = await ref.refresh(
+        knowledgeArticleDetailProvider(_detailRequest).future,
+      );
+    } catch (_) {
+      // The provider keeps the error for XbErrorState to display.
+    } finally {
+      if (mounted) setState(() => _isRefreshingDetail = false);
+    }
+  }
+
+  void _handleMobilePullDown(PointerDownEvent event) {
+    if (!_isMobile || _isRefreshingDetail) return;
+
+    _mobilePullPointer = event.pointer;
+    _mobilePullEnabled = _webController == null;
+    _mobilePullDistance = 0;
+
+    final controller = _webController;
+    if (controller == null) return;
     unawaited(
-      ref
-          .refresh(knowledgeArticleDetailProvider(_detailRequest).future)
-          .catchError((_) => null),
+      controller.getScrollPosition().then((position) {
+        if (!mounted || _mobilePullPointer != event.pointer) return;
+        _mobilePullEnabled = position.dy <= 1;
+      }).catchError((_) {
+        // If the platform cannot report its position, do not intercept pulls.
+      }),
+    );
+  }
+
+  void _handleMobilePullMove(PointerMoveEvent event) {
+    if (_mobilePullPointer != event.pointer ||
+        !_mobilePullEnabled ||
+        _isRefreshingDetail) {
+      return;
+    }
+
+    final nextDistance = (_mobilePullDistance + event.delta.dy)
+        .clamp(0.0, _maximumMobilePullDistance);
+    if (nextDistance == _mobilePullDistance) return;
+    setState(() => _mobilePullDistance = nextDistance);
+  }
+
+  void _finishMobilePull(int pointer) {
+    if (_mobilePullPointer != pointer) return;
+    final shouldRefresh =
+        _mobilePullEnabled && _mobilePullDistance >= _mobileRefreshThreshold;
+    _mobilePullPointer = null;
+    _mobilePullEnabled = false;
+
+    if (shouldRefresh) {
+      unawaited(_refreshDetail());
+    } else if (_mobilePullDistance != 0 && mounted) {
+      setState(() => _mobilePullDistance = 0);
+    }
+  }
+
+  Widget _buildMobileRefreshArea(Widget child) {
+    if (!_isMobile) return child;
+
+    final progress =
+        (_mobilePullDistance / _mobileRefreshThreshold).clamp(0.0, 1.0);
+    return Stack(
+      children: [
+        Listener(
+          behavior: HitTestBehavior.translucent,
+          onPointerDown: _handleMobilePullDown,
+          onPointerMove: _handleMobilePullMove,
+          onPointerUp: (event) => _finishMobilePull(event.pointer),
+          onPointerCancel: (event) => _finishMobilePull(event.pointer),
+          child: child,
+        ),
+        if (_isRefreshingDetail || _mobilePullDistance > 0)
+          Positioned(
+            top: 10,
+            left: 0,
+            right: 0,
+            child: IgnorePointer(
+              child: Center(
+                child: Material(
+                  elevation: 2,
+                  color: Theme.of(context).colorScheme.surface,
+                  shape: const CircleBorder(),
+                  child: Padding(
+                    padding: const EdgeInsets.all(8),
+                    child: SizedBox.square(
+                      dimension: 20,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2.4,
+                        value: _isRefreshingDetail ? null : progress,
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ),
+      ],
     );
   }
 
@@ -969,6 +1081,23 @@ p{margin:8px 0}
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
           ),
+          actions: _isDesktop
+              ? [
+                  Padding(
+                    padding: const EdgeInsets.only(right: 8),
+                    child: IconButton(
+                      onPressed: _isRefreshingDetail ? null : _refreshDetail,
+                      icon: _isRefreshingDetail
+                          ? const SizedBox.square(
+                              dimension: 20,
+                              child: CircularProgressIndicator(strokeWidth: 2),
+                            )
+                          : const Icon(Icons.refresh),
+                      tooltip: AppLocalizations.of(context).refresh,
+                    ),
+                  ),
+                ]
+              : null,
         ),
         body: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -1018,7 +1147,7 @@ p{margin:8px 0}
               ),
             ),
             const Divider(height: 1),
-            Expanded(child: contentArea),
+            Expanded(child: _buildMobileRefreshArea(contentArea)),
           ],
         ),
       ),

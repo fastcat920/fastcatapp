@@ -399,7 +399,6 @@ class _LoginPageState extends ConsumerState<LoginPage> {
     // 初始化中：直接显示登录表单，按钮禁用 + 右上角转圈，无需全屏加载画面
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final isIniting = !initState.isReady && !initState.isFailed;
-    final showBottomVersion = MediaQuery.viewInsetsOf(context).bottom == 0;
 
     return LoginResponsiveScaffold(
       appBar: AppBar(
@@ -458,7 +457,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
         child: Stack(
           children: [
             Positioned.fill(
-              bottom: showBottomVersion ? 64 : 0,
+              bottom: 64,
               child: Center(
                 child: SingleChildScrollView(
                   padding: const EdgeInsets.symmetric(
@@ -729,34 +728,36 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                             ),
                           ),
                           const SizedBox(height: 14),
-                          // 注册 + 忘记密码 并排
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              TextButton.icon(
-                                focusNode: _registerFocusNode,
-                                onPressed:
-                                    isIniting ? null : _navigateToRegister,
-                                icon: const Icon(
-                                  Icons.person_add_outlined,
-                                  size: 18,
+                          // 保持左右分布，并相对登录按钮边缘略微内收
+                          Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 8),
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                TextButton.icon(
+                                  focusNode: _registerFocusNode,
+                                  onPressed:
+                                      isIniting ? null : _navigateToRegister,
+                                  icon: const Icon(
+                                    Icons.person_add_outlined,
+                                    size: 18,
+                                  ),
+                                  label: Text(appLocalizations.xboardRegister),
                                 ),
-                                label: Text(appLocalizations.xboardRegister),
-                              ),
-                              const SizedBox(width: 16),
-                              TextButton.icon(
-                                focusNode: _forgotPasswordFocusNode,
-                                onPressed: isIniting
-                                    ? null
-                                    : _navigateToForgotPassword,
-                                icon: const Icon(
-                                  Icons.help_outline,
-                                  size: 18,
+                                TextButton.icon(
+                                  focusNode: _forgotPasswordFocusNode,
+                                  onPressed: isIniting
+                                      ? null
+                                      : _navigateToForgotPassword,
+                                  icon: const Icon(
+                                    Icons.help_outline,
+                                    size: 18,
+                                  ),
+                                  label: Text(
+                                      appLocalizations.xboardForgotPassword),
                                 ),
-                                label:
-                                    Text(appLocalizations.xboardForgotPassword),
-                              ),
-                            ],
+                              ],
+                            ),
                           ),
                         ],
                       ),
@@ -765,39 +766,38 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                 ),
               ),
             ),
-            if (showBottomVersion)
-              Positioned(
-                left: 0,
-                right: 0,
-                bottom: 12,
-                child: SafeArea(
-                  top: false,
-                  child: Center(
-                    child: InkWell(
-                      borderRadius: BorderRadius.circular(16),
-                      onTap: () => Navigator.of(context).push(
-                        MaterialPageRoute(
-                          builder: (_) => const FastCatAboutPage(),
-                        ),
+            Positioned(
+              left: 0,
+              right: 0,
+              bottom: 12,
+              child: SafeArea(
+                top: false,
+                child: Center(
+                  child: InkWell(
+                    borderRadius: BorderRadius.circular(16),
+                    onTap: () => Navigator.of(context).push(
+                      MaterialPageRoute(
+                        builder: (_) => const FastCatAboutPage(),
                       ),
-                      child: Padding(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 12,
-                          vertical: 6,
+                    ),
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 12,
+                        vertical: 6,
+                      ),
+                      child: Text(
+                        appLocalizations.updateCheckCurrentVersion(
+                          'V${globalState.packageInfo.version}',
                         ),
-                        child: Text(
-                          appLocalizations.updateCheckCurrentVersion(
-                            'V${globalState.packageInfo.version}',
-                          ),
-                          style: textTheme.bodySmall?.copyWith(
-                            color: colorScheme.onSurfaceVariant,
-                          ),
+                        style: textTheme.bodySmall?.copyWith(
+                          color: colorScheme.onSurfaceVariant,
                         ),
                       ),
                     ),
                   ),
                 ),
               ),
+            ),
           ],
         ),
       ),

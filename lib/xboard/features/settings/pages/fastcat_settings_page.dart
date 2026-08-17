@@ -1,3 +1,4 @@
+import 'package:fl_clash/common/common.dart';
 import 'package:fl_clash/l10n/l10n.dart';
 import 'package:fl_clash/providers/providers.dart';
 import 'package:fl_clash/xboard/features/about/pages/fastcat_about_page.dart';
@@ -25,77 +26,88 @@ class FastCatSettingsPage extends ConsumerWidget {
         backgroundColor: XbUiTokens.pageBackground(context),
         surfaceTintColor: Colors.transparent,
       ),
-      body: Center(
-        child: ConstrainedBox(
-          constraints: const BoxConstraints(maxWidth: 760),
-          child: ListView(
-            padding: const EdgeInsets.fromLTRB(16, 8, 16, 32),
-            children: [
-              _header(context, l10n.application),
-              _SettingsCard(
+      body: LayoutBuilder(
+        builder: (context, constraints) {
+          final useFullLandscapeWidth =
+              !system.isDesktop && constraints.maxWidth > constraints.maxHeight;
+          return Center(
+            child: ConstrainedBox(
+              constraints: BoxConstraints(
+                maxWidth: useFullLandscapeWidth ? double.infinity : 760,
+              ),
+              child: ListView(
+                padding: const EdgeInsets.fromLTRB(16, 8, 16, 32),
                 children: [
-                  _navigationTile(
-                    context,
-                    icon: Icons.language_outlined,
-                    title: l10n.language,
-                    subtitle: _languageLabel(appSetting.locale, l10n),
-                    onTap: () => _chooseLanguage(context, ref),
+                  _header(context, l10n.application),
+                  _SettingsCard(
+                    children: [
+                      _navigationTile(
+                        context,
+                        icon: Icons.language_outlined,
+                        title: l10n.language,
+                        subtitle: _languageLabel(appSetting.locale, l10n),
+                        onTap: () => _chooseLanguage(context, ref),
+                      ),
+                      _navigationTile(
+                        context,
+                        icon: Icons.brightness_6_outlined,
+                        title: l10n.theme,
+                        subtitle: _themeLabel(theme.themeMode, l10n),
+                        onTap: () =>
+                            _chooseTheme(context, ref, theme.themeMode),
+                      ),
+                      _navigationTile(
+                        context,
+                        icon: Icons.power_settings_new_outlined,
+                        title: l10n.xboardStartup,
+                        subtitle: l10n.xboardStartupDescription,
+                        onTap: () => _open(
+                            context, const FastCatAutoStartSettingsPage()),
+                      ),
+                    ],
                   ),
-                  _navigationTile(
-                    context,
-                    icon: Icons.brightness_6_outlined,
-                    title: l10n.theme,
-                    subtitle: _themeLabel(theme.themeMode, l10n),
-                    onTap: () => _chooseTheme(context, ref, theme.themeMode),
+                  _header(context, l10n.network),
+                  _SettingsCard(
+                    children: [
+                      _navigationTile(
+                        context,
+                        icon: Icons.dns_outlined,
+                        title: l10n.overrideDns,
+                        subtitle: l10n.dnsDesc,
+                        onTap: () =>
+                            _open(context, const FastCatDnsSettingsPage()),
+                      ),
+                      _navigationTile(
+                        context,
+                        icon: Icons.monitor_heart_outlined,
+                        title: l10n.xboardDiagnosticsCenter,
+                        onTap: () =>
+                            _open(context, const DiagnosticsCenterPage()),
+                      ),
+                      _navigationTile(
+                        context,
+                        icon: Icons.live_tv_outlined,
+                        title: l10n.xboardStreamingCheck,
+                        onTap: () => _open(context, const StreamingCheckPage()),
+                      ),
+                    ],
                   ),
-                  _navigationTile(
-                    context,
-                    icon: Icons.power_settings_new_outlined,
-                    title: l10n.xboardStartup,
-                    subtitle: l10n.xboardStartupDescription,
-                    onTap: () =>
-                        _open(context, const FastCatAutoStartSettingsPage()),
+                  _header(context, l10n.other),
+                  _SettingsCard(
+                    children: [
+                      _navigationTile(
+                        context,
+                        icon: Icons.info_outline,
+                        title: l10n.about,
+                        onTap: () => _open(context, const FastCatAboutPage()),
+                      ),
+                    ],
                   ),
                 ],
               ),
-              _header(context, l10n.network),
-              _SettingsCard(
-                children: [
-                  _navigationTile(
-                    context,
-                    icon: Icons.dns_outlined,
-                    title: l10n.overrideDns,
-                    subtitle: l10n.dnsDesc,
-                    onTap: () => _open(context, const FastCatDnsSettingsPage()),
-                  ),
-                  _navigationTile(
-                    context,
-                    icon: Icons.monitor_heart_outlined,
-                    title: l10n.xboardDiagnosticsCenter,
-                    onTap: () => _open(context, const DiagnosticsCenterPage()),
-                  ),
-                  _navigationTile(
-                    context,
-                    icon: Icons.live_tv_outlined,
-                    title: l10n.xboardStreamingCheck,
-                    onTap: () => _open(context, const StreamingCheckPage()),
-                  ),
-                ],
-              ),
-              _header(context, l10n.other),
-              _SettingsCard(
-                children: [
-                  _navigationTile(
-                    context,
-                    icon: Icons.info_outline,
-                    title: l10n.about,
-                    onTap: () => _open(context, const FastCatAboutPage()),
-                  ),
-                ],
-              ),
-            ],
-          ),
-        ),
+            ),
+          );
+        },
       ),
     );
   }
