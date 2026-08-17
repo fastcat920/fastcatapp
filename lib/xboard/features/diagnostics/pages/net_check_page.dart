@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:io';
 
 import 'package:fl_clash/clash/clash.dart';
+import 'package:fl_clash/common/sensitive_masker.dart';
 import 'package:fl_clash/enum/enum.dart';
 import 'package:fl_clash/l10n/l10n.dart';
 import 'package:fl_clash/models/models.dart';
@@ -177,7 +178,7 @@ class _NetCheckPageState extends ConsumerState<NetCheckPage> {
       nodeLayerResults: _toSnapshotItems(nodeLayerResults),
       directResults: _toSnapshotItems(directResults),
       proxyResults: _toSnapshotItems(proxyResults),
-      nodeResult: Map<String, dynamic>.from(nodeDiagnostic),
+      nodeResult: sanitizeNetworkDiagnosticNodeResult(nodeDiagnostic),
     );
     NetworkDiagnosticSnapshotStore.latest = snapshot;
     setState(() {
@@ -401,10 +402,7 @@ class _NetCheckPageState extends ConsumerState<NetCheckPage> {
   }
 
   String _maskPort(String value) {
-    if (value.isEmpty) return '*';
-    if (value.length == 1) return '*';
-    if (value.length == 2) return '${value[0]}*';
-    return '${value[0]}${'*' * (value.length - 2)}${value[value.length - 1]}';
+    return SensitiveMasker.maskPort(value);
   }
 
   String _maskIp(String value) {
@@ -771,20 +769,7 @@ class _NetCheckPageState extends ConsumerState<NetCheckPage> {
   }
 
   String _maskDetail(String value) {
-    final ipv4Masked = value.replaceAll(
-      RegExp(r'\b(?:\d{1,3}\.){3}\d{1,3}\b'),
-      '[redacted-ip]',
-    );
-    return ipv4Masked.replaceAllMapped(
-      RegExp(r'[0-9a-fA-F:]{2,}'),
-      (match) {
-        final candidate = match.group(0)!;
-        final address = InternetAddress.tryParse(candidate);
-        return address?.type == InternetAddressType.IPv6
-            ? '[redacted-ipv6]'
-            : candidate;
-      },
-    );
+    return SensitiveMasker.maskText(value);
   }
 
   @override

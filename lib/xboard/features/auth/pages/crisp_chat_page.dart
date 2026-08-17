@@ -32,6 +32,7 @@ const _mobileCrispUserAgent = 'Mozilla/5.0 (Linux; Android 14; Pixel 8) '
 
 class CrispChatPage extends StatefulWidget {
   final String websiteId;
+  final String localeTag;
   final String? crispProxyUrl;
   final String? userScript;
   final Future<String?> Function()? deferredUserScript;
@@ -41,6 +42,7 @@ class CrispChatPage extends StatefulWidget {
   const CrispChatPage({
     super.key,
     required this.websiteId,
+    required this.localeTag,
     this.crispProxyUrl,
     this.userScript,
     this.deferredUserScript,
@@ -113,6 +115,7 @@ class _CrispChatPageState extends State<CrispChatPage> {
     final prewarmed = CustomerServiceHelper.consumePrewarmedSystemWebView(
       websiteId: widget.websiteId,
       proxyUrl: widget.crispProxyUrl,
+      localeTag: widget.localeTag,
     );
     _usingPrewarmedPage = prewarmed != null;
     if (prewarmed != null) {
@@ -229,12 +232,10 @@ class _CrispChatPageState extends State<CrispChatPage> {
     _usingProxy = isCrispProxyConfigured(widget.crispProxyUrl);
     _didFallbackToOfficial = !_usingProxy;
     _embedFallbackTimer?.cancel();
-    if (_usingProxy) {
-      _embedFallbackTimer = Timer(
-        crispProxyFallbackDelay,
-        () => unawaited(_handleEmbedTimeout()),
-      );
-    }
+    _embedFallbackTimer = Timer(
+      _usingProxy ? crispProxyFallbackDelay : const Duration(seconds: 25),
+      () => unawaited(_handleEmbedTimeout()),
+    );
     await _injectDirectEmbedMonitor();
     unawaited(_runDeferredUserScript());
     _startReadyPolling();
@@ -490,8 +491,14 @@ if (typeof window.__fastcatHideLoadingMask === 'function') {
         window.\$crisp.push(["config", "locale", [window.__fastcatCustomerServiceCrispLocale || 'en']]);
         var theme = window.__fastcatCustomerServiceTheme || { isDark: ${_isDarkMode ? 'true' : 'false'} };
         window.\$crisp.push(["config", "color:mode", [theme.isDark ? "dark" : "light"]]);
+        var text = ((document.body && document.body.innerText) || '').toLowerCase();
+        var disconnected = navigator.onLine === false
+          || text.indexOf('network interrupted') >= 0
+          || text.indexOf('reconnecting') >= 0
+          || text.indexOf('网络中断') >= 0
+          || text.indexOf('重新连接') >= 0;
         var interactive = document.querySelector('textarea,input,[contenteditable="true"],button,[role="button"],a[href^="mailto:"],iframe[src*="crisp"]');
-        if (interactive) markReady();
+        window.__fastcatCrispReady = !!interactive && !disconnected;
       } catch(_) {}
     }
     directLooksReady();

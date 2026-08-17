@@ -6,6 +6,20 @@ class SensitiveMasker {
     r'(?<![A-Za-z0-9_.-])((?:[A-Za-z0-9-]+\.)+[A-Za-z]{2,}|(?:\d{1,3}\.){3}\d{1,3}|localhost):(\d{1,5})(?!\d)',
     caseSensitive: false,
   );
+  static final RegExp _ipv4Pattern = RegExp(
+    r'(?<![\d.])(?:\d{1,3}\.){3}\d{1,3}(?![\d.])',
+  );
+  static final RegExp _ipv6CandidatePattern = RegExp(
+    r'(?<![A-Fa-f0-9:])(?:[A-Fa-f0-9]{0,4}:){2,7}[A-Fa-f0-9]{0,4}(?![A-Fa-f0-9:])',
+  );
+  static final RegExp _domainPattern = RegExp(
+    r'(?<![A-Za-z0-9_.-])(?:[A-Za-z0-9-]+\.)+[A-Za-z]{2,}(?![A-Za-z0-9_.-])',
+    caseSensitive: false,
+  );
+  static final RegExp _namedPortPattern = RegExp(
+    r'\b((?:target[_-]?port|remote[_-]?port|server[_-]?port)\s*[:=]\s*)(\d{1,5})\b',
+    caseSensitive: false,
+  );
   static final RegExp _emailPattern = RegExp(
     r'\b([A-Za-z0-9._%+\-])([A-Za-z0-9._%+\-]*)(@[A-Za-z0-9.\-]+\.[A-Za-z]{2,})\b',
   );
@@ -36,6 +50,9 @@ class SensitiveMasker {
     var masked = text.replaceAllMapped(_urlPattern, (match) {
       return _maskUrl(match.group(0)!);
     });
+    masked = masked.replaceAllMapped(_namedPortPattern, (match) {
+      return '${match.group(1)}${maskPort(match.group(2)!)}';
+    });
     masked = masked.replaceAllMapped(_hostPortPattern, (match) {
       return '${_maskHost(match.group(1)!)}:[redacted-port]';
     });
@@ -44,6 +61,23 @@ class SensitiveMasker {
       final rest = match.group(2)!;
       final domain = match.group(3)!;
       return rest.isEmpty ? '$first***$domain' : '$first***$domain';
+    });
+    masked = masked.replaceAllMapped(_ipv6CandidatePattern, (match) {
+      final address = match.group(0)!;
+      final colonCount = ':'.allMatches(address).length;
+      if (!address.contains('::') && colonCount < 3) return address;
+      return '[redacted-ipv6]';
+    });
+    masked = masked.replaceAllMapped(_ipv4Pattern, (match) {
+      final address = match.group(0)!;
+      final octets = address.split('.').map(int.tryParse).toList();
+      if (octets.any((octet) => octet == null || octet > 255)) {
+        return address;
+      }
+      return _maskHost(address);
+    });
+    masked = masked.replaceAllMapped(_domainPattern, (match) {
+      return _maskHost(match.group(0)!);
     });
     masked = masked.replaceAllMapped(_bearerPattern, (match) {
       final prefix = match.group(1) ?? 'Token';
@@ -61,6 +95,14 @@ class SensitiveMasker {
   static String maskUrl(String? value) {
     if (value == null || value.trim().isEmpty) return '';
     return _maskUrl(value.trim());
+  }
+
+  static String maskPort(String value) {
+    if (value.isEmpty) return '*';
+    if (!RegExp(r'^\d+$').hasMatch(value)) return value;
+    if (value.length == 1) return '*';
+    if (value.length == 2) return '${value[0]}*';
+    return '${value[0]}${'*' * (value.length - 2)}${value[value.length - 1]}';
   }
 
   static String _maskUrl(String raw) {
@@ -102,20 +144,7 @@ class SensitiveMasker {
     }
 
     final parts = host.split('.');
-    if (parts.length < 2) {
-      return _maskPart(host);
-    }
-
-    final root = parts.last;
-    final secondLevel = _maskPart(parts[parts.length - 2]);
-    if (parts.length == 2) {
-      return '$secondLevel.$root';
-    }
-    final prefix = parts
-        .sublist(0, parts.length - 2)
-        .map((part) => part.isEmpty ? '*' : '${part[0]}***')
-        .join('.');
-    return '$prefix.$secondLevel.$root';
+    return parts.map(_maskPart).join('.');
   }
 
   static String _maskPart(String value) {

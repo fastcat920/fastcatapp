@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
+import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -34,6 +35,7 @@ const _desktopCustomerServiceWindowWidth = 800;
 const _desktopCustomerServiceWindowHeight = 600;
 const _crispProxyProbeTimeout = Duration(seconds: 4);
 const _crispWebViewPrewarmTimeout = Duration(seconds: 8);
+const _crispWebViewPrewarmTtl = Duration(seconds: 60);
 const _crispProxyProbePreviewBytes = 4096;
 const _crispProxyUsableCacheTtl = Duration(minutes: 10);
 const _crispUserDataResolveTimeout = Duration(milliseconds: 1800);
@@ -501,9 +503,16 @@ class CustomerServiceHelper {
         final websiteId = await _resolveCrispWebsiteId();
         if (websiteId.isEmpty) return;
         final proxyUrl = await _resolveUsableCrispProxyUrl(websiteId);
+        final localeTag = _currentCustomerServiceLocaleTag();
+        final networkSignature = await _customerServiceNetworkSignature();
         final warmed = _prewarmedSystemWebView;
         if (warmed != null &&
             warmed.websiteId == websiteId &&
+            warmed.matchesEnvironment(
+              localeTag: localeTag,
+              networkSignature: networkSignature,
+              now: DateTime.now(),
+            ) &&
             normalizeCrispProxyUrl(warmed.proxyUrl) ==
                 normalizeCrispProxyUrl(proxyUrl)) {
           return;
@@ -511,36 +520,50 @@ class CustomerServiceHelper {
         _prewarmedSystemWebView = null;
         final uri = localizedCrispUri(
           crispEmbedUri(websiteId: websiteId, proxyUrl: proxyUrl),
-          'en',
+          localeTag,
         );
         final ua = Platform.isAndroid || Platform.isIOS
             ? 'Mozilla/5.0 (Linux; Android 14; Pixel 8) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0.0.0 Mobile Safari/537.36'
             : 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.0 Safari/605.1.15';
-        final loaded = Completer<void>();
+        final loaded = Completer<bool>();
+        var mainFrameFailed = false;
         final controller = WebViewController()
           ..setUserAgent(ua)
           ..setJavaScriptMode(JavaScriptMode.unrestricted)
           ..setNavigationDelegate(
             NavigationDelegate(
               onPageFinished: (_) {
-                if (!loaded.isCompleted) loaded.complete();
+                if (!loaded.isCompleted) loaded.complete(!mainFrameFailed);
               },
               onWebResourceError: (error) {
-                if (error.isForMainFrame != false && !loaded.isCompleted) {
-                  loaded.complete();
+                if (error.isForMainFrame != false) {
+                  mainFrameFailed = true;
+                  if (!loaded.isCompleted) loaded.complete(false);
                 }
               },
             ),
           );
         await controller.loadRequest(uri);
-        await loaded.future.timeout(
+        final loadedSuccessfully = await loaded.future.timeout(
           _crispWebViewPrewarmTimeout,
-          onTimeout: () {},
+          onTimeout: () => false,
         );
+        if (!loadedSuccessfully) {
+          _logger.debug('[Crisp] System WebView prewarm discarded');
+          return;
+        }
+        final crispReady = await _waitForPrewarmedCrispReady(controller);
+        if (!crispReady) {
+          _logger.debug('[Crisp] System WebView prewarm not ready');
+          return;
+        }
         _prewarmedSystemWebView = _PrewarmedCrispWebView(
           controller: controller,
           websiteId: websiteId,
           proxyUrl: proxyUrl,
+          localeTag: localeTag,
+          networkSignature: networkSignature,
+          createdAt: DateTime.now(),
         );
         _logger.info('[Crisp] System WebView pre-warmed: ${uri.host}');
       } catch (e) {
@@ -551,15 +574,46 @@ class CustomerServiceHelper {
     }();
   }
 
+  static Future<bool> _waitForPrewarmedCrispReady(
+    WebViewController controller,
+  ) async {
+    final deadline = DateTime.now().add(const Duration(seconds: 5));
+    while (DateTime.now().isBefore(deadline)) {
+      try {
+        final result = await controller.runJavaScriptReturningResult('''
+(function(){
+  try {
+    if (navigator.onLine === false) return false;
+    var text = ((document.body && document.body.innerText) || '').toLowerCase();
+    var disconnected = text.indexOf('network interrupted') >= 0
+      || text.indexOf('reconnecting') >= 0
+      || text.indexOf('网络中断') >= 0
+      || text.indexOf('重新连接') >= 0;
+    if (disconnected) return false;
+    return !!document.querySelector('textarea,input,[contenteditable="true"],iframe[src*="crisp"]');
+  } catch (_) { return false; }
+})();''');
+        if (result is bool ? result : result.toString().contains('true')) {
+          return true;
+        }
+      } catch (_) {}
+      await Future.delayed(const Duration(milliseconds: 200));
+    }
+    return false;
+  }
+
   /// 消费已经加载目标客服页面的 controller。
   /// 返回 null 表示需要新建 controller。
   static WebViewController? consumePrewarmedSystemWebView({
     required String websiteId,
     String? proxyUrl,
+    required String localeTag,
   }) {
     final warmed = _prewarmedSystemWebView;
     if (warmed == null) return null;
     if (warmed.websiteId != websiteId ||
+        !warmed.matchesLocale(localeTag) ||
+        warmed.isExpired(DateTime.now()) ||
         normalizeCrispProxyUrl(warmed.proxyUrl) !=
             normalizeCrispProxyUrl(proxyUrl)) {
       _prewarmedSystemWebView = null;
@@ -568,6 +622,37 @@ class CustomerServiceHelper {
     }
     _prewarmedSystemWebView = null;
     return warmed.controller;
+  }
+
+  static String _currentCustomerServiceLocaleTag() {
+    final configured = globalState.config.appSetting.locale?.trim();
+    if (configured != null && configured.isNotEmpty) return configured;
+    return WidgetsBinding.instance.platformDispatcher.locale.toLanguageTag();
+  }
+
+  static Future<String> _customerServiceNetworkSignature() async {
+    try {
+      final results = await Connectivity().checkConnectivity();
+      final names = results.map((item) => item.name).toList()..sort();
+      return '${names.join(',')}|vpn=${globalState.isStart}';
+    } catch (_) {
+      return 'unknown|vpn=${globalState.isStart}';
+    }
+  }
+
+  static Future<void> _discardStalePrewarmedSystemWebView(
+    String localeTag,
+  ) async {
+    final warmed = _prewarmedSystemWebView;
+    if (warmed == null) return;
+    final signature = await _customerServiceNetworkSignature();
+    if (!warmed.matchesEnvironment(
+      localeTag: localeTag,
+      networkSignature: signature,
+      now: DateTime.now(),
+    )) {
+      _prewarmedSystemWebView = null;
+    }
   }
 
   /// 获取 WebView2 用户数据目录（可写路径）
@@ -944,6 +1029,9 @@ class CustomerServiceHelper {
       XBoardNotification.showError('未配置在线客服');
       return;
     }
+    if (!context.mounted) return;
+    final localeTag = Localizations.localeOf(context).toLanguageTag();
+    await _discardStalePrewarmedSystemWebView(localeTag);
     if (!context.mounted) return;
     // 点击时直接用预热缓存，不阻塞导航发起 HTTP 探测
     final crispProxyUrl = _getCachedCrispProxyUrl(crispId);
@@ -1425,6 +1513,7 @@ if(window===window.top){
         signature: signature,
         builder: (hide, session) => CrispChatPage(
           websiteId: websiteId,
+          localeTag: Localizations.localeOf(context).toLanguageTag(),
           crispProxyUrl: crispProxyUrl,
           userScript: effectiveUserScript,
           deferredUserScript: deferredUserScript,
@@ -1774,11 +1863,33 @@ class _PrewarmedCrispWebView {
     required this.controller,
     required this.websiteId,
     required this.proxyUrl,
+    required this.localeTag,
+    required this.networkSignature,
+    required this.createdAt,
   });
 
   final WebViewController controller;
   final String websiteId;
   final String proxyUrl;
+  final String localeTag;
+  final String networkSignature;
+  final DateTime createdAt;
+
+  bool matchesLocale(String value) =>
+      CustomerServiceHelper.crispLocaleFromTag(localeTag) ==
+      CustomerServiceHelper.crispLocaleFromTag(value);
+
+  bool isExpired(DateTime now) =>
+      now.difference(createdAt) >= _crispWebViewPrewarmTtl;
+
+  bool matchesEnvironment({
+    required String localeTag,
+    required String networkSignature,
+    required DateTime now,
+  }) =>
+      matchesLocale(localeTag) &&
+      this.networkSignature == networkSignature &&
+      !isExpired(now);
 }
 
 class _PendingCrispProxyProbe {

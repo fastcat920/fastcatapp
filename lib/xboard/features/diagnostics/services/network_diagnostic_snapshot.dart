@@ -1,3 +1,30 @@
+import 'package:fl_clash/common/sensitive_masker.dart';
+
+Map<String, dynamic> sanitizeNetworkDiagnosticNodeResult(
+  Map<String, dynamic> source,
+) {
+  final sanitized = Map<String, dynamic>.from(source);
+  final host = source['host']?.toString();
+  if (host != null && host.isNotEmpty) {
+    sanitized['host'] = SensitiveMasker.maskText(host);
+  }
+  final port = source['port']?.toString();
+  if (port != null && port.isNotEmpty) {
+    sanitized['port'] = SensitiveMasker.maskPort(port);
+  }
+  final resolvedIps = source['resolved-ips'];
+  if (resolvedIps is List) {
+    sanitized['resolved-ips'] = resolvedIps
+        .map((value) => SensitiveMasker.maskText(value.toString()))
+        .toList(growable: false);
+  }
+  final error = source['error']?.toString();
+  if (error != null && error.isNotEmpty) {
+    sanitized['error'] = SensitiveMasker.maskText(error);
+  }
+  return sanitized;
+}
+
 class NetworkDiagnosticSnapshot {
   const NetworkDiagnosticSnapshot({
     required this.generatedAt,

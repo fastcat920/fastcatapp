@@ -102,4 +102,24 @@ void main() {
     expect(result.reason, NetworkDiagnosticReason.proxyWorking);
     expect(result.severity, NetworkDiagnosticSeverity.warning);
   });
+
+  test('stored node diagnostics do not retain plaintext endpoints', () {
+    final source = <String, dynamic>{
+      'host': 'node.fastcat.wang',
+      'port': '10086',
+      'resolved-ips': ['109.244.50.201', '2400:3200:baba::1'],
+      'error': 'dial tcp node.fastcat.wang:10086: i/o timeout',
+      'tcp-status': 'timeout',
+    };
+
+    final sanitized = sanitizeNetworkDiagnosticNodeResult(source);
+
+    expect(sanitized.toString(), isNot(contains('node.fastcat.wang')));
+    expect(sanitized.toString(), isNot(contains('10086')));
+    expect(sanitized.toString(), isNot(contains('109.244.50.201')));
+    expect(sanitized.toString(), isNot(contains('2400:3200:baba::1')));
+    expect(sanitized['port'], '1***6');
+    expect(sanitized['tcp-status'], 'timeout');
+    expect(source['host'], 'node.fastcat.wang');
+  });
 }

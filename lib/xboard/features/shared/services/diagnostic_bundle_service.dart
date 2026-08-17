@@ -461,7 +461,10 @@ class DiagnosticBundleService {
           '  diagnostic_status: '
           '${snapshot.nodeResult['diagnostic-status'] ?? 'legacy'}',
         )
-        ..writeln('  target_port: ${snapshot.nodeResult['port'] ?? '-'}')
+        ..writeln(
+          '  target_port: '
+          '${SensitiveMasker.maskPort(snapshot.nodeResult['port']?.toString() ?? '-')}',
+        )
         ..writeln('  transport: ${snapshot.nodeResult['network'] ?? '-'}')
         ..writeln('  proxy_type: ${snapshot.nodeResult['proxy-type'] ?? '-'}')
         ..writeln(
@@ -554,20 +557,7 @@ class DiagnosticBundleService {
   }
 
   static String _maskNetworkValue(String value) {
-    final ipv4Masked = value.replaceAll(
-      RegExp(r'\b(?:\d{1,3}\.){3}\d{1,3}\b'),
-      '[redacted-ip]',
-    );
-    return ipv4Masked.replaceAllMapped(
-      RegExp(r'[0-9a-fA-F:]{2,}'),
-      (match) {
-        final candidate = match.group(0)!;
-        final address = InternetAddress.tryParse(candidate);
-        return address?.type == InternetAddressType.IPv6
-            ? '[redacted-ipv6]'
-            : candidate;
-      },
-    );
+    return SensitiveMasker.maskText(value);
   }
 
   static Future<String> _resolveNetworkType(AppLocalizations l10n) async {
