@@ -8,13 +8,11 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 class MobileNavigationBar extends ConsumerWidget {
   final int selectedIndex;
   final Function(int) onDestinationSelected;
-  final bool logCapture;
 
   const MobileNavigationBar({
     super.key,
     required this.selectedIndex,
     required this.onDestinationSelected,
-    this.logCapture = false,
   });
 
   @override
@@ -77,15 +75,6 @@ class MobileNavigationBar extends ConsumerWidget {
               showBadge: hasUpdate,
               onTap: onDestinationSelected,
             ),
-            if (logCapture)
-              _MobileNavItem(
-                index: 4,
-                selectedIndex: selectedIndex,
-                icon: Icons.list_alt_outlined,
-                selectedIcon: Icons.list_alt,
-                label: appLocalizations.logs,
-                onTap: onDestinationSelected,
-              ),
           ],
         ),
       ),

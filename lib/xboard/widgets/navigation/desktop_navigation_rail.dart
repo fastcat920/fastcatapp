@@ -7,17 +7,15 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 /// 桌面端侧边导航栏
-/// 导航项：主页 / 套餐 / 邀请 / 我的 [/ 日志（logCapture 开启时）]
+/// 导航项：主页 / 套餐 / 邀请 / 我的
 class DesktopNavigationRail extends ConsumerWidget {
   final int selectedIndex;
   final Function(int) onDestinationSelected;
-  final bool logCapture;
 
   const DesktopNavigationRail({
     super.key,
     required this.selectedIndex,
     required this.onDestinationSelected,
-    this.logCapture = false,
   });
 
   @override
@@ -156,7 +154,6 @@ class DesktopNavigationRail extends ConsumerWidget {
 
     const inviteIdx = 2;
     const mineIdx = 3;
-    const logsIdx = 4;
 
     return FocusTraversalGroup(
       policy: OrderedTraversalPolicy(),
@@ -172,9 +169,6 @@ class DesktopNavigationRail extends ConsumerWidget {
           buildItem(mineIdx, Icons.person_outline, Icons.person,
               appLocalizations.xboardMine,
               showBadge: hasUpdate),
-          if (logCapture)
-            buildItem(logsIdx, Icons.list_alt_outlined, Icons.list_alt,
-                appLocalizations.logs),
         ],
       ),
     );

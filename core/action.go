@@ -166,6 +166,9 @@ func handleAction(action *Action, result ActionResult) {
 		handleStopLog()
 		result.success(true)
 		return
+	case drainLogsMethod:
+		result.success(handleDrainLogs())
+		return
 	case startListenerMethod:
 		result.success(handleStartListener())
 		return

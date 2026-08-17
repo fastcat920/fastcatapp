@@ -8,8 +8,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 /// 适配性的 Shell 布局
-/// 桌面端：侧边栏（主页/套餐/邀请/我的[/日志]）+ 内容区
-/// 移动端：底部导航栏（主页/套餐/邀请/我的[/日志]）+ 内容区
+/// 桌面端：侧边栏（主页/套餐/邀请/我的）+ 内容区
+/// 移动端：底部导航栏（主页/套餐/邀请/我的）+ 内容区
 class AdaptiveShellLayout extends ConsumerStatefulWidget {
   final StatefulNavigationShell child;
 
@@ -43,14 +43,12 @@ class _AdaptiveShellLayoutState extends ConsumerState<AdaptiveShellLayout> {
     );
   }
 
-  void _onDestinationSelected(
-      BuildContext context, int index, bool isDesktop, bool logCapture) {
+  void _onDestinationSelected(BuildContext context, int index, bool isDesktop) {
     if (isDesktop) {
       // 桌面端索引动态调整：
-      // Home(0) Plans(1) Invite(2) Mine(3) [Logs(4)]
+      // Home(0) Plans(1) Invite(2) Mine(3)
       const inviteIdx = 2;
       const mineIdx = 3;
-      const logsIdx = 4;
 
       if (index == 0) {
         context.go('/');
@@ -60,11 +58,9 @@ class _AdaptiveShellLayoutState extends ConsumerState<AdaptiveShellLayout> {
         context.go('/invite');
       } else if (index == mineIdx) {
         context.go('/mine');
-      } else if (index == logsIdx && logCapture) {
-        context.go('/logs');
       }
     } else {
-      // 移动端：主页(0) 套餐(1) 邀请(2) 我的(3) [日志(4)]
+      // 移动端：主页(0) 套餐(1) 邀请(2) 我的(3)
       switch (index) {
         case 0:
           context.go('/');
@@ -77,9 +73,6 @@ class _AdaptiveShellLayoutState extends ConsumerState<AdaptiveShellLayout> {
           break;
         case 3:
           context.go('/mine');
-          break;
-        case 4:
-          if (logCapture) context.go('/logs');
           break;
       }
     }
@@ -127,9 +120,8 @@ class _AdaptiveShellLayoutState extends ConsumerState<AdaptiveShellLayout> {
           FocusTraversalGroup(
             child: DesktopNavigationRail(
               selectedIndex: currentIndex,
-              logCapture: logCapture,
               onDestinationSelected: (index) =>
-                  _onDestinationSelected(context, index, true, logCapture),
+                  _onDestinationSelected(context, index, true),
             ),
           ),
           Expanded(
@@ -161,9 +153,8 @@ class _AdaptiveShellLayoutState extends ConsumerState<AdaptiveShellLayout> {
           body: widget.child,
           bottomNavigationBar: MobileNavigationBar(
             selectedIndex: currentIndex,
-            logCapture: logCapture,
             onDestinationSelected: (index) =>
-                _onDestinationSelected(context, index, false, logCapture),
+                _onDestinationSelected(context, index, false),
           ),
         ),
       );

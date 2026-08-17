@@ -120,6 +120,7 @@ const (
 	sideLoadExternalProviderMethod Method = "sideLoadExternalProvider"
 	startLogMethod                 Method = "startLog"
 	stopLogMethod                  Method = "stopLog"
+	drainLogsMethod                Method = "drainLogs"
 	startListenerMethod            Method = "startListener"
 	stopListenerMethod             Method = "stopListener"
 	updateDnsMethod                Method = "updateDns"

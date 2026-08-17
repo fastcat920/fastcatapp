@@ -1,20 +1,33 @@
 import 'package:fl_clash/common/common.dart';
 import 'package:fl_clash/l10n/l10n.dart';
+import 'package:fl_clash/providers/providers.dart';
 import 'package:fl_clash/state.dart';
+import 'package:fl_clash/xboard/features/logs/pages/fastcat_logs_page.dart';
 import 'package:fl_clash/xboard/features/update_check/providers/update_check_provider.dart';
 import 'package:fl_clash/xboard/features/update_check/widgets/update_dialog.dart';
 import 'package:fl_clash/xboard/features/shared/styles/styles.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-class FastCatAboutPage extends ConsumerWidget {
+class FastCatAboutPage extends ConsumerStatefulWidget {
   const FastCatAboutPage({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<FastCatAboutPage> createState() => _FastCatAboutPageState();
+}
+
+class _FastCatAboutPageState extends ConsumerState<FastCatAboutPage> {
+  int _logoTapCount = 0;
+  DateTime? _lastLogoTapAt;
+
+  @override
+  Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
     final update = ref.watch(updateCheckProvider);
     final version = globalState.packageInfo.version;
+    final showLogs = ref.watch(
+      appSettingProvider.select((setting) => setting.logCapture),
+    );
     return Scaffold(
       backgroundColor: XbUiTokens.pageBackground(context),
       appBar: AppBar(
@@ -29,21 +42,25 @@ class FastCatAboutPage extends ConsumerWidget {
             padding: const EdgeInsets.fromLTRB(20, 20, 20, 32),
             children: [
               Center(
-                child: Container(
-                  width: 88,
-                  height: 88,
-                  decoration: BoxDecoration(
-                    color: Theme.of(context)
-                        .colorScheme
-                        .primary
-                        .withValues(alpha: 0.10),
-                    borderRadius: BorderRadius.circular(26),
-                  ),
-                  child: Padding(
-                    padding: const EdgeInsets.all(10),
-                    child: Image.asset(
-                      'assets/images/icon.png',
-                      fit: BoxFit.contain,
+                child: GestureDetector(
+                  behavior: HitTestBehavior.opaque,
+                  onTap: _onLogoTap,
+                  child: Container(
+                    width: 88,
+                    height: 88,
+                    decoration: BoxDecoration(
+                      color: Theme.of(context)
+                          .colorScheme
+                          .primary
+                          .withValues(alpha: 0.10),
+                      borderRadius: BorderRadius.circular(26),
+                    ),
+                    child: Padding(
+                      padding: const EdgeInsets.all(10),
+                      child: Image.asset(
+                        'assets/images/icon.png',
+                        fit: BoxFit.contain,
+                      ),
                     ),
                   ),
                 ),
@@ -82,6 +99,22 @@ class FastCatAboutPage extends ConsumerWidget {
                           ? null
                           : () => _checkUpdate(context, ref),
                     ),
+                    if (showLogs) ...[
+                      Divider(
+                        height: 1,
+                        color: XbUiTokens.cardBorder(context),
+                      ),
+                      ListTile(
+                        leading: const Icon(Icons.article_outlined),
+                        title: Text(l10n.logs),
+                        trailing: const Icon(Icons.chevron_right),
+                        onTap: () => Navigator.of(context).push(
+                          MaterialPageRoute<void>(
+                            builder: (_) => const FastCatLogsPage(),
+                          ),
+                        ),
+                      ),
+                    ],
                   ],
                 ),
               ),
@@ -91,6 +124,31 @@ class FastCatAboutPage extends ConsumerWidget {
       ),
     );
   }
+
+  void _onLogoTap() {
+    if (ref.read(appSettingProvider).logCapture) return;
+    final now = DateTime.now();
+    if (_lastLogoTapAt == null ||
+        now.difference(_lastLogoTapAt!) > const Duration(seconds: 2)) {
+      _logoTapCount = 0;
+    }
+    _lastLogoTapAt = now;
+    _logoTapCount += 1;
+    if (_logoTapCount < 5) return;
+
+    _logoTapCount = 0;
+    ref.read(appSettingProvider.notifier).updateState(
+          (state) => state.copyWith(logCapture: true, openLogs: true),
+        );
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text(_logsEnabledLabel(context))),
+    );
+  }
+
+  String _logsEnabledLabel(BuildContext context) =>
+      Localizations.localeOf(context).languageCode == 'zh'
+          ? '日志菜单已显示'
+          : 'Logs menu enabled';
 
   Future<void> _checkUpdate(BuildContext context, WidgetRef ref) async {
     await ref.read(updateCheckProvider.notifier).checkForUpdates();

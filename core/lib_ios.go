@@ -8,18 +8,10 @@ package main
 import "C"
 import (
 	"encoding/json"
-	"sync"
 	"unsafe"
 
 	"github.com/metacubex/mihomo/config"
 	MC "github.com/metacubex/mihomo/constant"
-)
-
-const iosLogBufferLimit = 500
-
-var (
-	iosLogBufferMu sync.Mutex
-	iosLogBuffer   []Message
 )
 
 // ClashCore_init initialises the mihomo core.
@@ -146,9 +138,6 @@ func ClashCore_get_mixed_port() C.int {
 func ClashCore_shutdown() {
 	handleStopListener()
 	handleStopLog()
-	iosLogBufferMu.Lock()
-	iosLogBuffer = nil
-	iosLogBufferMu.Unlock()
 	handleShutdown()
 }
 
@@ -244,8 +233,8 @@ func ClashCore_invoke(method *C.char, data *C.char) *C.char {
 		case stopLogMethod:
 			handleStopLog()
 			ch <- "true"
-		case Method("_drainLogs"):
-			ch <- drainIOSLogs()
+		case drainLogsMethod:
+			ch <- handleDrainLogs()
 		case startListenerMethod:
 			data, _ := json.Marshal(handleStartListener())
 			ch <- string(data)
@@ -300,35 +289,9 @@ func ClashCore_write_packet(data *C.uint8_t, length C.int) {
 	// Intentionally empty — iOS proxy mode, no packet forwarding.
 }
 
-// sendMessage stores core logs in a bounded buffer. The PacketTunnel cannot
-// push unsolicited messages to the main app, so Flutter drains this buffer
-// through ClashCore_invoke while log capture is active.
+// sendMessage is a no-op on iOS. Core logs are stored by handleStartLog and
+// drained through ClashCore_invoke; other async events use direct IPC calls.
 func sendMessage(message Message) {
-	if message.Type != LogMessage {
-		return
-	}
-	iosLogBufferMu.Lock()
-	defer iosLogBufferMu.Unlock()
-	if len(iosLogBuffer) >= iosLogBufferLimit {
-		copy(iosLogBuffer, iosLogBuffer[len(iosLogBuffer)-iosLogBufferLimit+1:])
-		iosLogBuffer = iosLogBuffer[:iosLogBufferLimit-1]
-	}
-	iosLogBuffer = append(iosLogBuffer, message)
-}
-
-func drainIOSLogs() string {
-	iosLogBufferMu.Lock()
-	messages := iosLogBuffer
-	iosLogBuffer = nil
-	iosLogBufferMu.Unlock()
-	if len(messages) == 0 {
-		return "[]"
-	}
-	data, err := json.Marshal(messages)
-	if err != nil {
-		return "[]"
-	}
-	return string(data)
 }
 
 // send — iOS no-op for ActionResult.send(). On non-iOS platforms this

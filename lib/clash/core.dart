@@ -16,6 +16,8 @@ import 'package:path/path.dart';
 class ClashCore {
   static ClashCore? _instance;
   late ClashHandlerInterface clashInterface;
+  Timer? _logPollingTimer;
+  bool _isDrainingLogs = false;
 
   ClashCore._internal() {
     if (Platform.isAndroid) {
@@ -190,9 +192,7 @@ class ClashCore {
 
   FutureOr<bool> closeConnections() => clashInterface.closeConnections();
 
-  resetConnections() {
-    clashInterface.resetConnections();
-  }
+  Future<bool> resetConnections() => clashInterface.resetConnections();
 
   Future<List<ExternalProvider>> getExternalProviders() async {
     final externalProvidersRawString =
@@ -315,10 +315,36 @@ class ClashCore {
 
   startLog() {
     clashInterface.startLog();
+    _logPollingTimer ??= Timer.periodic(
+      const Duration(milliseconds: 750),
+      (_) => unawaited(_drainLogs()),
+    );
+    unawaited(_drainLogs());
   }
 
   stopLog() {
+    _logPollingTimer?.cancel();
+    _logPollingTimer = null;
     clashInterface.stopLog();
+  }
+
+  Future<void> _drainLogs() async {
+    if (_isDrainingLogs) return;
+    _isDrainingLogs = true;
+    try {
+      final raw = await clashInterface.drainLogs();
+      final decoded = json.decode(raw);
+      if (decoded is! List) return;
+      for (final item in decoded) {
+        if (item is Map) {
+          clashMessage.controller.add(Map<String, Object?>.from(item));
+        }
+      }
+    } catch (_) {
+      // Core/service can be restarting; the next polling tick retries.
+    } finally {
+      _isDrainingLogs = false;
+    }
   }
 
   requestGc() {
@@ -326,6 +352,8 @@ class ClashCore {
   }
 
   destroy() async {
+    _logPollingTimer?.cancel();
+    _logPollingTimer = null;
     await clashInterface.destroy();
   }
 }

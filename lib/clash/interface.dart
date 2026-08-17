@@ -76,6 +76,8 @@ mixin ClashInterface {
 
   stopLog();
 
+  Future<String> drainLogs();
+
   Future<bool> crash();
 
   FutureOr<String> getConnections();
@@ -375,6 +377,15 @@ abstract class ClashHandlerInterface with ClashInterface {
   stopLog() {
     invoke<bool>(
       method: ActionMethod.stopLog,
+    );
+  }
+
+  @override
+  Future<String> drainLogs() {
+    return invoke<String>(
+      method: ActionMethod.drainLogs,
+      timeout: const Duration(seconds: 3),
+      onTimeout: () => '[]',
     );
   }
 

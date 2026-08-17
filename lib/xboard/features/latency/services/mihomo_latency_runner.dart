@@ -15,10 +15,8 @@ Future<void> testNodeLatency(Proxy proxy, [String? testUrl]) async {
   controller.setDelay(Delay(url: url, name: state.proxyName, value: 0));
   final target = _LatencyTestTarget(url: url, proxyName: state.proxyName);
   var result = await _testTargetTwice(target);
-  if (recoveringFromBackground &&
-      (result.value == null || result.value! <= 0)) {
-    await Future<void>.delayed(const Duration(milliseconds: 600));
-    await _waitForLatencyCoreReady();
+  if (_isTimedOut(result)) {
+    await _recoverLatencyCore();
     result = await _testTargetTwice(target);
   }
   controller.setDelay(result);
@@ -74,9 +72,10 @@ Future<void> testNodesLatency(
   var results = await _runLatencyTargets(
     targets,
     onResult: (index, result) {
-      // During foreground recovery, defer transient failures until the whole
-      // first attempt is known. Successful nodes still appear immediately.
-      if (recoveringFromBackground && _isTimedOut(result)) return;
+      // Defer failures until the whole attempt is known. Successful nodes
+      // still appear immediately; an all-timeout batch gets one transparent
+      // mobile-idle recovery before timeout is published.
+      if (_isTimedOut(result)) return;
       _publishTargetResult(
         setDelay: controller.setDelay,
         target: targets[index],
@@ -86,9 +85,8 @@ Future<void> testNodesLatency(
       publishedTargets.add(index);
     },
   );
-  if (recoveringFromBackground && _allTargetsTimedOut(results)) {
-    await Future<void>.delayed(const Duration(milliseconds: 600));
-    await _waitForLatencyCoreReady();
+  if (_allTargetsTimedOut(results)) {
+    await _recoverLatencyCore();
     results = await _runLatencyTargets(
       targets,
       onResult: (index, result) {
@@ -129,18 +127,16 @@ Future<List<Delay>> _runLatencyTargets(
 }
 
 Future<Delay> _testTargetTwice(_LatencyTestTarget target) async {
-  // Both measurements run concurrently. This keeps batch testing fast while
-  // reducing one-off handshake and network-jitter spikes in the displayed
-  // result. A successful sample always wins over a timeout.
-  final samples = await Future.wait(
-    List.generate(2, (_) async {
-      try {
-        return await clashCore.getDelay(target.url, target.proxyName);
-      } catch (_) {
-        return Delay(url: target.url, name: target.proxyName, value: -1);
-      }
-    }),
-  );
+  // Run samples sequentially so they do not share the same instant of stale
+  // mobile network state and represent two independent connection attempts.
+  final samples = <Delay>[];
+  for (var attempt = 0; attempt < 2; attempt++) {
+    try {
+      samples.add(await clashCore.getDelay(target.url, target.proxyName));
+    } catch (_) {
+      samples.add(Delay(url: target.url, name: target.proxyName, value: -1));
+    }
+  }
   return lowestSuccessfulDelay(
     samples,
     url: target.url,
@@ -167,6 +163,16 @@ bool _allTargetsTimedOut(List<Delay> results) {
 }
 
 bool _isTimedOut(Delay delay) => delay.value == null || delay.value! <= 0;
+
+Future<void> _recoverLatencyCore() async {
+  // resetConnections only resets Mihomo's resolver/idle transport cache. It
+  // does not stop VPN or close active user proxy sessions.
+  try {
+    await clashCore.resetConnections();
+  } catch (_) {}
+  await Future<void>.delayed(const Duration(milliseconds: 300));
+  await _waitForLatencyCoreReady();
+}
 
 void _publishTargetResult({
   required void Function(Delay delay) setDelay,

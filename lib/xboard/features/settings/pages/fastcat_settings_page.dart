@@ -2,7 +2,6 @@ import 'package:fl_clash/l10n/l10n.dart';
 import 'package:fl_clash/providers/providers.dart';
 import 'package:fl_clash/xboard/features/about/pages/fastcat_about_page.dart';
 import 'package:fl_clash/xboard/features/diagnostics/pages/diagnostics_center_page.dart';
-import 'package:fl_clash/xboard/features/logs/pages/fastcat_logs_page.dart';
 import 'package:fl_clash/xboard/features/settings/pages/fastcat_auto_start_settings_page.dart';
 import 'package:fl_clash/xboard/features/settings/pages/fastcat_dns_settings_page.dart';
 import 'package:fl_clash/xboard/features/shared/styles/styles.dart';
@@ -86,12 +85,6 @@ class FastCatSettingsPage extends ConsumerWidget {
               _header(context, l10n.other),
               _SettingsCard(
                 children: [
-                  _navigationTile(
-                    context,
-                    icon: Icons.article_outlined,
-                    title: l10n.logs,
-                    onTap: () => _open(context, const FastCatLogsPage()),
-                  ),
                   _navigationTile(
                     context,
                     icon: Icons.info_outline,

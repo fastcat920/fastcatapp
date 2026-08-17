@@ -25,13 +25,18 @@ import (
 	"sort"
 	"strconv"
 	"strings"
+	"sync"
 	"time"
 )
+
+const coreLogBufferLimit = 500
 
 var (
 	isInit            = false
 	externalProviders = map[string]cp.Provider{}
 	logSubscriber     observable.Subscription[log.Event]
+	coreLogBufferMu   sync.Mutex
+	coreLogBuffer     []Message
 )
 
 func handleInitClash(paramsString string) bool {
@@ -550,7 +555,7 @@ func handleStartLog() {
 				Type: LogMessage,
 				Data: logData,
 			}
-			sendMessage(*message)
+			appendCoreLog(*message)
 		}
 	}()
 }
@@ -560,6 +565,31 @@ func handleStopLog() {
 		log.UnSubscribe(logSubscriber)
 		logSubscriber = nil
 	}
+}
+
+func appendCoreLog(message Message) {
+	coreLogBufferMu.Lock()
+	defer coreLogBufferMu.Unlock()
+	if len(coreLogBuffer) >= coreLogBufferLimit {
+		copy(coreLogBuffer, coreLogBuffer[1:])
+		coreLogBuffer = coreLogBuffer[:coreLogBufferLimit-1]
+	}
+	coreLogBuffer = append(coreLogBuffer, message)
+}
+
+func handleDrainLogs() string {
+	coreLogBufferMu.Lock()
+	messages := coreLogBuffer
+	coreLogBuffer = nil
+	coreLogBufferMu.Unlock()
+	if len(messages) == 0 {
+		return "[]"
+	}
+	data, err := json.Marshal(messages)
+	if err != nil {
+		return "[]"
+	}
+	return string(data)
 }
 
 func handleGetCountryCode(ip string, fn func(value string)) {

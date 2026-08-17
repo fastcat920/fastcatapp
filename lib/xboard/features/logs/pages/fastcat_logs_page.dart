@@ -21,14 +21,13 @@ class _FastCatLogsPageState extends ConsumerState<FastCatLogsPage> {
   static const _levelFilterKey = 'fastcat_log_level_filter';
 
   String _query = '';
-  late Set<LogLevel> _selectedLevels;
+  LogLevel _selectedLevel = LogLevel.app;
 
   @override
   void initState() {
     super.initState();
     // 首次打开只展示客户端自身日志。用户主动选择的等级会持久化，
     // 后续仍恢复其上次选择，不因平台不同产生不一致的默认行为。
-    _selectedLevels = {LogLevel.app};
     _restoreLevelFilter();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
@@ -38,24 +37,31 @@ class _FastCatLogsPageState extends ConsumerState<FastCatLogsPage> {
 
   Future<void> _restoreLevelFilter() async {
     final preferences = await SharedPreferences.getInstance();
-    final stored = preferences.getStringList(_levelFilterKey);
-    if (stored == null || !mounted) return;
-    final restored =
-        LogLevel.values.where((level) => stored.contains(level.name)).toSet();
-    // 空筛选仍是用户的有效选择；仅在没有历史设置时使用“应用”默认值。
-    setState(() => _selectedLevels = restored);
+    final stored = preferences.get(_levelFilterKey);
+    if (!mounted) return;
+    // Migrate the previous multi-select list. Ambiguous/all-level selections
+    // intentionally fall back to the new single-select App default.
+    final storedName = switch (stored) {
+      String value => value,
+      List<String> values when values.length == 1 => values.single,
+      _ => null,
+    };
+    final restored = LogLevel.values
+            .where((level) => level.name == storedName)
+            .firstOrNull ??
+        LogLevel.app;
+    setState(() => _selectedLevel = restored);
     _syncCoreLogLevel();
   }
 
   void _syncCoreLogLevel() {
     if (!mounted) return;
-    final desiredLevel = _selectedLevels.contains(LogLevel.debug)
-        ? LogLevel.debug
-        : _selectedLevels.contains(LogLevel.info)
-            ? LogLevel.info
-            : _selectedLevels.contains(LogLevel.warning)
-                ? LogLevel.warning
-                : LogLevel.error;
+    final desiredLevel = switch (_selectedLevel) {
+      LogLevel.debug => LogLevel.debug,
+      LogLevel.info => LogLevel.info,
+      LogLevel.warning => LogLevel.warning,
+      LogLevel.error || LogLevel.silent || LogLevel.app => LogLevel.error,
+    };
     final config = ref.read(patchClashConfigProvider);
     if (config.logLevel == desiredLevel) return;
     ref
@@ -81,10 +87,15 @@ class _FastCatLogsPageState extends ConsumerState<FastCatLogsPage> {
         surfaceTintColor: Colors.transparent,
         actions: [
           IconButton(
+            tooltip: _hideLogsLabel(context),
+            onPressed: _hideLogs,
+            icon: const Icon(Icons.visibility_off_outlined),
+          ),
+          IconButton(
             tooltip: l10n.logLevel,
             onPressed: () => _showLevelFilter(context),
             icon: Badge(
-              isLabelVisible: _selectedLevels.length != LogLevel.values.length,
+              isLabelVisible: _selectedLevel != LogLevel.app,
               smallSize: 7,
               child: const Icon(Icons.filter_alt_outlined),
             ),
@@ -160,10 +171,24 @@ class _FastCatLogsPageState extends ConsumerState<FastCatLogsPage> {
     );
   }
 
+  String _hideLogsLabel(BuildContext context) =>
+      Localizations.localeOf(context).languageCode == 'zh'
+          ? '隐藏日志'
+          : 'Hide logs';
+
+  void _hideLogs() {
+    ref.read(appSettingProvider.notifier).updateState(
+          (state) => state.copyWith(logCapture: false, openLogs: false),
+        );
+    if (Navigator.of(context).canPop()) {
+      Navigator.of(context).pop();
+    }
+  }
+
   bool _matches(BuildContext context, Log log) {
     final query = _query.trim().toLowerCase();
     final localizedPayload = _localizedPayload(context, log.payload);
-    return _selectedLevels.contains(log.logLevel) &&
+    return _selectedLevel == log.logLevel &&
         (query.isEmpty ||
             log.payload.toLowerCase().contains(query) ||
             localizedPayload.toLowerCase().contains(query) ||
@@ -173,12 +198,11 @@ class _FastCatLogsPageState extends ConsumerState<FastCatLogsPage> {
 
   Future<void> _showLevelFilter(BuildContext context) async {
     final l10n = AppLocalizations.of(context);
-    final draft = Set<LogLevel>.of(_selectedLevels);
-    final result = await showDialog<Set<LogLevel>>(
+    var draft = _selectedLevel;
+    final result = await showDialog<LogLevel>(
       context: context,
       builder: (dialogContext) => StatefulBuilder(
         builder: (context, setDialogState) {
-          final allSelected = draft.length == LogLevel.values.length;
           return AlertDialog(
             shape: XbUiDialog.shape(),
             backgroundColor: XbUiDialog.background(context),
@@ -189,40 +213,23 @@ class _FastCatLogsPageState extends ConsumerState<FastCatLogsPage> {
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  CheckboxListTile(
-                    value: allSelected,
-                    title: Text(_allLevelsLabel(context)),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
+                  for (final level in LogLevel.values)
+                    RadioListTile<LogLevel>(
+                      value: level,
+                      // Keep compatibility with the project's Flutter SDK.
+                      // ignore: deprecated_member_use
+                      groupValue: draft,
+                      // ignore: deprecated_member_use
+                      onChanged: (value) {
+                        if (value != null) {
+                          setDialogState(() => draft = value);
+                        }
+                      },
+                      title: Text(_levelLabel(context, level)),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
                     ),
-                    onChanged: (selected) => setDialogState(() {
-                      if (selected == true) {
-                        draft.addAll(LogLevel.values);
-                      } else {
-                        draft.clear();
-                      }
-                    }),
-                  ),
-                  const Divider(height: 1),
-                  Column(
-                    children: [
-                      for (final level in LogLevel.values)
-                        CheckboxListTile(
-                          value: draft.contains(level),
-                          title: Text(_levelLabel(context, level)),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                          onChanged: (selected) => setDialogState(() {
-                            if (selected == true) {
-                              draft.add(level);
-                            } else {
-                              draft.remove(level);
-                            }
-                          }),
-                        ),
-                    ],
-                  ),
                 ],
               ),
             ),
@@ -241,19 +248,11 @@ class _FastCatLogsPageState extends ConsumerState<FastCatLogsPage> {
       ),
     );
     if (result == null || !mounted) return;
-    setState(() => _selectedLevels = result);
+    setState(() => _selectedLevel = result);
     _syncCoreLogLevel();
     final preferences = await SharedPreferences.getInstance();
-    await preferences.setStringList(
-      _levelFilterKey,
-      result.map((level) => level.name).toList(),
-    );
+    await preferences.setString(_levelFilterKey, result.name);
   }
-
-  String _allLevelsLabel(BuildContext context) =>
-      Localizations.localeOf(context).languageCode == 'zh'
-          ? '全部等级'
-          : 'All levels';
 
   String _confirmLabel(BuildContext context) =>
       Localizations.localeOf(context).languageCode == 'zh' ? '确定' : 'Apply';

@@ -1,8 +1,6 @@
 import 'dart:async';
-import 'dart:convert';
 import 'dart:io';
 
-import 'package:fl_clash/clash/message.dart';
 import 'package:fl_clash/clash/interface.dart';
 import 'package:fl_clash/enum/enum.dart';
 import 'package:flutter/services.dart';
@@ -18,8 +16,6 @@ import 'package:flutter/services.dart';
 /// values rather than throwing.
 class ClashIOS extends ClashHandlerInterface {
   static const MethodChannel _channel = MethodChannel("fastcat/clash");
-  Timer? _logPollingTimer;
-  bool _isDrainingLogs = false;
 
   // ── ClashHandlerInterface stubs ─────────────────────────────────────────
 
@@ -32,57 +28,10 @@ class ClashIOS extends ClashHandlerInterface {
   void reStart() {}
 
   @override
-  FutureOr<bool> destroy() async {
-    _stopLogPolling();
-    return true;
-  }
+  FutureOr<bool> destroy() async => true;
 
   @override
   Future<bool> preload() async => true;
-
-  @override
-  void startLog() {
-    unawaited(invoke<bool>(method: ActionMethod.startLog));
-    _logPollingTimer ??= Timer.periodic(
-      const Duration(milliseconds: 750),
-      (_) => unawaited(_drainLogs()),
-    );
-    unawaited(_drainLogs());
-  }
-
-  @override
-  void stopLog() {
-    _stopLogPolling();
-    unawaited(invoke<bool>(method: ActionMethod.stopLog));
-  }
-
-  void _stopLogPolling() {
-    _logPollingTimer?.cancel();
-    _logPollingTimer = null;
-  }
-
-  Future<void> _drainLogs() async {
-    if (_isDrainingLogs) return;
-    _isDrainingLogs = true;
-    try {
-      final raw = await _channel
-          .invokeMethod<dynamic>('_drainLogs')
-          .timeout(const Duration(seconds: 3));
-      if (raw is! String || raw.isEmpty) return;
-      final decoded = json.decode(raw);
-      if (decoded is! List) return;
-      for (final item in decoded) {
-        if (item is Map) {
-          clashMessage.controller.add(Map<String, Object?>.from(item));
-        }
-      }
-    } catch (_) {
-      // The PacketTunnel may be idle or restarting. The next polling tick
-      // retries without surfacing transient IPC failures to the user.
-    } finally {
-      _isDrainingLogs = false;
-    }
-  }
 
   // ── Core invoke override ─────────────────────────────────────────────────
 
