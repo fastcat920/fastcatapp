@@ -99,11 +99,19 @@ class _FastCatNodesPageState extends ConsumerState<FastCatNodesPage> {
       ),
       body: group == null
           ? Center(child: Text(l10n.xboardNoAvailableNodes))
-          : Center(
-              child: ConstrainedBox(
-                constraints: const BoxConstraints(maxWidth: 760),
-                child: _buildNodes(group, mode),
-              ),
+          : LayoutBuilder(
+              builder: (context, constraints) {
+                final useFullLandscapeWidth = !system.isDesktop &&
+                    constraints.maxWidth > constraints.maxHeight;
+                return Center(
+                  child: ConstrainedBox(
+                    constraints: BoxConstraints(
+                      maxWidth: useFullLandscapeWidth ? double.infinity : 760,
+                    ),
+                    child: _buildNodes(group, mode),
+                  ),
+                );
+              },
             ),
     );
   }

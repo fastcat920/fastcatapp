@@ -399,6 +399,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
     // 初始化中：直接显示登录表单，按钮禁用 + 右上角转圈，无需全屏加载画面
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final isIniting = !initState.isReady && !initState.isFailed;
+    final showBottomVersion = MediaQuery.viewInsetsOf(context).bottom == 0;
 
     return LoginResponsiveScaffold(
       appBar: AppBar(
@@ -454,327 +455,350 @@ class _LoginPageState extends ConsumerState<LoginPage> {
       ),
       body: Container(
         color: isDark ? colorScheme.surface : const Color(0xFFFAFBFD),
-        child: Center(
-          child: SingleChildScrollView(
-            padding: const EdgeInsets.symmetric(
-              horizontal: 32.0,
-              vertical: 16.0,
-            ),
-            child: ConstrainedBox(
-              constraints: const BoxConstraints(maxWidth: 400),
-              child: Form(
-                key: _formKey,
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    Center(
+        child: Stack(
+          children: [
+            Positioned.fill(
+              bottom: showBottomVersion ? 64 : 0,
+              child: Center(
+                child: SingleChildScrollView(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 32.0,
+                    vertical: 16.0,
+                  ),
+                  child: ConstrainedBox(
+                    constraints: const BoxConstraints(maxWidth: 400),
+                    child: Form(
+                      key: _formKey,
                       child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
                         children: [
-                          _buildLogo(colorScheme),
-                          const SizedBox(height: 12),
-                          Text(
-                            localizedAppName,
-                            style: textTheme.headlineMedium?.copyWith(
-                              color: colorScheme.onSurface,
-                              fontWeight: XbFontWeight.bold,
-                            ),
-                          ),
-                          if (_appWebsite.isNotEmpty) ...[
-                            const SizedBox(height: 6),
-                            Text(
-                              _appWebsite,
-                              style: textTheme.titleSmall?.copyWith(
-                                color: colorScheme.onSurfaceVariant,
-                              ),
-                            ),
-                          ],
-                        ],
-                      ),
-                    ),
-                    const SizedBox(height: 24),
-                    XBInputField(
-                      focusNode: _emailFocusNode,
-                      onKeyEvent: (_, event) => _moveTvFocus(
-                        event,
-                        down: _passwordFocusNode,
-                      ),
-                      controller: _emailController,
-                      labelText: appLocalizations.xboardEmail,
-                      hintText: appLocalizations.xboardEmail,
-                      prefixIcon: Icons.email_outlined,
-                      keyboardType: TextInputType.emailAddress,
-                      validator: (value) {
-                        if (value == null || value.isEmpty) {
-                          return appLocalizations.xboardEmail;
-                        }
-                        if (!value.contains('@')) {
-                          return appLocalizations.xboardEmail;
-                        }
-                        return null;
-                      },
-                    ),
-                    const SizedBox(height: 16),
-                    XBInputField(
-                      focusNode: _passwordFocusNode,
-                      onKeyEvent: (_, event) => _moveTvFocus(
-                        event,
-                        up: _emailFocusNode,
-                        down: _rememberFocusNode,
-                      ),
-                      controller: _passwordController,
-                      labelText: appLocalizations.xboardPassword,
-                      hintText: appLocalizations.xboardPassword,
-                      prefixIcon: Icons.lock_outlined,
-                      textInputAction: TextInputAction.done,
-                      onFieldSubmitted: (_) {
-                        if (!(isIniting || userState.isLoading)) {
-                          _login();
-                        }
-                      },
-                      obscureText: !_isPasswordVisible,
-                      autovalidateMode: _hasAttemptedLogin
-                          ? AutovalidateMode.onUserInteraction
-                          : AutovalidateMode.disabled,
-                      suffixIcon: IconButton(
-                        icon: Icon(
-                          _isPasswordVisible
-                              ? Icons.visibility_outlined
-                              : Icons.visibility_off_outlined,
-                        ),
-                        onPressed: () {
-                          setState(() {
-                            _isPasswordVisible = !_isPasswordVisible;
-                          });
-                        },
-                      ),
-                      validator: (value) {
-                        return switch (validateLoginPassword(value)) {
-                          LoginPasswordIssue.empty =>
-                            appLocalizations.xboardPassword,
-                          LoginPasswordIssue.tooShort =>
-                            appLocalizations.passwordMin8Chars,
-                          null => null,
-                        };
-                      },
-                    ),
-                    const SizedBox(height: 16),
-                    Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 12),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          // 记住密码
-                          GestureDetector(
-                            onTap: () {
-                              setState(() {
-                                _rememberPassword = !_rememberPassword;
-                              });
-                            },
-                            child: Row(
-                              mainAxisSize: MainAxisSize.min,
+                          Center(
+                            child: Column(
                               children: [
-                                SizedBox(
-                                  width: 24,
-                                  height: 24,
-                                  child: Checkbox(
-                                    focusNode: _rememberFocusNode,
-                                    value: _rememberPassword,
-                                    onChanged: (value) {
-                                      setState(() {
-                                        _rememberPassword = value ?? false;
-                                      });
-                                    },
+                                _buildLogo(colorScheme),
+                                const SizedBox(height: 12),
+                                Text(
+                                  localizedAppName,
+                                  style: textTheme.headlineMedium?.copyWith(
+                                    color: colorScheme.onSurface,
+                                    fontWeight: XbFontWeight.bold,
                                   ),
                                 ),
-                                const SizedBox(width: 8),
-                                Text(
-                                  appLocalizations.xboardRememberPassword,
-                                  style: textTheme.bodyMedium,
+                                if (_appWebsite.isNotEmpty) ...[
+                                  const SizedBox(height: 6),
+                                  Text(
+                                    _appWebsite,
+                                    style: textTheme.titleSmall?.copyWith(
+                                      color: colorScheme.onSurfaceVariant,
+                                    ),
+                                  ),
+                                ],
+                              ],
+                            ),
+                          ),
+                          const SizedBox(height: 24),
+                          XBInputField(
+                            focusNode: _emailFocusNode,
+                            onKeyEvent: (_, event) => _moveTvFocus(
+                              event,
+                              down: _passwordFocusNode,
+                            ),
+                            controller: _emailController,
+                            labelText: appLocalizations.xboardEmail,
+                            hintText: appLocalizations.xboardEmail,
+                            prefixIcon: Icons.email_outlined,
+                            keyboardType: TextInputType.emailAddress,
+                            validator: (value) {
+                              if (value == null || value.isEmpty) {
+                                return appLocalizations.xboardEmail;
+                              }
+                              if (!value.contains('@')) {
+                                return appLocalizations.xboardEmail;
+                              }
+                              return null;
+                            },
+                          ),
+                          const SizedBox(height: 16),
+                          XBInputField(
+                            focusNode: _passwordFocusNode,
+                            onKeyEvent: (_, event) => _moveTvFocus(
+                              event,
+                              up: _emailFocusNode,
+                              down: _rememberFocusNode,
+                            ),
+                            controller: _passwordController,
+                            labelText: appLocalizations.xboardPassword,
+                            hintText: appLocalizations.xboardPassword,
+                            prefixIcon: Icons.lock_outlined,
+                            textInputAction: TextInputAction.done,
+                            onFieldSubmitted: (_) {
+                              if (!(isIniting || userState.isLoading)) {
+                                _login();
+                              }
+                            },
+                            obscureText: !_isPasswordVisible,
+                            autovalidateMode: _hasAttemptedLogin
+                                ? AutovalidateMode.onUserInteraction
+                                : AutovalidateMode.disabled,
+                            suffixIcon: IconButton(
+                              icon: Icon(
+                                _isPasswordVisible
+                                    ? Icons.visibility_outlined
+                                    : Icons.visibility_off_outlined,
+                              ),
+                              onPressed: () {
+                                setState(() {
+                                  _isPasswordVisible = !_isPasswordVisible;
+                                });
+                              },
+                            ),
+                            validator: (value) {
+                              return switch (validateLoginPassword(value)) {
+                                LoginPasswordIssue.empty =>
+                                  appLocalizations.xboardPassword,
+                                LoginPasswordIssue.tooShort =>
+                                  appLocalizations.passwordMin8Chars,
+                                null => null,
+                              };
+                            },
+                          ),
+                          const SizedBox(height: 16),
+                          Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 12),
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                // 记住密码
+                                GestureDetector(
+                                  onTap: () {
+                                    setState(() {
+                                      _rememberPassword = !_rememberPassword;
+                                    });
+                                  },
+                                  child: Row(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      SizedBox(
+                                        width: 24,
+                                        height: 24,
+                                        child: Checkbox(
+                                          focusNode: _rememberFocusNode,
+                                          value: _rememberPassword,
+                                          onChanged: (value) {
+                                            setState(() {
+                                              _rememberPassword =
+                                                  value ?? false;
+                                            });
+                                          },
+                                        ),
+                                      ),
+                                      const SizedBox(width: 8),
+                                      Text(
+                                        appLocalizations.xboardRememberPassword,
+                                        style: textTheme.bodyMedium,
+                                      ),
+                                    ],
+                                  ),
                                 ),
                               ],
                             ),
                           ),
+                          const SizedBox(height: 20),
+                          // 初始化失败或重试中显示提示条
+                          if (initState.isFailed || isIniting) ...[
+                            Container(
+                              margin: const EdgeInsets.only(bottom: 12),
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 12, vertical: 8),
+                              decoration: BoxDecoration(
+                                color: initState.isFailed
+                                    ? colorScheme.errorContainer
+                                    : colorScheme.surfaceContainerHighest,
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                              child: Row(
+                                children: [
+                                  if (initState.isFailed)
+                                    Icon(Icons.warning_outlined,
+                                        size: 16,
+                                        color: colorScheme.onErrorContainer)
+                                  else
+                                    SizedBox(
+                                      width: 14,
+                                      height: 14,
+                                      child: CircularProgressIndicator(
+                                        strokeWidth: 2,
+                                        color: colorScheme.onSurfaceVariant,
+                                      ),
+                                    ),
+                                  const SizedBox(width: 8),
+                                  Expanded(
+                                    child: Text(
+                                      initState.isFailed
+                                          ? (initState.errorMessage ??
+                                              appLocalizations.checkNetwork)
+                                          : (initState.currentStepDescription ??
+                                              '正在重试...'),
+                                      style: TextStyle(
+                                        fontSize: 12,
+                                        color: initState.isFailed
+                                            ? colorScheme.onErrorContainer
+                                            : colorScheme.onSurfaceVariant,
+                                      ),
+                                    ),
+                                  ),
+                                  if (initState.isFailed)
+                                    TextButton(
+                                      onPressed: () {
+                                        ref
+                                            .read(
+                                                initializationProvider.notifier)
+                                            .refresh();
+                                      },
+                                      style: TextButton.styleFrom(
+                                        padding: EdgeInsets.zero,
+                                        minimumSize: const Size(40, 28),
+                                      ),
+                                      child: Text(
+                                        appLocalizations.xboardRetry,
+                                        style: TextStyle(
+                                            fontSize: 12,
+                                            color: colorScheme.error),
+                                      ),
+                                    ),
+                                ],
+                              ),
+                            ),
+                          ],
+                          SizedBox(
+                            child: FilledButton(
+                              focusNode: _loginFocusNode,
+                              onPressed: (isIniting || userState.isLoading)
+                                  ? null
+                                  : _login,
+                              style: XbUiButton.filledPrimary(
+                                context,
+                                busy: userState.isLoading,
+                              ).copyWith(
+                                shape: WidgetStatePropertyAll(
+                                  RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(14),
+                                  ),
+                                ),
+                              ),
+                              child: isIniting
+                                  ? Row(
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: [
+                                        SizedBox(
+                                          width: 16,
+                                          height: 16,
+                                          child: CircularProgressIndicator(
+                                            strokeWidth: 2,
+                                            color: colorScheme.onSurface
+                                                .withValues(alpha: 0.4),
+                                          ),
+                                        ),
+                                        const SizedBox(width: 10),
+                                        Text(appLocalizations
+                                            .xboardLoadingConfiguration),
+                                      ],
+                                    )
+                                  : userState.isLoading
+                                      ? Row(
+                                          mainAxisSize: MainAxisSize.min,
+                                          children: [
+                                            SizedBox(
+                                              width: 18,
+                                              height: 18,
+                                              child: CircularProgressIndicator(
+                                                strokeWidth: 2,
+                                                color: colorScheme.onPrimary,
+                                              ),
+                                            ),
+                                            const SizedBox(width: 10),
+                                            Text(
+                                              appLocalizations.xboardLoggingIn,
+                                              style: TextStyle(
+                                                  color: colorScheme.onPrimary),
+                                            ),
+                                          ],
+                                        )
+                                      : Text(appLocalizations.xboardLogin),
+                            ),
+                          ),
+                          const SizedBox(height: 14),
+                          // 注册 + 忘记密码 并排
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              TextButton.icon(
+                                focusNode: _registerFocusNode,
+                                onPressed:
+                                    isIniting ? null : _navigateToRegister,
+                                icon: const Icon(
+                                  Icons.person_add_outlined,
+                                  size: 18,
+                                ),
+                                label: Text(appLocalizations.xboardRegister),
+                              ),
+                              const SizedBox(width: 16),
+                              TextButton.icon(
+                                focusNode: _forgotPasswordFocusNode,
+                                onPressed: isIniting
+                                    ? null
+                                    : _navigateToForgotPassword,
+                                icon: const Icon(
+                                  Icons.help_outline,
+                                  size: 18,
+                                ),
+                                label:
+                                    Text(appLocalizations.xboardForgotPassword),
+                              ),
+                            ],
+                          ),
                         ],
                       ),
                     ),
-                    const SizedBox(height: 20),
-                    // 初始化失败或重试中显示提示条
-                    if (initState.isFailed || isIniting) ...[
-                      Container(
-                        margin: const EdgeInsets.only(bottom: 12),
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 12, vertical: 8),
-                        decoration: BoxDecoration(
-                          color: initState.isFailed
-                              ? colorScheme.errorContainer
-                              : colorScheme.surfaceContainerHighest,
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                        child: Row(
-                          children: [
-                            if (initState.isFailed)
-                              Icon(Icons.warning_outlined,
-                                  size: 16, color: colorScheme.onErrorContainer)
-                            else
-                              SizedBox(
-                                width: 14,
-                                height: 14,
-                                child: CircularProgressIndicator(
-                                  strokeWidth: 2,
-                                  color: colorScheme.onSurfaceVariant,
-                                ),
-                              ),
-                            const SizedBox(width: 8),
-                            Expanded(
-                              child: Text(
-                                initState.isFailed
-                                    ? (initState.errorMessage ??
-                                        appLocalizations.checkNetwork)
-                                    : (initState.currentStepDescription ??
-                                        '正在重试...'),
-                                style: TextStyle(
-                                  fontSize: 12,
-                                  color: initState.isFailed
-                                      ? colorScheme.onErrorContainer
-                                      : colorScheme.onSurfaceVariant,
-                                ),
-                              ),
-                            ),
-                            if (initState.isFailed)
-                              TextButton(
-                                onPressed: () {
-                                  ref
-                                      .read(initializationProvider.notifier)
-                                      .refresh();
-                                },
-                                style: TextButton.styleFrom(
-                                  padding: EdgeInsets.zero,
-                                  minimumSize: const Size(40, 28),
-                                ),
-                                child: Text(
-                                  appLocalizations.xboardRetry,
-                                  style: TextStyle(
-                                      fontSize: 12, color: colorScheme.error),
-                                ),
-                              ),
-                          ],
-                        ),
-                      ),
-                    ],
-                    SizedBox(
-                      child: FilledButton(
-                        focusNode: _loginFocusNode,
-                        onPressed:
-                            (isIniting || userState.isLoading) ? null : _login,
-                        style: XbUiButton.filledPrimary(
-                          context,
-                          busy: userState.isLoading,
-                        ).copyWith(
-                          shape: WidgetStatePropertyAll(
-                            RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(14),
-                            ),
-                          ),
-                        ),
-                        child: isIniting
-                            ? Row(
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  SizedBox(
-                                    width: 16,
-                                    height: 16,
-                                    child: CircularProgressIndicator(
-                                      strokeWidth: 2,
-                                      color: colorScheme.onSurface
-                                          .withValues(alpha: 0.4),
-                                    ),
-                                  ),
-                                  const SizedBox(width: 10),
-                                  Text(appLocalizations
-                                      .xboardLoadingConfiguration),
-                                ],
-                              )
-                            : userState.isLoading
-                                ? Row(
-                                    mainAxisSize: MainAxisSize.min,
-                                    children: [
-                                      SizedBox(
-                                        width: 18,
-                                        height: 18,
-                                        child: CircularProgressIndicator(
-                                          strokeWidth: 2,
-                                          color: colorScheme.onPrimary,
-                                        ),
-                                      ),
-                                      const SizedBox(width: 10),
-                                      Text(
-                                        appLocalizations.xboardLoggingIn,
-                                        style: TextStyle(
-                                            color: colorScheme.onPrimary),
-                                      ),
-                                    ],
-                                  )
-                                : Text(appLocalizations.xboardLogin),
-                      ),
-                    ),
-                    const SizedBox(height: 14),
-                    // 注册 + 忘记密码 并排
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        TextButton.icon(
-                          focusNode: _registerFocusNode,
-                          onPressed: isIniting ? null : _navigateToRegister,
-                          icon: const Icon(
-                            Icons.person_add_outlined,
-                            size: 18,
-                          ),
-                          label: Text(appLocalizations.xboardRegister),
-                        ),
-                        const SizedBox(width: 16),
-                        TextButton.icon(
-                          focusNode: _forgotPasswordFocusNode,
-                          onPressed:
-                              isIniting ? null : _navigateToForgotPassword,
-                          icon: const Icon(
-                            Icons.help_outline,
-                            size: 18,
-                          ),
-                          label: Text(appLocalizations.xboardForgotPassword),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 8),
-                    Center(
-                      child: InkWell(
-                        borderRadius: BorderRadius.circular(16),
-                        onTap: () => Navigator.of(context).push(
-                          MaterialPageRoute(
-                            builder: (_) => const FastCatAboutPage(),
-                          ),
-                        ),
-                        child: Padding(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 12,
-                            vertical: 6,
-                          ),
-                          child: Text(
-                            appLocalizations.updateCheckCurrentVersion(
-                              'V${globalState.packageInfo.version}',
-                            ),
-                            style: textTheme.bodySmall?.copyWith(
-                              color: colorScheme.onSurfaceVariant,
-                            ),
-                          ),
-                        ),
-                      ),
-                    ),
-                  ],
+                  ),
                 ),
               ),
             ),
-          ),
+            if (showBottomVersion)
+              Positioned(
+                left: 0,
+                right: 0,
+                bottom: 12,
+                child: SafeArea(
+                  top: false,
+                  child: Center(
+                    child: InkWell(
+                      borderRadius: BorderRadius.circular(16),
+                      onTap: () => Navigator.of(context).push(
+                        MaterialPageRoute(
+                          builder: (_) => const FastCatAboutPage(),
+                        ),
+                      ),
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 12,
+                          vertical: 6,
+                        ),
+                        child: Text(
+                          appLocalizations.updateCheckCurrentVersion(
+                            'V${globalState.packageInfo.version}',
+                          ),
+                          style: textTheme.bodySmall?.copyWith(
+                            color: colorScheme.onSurfaceVariant,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+          ],
         ),
       ),
     );
