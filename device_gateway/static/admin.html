@@ -20,15 +20,61 @@
 <div id="app" style="display:none">
   <nav>
     <span class="brand">Device Gateway</span>
-    <a href="#dashboard" class="nav-link active" data-tab="dashboard">仪表盘</a>
+    <a href="#dashboard" class="nav-link active" data-tab="dashboard">服务状态</a>
+    <a href="#statistics" class="nav-link" data-tab="statistics">数据统计</a>
     <a href="#users" class="nav-link" data-tab="users">用户管理</a>
     <a href="#audit" class="nav-link" data-tab="audit">审计日志</a>
     <button id="logout-btn">退出</button>
   </nav>
 
   <section id="tab-dashboard" class="tab-content active">
-    <div class="stats"></div>
-    <div id="dashboard-details" class="details-panel" style="display:none"></div>
+    <div class="page-heading">
+      <div>
+        <h1>服务状态</h1>
+        <p>独立检测每个配置源和 API，不影响实际业务故障切换。</p>
+      </div>
+      <button id="health-refresh" class="refresh-button" type="button">↻ 刷新状态</button>
+    </div>
+    <div id="health-summary" class="stats"></div>
+    <div id="health-warning" class="notice warning" style="display:none"></div>
+    <section class="health-panel">
+      <div class="health-panel-heading">
+        <div>
+          <h2>OSS 配置源</h2>
+          <p>检查下载、解密与配置内容有效性；本地缓存单独展示，不计入在线源统计。</p>
+        </div>
+      </div>
+      <div id="oss-health-panel" class="health-list"></div>
+    </section>
+    <section class="health-panel">
+      <div class="health-panel-heading">
+        <div>
+          <h2>网关 API</h2>
+          <p>逐个访问网关健康检查接口，标记当前后台公开地址。</p>
+        </div>
+      </div>
+      <div id="gateway-health-panel" class="health-list"></div>
+    </section>
+    <section class="health-panel">
+      <div class="health-panel-heading">
+        <div>
+          <h2>业务 API</h2>
+          <p>逐个执行只读探测，并展示当前使用、熔断和恢复状态。</p>
+        </div>
+      </div>
+      <div id="business-health-panel" class="health-list"></div>
+    </section>
+    <p id="health-checked-at" class="checked-at"></p>
+  </section>
+
+  <section id="tab-statistics" class="tab-content">
+    <div class="page-heading">
+      <div>
+        <h1>数据统计</h1>
+        <p>查看用户、设备活跃度与客户端分布情况。</p>
+      </div>
+    </div>
+    <div id="statistics-summary" class="stats"></div>
     <div class="dashboard-grid">
       <section class="metric-panel">
         <div class="metric-title">在线设备活跃</div>

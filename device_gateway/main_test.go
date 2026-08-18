@@ -540,19 +540,52 @@ func TestProxyPassesThroughBusinessErrorBody(t *testing.T) {
 	}
 }
 
-func TestAdminDashboardTreatsReachableBusiness4xxAsOnline(t *testing.T) {
-	business := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		w.Header().Set("Content-Type", "application/json")
-		if r.URL.Path != "/api/v1/passport/auth/login" {
+func TestAdminServiceHealthShowsEveryOSSAndAPI(t *testing.T) {
+	healthyBusiness := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.URL.Path != "/api/v1/guest/comm/config" {
 			w.WriteHeader(http.StatusNotFound)
 			return
 		}
-		w.WriteHeader(http.StatusBadRequest)
-		_ = json.NewEncoder(w).Encode(map[string]any{
-			"message": "credentials required",
-		})
+		w.Header().Set("Content-Type", "application/json")
+		_, _ = w.Write([]byte(`{"success":true}`))
 	}))
-	defer business.Close()
+	defer healthyBusiness.Close()
+	failingBusiness := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+		w.WriteHeader(http.StatusServiceUnavailable)
+	}))
+	defer failingBusiness.Close()
+
+	healthyGateway := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.URL.Path != "/healthz" {
+			w.WriteHeader(http.StatusNotFound)
+			return
+		}
+		_ = json.NewEncoder(w).Encode(map[string]any{"success": true, "data": map[string]any{"status": "ok"}})
+	}))
+	defer healthyGateway.Close()
+	failingGateway := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+		w.WriteHeader(http.StatusBadGateway)
+	}))
+	defer failingGateway.Close()
+
+	configBody := fmt.Sprintf(`{
+		"config_version":"9",
+		"domains":[%q,%q],
+		"gateway_urls":[%q,%q]
+	}`, healthyBusiness.URL, failingBusiness.URL, healthyGateway.URL, failingGateway.URL)
+	healthyOSS := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+		_, _ = w.Write([]byte(configBody))
+	}))
+	defer healthyOSS.Close()
+	failingOSS := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+		w.WriteHeader(http.StatusServiceUnavailable)
+	}))
+	defer failingOSS.Close()
+
+	t.Setenv("DG_OSS_CONFIG_URLS", healthyOSS.URL+","+failingOSS.URL)
+	t.Setenv("DG_EMERGENCY_OSS_CONFIG_URL", healthyOSS.URL)
+	t.Setenv("DG_OSS_XOR_KEY", "test-key")
+	t.Setenv("DG_OSS_CACHE_FILE", filepath.Join(t.TempDir(), "missing-cache.json"))
 
 	store, _, err := LoadStore(filepath.Join(t.TempDir(), "store.json"), "")
 	if err != nil {
@@ -560,7 +593,9 @@ func TestAdminDashboardTreatsReachableBusiness4xxAsOnline(t *testing.T) {
 	}
 	server := &Server{
 		cfg: Config{
-			BusinessBaseURLs:   []string{business.URL},
+			BusinessBaseURLs:   []string{healthyBusiness.URL, failingBusiness.URL},
+			GatewayURLs:        []string{healthyGateway.URL, failingGateway.URL},
+			PublicBaseURL:      healthyGateway.URL,
 			APIPrefix:          "/api/v1",
 			DataFile:           store.path,
 			AdminToken:         "admin-token",
@@ -570,19 +605,105 @@ func TestAdminDashboardTreatsReachableBusiness4xxAsOnline(t *testing.T) {
 			DefaultDeviceLimit: 1,
 			HTTPTimeout:        3 * time.Second,
 		},
-		store:  store,
-		client: business.Client(),
-		key:    deriveKey("test-secret"),
+		store:         store,
+		client:        &http.Client{Timeout: 3 * time.Second},
+		key:           deriveKey("test-secret"),
+		log:           log.New(io.Discard, "", 0),
+		backendStates: make(map[string]*BusinessBackendState),
+	}
+	server.syncBusinessBackends(server.cfg.BusinessBaseURLs)
+	gateway := httptest.NewServer(server.routes())
+	defer gateway.Close()
+
+	resp, body := getAdminJSON(t, gateway.URL+"/api/v1/admin/service-health", "admin-token")
+	if resp.StatusCode != http.StatusOK {
+		t.Fatalf("service health status = %d body=%s", resp.StatusCode, body)
+	}
+	payload := mapFromJSON(t, body)
+	data := payload["data"].(map[string]any)
+	summary := data["summary"].(map[string]any)
+	assertHealthSummary(t, summary["oss"], 1, 2)
+	assertHealthSummary(t, summary["gateways"], 1, 2)
+	assertHealthSummary(t, summary["business"], 1, 2)
+
+	encoded := string(body)
+	for _, address := range []string{healthyOSS.URL, failingOSS.URL, healthyGateway.URL, failingGateway.URL, healthyBusiness.URL, failingBusiness.URL} {
+		if !strings.Contains(encoded, address) {
+			t.Fatalf("admin health response omitted %q: %s", address, body)
+		}
+	}
+	if !strings.Contains(encoded, `"config_version":"9"`) || !strings.Contains(encoded, `"matches_current":true`) {
+		t.Fatalf("OSS config validation details missing: %s", body)
+	}
+	if got := server.businessURLs()[0]; got != healthyBusiness.URL {
+		t.Fatalf("read-only admin health changed active business URL to %q", got)
+	}
+}
+
+func TestAdminServiceHealthRequiresToken(t *testing.T) {
+	server := &Server{cfg: Config{APIPrefix: "/api/v1", AdminToken: "admin-token"}}
+	gateway := httptest.NewServer(server.routes())
+	defer gateway.Close()
+
+	resp, body := getAdminJSON(t, gateway.URL+"/api/v1/admin/service-health", "wrong-token")
+	if resp.StatusCode != http.StatusForbidden {
+		t.Fatalf("service health status = %d body=%s", resp.StatusCode, body)
+	}
+}
+
+func TestAdminStatisticsReturnsDeviceMetricsWithoutHealthProbes(t *testing.T) {
+	store, _, err := LoadStore(filepath.Join(t.TempDir(), "store.json"), "")
+	if err != nil {
+		t.Fatal(err)
+	}
+	now := time.Now().UTC()
+	store.Users["usr_1"] = &UserCache{ID: "usr_1", Email: "one@example.com", CreatedAt: now, UpdatedAt: now}
+	store.Devices["dev_1"] = &DeviceRecord{
+		ID:           "dev_1",
+		UserID:       "usr_1",
+		Status:       statusActive,
+		LastSeenAt:   now,
+		LastIPRegion: "中国 广东省 深圳市",
+		LastIPISP:    "电信",
+		AppVersion:   "3.5.9",
+		CreatedAt:    now,
+	}
+	server := &Server{
+		cfg:   Config{APIPrefix: "/api/v1", AdminToken: "admin-token", DevicePolicy: policyStrict},
+		store: store,
 	}
 	gateway := httptest.NewServer(server.routes())
 	defer gateway.Close()
 
-	resp, body := getAdminJSON(t, gateway.URL+"/api/v1/admin/dashboard", "admin-token")
+	resp, body := getAdminJSON(t, gateway.URL+"/api/v1/admin/statistics", "admin-token")
 	if resp.StatusCode != http.StatusOK {
-		t.Fatalf("dashboard status = %d body=%s", resp.StatusCode, body)
+		t.Fatalf("statistics status = %d body=%s", resp.StatusCode, body)
 	}
-	if got := stringFromNested(body, "data", "business", "status"); got != "online" {
-		t.Fatalf("business status = %q body=%s", got, body)
+	payload := mapFromJSON(t, body)
+	data := payload["data"].(map[string]any)
+	summary := data["summary"].(map[string]any)
+	if int(summary["total_users"].(float64)) != 1 || int(summary["online_devices"].(float64)) != 1 {
+		t.Fatalf("unexpected statistics summary: %s", body)
+	}
+	if _, exists := data["gateway"]; exists {
+		t.Fatalf("statistics endpoint still includes gateway probes: %s", body)
+	}
+	if _, exists := data["business"]; exists {
+		t.Fatalf("statistics endpoint still includes business probes: %s", body)
+	}
+}
+
+func assertHealthSummary(t *testing.T, raw any, healthy, total int) {
+	t.Helper()
+	value, ok := raw.(map[string]any)
+	if !ok {
+		t.Fatalf("health summary = %#v", raw)
+	}
+	if got := int(value["healthy"].(float64)); got != healthy {
+		t.Fatalf("healthy = %d, want %d", got, healthy)
+	}
+	if got := int(value["total"].(float64)); got != total {
+		t.Fatalf("total = %d, want %d", got, total)
 	}
 }
 

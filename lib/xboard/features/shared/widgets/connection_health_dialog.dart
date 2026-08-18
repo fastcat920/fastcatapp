@@ -521,37 +521,28 @@ class _EndpointHealthCard extends StatelessWidget {
       ),
       data: (snapshot) {
         final items = business ? snapshot.businessApis : snapshot.gateways;
+        final current = _currentEndpoint(items);
         final supported = !business || snapshot.businessStatusSupported;
         final unsupported = business &&
             snapshot.businessStatusError == ServiceEndpointState.unsupported;
-        final healthyCount = items.where((item) => item.healthy).length;
-        final headerValue = items.isEmpty
+        final headerValue = current == null
             ? unsupported
                 ? l10n.xboardServiceStatusUnsupported
                 : supported
                     ? fallbackText
                     : l10n.xboardServiceStatusUnavailable
-            : l10n.xboardServiceAvailableCount(healthyCount, items.length);
-        final healthy = items.isEmpty
-            ? fallbackHealthy && supported
-            : healthyCount > 0 &&
-                items.any((item) => item.active && item.healthy);
+            : [
+                _serviceEndpointStateLabel(l10n, current.state),
+                if (current.latencyMs != null && current.latencyMs! >= 0)
+                  l10n.xboardServiceLatency(current.latencyMs!),
+              ].join(' · ');
+        final healthy = current?.healthy ?? (fallbackHealthy && supported);
         return _buildContainer(
           context,
           healthy: healthy,
           headerValue: headerValue,
           children: [
-            if (business && snapshot.businessStatusSource.isNotEmpty)
-              Padding(
-                padding: const EdgeInsets.fromLTRB(12, 0, 12, 8),
-                child: Text(
-                  '${l10n.xboardServiceStatusSource}: ${snapshot.businessStatusSource}',
-                  style: theme.textTheme.bodySmall?.copyWith(
-                    color: theme.colorScheme.onSurfaceVariant,
-                  ),
-                ),
-              ),
-            if (items.isEmpty)
+            if (current == null)
               Padding(
                 padding: const EdgeInsets.fromLTRB(12, 0, 12, 14),
                 child: Text(
@@ -562,8 +553,7 @@ class _EndpointHealthCard extends StatelessWidget {
                 ),
               )
             else
-              for (final item in _activeFirst(items))
-                _EndpointStatusRow(item: item, business: business),
+              _EndpointStatusRow(item: current, business: business),
           ],
         );
       },
@@ -623,15 +613,14 @@ class _EndpointHealthCard extends StatelessWidget {
     );
   }
 
-  List<ServiceEndpointHealthItem> _activeFirst(
+  ServiceEndpointHealthItem? _currentEndpoint(
     List<ServiceEndpointHealthItem> source,
   ) {
-    final result = List<ServiceEndpointHealthItem>.from(source);
-    result.sort((a, b) {
-      if (a.active != b.active) return a.active ? -1 : 1;
-      return a.index.compareTo(b.index);
-    });
-    return result;
+    if (source.isEmpty) return null;
+    for (final item in source) {
+      if (item.active) return item;
+    }
+    return source.first;
   }
 }
 
@@ -645,7 +634,7 @@ class _EndpointStatusRow extends StatelessWidget {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
     final theme = Theme.of(context);
-    final color = _statusColor(context, item.state);
+    final color = _serviceEndpointStatusColor(context, item.state);
     final role = item.active
         ? l10n.xboardServiceInUse
         : item.primary
@@ -655,7 +644,7 @@ class _EndpointStatusRow extends StatelessWidget {
         ? l10n.xboardBusinessApiLabel(item.index)
         : l10n.xboardGatewayApiLabel(item.index);
     final details = <String>[
-      _stateLabel(l10n, item.state),
+      _serviceEndpointStateLabel(l10n, item.state),
       if (item.latencyMs != null && item.latencyMs! >= 0)
         l10n.xboardServiceLatency(item.latencyMs!),
       if (item.recoveryRequired > 0 &&
@@ -709,13 +698,6 @@ class _EndpointStatusRow extends StatelessWidget {
                 ),
                 const SizedBox(height: 3),
                 Text(
-                  item.address,
-                  style: theme.textTheme.bodySmall?.copyWith(
-                    color: theme.colorScheme.onSurfaceVariant,
-                  ),
-                ),
-                const SizedBox(height: 3),
-                Text(
                   details.join(' · '),
                   style: theme.textTheme.bodySmall?.copyWith(color: color),
                 ),
@@ -726,37 +708,40 @@ class _EndpointStatusRow extends StatelessWidget {
       ),
     );
   }
+}
 
-  Color _statusColor(BuildContext context, ServiceEndpointState state) {
-    return switch (state) {
-      ServiceEndpointState.healthy => XbUiStatusColor.success(context),
-      ServiceEndpointState.recovering ||
-      ServiceEndpointState.circuitOpen =>
-        XbUiStatusColor.pending(context),
-      ServiceEndpointState.unknown ||
-      ServiceEndpointState.unsupported =>
-        Theme.of(context).colorScheme.onSurfaceVariant,
-      _ => Theme.of(context).colorScheme.error,
-    };
-  }
+Color _serviceEndpointStatusColor(
+  BuildContext context,
+  ServiceEndpointState state,
+) {
+  return switch (state) {
+    ServiceEndpointState.healthy => XbUiStatusColor.success(context),
+    ServiceEndpointState.recovering ||
+    ServiceEndpointState.circuitOpen =>
+      XbUiStatusColor.pending(context),
+    ServiceEndpointState.unknown ||
+    ServiceEndpointState.unsupported =>
+      Theme.of(context).colorScheme.onSurfaceVariant,
+    _ => Theme.of(context).colorScheme.error,
+  };
+}
 
-  String _stateLabel(
-    AppLocalizations l10n,
-    ServiceEndpointState state,
-  ) {
-    return switch (state) {
-      ServiceEndpointState.healthy => l10n.xboardServiceStateHealthy,
-      ServiceEndpointState.recovering => l10n.xboardServiceStateRecovering,
-      ServiceEndpointState.circuitOpen => l10n.xboardServiceStateCircuitOpen,
-      ServiceEndpointState.timeout => l10n.xboardServiceStateTimeout,
-      ServiceEndpointState.serviceError => l10n.xboardServiceStateServerError,
-      ServiceEndpointState.unreachable => l10n.xboardServiceStateUnreachable,
-      ServiceEndpointState.unavailable => l10n.xboardServiceStateUnavailable,
-      ServiceEndpointState.unsupported ||
-      ServiceEndpointState.unknown =>
-        l10n.xboardServiceStateUnknown,
-    };
-  }
+String _serviceEndpointStateLabel(
+  AppLocalizations l10n,
+  ServiceEndpointState state,
+) {
+  return switch (state) {
+    ServiceEndpointState.healthy => l10n.xboardServiceStateHealthy,
+    ServiceEndpointState.recovering => l10n.xboardServiceStateRecovering,
+    ServiceEndpointState.circuitOpen => l10n.xboardServiceStateCircuitOpen,
+    ServiceEndpointState.timeout => l10n.xboardServiceStateTimeout,
+    ServiceEndpointState.serviceError => l10n.xboardServiceStateServerError,
+    ServiceEndpointState.unreachable => l10n.xboardServiceStateUnreachable,
+    ServiceEndpointState.unavailable => l10n.xboardServiceStateUnavailable,
+    ServiceEndpointState.unsupported ||
+    ServiceEndpointState.unknown =>
+      l10n.xboardServiceStateUnknown,
+  };
 }
 
 class _HelperHealthRow extends StatelessWidget {

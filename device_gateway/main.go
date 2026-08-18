@@ -1320,7 +1320,15 @@ func (s *Server) handleAdmin(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	if path == "dashboard" && r.Method == http.MethodGet {
-		s.handleAdminDashboard(w, r)
+		s.handleAdminServiceHealth(w, r)
+		return
+	}
+	if path == "service-health" && r.Method == http.MethodGet {
+		s.handleAdminServiceHealth(w, r)
+		return
+	}
+	if path == "statistics" && r.Method == http.MethodGet {
+		s.handleAdminStatistics(w, r)
 		return
 	}
 	if path == "audit-logs" && r.Method == http.MethodGet {
@@ -1402,7 +1410,7 @@ func (s *Server) handleAdminListUsers(w http.ResponseWriter, r *http.Request) {
 	})
 }
 
-func (s *Server) handleAdminDashboard(w http.ResponseWriter, r *http.Request) {
+func (s *Server) handleAdminStatistics(w http.ResponseWriter, r *http.Request) {
 	s.store.mu.RLock()
 	now := time.Now().UTC()
 	totalUsers := len(s.store.Users)
@@ -1440,13 +1448,6 @@ func (s *Server) handleAdminDashboard(w http.ResponseWriter, r *http.Request) {
 	}
 	s.store.mu.RUnlock()
 
-	business := s.probeBusinessBackends(r.Context())
-	gatewayURLs := s.ossGatewayURLs()
-	gatewayStatus := "running"
-	if s.cfg.PublicBaseURL == "" && len(gatewayURLs) == 0 {
-		gatewayStatus = "local"
-	}
-
 	writeJSON(w, http.StatusOK, map[string]any{
 		"success": true,
 		"data": map[string]any{
@@ -1467,14 +1468,6 @@ func (s *Server) handleAdminDashboard(w http.ResponseWriter, r *http.Request) {
 			"regions":  distributionBuckets(provinces),
 			"isps":     distributionBuckets(isps),
 			"versions": distributionBuckets(versions),
-			"gateway": map[string]any{
-				"status":          gatewayStatus,
-				"listen_addr":     s.cfg.ListenAddr,
-				"public_base_url": s.cfg.PublicBaseURL,
-				"gateway_urls":    gatewayURLs,
-				"api_prefix":      s.cfg.APIPrefix,
-			},
-			"business": business,
 		},
 	})
 }
@@ -2527,6 +2520,14 @@ func (s *Server) probeBusinessBackend(ctx context.Context, baseURL string) bool 
 }
 
 func (s *Server) businessServiceStatuses(ctx context.Context) []BusinessServiceStatus {
+	return s.businessServiceStatusesWithAddress(ctx, true)
+}
+
+func (s *Server) adminBusinessServiceStatuses(ctx context.Context) []BusinessServiceStatus {
+	return s.businessServiceStatusesWithAddress(ctx, false)
+}
+
+func (s *Server) businessServiceStatusesWithAddress(ctx context.Context, maskAddress bool) []BusinessServiceStatus {
 	s.ossMu.RLock()
 	configured := append([]string(nil), s.cfg.BusinessBaseURLs...)
 	s.ossMu.RUnlock()
@@ -2571,10 +2572,14 @@ func (s *Server) businessServiceStatuses(ctx context.Context) []BusinessServiceS
 					remaining = 1
 				}
 			}
+			address := baseURL
+			if maskAddress {
+				address = maskEndpointAddress(baseURL)
+			}
 			item := BusinessServiceStatus{
 				Index:                   index + 1,
 				Role:                    map[bool]string{true: "primary", false: "backup"}[index == 0],
-				Address:                 maskEndpointAddress(baseURL),
+				Address:                 address,
 				Active:                  baseURL == active,
 				Status:                  status,
 				LatencyMS:               latency,

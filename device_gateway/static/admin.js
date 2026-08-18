@@ -28,7 +28,10 @@ let auditState = {
   pageSize: PAGE_SIZE,
   pagination: null,
 };
-let dashboardData = null;
+let serviceHealthData = null;
+let statisticsData = null;
+let healthRefreshTimer = null;
+let healthLoading = false;
 let currentUserContext = null;
 let userSearchTimer = null;
 
@@ -44,11 +47,12 @@ document.getElementById('auth-form').addEventListener('submit', async (e) => {
   localStorage.setItem('admin_token', token);
   authEl.style.display = 'none';
   appEl.style.display = 'block';
-  loadDashboard();
+  activateTab('dashboard');
 });
 
 document.getElementById('logout-btn').addEventListener('click', () => {
   localStorage.removeItem('admin_token');
+  stopHealthAutoRefresh();
   authEl.style.display = 'block';
   appEl.style.display = 'none';
   document.getElementById('token-input').value = '';
@@ -57,7 +61,7 @@ document.getElementById('logout-btn').addEventListener('click', () => {
 if (localStorage.getItem('admin_token')) {
   authEl.style.display = 'none';
   appEl.style.display = 'block';
-  loadDashboard();
+  activateTab('dashboard');
 }
 
 document.querySelectorAll('.nav-link').forEach(link => {
@@ -79,38 +83,173 @@ function activateTab(tab) {
   document.querySelectorAll('.nav-link').forEach(l => l.classList.toggle('active', l.dataset.tab === tab));
   document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
   document.getElementById('tab-' + tab).classList.add('active');
-  if (tab === 'dashboard') loadDashboard();
+  if (tab === 'dashboard') {
+    loadServiceHealth();
+    startHealthAutoRefresh();
+  } else {
+    stopHealthAutoRefresh();
+  }
+  if (tab === 'statistics') loadStatistics();
   if (tab === 'users') loadUsers();
   if (tab === 'audit') loadAuditLogs();
 }
 
-async function loadDashboard() {
-  const res = await api('/dashboard');
-  if (!res.success) return;
-  dashboardData = res.data;
-  renderDashboard(dashboardData);
+document.getElementById('health-refresh').addEventListener('click', () => loadServiceHealth(true));
+
+async function loadServiceHealth(manual = false) {
+  if (healthLoading) return;
+  healthLoading = true;
+  const button = document.getElementById('health-refresh');
+  button.disabled = true;
+  button.textContent = manual ? '↻ 检测中…' : '↻ 刷新状态';
+  try {
+    const res = await api('/service-health');
+    if (!res.success) return;
+    serviceHealthData = res.data;
+    renderServiceHealth(serviceHealthData);
+  } catch (error) {
+    const warning = document.getElementById('health-warning');
+    warning.textContent = `状态检测请求失败：${error?.message || '无法连接设备管理后端'}`;
+    warning.style.display = 'block';
+  } finally {
+    healthLoading = false;
+    button.disabled = false;
+    button.textContent = '↻ 刷新状态';
+  }
 }
 
-function renderDashboard(data) {
-  const s = data.summary || {};
-  const biz = data.business || {};
-  const gateway = data.gateway || {};
-  const bizLabel = { online: '在线', error: '异常', offline: '离线', unknown: '—' };
-  const gatewayLabel = { running: '运行中', local: '本机运行' };
+function startHealthAutoRefresh() {
+  stopHealthAutoRefresh();
+  healthRefreshTimer = window.setInterval(() => loadServiceHealth(), 30000);
+}
 
-  document.querySelector('.stats').innerHTML = `
-    ${statCard('users', '总用户', s.total_users ?? 0, '进入用户管理')}
-    ${statCard('active-devices', '活跃设备', s.active_devices ?? 0, `${s.online_devices ?? 0} 台设备在线`)}
-    ${statCard('revoked-devices', '已撤销设备', s.revoked_devices ?? 0, '')}
-    ${statCard('policy', '设备策略', s.device_policy || '—', '')}
-    ${statCard('gateway', '网关状态', gatewayLabel[gateway.status] || '运行中', '查看网关信息', 'ok')}
-    ${statCard('business', '业务后端', bizLabel[biz.status] || '—', '查看业务后端', biz.status === 'online' ? 'ok' : 'warn')}
+function stopHealthAutoRefresh() {
+  if (healthRefreshTimer) window.clearInterval(healthRefreshTimer);
+  healthRefreshTimer = null;
+}
+
+function renderServiceHealth(data) {
+  const summary = data.summary || {};
+  const oss = summary.oss || {};
+  const gateways = summary.gateways || {};
+  const business = summary.business || {};
+  document.getElementById('health-summary').innerHTML = `
+    ${healthSummaryCard('OSS 配置源', oss, '下载、解密及内容校验')}
+    ${healthSummaryCard('网关 API', gateways, '网关健康检查')}
+    ${healthSummaryCard('业务 API', business, '只读业务接口探测')}
   `;
 
-  document.querySelectorAll('.stat-card.clickable').forEach(card => {
-    card.addEventListener('click', () => handleStatClick(card.dataset.detail));
-  });
+  renderHealthItems('oss-health-panel', data.oss?.items || [], 'oss');
+  renderHealthItems('gateway-health-panel', data.gateways?.items || [], 'gateway');
+  renderHealthItems('business-health-panel', data.business?.items || [], 'business');
 
+  const warning = document.getElementById('health-warning');
+  if (data.gateways?.public_base_mismatch) {
+    warning.innerHTML = `配置的公开地址 <strong>${esc(data.gateways.public_base_url)}</strong> 与当前访问地址 <strong>${esc(data.gateways.request_base_url)}</strong> 不一致，请确认反向代理或 DG_PUBLIC_BASE_URL 配置。`;
+    warning.style.display = 'block';
+  } else {
+    warning.style.display = 'none';
+  }
+  document.getElementById('health-checked-at').textContent = `最后检测：${formatDateTime(data.checked_at)}`;
+}
+
+function healthSummaryCard(label, summary, sub) {
+  const healthy = summary.healthy ?? 0;
+  const total = summary.total ?? 0;
+  const tone = total > 0 && healthy === total ? 'ok' : 'warn';
+  return `
+    <div class="stat-card ${tone}">
+      <span class="label">${esc(label)}</span>
+      <span class="value">${healthy} / ${total}</span>
+      <span class="sub">${esc(sub)}</span>
+    </div>
+  `;
+}
+
+function renderHealthItems(id, items, kind) {
+  const el = document.getElementById(id);
+  if (!items.length) {
+    el.innerHTML = '<div class="empty compact">暂无配置</div>';
+    return;
+  }
+  el.innerHTML = items.map(item => healthItemHTML(item, kind)).join('');
+}
+
+function healthItemHTML(item, kind) {
+  const status = healthStatus(item.status);
+  const badges = [];
+  if (item.active) badges.push('<span class="health-badge primary">当前使用</span>');
+  if (item.matches_current) badges.push('<span class="health-badge current">内容与当前一致</span>');
+  badges.push(`<span class="health-badge">${esc(roleLabel(item.role))}</span>`);
+  const meta = [];
+  if (item.latency_ms > 0) meta.push(`${item.latency_ms} ms`);
+  if (item.status_code) meta.push(`HTTP ${item.status_code}`);
+  if (item.config_version) meta.push(`配置版本 ${item.config_version}`);
+  if (kind === 'oss' && (item.business_count || item.gateway_count)) {
+    meta.push(`业务 API ${item.business_count || 0} · 网关 API ${item.gateway_count || 0}`);
+  }
+  if (kind === 'business' && item.failure_count) meta.push(`连续失败 ${item.failure_count}`);
+  if (kind === 'business' && item.recovery_success_count) {
+    meta.push(`恢复 ${item.recovery_success_count}/${item.recovery_required || 0}`);
+  }
+  if (item.circuit_remaining_seconds) meta.push(`熔断剩余 ${item.circuit_remaining_seconds} 秒`);
+  const error = item.error || item.failure_reason || '';
+  return `
+    <div class="health-row">
+      <span class="health-dot ${status.tone}"></span>
+      <div class="health-main">
+        <div class="health-title-line">
+          <strong>${esc(item.name || endpointLabel(kind, item.index))}</strong>
+          <div class="health-badges">${badges.join('')}</div>
+        </div>
+        <div class="health-address">${esc(item.address || '—')}</div>
+        <div class="health-meta">${meta.map(value => `<span>${esc(value)}</span>`).join('')}</div>
+        ${error ? `<div class="health-error">${esc(error)}</div>` : ''}
+      </div>
+      <span class="health-status ${status.tone}">${esc(status.label)}</span>
+    </div>
+  `;
+}
+
+function healthStatus(status) {
+  const values = {
+    healthy: ['正常', 'good'], recovering: ['恢复中', 'warning'], circuit_open: ['熔断', 'bad'],
+    timeout: ['超时', 'bad'], service_error: ['服务异常', 'bad'], unavailable: ['不可用', 'bad'],
+    unreachable: ['无法连接', 'bad'], http_error: ['HTTP 异常', 'bad'], decrypt_error: ['解密失败', 'bad'],
+    invalid_config: ['配置无效', 'bad'], invalid_response: ['响应无效', 'bad'], read_error: ['读取失败', 'bad'],
+    invalid_address: ['地址无效', 'bad'], missing: ['未生成', 'muted'], not_configured: ['未配置', 'muted'],
+  };
+  const value = values[status] || ['未知', 'muted'];
+  return { label: value[0], tone: value[1] };
+}
+
+function roleLabel(role) {
+  return { primary: '主线路', backup: '备用线路', emergency: '紧急备用', cache: '本地缓存' }[role] || role || '未分类';
+}
+
+function endpointLabel(kind, index) {
+  return `${kind === 'gateway' ? 'gateway' : kind === 'business' ? 'business' : 'source'}_${index || 0}`;
+}
+
+async function loadStatistics() {
+  const res = await api('/statistics');
+  if (!res.success) return;
+  statisticsData = res.data;
+  renderStatistics(statisticsData);
+}
+
+function renderStatistics(data) {
+  const s = data.summary || {};
+  document.getElementById('statistics-summary').innerHTML = `
+    ${statCard('users', '总用户', s.total_users ?? 0, '进入用户管理')}
+    ${statCard('', '设备总数', s.total_devices ?? 0, '')}
+    ${statCard('', '活跃设备', s.active_devices ?? 0, `${s.online_devices ?? 0} 台设备在线`)}
+    ${statCard('', '已撤销设备', s.revoked_devices ?? 0, '')}
+    ${statCard('', '设备策略', s.device_policy || '—', '')}
+  `;
+  document.querySelectorAll('#statistics-summary .stat-card.clickable').forEach(card => {
+    card.addEventListener('click', () => activateTab('users'));
+  });
   renderActivity(data.activity || {});
   renderDistribution('region-panel', data.regions || []);
   renderDistribution('isp-panel', data.isps || []);
@@ -118,7 +257,7 @@ function renderDashboard(data) {
 }
 
 function statCard(detail, label, value, sub, tone = '') {
-  const clickable = ['users', 'gateway', 'business'].includes(detail);
+  const clickable = detail === 'users';
   return `
     <button class="stat-card ${clickable ? 'clickable' : ''} ${tone}" data-detail="${detail}">
       <span class="label">${esc(label)}</span>
@@ -126,61 +265,6 @@ function statCard(detail, label, value, sub, tone = '') {
       ${sub ? `<span class="sub">${esc(sub)}</span>` : ''}
     </button>
   `;
-}
-
-function handleStatClick(detail) {
-  if (detail === 'users') {
-    activateTab('users');
-    return;
-  }
-  if (detail === 'gateway') {
-    showGatewayDetails();
-  }
-  if (detail === 'business') {
-    showBusinessDetails();
-  }
-}
-
-function showGatewayDetails() {
-  const gateway = dashboardData?.gateway || {};
-  const urls = gateway.gateway_urls || [];
-  showDashboardDetails('网关信息', `
-    <div class="detail-row"><span>监听地址</span><strong>${esc(gateway.listen_addr || '—')}</strong></div>
-    <div class="detail-row"><span>API 前缀</span><strong>${esc(gateway.api_prefix || '—')}</strong></div>
-    <div class="detail-row"><span>公开地址</span><strong>${esc(gateway.public_base_url || '未配置')}</strong></div>
-    <div class="detail-list">${urls.length ? urls.map(u => `<div>${esc(u)}</div>`).join('') : '<div>暂无 OSS 网关 URL</div>'}</div>
-  `);
-}
-
-function showBusinessDetails() {
-  const business = dashboardData?.business || {};
-  const items = business.backends || [];
-  const rows = items.length ? items.map(item => `
-    <div class="backend-item">
-      <div>
-        <strong>${esc(item.url || '—')}</strong>
-        <span>${item.status_code ? 'HTTP ' + item.status_code : esc(item.error || '')}</span>
-      </div>
-      <span class="status-badge status-${item.status === 'online' ? 'active' : 'expired'}">${item.status === 'online' ? '在线' : item.status === 'error' ? '异常' : '离线'}</span>
-    </div>
-  `).join('') : '<div class="empty compact">暂无业务后端 URL</div>';
-  showDashboardDetails('业务后端信息', rows);
-}
-
-function showDashboardDetails(title, body) {
-  const panel = document.getElementById('dashboard-details');
-  panel.innerHTML = `
-    <div class="panel-header">
-      <span>${esc(title)}</span>
-      <button class="close-details" title="关闭">&times;</button>
-    </div>
-    <div class="details-body">${body}</div>
-  `;
-  panel.style.display = 'block';
-  panel.querySelector('.close-details').addEventListener('click', () => {
-    panel.style.display = 'none';
-  });
-  panel.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
 }
 
 function renderActivity(activity) {
@@ -505,6 +589,13 @@ function cssEscape(s) {
 
 function formatPercent(value) {
   return `${Number(value || 0).toFixed(1)}%`;
+}
+
+function formatDateTime(ts) {
+  if (!ts) return '—';
+  const value = new Date(ts);
+  if (Number.isNaN(value.getTime())) return ts;
+  return value.toLocaleString('zh-CN', { hour12: false });
 }
 
 function timeAgo(ts) {
