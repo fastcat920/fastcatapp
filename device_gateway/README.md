@@ -50,9 +50,14 @@ future subscription refreshes.
 Set `DG_PUBLIC_BASE_URL` to the public URL of this gateway. If it is empty, the
 gateway infers the URL from the incoming request.
 
-For independent business API failover, configure comma-separated backends with
-`DG_BUSINESS_BASE_URLS`. It takes precedence over the legacy single
-`DG_BUSINESS_BASE_URL`. The gateway promotes a successful backend, opens its
+Business routes are normally read from the OSS `domains` array. Normal OSS
+mirrors are requested concurrently; the emergency OSS is used only when every
+normal mirror is unusable, followed by the last complete local OSS cache.
+`DG_BUSINESS_BASE_URLS` and the legacy `DG_BUSINESS_BASE_URL` are startup seeds
+for a new installation when no remote or cached configuration exists. Remote
+configurations must increase `config_version` whenever their content changes.
+
+The gateway promotes a successful business backend, opens its
 circuit after `DG_BUSINESS_FAILURE_THRESHOLD` consecutive failures (default 2),
 and retries it after `DG_BUSINESS_CIRCUIT_SECONDS` (default 90). Safe requests
 are retried on the next healthy backend; state-changing requests are never
@@ -148,6 +153,11 @@ Set `DG_POSTGRES_DSN` in production. PostgreSQL persistence uses incremental
 upserts for changed users, devices, sessions, and audit records; it does not
 rewrite the full dataset for heartbeats. The JSON file remains available as a
 single-process fallback and initial migration source.
+
+All gateway instances in one cluster must use the same `DG_POSTGRES_DSN` and
+`DG_TOKEN_SECRET`. A local session miss triggers an immediate PostgreSQL reload,
+so a client can switch gateways immediately instead of waiting for the periodic
+sync interval.
 
 The `deploy/` directory contains a systemd unit for the production path
 `/www/wwwroot/get.fastcat.com`. Install it into `/etc/systemd/system/`, then

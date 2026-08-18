@@ -34,8 +34,9 @@ latency:
   display_discount_percent: 30
 
 # 远程配置源
-# 支持多个源，按顺序尝试，第一个成功的生效
-# 所有源均使用相同的 XOR+Base64 加密（密钥硬编码在客户端）
+# 普通源并发请求，优先选择 config_version 更新的有效配置
+# 普通源全部不可用时，再使用程序内置紧急 OSS 和上次完整配置缓存
+# 所有源均使用相同的 XOR+Base64 密钥（构建时通过 XOR_KEY 注入）
 contact_fallback:
   website: "https://fastcat2.com"
   crisp_website_id: "d5182e08-1faa-4fa9-b3c2-2a34f1975d5f"

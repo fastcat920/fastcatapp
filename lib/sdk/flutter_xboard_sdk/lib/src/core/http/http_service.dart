@@ -41,7 +41,8 @@ class HttpService {
   final Future<String?> Function()? nextUrlProvider;
 
   /// 故障转移回调：当连接失败时调用，返回下一个可用的完整端点配置
-  final Future<HttpEndpointConfig?> Function()? nextEndpointProvider;
+  final Future<HttpEndpointConfig?> Function(Set<String> attemptedBaseUrls)?
+      nextEndpointProvider;
 
   /// 故障转移成功回调：切换到新 URL 并请求成功后调用，传入新 URL
   final void Function(String url)? onFailoverSuccess;
@@ -75,7 +76,8 @@ class HttpService {
     bool useBearerPrefix = true,
     String apiPrefix = '/api/v1',
     Future<String?> Function()? nextUrlProvider,
-    Future<HttpEndpointConfig?> Function()? nextEndpointProvider,
+    Future<HttpEndpointConfig?> Function(Set<String> attemptedBaseUrls)?
+        nextEndpointProvider,
     void Function(String url)? onFailoverSuccess,
     void Function(HttpEndpointConfig endpoint)? onEndpointFailoverSuccess,
     void Function(HttpEndpointConfig endpoint, Object error)? onEndpointFailure,
@@ -214,10 +216,14 @@ class HttpService {
           // 循环尝试所有候选 URL，直到成功或全部耗尽
           var retryCount =
               error.requestOptions.extra['_failover_count'] as int? ?? 0;
+          final attemptedBaseUrls = error.requestOptions
+                  .extra['_failover_attempted'] as Set<String>? ??
+              <String>{_baseUrl};
+          error.requestOptions.extra['_failover_attempted'] = attemptedBaseUrls;
 
           while (retryCount < 8) {
             final nextEndpoint = nextEndpointProvider != null
-                ? await nextEndpointProvider!()
+                ? await nextEndpointProvider!(attemptedBaseUrls)
                 : await nextUrlProvider!().then((nextUrl) {
                     if (nextUrl == null) return null;
                     return HttpEndpointConfig(
@@ -226,6 +232,7 @@ class HttpService {
                     );
                   });
             if (nextEndpoint == null) break;
+            attemptedBaseUrls.add(nextEndpoint.baseUrl);
 
             final cleanUrl = nextEndpoint.baseUrl.endsWith('/')
                 ? nextEndpoint.baseUrl.substring(
@@ -248,21 +255,6 @@ class HttpService {
             try {
               final response = await _dio.fetch(error.requestOptions);
 
-              // 检查业务层：success: false 说明备选网关的业务后端拒绝请求
-              // （如用户凭据在该实例无效），应继续尝试下一个 URL
-              final respData = response.data;
-              if (respData is Map && respData['success'] == false) {
-                SdkLogger.w('[HttpService] 候选 URL 返回业务失败，继续尝试下一个');
-                onEndpointFailure?.call(
-                  HttpEndpointConfig(
-                    baseUrl: cleanUrl,
-                    apiPrefix: nextEndpoint.apiPrefix,
-                  ),
-                  'business_failure',
-                );
-                continue;
-              }
-
               onFailoverSuccess?.call(cleanUrl);
               onEndpointFailoverSuccess?.call(
                 HttpEndpointConfig(
@@ -272,16 +264,26 @@ class HttpService {
               );
               handler.resolve(response);
               return;
-            } catch (_) {
-              // 连接错误，继续尝试下一个 URL
+            } on DioException catch (retryError) {
+              final retryKind =
+                  _classifyRequest(retryError.requestOptions.path);
+              if (_isAuthBusinessError(retryError) ||
+                  !_shouldTriggerFailover(retryError, retryKind)) {
+                handler.next(retryError);
+                return;
+              }
+              // 只有网络层或网关级错误才继续下一个候选。
               onEndpointFailure?.call(
                 HttpEndpointConfig(
                   baseUrl: cleanUrl,
                   apiPrefix: nextEndpoint.apiPrefix,
                 ),
-                error,
+                retryError,
               );
               continue;
+            } catch (_) {
+              handler.next(error);
+              return;
             }
           }
 
@@ -760,6 +762,7 @@ class HttpService {
     DioException error,
     RequestFailoverKind kind,
   ) {
+    if (!_canReplayAcrossGateway(error.requestOptions)) return false;
     final type = error.type;
     final isConnErr = type == DioExceptionType.connectionError ||
         type == DioExceptionType.connectionTimeout ||
@@ -772,17 +775,34 @@ class HttpService {
     if (error.requestOptions.extra['x_backend_business_message'] == true) {
       return false;
     }
-    if (statusCode >= 500) return true;
+    if (statusCode == 502 || statusCode == 503 || statusCode == 504) {
+      return true;
+    }
 
     switch (kind) {
       case RequestFailoverKind.bootstrap:
+        return statusCode == 404;
       case RequestFailoverKind.auth:
       case RequestFailoverKind.subscription:
       case RequestFailoverKind.device:
-        return statusCode == 404;
       case RequestFailoverKind.user:
       case RequestFailoverKind.general:
-        return statusCode == 404 || statusCode == 408 || statusCode == 429;
+        return statusCode == 408;
+    }
+  }
+
+  bool _canReplayAcrossGateway(RequestOptions request) {
+    switch (request.method.toUpperCase()) {
+      case 'GET':
+      case 'HEAD':
+      case 'OPTIONS':
+        return true;
+      case 'POST':
+        final path = request.path;
+        return path.contains('/passport/auth/login') ||
+            path.contains('/user/devices/heartbeat');
+      default:
+        return false;
     }
   }
 

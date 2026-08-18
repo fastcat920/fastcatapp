@@ -169,7 +169,7 @@ class XBoardConfigAccessor {
           final extracted = _parser.extractConfigFromRemoteResult(data);
           if (extracted == null) return false;
           _parser.parseFromJson(extracted, _currentProvider);
-          return true;
+          return _hasCompleteRuntimeRoute(extracted);
         } catch (_) {
           return false;
         }
@@ -190,6 +190,41 @@ class XBoardConfigAccessor {
       _logger.error('Configuration refresh failed', e);
       rethrow;
     }
+  }
+
+  bool _hasCompleteRuntimeRoute(Map<String, dynamic> config) {
+    final panels = config['panels'];
+    var hasBusinessRoute = false;
+    if (panels is Map) {
+      for (final value in panels.values) {
+        if (value is! List) continue;
+        for (final item in value) {
+          final raw = item is Map ? item['url']?.toString() : item?.toString();
+          if (_isHttpEndpoint(raw)) {
+            hasBusinessRoute = true;
+            break;
+          }
+        }
+        if (hasBusinessRoute) break;
+      }
+    }
+
+    final gatewayValues = <dynamic>[];
+    final gatewayUrls = config['gateway_urls'];
+    if (gatewayUrls is List) gatewayValues.addAll(gatewayUrls);
+    gatewayValues.add(config['gateway_url']);
+    final hasGatewayRoute = gatewayValues.any(
+      (value) => _isHttpEndpoint(value?.toString()),
+    );
+    return hasBusinessRoute && hasGatewayRoute;
+  }
+
+  bool _isHttpEndpoint(String? raw) {
+    if (raw == null || raw.trim().isEmpty) return false;
+    final uri = Uri.tryParse(raw.trim());
+    return uri != null &&
+        uri.host.isNotEmpty &&
+        (uri.scheme == 'http' || uri.scheme == 'https');
   }
 
   /// 用外部已解析的配置数据直接注入（fallback 路径）
@@ -496,7 +531,7 @@ class XBoardConfigAccessor {
       }
 
       // 提取配置版本（优先显式 config_version）
-      final rawConfigVersion = configData['config_version'] as String?;
+      final rawConfigVersion = configData['config_version']?.toString();
       if (rawConfigVersion != null && rawConfigVersion.trim().isNotEmpty) {
         _configVersion = rawConfigVersion.trim();
       } else {

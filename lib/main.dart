@@ -250,22 +250,6 @@ Future<void> _initializeXBoardServicesWithPrefs(SharedPreferences prefs) async {
     var configSettings = await ConfigFileLoader.loadFromFile();
     print('[Main] 配置文件加载成功，Provider: ${configSettings.currentProvider}');
 
-    final ossMode = prefs.getInt('xboard_oss_mode') ?? 0;
-    if (ossMode == 1) {
-      configSettings = ConfigSettings(
-        currentProvider: configSettings.currentProvider,
-        apiPrefix: configSettings.apiPrefix,
-        remoteConfig: RemoteConfigSettings(
-          sources: [RemoteSourceConfig(name: 'builtin', url: builtinOssUrl)],
-          maxRetries: configSettings.remoteConfig.maxRetries,
-          timeout: configSettings.remoteConfig.timeout,
-          retryDelay: configSettings.remoteConfig.retryDelay,
-        ),
-        subscription: configSettings.subscription,
-        log: configSettings.log,
-      );
-    }
-
     await _loadSecurityConfig();
     print('[Main] 安全配置加载成功');
 

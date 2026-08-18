@@ -80,13 +80,6 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
           return;
         }
 
-        // 注册成功 — 查全局开关决定新用户的 OSS 模式，同步到 Supabase
-        try {
-          final dualOssEnabled = await SupabaseService.isDualOssEnabled();
-          final ossMode = dualOssEnabled ? 1 : 0;
-          await SupabaseService.syncUser(_emailController.text, ossMode);
-        } catch (_) {}
-
         if (mounted) {
           final storageService = ref.read(storageServiceProvider);
           await storageService.saveCredentials(

@@ -62,7 +62,8 @@ class XBoardSDK {
     Future<String?> Function()? nextUrlProvider,
 
     /// 故障转移回调：连接失败时调用，返回下一个完整端点配置
-    Future<HttpEndpointConfig?> Function()? nextEndpointProvider,
+    Future<HttpEndpointConfig?> Function(Set<String> attemptedBaseUrls)?
+        nextEndpointProvider,
 
     /// 网关地址更新回调：登录成功后从响应中提取 gateway_urls 时调用
     void Function(List<String>)? onGatewayUrlsUpdated,
@@ -130,7 +131,8 @@ class XBoardSDK {
     );
 
     // 创建 API 工厂
-    _apiFactory = ApiFactory(_panelType!, _httpService, onGatewayUrls: onGatewayUrlsUpdated);
+    _apiFactory = ApiFactory(_panelType!, _httpService,
+        onGatewayUrls: onGatewayUrlsUpdated);
 
     _isInitialized = true;
     SdkLogger.i('XBoardSDK initialized with panel type: $_panelType');

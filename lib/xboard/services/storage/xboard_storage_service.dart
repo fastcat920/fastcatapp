@@ -32,7 +32,6 @@ class XBoardStorageService {
   static const String _savedPasswordKey = 'xboard_saved_password';
   static const String _rememberPasswordKey = 'xboard_remember_password';
   static const String _autoLoginKey = 'xboard_auto_login';
-  static const String _ossModeKey = 'xboard_oss_mode'; // 0=打包OSS, 1=内置OSS
   static const String _cachedApiEndpointKey = 'xboard_cached_api_endpoint';
 
   Future<Result<bool>> saveUserEmail(String email) async {
@@ -332,24 +331,6 @@ class XBoardStorageService {
 
   Future<Result<bool>> saveAutoLogin(bool autoLogin) async {
     return await _storage.setBool(_autoLoginKey, autoLogin);
-  }
-
-  // ===== OSS 模式缓存 =====
-
-  /// 获取 OSS 模式：0=打包OSS, 1=内置OSS
-  Future<int> getOssMode() async {
-    final result = await _storage.getInt(_ossModeKey);
-    return result.dataOrNull ?? 0;
-  }
-
-  /// 设置 OSS 模式
-  Future<void> setOssMode(int mode) async {
-    await _storage.setInt(_ossModeKey, mode);
-  }
-
-  /// 清除 OSS 模式（登出时调用）
-  Future<void> clearOssMode() async {
-    await _storage.remove(_ossModeKey);
   }
 
   // ===== 启动缓存：最后一次可用 API 端点 =====

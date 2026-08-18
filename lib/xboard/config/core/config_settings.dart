@@ -142,12 +142,14 @@ class RemoteConfigSettings {
 class RemoteSourceConfig {
   final String name;
   final String url;
+  final bool isEmergency;
   final Map<String, String>? headers;
   final Duration? timeout;
 
   const RemoteSourceConfig({
     required this.name,
     required this.url,
+    this.isEmergency = false,
     this.headers,
     this.timeout,
   });
@@ -159,6 +161,7 @@ class RemoteSourceConfig {
     return RemoteSourceConfig(
       name: json['name'] as String? ?? '',
       url: json['url'] as String? ?? '',
+      isEmergency: json['isEmergency'] as bool? ?? false,
       headers: headersData?.cast<String, String>(),
       timeout:
           timeoutSeconds != null ? Duration(seconds: timeoutSeconds) : null,
@@ -169,6 +172,7 @@ class RemoteSourceConfig {
     return {
       'name': name,
       'url': url,
+      if (isEmergency) 'isEmergency': true,
       if (headers != null) 'headers': headers,
       if (timeout != null) 'timeoutSeconds': timeout!.inSeconds,
     };

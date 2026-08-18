@@ -416,9 +416,7 @@ class XBoardProfileImportService {
       try {
         await globalState.appController
             .applyProfile(silence: true)
-            .timeout(const Duration(seconds: 30), onTimeout: () {
-          _logger.warning('⚠️ applyProfile 超时(30s)，继续执行');
-        });
+            .timeout(const Duration(seconds: 30));
         _logger.info('✅ [${sw.elapsedMilliseconds}ms] applyProfile 完成');
 
         // 检查节点是否已加载
@@ -430,11 +428,12 @@ class XBoardProfileImportService {
           await Future.delayed(const Duration(seconds: 5));
           await globalState.appController
               .applyProfile(silence: true)
-              .timeout(const Duration(seconds: 30), onTimeout: () {
-            _logger.warning('⚠️ applyProfile 重试超时(30s)');
-          });
+              .timeout(const Duration(seconds: 30));
           final retryGroups = _ref.read(groupsProvider);
           _logger.info('📊 重试后 groups 数量: ${retryGroups.length}');
+          if (retryGroups.isEmpty) {
+            throw Exception('新订阅应用后节点组仍为空');
+          }
         }
       } catch (e) {
         _logger.error('❌ applyProfile 失败', e);

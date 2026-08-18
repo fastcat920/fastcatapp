@@ -8,7 +8,6 @@ import (
 	"crypto/hmac"
 	"crypto/rand"
 	"crypto/sha256"
-	"crypto/tls"
 	"embed"
 	"encoding/base64"
 	"encoding/hex"
@@ -286,59 +285,206 @@ func main() {
 	}
 }
 
-// fetchBusinessBaseURLs tries to load business backend URLs from OSS remote
-// config. It iterates through the comma-separated DG_OSS_CONFIG_URLS, downloads
-// each, XOR-decrypts the body, and extracts all domains.
-// Returns nil if all sources fail or are not configured.
+const defaultEmergencyOSSConfigURL = "https://gdhwag-1251796499.cos.ap-guangzhou.myqcloud.com/cat.json"
+
+type ossFetchResult struct {
+	domains       []string
+	gatewayURLs   []string
+	configVersion string
+	decrypted     []byte
+	source        string
+	index         int
+	err           error
+}
+
+// fetchBusinessBaseURLs resolves the dynamic route bundle using the same
+// order as the client: concurrent normal OSS sources, the emergency OSS, then
+// the last complete server-side cache.
 func fetchBusinessBaseURLs(logger *log.Logger) (domains, gatewayURLs []string) {
 	ossURLs := env("DG_OSS_CONFIG_URLS", "")
-	if ossURLs == "" {
-		return nil, nil
-	}
 	xorKey := env("DG_OSS_XOR_KEY", "")
-	if xorKey == "" {
-		logger.Printf("DG_OSS_XOR_KEY not set, skipping OSS fetch")
-		return nil, nil
-	}
 	timeout := envInt("DG_OSS_FETCH_TIMEOUT", 15)
-	urls := strings.Split(ossURLs, ",")
-
+	if timeout < 1 {
+		timeout = 5
+	}
 	client := &http.Client{
 		Timeout: time.Duration(timeout) * time.Second,
-		Transport: &http.Transport{
-			TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
-		},
+	}
+	cached := loadCachedOSSResult(logger)
+	var cachedHealthChannel chan bool
+	if cached != nil {
+		cachedHealthChannel = make(chan bool, 1)
+		go func() {
+			cachedHealthChannel <- anyOSSBusinessRouteHealthy(client, cached.domains)
+		}()
+	}
+	cachedHealthKnown := false
+	cachedHealthy := false
+	waitForCachedHealth := func(wait time.Duration) bool {
+		if cached == nil {
+			return false
+		}
+		if cachedHealthKnown {
+			return cachedHealthy
+		}
+		select {
+		case cachedHealthy = <-cachedHealthChannel:
+			cachedHealthKnown = true
+		case <-time.After(wait):
+			return false
+		}
+		return cachedHealthy
+	}
+	if xorKey == "" {
+		logger.Printf("DG_OSS_XOR_KEY not set, skipping OSS fetch")
+		if !waitForCachedHealth(5 * time.Second) {
+			return nil, nil
+		}
+		return cached.domains, cached.gatewayURLs
 	}
 
+	normalURLs := splitAndNormalizeURLs(ossURLs)
+	result := fetchOSSGroup(logger, client, normalURLs, xorKey)
+	if result == nil {
+		emergencyURL := strings.TrimSpace(env("DG_EMERGENCY_OSS_CONFIG_URL", defaultEmergencyOSSConfigURL))
+		if emergencyURL != "" && !containsString(normalURLs, emergencyURL) {
+			logger.Printf("normal OSS sources unavailable, trying emergency OSS")
+			result = fetchOSSGroup(logger, client, []string{emergencyURL}, xorKey)
+		}
+	}
+	if result == nil {
+		if !waitForCachedHealth(5 * time.Second) {
+			return nil, nil
+		}
+		logger.Printf("using complete OSS cache config_version=%s", cached.configVersion)
+		return cached.domains, cached.gatewayURLs
+	}
+	if !anyOSSBusinessRouteHealthy(client, result.domains) {
+		logger.Printf("OSS source %s has no reachable business route, keeping complete cache", result.source)
+		if !waitForCachedHealth(5 * time.Second) {
+			return nil, nil
+		}
+		return cached.domains, cached.gatewayURLs
+	}
+	if cached != nil &&
+		compareConfigVersions(cached.configVersion, result.configVersion) >= 0 &&
+		waitForCachedHealth(time.Second) {
+		logger.Printf(
+			"OSS config_version=%s is not newer than complete cache=%s, keeping cache",
+			result.configVersion,
+			cached.configVersion,
+		)
+		return cached.domains, cached.gatewayURLs
+	}
+	if cached != nil &&
+		compareConfigVersions(cached.configVersion, result.configVersion) >= 0 {
+		// Availability wins temporarily when the newer cache route is down, but
+		// do not overwrite it with an older/equal version. A later recovery can
+		// still restore the intended higher-version route.
+		logger.Printf("complete OSS cache is unreachable, temporarily using healthy source=%s without replacing cache", result.source)
+		return result.domains, result.gatewayURLs
+	}
+	persistOSSConfigCache(logger, result.decrypted)
+	logger.Printf("OSS resolved source=%s config_version=%s business URLs=%v gateway URLs=%v", result.source, result.configVersion, result.domains, result.gatewayURLs)
+	return result.domains, result.gatewayURLs
+}
+
+func anyOSSBusinessRouteHealthy(client *http.Client, domains []string) bool {
+	if len(domains) == 0 {
+		return false
+	}
+	results := make(chan bool, len(domains))
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+	prefix := strings.TrimRight(env("DG_API_PREFIX", "/api/v1"), "/")
+	for _, domain := range domains {
+		go func(baseURL string) {
+			target, err := url.Parse(baseURL)
+			if err != nil {
+				results <- false
+				return
+			}
+			target.Path = joinURLPath(target.Path, prefix+"/guest/comm/config")
+			probeCtx, probeCancel := context.WithTimeout(ctx, 5*time.Second)
+			defer probeCancel()
+			req, err := http.NewRequestWithContext(probeCtx, http.MethodGet, target.String(), nil)
+			if err != nil {
+				results <- false
+				return
+			}
+			resp, err := client.Do(req)
+			if err != nil {
+				results <- false
+				return
+			}
+			_, _ = io.Copy(io.Discard, io.LimitReader(resp.Body, 4096))
+			_ = resp.Body.Close()
+			results <- resp.StatusCode >= 200 && resp.StatusCode < 300
+		}(domain)
+	}
+	for range domains {
+		if <-results {
+			cancel()
+			return true
+		}
+	}
+	return false
+}
+
+func fetchOSSGroup(logger *log.Logger, client *http.Client, urls []string, xorKey string) *ossFetchResult {
+	if len(urls) == 0 {
+		return nil
+	}
+	results := make(chan ossFetchResult, len(urls))
 	for i, rawURL := range urls {
-		rawURL = strings.TrimSpace(rawURL)
-		if rawURL == "" {
-			continue
-		}
-		logger.Printf("OSS fetch [%d/%d]: %s", i+1, len(urls), rawURL)
-
-		body, err := downloadOSS(client, rawURL)
-		if err != nil {
-			logger.Printf("OSS fetch failed: %v", err)
-			continue
-		}
-
-		decrypted, err := xorDecrypt(body, xorKey)
-		if err != nil {
-			logger.Printf("OSS decrypt failed: %v", err)
-			continue
-		}
-
-		domains, gatewayURLs, err := extractOSSConfig(decrypted)
-		if err != nil {
-			logger.Printf("OSS parse failed: %v", err)
-			continue
-		}
-
-		logger.Printf("OSS resolved business URLs: %v, gateway URLs: %v", domains, gatewayURLs)
-		return domains, gatewayURLs
+		go func(index int, source string) {
+			logger.Printf("OSS fetch [%d/%d]: %s", index+1, len(urls), source)
+			body, err := downloadOSS(client, source)
+			if err != nil {
+				results <- ossFetchResult{source: source, index: index, err: err}
+				return
+			}
+			decrypted, err := xorDecrypt(body, xorKey)
+			if err != nil {
+				results <- ossFetchResult{source: source, index: index, err: err}
+				return
+			}
+			domains, gatewayURLs, version, err := extractOSSConfig(decrypted)
+			results <- ossFetchResult{
+				domains: domains, gatewayURLs: gatewayURLs, configVersion: version,
+				decrypted: decrypted, source: source, index: index, err: err,
+			}
+		}(i, rawURL)
 	}
-	return nil, nil
+
+	var best *ossFetchResult
+	var settlement <-chan time.Time
+	for received := 0; received < len(urls); {
+		select {
+		case result := <-results:
+			received++
+			if result.err != nil {
+				logger.Printf("OSS source %s rejected: %v", result.source, result.err)
+				continue
+			}
+			comparison := 1
+			if best != nil {
+				comparison = compareConfigVersions(result.configVersion, best.configVersion)
+			}
+			if best == nil || comparison > 0 || (comparison == 0 && result.index < best.index) {
+				copy := result
+				best = &copy
+			}
+			if settlement == nil {
+				// Give other healthy mirrors a short window to return a newer
+				// config_version, but never wait for every dead source timeout.
+				settlement = time.After(500 * time.Millisecond)
+			}
+		case <-settlement:
+			return best
+		}
+	}
+	return best
 }
 
 func downloadOSS(client *http.Client, rawURL string) ([]byte, error) {
@@ -384,14 +530,15 @@ func xorDecrypt(body []byte, key string) ([]byte, error) {
 }
 
 var (
-	ossDomainsRE     = regexp.MustCompile(`"domains"\s*:\s*(\[[^\]]*\])`)
-	ossGatewayURLsRE = regexp.MustCompile(`"gateway_urls"\s*:\s*(\[[^\]]*\])`)
+	ossDomainsRE       = regexp.MustCompile(`"domains"\s*:\s*(\[[^\]]*\])`)
+	ossGatewayURLsRE   = regexp.MustCompile(`"gateway_urls"\s*:\s*(\[[^\]]*\])`)
+	ossConfigVersionRE = regexp.MustCompile(`"config_version"\s*:\s*"?([0-9]+(?:\.[0-9]+)*)"?`)
 )
 
 // extractOSSConfig extracts business domains and gateway URLs from the
 // OSS remote config. The OSS data is non-standard JSON (anonymous nested
 // object), so we use regex to pull out the two arrays directly.
-func extractOSSConfig(data []byte) (domains, gatewayURLs []string, err error) {
+func extractOSSConfig(data []byte) (domains, gatewayURLs []string, configVersion string, err error) {
 	// Extract domains
 	if m := ossDomainsRE.FindSubmatch(data); len(m) >= 2 {
 		var arr []string
@@ -425,8 +572,92 @@ func extractOSSConfig(data []byte) (domains, gatewayURLs []string, err error) {
 			}
 		}
 	}
+	if m := ossConfigVersionRE.FindSubmatch(data); len(m) >= 2 {
+		configVersion = string(m[1])
+	}
+	if len(domains) == 0 {
+		return nil, nil, configVersion, errors.New("OSS config has no valid domains")
+	}
+	return domains, gatewayURLs, configVersion, nil
+}
 
-	return domains, gatewayURLs, nil
+func compareConfigVersions(left, right string) int {
+	if left == right {
+		return 0
+	}
+	if left == "" {
+		return -1
+	}
+	if right == "" {
+		return 1
+	}
+	a := strings.Split(left, ".")
+	b := strings.Split(right, ".")
+	length := len(a)
+	if len(b) > length {
+		length = len(b)
+	}
+	for i := 0; i < length; i++ {
+		av, bv := 0, 0
+		if i < len(a) {
+			av, _ = strconv.Atoi(a[i])
+		}
+		if i < len(b) {
+			bv, _ = strconv.Atoi(b[i])
+		}
+		if av < bv {
+			return -1
+		}
+		if av > bv {
+			return 1
+		}
+	}
+	return 0
+}
+
+func ossConfigCachePath() string {
+	return env("DG_OSS_CACHE_FILE", "./data/device-gateway-remote-config.json")
+}
+
+func persistOSSConfigCache(logger *log.Logger, data []byte) {
+	if len(data) == 0 {
+		return
+	}
+	path := ossConfigCachePath()
+	if err := os.MkdirAll(filepath.Dir(path), 0o700); err != nil {
+		logger.Printf("OSS cache mkdir failed: %v", err)
+		return
+	}
+	temp := path + ".tmp"
+	if err := os.WriteFile(temp, data, 0o600); err != nil {
+		logger.Printf("OSS cache write failed: %v", err)
+		return
+	}
+	if err := os.Rename(temp, path); err != nil {
+		logger.Printf("OSS cache replace failed: %v", err)
+	}
+}
+
+func loadCachedOSSResult(logger *log.Logger) *ossFetchResult {
+	data, err := os.ReadFile(ossConfigCachePath())
+	if err != nil {
+		if !errors.Is(err, os.ErrNotExist) {
+			logger.Printf("OSS cache read failed: %v", err)
+		}
+		return nil
+	}
+	domains, gatewayURLs, version, err := extractOSSConfig(data)
+	if err != nil {
+		logger.Printf("OSS cache invalid: %v", err)
+		return nil
+	}
+	return &ossFetchResult{
+		domains:       domains,
+		gatewayURLs:   gatewayURLs,
+		configVersion: version,
+		decrypted:     data,
+		source:        "local_cache",
+	}
 }
 
 func loadConfig(logger *log.Logger) (Config, error) {
@@ -445,22 +676,28 @@ func loadConfig(logger *log.Logger) (Config, error) {
 	publicBaseURL := strings.TrimRight(env("DG_PUBLIC_BASE_URL", ""), "/")
 	var ossGatewayURLs []string
 
-	var baseURLs []string
-	if envURLs := env("DG_BUSINESS_BASE_URLS", ""); envURLs != "" {
-		baseURLs = splitAndNormalizeURLs(envURLs)
-	} else if envURL := strings.TrimRight(env("DG_BUSINESS_BASE_URL", ""), "/"); envURL != "" {
-		baseURLs = []string{envURL}
-	} else {
-		logger.Printf("DG_BUSINESS_BASE_URL not set, fetching from OSS remote config...")
-		baseURLs, ossGatewayURLs = fetchBusinessBaseURLs(logger)
-		if len(baseURLs) == 0 {
-			return Config{}, errors.New("DG_BUSINESS_BASE_URL is required (env not set and all OSS sources failed)")
+	// OSS is the authoritative dynamic route. The environment values are only
+	// startup seeds for a brand-new server when both OSS and its complete cache
+	// are unavailable.
+	baseURLs, ossGatewayURLs := fetchBusinessBaseURLs(logger)
+	if len(baseURLs) == 0 {
+		if envURLs := env("DG_BUSINESS_BASE_URLS", ""); envURLs != "" {
+			baseURLs = splitAndNormalizeURLs(envURLs)
+		} else if envURL := strings.TrimRight(env("DG_BUSINESS_BASE_URL", ""), "/"); envURL != "" {
+			baseURLs = []string{envURL}
 		}
-		// Use OSS gateway_urls as fallback for DG_PUBLIC_BASE_URL
-		if publicBaseURL == "" && len(ossGatewayURLs) > 0 {
-			publicBaseURL = ossGatewayURLs[0]
-			logger.Printf("using OSS gateway_url as public base: %s", publicBaseURL)
+		if len(baseURLs) > 0 {
+			logger.Printf("OSS route unavailable, using environment business seed: %v", baseURLs)
 		}
+	}
+	if len(baseURLs) == 0 {
+		return Config{}, errors.New("no usable business route from OSS, cache, or environment seed")
+	}
+	// A gateway should normally set its own public URL. This is only a fallback
+	// for deployments which intentionally infer it from the shared OSS bundle.
+	if publicBaseURL == "" && len(ossGatewayURLs) > 0 {
+		publicBaseURL = ossGatewayURLs[0]
+		logger.Printf("using OSS gateway_url as public base: %s", publicBaseURL)
 	}
 	for _, u := range baseURLs {
 		if _, err := url.ParseRequestURI(u); err != nil {
@@ -553,12 +790,16 @@ func (s *Server) startOSSRefresher(intervalMinutes int) {
 }
 
 func (s *Server) refreshOSSConfig() {
-	if env("DG_OSS_CONFIG_URLS", "") == "" || env("DG_OSS_XOR_KEY", "") == "" {
+	if env("DG_OSS_XOR_KEY", "") == "" {
 		return
 	}
 	domains, gatewayURLs := fetchBusinessBaseURLs(s.log)
 	if len(domains) == 0 {
 		s.log.Printf("OSS refresh: no domains returned, keeping current config")
+		return
+	}
+	if !s.anyBusinessBackendHealthy(domains) {
+		s.log.Printf("OSS refresh: candidate business routes are unreachable, keeping current config")
 		return
 	}
 	s.ossMu.Lock()
@@ -569,6 +810,27 @@ func (s *Server) refreshOSSConfig() {
 	s.ossMu.Unlock()
 	s.syncBusinessBackends(domains)
 	s.log.Printf("OSS refreshed: business URLs=%v, gateway URLs=%v", domains, gatewayURLs)
+}
+
+func (s *Server) anyBusinessBackendHealthy(domains []string) bool {
+	if len(domains) == 0 {
+		return false
+	}
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+	results := make(chan bool, len(domains))
+	for _, domain := range domains {
+		go func(baseURL string) {
+			results <- s.probeBusinessBackend(ctx, baseURL)
+		}(domain)
+	}
+	for range domains {
+		if <-results {
+			cancel()
+			return true
+		}
+	}
+	return false
 }
 
 func (s *Server) handleAdminPage(w http.ResponseWriter, r *http.Request) {
@@ -1386,6 +1648,10 @@ func (s *Server) requireSession(w http.ResponseWriter, r *http.Request) (*Sessio
 }
 
 func (s *Server) authorize(r *http.Request) (*SessionContext, error) {
+	return s.authorizeWithReload(r, true)
+}
+
+func (s *Server) authorizeWithReload(r *http.Request, allowPostgresReload bool) (*SessionContext, error) {
 	token := bearerToken(r.Header.Get("Authorization"))
 	if token == "" {
 		return nil, errors.New("missing authorization")
@@ -1442,6 +1708,16 @@ func (s *Server) authorize(r *http.Request) (*SessionContext, error) {
 	}
 	if sessionCopy.ID == "" {
 		s.store.mu.Unlock()
+		if allowPostgresReload {
+			reloaded, err := s.store.reloadFromPostgresOnMiss()
+			if err != nil {
+				if s.log != nil {
+					s.log.Printf("postgres session reload failed: %v", err)
+				}
+			} else if reloaded {
+				return s.authorizeWithReload(r, false)
+			}
+		}
 		return nil, errors.New("session not found")
 	}
 	if shouldSave {
@@ -1500,6 +1776,10 @@ func (s *Server) sessionAuthorizationErrorLocked(session *SessionRecord, now tim
 }
 
 func (s *Server) authorizeSubscribeToken(r *http.Request, token string) (*SessionContext, error) {
+	return s.authorizeSubscribeTokenWithReload(r, token, true)
+}
+
+func (s *Server) authorizeSubscribeTokenWithReload(r *http.Request, token string, allowPostgresReload bool) (*SessionContext, error) {
 	tokenHash := s.hashValue("subscribe", token)
 	now := time.Now().UTC()
 	clientIP := s.clientIP(r)
@@ -1550,6 +1830,16 @@ func (s *Server) authorizeSubscribeToken(r *http.Request, token string) (*Sessio
 	}
 	if sessionCopy.ID == "" {
 		s.store.mu.Unlock()
+		if allowPostgresReload {
+			reloaded, err := s.store.reloadFromPostgresOnMiss()
+			if err != nil {
+				if s.log != nil {
+					s.log.Printf("postgres subscription session reload failed: %v", err)
+				}
+			} else if reloaded {
+				return s.authorizeSubscribeTokenWithReload(r, token, false)
+			}
+		}
 		return nil, errors.New("session not found")
 	}
 	if shouldSave {
@@ -2236,7 +2526,13 @@ func (s *Server) tryBusinessURLs(ctx context.Context, makeReq func(baseURL strin
 			s.markBusinessFailure(baseURL)
 			s.log.Printf("business request to %s failed (%d/%d): %v", baseURL, i+1, len(urls), err)
 			lastErr = err
-			continue
+			// Once a state-changing request may have reached the backend, replaying
+			// it elsewhere can create duplicate orders or payments. Login and
+			// read-only requests are explicitly safe to fail over.
+			if i+1 < len(urls) && safeBusinessRetry(req) {
+				continue
+			}
+			return nil, err
 		}
 		// A reachable reverse proxy may still return 5xx while another business
 		// backend is healthy. Retry only requests that are safe to repeat; avoid
@@ -2748,6 +3044,45 @@ func (s *Store) hasPendingChangesLocked() bool {
 		len(s.dirtySessions) > 0 || len(s.dirtyAudits) > 0 ||
 		len(s.deletedDevices) > 0 || len(s.deletedSessions) > 0 ||
 		len(s.deletedAudits) > 0
+}
+
+// reloadFromPostgresOnMiss makes a session created by another gateway
+// immediately visible. The regular sync loop remains the inexpensive steady
+// state path; this reload runs only after a local session-index miss.
+func (s *Store) reloadFromPostgresOnMiss() (bool, error) {
+	s.mu.Lock()
+	pg := s.pg
+	startRevision := s.revision
+	hasPendingChanges := s.hasPendingChangesLocked()
+	s.mu.Unlock()
+	if pg == nil || hasPendingChanges {
+		return false, nil
+	}
+
+	fresh := &Store{
+		Users:    map[string]*UserCache{},
+		Devices:  map[string]*DeviceRecord{},
+		Sessions: map[string]*SessionRecord{},
+		Audits:   []AuditLog{},
+	}
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	err := pg.LoadAll(ctx, fresh)
+	cancel()
+	if err != nil {
+		return false, err
+	}
+
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.revision != startRevision || s.hasPendingChangesLocked() {
+		return false, nil
+	}
+	s.Users = fresh.Users
+	s.Devices = fresh.Devices
+	s.Sessions = fresh.Sessions
+	s.Audits = fresh.Audits
+	s.rebuildSessionIndexesLocked()
+	return true, nil
 }
 
 func LoadStore(path, pgDSN string) (*Store, func(), error) {

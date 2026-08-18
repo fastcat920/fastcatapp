@@ -25,26 +25,22 @@ Future<XBoardSDK> xboardSdk(Ref ref) async {
 
     final runtime = GatewayRuntimeService.instance;
     await runtime.bootstrapFromCurrentConfig();
-    await runtime.verifyAndActivateBestCandidate(
+    final verified = await runtime.verifyAndActivateBestCandidate(
       userAgent: globalState.ua,
       preferCurrent: true,
     );
+    if (verified == null) {
+      throw StateError('没有经过验证的可用业务网关');
+    }
 
     // 使用统一网关运行时配置（支持热更新、故障转移、回退）
-    final activeConfig = runtime.activeConfig ??
-        GatewayEndpointConfig(
-          baseUrl: gatewayBaseUrl,
-          apiPrefix: currentGatewayApiPrefix,
-          source: 'bootstrap_fallback',
-          updatedAt: DateTime.now(),
-        );
+    final activeConfig = runtime.activeConfig ?? verified;
     final gatewayUrls = runtime.candidates.map((item) => item.baseUrl).toList();
     final selectedUrl = activeConfig.baseUrl;
 
     _logger.info(
       '[XBoardSdkProvider] 使用网关地址: ${gatewayDisplayLabel(selectedUrl)}',
     );
-
 
     // 2. 获取面板类型（通过provider接口）
     final panelType = XBoardConfig.provider.getPanelType();
@@ -71,18 +67,15 @@ Future<XBoardSDK> xboardSdk(Ref ref) async {
     // 6. 初始化SDK
     final sdk = XBoardSDK.instance;
     // 网关故障转移：连接失败时自动切换到备用地址（SDK nextUrlProvider 机制）
-    final attemptedFailoverUrls = <String>{selectedUrl};
-
     await sdk.initialize(
       selectedUrl,
       panelType: panelType,
       httpConfig: httpConfig,
       apiPrefix: apiPrefix,
-      nextEndpointProvider: () async {
+      nextEndpointProvider: (attemptedBaseUrls) async {
         runtime.syncFromCurrentConfig();
-        final next = runtime.nextFailoverCandidate(attemptedFailoverUrls);
+        final next = runtime.nextFailoverCandidate(attemptedBaseUrls);
         if (next == null) return null;
-        attemptedFailoverUrls.add(next.baseUrl);
         return HttpEndpointConfig(
           baseUrl: next.baseUrl,
           apiPrefix: next.apiPrefix,
@@ -137,9 +130,6 @@ Future<XBoardSDK> xboardSdk(Ref ref) async {
         active.baseUrl,
         apiPrefix: active.apiPrefix,
       );
-      attemptedFailoverUrls
-        ..clear()
-        ..add(active.baseUrl);
     });
     ref.onDispose(runtimeSub.cancel);
 

@@ -7,7 +7,7 @@
 /// 1. XBOARD_GATEWAY_URL 编译期常量（调试用）
 /// 2. 上次成功缓存的网关配置（冷启动优先）
 /// 3. OSS 远程配置 gateway_urls / gateway_url + api_prefix
-/// 4. productionGatewayUrl 硬编码兜底（始终追加在末尾）
+/// 网关只来自远程配置和上次验证成功缓存，不使用硬编码业务地址。
 library;
 
 import 'dart:async';
@@ -22,9 +22,6 @@ import 'xboard_config.dart';
 
 /// 编译期覆盖（用于本地调试，构建时通过 --dart-define 传入）
 const _overrideUrl = String.fromEnvironment('XBOARD_GATEWAY_URL');
-
-/// 生产网关域名（最后兜底，始终追加在 URL 列表末尾）
-const productionGatewayUrl = 'https://d3.fastcat2.com';
 
 /// 网关 API 前缀（需与网关环境变量 DG_API_PREFIX 保持一致，默认 /api/v1）
 const gatewayApiPrefix = '/api/v1';
@@ -127,11 +124,6 @@ List<String> _collectConfiguredGatewayUrls() {
     }
   } catch (_) {}
 
-  final fallback = _normalizeBaseUrl(productionGatewayUrl);
-  if (!urls.contains(fallback)) {
-    urls.add(fallback);
-  }
-
   return urls;
 }
 
@@ -231,6 +223,7 @@ class GatewayEndpointConfig {
     int? failureCount,
     GatewayVerificationStatus? verificationStatus,
     int? lastVerificationStatusCode,
+    bool clearFailureState = false,
   }) {
     return GatewayEndpointConfig(
       baseUrl: _normalizeBaseUrl(baseUrl ?? this.baseUrl),
@@ -239,8 +232,10 @@ class GatewayEndpointConfig {
       versionTag: versionTag ?? this.versionTag,
       updatedAt: updatedAt ?? this.updatedAt,
       lastVerifiedAt: lastVerifiedAt ?? this.lastVerifiedAt,
-      lastFailureAt: lastFailureAt ?? this.lastFailureAt,
-      disabledUntil: disabledUntil ?? this.disabledUntil,
+      lastFailureAt:
+          clearFailureState ? null : (lastFailureAt ?? this.lastFailureAt),
+      disabledUntil:
+          clearFailureState ? null : (disabledUntil ?? this.disabledUntil),
       failureCount: failureCount ?? this.failureCount,
       verificationStatus: verificationStatus ?? this.verificationStatus,
       lastVerificationStatusCode:
@@ -337,6 +332,7 @@ enum GatewayRuntimeEventType {
   failoverSuccess,
   endpointFailure,
   circuitOpened,
+  automaticFailback,
   rollback,
 }
 
@@ -368,6 +364,9 @@ class GatewayRuntimeService {
   static const _kGatewayRuntimeCacheKey = 'gateway_runtime_active_config';
   static const _failureThreshold = 2;
   static const Duration _circuitBreakDuration = Duration(seconds: 90);
+  static const Duration _recoveryCheckInterval = Duration(seconds: 30);
+  static const Duration _backupMinHold = Duration(minutes: 3);
+  static const int _recoverySuccessThreshold = 3;
 
   final StreamController<GatewayRuntimeSnapshot> _controller =
       StreamController<GatewayRuntimeSnapshot>.broadcast();
@@ -380,6 +379,11 @@ class GatewayRuntimeService {
   List<GatewayEndpointConfig> _candidates = const [];
   bool _bootstrapped = false;
   String? _activeVersionTag;
+  String? _lastUserAgent;
+  DateTime? _activeSince;
+  Timer? _recoveryTimer;
+  bool _recoveryProbeRunning = false;
+  final Map<String, int> _recoverySuccessCounts = {};
 
   Stream<GatewayRuntimeSnapshot> get stream => _controller.stream;
   Stream<GatewayRuntimeEvent> get events => _eventController.stream;
@@ -396,12 +400,14 @@ class GatewayRuntimeService {
   Future<void> bootstrapFromCurrentConfig() async {
     if (_bootstrapped) {
       syncFromCurrentConfig();
+      _startRecoveryChecker();
       return;
     }
 
     final cached = await _loadPersistedActiveConfig();
     if (cached != null) {
       _activeConfig = cached;
+      _activeSince = DateTime.now();
       _activeVersionTag = cached.versionTag;
       _cachedGatewayUrl = cached.baseUrl;
       _cachedGatewayApiPrefix = cached.apiPrefix;
@@ -418,6 +424,7 @@ class GatewayRuntimeService {
 
     syncFromCurrentConfig();
     _bootstrapped = true;
+    _startRecoveryChecker();
   }
 
   void syncFromCurrentConfig() {
@@ -533,8 +540,6 @@ class GatewayRuntimeService {
       }
     }
 
-    addCandidate(productionGatewayUrl, source: 'hardcoded_fallback');
-
     _candidates = next;
     if (_activeConfig == null && _candidates.isNotEmpty) {
       _activeConfig = _candidates.first;
@@ -556,6 +561,9 @@ class GatewayRuntimeService {
     String? userAgent,
     bool preferCurrent = true,
   }) async {
+    if (userAgent != null && userAgent.isNotEmpty) {
+      _lastUserAgent = userAgent;
+    }
     final queue = <GatewayEndpointConfig>[];
     final attemptedBaseUrls = <String>{};
     if (preferCurrent && _activeConfig != null) {
@@ -644,8 +652,6 @@ class GatewayRuntimeService {
         }
       }
     } catch (_) {}
-    add(productionGatewayUrl);
-
     final result = <GatewayEndpointConfig>[];
     for (final url in orderedUrls) {
       final match = _candidates.where((item) => item.baseUrl == url);
@@ -867,6 +873,7 @@ class GatewayRuntimeService {
             disabledUntil: null,
             failureCount: 0,
             verificationStatus: GatewayVerificationStatus.verified,
+            clearFailureState: true,
           )
         : GatewayEndpointConfig(
             baseUrl: normalizedBaseUrl,
@@ -984,7 +991,12 @@ class GatewayRuntimeService {
     bool persist = true,
   }) async {
     final normalized = config.copyWith();
+    final changedGateway = _activeConfig?.baseUrl != normalized.baseUrl;
     _activeConfig = normalized;
+    if (changedGateway || _activeSince == null) {
+      _activeSince = DateTime.now();
+      _recoverySuccessCounts.clear();
+    }
     _lastKnownGoodConfig = normalized;
     _activeVersionTag = normalized.versionTag;
     _cachedGatewayUrl = normalized.baseUrl;
@@ -995,11 +1007,87 @@ class GatewayRuntimeService {
       if (candidate.baseUrl == normalized.baseUrl) continue;
       next.add(candidate);
     }
-    _candidates = next;
+    // Once an address from the current remote bundle has been verified, old
+    // cached addresses are retired. Until then they remain available so a bad
+    // remote edit cannot strand an already working client.
+    final authoritativeUrls = _authoritativeGatewayUrls();
+    _candidates = authoritativeUrls.contains(normalized.baseUrl)
+        ? next
+            .where((candidate) => authoritativeUrls.contains(candidate.baseUrl))
+            .toList()
+        : next;
     _emit();
 
     if (persist) {
       await _persistActiveConfig(normalized);
+    }
+  }
+
+  Set<String> _authoritativeGatewayUrls() {
+    final urls = <String>{};
+    final override = _normalizeBaseUrl(_overrideUrl);
+    if (override.isNotEmpty) urls.add(override);
+    try {
+      if (XBoardConfig.isInitialized) {
+        for (final raw in XBoardConfig.gatewayUrls) {
+          final normalized = _normalizeBaseUrl(raw);
+          if (normalized.isNotEmpty) urls.add(normalized);
+        }
+      }
+    } catch (_) {}
+    return urls;
+  }
+
+  void _startRecoveryChecker() {
+    _recoveryTimer ??= Timer.periodic(
+      _recoveryCheckInterval,
+      (_) => unawaited(_checkHigherPriorityRecovery()),
+    );
+  }
+
+  Future<void> _checkHigherPriorityRecovery() async {
+    if (_recoveryProbeRunning || _activeConfig == null) return;
+    final activeSince = _activeSince;
+    if (activeSince == null ||
+        DateTime.now().difference(activeSince) < _backupMinHold) {
+      return;
+    }
+
+    final ordered = _candidatesInConfiguredPriorityOrder();
+    final activeIndex = ordered.indexWhere(
+      (candidate) => candidate.baseUrl == _activeConfig!.baseUrl,
+    );
+    if (activeIndex <= 0) return;
+
+    _recoveryProbeRunning = true;
+    try {
+      for (final candidate in ordered.take(activeIndex)) {
+        final verified = await _verifyCandidate(
+          candidate,
+          userAgent: _lastUserAgent,
+        );
+        if (verified == null) {
+          _recoverySuccessCounts[candidate.baseUrl] = 0;
+          continue;
+        }
+        final successes = (_recoverySuccessCounts[candidate.baseUrl] ?? 0) + 1;
+        _recoverySuccessCounts[candidate.baseUrl] = successes;
+        if (successes < _recoverySuccessThreshold) {
+          return;
+        }
+        await applyRuntimeConfig(verified, persist: true);
+        _recordEvent(
+          GatewayRuntimeEventType.automaticFailback,
+          '高优先级网关连续健康，已静默自动回切',
+          payload: {
+            'base_url': verified.baseUrl,
+            'recovery_successes': successes,
+          },
+        );
+        return;
+      }
+    } finally {
+      _recoveryProbeRunning = false;
     }
   }
 
@@ -1116,6 +1204,7 @@ class GatewayRuntimeService {
           failureCount: 0,
           verificationStatus: GatewayVerificationStatus.verified,
           lastVerificationStatusCode: statusCode,
+          clearFailureState: true,
         );
       }
       _recordEvent(
@@ -1235,7 +1324,8 @@ GatewayEndpointConfig? get activeGatewayConfig =>
 String get gatewayBaseUrl {
   final active = GatewayRuntimeService.instance.activeConfig;
   if (active != null) return active.baseUrl;
-  return allGatewayUrls.first;
+  final urls = allGatewayUrls;
+  return urls.isEmpty ? '' : urls.first;
 }
 
 /// 获取当前生效的 API 前缀

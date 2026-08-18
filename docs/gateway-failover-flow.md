@@ -73,14 +73,16 @@
 
 它们会先进入 `XBoardConfigAccessor`，再被 `GatewayRuntimeService` 同步进候选池。
 
-### 3.2 本地和兜底来源
+### 3.2 本地恢复来源
 
 除了远程 OSS，还会从以下来源补充候选：
 
 1. 编译期 `XBOARD_GATEWAY_URL`
 2. 上次成功缓存的网关 URL
 3. 持久化的运行时 `active config`
-4. 硬编码兜底 `productionGatewayUrl`
+
+不再内置固定的兜底网关。紧急 OSS 只提供完整远程配置，
+仍由配置中的 `gateway_urls` 决定网关。
 
 ### 3.3 候选顺序
 
@@ -90,7 +92,6 @@
 2. 当前 `active config`
 3. 内存缓存 `_cachedGatewayUrl`
 4. OSS `gateway_urls/gateway_url`
-5. 硬编码兜底
 
 同一个 `baseUrl` 只保留一份，按 `baseUrl` 去重。
 
@@ -385,9 +386,9 @@ GET、HEAD、OPTIONS 和登录请求可在连接错误或 5xx 后切换后端重
 `DG_BUSINESS_HEALTH_INTERVAL_SECONDS`、`DG_BUSINESS_RECOVERY_SUCCESSES` 和
 `DG_BUSINESS_BACKUP_MIN_HOLD_SECONDS` 调整。
 
-客户端网关不在运行中主动回切，以免并发业务请求跨网关抖动。每次新的应用
-启动会忽略上次成功地址的运行时提升，重新按照 OSS `gateway_urls` 的固定顺序
-验证，因此恢复的高优先级网关会在下一次启动自动重新成为 active。
+客户端使用备用网关时，每 30 秒静默探测更高优先级网关。备用网关
+至少稳定使用 180 秒，且高优先级网关连续健康 3 次后，只将后续新请求
+静默切回，不取消或重放在途请求。
 
 ---
 

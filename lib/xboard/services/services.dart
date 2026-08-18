@@ -12,7 +12,3 @@ library;
 // ===== 导出存储服务 =====
 export 'storage/xboard_storage_service.dart';
 export 'storage/xboard_storage_provider.dart';
-
-// ===== 导出 Supabase 服务 =====
-export 'supabase_service.dart';
-

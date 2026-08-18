@@ -1,7 +1,6 @@
 import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
-import 'dart:typed_data';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:fl_clash/state.dart';
 import 'package:fl_clash/common/path.dart';
@@ -142,22 +141,8 @@ class XBoardInitializationNotifier extends StateNotifier<InitializationState> {
       }
       _lastKnownDomains = currentDomains;
 
-      // Fallback: 配置模块失败且面板列表仍为空时，直连 OSS（限时 15 秒）
-      if (XBoardConfig.allPanelUrls.isEmpty) {
-        _logger.info('[Initialization] 🔄 启动直连 OSS fallback...');
-        try {
-          await _directFetchOssConfig().timeout(
-            const Duration(seconds: 15),
-            onTimeout: () {
-              _logger.warning('[Initialization] 直连 OSS 超时（15s）');
-            },
-          );
-        } catch (e) {
-          _logger.warning('[Initialization] 直连 OSS 失败: $e');
-        }
-      }
-
-      // Fallback 第三层：远程+直连都失败时，尝试使用上次成功缓存启动
+      // 统一配置解析器已经按“普通 OSS → 紧急 OSS → 完整配置缓存”处理。
+      // 这里保留旧版 API 端点缓存，仅用于兼容尚未生成完整缓存的升级用户。
       if (XBoardConfig.allPanelUrls.isEmpty) {
         _logger.info('[Initialization] 🧰 尝试使用启动缓存...');
         final cachedOk = await _tryBootstrapFromCachedEndpoint();
@@ -182,17 +167,26 @@ class XBoardInitializationNotifier extends StateNotifier<InitializationState> {
       // ========== 步骤 1.5: 启动网关运行时配置 ==========
       final gatewayRuntime = GatewayRuntimeService.instance;
       await gatewayRuntime.bootstrapFromCurrentConfig();
-      await gatewayRuntime.verifyAndActivateBestCandidate(
+      final verifiedGateway =
+          await gatewayRuntime.verifyAndActivateBestCandidate(
         userAgent: globalState.ua,
         // New launches re-check the fixed gateway_urls priority so a recovered
         // primary can be selected without switching gateways mid-session.
         preferCurrent: false,
       );
+      if (verifiedGateway == null) {
+        const msg = '业务网关暂不可用，请稍后重试';
+        await _writeDiagnosticFile(msg);
+        state = state.copyWith(
+          status: InitializationStatus.failed,
+          errorMessage: msg,
+          currentStepDescription: '网关连接失败',
+        );
+        return;
+      }
 
       // ========== 步骤 2: 选择可用域名（逐个尝试，不竞速） ==========
-      final gatewayUrls = allGatewayUrls;
-      final panelUrls =
-          gatewayUrls.isNotEmpty ? gatewayUrls : XBoardConfig.allPanelUrls;
+      final panelUrls = allGatewayUrls;
       if (panelUrls.isEmpty) {
         const msg = '无法连接服务器，请检查网络后重试';
         await _writeDiagnosticFile(msg);
@@ -466,115 +460,6 @@ class XBoardInitializationNotifier extends StateNotifier<InitializationState> {
     } finally {
       client?.close();
     }
-  }
-
-  /// 直连 OSS 获取配置（绕过配置模块，作为 fallback）
-  Future<void> _directFetchOssConfig() async {
-    const ossUrl1 = String.fromEnvironment('OSS_URL_1');
-    const ossUrl2 = String.fromEnvironment('OSS_URL_2');
-    const xorKey = String.fromEnvironment('XOR_KEY',
-        defaultValue: 'CHANGE_ME_TO_YOUR_SECRET_KEY_32C');
-
-    const isDefaultKey = xorKey == 'CHANGE_ME_TO_YOUR_SECRET_KEY_32C';
-    _logger.info(
-        '[Fallback] XOR_KEY: ${isDefaultKey ? "⚠️ 默认占位符（CI未注入）" : "✅ 已注入(${xorKey.length}字符)"}');
-
-    final urls = [ossUrl1, ossUrl2].where((u) => u.isNotEmpty).toList();
-    if (urls.isEmpty) {
-      _logger.warning('[Fallback] 无 OSS URL（dart-define 未注入 OSS_URL_1/2）');
-      return;
-    }
-    _logger.info('[Fallback] OSS URLs: ${urls.length} 个');
-
-    for (final url in urls) {
-      HttpClient? client;
-      try {
-        final maskedUrl = Uri.tryParse(url)?.host ??
-            url.substring(0, url.length.clamp(0, 20));
-        _logger.info('[Fallback] 直连: $maskedUrl');
-        client = HttpClient();
-        client.findProxy = (_) => 'DIRECT';
-        client.connectionTimeout = const Duration(seconds: 15);
-
-        final request = await client.getUrl(Uri.parse(url));
-        final response = await request.close();
-        if (response.statusCode != 200) {
-          _logger.warning('[Fallback] HTTP ${response.statusCode}');
-          continue;
-        }
-        final body = await response.transform(utf8.decoder).join();
-        if (body.trim().isEmpty) continue;
-
-        // 解密
-        String decrypted;
-        try {
-          json.decode(body.trim());
-          decrypted = body.trim(); // 明文 JSON
-        } catch (_) {
-          // XOR+Base64
-          final keyBytes = utf8.encode(xorKey);
-          final encBytes = base64.decode(body.trim());
-          final decBytes = Uint8List(encBytes.length);
-          for (var i = 0; i < encBytes.length; i++) {
-            decBytes[i] = encBytes[i] ^ keyBytes[i % keyBytes.length];
-          }
-          decrypted = utf8.decode(decBytes);
-        }
-
-        final configJson = json.decode(decrypted) as Map<String, dynamic>;
-        _logger.info('[Fallback] 解密成功: ${configJson.keys}');
-
-        // 归一化为内部 panels 格式（和 configuration_parser 一致）
-        Map<String, dynamic> normalized;
-        if (configJson.containsKey('domains')) {
-          final domains = configJson['domains'] as List<dynamic>? ?? [];
-          final pt = (configJson['panel_type'] as String?)?.isNotEmpty == true
-              ? configJson['panel_type'] as String
-              : 'xboard';
-          normalized = <String, dynamic>{
-            'panelType': pt,
-            'panels': {
-              pt: domains
-                  .map(
-                      (d) => {'url': d.toString(), 'description': d.toString()})
-                  .toList(),
-            },
-          };
-          // 保留其他字段
-          for (final key in [
-            'contact',
-            'features',
-            'announcement',
-            'update',
-            'subscription',
-            'api_prefix',
-            'gateway_urls',
-            'gateway_url',
-            'ticket'
-          ]) {
-            if (configJson.containsKey(key)) normalized[key] = configJson[key];
-          }
-        } else {
-          normalized = configJson;
-        }
-
-        await XBoardConfig.loadParsedConfig(normalized);
-        _logger.info(
-            '[Fallback] ✅ 成功注入面板URL: ${XBoardConfig.allPanelUrls.length}');
-        return;
-      } catch (e) {
-        final errStr = e.toString();
-        if (errStr.contains('FormatException') || errStr.contains('decode')) {
-          _logger.error('[Fallback] $url 解密/解析失败（密钥不匹配或OSS文件内容异常）: $e');
-        } else {
-          _logger.warning('[Fallback] $url 网络请求失败: $e');
-        }
-      } finally {
-        client?.close();
-      }
-    }
-    _logger.warning(
-        '[Fallback] 所有 OSS URL 均失败（请检查：1.OSS文件是否已上传 2.XOR密钥是否与加密时一致 3.OSS地址是否可访问）');
   }
 
   /// 写诊断文件到应用数据目录（release 版无法看 console，用文件排查）

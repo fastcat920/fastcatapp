@@ -80,7 +80,13 @@ class SubscriptionDownloader {
               '2. 订阅链接是否正确（可尝试在 URL 后加 &flag=meta）');
         }
 
-        _logger.error('⚠️ 警告: 下载的配置文件中没有找到 proxies 字段！');
+        _logger.error('❌ 订阅中没有可用的节点或策略组，拒绝覆盖本地配置');
+        throw Exception('订阅配置为空：未找到 proxies 或 proxy-groups');
+      }
+
+      if (!hasProxyGroups) {
+        _logger.error('❌ 订阅缺少 proxy-groups，拒绝覆盖本地配置');
+        throw Exception('订阅配置不完整：未找到 proxy-groups');
       }
 
       if (token.isCancelled) {

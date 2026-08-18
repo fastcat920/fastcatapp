@@ -14,11 +14,9 @@ import 'package:fl_clash/xboard/adapter/state/subscription_state.dart';
 import 'package:fl_clash/xboard/adapter/state/plan_state.dart';
 import 'package:fl_clash/xboard/adapter/state/order_state.dart';
 import 'package:fl_clash/xboard/adapter/initialization/sdk_provider.dart';
-import 'package:fl_clash/xboard/features/domain_status/providers/domain_status_provider.dart';
 import 'package:fl_clash/xboard/features/initialization/initialization.dart';
 import 'package:fl_clash/xboard/config/xboard_config.dart';
 import 'package:fl_clash/xboard/config/gateway_config.dart';
-import 'package:fl_clash/common/constant.dart';
 import 'package:fl_clash/common/sensitive_masker.dart';
 import 'package:fl_clash/state.dart';
 import 'package:fl_clash/providers/providers.dart';
@@ -540,104 +538,6 @@ class XBoardUserAuthNotifier extends Notifier<UserAuthState> {
     }
   }
 
-  /// 根据 Supabase 查询结果决定走哪个 OSS 源
-  ///
-  /// 返回目标 OSS 模式：0=打包OSS, 1=内置OSS
-  ///
-  /// 逻辑：
-  /// - 先查用户 is_builtin 记录，有记录则始终按记录走（不受开关影响）
-  /// - 无记录（新用户）：查全局开关，开关开=内置OSS，开关关=打包OSS
-  /// - Supabase 不可达：降级走打包 OSS
-  Future<int> _resolveOssMode(String email) async {
-    try {
-      // 1. 查用户 is_builtin（已注册用户始终按记录走）
-      final isBuiltin = await SupabaseService.queryUserBuiltin(email);
-      if (isBuiltin != null) {
-        return isBuiltin;
-      }
-
-      // 2. 新用户：查全局开关决定走哪个 OSS
-      final dualOssEnabled = await SupabaseService.isDualOssEnabled();
-      return dualOssEnabled ? 1 : 0;
-    } catch (e) {
-      return 0;
-    }
-  }
-
-  /// 切换到目标 OSS 配置源并重建 SDK
-  ///
-  /// 失败时自动回滚到原配置，保证 SDK 始终处于可用状态。
-  Future<void> _switchOssSource(int targetOssMode) async {
-    final currentOssMode = await _storageService.getOssMode();
-    if (currentOssMode == targetOssMode) {
-      return;
-    }
-
-    _logger.info('[_switchOssSource] $currentOssMode → $targetOssMode');
-
-    // 1. 构建目标配置
-    final baseSettings = await ConfigFileLoader.loadFromFile();
-    final targetSettings = _buildConfigSettings(baseSettings, targetOssMode);
-
-    // 2. 重置 XBoardConfig + SDK，切换到新配置源
-    XBoardConfig.reset();
-    try {
-      await XBoardConfig.initialize(settings: targetSettings);
-      await XBoardConfig.clearRacingCache();
-
-      // 用新 OSS 的域名更新 domainStatusProvider
-      final newPanelUrls = XBoardConfig.allPanelUrls;
-      if (newPanelUrls.isNotEmpty) {
-        _logger.info('[_switchOssSource] 更新域名: ${newPanelUrls.first}');
-        ref.read(domainStatusProvider.notifier).setDomain(newPanelUrls.first);
-      }
-
-      // dispose 旧 SDK 单例，invalidate provider 触发重建
-      XBoardSDK.instance.dispose();
-      ref.invalidate(xboardSdkProvider);
-
-      // 等待 SDK 重新初始化完成
-      await ref.read(xboardSdkProvider.future);
-
-      // 全部成功，持久化 OSS 模式
-      await _storageService.setOssMode(targetOssMode);
-      _logger.info('[_switchOssSource] 切换成功');
-    } catch (e) {
-      // 切换失败，回滚到原配置，保证 SDK 可用
-      _logger.warning('[_switchOssSource] 切换失败，回滚到模式 $currentOssMode: $e');
-      try {
-        final rollbackSettings =
-            _buildConfigSettings(baseSettings, currentOssMode);
-        XBoardConfig.reset();
-        await XBoardConfig.initialize(settings: rollbackSettings);
-        XBoardSDK.instance.dispose();
-        ref.invalidate(xboardSdkProvider);
-        await ref.read(xboardSdkProvider.future);
-        _logger.info('[_switchOssSource] 回滚成功');
-      } catch (rollbackErr) {
-        _logger.error('[_switchOssSource] 回滚也失败: $rollbackErr');
-      }
-      rethrow;
-    }
-  }
-
-  /// 根据 ossMode 构建 ConfigSettings
-  ConfigSettings _buildConfigSettings(ConfigSettings base, int ossMode) {
-    if (ossMode != 1) return base;
-    return ConfigSettings(
-      currentProvider: base.currentProvider,
-      apiPrefix: base.apiPrefix,
-      remoteConfig: RemoteConfigSettings(
-        sources: [RemoteSourceConfig(name: 'builtin', url: builtinOssUrl)],
-        maxRetries: base.remoteConfig.maxRetries,
-        timeout: base.remoteConfig.timeout,
-        retryDelay: base.remoteConfig.retryDelay,
-      ),
-      subscription: base.subscription,
-      log: base.log,
-    );
-  }
-
   Future<bool> login(String email, String password) async {
     final generation = _nextAuthGeneration();
     String? subscriptionUrlForImport;
@@ -647,22 +547,12 @@ class XBoardUserAuthNotifier extends Notifier<UserAuthState> {
       _clearSessionScopedProvidersForLogin();
       _logger.info('开始登录: ${SensitiveMasker.maskText(email)}');
 
-      // 使用统一网关配置（gateway_config.dart）
+      // 登录始终使用统一配置解析器选出的网关，不再按用户切换 OSS。
       final gatewayUrl = gatewayBaseUrl;
       if (gatewayUrl.isEmpty) {
-        // 登录前决定走哪个配置源
-        // _switchOssSource 内部有回滚机制，失败后 SDK 仍可用，可继续用当前配置登录
-        try {
-          final targetOssMode =
-              await _resolveOssMode(email).timeout(const Duration(seconds: 5));
-          await _switchOssSource(targetOssMode)
-              .timeout(const Duration(seconds: 15));
-        } catch (e) {
-          _logger.warning('OSS 源切换失败，使用当前配置继续登录: $e');
-        }
         await _refreshSdkForLogin();
       } else {
-        _logger.info('网关模式登录，跳过 OSS 源切换: $gatewayUrl');
+        _logger.info('使用统一网关登录: $gatewayUrl');
         XBoardSDK.instance.dispose();
         ref.invalidate(xboardSdkProvider);
         await ref.read(xboardSdkProvider.future);
@@ -1405,12 +1295,6 @@ class XBoardUserAuthNotifier extends Notifier<UserAuthState> {
       }
     } catch (e) {
       _logger.warning('清理认证存储失败，继续登出: $e');
-    }
-    // 清除 OSS 模式缓存，下次登录重新从 Supabase 查询
-    try {
-      await _storageService.clearOssMode();
-    } catch (e) {
-      _logger.warning('清除 OSS 模式缓存失败: $e');
     }
     // 清除域名竞速缓存，确保重新登录时从 OSS 拉取最新域名
     try {

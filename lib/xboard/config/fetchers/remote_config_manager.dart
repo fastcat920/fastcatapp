@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:io';
 import 'dart:convert';
 import 'dart:typed_data';
@@ -170,6 +171,7 @@ class SimpleHttpClient implements IHttpClient {
 abstract class ConfigSource {
   String get sourceName;
   int get priority;
+  bool get isEmergency;
   Future<ConfigResult<Map<String, dynamic>>> fetchConfig();
 }
 
@@ -178,12 +180,14 @@ class OssConfigSource implements ConfigSource {
   final IHttpClient _httpClient;
   final String url;
   final String name;
+  final bool emergency;
   final Duration timeout;
 
   OssConfigSource({
     IHttpClient? httpClient,
     required this.url,
     required this.name,
+    this.emergency = false,
     Duration? timeout,
   })  : _httpClient = httpClient ?? SimpleHttpClient(),
         timeout = timeout ?? const Duration(seconds: 10);
@@ -193,6 +197,9 @@ class OssConfigSource implements ConfigSource {
 
   @override
   int get priority => 1;
+
+  @override
+  bool get isEmergency => emergency;
 
   @override
   Future<ConfigResult<Map<String, dynamic>>> fetchConfig() async {
@@ -233,6 +240,11 @@ class OssConfigSource implements ConfigSource {
 class RemoteConfigManager {
   static const _lastSuccessfulSourceKey =
       'xboard_remote_config_last_successful_source';
+  static const _currentConfigCacheKey =
+      'xboard_remote_config_complete_current_v1';
+  static const _previousConfigCacheKey =
+      'xboard_remote_config_complete_previous_v1';
+  static const Duration _versionSettlementWindow = Duration(milliseconds: 350);
   final List<ConfigSource> _configSources;
   final int _maxRetries;
   final Duration _retryDelay;
@@ -252,6 +264,7 @@ class RemoteConfigManager {
       sources.add(OssConfigSource(
         url: s.url,
         name: s.name,
+        emergency: s.isEmergency,
         timeout: s.timeout ?? settings.timeout,
       ));
     }
@@ -275,16 +288,88 @@ class RemoteConfigManager {
       throw Exception('没有可用的配置源，请在 config.yaml 中配置 remote_config.sources');
     }
 
+    final cached = await _loadBestCachedConfig(isUsable);
     final orderedSources = await _sourcesWithLastSuccessFirst();
+    final normalSources =
+        orderedSources.where((source) => !source.isEmergency).toList();
+    final emergencySources =
+        orderedSources.where((source) => source.isEmergency).toList();
+    final errors = <String>[];
+
+    var liveResult = await _fetchFirstUsableGroup(
+      normalSources,
+      isUsable,
+      errors,
+      settleForHigherVersion: true,
+    );
+
+    // 普通源全部失败后，只快速重试上次成功的普通源一次，避免网络刚恢复时
+    // 直接进入紧急源。无普通源时跳过。
+    if (liveResult == null && normalSources.isNotEmpty) {
+      final retryResult = await normalSources.first.fetchConfig();
+      if (retryResult.isSuccess &&
+          retryResult.data != null &&
+          isUsable(retryResult.data!)) {
+        liveResult = retryResult;
+      } else {
+        errors.add(
+          '${retryResult.source}: ${retryResult.error ?? '配置内容校验失败'}',
+        );
+      }
+    }
+
+    // 内置紧急 OSS 永远只在普通源没有有效结果后接管。
+    liveResult ??= await _fetchFirstUsableGroup(
+      emergencySources,
+      isUsable,
+      errors,
+      settleForHigherVersion: false,
+    );
+
+    final selected = _newerResult(liveResult, cached);
+    if (selected != null) {
+      if (selected.source != 'local_cache') {
+        await _persistLastSuccessfulSource(selected.source);
+        await _persistCompleteConfig(selected);
+      }
+      _logger.info(
+        '[RemoteConfigManager] ✅ 使用可解析配置源: ${selected.source} '
+        '(config_version=${_configVersion(selected.data)})',
+      );
+      return selected;
+    }
+
+    return ConfigResult.failure(errors.join('; '), 'all');
+  }
+
+  Future<ConfigResult<Map<String, dynamic>>?> _fetchFirstUsableGroup(
+    List<ConfigSource> sources,
+    bool Function(Map<String, dynamic> data) isUsable,
+    List<String> errors, {
+    required bool settleForHigherVersion,
+  }) async {
+    if (sources.isEmpty) return null;
     final pending = <int, Future<(int, ConfigResult<Map<String, dynamic>>)>>{};
-    for (var i = 0; i < orderedSources.length; i++) {
-      final source = orderedSources[i];
+    for (var i = 0; i < sources.length; i++) {
+      final source = sources[i];
       pending[i] = source.fetchConfig().then((result) => (i, result));
     }
 
-    final errors = <String>[];
+    ConfigResult<Map<String, dynamic>>? best;
+    DateTime? settleDeadline;
     while (pending.isNotEmpty) {
-      final completed = await Future.any(pending.values);
+      (int, ConfigResult<Map<String, dynamic>>) completed;
+      if (settleDeadline == null) {
+        completed = await Future.any(pending.values);
+      } else {
+        final remaining = settleDeadline.difference(DateTime.now());
+        if (remaining <= Duration.zero) break;
+        try {
+          completed = await Future.any(pending.values).timeout(remaining);
+        } on TimeoutException {
+          break;
+        }
+      }
       pending.remove(completed.$1);
       final result = completed.$2;
       if (!result.isSuccess || result.data == null) {
@@ -298,23 +383,118 @@ class RemoteConfigManager {
         );
         continue;
       }
-      await _persistLastSuccessfulSource(result.source);
-      _logger.info('[RemoteConfigManager] ✅ 使用可解析配置源: ${result.source}');
-      return result;
+      best = _newerResult(result, best);
+      if (!settleForHigherVersion) return best;
+      settleDeadline ??= DateTime.now().add(_versionSettlementWindow);
     }
+    return best;
+  }
 
-    // Concurrent first pass failed. Retry the remembered source (or the first
-    // configured source) to tolerate a short network transition at startup.
-    final retrySource = orderedSources.first;
-    final retryResult = await _fetchWithRetry(retrySource);
-    if (retryResult.isSuccess &&
-        retryResult.data != null &&
-        isUsable(retryResult.data!)) {
-      await _persistLastSuccessfulSource(retryResult.source);
-      return retryResult;
+  ConfigResult<Map<String, dynamic>>? _newerResult(
+    ConfigResult<Map<String, dynamic>>? left,
+    ConfigResult<Map<String, dynamic>>? right,
+  ) {
+    if (left == null) return right;
+    if (right == null) return left;
+    final comparison = _compareConfigVersions(
+      _configVersion(left.data),
+      _configVersion(right.data),
+    );
+    // 相同版本保留先选中的结果，避免多个内容一致的 OSS 因响应顺序
+    // 反复改变来源；缓存与实时版本相同时也继续使用已验证缓存。
+    return comparison > 0 ? left : right;
+  }
+
+  String _configVersion(Map<String, dynamic>? data) {
+    if (data == null) return '';
+    final direct = data['config_version']?.toString().trim() ?? '';
+    if (direct.isNotEmpty) return direct;
+    for (final value in data.values) {
+      if (value is Map) {
+        final nested =
+            value.map((key, value) => MapEntry(key.toString(), value));
+        final version = _configVersion(nested);
+        if (version.isNotEmpty) return version;
+      }
     }
-    errors.add('${retryResult.source}: ${retryResult.error ?? '配置内容校验失败'}');
-    return ConfigResult.failure(errors.join('; '), 'all');
+    return '';
+  }
+
+  int _compareConfigVersions(String left, String right) {
+    if (left == right) return 0;
+    if (left.isEmpty) return -1;
+    if (right.isEmpty) return 1;
+    final leftParts = left.split('.').map((p) => int.tryParse(p)).toList();
+    final rightParts = right.split('.').map((p) => int.tryParse(p)).toList();
+    if (leftParts.every((p) => p != null) &&
+        rightParts.every((p) => p != null)) {
+      final length = leftParts.length > rightParts.length
+          ? leftParts.length
+          : rightParts.length;
+      for (var i = 0; i < length; i++) {
+        final a = i < leftParts.length ? leftParts[i]! : 0;
+        final b = i < rightParts.length ? rightParts[i]! : 0;
+        if (a != b) return a.compareTo(b);
+      }
+      return 0;
+    }
+    return left.compareTo(right);
+  }
+
+  Future<void> _persistCompleteConfig(
+    ConfigResult<Map<String, dynamic>> result,
+  ) async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final current = prefs.getString(_currentConfigCacheKey);
+      if (current != null && current.isNotEmpty) {
+        await prefs.setString(_previousConfigCacheKey, current);
+      }
+      await prefs.setString(
+        _currentConfigCacheKey,
+        jsonEncode({
+          'source': result.source,
+          'fetched_at': result.fetchTime.toIso8601String(),
+          'config_version': _configVersion(result.data),
+          'data': result.data,
+        }),
+      );
+    } catch (error) {
+      _logger.warning('[RemoteConfigManager] 保存完整配置缓存失败: $error');
+    }
+  }
+
+  Future<ConfigResult<Map<String, dynamic>>?> _loadBestCachedConfig(
+    bool Function(Map<String, dynamic> data) isUsable,
+  ) async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      ConfigResult<Map<String, dynamic>>? best;
+      for (final key in [_currentConfigCacheKey, _previousConfigCacheKey]) {
+        final raw = prefs.getString(key);
+        if (raw == null || raw.isEmpty) continue;
+        try {
+          final decoded = jsonDecode(raw);
+          if (decoded is! Map) continue;
+          final rawData = decoded['data'];
+          if (rawData is! Map) continue;
+          final data = rawData.map(
+            (key, value) => MapEntry(key.toString(), value),
+          );
+          if (!isUsable(data)) continue;
+          final candidate = ConfigResult<Map<String, dynamic>>.success(
+            data,
+            'local_cache',
+          );
+          best = _newerResult(candidate, best);
+        } catch (_) {
+          continue;
+        }
+      }
+      return best;
+    } catch (_) {
+      return null;
+    }
   }
 
   Future<List<ConfigSource>> _sourcesWithLastSuccessFirst() async {

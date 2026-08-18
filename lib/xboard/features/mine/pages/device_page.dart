@@ -196,8 +196,6 @@ class _DeviceManagementPageState extends ConsumerState<DeviceManagementPage>
       XBoardSDK.instance.httpService.baseUrl,
       apiPrefix: XBoardSDK.instance.httpService.apiPrefix,
     );
-    addFromBaseUrl(productionGatewayUrl, apiPrefix: _deviceGatewayApiPrefix);
-
     return endpoints;
   }
 

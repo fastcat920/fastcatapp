@@ -25,7 +25,17 @@ class ConfigFileLoader {
       return _applyDartDefineOverrides(config);
     } catch (e) {
       _logger.error('加载配置文件失败', e);
-      return const ConfigSettings();
+      return ConfigSettings(
+        remoteConfig: RemoteConfigSettings(
+          sources: [
+            RemoteSourceConfig(
+              name: 'emergency_builtin',
+              url: builtinOssUrl,
+              isEmergency: true,
+            ),
+          ],
+        ),
+      );
     }
   }
 
@@ -90,6 +100,7 @@ class ConfigFileLoader {
               url: e.value,
             ))
         .toList();
+    _appendEmergencySource(sources);
 
     return ConfigSettings(
       currentProvider: provider,
@@ -116,16 +127,9 @@ class ConfigFileLoader {
       _logger.warning('[ConfigLoader] 忽略 config.yaml 中的示例 OSS 地址');
     }
 
-    if (sources.isEmpty) {
-      _logger.warning('[ConfigLoader] 未配置有效 OSS 地址，使用内置 OSS 配置源');
-      return RemoteConfigSettings(
-        sources: [
-          RemoteSourceConfig(name: 'builtin', url: builtinOssUrl),
-        ],
-        maxRetries: remoteConfig.maxRetries,
-        timeout: remoteConfig.timeout,
-        retryDelay: remoteConfig.retryDelay,
-      );
+    _appendEmergencySource(sources);
+    if (sources.length == 1 && sources.first.isEmergency) {
+      _logger.warning('[ConfigLoader] 未配置普通 OSS，使用内置紧急 OSS 配置源');
     }
 
     return RemoteConfigSettings(
@@ -134,6 +138,19 @@ class ConfigFileLoader {
       timeout: remoteConfig.timeout,
       retryDelay: remoteConfig.retryDelay,
     );
+  }
+
+  static void _appendEmergencySource(List<RemoteSourceConfig> sources) {
+    final emergencyUrl = builtinOssUrl.trim();
+    if (emergencyUrl.isEmpty ||
+        sources.any((source) => source.url.trim() == emergencyUrl)) {
+      return;
+    }
+    sources.add(RemoteSourceConfig(
+      name: 'emergency_builtin',
+      url: emergencyUrl,
+      isEmergency: true,
+    ));
   }
 
   static bool _isPlaceholderUrl(String url) {
@@ -236,6 +253,7 @@ class ConfigFileLoader {
           ? json['name'] as String
           : 'source_$index',
       url: json['url'] as String? ?? '',
+      isEmergency: json['is_emergency'] as bool? ?? false,
       headers:
           (json['headers'] as Map<String, dynamic>?)?.cast<String, String>(),
       timeout: json['timeout_seconds'] != null

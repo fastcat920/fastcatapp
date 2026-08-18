@@ -760,6 +760,64 @@ func TestBusinessFailoverDoesNotRetryUnsafeRequestOnServerError(t *testing.T) {
 	}
 }
 
+func TestBusinessFailoverDoesNotReplayUnsafeRequestAfterTransportError(t *testing.T) {
+	secondCalls := 0
+	second := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		secondCalls++
+		w.WriteHeader(http.StatusOK)
+	}))
+	defer second.Close()
+
+	server := &Server{
+		cfg: Config{BusinessBaseURLs: []string{
+			"http://127.0.0.1:1",
+			second.URL,
+		}},
+		client: &http.Client{Timeout: 200 * time.Millisecond},
+		log:    log.New(io.Discard, "", 0),
+	}
+	_, err := server.tryBusinessURLs(context.Background(), func(baseURL string) (*http.Request, error) {
+		return http.NewRequest(http.MethodPost, baseURL+"/api/v1/user/order/save", strings.NewReader("{}"))
+	})
+	if err == nil {
+		t.Fatal("expected transport error")
+	}
+	if secondCalls != 0 {
+		t.Fatalf("unsafe request was replayed %d times", secondCalls)
+	}
+}
+
+func TestOSSGroupReturnsWithoutWaitingForDeadMirrors(t *testing.T) {
+	slow := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		time.Sleep(2 * time.Second)
+		w.WriteHeader(http.StatusServiceUnavailable)
+	}))
+	defer slow.Close()
+	healthy := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "application/json")
+		_, _ = w.Write([]byte(`{
+			"config_version":"2",
+			"domains":["https://api.example.com"],
+			"gateway_urls":["https://gateway.example.com"]
+		}`))
+	}))
+	defer healthy.Close()
+
+	started := time.Now()
+	result := fetchOSSGroup(
+		log.New(io.Discard, "", 0),
+		&http.Client{Timeout: 3 * time.Second},
+		[]string{slow.URL, healthy.URL},
+		"unused-for-plain-json",
+	)
+	if result == nil || result.configVersion != "2" {
+		t.Fatalf("unexpected OSS result: %#v", result)
+	}
+	if elapsed := time.Since(started); elapsed > 1500*time.Millisecond {
+		t.Fatalf("OSS group waited for dead mirror: %s", elapsed)
+	}
+}
+
 func TestBusinessFailoverPromotesSuccessfulBackup(t *testing.T) {
 	firstCalls := 0
 	first := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
