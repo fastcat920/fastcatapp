@@ -14,11 +14,11 @@ import 'package:fl_clash/xboard/features/auth/providers/xboard_user_provider.dar
 import 'package:fl_clash/xboard/features/diagnostics/services/network_diagnostic_snapshot.dart';
 import 'package:fl_clash/xboard/features/initialization/initialization.dart';
 import 'package:fl_clash/xboard/features/profile/providers/profile_import_provider.dart';
+import 'package:fl_clash/xboard/features/shared/services/service_endpoint_health_service.dart';
 import 'package:fl_clash/xboard/features/subscription/services/subscription_status_service.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:flutter_xboard_sdk/flutter_xboard_sdk.dart';
 
 final deviceHealthSummaryProvider =
     FutureProvider.autoDispose<DeviceHealthSummary>((ref) async {
@@ -94,12 +94,6 @@ class DiagnosticBundleService {
     final latestGatewayEvent = gatewayRuntime.recentEvents.isNotEmpty
         ? gatewayRuntime.recentEvents.last.message
         : null;
-    final businessApiLabel = _resolveBusinessApiLabel(activeGateway);
-    final coreRunning = globalState.appState.runTime != null;
-    final vpnConnected = globalState.isStart;
-    final gatewayOk = activeGateway != null && initState.isReady;
-    final nodeCount = _countNodes(groups);
-    final nodesOk = currentProxy != null && !importState.isImporting;
     final subscriptionStatus = userState.isAuthenticated
         ? subscriptionStatusService.checkSubscriptionStatus(
             userState: userState,
@@ -114,6 +108,19 @@ class DiagnosticBundleService {
             ? l10n.xboardNoAvailableSubscription
             : l10n.xboardHealthy);
     final subscriptionDetail = subscriptionStatus?.getDetailMessage(context);
+    ServiceEndpointHealthSnapshot? endpointHealth;
+    try {
+      endpointHealth = await ref.read(serviceEndpointHealthProvider.future);
+    } catch (_) {}
+    final coreRunning = globalState.appState.runTime != null;
+    final vpnConnected = globalState.isStart;
+    final activeGatewayHealth = _activeEndpoint(endpointHealth?.gateways);
+    final activeBusinessHealth = _activeEndpoint(endpointHealth?.businessApis);
+    final gatewayOk = activeGatewayHealth?.healthy ??
+        (activeGateway != null && initState.isReady);
+    final serverOk = activeBusinessHealth?.healthy ?? initState.isReady;
+    final nodeCount = _countNodes(groups);
+    final nodesOk = currentProxy != null && !importState.isImporting;
     final tunPending = patchConfig.tun.enable && !realTunEnable;
     final actualProxy = system.isDesktop && proxy != null
         ? await proxy!.getSystemProxyStatus()
@@ -166,6 +173,7 @@ class DiagnosticBundleService {
 
     final problems = <String>[
       if (!coreRunning) l10n.xboardDiagnosticIssueCore,
+      if (!serverOk) l10n.xboardServerStatus,
       if (!gatewayOk) l10n.xboardDiagnosticIssueGateway,
       if (!subscriptionOk) l10n.xboardSubscriptionHealth,
       if (deviceSummary == null) l10n.xboardDeviceHealth,
@@ -202,27 +210,48 @@ class DiagnosticBundleService {
 
     _writeSection(buffer, l10n.xboardDiagnosticBusinessServices, [
       _ReportItem(
-        initState.isReady,
+        serverOk,
         l10n.xboardServerStatus,
-        initState.isReady
-            ? l10n.xboardHealthy
-            : initState.currentStepDescription ??
-                initState.errorMessage ??
-                l10n.xboardNeedsAttention,
-        details: [
-          if (businessApiLabel.isNotEmpty)
-            '${l10n.xboardCurrentBusinessApi}: $businessApiLabel',
-        ],
+        activeBusinessHealth == null
+            ? endpointHealth?.businessStatusError ==
+                    ServiceEndpointState.unsupported
+                ? l10n.xboardServiceStatusUnsupported
+                : initState.isReady
+                    ? l10n.xboardHealthy
+                    : initState.currentStepDescription ??
+                        initState.errorMessage ??
+                        l10n.xboardNeedsAttention
+            : '${l10n.xboardServiceInUse}: '
+                '${activeBusinessHealth.address} · '
+                '${_endpointStateLabel(l10n, activeBusinessHealth.state)}',
+        details: _endpointReportDetails(
+          endpointHealth?.businessApis ?? const [],
+          l10n,
+          business: true,
+          checkedAt: endpointHealth?.checkedAt,
+          source: endpointHealth?.businessStatusSource,
+        ),
       ),
       _ReportItem(
         gatewayOk,
         l10n.xboardGatewayStatus,
-        activeGateway == null
-            ? l10n.xboardNoGatewayActive
-            : '${l10n.xboardCurrentGateway}: '
-                '${gatewayDisplayLabel(activeGateway.baseUrl)}',
+        activeGatewayHealth == null
+            ? activeGateway == null
+                ? l10n.xboardNoGatewayActive
+                : '${l10n.xboardCurrentGateway}: '
+                    '${gatewayDisplayLabel(activeGateway.baseUrl)}'
+            : '${l10n.xboardServiceInUse}: '
+                '${activeGatewayHealth.address} · '
+                '${_endpointStateLabel(l10n, activeGatewayHealth.state)}',
         details: [
-          l10n.xboardGatewayCandidateCount(gatewayRuntime.candidates.length),
+          ..._endpointReportDetails(
+            endpointHealth?.gateways ?? const [],
+            l10n,
+            business: false,
+            checkedAt: endpointHealth?.checkedAt,
+          ),
+          if ((endpointHealth?.gateways.isEmpty ?? true))
+            l10n.xboardGatewayCandidateCount(gatewayRuntime.candidates.length),
           if (latestGatewayEvent != null)
             '${l10n.xboardHealthLastEvent}: '
                 '${SensitiveMasker.maskText(latestGatewayEvent)}',
@@ -616,14 +645,62 @@ class DiagnosticBundleService {
     );
   }
 
-  static String _resolveBusinessApiLabel(GatewayEndpointConfig? fallback) {
-    final sdk = XBoardSDK.instance;
-    if (sdk.isInitialized) {
-      final baseUrl = sdk.httpService.baseUrl.trim();
-      if (baseUrl.isNotEmpty) return gatewayDisplayLabel(baseUrl);
+  static ServiceEndpointHealthItem? _activeEndpoint(
+    List<ServiceEndpointHealthItem>? items,
+  ) {
+    if (items == null || items.isEmpty) return null;
+    for (final item in items) {
+      if (item.active) return item;
     }
-    if (fallback == null) return '';
-    return gatewayDisplayLabel(fallback.baseUrl);
+    return items.first;
+  }
+
+  static List<String> _endpointReportDetails(
+    List<ServiceEndpointHealthItem> items,
+    AppLocalizations l10n, {
+    required bool business,
+    DateTime? checkedAt,
+    String? source,
+  }) {
+    if (items.isEmpty) return const [];
+    final ordered = List<ServiceEndpointHealthItem>.from(items)
+      ..sort((a, b) {
+        if (a.active != b.active) return a.active ? -1 : 1;
+        return a.index.compareTo(b.index);
+      });
+    return [
+      if (checkedAt != null)
+        '${l10n.xboardServiceCheckedAt}: ${_fmt(checkedAt)}',
+      if (source?.isNotEmpty == true)
+        '${l10n.xboardServiceStatusSource}: $source',
+      for (final item in ordered)
+        '${item.healthy ? '✓' : item.state == ServiceEndpointState.recovering || item.state == ServiceEndpointState.circuitOpen ? '⚠' : '✗'} '
+            '[${item.active ? l10n.xboardServiceInUse : item.primary ? l10n.xboardServicePrimary : l10n.xboardServiceBackup(item.index - 1)}] '
+            '${business ? l10n.xboardBusinessApiLabel(item.index) : l10n.xboardGatewayApiLabel(item.index)}: '
+            '${item.address} · ${_endpointStateLabel(l10n, item.state)}'
+            '${item.latencyMs == null ? '' : ' · ${l10n.xboardServiceLatency(item.latencyMs!)}'}'
+            '${item.recoveryRequired > 0 && item.recoverySuccessCount > 0 ? ' · ${l10n.xboardServiceRecoveryProgress(item.recoverySuccessCount, item.recoveryRequired)}' : ''}'
+            '${item.circuitRemainingSeconds > 0 ? ' · ${l10n.xboardServiceCircuitRemaining(item.circuitRemainingSeconds)}' : ''}'
+            '${item.statusCode == null ? '' : ' · HTTP ${item.statusCode}'}',
+    ];
+  }
+
+  static String _endpointStateLabel(
+    AppLocalizations l10n,
+    ServiceEndpointState state,
+  ) {
+    return switch (state) {
+      ServiceEndpointState.healthy => l10n.xboardServiceStateHealthy,
+      ServiceEndpointState.recovering => l10n.xboardServiceStateRecovering,
+      ServiceEndpointState.circuitOpen => l10n.xboardServiceStateCircuitOpen,
+      ServiceEndpointState.timeout => l10n.xboardServiceStateTimeout,
+      ServiceEndpointState.serviceError => l10n.xboardServiceStateServerError,
+      ServiceEndpointState.unreachable => l10n.xboardServiceStateUnreachable,
+      ServiceEndpointState.unavailable => l10n.xboardServiceStateUnavailable,
+      ServiceEndpointState.unsupported ||
+      ServiceEndpointState.unknown =>
+        l10n.xboardServiceStateUnknown,
+    };
   }
 
   static int _countNodes(List<Group> groups) {

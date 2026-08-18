@@ -88,6 +88,24 @@ type BusinessBackendState struct {
 	RecoverySuccessCount int
 }
 
+type BusinessServiceStatus struct {
+	Index                   int    `json:"index"`
+	Role                    string `json:"role"`
+	Address                 string `json:"address"`
+	Active                  bool   `json:"active"`
+	Status                  string `json:"status"`
+	LatencyMS               int64  `json:"latency_ms"`
+	StatusCode              int    `json:"status_code,omitempty"`
+	FailureReason           string `json:"failure_reason,omitempty"`
+	FailureCount            int    `json:"failure_count"`
+	RecoverySuccessCount    int    `json:"recovery_success_count"`
+	RecoveryRequired        int    `json:"recovery_required"`
+	CircuitRemainingSeconds int64  `json:"circuit_remaining_seconds,omitempty"`
+	LastSuccessAt           string `json:"last_success_at,omitempty"`
+	LastFailureAt           string `json:"last_failure_at,omitempty"`
+	CheckedAt               string `json:"checked_at"`
+}
+
 type Store struct {
 	mu                     sync.RWMutex              `json:"-"`
 	path                   string                    `json:"-"`
@@ -768,6 +786,7 @@ func (s *Server) routes() http.Handler {
 	mux.HandleFunc(prefix+"/user/devices/heartbeat", s.handleHeartbeat)
 	mux.HandleFunc(prefix+"/user/devices", s.handleUserDevices)
 	mux.HandleFunc(prefix+"/user/devices/", s.handleUserDeviceByID)
+	mux.HandleFunc(prefix+"/user/service-status", s.handleServiceStatus)
 	mux.HandleFunc(prefix+"/admin/", s.handleAdmin)
 	mux.HandleFunc("/", s.handleProxy)
 
@@ -1218,6 +1237,38 @@ func (s *Server) handleHeartbeat(w http.ResponseWriter, r *http.Request) {
 		"data": map[string]any{
 			"device":        publicDevice(ctx.Device, ctx.Device.ID),
 			"device_policy": s.cfg.DevicePolicy,
+		},
+	})
+}
+
+// handleServiceStatus exposes a read-only, sanitized view of the business
+// backends used by this gateway. It is authenticated with the normal device
+// session and never returns raw backend URLs or mutates failover state.
+func (s *Server) handleServiceStatus(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodGet {
+		writeError(w, http.StatusMethodNotAllowed, "METHOD_NOT_ALLOWED", "Method not allowed", nil)
+		return
+	}
+	if _, ok := s.requireSession(w, r); !ok {
+		return
+	}
+
+	statuses := s.businessServiceStatuses(r.Context())
+	healthyCount := 0
+	for _, item := range statuses {
+		if item.Status == "healthy" || item.Status == "recovering" {
+			healthyCount++
+		}
+	}
+
+	writeJSON(w, http.StatusOK, map[string]any{
+		"success": true,
+		"data": map[string]any{
+			"checked_at":     time.Now().UTC().Format(time.RFC3339),
+			"source_gateway": maskEndpointAddress(s.publicBaseURL(r)),
+			"healthy_count":  healthyCount,
+			"total_count":    len(statuses),
+			"backends":       statuses,
 		},
 	})
 }
@@ -2473,6 +2524,185 @@ func (s *Server) probeBusinessBackend(ctx context.Context, baseURL string) bool 
 	defer resp.Body.Close()
 	_, _ = io.Copy(io.Discard, io.LimitReader(resp.Body, 4096))
 	return resp.StatusCode >= 200 && resp.StatusCode < 300
+}
+
+func (s *Server) businessServiceStatuses(ctx context.Context) []BusinessServiceStatus {
+	s.ossMu.RLock()
+	configured := append([]string(nil), s.cfg.BusinessBaseURLs...)
+	s.ossMu.RUnlock()
+	if len(configured) == 0 {
+		return []BusinessServiceStatus{}
+	}
+
+	now := time.Now()
+	s.backendMu.Lock()
+	active := s.activeBusinessURL
+	if active == "" {
+		active = configured[0]
+	}
+	states := make(map[string]BusinessBackendState, len(s.backendStates))
+	for baseURL, state := range s.backendStates {
+		if state != nil {
+			states[baseURL] = *state
+		}
+	}
+	s.backendMu.Unlock()
+	recoveryRequired := s.cfg.BusinessRecoverySuccess
+	if recoveryRequired < 1 {
+		recoveryRequired = 3
+	}
+
+	results := make(chan BusinessServiceStatus, len(configured))
+	for index, baseURL := range configured {
+		go func(index int, baseURL string) {
+			state := states[baseURL]
+			status, latency, statusCode, reason := s.probeBusinessBackendStatus(ctx, baseURL)
+			if status == "healthy" && !state.DisabledUntil.IsZero() && state.DisabledUntil.After(now) {
+				status = "recovering"
+			} else if status == "healthy" && state.RecoverySuccessCount > 0 && baseURL != active {
+				status = "recovering"
+			} else if status != "healthy" && !state.DisabledUntil.IsZero() && state.DisabledUntil.After(now) {
+				status = "circuit_open"
+			}
+			remaining := int64(0)
+			if state.DisabledUntil.After(now) {
+				remaining = int64(time.Until(state.DisabledUntil).Seconds())
+				if remaining < 1 {
+					remaining = 1
+				}
+			}
+			item := BusinessServiceStatus{
+				Index:                   index + 1,
+				Role:                    map[bool]string{true: "primary", false: "backup"}[index == 0],
+				Address:                 maskEndpointAddress(baseURL),
+				Active:                  baseURL == active,
+				Status:                  status,
+				LatencyMS:               latency,
+				StatusCode:              statusCode,
+				FailureReason:           reason,
+				FailureCount:            state.FailureCount,
+				RecoverySuccessCount:    state.RecoverySuccessCount,
+				RecoveryRequired:        recoveryRequired,
+				CircuitRemainingSeconds: remaining,
+				CheckedAt:               time.Now().UTC().Format(time.RFC3339),
+			}
+			if !state.LastSuccessAt.IsZero() {
+				item.LastSuccessAt = state.LastSuccessAt.UTC().Format(time.RFC3339)
+			}
+			if !state.LastFailureAt.IsZero() {
+				item.LastFailureAt = state.LastFailureAt.UTC().Format(time.RFC3339)
+			}
+			results <- item
+		}(index, baseURL)
+	}
+
+	statuses := make([]BusinessServiceStatus, 0, len(configured))
+	for range configured {
+		statuses = append(statuses, <-results)
+	}
+	sort.Slice(statuses, func(i, j int) bool { return statuses[i].Index < statuses[j].Index })
+	return statuses
+}
+
+func (s *Server) probeBusinessBackendStatus(ctx context.Context, baseURL string) (status string, latencyMS int64, statusCode int, reason string) {
+	targetURL, err := s.businessURLFor(baseURL, s.cfg.APIPrefix+"/guest/comm/config", "")
+	if err != nil {
+		return "unreachable", 0, 0, "configuration"
+	}
+	probeCtx, cancel := context.WithTimeout(ctx, 5*time.Second)
+	defer cancel()
+	req, err := http.NewRequestWithContext(probeCtx, http.MethodGet, targetURL, nil)
+	if err != nil {
+		return "unreachable", 0, 0, "configuration"
+	}
+	started := time.Now()
+	client := s.client
+	if client == nil {
+		client = http.DefaultClient
+	}
+	resp, err := client.Do(req)
+	latencyMS = time.Since(started).Milliseconds()
+	if err != nil {
+		if errors.Is(err, context.DeadlineExceeded) || errors.Is(probeCtx.Err(), context.DeadlineExceeded) {
+			return "timeout", latencyMS, 0, "timeout"
+		}
+		var networkError net.Error
+		if errors.As(err, &networkError) && networkError.Timeout() {
+			return "timeout", latencyMS, 0, "timeout"
+		}
+		return "unreachable", latencyMS, 0, "connection"
+	}
+	defer resp.Body.Close()
+	_, _ = io.Copy(io.Discard, io.LimitReader(resp.Body, 4096))
+	if resp.StatusCode >= 200 && resp.StatusCode < 300 {
+		return "healthy", latencyMS, resp.StatusCode, ""
+	}
+	if resp.StatusCode >= 500 {
+		return "service_error", latencyMS, resp.StatusCode, "server"
+	}
+	return "unavailable", latencyMS, resp.StatusCode, "http"
+}
+
+func maskEndpointAddress(raw string) string {
+	raw = strings.TrimSpace(raw)
+	if raw == "" {
+		return ""
+	}
+	hasScheme := strings.Contains(raw, "://")
+	parseTarget := raw
+	if !hasScheme {
+		parseTarget = "https://" + raw
+	}
+	parsed, err := url.Parse(parseTarget)
+	if err != nil || parsed.Hostname() == "" {
+		return "[redacted-endpoint]"
+	}
+	prefix := ""
+	if hasScheme {
+		prefix = parsed.Scheme + "://"
+	}
+	host := maskEndpointHost(parsed.Hostname())
+	port := parsed.Port()
+	if port != "" {
+		port = ":" + maskEndpointPort(port)
+	}
+	return prefix + host + port
+}
+
+func maskEndpointHost(host string) string {
+	if ip := net.ParseIP(host); ip != nil {
+		if ipv4 := ip.To4(); ipv4 != nil {
+			parts := strings.Split(ipv4.String(), ".")
+			return parts[0] + ".***.***." + parts[3]
+		}
+		return "[redacted-ipv6]"
+	}
+	parts := strings.Split(host, ".")
+	for index, part := range parts {
+		if len(part) == 0 {
+			parts[index] = "*"
+		} else if len(part) == 1 {
+			parts[index] = "*"
+		} else if len(part) == 2 {
+			parts[index] = part[:1] + "*"
+		} else {
+			parts[index] = part[:1] + strings.Repeat("*", len(part)-2) + part[len(part)-1:]
+		}
+	}
+	return strings.Join(parts, ".")
+}
+
+func maskEndpointPort(port string) string {
+	if len(port) == 0 {
+		return "*"
+	}
+	if len(port) == 1 {
+		return "*"
+	}
+	if len(port) == 2 {
+		return port[:1] + "*"
+	}
+	return port[:1] + strings.Repeat("*", len(port)-2) + port[len(port)-1:]
 }
 
 func (s *Server) ossGatewayURLs() []string {

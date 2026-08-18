@@ -36,8 +36,8 @@ void main() {
       expect(masked, isNot(contains('dnsh.pub')));
       expect(masked, isNot(contains('.pub')));
       expect(masked, isNot(contains('.wang')));
-      expect(masked, contains('p***b'));
-      expect(masked, contains('w***g'));
+      expect(masked, contains('p*b'));
+      expect(masked, contains('w**g'));
       expect(masked, contains('[DNS]'));
       expect(masked, contains('A from https://'));
     });
@@ -66,7 +66,7 @@ void main() {
       final masked = SensitiveMasker.maskText(input);
 
       expect(masked, isNot(contains('.com')));
-      expect(masked, contains('c***m'));
+      expect(masked, contains('c*m'));
     });
 
     test('masks named target port fields without hiding other numbers', () {
@@ -82,6 +82,21 @@ void main() {
     test('masks ports while retaining only their first and final digits', () {
       expect(SensitiveMasker.maskPort('10086'), '1***6');
       expect(SensitiveMasker.maskPort('80'), '8*');
+    });
+
+    test('masks endpoint domains, IP addresses, and explicit ports', () {
+      expect(
+        SensitiveMasker.maskEndpoint('https://api.fastcat.wang:43210/path'),
+        'https://a*i.f*****t.w**g:4***0',
+      );
+      expect(
+        SensitiveMasker.maskEndpoint('http://114.117.243.88:4321'),
+        'http://114.***.***.88:4**1',
+      );
+      expect(
+        SensitiveMasker.maskUrl('https://api.fastcat.wang:43210/token/value'),
+        isNot(contains('43210')),
+      );
     });
   });
 }

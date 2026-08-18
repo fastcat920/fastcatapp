@@ -96,27 +96,41 @@ class MessageLookup extends MessageLookupByLibrary {
 
   static String m37(amount) => "¥${amount}";
 
-  static String m38(count, limit) => "活跃 ${count} 台 · 限额 ${limit}";
+  static String m38(index) => "业务 API ${index}";
 
-  static String m39(count) => "${count}台";
+  static String m39(count, limit) => "活跃 ${count} 台 · 限额 ${limit}";
 
-  static String m40(date) => "已于 ${date} 到期";
+  static String m40(count) => "${count}台";
 
-  static String m41(date) => "有效期至 ${date}";
+  static String m41(date) => "已于 ${date} 到期";
 
-  static String m42(date, days) => "于 ${date} 到期，距离到期还有 ${days} 天";
+  static String m42(date) => "有效期至 ${date}";
 
-  static String m43(count) => "${count} 个候选";
+  static String m43(date, days) => "于 ${date} 到期，距离到期还有 ${days} 天";
 
-  static String m44(message) => "订阅导入：${message}";
+  static String m44(index) => "网关 API ${index}";
 
-  static String m45(count) => "${count} 个节点";
+  static String m45(count) => "${count} 个候选";
 
-  static String m46(error) => "兑换失败：${error}";
+  static String m46(message) => "订阅导入：${message}";
 
-  static String m47(days) => "已用流量将在 ${days} 天后重置";
+  static String m47(count) => "${count} 个节点";
 
-  static String m48(time) => "运行时间: ${time}";
+  static String m48(error) => "兑换失败：${error}";
+
+  static String m49(days) => "已用流量将在 ${days} 天后重置";
+
+  static String m50(time) => "运行时间: ${time}";
+
+  static String m51(healthy, total) => "${healthy}/${total} 可用";
+
+  static String m52(index) => "备用接口 ${index}";
+
+  static String m53(seconds) => "${seconds} 秒后重新检测";
+
+  static String m54(latency) => "${latency}ms";
+
+  static String m55(current, required) => "恢复进度 ${current}/${required}";
 
   final messages = _notInlinedMessages(_notInlinedMessages);
   static Map<String, Function> _notInlinedMessages(_) => <String, Function>{
@@ -1056,6 +1070,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "xboardBrowserNotOpenedTip": MessageLookupByLibrary.simpleMessage(
       "如果浏览器未自动打开，可以点击\\\"重新打开\\\"或复制链接手动打开",
     ),
+    "xboardBusinessApiLabel": m38,
     "xboardBuyMoreTrafficOrUpgrade": MessageLookupByLibrary.simpleMessage(
       "请购买更多流量或升级套餐",
     ),
@@ -1230,8 +1245,8 @@ class MessageLookup extends MessageLookupByLibrary {
     "xboardDeviceSessionRevokedTitle": MessageLookupByLibrary.simpleMessage(
       "设备已被移除",
     ),
-    "xboardDeviceSummary": m38,
-    "xboardDeviceUnit": m39,
+    "xboardDeviceSummary": m39,
+    "xboardDeviceUnit": m40,
     "xboardDeviceUnknown": MessageLookupByLibrary.simpleMessage("未知"),
     "xboardDeviceUnknownVersion": MessageLookupByLibrary.simpleMessage("未知版本"),
     "xboardDeviceUnlimited": MessageLookupByLibrary.simpleMessage("无限制"),
@@ -1361,9 +1376,9 @@ class MessageLookup extends MessageLookupByLibrary {
       "请输入礼品卡兑换码",
     ),
     "xboardExcellent": MessageLookupByLibrary.simpleMessage("优秀"),
-    "xboardExpiredOnDate": m40,
-    "xboardExpiresOnDate": m41,
-    "xboardExpiresOnWithDays": m42,
+    "xboardExpiredOnDate": m41,
+    "xboardExpiresOnDate": m42,
+    "xboardExpiresOnWithDays": m43,
     "xboardExpiryTime": MessageLookupByLibrary.simpleMessage("过期时间"),
     "xboardFailedToCheckPaymentStatus": MessageLookupByLibrary.simpleMessage(
       "检查支付状态失败",
@@ -1380,7 +1395,8 @@ class MessageLookup extends MessageLookupByLibrary {
     "xboardFair": MessageLookupByLibrary.simpleMessage("一般"),
     "xboardForceUpdate": MessageLookupByLibrary.simpleMessage("强制更新"),
     "xboardForgotPassword": MessageLookupByLibrary.simpleMessage("忘记密码"),
-    "xboardGatewayCandidateCount": m43,
+    "xboardGatewayApiLabel": m44,
+    "xboardGatewayCandidateCount": m45,
     "xboardGatewayStatus": MessageLookupByLibrary.simpleMessage("网关状态"),
     "xboardGetGroupLinkFailed": MessageLookupByLibrary.simpleMessage(
       "获取群组链接失败",
@@ -1431,7 +1447,7 @@ class MessageLookup extends MessageLookupByLibrary {
       "不可用",
     ),
     "xboardHealthLastEvent": MessageLookupByLibrary.simpleMessage("最近事件"),
-    "xboardHealthSubscriptionImport": m44,
+    "xboardHealthSubscriptionImport": m46,
     "xboardHealthTunApplied": MessageLookupByLibrary.simpleMessage("已应用"),
     "xboardHealthTunPending": MessageLookupByLibrary.simpleMessage("等待应用"),
     "xboardHealthy": MessageLookupByLibrary.simpleMessage("正常"),
@@ -1787,7 +1803,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "xboardNoSubscriptionPlans": MessageLookupByLibrary.simpleMessage("暂无套餐信息"),
     "xboardNoTicketRecords": MessageLookupByLibrary.simpleMessage("暂无工单记录"),
     "xboardNoTrafficRecords": MessageLookupByLibrary.simpleMessage("暂无流量记录"),
-    "xboardNodeCount": m45,
+    "xboardNodeCount": m47,
     "xboardNodeHealth": MessageLookupByLibrary.simpleMessage("节点状态"),
     "xboardNodeName": MessageLookupByLibrary.simpleMessage("节点名称"),
     "xboardNodeSelection": MessageLookupByLibrary.simpleMessage("节点选择"),
@@ -1958,7 +1974,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "xboardRechargeBonus": MessageLookupByLibrary.simpleMessage("充值奖励"),
     "xboardRechargeNow": MessageLookupByLibrary.simpleMessage("立即充值"),
     "xboardRedeemFailed": MessageLookupByLibrary.simpleMessage("兑换失败"),
-    "xboardRedeemFailedWithError": m46,
+    "xboardRedeemFailedWithError": m48,
     "xboardRedeemNow": MessageLookupByLibrary.simpleMessage("立即兑换"),
     "xboardRedeemSuccess": MessageLookupByLibrary.simpleMessage("兑换成功"),
     "xboardRefresh": MessageLookupByLibrary.simpleMessage("刷新"),
@@ -2005,7 +2021,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "xboardResetTrafficConfirmContent": MessageLookupByLibrary.simpleMessage(
       "此操作将重置已使用的流量，但不会增加套餐时长，是否继续？",
     ),
-    "xboardResetTrafficInDays": m47,
+    "xboardResetTrafficInDays": m49,
     "xboardResetTrafficToday": MessageLookupByLibrary.simpleMessage(
       "已用流量已在今天重置",
     ),
@@ -2016,7 +2032,7 @@ class MessageLookup extends MessageLookupByLibrary {
       "3. 支付完成后返回应用，系统将自动检测",
     ),
     "xboardRunDiagnosis": MessageLookupByLibrary.simpleMessage("运行自检"),
-    "xboardRunningTime": m48,
+    "xboardRunningTime": m50,
     "xboardSecureEncryption": MessageLookupByLibrary.simpleMessage("安全加密"),
     "xboardSelectPaymentMethod": MessageLookupByLibrary.simpleMessage("选择支付方式"),
     "xboardSelectPaymentPeriod": MessageLookupByLibrary.simpleMessage("选择购买周期"),
@@ -2027,12 +2043,21 @@ class MessageLookup extends MessageLookupByLibrary {
     "xboardSendVerificationCode": MessageLookupByLibrary.simpleMessage("发送验证码"),
     "xboardServerError": MessageLookupByLibrary.simpleMessage("服务器错误"),
     "xboardServerStatus": MessageLookupByLibrary.simpleMessage("服务器状态"),
+    "xboardServiceAvailableCount": m51,
+    "xboardServiceBackup": m52,
+    "xboardServiceCheckedAt": MessageLookupByLibrary.simpleMessage("检测时间"),
+    "xboardServiceCheckingEndpoints": MessageLookupByLibrary.simpleMessage(
+      "正在检测所有接口",
+    ),
+    "xboardServiceCircuitRemaining": m53,
     "xboardServiceConnectionDegraded": MessageLookupByLibrary.simpleMessage(
       "服务连接不稳定",
     ),
     "xboardServiceDegradedTooltip": MessageLookupByLibrary.simpleMessage(
       "业务请求出现异常，客户端正在确认本地网络和业务网关状态。",
     ),
+    "xboardServiceInUse": MessageLookupByLibrary.simpleMessage("正在使用"),
+    "xboardServiceLatency": m54,
     "xboardServiceNetworkRestricted": MessageLookupByLibrary.simpleMessage(
       "网络连接受限",
     ),
@@ -2050,9 +2075,36 @@ class MessageLookup extends MessageLookupByLibrary {
     "xboardServiceOfflineCacheTooltip": MessageLookupByLibrary.simpleMessage(
       "本地网络正常，但暂时无法连接业务服务器。当前代理可继续使用已缓存的订阅和节点，登录、套餐、支付等功能可能暂不可用。网络或网关恢复后会自动退出离线缓存模式。",
     ),
+    "xboardServicePrimary": MessageLookupByLibrary.simpleMessage("主接口"),
     "xboardServiceRecovering": MessageLookupByLibrary.simpleMessage("正在恢复连接"),
     "xboardServiceRecoveringTooltip": MessageLookupByLibrary.simpleMessage(
       "网络已恢复，客户端正在重新确认业务网关状态。",
+    ),
+    "xboardServiceRecoveryProgress": m55,
+    "xboardServiceStateCircuitOpen": MessageLookupByLibrary.simpleMessage(
+      "熔断中",
+    ),
+    "xboardServiceStateHealthy": MessageLookupByLibrary.simpleMessage("正常"),
+    "xboardServiceStateRecovering": MessageLookupByLibrary.simpleMessage(
+      "恢复确认中",
+    ),
+    "xboardServiceStateServerError": MessageLookupByLibrary.simpleMessage(
+      "服务异常",
+    ),
+    "xboardServiceStateTimeout": MessageLookupByLibrary.simpleMessage("连接超时"),
+    "xboardServiceStateUnavailable": MessageLookupByLibrary.simpleMessage(
+      "不可用",
+    ),
+    "xboardServiceStateUnknown": MessageLookupByLibrary.simpleMessage("待检测"),
+    "xboardServiceStateUnreachable": MessageLookupByLibrary.simpleMessage(
+      "无法连接",
+    ),
+    "xboardServiceStatusSource": MessageLookupByLibrary.simpleMessage("状态来源"),
+    "xboardServiceStatusUnavailable": MessageLookupByLibrary.simpleMessage(
+      "暂时无法获取详细状态",
+    ),
+    "xboardServiceStatusUnsupported": MessageLookupByLibrary.simpleMessage(
+      "当前网关版本不支持详细检测",
     ),
     "xboardSetup": MessageLookupByLibrary.simpleMessage("设置"),
     "xboardSixMonthCycle": MessageLookupByLibrary.simpleMessage("6个月周期"),

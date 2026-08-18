@@ -14,6 +14,7 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:fl_clash/common/sensitive_masker.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'package:fl_clash/xboard/core/core.dart';
@@ -128,13 +129,7 @@ List<String> _collectConfiguredGatewayUrls() {
 }
 
 String maskGatewayAddress(String raw) {
-  final normalized = _normalizeBaseUrl(raw);
-  final uri = Uri.tryParse(normalized);
-  if (uri == null || uri.host.isEmpty) {
-    return _maskHost(normalized);
-  }
-  final maskedHost = _maskHost(uri.host);
-  return uri.hasScheme ? '${uri.scheme}://$maskedHost' : maskedHost;
+  return SensitiveMasker.maskEndpoint(_normalizeBaseUrl(raw));
 }
 
 String gatewayAddressFingerprint(String raw) {
@@ -146,42 +141,6 @@ String gatewayAddressFingerprint(String raw) {
 
 String gatewayDisplayLabel(String raw) {
   return '${maskGatewayAddress(raw)} · ${gatewayAddressFingerprint(raw)}';
-}
-
-String _maskHost(String host) {
-  final isIpv4 = RegExp(r'^\d{1,3}(\.\d{1,3}){3}$').hasMatch(host);
-  if (isIpv4) {
-    final parts = host.split('.');
-    if (parts.length == 4) {
-      return '${parts.first}.***.***.${parts.last}';
-    }
-  }
-
-  final parts = host.split('.');
-  if (parts.length >= 2) {
-    final root = parts.last;
-    final secondLevel = parts[parts.length - 2];
-    final maskedSecond = secondLevel.length <= 2
-        ? '${secondLevel[0]}*'
-        : '${secondLevel.substring(0, 1)}***${secondLevel.substring(secondLevel.length - 1)}';
-    if (parts.length == 2) {
-      return '$maskedSecond.$root';
-    }
-    final prefix = parts.sublist(0, parts.length - 2);
-    final maskedPrefix = prefix
-        .map(
-          (item) => item.isEmpty
-              ? '*'
-              : item.length == 1
-                  ? '*'
-                  : '${item.substring(0, 1)}***',
-        )
-        .join('.');
-    return '$maskedPrefix.$maskedSecond.$root';
-  }
-
-  if (host.length <= 2) return '${host[0]}*';
-  return '${host.substring(0, 1)}***${host.substring(host.length - 1)}';
 }
 
 class GatewayEndpointConfig {
@@ -394,6 +353,10 @@ class GatewayRuntimeService {
 
   List<GatewayEndpointConfig> get candidates =>
       List<GatewayEndpointConfig>.unmodifiable(_candidates);
+  List<GatewayEndpointConfig> get configuredPriorityCandidates =>
+      List<GatewayEndpointConfig>.unmodifiable(
+        _candidatesInConfiguredPriorityOrder(),
+      );
   List<GatewayRuntimeEvent> get recentEvents =>
       List<GatewayRuntimeEvent>.unmodifiable(_recentEvents);
 

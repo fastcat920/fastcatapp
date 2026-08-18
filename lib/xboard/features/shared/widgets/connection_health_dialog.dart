@@ -11,12 +11,12 @@ import 'package:fl_clash/xboard/features/auth/providers/xboard_user_provider.dar
 import 'package:fl_clash/xboard/features/initialization/initialization.dart';
 import 'package:fl_clash/xboard/features/profile/providers/profile_import_provider.dart';
 import 'package:fl_clash/xboard/features/shared/services/diagnostic_bundle_service.dart';
+import 'package:fl_clash/xboard/features/shared/services/service_endpoint_health_service.dart';
 import 'package:fl_clash/xboard/features/shared/styles/styles.dart';
 import 'package:fl_clash/xboard/features/subscription/services/subscription_status_service.dart';
 import 'package:fl_clash/xboard/utils/xboard_notification.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:flutter_xboard_sdk/flutter_xboard_sdk.dart';
 
 final _windowsHelperStatusProvider =
     FutureProvider.autoDispose<WindowsHelperRuntimeStatus?>((ref) async {
@@ -101,7 +101,7 @@ class _ConnectionHealthViewState extends ConsumerState<ConnectionHealthView> {
     gatewayRuntime.syncFromCurrentConfig();
     final activeGateway = gatewayRuntime.activeConfig;
     final currentProxy = _resolveCurrentProxy(ref);
-    final businessApiLabel = _resolveBusinessApiLabel(activeGateway);
+    final endpointHealth = ref.watch(serviceEndpointHealthProvider);
     final helperStatus = ref.watch(_windowsHelperStatusProvider);
     final networkProps = ref.watch(networkSettingProvider);
     final patchConfig = ref.watch(patchClashConfigProvider);
@@ -120,10 +120,6 @@ class _ConnectionHealthViewState extends ConsumerState<ConnectionHealthView> {
     final gatewayOk = activeGateway != null && initState.isReady;
     final nodeOk = groups.isNotEmpty && currentProxy != null;
     final allHealthy = gatewayOk && subscriptionOk && nodeOk;
-    final latestEvent = gatewayRuntime.recentEvents.isNotEmpty
-        ? gatewayRuntime.recentEvents.last.message
-        : null;
-
     return ListView(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
       children: [
@@ -157,34 +153,25 @@ class _ConnectionHealthViewState extends ConsumerState<ConnectionHealthView> {
           ),
         if (widget.showHeader) const SizedBox(height: 16),
         _ConnectionSectionHeader(l10n.xboardDiagnosticBusinessServices),
-        _HealthRow(
+        _EndpointHealthCard(
           icon: Icons.cloud_done_outlined,
           title: l10n.xboardServerStatus,
-          value: initState.isReady
-              ? l10n.xboardHealthy
-              : initState.currentStepDescription ??
-                  initState.errorMessage ??
-                  l10n.xboardNeedsAttention,
-          detail: businessApiLabel.isEmpty
-              ? null
-              : '${l10n.xboardCurrentBusinessApi}: $businessApiLabel',
-          healthy: initState.isReady,
+          summary: endpointHealth,
+          business: true,
+          fallbackHealthy: initState.isReady,
+          fallbackText: initState.currentStepDescription ??
+              initState.errorMessage ??
+              l10n.xboardNeedsAttention,
         ),
-        _HealthRow(
+        _EndpointHealthCard(
           icon: Icons.hub_outlined,
           title: l10n.xboardGatewayStatus,
-          value: activeGateway == null
+          summary: endpointHealth,
+          business: false,
+          fallbackHealthy: gatewayOk,
+          fallbackText: activeGateway == null
               ? l10n.xboardNoGatewayActive
-              : '${l10n.xboardCurrentGateway}: '
-                  '${gatewayDisplayLabel(activeGateway.baseUrl)}',
-          detail: [
-            l10n.xboardGatewayCandidateCount(
-              gatewayRuntime.candidates.length,
-            ),
-            if (latestEvent != null)
-              '${l10n.xboardHealthLastEvent}: $latestEvent',
-          ].join('\n'),
-          healthy: gatewayOk,
+              : l10n.xboardHealthy,
         ),
         _HealthRow(
           icon: Icons.card_membership_outlined,
@@ -283,6 +270,7 @@ class _ConnectionHealthViewState extends ConsumerState<ConnectionHealthView> {
                         .refreshSubscriptionInfo();
                     ref.invalidate(_windowsHelperStatusProvider);
                     ref.invalidate(_systemProxyHealthProvider);
+                    ref.invalidate(serviceEndpointHealthProvider);
                   } finally {
                     if (mounted) setState(() => _isRefreshing = false);
                   }
@@ -354,6 +342,7 @@ Future<void> _repairConnection(
     await ref.read(xboardUserProvider.notifier).refreshSubscriptionInfo(
           importProfile: false,
         );
+    ref.invalidate(serviceEndpointHealthProvider);
     ref.invalidate(_systemProxyHealthProvider);
     return null;
   }
@@ -423,18 +412,6 @@ int _countNodes(List<Group> groups) {
   return names.length;
 }
 
-String _resolveBusinessApiLabel(GatewayEndpointConfig? fallback) {
-  final sdk = XBoardSDK.instance;
-  if (sdk.isInitialized) {
-    final baseUrl = sdk.httpService.baseUrl.trim();
-    if (baseUrl.isNotEmpty) {
-      return gatewayDisplayLabel(baseUrl);
-    }
-  }
-  if (fallback == null) return '';
-  return gatewayDisplayLabel(fallback.baseUrl);
-}
-
 Proxy? _resolveCurrentProxy(WidgetRef ref) {
   final groups = ref.watch(groupsProvider);
   if (groups.isEmpty) return null;
@@ -490,6 +467,295 @@ class _DeviceHealthRow extends ConsumerWidget {
       ),
       healthy: !summary.hasError,
     );
+  }
+}
+
+class _EndpointHealthCard extends StatelessWidget {
+  const _EndpointHealthCard({
+    required this.icon,
+    required this.title,
+    required this.summary,
+    required this.business,
+    required this.fallbackHealthy,
+    required this.fallbackText,
+  });
+
+  final IconData icon;
+  final String title;
+  final AsyncValue<ServiceEndpointHealthSnapshot> summary;
+  final bool business;
+  final bool fallbackHealthy;
+  final String fallbackText;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+    final theme = Theme.of(context);
+    return summary.when(
+      loading: () => _buildContainer(
+        context,
+        healthy: fallbackHealthy,
+        headerValue: l10n.xboardServiceCheckingEndpoints,
+        children: const [
+          Padding(
+            padding: EdgeInsets.fromLTRB(12, 2, 12, 14),
+            child: LinearProgressIndicator(minHeight: 2),
+          ),
+        ],
+      ),
+      error: (_, __) => _buildContainer(
+        context,
+        healthy: false,
+        headerValue: l10n.xboardServiceStatusUnavailable,
+        children: [
+          Padding(
+            padding: const EdgeInsets.fromLTRB(12, 0, 12, 14),
+            child: Text(
+              fallbackText,
+              style: theme.textTheme.bodySmall?.copyWith(
+                color: theme.colorScheme.onSurfaceVariant,
+              ),
+            ),
+          ),
+        ],
+      ),
+      data: (snapshot) {
+        final items = business ? snapshot.businessApis : snapshot.gateways;
+        final supported = !business || snapshot.businessStatusSupported;
+        final unsupported = business &&
+            snapshot.businessStatusError == ServiceEndpointState.unsupported;
+        final healthyCount = items.where((item) => item.healthy).length;
+        final headerValue = items.isEmpty
+            ? unsupported
+                ? l10n.xboardServiceStatusUnsupported
+                : supported
+                    ? fallbackText
+                    : l10n.xboardServiceStatusUnavailable
+            : l10n.xboardServiceAvailableCount(healthyCount, items.length);
+        final healthy = items.isEmpty
+            ? fallbackHealthy && supported
+            : healthyCount > 0 &&
+                items.any((item) => item.active && item.healthy);
+        return _buildContainer(
+          context,
+          healthy: healthy,
+          headerValue: headerValue,
+          children: [
+            if (business && snapshot.businessStatusSource.isNotEmpty)
+              Padding(
+                padding: const EdgeInsets.fromLTRB(12, 0, 12, 8),
+                child: Text(
+                  '${l10n.xboardServiceStatusSource}: ${snapshot.businessStatusSource}',
+                  style: theme.textTheme.bodySmall?.copyWith(
+                    color: theme.colorScheme.onSurfaceVariant,
+                  ),
+                ),
+              ),
+            if (items.isEmpty)
+              Padding(
+                padding: const EdgeInsets.fromLTRB(12, 0, 12, 14),
+                child: Text(
+                  headerValue,
+                  style: theme.textTheme.bodySmall?.copyWith(
+                    color: theme.colorScheme.onSurfaceVariant,
+                  ),
+                ),
+              )
+            else
+              for (final item in _activeFirst(items))
+                _EndpointStatusRow(item: item, business: business),
+          ],
+        );
+      },
+    );
+  }
+
+  Widget _buildContainer(
+    BuildContext context, {
+    required bool healthy,
+    required String headerValue,
+    required List<Widget> children,
+  }) {
+    final theme = Theme.of(context);
+    final statusColor = healthy
+        ? XbUiStatusColor.success(context)
+        : XbUiStatusColor.pending(context);
+    return Container(
+      margin: const EdgeInsets.only(bottom: 10),
+      decoration: BoxDecoration(
+        color: theme.colorScheme.surfaceContainerHighest.withValues(alpha: 0.4),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(
+          color: theme.colorScheme.outline.withValues(alpha: 0.12),
+        ),
+      ),
+      clipBehavior: Clip.antiAlias,
+      child: Theme(
+        data: theme.copyWith(dividerColor: Colors.transparent),
+        child: ExpansionTile(
+          initiallyExpanded: true,
+          tilePadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 2),
+          childrenPadding: EdgeInsets.zero,
+          leading: Container(
+            width: 34,
+            height: 34,
+            decoration: BoxDecoration(
+              color: statusColor.withValues(alpha: 0.12),
+              shape: BoxShape.circle,
+            ),
+            child: Icon(icon, color: statusColor, size: 18),
+          ),
+          title: Text(
+            title,
+            style: theme.textTheme.labelLarge?.copyWith(
+              fontWeight: XbFontWeight.bold,
+            ),
+          ),
+          subtitle: Text(
+            headerValue,
+            style: theme.textTheme.bodySmall?.copyWith(
+              color: theme.colorScheme.onSurfaceVariant,
+            ),
+          ),
+          children: children,
+        ),
+      ),
+    );
+  }
+
+  List<ServiceEndpointHealthItem> _activeFirst(
+    List<ServiceEndpointHealthItem> source,
+  ) {
+    final result = List<ServiceEndpointHealthItem>.from(source);
+    result.sort((a, b) {
+      if (a.active != b.active) return a.active ? -1 : 1;
+      return a.index.compareTo(b.index);
+    });
+    return result;
+  }
+}
+
+class _EndpointStatusRow extends StatelessWidget {
+  const _EndpointStatusRow({required this.item, required this.business});
+
+  final ServiceEndpointHealthItem item;
+  final bool business;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+    final theme = Theme.of(context);
+    final color = _statusColor(context, item.state);
+    final role = item.active
+        ? l10n.xboardServiceInUse
+        : item.primary
+            ? l10n.xboardServicePrimary
+            : l10n.xboardServiceBackup(item.index - 1);
+    final endpointName = business
+        ? l10n.xboardBusinessApiLabel(item.index)
+        : l10n.xboardGatewayApiLabel(item.index);
+    final details = <String>[
+      _stateLabel(l10n, item.state),
+      if (item.latencyMs != null && item.latencyMs! >= 0)
+        l10n.xboardServiceLatency(item.latencyMs!),
+      if (item.recoveryRequired > 0 &&
+          item.recoverySuccessCount > 0 &&
+          item.state == ServiceEndpointState.recovering)
+        l10n.xboardServiceRecoveryProgress(
+          item.recoverySuccessCount,
+          item.recoveryRequired,
+        ),
+      if (item.circuitRemainingSeconds > 0)
+        l10n.xboardServiceCircuitRemaining(item.circuitRemainingSeconds),
+      if (item.statusCode != null) 'HTTP ${item.statusCode}',
+    ];
+    return Container(
+      margin: const EdgeInsets.fromLTRB(12, 0, 12, 8),
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+      decoration: BoxDecoration(
+        color: theme.colorScheme.surface.withValues(alpha: 0.72),
+        borderRadius: BorderRadius.circular(10),
+        border: Border.all(color: color.withValues(alpha: 0.18)),
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Container(
+            width: 8,
+            height: 8,
+            margin: const EdgeInsets.only(top: 5),
+            decoration: BoxDecoration(color: color, shape: BoxShape.circle),
+          ),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    Expanded(
+                      child: Text(
+                        endpointName,
+                        style: theme.textTheme.bodyMedium?.copyWith(
+                          fontWeight: XbFontWeight.semibold,
+                        ),
+                      ),
+                    ),
+                    Text(
+                      role,
+                      style: theme.textTheme.labelSmall?.copyWith(color: color),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 3),
+                Text(
+                  item.address,
+                  style: theme.textTheme.bodySmall?.copyWith(
+                    color: theme.colorScheme.onSurfaceVariant,
+                  ),
+                ),
+                const SizedBox(height: 3),
+                Text(
+                  details.join(' · '),
+                  style: theme.textTheme.bodySmall?.copyWith(color: color),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Color _statusColor(BuildContext context, ServiceEndpointState state) {
+    return switch (state) {
+      ServiceEndpointState.healthy => XbUiStatusColor.success(context),
+      ServiceEndpointState.recovering ||
+      ServiceEndpointState.circuitOpen =>
+        XbUiStatusColor.pending(context),
+      ServiceEndpointState.unknown ||
+      ServiceEndpointState.unsupported =>
+        Theme.of(context).colorScheme.onSurfaceVariant,
+      _ => Theme.of(context).colorScheme.error,
+    };
+  }
+
+  String _stateLabel(
+    AppLocalizations l10n,
+    ServiceEndpointState state,
+  ) {
+    return switch (state) {
+      ServiceEndpointState.healthy => l10n.xboardServiceStateHealthy,
+      ServiceEndpointState.recovering => l10n.xboardServiceStateRecovering,
+      ServiceEndpointState.circuitOpen => l10n.xboardServiceStateCircuitOpen,
+      ServiceEndpointState.timeout => l10n.xboardServiceStateTimeout,
+      ServiceEndpointState.serviceError => l10n.xboardServiceStateServerError,
+      ServiceEndpointState.unreachable => l10n.xboardServiceStateUnreachable,
+      ServiceEndpointState.unavailable => l10n.xboardServiceStateUnavailable,
+      ServiceEndpointState.unsupported ||
+      ServiceEndpointState.unknown =>
+        l10n.xboardServiceStateUnknown,
+    };
   }
 }
 

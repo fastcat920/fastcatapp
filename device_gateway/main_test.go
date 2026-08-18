@@ -224,6 +224,21 @@ func TestDeviceLimitAndSubscriptionRewrite(t *testing.T) {
 	if !strings.HasPrefix(authToken, "Bearer dg_") {
 		t.Fatalf("expected gateway auth token, got %q", authToken)
 	}
+	unauthorizedStatusResp, _ := getJSON(t, gateway.URL+"/api/v1/user/service-status", "")
+	if unauthorizedStatusResp.StatusCode != http.StatusUnauthorized {
+		t.Fatalf("unauthorized service status = %d, want 401", unauthorizedStatusResp.StatusCode)
+	}
+	serviceStatusResp, serviceStatusBody := getJSON(
+		t,
+		gateway.URL+"/api/v1/user/service-status",
+		authToken,
+	)
+	if serviceStatusResp.StatusCode != http.StatusOK {
+		t.Fatalf("service status = %d body=%s", serviceStatusResp.StatusCode, serviceStatusBody)
+	}
+	if strings.Contains(string(serviceStatusBody), business.URL) {
+		t.Fatalf("service status leaked raw backend URL: %s", serviceStatusBody)
+	}
 	if policy := stringFromNested(firstBody, "data", "device_policy"); policy != policyStrict {
 		t.Fatalf("login device_policy = %q, want %q", policy, policyStrict)
 	}
@@ -945,6 +960,67 @@ func TestBusinessRecoveryHonorsBackupMinimumHold(t *testing.T) {
 
 	if got := server.businessURLs()[0]; got != backup.URL {
 		t.Fatalf("active backend = %s, want backup during minimum hold", got)
+	}
+}
+
+func TestMaskEndpointAddressHidesHostAndPort(t *testing.T) {
+	tests := map[string]string{
+		"https://api.fastcat.wang:43210/path": "https://a*i.f*****t.w**g:4***0",
+		"http://114.117.243.88:4321":          "http://114.***.***.88:4**1",
+	}
+	for input, want := range tests {
+		if got := maskEndpointAddress(input); got != want {
+			t.Fatalf("maskEndpointAddress(%q) = %q, want %q", input, got, want)
+		}
+	}
+}
+
+func TestBusinessServiceStatusesAreSanitizedAndReadOnly(t *testing.T) {
+	primary := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(http.StatusServiceUnavailable)
+	}))
+	defer primary.Close()
+	backup := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(http.StatusOK)
+	}))
+	defer backup.Close()
+
+	server := &Server{
+		cfg: Config{
+			BusinessBaseURLs:         []string{primary.URL, backup.URL},
+			APIPrefix:                "/api/v1",
+			BusinessRecoverySuccess:  3,
+			BusinessHealthInterval:   30 * time.Second,
+			BusinessBackupMinHold:    3 * time.Minute,
+			BusinessFailureThreshold: 2,
+		},
+		client:        &http.Client{Timeout: time.Second},
+		log:           log.New(io.Discard, "", 0),
+		backendStates: make(map[string]*BusinessBackendState),
+	}
+	server.syncBusinessBackends(server.cfg.BusinessBaseURLs)
+	server.markBusinessSuccess(backup.URL)
+
+	statuses := server.businessServiceStatuses(context.Background())
+	if len(statuses) != 2 {
+		t.Fatalf("status count = %d, want 2", len(statuses))
+	}
+	if statuses[0].Status != "service_error" {
+		t.Fatalf("primary status = %q, want service_error", statuses[0].Status)
+	}
+	if statuses[1].Status != "healthy" || !statuses[1].Active {
+		t.Fatalf("backup status = %#v, want active healthy", statuses[1])
+	}
+	encoded, err := json.Marshal(statuses)
+	if err != nil {
+		t.Fatal(err)
+	}
+	text := string(encoded)
+	if strings.Contains(text, primary.URL) || strings.Contains(text, backup.URL) {
+		t.Fatalf("service status leaked a raw backend URL: %s", text)
+	}
+	if got := server.businessURLs()[0]; got != backup.URL {
+		t.Fatalf("read-only status changed active backend to %q", got)
 	}
 }
 

@@ -104,27 +104,41 @@ class MessageLookup extends MessageLookupByLibrary {
 
   static String m37(amount) => "¥${amount}";
 
-  static String m38(count, limit) => "${count} active · Limit ${limit}";
+  static String m38(index) => "Business API ${index}";
 
-  static String m39(count) => "${count} devices";
+  static String m39(count, limit) => "${count} active · Limit ${limit}";
 
-  static String m40(date) => "Expired on ${date}";
+  static String m40(count) => "${count} devices";
 
-  static String m41(date) => "Valid until ${date}";
+  static String m41(date) => "Expired on ${date}";
 
-  static String m42(date, days) => "Expires on ${date}, ${days} days remaining";
+  static String m42(date) => "Valid until ${date}";
 
-  static String m43(count) => "${count} candidates";
+  static String m43(date, days) => "Expires on ${date}, ${days} days remaining";
 
-  static String m44(message) => "Subscription import: ${message}";
+  static String m44(index) => "Gateway API ${index}";
 
-  static String m45(count) => "${count} nodes";
+  static String m45(count) => "${count} candidates";
 
-  static String m46(error) => "Redeem failed: ${error}";
+  static String m46(message) => "Subscription import: ${message}";
 
-  static String m47(days) => "Used traffic will reset in ${days} days";
+  static String m47(count) => "${count} nodes";
 
-  static String m48(time) => "Running time: ${time}";
+  static String m48(error) => "Redeem failed: ${error}";
+
+  static String m49(days) => "Used traffic will reset in ${days} days";
+
+  static String m50(time) => "Running time: ${time}";
+
+  static String m51(healthy, total) => "${healthy}/${total} available";
+
+  static String m52(index) => "Backup ${index}";
+
+  static String m53(seconds) => "Retry check in ${seconds}s";
+
+  static String m54(latency) => "${latency}ms";
+
+  static String m55(current, required) => "Recovery ${current}/${required}";
 
   final messages = _notInlinedMessages(_notInlinedMessages);
   static Map<String, Function> _notInlinedMessages(_) => <String, Function>{
@@ -1496,6 +1510,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "xboardBrowserNotOpenedTip": MessageLookupByLibrary.simpleMessage(
       "If browser doesn\'t open automatically, click \\\"Reopen\\\" or copy link manually",
     ),
+    "xboardBusinessApiLabel": m38,
     "xboardBuyMoreTrafficOrUpgrade": MessageLookupByLibrary.simpleMessage(
       "Please buy more traffic or upgrade plan",
     ),
@@ -1756,8 +1771,8 @@ class MessageLookup extends MessageLookupByLibrary {
     "xboardDeviceSessionRevokedTitle": MessageLookupByLibrary.simpleMessage(
       "Device Removed",
     ),
-    "xboardDeviceSummary": m38,
-    "xboardDeviceUnit": m39,
+    "xboardDeviceSummary": m39,
+    "xboardDeviceUnit": m40,
     "xboardDeviceUnknown": MessageLookupByLibrary.simpleMessage("Unknown"),
     "xboardDeviceUnknownVersion": MessageLookupByLibrary.simpleMessage(
       "Unknown version",
@@ -1913,9 +1928,9 @@ class MessageLookup extends MessageLookupByLibrary {
       "Enter gift card redemption code",
     ),
     "xboardExcellent": MessageLookupByLibrary.simpleMessage("Excellent"),
-    "xboardExpiredOnDate": m40,
-    "xboardExpiresOnDate": m41,
-    "xboardExpiresOnWithDays": m42,
+    "xboardExpiredOnDate": m41,
+    "xboardExpiresOnDate": m42,
+    "xboardExpiresOnWithDays": m43,
     "xboardExpiryTime": MessageLookupByLibrary.simpleMessage("Expiry time"),
     "xboardFailedToCheckPaymentStatus": MessageLookupByLibrary.simpleMessage(
       "Failed to check payment status",
@@ -1934,7 +1949,8 @@ class MessageLookup extends MessageLookupByLibrary {
     "xboardForgotPassword": MessageLookupByLibrary.simpleMessage(
       "Forgot Password",
     ),
-    "xboardGatewayCandidateCount": m43,
+    "xboardGatewayApiLabel": m44,
+    "xboardGatewayCandidateCount": m45,
     "xboardGatewayStatus": MessageLookupByLibrary.simpleMessage(
       "Gateway status",
     ),
@@ -2008,7 +2024,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "xboardHealthLastEvent": MessageLookupByLibrary.simpleMessage(
       "Latest event",
     ),
-    "xboardHealthSubscriptionImport": m44,
+    "xboardHealthSubscriptionImport": m46,
     "xboardHealthTunApplied": MessageLookupByLibrary.simpleMessage("Applied"),
     "xboardHealthTunPending": MessageLookupByLibrary.simpleMessage(
       "Waiting to apply",
@@ -2449,7 +2465,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "xboardNoTrafficRecords": MessageLookupByLibrary.simpleMessage(
       "No traffic records",
     ),
-    "xboardNodeCount": m45,
+    "xboardNodeCount": m47,
     "xboardNodeHealth": MessageLookupByLibrary.simpleMessage("Node status"),
     "xboardNodeName": MessageLookupByLibrary.simpleMessage("Node Name"),
     "xboardNodeSelection": MessageLookupByLibrary.simpleMessage(
@@ -2704,7 +2720,7 @@ class MessageLookup extends MessageLookupByLibrary {
     ),
     "xboardRechargeNow": MessageLookupByLibrary.simpleMessage("Recharge now"),
     "xboardRedeemFailed": MessageLookupByLibrary.simpleMessage("Redeem failed"),
-    "xboardRedeemFailedWithError": m46,
+    "xboardRedeemFailedWithError": m48,
     "xboardRedeemNow": MessageLookupByLibrary.simpleMessage("Redeem now"),
     "xboardRedeemSuccess": MessageLookupByLibrary.simpleMessage(
       "Redeem successful",
@@ -2767,7 +2783,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "xboardResetTrafficConfirmContent": MessageLookupByLibrary.simpleMessage(
       "This will reset the used traffic, but will not extend the plan duration. Continue?",
     ),
-    "xboardResetTrafficInDays": m47,
+    "xboardResetTrafficInDays": m49,
     "xboardResetTrafficToday": MessageLookupByLibrary.simpleMessage(
       "Used traffic has been reset today",
     ),
@@ -2778,7 +2794,7 @@ class MessageLookup extends MessageLookupByLibrary {
       "3. Return to app after payment, system will detect automatically",
     ),
     "xboardRunDiagnosis": MessageLookupByLibrary.simpleMessage("Run check"),
-    "xboardRunningTime": m48,
+    "xboardRunningTime": m50,
     "xboardSecureEncryption": MessageLookupByLibrary.simpleMessage(
       "Secure encryption",
     ),
@@ -2799,12 +2815,23 @@ class MessageLookup extends MessageLookupByLibrary {
     ),
     "xboardServerError": MessageLookupByLibrary.simpleMessage("Server error"),
     "xboardServerStatus": MessageLookupByLibrary.simpleMessage("Server status"),
+    "xboardServiceAvailableCount": m51,
+    "xboardServiceBackup": m52,
+    "xboardServiceCheckedAt": MessageLookupByLibrary.simpleMessage(
+      "Checked at",
+    ),
+    "xboardServiceCheckingEndpoints": MessageLookupByLibrary.simpleMessage(
+      "Checking all endpoints",
+    ),
+    "xboardServiceCircuitRemaining": m53,
     "xboardServiceConnectionDegraded": MessageLookupByLibrary.simpleMessage(
       "Service connection unstable",
     ),
     "xboardServiceDegradedTooltip": MessageLookupByLibrary.simpleMessage(
       "A business request failed. The client is checking the local network and business gateways.",
     ),
+    "xboardServiceInUse": MessageLookupByLibrary.simpleMessage("In use"),
+    "xboardServiceLatency": m54,
     "xboardServiceNetworkRestricted": MessageLookupByLibrary.simpleMessage(
       "Network access restricted",
     ),
@@ -2823,11 +2850,46 @@ class MessageLookup extends MessageLookupByLibrary {
     "xboardServiceOfflineCacheTooltip": MessageLookupByLibrary.simpleMessage(
       "The local internet connection is working, but the business service is temporarily unreachable. The proxy can continue using cached subscriptions and nodes, while login, plans, and payments may be unavailable. Offline cache mode ends automatically after recovery.",
     ),
+    "xboardServicePrimary": MessageLookupByLibrary.simpleMessage("Primary"),
     "xboardServiceRecovering": MessageLookupByLibrary.simpleMessage(
       "Restoring connection",
     ),
     "xboardServiceRecoveringTooltip": MessageLookupByLibrary.simpleMessage(
       "The network has recovered. The client is confirming business gateway availability.",
+    ),
+    "xboardServiceRecoveryProgress": m55,
+    "xboardServiceStateCircuitOpen": MessageLookupByLibrary.simpleMessage(
+      "Circuit open",
+    ),
+    "xboardServiceStateHealthy": MessageLookupByLibrary.simpleMessage(
+      "Healthy",
+    ),
+    "xboardServiceStateRecovering": MessageLookupByLibrary.simpleMessage(
+      "Confirming recovery",
+    ),
+    "xboardServiceStateServerError": MessageLookupByLibrary.simpleMessage(
+      "Service error",
+    ),
+    "xboardServiceStateTimeout": MessageLookupByLibrary.simpleMessage(
+      "Connection timed out",
+    ),
+    "xboardServiceStateUnavailable": MessageLookupByLibrary.simpleMessage(
+      "Unavailable",
+    ),
+    "xboardServiceStateUnknown": MessageLookupByLibrary.simpleMessage(
+      "Not checked",
+    ),
+    "xboardServiceStateUnreachable": MessageLookupByLibrary.simpleMessage(
+      "Unreachable",
+    ),
+    "xboardServiceStatusSource": MessageLookupByLibrary.simpleMessage(
+      "Status source",
+    ),
+    "xboardServiceStatusUnavailable": MessageLookupByLibrary.simpleMessage(
+      "Detailed status is temporarily unavailable",
+    ),
+    "xboardServiceStatusUnsupported": MessageLookupByLibrary.simpleMessage(
+      "This gateway version does not support detailed checks",
     ),
     "xboardSetup": MessageLookupByLibrary.simpleMessage("Setup"),
     "xboardSixMonthCycle": MessageLookupByLibrary.simpleMessage(

@@ -8,6 +8,12 @@ this service, this service logs in to the business API, checks the user's
 through this service and are proxied to the business API only when the device is
 still authorized.
 
+Authenticated clients can inspect a sanitized, read-only backend health
+snapshot at `GET /api/v1/user/service-status`. The response marks the active,
+primary, and backup business APIs, but masks every domain, IP address, and
+explicit port. These probes never change failover counters or the active
+backend.
+
 ## Run
 
 ```bash
@@ -23,6 +29,27 @@ Health check:
 ```bash
 curl http://127.0.0.1:8787/healthz
 ```
+
+## Production deployment
+
+The repository keeps the production deployment script at
+`device_gateway/deploy-device-gateway.sh`. Install it once on the server and
+run it from the fixed deployment directory:
+
+```bash
+sudo install -m 755 \
+  device_gateway/deploy-device-gateway.sh \
+  /www/wwwroot/get.fastcat.com/deploy-device-gateway.sh
+
+cd /www/wwwroot/get.fastcat.com
+sudo ./deploy-device-gateway.sh
+```
+
+The script defaults to the `main` branch, checks out only `device_gateway`,
+backs up the live binary and configuration, tests and builds the new binary,
+then automatically restores and restarts the previous version if startup or
+the health check fails. `DEPLOY_BRANCH` may be set for an intentional one-off
+branch deployment.
 
 ## Required client login payload
 

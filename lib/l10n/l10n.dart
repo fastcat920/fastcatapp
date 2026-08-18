@@ -9735,6 +9735,226 @@ class AppLocalizations {
     );
   }
 
+  /// `{healthy}/{total} available`
+  String xboardServiceAvailableCount(Object healthy, Object total) {
+    return Intl.message(
+      '$healthy/$total available',
+      name: 'xboardServiceAvailableCount',
+      desc: '',
+      args: [healthy, total],
+    );
+  }
+
+  /// `Checking all endpoints`
+  String get xboardServiceCheckingEndpoints {
+    return Intl.message(
+      'Checking all endpoints',
+      name: 'xboardServiceCheckingEndpoints',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Detailed status is temporarily unavailable`
+  String get xboardServiceStatusUnavailable {
+    return Intl.message(
+      'Detailed status is temporarily unavailable',
+      name: 'xboardServiceStatusUnavailable',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `This gateway version does not support detailed checks`
+  String get xboardServiceStatusUnsupported {
+    return Intl.message(
+      'This gateway version does not support detailed checks',
+      name: 'xboardServiceStatusUnsupported',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `In use`
+  String get xboardServiceInUse {
+    return Intl.message(
+      'In use',
+      name: 'xboardServiceInUse',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Primary`
+  String get xboardServicePrimary {
+    return Intl.message(
+      'Primary',
+      name: 'xboardServicePrimary',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Backup {index}`
+  String xboardServiceBackup(Object index) {
+    return Intl.message(
+      'Backup $index',
+      name: 'xboardServiceBackup',
+      desc: '',
+      args: [index],
+    );
+  }
+
+  /// `Business API {index}`
+  String xboardBusinessApiLabel(Object index) {
+    return Intl.message(
+      'Business API $index',
+      name: 'xboardBusinessApiLabel',
+      desc: '',
+      args: [index],
+    );
+  }
+
+  /// `Gateway API {index}`
+  String xboardGatewayApiLabel(Object index) {
+    return Intl.message(
+      'Gateway API $index',
+      name: 'xboardGatewayApiLabel',
+      desc: '',
+      args: [index],
+    );
+  }
+
+  /// `Healthy`
+  String get xboardServiceStateHealthy {
+    return Intl.message(
+      'Healthy',
+      name: 'xboardServiceStateHealthy',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Confirming recovery`
+  String get xboardServiceStateRecovering {
+    return Intl.message(
+      'Confirming recovery',
+      name: 'xboardServiceStateRecovering',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Circuit open`
+  String get xboardServiceStateCircuitOpen {
+    return Intl.message(
+      'Circuit open',
+      name: 'xboardServiceStateCircuitOpen',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Connection timed out`
+  String get xboardServiceStateTimeout {
+    return Intl.message(
+      'Connection timed out',
+      name: 'xboardServiceStateTimeout',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Service error`
+  String get xboardServiceStateServerError {
+    return Intl.message(
+      'Service error',
+      name: 'xboardServiceStateServerError',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Unreachable`
+  String get xboardServiceStateUnreachable {
+    return Intl.message(
+      'Unreachable',
+      name: 'xboardServiceStateUnreachable',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Unavailable`
+  String get xboardServiceStateUnavailable {
+    return Intl.message(
+      'Unavailable',
+      name: 'xboardServiceStateUnavailable',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Not checked`
+  String get xboardServiceStateUnknown {
+    return Intl.message(
+      'Not checked',
+      name: 'xboardServiceStateUnknown',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `{latency}ms`
+  String xboardServiceLatency(Object latency) {
+    return Intl.message(
+      '${latency}ms',
+      name: 'xboardServiceLatency',
+      desc: '',
+      args: [latency],
+    );
+  }
+
+  /// `Recovery {current}/{required}`
+  String xboardServiceRecoveryProgress(Object current, Object required) {
+    return Intl.message(
+      'Recovery $current/$required',
+      name: 'xboardServiceRecoveryProgress',
+      desc: '',
+      args: [current, required],
+    );
+  }
+
+  /// `Retry check in {seconds}s`
+  String xboardServiceCircuitRemaining(Object seconds) {
+    return Intl.message(
+      'Retry check in ${seconds}s',
+      name: 'xboardServiceCircuitRemaining',
+      desc: '',
+      args: [seconds],
+    );
+  }
+
+  /// `Status source`
+  String get xboardServiceStatusSource {
+    return Intl.message(
+      'Status source',
+      name: 'xboardServiceStatusSource',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Checked at`
+  String get xboardServiceCheckedAt {
+    return Intl.message(
+      'Checked at',
+      name: 'xboardServiceCheckedAt',
+      desc: '',
+      args: [],
+    );
+  }
+
   /// `No active gateway`
   String get xboardNoGatewayActive {
     return Intl.message(

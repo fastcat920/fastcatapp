@@ -97,6 +97,20 @@ class SensitiveMasker {
     return _maskUrl(value.trim());
   }
 
+  /// Masks an endpoint while keeping enough shape to distinguish candidates.
+  /// Paths and query parameters are intentionally omitted.
+  static String maskEndpoint(String? value) {
+    if (value == null || value.trim().isEmpty) return '';
+    final raw = value.trim();
+    final hasScheme = raw.contains('://');
+    final uri = Uri.tryParse(hasScheme ? raw : 'https://$raw');
+    if (uri == null || uri.host.isEmpty) return '[redacted-endpoint]';
+    final scheme = hasScheme ? '${uri.scheme}://' : '';
+    final host = _maskHost(uri.host);
+    final port = uri.hasPort ? ':${maskPort(uri.port.toString())}' : '';
+    return '$scheme$host$port';
+  }
+
   static String maskPort(String value) {
     if (value.isEmpty) return '*';
     if (!RegExp(r'^\d+$').hasMatch(value)) return value;
@@ -113,7 +127,7 @@ class SensitiveMasker {
 
     final scheme = uri.scheme.isEmpty ? 'https' : uri.scheme;
     final host = _maskHost(uri.host);
-    final port = uri.hasPort ? ':${uri.port}' : '';
+    final port = uri.hasPort ? ':${maskPort(uri.port.toString())}' : '';
     final segments = uri.pathSegments.where((item) => item.isNotEmpty).toList();
     final firstSegment =
         segments.isEmpty ? '' : _safePathSegment(segments.first);
@@ -151,7 +165,7 @@ class SensitiveMasker {
     if (value.isEmpty) return '*';
     if (value.length == 1) return '*';
     if (value.length == 2) return '${value[0]}*';
-    return '${value[0]}***${value[value.length - 1]}';
+    return '${value[0]}${'*' * (value.length - 2)}${value[value.length - 1]}';
   }
 
   static bool _looksLikeHash(String value) {
