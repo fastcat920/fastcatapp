@@ -21,6 +21,14 @@ import '../services/payment_status_poller.dart';
 
 const _logger = FileLogger('order_detail_page.dart');
 
+bool isOrderPendingForDisplay(
+  int? statusCode, {
+  required bool paymentCompleted,
+}) {
+  if (paymentCompleted) return false;
+  return OrderStatus.fromCode(statusCode ?? 0) == OrderStatus.pending;
+}
+
 class OrderDetailPage extends ConsumerStatefulWidget {
   final String tradeNo;
   final DomainPlan? plan;
@@ -527,15 +535,48 @@ class _OrderDetailPageState extends ConsumerState<OrderDetailPage>
       clearGetOrdersCache();
       ref.invalidate(getOrderProvider(widget.tradeNo));
       ref.invalidate(getOrdersProvider);
+      ref
+          .read(xboardPaymentProvider.notifier)
+          .markOrderCompletedLocally(widget.tradeNo);
       _notifyOrderChanged();
       _notifyPaymentSuccess();
       XBoardNotification.showSuccess(l10n.xboardPaymentSuccess);
 
-      // 后台异步刷新订阅信息，不阻塞 toast 和页面返回
-      unawaited(_refreshSubscriptionInBackground());
+      // 余额支付成功和订单接口的最终状态可能有短暂延迟。
+      // 页面先乐观更新，后台再确认订单并刷新订阅。
+      unawaited(_synchronizeCompletedOrder());
     } finally {
       _isHandlingPaymentSuccess = false;
     }
+  }
+
+  Future<void> _synchronizeCompletedOrder() async {
+    const delays = <Duration>[
+      Duration.zero,
+      Duration(milliseconds: 400),
+      Duration(seconds: 1),
+      Duration(seconds: 2),
+      Duration(seconds: 3),
+    ];
+    for (final delay in delays) {
+      if (delay > Duration.zero) await Future<void>.delayed(delay);
+      if (!mounted) return;
+      try {
+        clearGetOrderCache(widget.tradeNo);
+        ref.invalidate(getOrderProvider(widget.tradeNo));
+        final order = await ref.read(getOrderProvider(widget.tradeNo).future);
+        final status = OrderStatus.fromCode(order?.status ?? 0);
+        if (status == OrderStatus.completed ||
+            status == OrderStatus.discounted) {
+          clearGetOrdersCache();
+          ref.invalidate(getOrdersProvider);
+          break;
+        }
+      } catch (e) {
+        _logger.warning('支付成功后同步订单状态失败: $e');
+      }
+    }
+    if (mounted) await _refreshSubscriptionInBackground();
   }
 
   Future<void> _refreshSubscriptionInBackground() async {
@@ -620,9 +661,10 @@ class _OrderDetailContent extends StatelessWidget {
   Widget build(BuildContext context) {
     final effectivePlanId = order?.planId ?? widgetPlan?.id;
     final period = widgetPeriod ?? order?.period;
-    final isPending = order?.status != null
-        ? OrderStatus.fromCode(order!.status ?? 0) == OrderStatus.pending
-        : true;
+    final isPending = isOrderPendingForDisplay(
+      order?.status,
+      paymentCompleted: isPaymentCompleted,
+    );
     final latestPlan = _findPlan(plans, effectivePlanId);
     final resolvedPlan = latestPlan ?? widgetPlan;
     final trafficFallback = currentSubscription?.planId == effectivePlanId
@@ -678,7 +720,10 @@ class _OrderDetailContent extends StatelessWidget {
         );
         final rightColumn = Column(
           children: [
-            _OrderStatusCard(order: order),
+            _OrderStatusCard(
+              order: order,
+              completedOverride: isPaymentCompleted,
+            ),
             if (isPending) ...[
               const SizedBox(height: 16),
               if (pricing.needExternalPayment) ...[
@@ -1141,13 +1186,19 @@ class _OrderInfoCard extends StatelessWidget {
 
 class _OrderStatusCard extends StatelessWidget {
   final OrderModel? order;
+  final bool completedOverride;
 
-  const _OrderStatusCard({required this.order});
+  const _OrderStatusCard({
+    required this.order,
+    this.completedOverride = false,
+  });
 
   @override
   Widget build(BuildContext context) {
-    final color = _statusColor(order?.status, context);
-    final icon = _statusIcon(order?.status);
+    final effectiveStatus =
+        completedOverride ? OrderStatus.completed.code : order?.status;
+    final color = _statusColor(effectiveStatus, context);
+    final icon = _statusIcon(effectiveStatus);
 
     return _InfoCard(
       title: AppLocalizations.of(context).xboardOrderStatus,
@@ -1161,7 +1212,7 @@ class _OrderStatusCard extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  _statusLabel(context, order?.status),
+                  _statusLabel(context, effectiveStatus),
                   style: Theme.of(context).textTheme.titleMedium?.copyWith(
                         color: color,
                         fontWeight: XbFontWeight.bold,
@@ -1169,7 +1220,7 @@ class _OrderStatusCard extends StatelessWidget {
                 ),
                 const SizedBox(height: 6),
                 Text(
-                  _statusDescription(context, order?.status),
+                  _statusDescription(context, effectiveStatus),
                   style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                         color: Theme.of(context).colorScheme.onSurfaceVariant,
                       ),

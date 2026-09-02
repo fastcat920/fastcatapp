@@ -321,11 +321,16 @@ class _NetCheckPageState extends ConsumerState<NetCheckPage> {
       elapsedMs: _asInt(data['dns-elapsed-ms']),
     ));
 
+    final failureStage = data['failure-stage']?.toString();
     final tcpStatus = data['tcp-status']?.toString();
     if (tcpStatus == 'skipped') {
       results.add(_StepResult.skipped(
         l10n.xboardNetworkDiagnosticsNodeTcp,
-        l10n.xboardNetworkDiagnosticsTcpSkippedUdp,
+        network == 'UDP'
+            ? l10n.xboardNetworkDiagnosticsTcpSkippedUdp
+            : failureStage == 'dns'
+                ? l10n.xboardNetworkDiagnosticsNodeDnsFailed
+                : l10n.xboardNetworkDiagnosticsUnavailable,
       ));
     } else {
       results.add(_StepResult(
@@ -337,7 +342,6 @@ class _NetCheckPageState extends ConsumerState<NetCheckPage> {
     }
 
     final proxyStatus = data['proxy-status']?.toString();
-    final failureStage = data['failure-stage']?.toString();
     results.add(_StepResult(
       label: failureStage == 'tls'
           ? l10n.xboardNetworkDiagnosticsNodeTls

@@ -2,6 +2,16 @@ import 'package:fl_clash/xboard/config/gateway_config.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
+  test('gateway health accepts only successful HTTP responses', () {
+    expect(isHealthyGatewayStatusCode(200), isTrue);
+    expect(isHealthyGatewayStatusCode(204), isTrue);
+    expect(isHealthyGatewayStatusCode(299), isTrue);
+    expect(isHealthyGatewayStatusCode(300), isFalse);
+    expect(isHealthyGatewayStatusCode(401), isFalse);
+    expect(isHealthyGatewayStatusCode(404), isFalse);
+    expect(isHealthyGatewayStatusCode(500), isFalse);
+  });
+
   test('verified gateway clears stale circuit breaker state', () {
     final failedAt = DateTime(2026, 8, 18);
     final config = GatewayEndpointConfig(

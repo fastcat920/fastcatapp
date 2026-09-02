@@ -64,7 +64,6 @@ class _NodeSelectorBarState extends ConsumerState<NodeSelectorBar> {
       }
     });
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      autoLatencyService.initialize(ref);
       unawaited(_hydrateGroupsFromLocalProfile());
     });
   }
@@ -354,7 +353,9 @@ class _NodeSelectorBarState extends ConsumerState<NodeSelectorBar> {
         borderRadius: BorderRadius.circular(XbUiTokens.radiusCard),
         border: Border.all(color: XbUiCardStyle.shape(context).side.color),
       ),
-      padding: const EdgeInsets.all(14),
+      // 首页为节点栏预留 56px；36px 图标上下各留 9px 正好适配，
+      // 避免原先 14px 垂直内边距造成 8px RenderFlex overflow。
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 9),
       child: Row(
         children: [
           Container(
@@ -410,7 +411,7 @@ class _NodeSelectorBarState extends ConsumerState<NodeSelectorBar> {
         borderRadius: BorderRadius.circular(XbUiTokens.radiusCard),
         border: Border.all(color: XbUiCardStyle.shape(context).side.color),
       ),
-      padding: const EdgeInsets.all(14),
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 9),
       child: Row(
         children: [
           Container(

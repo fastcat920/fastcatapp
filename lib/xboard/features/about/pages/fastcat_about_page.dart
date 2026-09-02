@@ -87,7 +87,26 @@ class _FastCatAboutPageState extends ConsumerState<FastCatAboutPage> {
                 child: Column(
                   children: [
                     ListTile(
-                      leading: const Icon(Icons.system_update_outlined),
+                      leading: Stack(
+                        clipBehavior: Clip.none,
+                        children: [
+                          const Icon(Icons.system_update_outlined),
+                          if (update.hasUpdate)
+                            Positioned(
+                              right: -3,
+                              top: -3,
+                              child: Container(
+                                key: const Key('about_update_badge'),
+                                width: 8,
+                                height: 8,
+                                decoration: const BoxDecoration(
+                                  color: Colors.redAccent,
+                                  shape: BoxShape.circle,
+                                ),
+                              ),
+                            ),
+                        ],
+                      ),
                       title: Text(l10n.checkUpdate),
                       trailing: update.isChecking
                           ? const SizedBox.square(

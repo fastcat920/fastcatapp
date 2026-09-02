@@ -33,6 +33,30 @@ void main() {
         ServiceConnectivityCause.networkRestricted,
       );
     });
+
+    test('does not report restricted network when active proxy is reachable',
+        () {
+      expect(
+        classifyServiceConnectivityFailure(
+          hasNetworkInterface: true,
+          baseNetworkReachable: false,
+          proxyNetworkReachable: true,
+        ),
+        ServiceConnectivityCause.gatewayUnavailable,
+      );
+    });
+
+    test('reachable proxy also compensates for a transient interface event',
+        () {
+      expect(
+        classifyServiceConnectivityFailure(
+          hasNetworkInterface: false,
+          baseNetworkReachable: false,
+          proxyNetworkReachable: true,
+        ),
+        ServiceConnectivityCause.gatewayUnavailable,
+      );
+    });
   });
 
   test('copyWith can clear a previous connectivity cause', () {

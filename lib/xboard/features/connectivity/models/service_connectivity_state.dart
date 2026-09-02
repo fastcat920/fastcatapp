@@ -16,11 +16,12 @@ enum ServiceConnectivityCause {
 ServiceConnectivityCause classifyServiceConnectivityFailure({
   required bool hasNetworkInterface,
   required bool baseNetworkReachable,
+  bool proxyNetworkReachable = false,
 }) {
-  if (!hasNetworkInterface) {
+  if (!hasNetworkInterface && !proxyNetworkReachable) {
     return ServiceConnectivityCause.noNetwork;
   }
-  if (baseNetworkReachable) {
+  if (baseNetworkReachable || proxyNetworkReachable) {
     return ServiceConnectivityCause.gatewayUnavailable;
   }
   return ServiceConnectivityCause.networkRestricted;

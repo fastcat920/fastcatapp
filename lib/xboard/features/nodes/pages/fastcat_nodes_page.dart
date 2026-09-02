@@ -5,7 +5,9 @@ import 'package:fl_clash/common/common.dart';
 import 'package:fl_clash/enum/enum.dart';
 import 'package:fl_clash/mihomo/mihomo.dart';
 import 'package:fl_clash/providers/providers.dart';
+import 'package:fl_clash/widgets/text.dart';
 import 'package:fl_clash/xboard/features/latency/services/auto_latency_service.dart';
+import 'package:fl_clash/xboard/features/nodes/utils/node_country_resolver.dart';
 import 'package:fl_clash/xboard/features/profile/providers/profile_import_provider.dart';
 import 'package:fl_clash/xboard/features/auth/providers/xboard_user_provider.dart';
 import 'package:fl_clash/xboard/features/shared/styles/styles.dart';
@@ -97,22 +99,47 @@ class _FastCatNodesPageState extends ConsumerState<FastCatNodesPage> {
           const SizedBox(width: 4),
         ],
       ),
-      body: group == null
-          ? Center(child: Text(l10n.xboardNoAvailableNodes))
-          : LayoutBuilder(
-              builder: (context, constraints) {
-                final useFullLandscapeWidth = !system.isDesktop &&
-                    constraints.maxWidth > constraints.maxHeight;
-                return Center(
-                  child: ConstrainedBox(
-                    constraints: BoxConstraints(
-                      maxWidth: useFullLandscapeWidth ? double.infinity : 760,
+      body: _buildPageBody(group, mode),
+    );
+  }
+
+  Widget _buildPageBody(MihomoGroup? group, Mode mode) {
+    final content = group == null
+        ? LayoutBuilder(
+            builder: (context, constraints) => ListView(
+              physics: const AlwaysScrollableScrollPhysics(),
+              children: [
+                SizedBox(
+                  height: constraints.maxHeight,
+                  child: Center(
+                    child: Text(
+                      AppLocalizations.of(context).xboardNoAvailableNodes,
                     ),
-                    child: _buildNodes(group, mode),
                   ),
-                );
-              },
+                ),
+              ],
             ),
+          )
+        : LayoutBuilder(
+            builder: (context, constraints) {
+              final useFullLandscapeWidth = !system.isDesktop &&
+                  constraints.maxWidth > constraints.maxHeight;
+              return Center(
+                child: ConstrainedBox(
+                  constraints: BoxConstraints(
+                    maxWidth: useFullLandscapeWidth ? double.infinity : 760,
+                  ),
+                  child: _buildNodes(group, mode),
+                ),
+              );
+            },
+          );
+
+    if (system.isDesktop || system.isTV) return content;
+    return RefreshIndicator(
+      key: const Key('nodes_pull_to_refresh'),
+      onRefresh: _runUpdate,
+      child: content,
     );
   }
 
@@ -199,6 +226,7 @@ class _FastCatNodesPageState extends ConsumerState<FastCatNodesPage> {
         _centerSelectedNode(selectedIndex, constraints.maxHeight, columns);
         return CustomScrollView(
           controller: _scrollController,
+          physics: const AlwaysScrollableScrollPhysics(),
           slivers: [
             SliverToBoxAdapter(child: _buildOverview(context, mode)),
             SliverPadding(
@@ -256,7 +284,12 @@ class _FastCatNodesPageState extends ConsumerState<FastCatNodesPage> {
                                         ? primary
                                         : Theme.of(context).colorScheme.outline,
                                   ),
-                                  const SizedBox(width: 11),
+                                  const SizedBox(width: 9),
+                                  EmojiText(
+                                    NodeCountryResolver.resolveFlag(node.name),
+                                    style: const TextStyle(fontSize: 20),
+                                  ),
+                                  const SizedBox(width: 9),
                                   Expanded(
                                     child: Column(
                                       mainAxisAlignment:
@@ -384,6 +417,7 @@ class _FastCatNodesPageState extends ConsumerState<FastCatNodesPage> {
   }
 
   Future<void> _runUpdate() async {
+    if (_updating || _testing) return;
     setState(() => _updating = true);
     try {
       await _reloadNodes();

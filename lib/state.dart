@@ -473,6 +473,16 @@ class GlobalState {
             entry.value.splitByMultipleSeparators;
       }
     }
+    // DIRECT connections bypass the VPN on Android, so their hostnames must
+    // use the system resolver. Keep an explicit subscription setting, but add
+    // the safe default when the profile does not provide one.
+    final dnsConfig = rawConfig["dns"] as Map;
+    final directNameservers = dnsConfig["direct-nameserver"];
+    if (directNameservers == null ||
+        (directNameservers is List && directNameservers.isEmpty)) {
+      dnsConfig["direct-nameserver"] = ["system://"];
+    }
+    dnsConfig.putIfAbsent("direct-nameserver-follow-policy", () => false);
     var rules = [];
     if (rawConfig["rules"] != null) {
       rules = rawConfig["rules"];

@@ -91,20 +91,26 @@ class FastCatVpnService : VpnService(), BaseServiceInterface {
             addDnsServer(options.dnsServerAddress)
             setMtu(9000)
             options.accessControl.let { accessControl ->
-                if (accessControl.enable) {
-                    when (accessControl.mode) {
-                        AccessControlMode.acceptSelected -> {
-                            (accessControl.acceptList + packageName).forEach {
-                                addAllowedApplication(it)
-                            }
-                        }
-
-                        AccessControlMode.rejectSelected -> {
-                            (accessControl.rejectList - packageName).forEach {
-                                addDisallowedApplication(it)
-                            }
-                        }
+                if (accessControl.enable &&
+                    accessControl.mode == AccessControlMode.acceptSelected
+                ) {
+                    // The control plane must stay outside the VPN. Requests
+                    // that explicitly target the local Clash proxy still work
+                    // through loopback, while DIRECT OSS/gateway requests keep
+                    // using the physical network.
+                    accessControl.acceptList
+                        .filterNot { it == packageName }
+                        .distinct()
+                        .forEach { addAllowedApplication(it) }
+                } else {
+                    val rejectedApplications = if (accessControl.enable) {
+                        accessControl.rejectList
+                    } else {
+                        emptyList()
                     }
+                    (rejectedApplications + packageName)
+                        .distinct()
+                        .forEach { addDisallowedApplication(it) }
                 }
             }
             setSession(getString(R.string.app_name))

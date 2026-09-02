@@ -197,7 +197,12 @@ class DiagnosticBundleService {
         ..writeln(
           '${l10n.xboardNetworkDiagnosticsTime}: ${_fmt(DateTime.now())}',
         )
-        ..writeln('${l10n.xboardDiagnosticPlatform}: ${_platformLabel()}')
+        ..writeln(
+          '${l10n.xboardStreamingReportVersion}: ${_clientVersionLabel()}',
+        )
+        ..writeln(
+          '${l10n.xboardStreamingReportSystem}: ${_systemVersionLabel()}',
+        )
         ..writeln('${l10n.xboardNetworkDiagnosticsNetworkType}: $networkType')
         ..writeln(
           '${l10n.xboardNetworkDiagnosticsVpnStatus}: '
@@ -380,13 +385,23 @@ class DiagnosticBundleService {
 
   static String buildNetworkReport(
     NetworkDiagnosticSnapshot snapshot,
-    AppLocalizations l10n,
-  ) {
+    AppLocalizations l10n, {
+    String? clientVersion,
+    String? systemVersion,
+  }) {
     final buffer = StringBuffer()
       ..writeln('=== ${l10n.xboardNetworkDiagnosticsReportTitle} ===')
       ..writeln(
         '${l10n.xboardNetworkDiagnosticsTime}: '
         '${snapshot.generatedAt.toIso8601String()}',
+      )
+      ..writeln(
+        '${l10n.xboardStreamingReportVersion}: '
+        '${_clientVersionLabel(clientVersion)}',
+      )
+      ..writeln(
+        '${l10n.xboardStreamingReportSystem}: '
+        '${_systemVersionLabel(systemVersion)}',
       )
       ..writeln('${l10n.xboardNetworkDiagnosticsDomain}: [redacted-domain]')
       ..writeln(
@@ -730,6 +745,29 @@ class DiagnosticBundleService {
     if (Platform.isAndroid) return 'Android';
     if (Platform.isIOS) return 'iOS';
     return Platform.operatingSystem;
+  }
+
+  static String _clientVersionLabel([String? override]) {
+    final explicit = override?.trim();
+    if (explicit != null && explicit.isNotEmpty) return explicit;
+    try {
+      final version = globalState.packageInfo.version.trim();
+      final buildNumber = globalState.packageInfo.buildNumber.trim();
+      if (version.isEmpty) return '-';
+      return buildNumber.isEmpty ? version : '$version+$buildNumber';
+    } catch (_) {
+      return '-';
+    }
+  }
+
+  static String _systemVersionLabel([String? override]) {
+    final explicit = override?.trim();
+    if (explicit != null && explicit.isNotEmpty) return explicit;
+    final version = Platform.operatingSystemVersion
+        .replaceAll(RegExp(r'[\r\n]+'), ' ')
+        .trim();
+    final platform = _platformLabel();
+    return version.isEmpty ? platform : '$platform $version';
   }
 
   static Future<bool> _probeLocalProxy(int port) async {

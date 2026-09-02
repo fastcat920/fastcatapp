@@ -338,7 +338,7 @@ class XBoardInitializationNotifier extends StateNotifier<InitializationState> {
           await request.close().timeout(const Duration(seconds: 4));
       await response.drain<void>();
       final statusCode = response.statusCode;
-      if (statusCode >= 200 && statusCode < 300) {
+      if (isHealthyGatewayStatusCode(statusCode)) {
         _logger.info('[Initialization] ✅ 域名可用: $domain (HTTP $statusCode)');
         return true;
       }
@@ -448,7 +448,7 @@ class XBoardInitializationNotifier extends StateNotifier<InitializationState> {
       final response = await request.close().timeout(timeout);
       await response.drain<void>();
       final statusCode = response.statusCode;
-      if (statusCode >= 200 && statusCode < 300) {
+      if (isHealthyGatewayStatusCode(statusCode)) {
         _logger.info('[Initialization] 缓存域名探测成功: $domain (HTTP $statusCode)');
         return true;
       }

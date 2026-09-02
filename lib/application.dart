@@ -399,6 +399,17 @@ class ApplicationState extends ConsumerState<Application>
     } catch (error) {
       debugPrint('[Application] 恢复本地更新提示失败: $error');
     }
+    // 上次已由 OSS 确认的普通更新可在首帧后立即提示，
+    // 不必再等待本次远程配置下载。后台检查仍会继续校正缓存。
+    final cachedUpdate = ref.read(updateCheckProvider);
+    if (mounted &&
+        ref.read(appSettingProvider).autoCheckUpdate &&
+        cachedUpdate.hasUpdate) {
+      await WidgetsBinding.instance.endOfFrame;
+      if (mounted) {
+        await _showAutomaticUpdateDialog(ref.read(updateCheckProvider));
+      }
+    }
     if (mounted) await _initializeAutomaticUpdateCheck();
   }
 

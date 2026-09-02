@@ -147,7 +147,7 @@ class ServiceEndpointHealthService {
           await request.close().timeout(const Duration(seconds: 4));
       await response.drain<void>();
       stopwatch.stop();
-      final healthy = response.statusCode >= 200 && response.statusCode < 300;
+      final healthy = isHealthyGatewayStatusCode(response.statusCode);
       final state = healthy
           ? (candidate.isCircuitOpen || candidate.failureCount > 0
               ? ServiceEndpointState.recovering

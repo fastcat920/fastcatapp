@@ -78,6 +78,7 @@ class XBoardUserAuthNotifier extends Notifier<UserAuthState> {
   int _authGeneration = 0;
   bool _isTokenExpiryActive = false;
   bool _isDisconnectingExpiredSession = false;
+  String? _automaticSubscriptionImportKey;
 
   int _nextAuthGeneration() => ++_authGeneration;
   bool _isAuthGenerationActive(int generation) => generation == _authGeneration;
@@ -288,16 +289,10 @@ class XBoardUserAuthNotifier extends Notifier<UserAuthState> {
     if (subscriptionInfo != null) {
       ref.read(subscriptionInfoProvider.notifier).state = subscriptionInfo;
       if (allowInitialImport && subscriptionInfo.subscribeUrl.isNotEmpty) {
-        final currentProfileId = globalState.config.currentProfileId;
-        if (currentProfileId != null && currentProfileId.isNotEmpty) {
-          _logger.info('已有配置 ($currentProfileId)，跳过启动时下载，等待 init() 加载');
-        } else {
-          _logger.info(
-              '无当前配置，首次下载订阅: ${SensitiveMasker.maskUrl(subscriptionInfo.subscribeUrl)}');
-          ref
-              .read(profileImportProvider.notifier)
-              .importSubscription(subscriptionInfo.subscribeUrl);
-        }
+        _startPostLoginSubscriptionImport(
+          subscriptionInfo.subscribeUrl,
+          _authGeneration,
+        );
       }
     }
   }
@@ -783,26 +778,54 @@ class XBoardUserAuthNotifier extends Notifier<UserAuthState> {
     if (url == null || url.isEmpty) {
       return;
     }
-    _logger.info('[登录成功] 后台导入订阅配置: ${SensitiveMasker.maskUrl(url)}');
+    final importKey = '$generation|$url';
+    if (_automaticSubscriptionImportKey == importKey) {
+      _logger.info('[自动刷新] 本次会话已启动同一订阅刷新，跳过重复请求');
+      return;
+    }
+    _automaticSubscriptionImportKey = importKey;
+    _logger.info('[自动刷新] 后台刷新订阅配置: ${SensitiveMasker.maskUrl(url)}');
     unawaited(Future<void>(() async {
       try {
         if (!_isAuthGenerationActive(generation)) {
-          _logger.info('[后台导入] 跳过：认证会话已变化');
+          _logger.info('[自动刷新] 跳过：认证会话已变化');
           return;
         }
-        if (await _restoreReusableLocalProfile(url)) {
-          _logger.info('[后台导入] 已恢复同一订阅的本地配置，跳过启动强制下载');
+        if (!await _waitForCoreReady(generation)) {
+          _logger.warning('[自动刷新] Clash 内核未就绪，本次保留旧订阅缓存');
           return;
+        }
+        // 给首屏动画和高优先级更新检查留出稳定窗口。旧订阅缓存已经由
+        // 启动快照提供，延后联网刷新不会影响用户查看节点或套餐信息。
+        await Future<void>.delayed(const Duration(milliseconds: 1200));
+        if (!_isAuthGenerationActive(generation)) return;
+        // 先恢复旧 Profile 供首屏使用，但不再因存在本地缓存而跳过刷新。
+        if (await _restoreReusableLocalProfile(url)) {
+          _logger.info('[自动刷新] 已先恢复旧订阅缓存，继续后台检查新配置');
         }
         final success = await ref
             .read(profileImportProvider.notifier)
             .importSubscription(url);
-        _logger.info('[后台导入] 订阅配置导入${success ? '成功' : '失败'}');
+        _logger.info(
+          '[自动刷新] 订阅配置更新${success ? '成功' : '失败，继续使用旧缓存'}',
+        );
       } catch (e, stackTrace) {
-        _logger.warning('[后台导入] 订阅配置导入异常: $e');
+        _logger.warning('[自动刷新] 订阅更新异常，继续使用旧缓存: $e');
         _logger.debug('$stackTrace');
       }
     }));
+  }
+
+  Future<bool> _waitForCoreReady(int generation) async {
+    if (globalState.coreStatusReadyNotifier.value) return true;
+    const interval = Duration(milliseconds: 100);
+    const maxAttempts = 450;
+    for (var attempt = 0; attempt < maxAttempts; attempt++) {
+      if (!_isAuthGenerationActive(generation)) return false;
+      await Future<void>.delayed(interval);
+      if (globalState.coreStatusReadyNotifier.value) return true;
+    }
+    return false;
   }
 
   Future<bool> _restoreReusableLocalProfile(String subscriptionUrl) async {

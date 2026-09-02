@@ -15,6 +15,11 @@ import 'package:fl_clash/common/sensitive_masker.dart';
 // 初始化文件级日志器
 const _logger = FileLogger('invite_provider.dart');
 
+String formatInviteAmount(double amount, {bool showDecimals = true}) {
+  if (showDecimals) return '¥${amount.toStringAsFixed(2)}';
+  return '¥${amount.truncate()}';
+}
+
 class InviteState {
   final DomainInvite? inviteData;
   final List<DomainCommission> commissionHistory;
@@ -94,26 +99,31 @@ class InviteState {
 
   double get walletBalance => (userInfo?.balanceInCents ?? 0) / 100.0;
   bool get isWithdrawEnabled => withdrawEnabled && withdrawMethods.isNotEmpty;
-  String get formattedCommission => _formatCommissionAmount(totalCommission);
+  String get formattedCommission => formatInviteAmount(totalCommission);
+  String get wholeCommission =>
+      formatInviteAmount(totalCommission, showDecimals: false);
   String get formattedPendingCommission =>
-      _formatCommissionAmount(pendingCommission);
+      formatInviteAmount(pendingCommission);
+  String get wholePendingCommission =>
+      formatInviteAmount(pendingCommission, showDecimals: false);
   String get formattedAvailableCommission {
     if (userInfo == null && inviteData == null) return '···';
-    return _formatCommissionAmount(availableCommission);
+    return formatInviteAmount(availableCommission);
+  }
+
+  String get wholeAvailableCommission {
+    if (userInfo == null && inviteData == null) return '···';
+    return formatInviteAmount(availableCommission, showDecimals: false);
   }
 
   String get formattedWalletBalance {
     if (userInfo == null) return '···';
-    return _formatCommissionAmount(walletBalance);
+    return formatInviteAmount(walletBalance);
   }
 
-  String _formatCommissionAmount(double amount) {
-    final value = amount;
-    if (value >= 1000) {
-      return '¥${(value / 1000).toStringAsFixed(1)}k';
-    } else {
-      return '¥${value.toStringAsFixed(2)}';
-    }
+  String get wholeWalletBalance {
+    if (userInfo == null) return '···';
+    return formatInviteAmount(walletBalance, showDecimals: false);
   }
 }
 

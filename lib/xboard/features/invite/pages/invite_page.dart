@@ -6,6 +6,7 @@ import 'package:fl_clash/common/common.dart';
 import 'package:fl_clash/xboard/features/invite/providers/invite_provider.dart';
 import 'package:fl_clash/xboard/features/invite/dialogs/transfer_dialog.dart';
 import 'package:fl_clash/xboard/features/invite/dialogs/withdraw_dialog.dart';
+import 'package:fl_clash/xboard/features/invite/widgets/adaptive_amount_text.dart';
 import 'package:fl_clash/xboard/features/mine/pages/ticket_page.dart';
 import 'package:fl_clash/xboard/features/shared/styles/styles.dart';
 import 'package:fl_clash/xboard/features/shared/widgets/widgets.dart';
@@ -216,6 +217,7 @@ class _BalanceCards extends StatelessWidget {
           child: _BalanceCard(
             title: appLocalizations.availableCommission,
             value: state.formattedAvailableCommission,
+            compactValue: state.wholeAvailableCommission,
             icon: Icons.monetization_on_outlined,
             color: theme.colorScheme.primary,
           ),
@@ -225,6 +227,7 @@ class _BalanceCards extends StatelessWidget {
           child: _BalanceCard(
             title: appLocalizations.walletBalance,
             value: state.formattedWalletBalance,
+            compactValue: state.wholeWalletBalance,
             icon: Icons.account_balance_outlined,
             color: theme.colorScheme.primary,
           ),
@@ -237,11 +240,13 @@ class _BalanceCards extends StatelessWidget {
 class _BalanceCard extends StatelessWidget {
   final String title;
   final String value;
+  final String compactValue;
   final IconData icon;
   final Color color;
   const _BalanceCard({
     required this.title,
     required this.value,
+    required this.compactValue,
     required this.icon,
     required this.color,
   });
@@ -301,8 +306,9 @@ class _BalanceCard extends StatelessWidget {
             ],
           ),
           const SizedBox(height: 8),
-          Text(
-            value,
+          AdaptiveAmountText(
+            value: value,
+            compactValue: compactValue,
             style: TextStyle(
                 color: valueColor, fontSize: 24, fontWeight: XbFontWeight.bold),
           ),
@@ -480,6 +486,7 @@ class _InviteStatsSection extends StatelessWidget {
                     child: _StatCard(
                       label: appLocalizations.totalCommission,
                       value: state.formattedCommission,
+                      compactValue: state.wholeCommission,
                       icon: Icons.savings_outlined,
                     ),
                   ),
@@ -488,6 +495,7 @@ class _InviteStatsSection extends StatelessWidget {
                     child: _StatCard(
                       label: appLocalizations.pendingCommission,
                       value: state.formattedPendingCommission,
+                      compactValue: state.wholePendingCommission,
                       icon: Icons.hourglass_top_outlined,
                       tooltipMessage: pendingCommissionTooltip,
                       valueColor: Theme.of(context).colorScheme.error,
@@ -523,6 +531,7 @@ class _InviteStatsSection extends StatelessWidget {
                         child: _StatCard(
                           label: appLocalizations.totalCommission,
                           value: state.formattedCommission,
+                          compactValue: state.wholeCommission,
                           icon: Icons.savings_outlined,
                         ),
                       ),
@@ -531,6 +540,7 @@ class _InviteStatsSection extends StatelessWidget {
                         child: _StatCard(
                           label: appLocalizations.pendingCommission,
                           value: state.formattedPendingCommission,
+                          compactValue: state.wholePendingCommission,
                           icon: Icons.hourglass_top_outlined,
                           tooltipMessage: pendingCommissionTooltip,
                           valueColor: Theme.of(context).colorScheme.error,
@@ -548,12 +558,14 @@ class _InviteStatsSection extends StatelessWidget {
 class _StatCard extends StatelessWidget {
   final String label;
   final String value;
+  final String? compactValue;
   final IconData icon;
   final String? tooltipMessage;
   final Color? valueColor;
   const _StatCard({
     required this.label,
     required this.value,
+    this.compactValue,
     required this.icon,
     this.tooltipMessage,
     this.valueColor,
@@ -607,8 +619,9 @@ class _StatCard extends StatelessWidget {
             ],
           ),
           const SizedBox(height: 6),
-          Text(
-            value,
+          AdaptiveAmountText(
+            value: value,
+            compactValue: compactValue ?? value,
             style: theme.textTheme.titleMedium?.copyWith(
               fontWeight: XbFontWeight.bold,
               color: valueColor ?? theme.colorScheme.onSurface,

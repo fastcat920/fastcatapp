@@ -39,8 +39,11 @@ class _XBoardHomePageState extends ConsumerState<XBoardHomePage>
   bool _hasInitialized = false;
   bool _hasCheckedSubscriptionStatus = false;
   bool _hasTriggeredLatencyTest = false;
+  bool _deferredStartupTasksReady = false;
   bool _isTokenExpiredDialogVisible = false;
   bool _isCheckingWebsite = false;
+  Timer? _noticeStartupTimer;
+  Timer? _latencyStartupTimer;
 
   @override
   bool get wantKeepAlive => true; // 保持页面状态，防止重建
@@ -56,9 +59,7 @@ class _XBoardHomePageState extends ConsumerState<XBoardHomePage>
         // 等待订阅导入完成后再检查订阅状态
         _waitForSubscriptionImportThenCheck();
       }
-      autoLatencyService.initialize(ref);
-      // 主动拉取公告，保证铃铛和 Banner 都能显示数据
-      ref.read(noticeProvider.notifier).fetchNotices();
+      _scheduleDeferredStartupTasks();
     });
     ref.listenManual(xboardUserProvider, (previous, next) {
       if (next.isAuthenticated && isSessionTerminationCode(next.errorMessage)) {
@@ -87,11 +88,7 @@ class _XBoardHomePageState extends ConsumerState<XBoardHomePage>
     });
 
     ref.listenManual(groupsProvider, (previous, next) {
-      if (next.isNotEmpty && !_hasTriggeredLatencyTest) {
-        _hasTriggeredLatencyTest = true;
-        autoLatencyService.initialize(ref);
-        autoLatencyService.testCurrentGroupNodes(maxNodes: 999);
-      }
+      if (next.isNotEmpty) _startLatencyTestWhenReady();
     });
 
     // 初始化订阅守护服务
@@ -112,6 +109,37 @@ class _XBoardHomePageState extends ConsumerState<XBoardHomePage>
       if (next == null) return;
       subscriptionGuardService.onSubscriptionInfoChanged();
     });
+  }
+
+  /// 更新检查和核心状态恢复属于首屏高优先级任务。公告及全节点延迟检测
+  /// 分批启动，避免它们与连接按钮的初始化动画争抢 UI isolate 和网络资源。
+  void _scheduleDeferredStartupTasks() {
+    _noticeStartupTimer?.cancel();
+    _latencyStartupTimer?.cancel();
+    _noticeStartupTimer = Timer(const Duration(milliseconds: 2500), () {
+      if (!mounted) return;
+      ref.read(noticeProvider.notifier).fetchNotices();
+    });
+    _latencyStartupTimer = Timer(const Duration(milliseconds: 3500), () {
+      if (!mounted) return;
+      _deferredStartupTasksReady = true;
+      autoLatencyService.initialize(ref);
+      _startLatencyTestWhenReady();
+    });
+  }
+
+  void _startLatencyTestWhenReady() {
+    if (!_deferredStartupTasksReady || _hasTriggeredLatencyTest) return;
+    if (ref.read(groupsProvider).isEmpty) return;
+    _hasTriggeredLatencyTest = true;
+    autoLatencyService.testCurrentGroupNodes(maxNodes: 999);
+  }
+
+  @override
+  void dispose() {
+    _noticeStartupTimer?.cancel();
+    _latencyStartupTimer?.cancel();
+    super.dispose();
   }
 
   @override

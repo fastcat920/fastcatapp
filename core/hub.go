@@ -268,7 +268,14 @@ func handleDiagnoseProxy(paramsString string) string {
 
 	dnsStarted := time.Now()
 	dnsCtx, dnsCancel := context.WithTimeout(context.Background(), timeout)
-	ips, dnsErr := resolver.LookupIP(dnsCtx, host)
+	// Diagnose the endpoint with the same resolver that real proxy dialing
+	// uses. The default resolver can be a fake-IP resolver and report a false
+	// DNS failure even while the selected node is carrying traffic normally.
+	ips, dnsErr := resolver.LookupIPWithResolver(
+		dnsCtx,
+		host,
+		resolver.ProxyServerHostResolver,
+	)
 	dnsCancel()
 	result.DNSElapsedMs = time.Since(dnsStarted).Milliseconds()
 	if dnsErr != nil {
