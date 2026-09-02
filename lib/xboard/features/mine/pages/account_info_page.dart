@@ -3,6 +3,7 @@ import 'package:fl_clash/xboard/features/auth/auth.dart';
 import 'package:fl_clash/xboard/features/invite/dialogs/logout_dialog.dart';
 import 'package:fl_clash/xboard/features/mine/widgets/change_password_sheet.dart';
 import 'package:fl_clash/xboard/features/mine/widgets/change_email_sheet.dart';
+import 'package:fl_clash/xboard/features/mine/widgets/account_deletion_sheet.dart';
 import 'package:fl_clash/xboard/utils/xboard_notification.dart';
 import 'package:flutter/material.dart';
 import 'package:fl_clash/xboard/features/shared/shared.dart';
@@ -78,6 +79,43 @@ class _AccountInfoPageState extends ConsumerState<AccountInfoPage> {
       ),
       child: child,
     );
+  }
+
+  Future<void> _showAccountDeletionFlow(String email) async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        shape: XbUiDialog.shape(),
+        backgroundColor: XbUiDialog.background(context),
+        title: Text(
+            Localizations.localeOf(context).languageCode == 'zh'
+                ? '确认进入注销流程？'
+                : 'Start account deletion?',
+            style: XbUiText.sectionTitle(context)),
+        content: Text(Localizations.localeOf(context).languageCode == 'zh'
+            ? '退出登录仅退出当前设备；注销账号会使所有设备退出登录，并立即停止套餐与订阅。'
+            : 'Signing out only affects this device. Deleting your account signs out all devices and stops subscriptions immediately.'),
+        actions: [
+          OutlinedButton(
+            onPressed: () => Navigator.of(dialogContext).pop(false),
+            style: XbUiButton.outlinedNeutral(context),
+            child: Text(Localizations.localeOf(context).languageCode == 'zh'
+                ? '取消'
+                : 'Cancel'),
+          ),
+          FilledButton(
+            style: XbUiButton.filledDanger(context),
+            onPressed: () => Navigator.of(dialogContext).pop(true),
+            child: Text(Localizations.localeOf(context).languageCode == 'zh'
+                ? '继续'
+                : 'Continue'),
+          ),
+        ],
+      ),
+    );
+    if (confirmed == true && mounted) {
+      await showAccountDeletionSheet(context, ref, email);
+    }
   }
 
   @override
@@ -188,26 +226,50 @@ class _AccountInfoPageState extends ConsumerState<AccountInfoPage> {
           _buildCard(
             child: Padding(
               padding: const EdgeInsets.all(16),
-              child: SizedBox(
-                width: double.infinity,
-                child: FilledButton.icon(
-                  onPressed: () => showDialog(
-                    context: context,
-                    builder: (_) => const LogoutDialog(),
-                  ),
-                  icon: const Icon(Icons.logout),
-                  label: Text(l10n.xboardLogout),
-                  style: XbUiButton.filledDanger(context).copyWith(
-                    shape: WidgetStatePropertyAll(
-                      RoundedRectangleBorder(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  FilledButton.icon(
+                    onPressed: () => showDialog(
+                      context: context,
+                      builder: (_) => const LogoutDialog(),
+                    ),
+                    icon: const Icon(Icons.logout_outlined),
+                    label: Text(l10n.xboardLogout),
+                    style: FilledButton.styleFrom(
+                      backgroundColor: isDark
+                          ? theme.colorScheme.surfaceContainerHighest
+                          : const Color(0xFFE8EDF3),
+                      foregroundColor: isDark
+                          ? theme.colorScheme.onSurface
+                          : const Color(0xFF344054),
+                      padding: const EdgeInsets.symmetric(vertical: 14),
+                      shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(14),
                       ),
                     ),
-                    padding: const WidgetStatePropertyAll(
-                      EdgeInsets.symmetric(vertical: 14),
+                  ),
+                  const SizedBox(height: 12),
+                  SizedBox(
+                    width: double.infinity,
+                    child: FilledButton.icon(
+                      onPressed: () => _showAccountDeletionFlow(email),
+                      icon: const Icon(Icons.delete_forever_outlined),
+                      label: Text(
+                          Localizations.localeOf(context).languageCode == 'zh'
+                              ? '注销账号'
+                              : 'Delete account'),
+                      style: FilledButton.styleFrom(
+                        backgroundColor: theme.colorScheme.error,
+                        foregroundColor: theme.colorScheme.onError,
+                        padding: const EdgeInsets.symmetric(vertical: 14),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(14),
+                        ),
+                      ),
                     ),
                   ),
-                ),
+                ],
               ),
             ),
           ),
