@@ -641,10 +641,10 @@ class _OrderDetailContent extends StatelessWidget {
         final mediaSize = MediaQuery.sizeOf(context);
         final useSideNavigation =
             mediaSize.width > mediaSize.height || system.isTV;
-        final contentPadding = EdgeInsets.symmetric(
-          horizontal: useSideNavigation ? 32 : 16,
-          vertical: 12,
-        );
+        // 与订单列表、充值和套餐页面统一使用页面级边距；桌面端不再额外
+        // 扩大左右留白，保证内容卡片与其他界面的边界对齐。
+        const contentPadding = XbUiTokens.pagePadding;
+        const columnGap = 12.0;
         final leftColumn = Column(
           children: [
             _ProductInfoCard(
@@ -705,7 +705,7 @@ class _OrderDetailContent extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Expanded(child: leftColumn),
-                      const SizedBox(width: 24),
+                      SizedBox(width: columnGap),
                       Expanded(child: rightColumn),
                     ],
                   )
