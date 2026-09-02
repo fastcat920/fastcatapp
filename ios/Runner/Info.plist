@@ -71,13 +71,5 @@
 		<string>UIInterfaceOrientationLandscapeLeft</string>
 		<string>UIInterfaceOrientationLandscapeRight</string>
 	</array>
-	<key>LSApplicationQueriesSchemes</key>
-	<array>
-		<string>alipay</string>
-		<string>alipays</string>
-		<string>weixin</string>
-		<string>weixinULAPI</string>
-		<string>alipayqr</string>
-	</array>
 </dict>
 </plist>
