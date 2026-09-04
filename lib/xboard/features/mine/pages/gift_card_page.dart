@@ -17,6 +17,15 @@ class GiftCardPage extends ConsumerStatefulWidget {
 class _GiftCardPageState extends ConsumerState<GiftCardPage> {
   final _codeCtrl = TextEditingController();
   bool _isSubmitting = false;
+  bool _isLoadingRecords = true;
+  String? _recordsError;
+  List<GiftCardRedemptionRecord> _records = const [];
+
+  @override
+  void initState() {
+    super.initState();
+    _loadRecords();
+  }
 
   @override
   void dispose() {
@@ -40,9 +49,8 @@ class _GiftCardPageState extends ConsumerState<GiftCardPage> {
       );
       if (!mounted) return;
       if (result.success) {
-        if (Navigator.of(context).canPop()) {
-          Navigator.of(context).pop();
-        }
+        _codeCtrl.clear();
+        await _loadRecords(showLoading: false);
         XBoardNotification.showSuccess(result.message);
       } else {
         XBoardNotification.showError(result.message);
@@ -73,21 +81,27 @@ class _GiftCardPageState extends ConsumerState<GiftCardPage> {
               Center(
                 child: ConstrainedBox(
                   constraints: const BoxConstraints(maxWidth: 700),
-                  child: Card(
-                    elevation: isDark ? 0 : 1,
-                    margin: EdgeInsets.zero,
-                    shadowColor:
-                        isDark ? null : Colors.black.withValues(alpha: 0.08),
-                    color: isDark ? null : Colors.white,
-                    shape: XbUiCardStyle.shape(context),
-                    child: Padding(
-                      padding: const EdgeInsets.all(16),
-                      child: _GiftCardForm(
-                        controller: _codeCtrl,
-                        isSubmitting: _isSubmitting,
-                        onRedeem: _redeem,
+                  child: Column(
+                    children: [
+                      _GiftCardSurface(
+                        child: _GiftCardForm(
+                          controller: _codeCtrl,
+                          isSubmitting: _isSubmitting,
+                          onRedeem: _redeem,
+                        ),
                       ),
-                    ),
+                      const SizedBox(height: 16),
+                      _GiftCardSurface(
+                        child: _GiftCardRecords(
+                          records: _records,
+                          isLoading: _isLoadingRecords,
+                          errorMessage: _recordsError,
+                          onRetry: _loadRecords,
+                        ),
+                      ),
+                      const SizedBox(height: 16),
+                      const _GiftCardUsageGuide(),
+                    ],
                   ),
                 ),
               ),
@@ -99,9 +113,227 @@ class _GiftCardPageState extends ConsumerState<GiftCardPage> {
   }
 
   Future<void> _refreshPage() async {
-    ref.read(xboardUserAuthProvider.notifier).refreshUserInfo();
-    await Future<void>.delayed(const Duration(milliseconds: 250));
+    await Future.wait([
+      ref.read(xboardUserAuthProvider.notifier).refreshUserInfo(),
+      _loadRecords(showLoading: false),
+    ]);
   }
+
+  Future<void> _loadRecords({bool showLoading = true}) async {
+    if (showLoading && mounted) {
+      setState(() {
+        _isLoadingRecords = true;
+        _recordsError = null;
+      });
+    }
+    try {
+      final records = await GiftCardRedeemService.fetchRedemptions(ref: ref);
+      if (!mounted) return;
+      setState(() {
+        _records = records;
+        _recordsError = null;
+      });
+    } catch (_) {
+      if (mounted) setState(() => _recordsError = '兑换记录加载失败');
+    } finally {
+      if (mounted) setState(() => _isLoadingRecords = false);
+    }
+  }
+}
+
+class _GiftCardSurface extends StatelessWidget {
+  const _GiftCardSurface({required this.child});
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+    return Card(
+      elevation: isDark ? 0 : 1,
+      margin: EdgeInsets.zero,
+      shadowColor: isDark ? null : Colors.black.withValues(alpha: 0.08),
+      color: isDark ? null : Colors.white,
+      shape: XbUiCardStyle.shape(context),
+      child: Padding(padding: const EdgeInsets.all(16), child: child),
+    );
+  }
+}
+
+class _GiftCardRecords extends StatelessWidget {
+  const _GiftCardRecords({
+    required this.records,
+    required this.isLoading,
+    required this.errorMessage,
+    required this.onRetry,
+  });
+  final List<GiftCardRedemptionRecord> records;
+  final bool isLoading;
+  final String? errorMessage;
+  final VoidCallback onRetry;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(children: [
+          Icon(Icons.history_outlined,
+              color: theme.colorScheme.primary, size: 20),
+          const SizedBox(width: 8),
+          Text('兑换记录', style: XbUiText.sectionTitle(context)),
+        ]),
+        const SizedBox(height: 12),
+        if (isLoading)
+          const Padding(
+            padding: EdgeInsets.symmetric(vertical: 24),
+            child: Center(child: CircularProgressIndicator()),
+          )
+        else if (errorMessage != null)
+          Center(
+              child: TextButton.icon(
+            onPressed: onRetry,
+            icon: const Icon(Icons.refresh_outlined),
+            label: Text(errorMessage!),
+          ))
+        else if (records.isEmpty)
+          Padding(
+            padding: const EdgeInsets.symmetric(vertical: 26),
+            child: Center(
+                child: Text('暂无兑换记录',
+                    style: theme.textTheme.bodyMedium?.copyWith(
+                      color: theme.colorScheme.onSurfaceVariant,
+                    ))),
+          )
+        else
+          ...records.map(_GiftCardRecordTile.new),
+      ],
+    );
+  }
+}
+
+class _GiftCardRecordTile extends StatelessWidget {
+  const _GiftCardRecordTile(this.record);
+  final GiftCardRedemptionRecord record;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final date = record.redeemedAt <= 0
+        ? '--'
+        : DateTime.fromMillisecondsSinceEpoch(record.redeemedAt * 1000)
+            .toLocal()
+            .toString()
+            .substring(0, 16);
+    return Padding(
+      padding: const EdgeInsets.only(top: 10),
+      child: Container(
+        padding: const EdgeInsets.all(12),
+        decoration: BoxDecoration(
+          color:
+              theme.colorScheme.surfaceContainerHighest.withValues(alpha: 0.42),
+          borderRadius: BorderRadius.circular(12),
+        ),
+        child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
+          Expanded(
+              child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                  record.giftCardName?.isNotEmpty == true
+                      ? record.giftCardName!
+                      : record.codeMasked,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: theme.textTheme.titleSmall
+                      ?.copyWith(fontWeight: XbFontWeight.semibold)),
+              const SizedBox(height: 3),
+              Text(record.codeMasked,
+                  style: theme.textTheme.bodySmall
+                      ?.copyWith(color: theme.colorScheme.onSurfaceVariant)),
+            ],
+          )),
+          const SizedBox(width: 12),
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.end,
+            children: [
+              Text(_valueLabel(),
+                  textAlign: TextAlign.end,
+                  style: theme.textTheme.labelLarge?.copyWith(
+                      color: theme.colorScheme.primary,
+                      fontWeight: XbFontWeight.semibold)),
+              const SizedBox(height: 3),
+              Text(date,
+                  style: theme.textTheme.bodySmall?.copyWith(
+                    color: theme.colorScheme.onSurfaceVariant,
+                  )),
+            ],
+          ),
+        ]),
+      ),
+    );
+  }
+
+  String _valueLabel() => switch (record.type) {
+        1 => '账户余额 ¥${(record.value / 100).toStringAsFixed(2)}',
+        2 => '${record.value} 天订阅时长',
+        3 => '${record.value} GB 套餐流量',
+        4 => '重置套餐流量',
+        5 => record.planName?.isNotEmpty == true
+            ? '${record.planName}（${record.value} 天）'
+            : '套餐（${record.value} 天）',
+        _ => '--',
+      };
+}
+
+class _GiftCardUsageGuide extends StatelessWidget {
+  const _GiftCardUsageGuide();
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+    return Card(
+      margin: EdgeInsets.zero,
+      elevation: isDark ? 0 : 1,
+      shadowColor: isDark ? null : Colors.black.withValues(alpha: 0.08),
+      color: isDark ? null : Colors.white,
+      shape: XbUiCardStyle.shape(context),
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(children: [
+              Icon(Icons.info_outline,
+                  color: theme.colorScheme.primary, size: 20),
+              const SizedBox(width: 8),
+              Text('使用说明', style: XbUiText.sectionTitle(context)),
+            ]),
+            const SizedBox(height: 12),
+            const _GuideItem('1. 使用礼品卡可以兑换余额、流量、套餐时长等。'),
+            const SizedBox(height: 8),
+            const _GuideItem('2. 礼品卡仅限本账户使用。'),
+            const SizedBox(height: 8),
+            const _GuideItem('3. 兑换后无法撤销。'),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _GuideItem extends StatelessWidget {
+  const _GuideItem(this.text);
+  final String text;
+
+  @override
+  Widget build(BuildContext context) => Text(text,
+      style: Theme.of(context).textTheme.bodySmall?.copyWith(
+            color: Theme.of(context).colorScheme.onSurfaceVariant,
+            height: 1.45,
+          ));
 }
 
 class _GiftCardForm extends StatelessWidget {

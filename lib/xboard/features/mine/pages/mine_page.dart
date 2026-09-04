@@ -15,11 +15,11 @@ import 'package:fl_clash/xboard/config/xboard_config.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:fl_clash/xboard/features/settings/pages/fastcat_settings_page.dart';
 import 'package:fl_clash/xboard/adapter/initialization/sdk_provider.dart';
-import 'package:fl_clash/xboard/features/mine/services/gift_card_redeem_service.dart';
 import 'package:fl_clash/xboard/features/subscription/widgets/subscription_usage_card.dart';
 import 'package:fl_clash/xboard/features/shared/styles/styles.dart';
 import 'package:fl_clash/xboard/utils/xboard_notification.dart';
 import 'order_page.dart';
+import 'gift_card_page.dart';
 import 'ticket_page.dart';
 import 'package:fl_clash/xboard/features/docs/pages/docs_page.dart';
 import 'package:fl_clash/xboard/features/payment/pages/recharge_page.dart';
@@ -463,7 +463,9 @@ class _MinePageState extends ConsumerState<MinePage>
               label: appLocalizations.xboardGiftCardRedeem,
               iconColor: theme.colorScheme.primary,
               iconBgColor: theme.colorScheme.primary.withValues(alpha: 0.1),
-              onTap: () => _showGiftCardSheet(context),
+              onTap: () => Navigator.of(context).push(
+                MaterialPageRoute(builder: (_) => const GiftCardPage()),
+              ),
             ),
             _divider(),
           ],
@@ -516,24 +518,6 @@ class _MinePageState extends ConsumerState<MinePage>
   }
 
   // ─── 动作方法 ─────────────────────────────────────────────────────────────
-
-  Future<void> _showGiftCardSheet(BuildContext context) async {
-    final result = await showModalBottomSheet<GiftCardRedeemResult>(
-      context: context,
-      isScrollControlled: true,
-      useSafeArea: true,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-      ),
-      builder: (_) => const _GiftCardSheet(),
-    );
-    if (result == null || !mounted) return;
-    if (result.success) {
-      XBoardNotification.showSuccess(result.message);
-    } else {
-      XBoardNotification.showError(result.message);
-    }
-  }
 
   // 加入群组：优先读远程配置文件 contact.telegram_group，回退到 API telegram_discuss_link
   Future<void> _openTelegramGroup(BuildContext context) async {
@@ -657,118 +641,6 @@ class _MinePageState extends ConsumerState<MinePage>
       indent: 56,
       endIndent: 16,
       color: isDark ? null : XbUiTokens.dividerLight,
-    );
-  }
-}
-
-// ─── 礼品卡兑换底部弹窗 ─────────────────────────────────────────────────────
-
-class _GiftCardSheet extends ConsumerStatefulWidget {
-  const _GiftCardSheet();
-
-  @override
-  ConsumerState<_GiftCardSheet> createState() => _GiftCardSheetState();
-}
-
-class _GiftCardSheetState extends ConsumerState<_GiftCardSheet> {
-  final _codeCtrl = TextEditingController();
-  bool _isSubmitting = false;
-
-  @override
-  void dispose() {
-    _codeCtrl.dispose();
-    super.dispose();
-  }
-
-  Future<void> _redeem() async {
-    final l10n = AppLocalizations.of(context);
-    final code = _codeCtrl.text.trim();
-    if (code.isEmpty) {
-      XBoardNotification.showError(l10n.xboardPleaseEnterGiftCardCode);
-      return;
-    }
-    setState(() => _isSubmitting = true);
-    try {
-      final result = await GiftCardRedeemService.redeem(
-        ref: ref,
-        l10n: l10n,
-        code: code,
-      );
-      if (mounted) {
-        Navigator.of(context).pop(result);
-      }
-    } finally {
-      if (mounted) setState(() => _isSubmitting = false);
-    }
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    return Padding(
-      padding: EdgeInsets.only(
-        left: 16,
-        right: 16,
-        top: 20,
-        bottom: MediaQuery.of(context).viewInsets.bottom + 24,
-      ),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Text(appLocalizations.xboardGiftCardRedeem,
-                  style: theme.textTheme.titleMedium
-                      ?.copyWith(fontWeight: XbFontWeight.bold)),
-              const Spacer(),
-              IconButton(
-                  icon: const Icon(Icons.close),
-                  onPressed: () => Navigator.of(context).pop()),
-            ],
-          ),
-          const SizedBox(height: 12),
-          TextField(
-            controller: _codeCtrl,
-            decoration: InputDecoration(
-              labelText: appLocalizations.xboardGiftCardCodeLabel,
-              hintText: appLocalizations.xboardEnterGiftCardCodeHint,
-              border:
-                  OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
-              contentPadding:
-                  const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
-              prefixIcon: const Icon(Icons.card_giftcard_outlined),
-            ),
-          ),
-          const SizedBox(height: 16),
-          SizedBox(
-            width: double.infinity,
-            child: FilledButton(
-              onPressed: _isSubmitting ? null : _redeem,
-              style: XbUiButton.filledPrimary(
-                context,
-                busy: _isSubmitting,
-              ),
-              child: _isSubmitting
-                  ? SizedBox(
-                      width: 18,
-                      height: 18,
-                      child: CircularProgressIndicator(
-                        strokeWidth: 2,
-                        color: Theme.of(context).colorScheme.onPrimary,
-                      ))
-                  : Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        const Icon(Icons.card_giftcard_outlined, size: 18),
-                        const SizedBox(width: 8),
-                        Text(appLocalizations.xboardRedeemNow),
-                      ],
-                    ),
-            ),
-          ),
-        ],
-      ),
     );
   }
 }

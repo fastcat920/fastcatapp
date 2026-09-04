@@ -15,6 +15,38 @@ class GiftCardRedeemResult {
   final String message;
 }
 
+class GiftCardRedemptionRecord {
+  const GiftCardRedemptionRecord({
+    required this.id,
+    required this.codeMasked,
+    required this.type,
+    required this.value,
+    required this.redeemedAt,
+    this.giftCardName,
+    this.planName,
+  });
+
+  final int id;
+  final String codeMasked;
+  final int type;
+  final num value;
+  final int redeemedAt;
+  final String? giftCardName;
+  final String? planName;
+
+  factory GiftCardRedemptionRecord.fromJson(Map<String, dynamic> json) {
+    return GiftCardRedemptionRecord(
+      id: (json['id'] as num?)?.toInt() ?? 0,
+      codeMasked: json['code_masked']?.toString() ?? '',
+      type: (json['type'] as num?)?.toInt() ?? 0,
+      value: json['value'] as num? ?? 0,
+      redeemedAt: (json['redeemed_at'] as num?)?.toInt() ?? 0,
+      giftCardName: json['giftcard_name']?.toString(),
+      planName: json['plan_name']?.toString(),
+    );
+  }
+}
+
 class GiftCardRedeemService {
   const GiftCardRedeemService._();
 
@@ -54,6 +86,22 @@ class GiftCardRedeemService {
         message: _failureMessage(l10n, BackendMessageMapper.rawMessage(error)),
       );
     }
+  }
+
+  static Future<List<GiftCardRedemptionRecord>> fetchRedemptions({
+    required WidgetRef ref,
+  }) async {
+    final sdk = await ref.read(xboardSdkProvider.future);
+    final response =
+        await sdk.httpService.getRequest('/user/giftcard/redemptions');
+    final data = response['data'];
+    if (data is! List) return const [];
+    return data
+        .whereType<Map>()
+        .map((item) => GiftCardRedemptionRecord.fromJson(
+              Map<String, dynamic>.from(item),
+            ))
+        .toList(growable: false);
   }
 
   static String _failureMessage(AppLocalizations l10n, String? rawMessage) {
