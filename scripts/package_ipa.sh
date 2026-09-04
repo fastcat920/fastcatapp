@@ -40,7 +40,9 @@ flutter build ipa --release --no-codesign \
   --dart-define=FASTCAT_KEY_NEXT_ID="${FASTCAT_KEY_NEXT_ID}" \
   --dart-define=FASTCAT_KEY_NEXT="${FASTCAT_KEY_NEXT}" \
   --dart-define=FASTCAT_SUBSCRIPTION_FLAG="${FASTCAT_SUBSCRIPTION_FLAG}" \
-  --dart-define=FASTCAT_REQUIRE_ENCRYPTION="${FASTCAT_REQUIRE_ENCRYPTION}"
+  --dart-define=FASTCAT_REQUIRE_ENCRYPTION="${FASTCAT_REQUIRE_ENCRYPTION}" \
+  --dart-define=FASTCAT_PRIVACY_POLICY_URL="${FASTCAT_PRIVACY_POLICY_URL:-https://www.fastcat6.com/privacy}" \
+  --dart-define=FASTCAT_TERMS_OF_SERVICE_URL="${FASTCAT_TERMS_OF_SERVICE_URL:-https://www.fastcat6.com/terms}"
 
 echo "→ Packaging IPA from xcarchive..."
 cd build/ios

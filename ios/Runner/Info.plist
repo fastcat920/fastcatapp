@@ -28,31 +28,12 @@
 	<string>$(FLUTTER_BUILD_NUMBER)</string>
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
-	<key>NSAppTransportSecurity</key>
-	<dict>
-		<key>NSAllowsArbitraryLoads</key>
-		<true/>
-	</dict>
-	<key>NSBonjourServices</key>
-	<array>
-		<string>_http._tcp</string>
-		<string>_socks5._tcp</string>
-	</array>
-	<key>NSLocalNetworkUsageDescription</key>
-	<string>快猫需要访问本地网络以提供代理服务</string>
 	<key>NSPhotoLibraryUsageDescription</key>
-	<string>快猫需要访问相册，以便您向在线客服提交图片附件</string>
+	<string>用于选择图片并作为在线客服会话附件发送。</string>
 	<key>NSCameraUsageDescription</key>
-	<string>快猫需要访问相机，以便您向在线客服拍摄并提交附件</string>
-	<key>NSMicrophoneUsageDescription</key>
-	<string>快猫需要访问麦克风，以便您在在线客服中提交语音附件</string>
+	<string>用于拍摄图片并作为在线客服会话附件发送。</string>
 	<key>UIApplicationSupportsIndirectInputEvents</key>
 	<true/>
-	<key>UIBackgroundModes</key>
-	<array>
-		<string>network-authentication</string>
-		<string>voip</string>
-	</array>
 	<key>UILaunchScreen</key>
 	<dict>
 		<key>UIColorName</key>

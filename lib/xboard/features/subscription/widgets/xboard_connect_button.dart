@@ -9,6 +9,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:fl_clash/xboard/features/auth/providers/xboard_user_provider.dart';
 import 'package:fl_clash/xboard/features/latency/services/auto_latency_service.dart';
 import 'package:fl_clash/xboard/features/subscription/services/traffic_recovery_service.dart';
+import 'package:fl_clash/xboard/features/subscription/services/ios_vpn_privacy_notice.dart';
 import 'package:fl_clash/xboard/features/subscription/services/subscription_guard_service.dart';
 import 'package:fl_clash/xboard/features/subscription/services/subscription_status_checker.dart';
 import 'package:fl_clash/xboard/features/subscription/services/subscription_status_service.dart';
@@ -38,6 +39,7 @@ class _XBoardConnectButtonState extends ConsumerState<XBoardConnectButton>
   bool isStart = false;
   bool _isCheckingSubscription = false;
   bool _isSwitching = false;
+  bool _isPresentingPrivacyNotice = false;
   String? _subscriptionCheckLabel;
   late final FocusNode _tvFocusNode;
 
@@ -101,7 +103,9 @@ class _XBoardConnectButtonState extends ConsumerState<XBoardConnectButton>
   }
 
   Future<void> handleSwitchStart() async {
-    if (_isBusy || globalState.appController.isCoreSwitching) {
+    if (_isBusy ||
+        _isPresentingPrivacyNotice ||
+        globalState.appController.isCoreSwitching) {
       return;
     }
     final currentlyRunning = ref.read(runTimeProvider) != null;
@@ -117,6 +121,15 @@ class _XBoardConnectButtonState extends ConsumerState<XBoardConnectButton>
       }
       return;
     }
+
+    _isPresentingPrivacyNotice = true;
+    late final bool privacyNoticeAccepted;
+    try {
+      privacyNoticeAccepted = await IosVpnPrivacyNotice.ensureAccepted(context);
+    } finally {
+      _isPresentingPrivacyNotice = false;
+    }
+    if (!privacyNoticeAccepted || !mounted) return;
 
     // 开始连接前：在线时限时刷新；离线或超时时立即使用本地缓存校验。
     if (mounted) {

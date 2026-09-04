@@ -70,6 +70,9 @@ dependencies:
   qr_flutter: ^4.1.0
   socks5_proxy: ^2.1.1
   webview_flutter: ^4.13.0
+  # Pin the endorsed iOS implementation explicitly. 3.23.0 fails to compile
+  # with the Xcode 26 Swift module scanner by attempting to resolve AppKit.
+  webview_flutter_wkwebview: ^3.26.1
   flutter_xboard_sdk:
     path: lib/sdk/flutter_xboard_sdk
   desktop_webview_window:

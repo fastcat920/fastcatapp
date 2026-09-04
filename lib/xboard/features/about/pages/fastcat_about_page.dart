@@ -6,6 +6,7 @@ import 'package:fl_clash/xboard/features/logs/pages/fastcat_logs_page.dart';
 import 'package:fl_clash/xboard/features/update_check/providers/update_check_provider.dart';
 import 'package:fl_clash/xboard/features/update_check/widgets/update_dialog.dart';
 import 'package:fl_clash/xboard/features/shared/styles/styles.dart';
+import 'package:fl_clash/xboard/features/shared/widgets/legal_footer.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -137,6 +138,8 @@ class _FastCatAboutPageState extends ConsumerState<FastCatAboutPage> {
                   ],
                 ),
               ),
+              const SizedBox(height: 24),
+              const FastCatLegalFooter(),
             ],
           ),
         ),

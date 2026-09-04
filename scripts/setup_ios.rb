@@ -6,7 +6,7 @@
 #   1. Replace placeholder variables (APP_GROUP_ID, PRODUCT_BUNDLE_IDENTIFIER)
 #   2. Add the PacketTunnel Network Extension target to the Xcode project
 #   3. Add libclash.xcframework to the PacketTunnel target
-#   4. Update Runner/Info.plist with Background Modes (if not already present)
+#   4. Embed PacketTunnel.appex in the Runner application
 #
 # Usage (called by build.yaml):
 #   gem install xcodeproj
@@ -44,35 +44,14 @@ puts "[setup_ios] bundle_id=#{bundle_id}  app_group=#{app_group}"
   puts "[setup_ios] patched placeholders in #{f}"
 end
 
-# ── 2. Patch Runner/Info.plist — ensure Background Modes ────────────────────
-
-info_plist = 'ios/Runner/Info.plist'
-content = File.read(info_plist)
-unless content.include?('UIBackgroundModes')
-  content.sub!(
-    '</dict>',
-    <<~XML
-      \t<key>UIBackgroundModes</key>
-      \t<array>
-      \t\t<string>network-authentication</string>
-      \t\t<string>voip</string>
-      \t</array>
-      </dict>
-    XML
-  )
-  File.write(info_plist, content)
-  puts "[setup_ios] patched Runner/Info.plist — added UIBackgroundModes"
-end
-
-# ── 3. Open Xcode project and add PacketTunnel target ────────────────────────
+# ── 2. Open Xcode project and add PacketTunnel target ────────────────────────
 
 project = Xcodeproj::Project.open(project_path)
 
 # Check if PacketTunnel target already exists
 existing = project.targets.find { |t| t.name == 'PacketTunnel' }
 if existing
-  puts "[setup_ios] PacketTunnel target already exists — skipping creation"
-  # Still update bundle IDs
+  puts "[setup_ios] PacketTunnel target already exists — refreshing configuration"
   runner = project.targets.find { |t| t.name == 'Runner' }
   runner&.build_configurations&.each do |c|
     c.build_settings['CODE_SIGN_ENTITLEMENTS']    = 'Runner/Runner.entitlements'
@@ -80,6 +59,23 @@ if existing
   end
   existing.build_configurations.each do |c|
     c.build_settings['PRODUCT_BUNDLE_IDENTIFIER'] = tunnel_id
+  end
+
+  if runner
+    embed_phase = runner.build_phases.find do |phase|
+      phase.is_a?(Xcodeproj::Project::Object::PBXCopyFilesBuildPhase) &&
+        phase.dst_subfolder_spec.to_s == '13'
+    end
+    embed_phase ||= runner.new_copy_files_build_phase('Embed App Extensions').tap do |phase|
+      phase.dst_subfolder_spec = '13'
+    end
+    unless embed_phase.files_references.include?(existing.product_reference)
+      build_file = embed_phase.add_file_reference(existing.product_reference)
+      build_file.settings = { 'ATTRIBUTES' => %w[RemoveHeadersOnCopy CodeSignOnCopy] }
+    end
+    runner.add_dependency(existing) unless runner.dependencies.any? do |dependency|
+      dependency.target == existing
+    end
   end
   project.save
   exit 0
@@ -146,22 +142,16 @@ end
 
 # ── 6. Embed PacketTunnel extension in Runner ─────────────────────────────────
 #
-# Do NOT create an "Embed App Extensions" copy-files phase here.
-# Xcode's implicit embed (from the target dependency) conflicts with a manual
-# copy-files phase, causing "Cycle inside Runner" build errors.
-# Instead, build.yaml will manually copy PacketTunnel.appex into PlugIns/
-# after the archive step if Xcode didn't embed it automatically.
-
 if runner
-  # Remove any leftover embed phases from previous runs (safety net)
-  runner.build_phases.select do |p|
-    p.is_a?(Xcodeproj::Project::Object::PBXCopyFilesBuildPhase) &&
-      p.dst_subfolder_spec.to_s == '13'
-  end.each do |p|
-    p.remove_from_project
+  embed_phase = runner.new_copy_files_build_phase('Embed App Extensions')
+  embed_phase.dst_subfolder_spec = '13'
+  build_file = embed_phase.add_file_reference(tunnel_target.product_reference)
+  build_file.settings = {
+    'ATTRIBUTES' => %w[RemoveHeadersOnCopy CodeSignOnCopy]
+  }
+  unless runner.dependencies.any? { |dependency| dependency.target == tunnel_target }
+    runner.add_dependency(tunnel_target)
   end
-
-  runner.add_dependency(tunnel_target)
 end
 
 project.save

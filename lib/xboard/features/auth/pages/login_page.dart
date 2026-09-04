@@ -16,6 +16,7 @@ import 'package:fl_clash/xboard/utils/xboard_notification.dart';
 import 'package:fl_clash/xboard/features/auth/utils/login_validation.dart';
 import 'package:fl_clash/state.dart';
 import 'package:fl_clash/xboard/features/about/pages/fastcat_about_page.dart';
+import 'package:fl_clash/xboard/features/shared/widgets/legal_footer.dart';
 import 'package:flutter/services.dart';
 
 const _gatewayOverrideUrl = String.fromEnvironment('XBOARD_GATEWAY_URL');
@@ -42,6 +43,7 @@ class LoginResponsiveScaffold extends StatelessWidget {
             constraints.maxHeight >= fullLayoutMinHeight;
 
         return Scaffold(
+          resizeToAvoidBottomInset: true,
           appBar: showPageActions ? appBar : null,
           extendBodyBehindAppBar: showPageActions,
           body: SafeArea(
@@ -454,15 +456,16 @@ class _LoginPageState extends ConsumerState<LoginPage> {
       ),
       body: Container(
         color: isDark ? colorScheme.surface : const Color(0xFFFAFBFD),
-        child: Stack(
+        child: Column(
           children: [
-            Positioned.fill(
-              bottom: 64,
+            Expanded(
               child: Center(
                 child: SingleChildScrollView(
+                  keyboardDismissBehavior:
+                      ScrollViewKeyboardDismissBehavior.onDrag,
                   padding: const EdgeInsets.symmetric(
-                    horizontal: 32.0,
-                    vertical: 16.0,
+                    horizontal: 32,
+                    vertical: 16,
                   ),
                   child: ConstrainedBox(
                     constraints: const BoxConstraints(maxWidth: 400),
@@ -766,34 +769,39 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                 ),
               ),
             ),
-            Positioned(
-              left: 0,
-              right: 0,
-              bottom: 12,
-              child: SafeArea(
-                top: false,
+            SafeArea(
+              top: false,
+              child: Padding(
+                padding: const EdgeInsets.only(bottom: 12),
                 child: Center(
-                  child: InkWell(
-                    borderRadius: BorderRadius.circular(16),
-                    onTap: () => Navigator.of(context).push(
-                      MaterialPageRoute(
-                        builder: (_) => const FastCatAboutPage(),
-                      ),
-                    ),
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 12,
-                        vertical: 6,
-                      ),
-                      child: Text(
-                        appLocalizations.updateCheckCurrentVersion(
-                          'V${globalState.packageInfo.version}',
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      InkWell(
+                        borderRadius: BorderRadius.circular(16),
+                        onTap: () => Navigator.of(context).push(
+                          MaterialPageRoute(
+                            builder: (_) => const FastCatAboutPage(),
+                          ),
                         ),
-                        style: textTheme.bodySmall?.copyWith(
-                          color: colorScheme.onSurfaceVariant,
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 12,
+                            vertical: 4,
+                          ),
+                          child: Text(
+                            appLocalizations.updateCheckCurrentVersion(
+                              'V${globalState.packageInfo.version}',
+                            ),
+                            style: textTheme.bodySmall?.copyWith(
+                              color: colorScheme.onSurfaceVariant,
+                            ),
+                          ),
                         ),
                       ),
-                    ),
+                      const SizedBox(height: 2),
+                      const FastCatCopyrightNotice(compact: true),
+                    ],
                   ),
                 ),
               ),

@@ -185,8 +185,8 @@ class AppController {
           );
         }
         if (Platform.isIOS) {
-          // Traffic routing just enabled — mihomo was already running in idle mode.
-          // Refresh groups from the core and re-apply the user's selected proxy.
+          // The user-approved connection has started the Packet Tunnel. Refresh
+          // groups from the core and re-apply the selected proxy.
           await _refreshGroupsAfterConnect();
           addCheckIpNumDebounce();
           globalState.updateCoreSwitchStatus(
@@ -964,20 +964,8 @@ class AppController {
       await applyProfile(silence: true);
     }
 
-    // iOS always-on: start the tunnel in idle mode so mihomo is available
-    // for IPC (delay tests, proxy queries) before the user taps "connect".
-    if (Platform.isIOS) {
-      final profileId = globalState.config.currentProfileId;
-      if (profileId != null) {
-        try {
-          final profilePath = await appPath.getProfilePath(profileId);
-          final configYaml = await File(profilePath).readAsString();
-          await service?.ensureTunnelRunning(configYaml);
-        } catch (e) {
-          commonPrint.log('iOS ensureTunnelRunning failed: $e');
-        }
-      }
-    }
+    // Do not create or start the iOS Packet Tunnel here. The first user-
+    // initiated connection is gated by IosVpnPrivacyNotice in the connect UI.
   }
 
   init() async {
