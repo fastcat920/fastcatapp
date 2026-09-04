@@ -157,7 +157,7 @@ class FastCatCopyrightNotice extends StatelessWidget {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 12),
       child: Text(
-        '© 2021–2026 FastCat Digital Labs LLC. All rights reserved.',
+        '© 2020–2026 FastCat Digital Labs LLC. All rights reserved.',
         textAlign: TextAlign.center,
         style: Theme.of(context).textTheme.bodySmall?.copyWith(
               color: colorScheme.onSurfaceVariant,

@@ -30,7 +30,6 @@ fi
 echo "→ Building IPA for ${APP_NAME_EN} ${VERSION}..."
 mkdir -p dist
 
-/usr/libexec/PlistBuddy -c "Set :CFBundleDisplayName ${APP_NAME}" ios/Runner/Info.plist
 /usr/libexec/PlistBuddy -c "Set :CFBundleName ${APP_NAME_EN}" ios/Runner/Info.plist
 
 flutter build ipa --release --no-codesign \

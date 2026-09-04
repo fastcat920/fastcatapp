@@ -29,14 +29,6 @@ fi
 
 echo "→ Building split APKs for ${APP_NAME_EN} ${VERSION}..."
 
-STRINGS_XML="android/app/src/main/res/values/strings.xml"
-if [ -f "$STRINGS_XML" ]; then
-  APP_NAME_FOR_PERL="$APP_NAME" perl -0pi -e '
-    s#<string name="app_name">[^<]*</string>#<string name="app_name">$ENV{APP_NAME_FOR_PERL}</string>#g;
-    s#<string name="fl_clash">[^<]*</string>#<string name="fl_clash">$ENV{APP_NAME_FOR_PERL}</string>#g;
-  ' "$STRINGS_XML"
-fi
-
 flutter clean
 BUILD_EXIT=1
 for attempt in 1 2 3; do

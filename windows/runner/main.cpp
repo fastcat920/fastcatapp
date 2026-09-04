@@ -8,6 +8,15 @@
 #include "flutter_window.h"
 #include "utils.h"
 
+namespace {
+
+const wchar_t* LocalizedAppName() {
+  const LANGID language = ::GetUserDefaultUILanguage();
+  return PRIMARYLANGID(language) == LANG_CHINESE ? L"快猫" : L"FastCat";
+}
+
+}  // namespace
+
 int APIENTRY wWinMain(_In_ HINSTANCE instance, _In_opt_ HINSTANCE prev,
                       _In_ wchar_t *command_line, _In_ int show_command) {
   BootDiagLog("wWinMain started");
@@ -36,7 +45,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE instance, _In_opt_ HINSTANCE prev,
   Win32Window::Point origin(10, 10);
   Win32Window::Size size(800, 600);
   BootDiagLog("FlutterWindow.Create begin");
-  if (!window.Create(L"快猫", origin, size)) {
+  if (!window.Create(LocalizedAppName(), origin, size)) {
     BootDiagLog("FlutterWindow.Create failed");
     return EXIT_FAILURE;
   }

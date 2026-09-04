@@ -1,7 +1,7 @@
 [Setup]
 AppId={{APP_ID}}
 AppVersion={{APP_VERSION}}
-AppName={{DISPLAY_NAME}}
+AppName={code:LocalizedAppDisplayName}
 AppPublisher={{PUBLISHER_NAME}}
 AppPublisherURL={{PUBLISHER_URL}}
 AppSupportURL={{PUBLISHER_URL}}
@@ -22,6 +22,30 @@ ArchitecturesInstallIn64BitMode=x64compatible arm64
 RestartIfNeededByRun=no
 
 [Code]
+function GetUserDefaultUILanguage(): Integer;
+  external 'GetUserDefaultUILanguage@kernel32.dll stdcall';
+
+function UsesChineseSystemLanguage(): Boolean;
+begin
+  Result := (GetUserDefaultUILanguage() and $3FF) = $04;
+end;
+
+function LocalizedAppDisplayName(Param: String): String;
+begin
+  if UsesChineseSystemLanguage() then
+    Result := '快猫'
+  else
+    Result := 'FastCat';
+end;
+
+function LocalizedLaunchApp(Param: String): String;
+begin
+  if UsesChineseSystemLanguage() then
+    Result := '启动快猫'
+  else
+    Result := 'Launch FastCat';
+end;
+
 procedure KillProcesses;
 var
   Processes: TArrayOfString;
@@ -106,10 +130,10 @@ Source: "vc_redist.arm64.exe"; DestDir: "{tmp}"; Flags: deleteafterinstall; Chec
 ; NOTE: Don't use "Flags: ignoreversion" on any shared system files
 
 [Icons]
-Name: "{autoprograms}\{{DISPLAY_NAME}}"; Filename: "{app}\{{EXECUTABLE_NAME}}"; IconFilename: "{app}\{{EXECUTABLE_NAME}}"; IconIndex: 0
-Name: "{autodesktop}\{{DISPLAY_NAME}}"; Filename: "{app}\{{EXECUTABLE_NAME}}"; IconFilename: "{app}\{{EXECUTABLE_NAME}}"; IconIndex: 0; Tasks: desktopicon
+Name: "{autoprograms}\{code:LocalizedAppDisplayName}"; Filename: "{app}\{{EXECUTABLE_NAME}}"; IconFilename: "{app}\{{EXECUTABLE_NAME}}"; IconIndex: 0
+Name: "{autodesktop}\{code:LocalizedAppDisplayName}"; Filename: "{app}\{{EXECUTABLE_NAME}}"; IconFilename: "{app}\{{EXECUTABLE_NAME}}"; IconIndex: 0; Tasks: desktopicon
 
 [Run]
 Filename: "{tmp}\vc_redist.x64.exe"; Parameters: "/install /quiet /norestart"; StatusMsg: "正在安装 Visual C++ 运行库..."; Flags: waituntilterminated; Check: not IsArm64
 Filename: "{tmp}\vc_redist.arm64.exe"; Parameters: "/install /quiet /norestart"; StatusMsg: "正在安装 Visual C++ 运行库..."; Flags: waituntilterminated; Check: IsArm64
-Filename: "{app}\{{EXECUTABLE_NAME}}"; Description: "{cm:LaunchProgram,{{DISPLAY_NAME}}}"; Flags: runascurrentuser nowait postinstall skipifsilent
+Filename: "{app}\{{EXECUTABLE_NAME}}"; Description: "{code:LocalizedLaunchApp}"; Flags: runascurrentuser nowait postinstall skipifsilent

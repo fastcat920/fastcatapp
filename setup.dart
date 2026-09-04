@@ -828,7 +828,13 @@ List<String> _linuxDesktopEntryLines({
     '[Desktop Entry]',
     'Type=Application',
     'Version=${Build.appVersion}',
-    'Name=$appName',
+    'Name=$appNameEn',
+    'Name[zh]=$appName',
+    'Name[zh_CN]=$appName',
+    'Name[zh_TW]=$appName',
+    'Name[zh_HK]=$appName',
+    'Name[zh_MO]=$appName',
+    'Name[zh_SG]=$appName',
     'GenericName=$appNameEn',
     'Icon=/usr/share/icons/hicolor/256x256/apps/$appNameEn.png',
     'Exec=$appNameEn %U',
@@ -1476,9 +1482,9 @@ end tell
       }
     }
 
-    final productName = Platform.environment["APP_NAME"]?.isNotEmpty == true
-        ? Platform.environment["APP_NAME"]!
-        : Build.appName;
+    final productName = Platform.environment["APP_NAME_EN"]?.isNotEmpty == true
+        ? Platform.environment["APP_NAME_EN"]!
+        : Build.appNameEn;
     final dmgVolumeName = _safeAsciiDmgVolumeName(productName);
     if (dmgVolumeName != productName) {
       print(
@@ -2003,21 +2009,14 @@ void _applyDistributorOptions() {
 /// 用 APP_NAME 环境变量替换 macOS 打包配置中的应用名称
 ///
 /// macOS 架构：
-///   PRODUCT_NAME  — .app 包名/可执行文件名，macOS 支持 Unicode
-///   DISPLAY_NAME  — 用户可见名（Dock/Finder/关于），支持中文
-///
-/// 当 APP_NAME 含非 ASCII 字符（如中文）时：
-///   PRODUCT_NAME 和 DISPLAY_NAME 设为中文名
-///   .app 包名使用中文名；DMG 卷标使用 ASCII 名称以保证 Finder 背景图生效
+///   PRODUCT_NAME  — 稳定使用英文，保证构建产物路径不随系统语言变化
+///   DISPLAY_NAME  — 默认英文，由 InfoPlist.strings 按系统语言本地化
 void _applyMacosAppName() {
   final brand = _loadAppBrandConfig();
   final appName = brand.appName;
   final appNameEn = brand.appNameEn;
-  print('[setup.dart] 🍎 macOS 应用名称: $appName');
-
-  // macOS Xcode 原生支持 Unicode，PRODUCT_NAME 可直接使用中文
-  // （不同于 Windows CMake / Linux deb 需要 ASCII）
-  final productName = appName;
+  print('[setup.dart] 🍎 macOS 应用名称: $appName / $appNameEn');
+  final productName = appNameEn;
 
   // 1. AppInfo.xcconfig: PRODUCT_NAME + DISPLAY_NAME
   final xcconfigPath =
@@ -2031,7 +2030,7 @@ void _applyMacosAppName() {
     );
     content = content.replaceFirst(
       RegExp(r'DISPLAY_NAME\s*=\s*.+'),
-      'DISPLAY_NAME = $appName',
+      'DISPLAY_NAME = $appNameEn',
     );
     content = content.replaceFirst(
       RegExp(r'PRODUCT_COPYRIGHT\s*=\s*.+'),
@@ -2039,7 +2038,7 @@ void _applyMacosAppName() {
     );
     xcconfigFile.writeAsStringSync(content);
     print(
-        '[setup.dart]   ✅ AppInfo.xcconfig PRODUCT_NAME → $productName, DISPLAY_NAME → $appName, COPYRIGHT → $appNameEn');
+        '[setup.dart]   ✅ AppInfo.xcconfig PRODUCT_NAME / DISPLAY_NAME → $productName, localized Chinese → $appName');
   }
 
   // 2. DMG make_config.json: title 用 ASCII 卷标，.app path 用 PRODUCT_NAME。
@@ -2048,7 +2047,7 @@ void _applyMacosAppName() {
       join(current, 'macos', 'packaging', 'dmg', 'make_config.json');
   final dmgConfigFile = File(dmgConfigPath);
   if (dmgConfigFile.existsSync()) {
-    final dmgVolumeName = _safeAsciiDmgVolumeName(appName);
+    final dmgVolumeName = _safeAsciiDmgVolumeName(appNameEn);
     final config = _macosDmgConfigWithNames(
       sourceFile: dmgConfigFile,
       productName: productName,
@@ -2078,8 +2077,10 @@ void _applyMacosAppName() {
 
 /// 用 APP_NAME 替换 Android strings.xml 中的应用名称
 void _applyAndroidAppName() {
-  final appName = _loadAppBrandConfig().appName;
-  print('[setup.dart] 🤖 Android 应用名称: $appName');
+  final brand = _loadAppBrandConfig();
+  final appName = brand.appName;
+  final appNameEn = brand.appNameEn;
+  print('[setup.dart] 🤖 Android 应用名称: $appName / $appNameEn');
 
   final stringsPath = join(
       current, 'android', 'app', 'src', 'main', 'res', 'values', 'strings.xml');
@@ -2088,14 +2089,39 @@ void _applyAndroidAppName() {
     var content = stringsFile.readAsStringSync();
     content = content.replaceAll(
       RegExp(r'<string name="app_name">[^<]+</string>'),
+      '<string name="app_name">$appNameEn</string>',
+    );
+    content = content.replaceAll(
+      RegExp(r'<string name="fl_clash">[^<]+</string>'),
+      '<string name="fl_clash">$appNameEn</string>',
+    );
+    content = content.replaceAll(
+      RegExp(r'<string name="app_name_debug">[^<]+</string>'),
+      '<string name="app_name_debug">$appNameEn Debug</string>',
+    );
+    stringsFile.writeAsStringSync(content);
+    print('[setup.dart]   ✅ 默认 strings.xml app_name → $appNameEn');
+  }
+
+  final chineseStringsPath = join(current, 'android', 'app', 'src', 'main',
+      'res', 'values-zh', 'strings.xml');
+  final chineseStringsFile = File(chineseStringsPath);
+  if (chineseStringsFile.existsSync()) {
+    var content = chineseStringsFile.readAsStringSync();
+    content = content.replaceAll(
+      RegExp(r'<string name="app_name">[^<]+</string>'),
       '<string name="app_name">$appName</string>',
     );
     content = content.replaceAll(
       RegExp(r'<string name="fl_clash">[^<]+</string>'),
       '<string name="fl_clash">$appName</string>',
     );
-    stringsFile.writeAsStringSync(content);
-    print('[setup.dart]   ✅ strings.xml app_name → $appName');
+    content = content.replaceAll(
+      RegExp(r'<string name="app_name_debug">[^<]+</string>'),
+      '<string name="app_name_debug">$appName Debug</string>',
+    );
+    chineseStringsFile.writeAsStringSync(content);
+    print('[setup.dart]   ✅ 中文 strings.xml app_name → $appName');
   }
 
   // debug manifest
@@ -2106,10 +2132,10 @@ void _applyAndroidAppName() {
     var content = debugManifestFile.readAsStringSync();
     content = content.replaceAll(
       RegExp(r'android:label="[^"]+"'),
-      'android:label="$appName Debug"',
+      'android:label="@string/app_name_debug"',
     );
     debugManifestFile.writeAsStringSync(content);
-    print('[setup.dart]   ✅ debug AndroidManifest.xml label → $appName Debug');
+    print('[setup.dart]   ✅ debug AndroidManifest.xml 使用本地化名称资源');
   }
 }
 
@@ -2146,18 +2172,6 @@ void _applyWindowsAppName() {
   final exeName = '$appNameEn.exe';
   print('[setup.dart] 🪟 Windows 应用名称: $appName ($exeName)');
 
-  final mainCppPath = join(current, 'windows', 'runner', 'main.cpp');
-  final mainCppFile = File(mainCppPath);
-  if (mainCppFile.existsSync()) {
-    var content = mainCppFile.readAsStringSync();
-    content = content.replaceFirst(
-      RegExp(r'window\.Create\(L"[^"]+"'),
-      'window.Create(L"$appName"',
-    );
-    mainCppFile.writeAsStringSync(content);
-    print('[setup.dart]   ✅ main.cpp window title → $appName');
-  }
-
   final cmakePath = join(current, 'windows', 'CMakeLists.txt');
   final cmakeFile = File(cmakePath);
   if (cmakeFile.existsSync()) {
@@ -2180,7 +2194,7 @@ void _applyWindowsAppName() {
     var content = rcFile.readAsStringSync();
     content = content.replaceFirst(
       RegExp(r'VALUE "FileDescription", "[^"]*" "\\0"'),
-      'VALUE "FileDescription", "$appName" "\\0"',
+      'VALUE "FileDescription", "$appNameEn" "\\0"',
     );
     content = content.replaceFirst(
       RegExp(r'VALUE "InternalName", "[^"]*" "\\0"'),
@@ -2192,10 +2206,10 @@ void _applyWindowsAppName() {
     );
     content = content.replaceFirst(
       RegExp(r'VALUE "ProductName", "[^"]*" "\\0"'),
-      'VALUE "ProductName", "$appName" "\\0"',
+      'VALUE "ProductName", "$appNameEn" "\\0"',
     );
     rcFile.writeAsStringSync(content);
-    print('[setup.dart]   ✅ Runner.rc 元信息 → $appName / $exeName');
+    print('[setup.dart]   ✅ Runner.rc 默认英文元信息 → $appNameEn / $exeName');
   }
 
   final makeConfigPath =
@@ -2203,14 +2217,14 @@ void _applyWindowsAppName() {
   final makeConfigFile = File(makeConfigPath);
   if (makeConfigFile.existsSync()) {
     var content = makeConfigFile.readAsStringSync();
-    content = _replaceYamlValue(content, 'app_name', appName);
-    content = _replaceYamlValue(content, 'display_name', appName);
+    content = _replaceYamlValue(content, 'app_name', appNameEn);
+    content = _replaceYamlValue(content, 'display_name', appNameEn);
     final artifactBase = '$appNameEn-Windows-${Build.appVersion}.exe';
     content = _replaceYamlValue(content, 'executable_name', exeName);
     content = _replaceYamlValue(content, 'output_base_file_name', artifactBase);
     makeConfigFile.writeAsStringSync(content);
     print(
-        '[setup.dart]   ✅ exe make_config.yaml → display=$appName, exe=$exeName, installer=$artifactBase');
+        '[setup.dart]   ✅ exe make_config.yaml → default=$appNameEn, localized Chinese=$appName, exe=$exeName, installer=$artifactBase');
   }
 }
 
@@ -2221,35 +2235,6 @@ void _applyLinuxAppName() {
   final appNameEn = brand.appNameEn;
   const applicationId = 'com.fastcat.app';
   print('[setup.dart] 🐧 Linux 应用名称: $appName ($appNameEn)');
-
-  final appPath = join(current, 'linux', 'my_application.cc');
-  final appFile = File(appPath);
-  if (appFile.existsSync()) {
-    var content = appFile.readAsStringSync();
-    content = content.replaceAll(
-      RegExp(r'g_set_application_name\("[^"]+"\)'),
-      'g_set_application_name("$appName")',
-    );
-    content = content.replaceAll(
-      RegExp(r'gtk_window_set_icon_name\(window,\s*"[^"]+"\)'),
-      'gtk_window_set_icon_name(window, "$appNameEn")',
-    );
-    content = content.replaceAll(
-      RegExp(r'gtk_header_bar_set_title\(header_bar,\s*"[^"]+"\)'),
-      'gtk_header_bar_set_title(header_bar, "$appName")',
-    );
-    content = content.replaceAll(
-      RegExp(r'gtk_window_set_title\(window,\s*"[^"]+"\)'),
-      'gtk_window_set_title(window, "$appName")',
-    );
-    content = content.replaceAll(
-      RegExp(r'gtk_window_set_default_size\(window,\s*\d+,\s*\d+\)'),
-      'gtk_window_set_default_size(window, 800, 600)',
-    );
-    appFile.writeAsStringSync(content);
-    print(
-        '[setup.dart]   ✅ my_application.cc title → $appName, size → 800x600');
-  }
 
   final cmakePath = join(current, 'linux', 'CMakeLists.txt');
   final cmakeFile = File(cmakePath);
@@ -2276,7 +2261,7 @@ void _applyLinuxAppName() {
       appName: appName,
       appNameEn: appNameEn,
     );
-    content = _replaceYamlValue(content, 'display_name', appName);
+    content = _replaceYamlValue(content, 'display_name', appNameEn);
     content = _replaceYamlValue(content, 'generic_name', appNameEn);
     content = _replaceYamlValue(content, 'startup_wm_class', applicationId);
     if (content.contains(RegExp(r'^package_name:', multiLine: true))) {
@@ -2318,6 +2303,30 @@ void _applyLinuxAppName() {
         content,
         'preinstall_scripts',
         stopProcessCommands,
+      );
+      final desktopSource = '/usr/share/applications/$appNameEn.desktop';
+      const desktopTarget = '/usr/share/applications/$applicationId.desktop';
+      final legacyDesktop =
+          '/usr/share/applications/${appNameEn.toLowerCase()}.desktop';
+      content = _replaceYamlListBlock(
+        content,
+        'postinstall_scripts',
+        [
+          _linuxWriteDesktopEntryCommand(
+            appName: appName,
+            appNameEn: appNameEn,
+            applicationId: applicationId,
+            desktopPath: desktopTarget,
+          ),
+          'chmod 644 $desktopTarget',
+          'rm -f $desktopSource $legacyDesktop',
+          'command -v update-desktop-database >/dev/null 2>&1 && update-desktop-database /usr/share/applications >/dev/null 2>&1 || true',
+        ],
+      );
+      content = _replaceYamlListBlock(
+        content,
+        'postuninstall_scripts',
+        ['rm -f $desktopTarget $desktopSource $legacyDesktop'],
       );
     }
     content = content.replaceFirst(

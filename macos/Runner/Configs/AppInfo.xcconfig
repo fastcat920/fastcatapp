@@ -5,11 +5,11 @@
 // 'flutter create' template.
 
 // The application's name. By default this is also the title of the Flutter window.
-PRODUCT_NAME = 快猫
+PRODUCT_NAME = FastCat
 
-// The user-visible display name (supports Chinese/Unicode). Used by CFBundleDisplayName.
-// Overridden by setup.dart when APP_NAME is set.
-DISPLAY_NAME = 快猫
+// The default user-visible name. InfoPlist.strings localizes Chinese systems.
+// setup.dart keeps this English fallback aligned with app_name_en.
+DISPLAY_NAME = FastCat
 
 // The application's bundle identifier
 PRODUCT_BUNDLE_IDENTIFIER = com.fastcat.app

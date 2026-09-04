@@ -15,6 +15,15 @@ struct _MyApplication {
 
 G_DEFINE_TYPE(MyApplication, my_application, GTK_TYPE_APPLICATION)
 
+static const gchar* localized_application_name() {
+  const gchar* const* languages = g_get_language_names();
+  if (languages != nullptr && languages[0] != nullptr &&
+      g_ascii_strncasecmp(languages[0], "zh", 2) == 0) {
+    return "快猫";
+  }
+  return "FastCat";
+}
+
 static void center_window_on_monitor(GtkWindow* window, int width, int height) {
   GdkDisplay* display = gdk_display_get_default();
   if (display == nullptr) return;
@@ -158,11 +167,11 @@ static void my_application_activate(GApplication* application) {
   if (use_header_bar) {
     GtkHeaderBar* header_bar = GTK_HEADER_BAR(gtk_header_bar_new());
     gtk_widget_show(GTK_WIDGET(header_bar));
-    gtk_header_bar_set_title(header_bar, "快猫");
+    gtk_header_bar_set_title(header_bar, localized_application_name());
     gtk_header_bar_set_show_close_button(header_bar, TRUE);
     gtk_window_set_titlebar(window, GTK_WIDGET(header_bar));
   } else {
-    gtk_window_set_title(window, "快猫");
+    gtk_window_set_title(window, localized_application_name());
   }
 
   gtk_window_set_default_size(window, 800, 600);
@@ -256,7 +265,7 @@ static void my_application_init(MyApplication* self) {
 }
 
 MyApplication* my_application_new() {
-  g_set_application_name("快猫");
+  g_set_application_name(localized_application_name());
 
   // Set the program name to the application ID, which helps various systems
   // like GTK and desktop environments map this running application to its

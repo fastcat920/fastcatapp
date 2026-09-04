@@ -36,111 +36,130 @@ class _FastCatAboutPageState extends ConsumerState<FastCatAboutPage> {
         backgroundColor: XbUiTokens.pageBackground(context),
         surfaceTintColor: Colors.transparent,
       ),
-      body: Center(
-        child: ConstrainedBox(
-          constraints: const BoxConstraints(maxWidth: 680),
-          child: ListView(
-            padding: const EdgeInsets.fromLTRB(20, 20, 20, 32),
-            children: [
-              Center(
-                child: GestureDetector(
-                  behavior: HitTestBehavior.opaque,
-                  onTap: _onLogoTap,
-                  child: Container(
-                    width: 88,
-                    height: 88,
-                    decoration: BoxDecoration(
-                      color: Theme.of(context)
-                          .colorScheme
-                          .primary
-                          .withValues(alpha: 0.10),
-                      borderRadius: BorderRadius.circular(26),
-                    ),
-                    child: Padding(
-                      padding: const EdgeInsets.all(10),
-                      child: Image.asset(
-                        'assets/images/icon.png',
-                        fit: BoxFit.contain,
-                      ),
-                    ),
-                  ),
-                ),
-              ),
-              const SizedBox(height: 12),
-              Text(
-                localizedAppName,
-                textAlign: TextAlign.center,
-                style: Theme.of(context).textTheme.headlineSmall,
-              ),
-              const SizedBox(height: 4),
-              Text(
-                'V$version',
-                textAlign: TextAlign.center,
-                style: Theme.of(context).textTheme.bodyMedium,
-              ),
-              const SizedBox(height: 24),
-              Card(
-                elevation: XbUiCardStyle.elevation(context),
-                shadowColor: XbUiCardStyle.shadowColor(context),
-                color: XbUiCardStyle.background(context),
-                shape: XbUiCardStyle.shape(context),
-                clipBehavior: Clip.antiAlias,
-                child: Column(
-                  children: [
-                    ListTile(
-                      leading: Stack(
-                        clipBehavior: Clip.none,
-                        children: [
-                          const Icon(Icons.system_update_outlined),
-                          if (update.hasUpdate)
-                            Positioned(
-                              right: -3,
-                              top: -3,
-                              child: Container(
-                                key: const Key('about_update_badge'),
-                                width: 8,
-                                height: 8,
-                                decoration: const BoxDecoration(
-                                  color: Colors.redAccent,
-                                  shape: BoxShape.circle,
-                                ),
+      body: SafeArea(
+        top: false,
+        child: Center(
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 680),
+            child: CustomScrollView(
+              slivers: [
+                SliverPadding(
+                  padding: const EdgeInsets.fromLTRB(20, 20, 20, 0),
+                  sliver: SliverList.list(
+                    children: [
+                      Center(
+                        child: GestureDetector(
+                          behavior: HitTestBehavior.opaque,
+                          onTap: _onLogoTap,
+                          child: Container(
+                            width: 88,
+                            height: 88,
+                            decoration: BoxDecoration(
+                              color: Theme.of(context)
+                                  .colorScheme
+                                  .primary
+                                  .withValues(alpha: 0.10),
+                              borderRadius: BorderRadius.circular(26),
+                            ),
+                            child: Padding(
+                              padding: const EdgeInsets.all(10),
+                              child: Image.asset(
+                                'assets/images/icon.png',
+                                fit: BoxFit.contain,
                               ),
                             ),
-                        ],
-                      ),
-                      title: Text(l10n.checkUpdate),
-                      trailing: update.isChecking
-                          ? const SizedBox.square(
-                              dimension: 20,
-                              child: CircularProgressIndicator(strokeWidth: 2),
-                            )
-                          : const Icon(Icons.chevron_right),
-                      onTap: update.isChecking
-                          ? null
-                          : () => _checkUpdate(context, ref),
-                    ),
-                    if (showLogs) ...[
-                      Divider(
-                        height: 1,
-                        color: XbUiTokens.cardBorder(context),
-                      ),
-                      ListTile(
-                        leading: const Icon(Icons.article_outlined),
-                        title: Text(l10n.logs),
-                        trailing: const Icon(Icons.chevron_right),
-                        onTap: () => Navigator.of(context).push(
-                          MaterialPageRoute<void>(
-                            builder: (_) => const FastCatLogsPage(),
                           ),
                         ),
                       ),
+                      const SizedBox(height: 12),
+                      Text(
+                        localizedAppName,
+                        textAlign: TextAlign.center,
+                        style: Theme.of(context).textTheme.headlineSmall,
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        'V$version',
+                        textAlign: TextAlign.center,
+                        style: Theme.of(context).textTheme.bodyMedium,
+                      ),
+                      const SizedBox(height: 24),
+                      Card(
+                        elevation: XbUiCardStyle.elevation(context),
+                        shadowColor: XbUiCardStyle.shadowColor(context),
+                        color: XbUiCardStyle.background(context),
+                        shape: XbUiCardStyle.shape(context),
+                        clipBehavior: Clip.antiAlias,
+                        child: Column(
+                          children: [
+                            ListTile(
+                              leading: Stack(
+                                clipBehavior: Clip.none,
+                                children: [
+                                  const Icon(Icons.system_update_outlined),
+                                  if (update.hasUpdate)
+                                    Positioned(
+                                      right: -3,
+                                      top: -3,
+                                      child: Container(
+                                        key: const Key('about_update_badge'),
+                                        width: 8,
+                                        height: 8,
+                                        decoration: const BoxDecoration(
+                                          color: Colors.redAccent,
+                                          shape: BoxShape.circle,
+                                        ),
+                                      ),
+                                    ),
+                                ],
+                              ),
+                              title: Text(l10n.checkUpdate),
+                              trailing: update.isChecking
+                                  ? const SizedBox.square(
+                                      dimension: 20,
+                                      child: CircularProgressIndicator(
+                                        strokeWidth: 2,
+                                      ),
+                                    )
+                                  : const Icon(Icons.chevron_right),
+                              onTap: update.isChecking
+                                  ? null
+                                  : () => _checkUpdate(context, ref),
+                            ),
+                            if (showLogs) ...[
+                              Divider(
+                                height: 1,
+                                color: XbUiTokens.cardBorder(context),
+                              ),
+                              ListTile(
+                                leading: const Icon(Icons.article_outlined),
+                                title: Text(l10n.logs),
+                                trailing: const Icon(Icons.chevron_right),
+                                onTap: () => Navigator.of(context).push(
+                                  MaterialPageRoute<void>(
+                                    builder: (_) => const FastCatLogsPage(),
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ],
+                        ),
+                      ),
                     ],
-                  ],
+                  ),
                 ),
-              ),
-              const SizedBox(height: 24),
-              const FastCatLegalFooter(),
-            ],
+                SliverFillRemaining(
+                  hasScrollBody: false,
+                  child: const Padding(
+                    padding: EdgeInsets.fromLTRB(20, 24, 20, 24),
+                    child: Align(
+                      alignment: Alignment.bottomCenter,
+                      child: FastCatLegalFooter(),
+                    ),
+                  ),
+                ),
+              ],
+            ),
           ),
         ),
       ),

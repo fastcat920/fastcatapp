@@ -18,7 +18,7 @@ const appNameEn = "FastCat";
 
 /// 根据设备语言返回本地化应用名称：中文设备显示"快猫"，其他语言显示 "FastCat"
 String get localizedAppName {
-  final locale = Platform.localeName;
+  final locale = Platform.localeName.toLowerCase();
   return locale.startsWith('zh') ? appName : appNameEn;
 }
 
