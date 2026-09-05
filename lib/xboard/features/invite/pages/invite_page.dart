@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:fl_clash/common/common.dart';
+import 'package:fl_clash/l10n/l10n.dart';
 import 'package:fl_clash/xboard/features/invite/providers/invite_provider.dart';
 import 'package:fl_clash/xboard/features/invite/dialogs/transfer_dialog.dart';
 import 'package:fl_clash/xboard/features/invite/dialogs/withdraw_dialog.dart';
@@ -326,6 +327,7 @@ class _ActionButtons extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final inviteState = ref.watch(inviteProvider);
+    final l10n = AppLocalizations.of(context);
     if (!inviteState.isWithdrawEnabled) {
       return SizedBox(
         width: double.infinity,
@@ -335,7 +337,7 @@ class _ActionButtons extends ConsumerWidget {
             builder: (_) => const TransferDialog(),
           ),
           icon: const Icon(Icons.swap_horiz, size: 18),
-          label: appLocalizations.transferToWallet,
+          label: l10n.transferToWallet,
         ),
       );
     }
@@ -352,7 +354,7 @@ class _ActionButtons extends ConsumerWidget {
                     builder: (_) => const WithdrawDialog(),
                   ),
                   icon: const Icon(Icons.account_balance, size: 18),
-                  label: appLocalizations.withdraw,
+                  label: l10n.withdraw,
                 ),
               ),
               const SizedBox(width: 12),
@@ -363,7 +365,7 @@ class _ActionButtons extends ConsumerWidget {
                   ),
                   icon:
                       const Icon(Icons.confirmation_number_outlined, size: 18),
-                  label: appLocalizations.ticketRecords,
+                  label: l10n.ticketRecords,
                 ),
               ),
             ],
@@ -377,7 +379,7 @@ class _ActionButtons extends ConsumerWidget {
               builder: (_) => const TransferDialog(),
             ),
             icon: const Icon(Icons.swap_horiz, size: 18),
-            label: appLocalizations.transferToWallet,
+            label: l10n.transferToWallet,
           ),
         ),
       ],

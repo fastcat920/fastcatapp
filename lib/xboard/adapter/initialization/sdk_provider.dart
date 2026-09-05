@@ -115,6 +115,9 @@ Future<XBoardSDK> xboardSdk(Ref ref) async {
         );
       },
     );
+    sdk.httpService.setContentLocale(
+      xboardContentLocale(globalState.config.appSetting.locale),
+    );
 
     final runtimeSub = runtime.stream.listen((snapshot) {
       final active = snapshot.activeConfig;

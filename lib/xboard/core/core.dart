@@ -39,6 +39,8 @@ export 'exceptions/exceptions.dart';
 // ===== 导出 Result 类型 =====
 export 'result/result.dart';
 
+// ===== Content locale =====
+export 'content_locale.dart';
+
 // ===== 导出工具函数 =====
 export 'utils/utils.dart';
-
