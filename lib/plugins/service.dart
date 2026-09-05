@@ -5,6 +5,7 @@ import 'dart:isolate';
 import 'package:fl_clash/common/common.dart';
 import 'package:fl_clash/state.dart';
 import 'package:flutter/services.dart';
+import 'package:fl_clash/security/profile_vault.dart';
 
 import '../clash/lib.dart';
 
@@ -51,8 +52,7 @@ class Service {
       String configYaml = '';
       if (profileId != null) {
         try {
-          final profilePath = await appPath.getProfilePath(profileId);
-          configYaml = await File(profilePath).readAsString();
+          configYaml = await ProfileVault.instance.readText(profileId);
         } catch (_) {}
       }
       // This will throw PlatformException if VPN start fails.

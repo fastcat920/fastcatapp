@@ -76,6 +76,11 @@ class AppPath {
 
   Future<String> getProfilePath(String id) async {
     final directory = await profilesPath;
+    return join(directory, "$id.fcfg");
+  }
+
+  Future<String> getLegacyProfilePath(String id) async {
+    final directory = await profilesPath;
     return join(directory, "$id.yaml");
   }
 
@@ -86,6 +91,16 @@ class AppPath {
       "providers",
       id,
     );
+  }
+
+  Future<String> getSecureProvidersDirPath(String id) async {
+    final directory = await profilesPath;
+    return join(directory, 'providers-secure', id);
+  }
+
+  Future<String> getRuntimeProvidersDirPath(String id) async {
+    final directory = await tempDir.future;
+    return join(directory.path, 'fastcat-runtime-providers', id);
   }
 
   Future<String> getProvidersFilePath(
@@ -101,6 +116,24 @@ class AppPath {
       type,
       url.toMd5(),
     );
+  }
+
+  Future<String> getSecureProvidersFilePath(
+    String id,
+    String type,
+    String url,
+  ) async {
+    final directory = await getSecureProvidersDirPath(id);
+    return join(directory, type, '${url.toMd5()}.fcfg');
+  }
+
+  Future<String> getRuntimeProvidersFilePath(
+    String id,
+    String type,
+    String url,
+  ) async {
+    final directory = await getRuntimeProvidersDirPath(id);
+    return join(directory, type, url.toMd5());
   }
 
   Future<String> get tempPath async {

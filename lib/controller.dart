@@ -16,13 +16,14 @@ import 'package:fl_clash/state.dart';
 import 'package:fl_clash/widgets/dialog.dart';
 import 'package:fl_clash/xboard/features/auth/services/device_heartbeat_service.dart';
 import 'package:fl_clash/xboard/features/auth/utils/customer_service_helper.dart';
+import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter/material.dart';
 import 'package:yaml/yaml.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:path/path.dart';
 
 import 'common/common.dart';
 import 'common/boot_diag.dart';
+import 'security/profile_vault.dart';
 import 'models/models.dart';
 
 class _TunAdminResult {
@@ -44,6 +45,10 @@ class AppController {
   bool _tunAdminDenied = true;
   bool _isCoreSwitching = false;
   Future<void>? _disconnectCleanupFuture;
+  String? _lastConnectivityFingerprint;
+  Timer? _networkRecoveryTimer;
+  DateTime? _lastNetworkRecoveryAt;
+  bool _isRecoveringFromNetworkChange = false;
 
   bool get isCoreSwitching => _isCoreSwitching;
 
@@ -96,6 +101,69 @@ class AppController {
     debouncer.call(FunctionTag.addCheckIpNum, () {
       _ref.read(checkIpNumProvider.notifier).add();
     });
+  }
+
+  /// Handles an actual physical-network transition reported by
+  /// connectivity_plus. The first value is only a baseline; it must not break
+  /// active sessions during app startup. Later changes are coalesced because
+  /// Wi-Fi/mobile handoffs commonly emit several transient values.
+  void handleConnectivityChanged(List<ConnectivityResult> results) {
+    final fingerprint =
+        (results.map((result) => result.name).toList()..sort()).join(',');
+    final previous = _lastConnectivityFingerprint;
+    _lastConnectivityFingerprint = fingerprint;
+
+    updateLocalIp();
+    addCheckIpNumDebounce();
+
+    if (previous == null || previous == fingerprint) return;
+    if (results.contains(ConnectivityResult.vpn) ||
+        globalState.shouldSuppressConnectionCleanup) {
+      return;
+    }
+
+    // Remove old RTT badges at once; the actual core cleanup below is debounced
+    // to let a Wi-Fi/mobile handoff finish settling first.
+    _ref.read(delayDataSourceProvider.notifier).value = {};
+    _networkRecoveryTimer?.cancel();
+    _networkRecoveryTimer = Timer(
+      const Duration(milliseconds: 1500),
+      () => unawaited(_recoverFromNetworkChange()),
+    );
+  }
+
+  Future<void> _recoverFromNetworkChange() async {
+    if (_isRecoveringFromNetworkChange ||
+        globalState.shouldSuppressConnectionCleanup) {
+      return;
+    }
+    final lastRecoveryAt = _lastNetworkRecoveryAt;
+    if (lastRecoveryAt != null &&
+        DateTime.now().difference(lastRecoveryAt) <
+            const Duration(seconds: 8)) {
+      _networkRecoveryTimer?.cancel();
+      _networkRecoveryTimer = Timer(
+        const Duration(seconds: 8) - DateTime.now().difference(lastRecoveryAt),
+        () => unawaited(_recoverFromNetworkChange()),
+      );
+      return;
+    }
+
+    _isRecoveringFromNetworkChange = true;
+    _lastNetworkRecoveryAt = DateTime.now();
+    try {
+      if (globalState.isStart) {
+        await clashCore.closeConnections();
+        await clashCore.clearNetworkCaches();
+      }
+    } catch (error) {
+      commonPrint.log('network cache recovery failed: $error');
+    } finally {
+      _isRecoveringFromNetworkChange = false;
+    }
+
+    await updateLocalIp();
+    addCheckIpNumDebounce();
   }
 
   applyProfileDebounce({
@@ -547,6 +615,10 @@ class AppController {
     ClashConfig patchConfig,
     bool enableTun,
   ) async {
+    final profile = _ref.read(currentProfileProvider);
+    if (profile != null) {
+      await ProfileVault.instance.prepareRuntimeProviders(profile.id);
+    }
     final realPatchConfig = patchConfig.copyWith.tun(enable: enableTun);
     final params = await globalState.getSetupParams(
       pathConfig: realPatchConfig,
@@ -573,6 +645,10 @@ class AppController {
     await clashCore.requestGc();
     await _setupClashConfig();
     await Future.wait<void>([updateGroups(), updateProviders()]);
+    final profile = _ref.read(currentProfileProvider);
+    if (profile != null) {
+      await ProfileVault.instance.snapshotRuntimeProviders(profile.id);
+    }
   }
 
   /// iOS/fallback: parse profile YAML directly in Dart to build Groups.
@@ -584,9 +660,9 @@ class AppController {
     try {
       final profile = _ref.read(currentProfileProvider);
       if (profile == null) return;
-      final file = await profile.getFile();
-      if (!await file.exists()) return;
-      final content = await file.readAsString();
+      if (!await profile.check()) return;
+      await ProfileVault.instance.prepareRuntimeProviders(profile.id);
+      final content = await ProfileVault.instance.readText(profile.id);
       final yamlDoc = loadYaml(content);
       if (yamlDoc is! YamlMap) return;
 
@@ -610,17 +686,25 @@ class AppController {
       final providerProxies = <String, List<Proxy>>{}; // providerName → proxies
       final providers = yamlDoc['proxy-providers'] as YamlMap?;
       if (providers != null) {
-        final profileDir = dirname(file.path);
         for (final entry in providers.entries) {
           final providerName = entry.key.toString();
           final providerCfg = entry.value;
           if (providerCfg is! YamlMap) continue;
           final path = providerCfg['path']?.toString();
-          if (path == null || path.isEmpty) continue;
+          final url = providerCfg['url']?.toString();
+          if ((path == null || path.isEmpty) && (url == null || url.isEmpty)) {
+            continue;
+          }
 
-          // Provider path is relative to profile directory
+          // HTTP provider caches use the vault's ephemeral runtime directory.
           final providerFile = File(
-            path.startsWith('/') ? path : join(profileDir, path),
+            url != null && url.isNotEmpty
+                ? await appPath.getRuntimeProvidersFilePath(
+                    profile.id,
+                    'proxies',
+                    url,
+                  )
+                : path!,
           );
           try {
             if (await providerFile.exists()) {

@@ -105,6 +105,9 @@ func handleAction(action *Action, result ActionResult) {
 	case resetConnectionsMethod:
 		result.success(handleResetConnections())
 		return
+	case clearNetworkCachesMethod:
+		result.success(handleClearNetworkCaches())
+		return
 	case getConfigMethod:
 		path := action.Data.(string)
 		config, err := handleGetConfig(path)

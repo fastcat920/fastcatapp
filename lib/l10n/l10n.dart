@@ -9380,6 +9380,126 @@ class AppLocalizations {
     );
   }
 
+  /// `Redemption history`
+  String get xboardGiftCardRedemptionRecords {
+    return Intl.message(
+      'Redemption history',
+      name: 'xboardGiftCardRedemptionRecords',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Failed to load redemption history`
+  String get xboardGiftCardRedemptionsLoadFailed {
+    return Intl.message(
+      'Failed to load redemption history',
+      name: 'xboardGiftCardRedemptionsLoadFailed',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `No redemption history`
+  String get xboardNoGiftCardRedemptions {
+    return Intl.message(
+      'No redemption history',
+      name: 'xboardNoGiftCardRedemptions',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Account balance ¥{amount}`
+  String xboardGiftCardBalanceValue(Object amount) {
+    return Intl.message(
+      'Account balance ¥$amount',
+      name: 'xboardGiftCardBalanceValue',
+      desc: '',
+      args: [amount],
+    );
+  }
+
+  /// `{days} day subscription duration`
+  String xboardGiftCardSubscriptionDuration(Object days) {
+    return Intl.message(
+      '$days day subscription duration',
+      name: 'xboardGiftCardSubscriptionDuration',
+      desc: '',
+      args: [days],
+    );
+  }
+
+  /// `{amount} GB plan traffic`
+  String xboardGiftCardPlanTraffic(Object amount) {
+    return Intl.message(
+      '$amount GB plan traffic',
+      name: 'xboardGiftCardPlanTraffic',
+      desc: '',
+      args: [amount],
+    );
+  }
+
+  /// `Reset plan traffic`
+  String get xboardGiftCardResetPlanTraffic {
+    return Intl.message(
+      'Reset plan traffic',
+      name: 'xboardGiftCardResetPlanTraffic',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `{name} ({days} days)`
+  String xboardGiftCardPlanDuration(Object name, Object days) {
+    return Intl.message(
+      '$name ($days days)',
+      name: 'xboardGiftCardPlanDuration',
+      desc: '',
+      args: [name, days],
+    );
+  }
+
+  /// `Plan ({days} days)`
+  String xboardGiftCardPlanDurationFallback(Object days) {
+    return Intl.message(
+      'Plan ($days days)',
+      name: 'xboardGiftCardPlanDurationFallback',
+      desc: '',
+      args: [days],
+    );
+  }
+
+  /// `1. Gift cards can be redeemed for account balance, traffic, subscription duration, and more.`
+  String get xboardGiftCardUsageGuideItem1 {
+    return Intl.message(
+      '1. Gift cards can be redeemed for account balance, traffic, subscription duration, and more.',
+      name: 'xboardGiftCardUsageGuideItem1',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `2. Gift cards can only be used with this account.`
+  String get xboardGiftCardUsageGuideItem2 {
+    return Intl.message(
+      '2. Gift cards can only be used with this account.',
+      name: 'xboardGiftCardUsageGuideItem2',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `3. Redemptions cannot be reversed.`
+  String get xboardGiftCardUsageGuideItem3 {
+    return Intl.message(
+      '3. Redemptions cannot be reversed.',
+      name: 'xboardGiftCardUsageGuideItem3',
+      desc: '',
+      args: [],
+    );
+  }
+
   /// `Device removed`
   String get xboardDeviceRemoved {
     return Intl.message(

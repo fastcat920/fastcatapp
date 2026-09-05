@@ -18,21 +18,35 @@ class ConnectivityManager extends StatefulWidget {
 }
 
 class _ConnectivityManagerState extends State<ConnectivityManager> {
-  late StreamSubscription subscription;
+  StreamSubscription<List<ConnectivityResult>>? subscription;
+  bool _disposed = false;
 
   @override
   void initState() {
     super.initState();
-    subscription = Connectivity().onConnectivityChanged.listen((results) async {
-      if (widget.onConnectivityChanged != null) {
-        widget.onConnectivityChanged!(results);
-      }
-    });
+    unawaited(_startListening());
+  }
+
+  Future<void> _startListening() async {
+    // Establish a baseline first. This prevents the first stream event after
+    // startup from being mistaken for a network handoff.
+    final initialResults = await Connectivity().checkConnectivity();
+    if (_disposed) return;
+    _notify(initialResults);
+    subscription = Connectivity().onConnectivityChanged.listen(_notify);
+  }
+
+  void _notify(List<ConnectivityResult> results) {
+    if (_disposed) return;
+    if (widget.onConnectivityChanged != null) {
+      widget.onConnectivityChanged!(results);
+    }
   }
 
   @override
   void dispose() {
-    subscription.cancel();
+    _disposed = true;
+    subscription?.cancel();
     super.dispose();
   }
 

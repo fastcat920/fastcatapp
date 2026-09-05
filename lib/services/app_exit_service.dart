@@ -4,6 +4,7 @@ import 'dart:io';
 import 'package:fl_clash/clash/clash.dart';
 import 'package:fl_clash/common/common.dart';
 import 'package:fl_clash/models/models.dart';
+import 'package:fl_clash/security/profile_vault.dart';
 import 'package:fl_clash/state.dart';
 import 'package:path/path.dart' show dirname;
 
@@ -29,6 +30,11 @@ class AppExitService {
       await system.setMacOSDns(true);
       await proxy?.stopProxy();
       await clashCore.shutdown();
+      final profileId = globalState.config.currentProfileId;
+      if (profileId != null) {
+        await ProfileVault.instance.snapshotRuntimeProviders(profileId);
+        await ProfileVault.instance.clearRuntimeProviders(profileId);
+      }
       await clashService?.destroy();
     } finally {
       fallbackExitTimer.cancel();
@@ -81,6 +87,11 @@ class AppExitService {
         shutdownTasks.add(_ignoreTaskResult(serviceDestroy));
       }
       await Future.wait<void>(shutdownTasks).timeout(timeout);
+      final profileId = globalState.config.currentProfileId;
+      if (profileId != null) {
+        await ProfileVault.instance.snapshotRuntimeProviders(profileId);
+        await ProfileVault.instance.clearRuntimeProviders(profileId);
+      }
     } catch (e) {
       commonPrint.log('shutdown before restart timeout or failed: $e');
     }

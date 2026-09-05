@@ -88,6 +88,8 @@ mixin ClashInterface {
 
   FutureOr<bool> resetConnections();
 
+  FutureOr<bool> clearNetworkCaches();
+
   Future<bool> setState(CoreState state);
 }
 
@@ -338,6 +340,13 @@ abstract class ClashHandlerInterface with ClashInterface {
   Future<bool> resetConnections() {
     return invoke<bool>(
       method: ActionMethod.resetConnections,
+    );
+  }
+
+  @override
+  Future<bool> clearNetworkCaches() {
+    return invoke<bool>(
+      method: ActionMethod.clearNetworkCaches,
     );
   }
 

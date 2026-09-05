@@ -133,15 +133,9 @@ class VPNManager: NSObject {
     // Already running — just make sure config is up to date
     if isTunnelRunning {
       NSLog("[VPNManager] ensureTunnelRunning: tunnel already running")
-      if !config.isEmpty {
-        writeConfigToAppGroup(config)
-      }
+      if !config.isEmpty { sendConfigUpdate(config) }
       completion(nil)
       return
-    }
-
-    if !config.isEmpty {
-      writeConfigToAppGroup(config)
     }
 
     guard let mgr = manager else {
@@ -160,11 +154,9 @@ class VPNManager: NSObject {
     }
 
     mgr.isEnabled = true
-    // Store config in providerConfiguration as fallback
-    if !config.isEmpty {
-      (mgr.protocolConfiguration as? NETunnelProviderProtocol)?
-        .providerConfiguration = ["config": config]
-    }
+    // Never persist profile YAML in VPN preferences.
+    (mgr.protocolConfiguration as? NETunnelProviderProtocol)?
+      .providerConfiguration = ["profileFormat": "FCATCFG1"]
 
     mgr.onDemandRules = []
     mgr.isOnDemandEnabled = false
@@ -189,7 +181,10 @@ class VPNManager: NSObject {
         self?.manager = mgr
         do {
           // Start in idle mode — mihomo runs but no traffic routing
-          let options: [String: NSObject] = ["mode": "idle" as NSObject]
+          let options: [String: NSObject] = [
+            "mode": "idle" as NSObject,
+            "config": config as NSObject,
+          ]
           NSLog("[VPNManager] ensureTunnelRunning: starting tunnel in idle mode...")
           try mgr.connection.startVPNTunnel(options: options)
           NSLog("[VPNManager] ensureTunnelRunning: startVPNTunnel called successfully")
@@ -206,10 +201,8 @@ class VPNManager: NSObject {
 
   // MARK: - Connect / Disconnect (traffic routing toggle)
 
-  /// Write clash config to App Group, ensure tunnel is running, then enable traffic routing.
+  /// Supply the decoded profile only to the active tunnel; never persist YAML.
   func connect(config: String, completion: @escaping (String?) -> Void) {
-    writeConfigToAppGroup(config)
-
     if isTunnelRunning {
       // Tunnel already running — just enable traffic mode
       NSLog("[VPNManager] connect: tunnel running, enabling traffic mode")
@@ -242,7 +235,7 @@ class VPNManager: NSObject {
     }
     mgr.isEnabled = true
     (mgr.protocolConfiguration as? NETunnelProviderProtocol)?
-      .providerConfiguration = ["config": config]
+      .providerConfiguration = ["profileFormat": "FCATCFG1"]
 
     mgr.onDemandRules = []
     mgr.isOnDemandEnabled = false
@@ -268,7 +261,10 @@ class VPNManager: NSObject {
         self?.manager = mgr
         do {
           // Start with traffic active
-          let options: [String: NSObject] = ["mode": "active" as NSObject]
+          let options: [String: NSObject] = [
+            "mode": "active" as NSObject,
+            "config": config as NSObject,
+          ]
           NSLog("[VPNManager] connect: starting VPN tunnel (active mode)...")
           try mgr.connection.startVPNTunnel(options: options)
           self?.isTrafficActive = true
@@ -322,6 +318,15 @@ class VPNManager: NSObject {
 
   // MARK: - Traffic mode IPC
 
+  /// Reconfigure an already-running tunnel without writing YAML to disk.
+  private func sendConfigUpdate(_ config: String) {
+    sendClashMessage(method: "_updateConfig", data: config) { response in
+      if (response ?? "").hasPrefix("error") {
+        NSLog("[VPNManager] config update failed: %@", response ?? "unknown")
+      }
+    }
+  }
+
   /// Toggle traffic routing in the PacketTunnel extension via IPC.
   private func setTrafficMode(active: Bool, completion: @escaping (String?) -> Void) {
     let mode = active ? "active" : "idle"
@@ -368,33 +373,6 @@ class VPNManager: NSObject {
     } catch {
       NSLog("[VPNManager] sendClashMessage(%@): IPC error: %@", method, error.localizedDescription)
       completion("")
-    }
-  }
-
-  // MARK: - App Group
-
-  private func writeConfigToAppGroup(_ config: String) {
-    guard !config.isEmpty else {
-      NSLog("[VPNManager] writeConfigToAppGroup: config is empty, skipping")
-      return
-    }
-    NSLog("[VPNManager] writeConfigToAppGroup: kAppGroupId=%@", kAppGroupId)
-    guard
-      let url = FileManager.default
-        .containerURL(forSecurityApplicationGroupIdentifier: kAppGroupId)?
-        .appendingPathComponent("clash.yaml")
-    else {
-      // App Group container unavailable — common on TrollStore if entitlements
-      // aren't properly configured. Config will fall back to providerConfiguration.
-      NSLog("[VPNManager] writeConfigToAppGroup: App Group container unavailable (kAppGroupId=%@). Config will be passed via providerConfiguration instead.", kAppGroupId)
-      return
-    }
-    do {
-      try config.write(to: url, atomically: true, encoding: .utf8)
-      NSLog("[VPNManager] writeConfigToAppGroup: wrote %d bytes to %@", config.count, url.path)
-    } catch {
-      NSLog("[VPNManager] writeConfigToAppGroup error: %@", error.localizedDescription)
-      lastError = "writeConfig: \(error.localizedDescription)"
     }
   }
 

@@ -23,6 +23,7 @@ import 'package:fl_clash/providers/providers.dart';
 import 'package:fl_clash/xboard/features/subscription/services/subscription_guard_service.dart';
 import 'package:fl_clash/xboard/utils/backend_message_mapper.dart';
 import 'package:fl_clash/xboard/features/connectivity/connectivity.dart';
+import 'package:fl_clash/security/profile_vault.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:fl_clash/models/profile.dart';
 
@@ -832,8 +833,10 @@ class XBoardUserAuthNotifier extends Notifier<UserAuthState> {
     final profile = ref.read(currentProfileProvider);
     if (profile == null || profile.url != subscriptionUrl) return false;
     try {
-      final file = await profile.getFile();
-      if (!await file.exists() || await file.length() == 0) return false;
+      if (!await profile.check() ||
+          (await ProfileVault.instance.readText(profile.id)).isEmpty) {
+        return false;
+      }
       if (ref.read(groupsProvider).isEmpty) {
         await globalState.appController.loadGroupsFromLocalProfile();
       }

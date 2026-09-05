@@ -120,25 +120,35 @@ class MessageLookup extends MessageLookupByLibrary {
 
   static String m45(count) => "${count} candidates";
 
-  static String m46(message) => "Subscription import: ${message}";
+  static String m46(amount) => "Account balance ¥${amount}";
 
-  static String m47(count) => "${count} nodes";
+  static String m47(name, days) => "${name} (${days} days)";
 
-  static String m48(error) => "Redeem failed: ${error}";
+  static String m48(days) => "Plan (${days} days)";
 
-  static String m49(days) => "Used traffic will reset in ${days} days";
+  static String m49(amount) => "${amount} GB plan traffic";
 
-  static String m50(time) => "Running time: ${time}";
+  static String m50(days) => "${days} day subscription duration";
 
-  static String m51(healthy, total) => "${healthy}/${total} available";
+  static String m51(message) => "Subscription import: ${message}";
 
-  static String m52(index) => "Backup ${index}";
+  static String m52(count) => "${count} nodes";
 
-  static String m53(seconds) => "Retry check in ${seconds}s";
+  static String m53(error) => "Redeem failed: ${error}";
 
-  static String m54(latency) => "${latency}ms";
+  static String m54(days) => "Used traffic will reset in ${days} days";
 
-  static String m55(current, required) => "Recovery ${current}/${required}";
+  static String m55(time) => "Running time: ${time}";
+
+  static String m56(healthy, total) => "${healthy}/${total} available";
+
+  static String m57(index) => "Backup ${index}";
+
+  static String m58(seconds) => "Retry check in ${seconds}s";
+
+  static String m59(latency) => "${latency}ms";
+
+  static String m60(current, required) => "Recovery ${current}/${required}";
 
   final messages = _notInlinedMessages(_notInlinedMessages);
   static Map<String, Function> _notInlinedMessages(_) => <String, Function>{
@@ -1961,6 +1971,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "xboardGiftCardAlreadyUsedByUser": MessageLookupByLibrary.simpleMessage(
       "Redeem failed: this gift card has already been used by this user",
     ),
+    "xboardGiftCardBalanceValue": m46,
     "xboardGiftCardCode": MessageLookupByLibrary.simpleMessage(
       "Gift card code",
     ),
@@ -1970,6 +1981,9 @@ class MessageLookup extends MessageLookupByLibrary {
     "xboardGiftCardNotFound": MessageLookupByLibrary.simpleMessage(
       "Redeem failed: this gift card does not exist",
     ),
+    "xboardGiftCardPlanDuration": m47,
+    "xboardGiftCardPlanDurationFallback": m48,
+    "xboardGiftCardPlanTraffic": m49,
     "xboardGiftCardRedeem": MessageLookupByLibrary.simpleMessage(
       "Gift card redeem",
     ),
@@ -1978,6 +1992,25 @@ class MessageLookup extends MessageLookupByLibrary {
     ),
     "xboardGiftCardRedeemTitle": MessageLookupByLibrary.simpleMessage(
       "Gift Card Redeem",
+    ),
+    "xboardGiftCardRedemptionRecords": MessageLookupByLibrary.simpleMessage(
+      "Redemption history",
+    ),
+    "xboardGiftCardRedemptionsLoadFailed": MessageLookupByLibrary.simpleMessage(
+      "Failed to load redemption history",
+    ),
+    "xboardGiftCardResetPlanTraffic": MessageLookupByLibrary.simpleMessage(
+      "Reset plan traffic",
+    ),
+    "xboardGiftCardSubscriptionDuration": m50,
+    "xboardGiftCardUsageGuideItem1": MessageLookupByLibrary.simpleMessage(
+      "1. Gift cards can be redeemed for account balance, traffic, subscription duration, and more.",
+    ),
+    "xboardGiftCardUsageGuideItem2": MessageLookupByLibrary.simpleMessage(
+      "2. Gift cards can only be used with this account.",
+    ),
+    "xboardGiftCardUsageGuideItem3": MessageLookupByLibrary.simpleMessage(
+      "3. Redemptions cannot be reversed.",
     ),
     "xboardGlobalNodes": MessageLookupByLibrary.simpleMessage("Global nodes"),
     "xboardGlobalProxy": MessageLookupByLibrary.simpleMessage("Global proxy"),
@@ -2024,7 +2057,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "xboardHealthLastEvent": MessageLookupByLibrary.simpleMessage(
       "Latest event",
     ),
-    "xboardHealthSubscriptionImport": m46,
+    "xboardHealthSubscriptionImport": m51,
     "xboardHealthTunApplied": MessageLookupByLibrary.simpleMessage("Applied"),
     "xboardHealthTunPending": MessageLookupByLibrary.simpleMessage(
       "Waiting to apply",
@@ -2440,6 +2473,9 @@ class MessageLookup extends MessageLookupByLibrary {
     "xboardNoGatewayActive": MessageLookupByLibrary.simpleMessage(
       "No active gateway",
     ),
+    "xboardNoGiftCardRedemptions": MessageLookupByLibrary.simpleMessage(
+      "No redemption history",
+    ),
     "xboardNoInternetConnection": MessageLookupByLibrary.simpleMessage(
       "No internet connection, please check network settings",
     ),
@@ -2465,7 +2501,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "xboardNoTrafficRecords": MessageLookupByLibrary.simpleMessage(
       "No traffic records",
     ),
-    "xboardNodeCount": m47,
+    "xboardNodeCount": m52,
     "xboardNodeHealth": MessageLookupByLibrary.simpleMessage("Node status"),
     "xboardNodeName": MessageLookupByLibrary.simpleMessage("Node Name"),
     "xboardNodeSelection": MessageLookupByLibrary.simpleMessage(
@@ -2720,7 +2756,7 @@ class MessageLookup extends MessageLookupByLibrary {
     ),
     "xboardRechargeNow": MessageLookupByLibrary.simpleMessage("Recharge now"),
     "xboardRedeemFailed": MessageLookupByLibrary.simpleMessage("Redeem failed"),
-    "xboardRedeemFailedWithError": m48,
+    "xboardRedeemFailedWithError": m53,
     "xboardRedeemNow": MessageLookupByLibrary.simpleMessage("Redeem now"),
     "xboardRedeemSuccess": MessageLookupByLibrary.simpleMessage(
       "Redeem successful",
@@ -2783,7 +2819,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "xboardResetTrafficConfirmContent": MessageLookupByLibrary.simpleMessage(
       "This will reset the used traffic, but will not extend the plan duration. Continue?",
     ),
-    "xboardResetTrafficInDays": m49,
+    "xboardResetTrafficInDays": m54,
     "xboardResetTrafficToday": MessageLookupByLibrary.simpleMessage(
       "Used traffic has been reset today",
     ),
@@ -2794,7 +2830,7 @@ class MessageLookup extends MessageLookupByLibrary {
       "3. Return to app after payment, system will detect automatically",
     ),
     "xboardRunDiagnosis": MessageLookupByLibrary.simpleMessage("Run check"),
-    "xboardRunningTime": m50,
+    "xboardRunningTime": m55,
     "xboardSecureEncryption": MessageLookupByLibrary.simpleMessage(
       "Secure encryption",
     ),
@@ -2815,15 +2851,15 @@ class MessageLookup extends MessageLookupByLibrary {
     ),
     "xboardServerError": MessageLookupByLibrary.simpleMessage("Server error"),
     "xboardServerStatus": MessageLookupByLibrary.simpleMessage("Server status"),
-    "xboardServiceAvailableCount": m51,
-    "xboardServiceBackup": m52,
+    "xboardServiceAvailableCount": m56,
+    "xboardServiceBackup": m57,
     "xboardServiceCheckedAt": MessageLookupByLibrary.simpleMessage(
       "Checked at",
     ),
     "xboardServiceCheckingEndpoints": MessageLookupByLibrary.simpleMessage(
       "Checking all endpoints",
     ),
-    "xboardServiceCircuitRemaining": m53,
+    "xboardServiceCircuitRemaining": m58,
     "xboardServiceConnectionDegraded": MessageLookupByLibrary.simpleMessage(
       "Service connection unstable",
     ),
@@ -2831,7 +2867,7 @@ class MessageLookup extends MessageLookupByLibrary {
       "A business request failed. The client is checking the local network and business gateways.",
     ),
     "xboardServiceInUse": MessageLookupByLibrary.simpleMessage("In use"),
-    "xboardServiceLatency": m54,
+    "xboardServiceLatency": m59,
     "xboardServiceNetworkRestricted": MessageLookupByLibrary.simpleMessage(
       "Network access restricted",
     ),
@@ -2857,7 +2893,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "xboardServiceRecoveringTooltip": MessageLookupByLibrary.simpleMessage(
       "The network has recovered. The client is confirming business gateway availability.",
     ),
-    "xboardServiceRecoveryProgress": m55,
+    "xboardServiceRecoveryProgress": m60,
     "xboardServiceStateCircuitOpen": MessageLookupByLibrary.simpleMessage(
       "Circuit open",
     ),

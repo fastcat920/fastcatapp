@@ -10,6 +10,7 @@ list(APPEND FLUTTER_PLUGIN_LIST
   file_selector_windows
   flutter_inappwebview_windows
   flutter_js
+  flutter_secure_storage_windows
   fullscreen_window
   hotkey_manager_windows
   proxy

@@ -24,6 +24,7 @@ import 'common/common.dart';
 import 'common/boot_diag.dart';
 import 'common/desktop_shared_preferences_store.dart';
 import 'common/macos_startup_diagnostics.dart';
+import 'security/profile_vault.dart';
 import 'models/models.dart';
 import 'package:fl_clash/xboard/features/auth/providers/xboard_user_provider.dart';
 import 'package:fl_clash/xboard/infrastructure/infrastructure.dart';
@@ -47,6 +48,8 @@ Future<void> main(List<String> args) async {
   }
   BrandedDesktopSharedPreferencesStore.registerIfNeeded();
   unawaited(bootDiagLog('SharedPreferences store registered'));
+  await ProfileVault.instance.clearAllRuntimeProviders();
+  unawaited(ProfileVault.instance.migrateAllLegacyProfiles());
   const previewMode = bool.fromEnvironment('APP_PREVIEW_MODE');
 
   FlutterError.onError = (FlutterErrorDetails details) {

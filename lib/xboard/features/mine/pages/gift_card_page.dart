@@ -92,6 +92,10 @@ class _GiftCardPageState extends ConsumerState<GiftCardPage> {
                       ),
                       const SizedBox(height: 16),
                       _GiftCardSurface(
+                        child: const _GiftCardUsageGuide(),
+                      ),
+                      const SizedBox(height: 16),
+                      _GiftCardSurface(
                         child: _GiftCardRecords(
                           records: _records,
                           isLoading: _isLoadingRecords,
@@ -99,8 +103,6 @@ class _GiftCardPageState extends ConsumerState<GiftCardPage> {
                           onRetry: _loadRecords,
                         ),
                       ),
-                      const SizedBox(height: 16),
-                      const _GiftCardUsageGuide(),
                     ],
                   ),
                 ),
@@ -134,7 +136,10 @@ class _GiftCardPageState extends ConsumerState<GiftCardPage> {
         _recordsError = null;
       });
     } catch (_) {
-      if (mounted) setState(() => _recordsError = '兑换记录加载失败');
+      if (mounted) {
+        setState(() => _recordsError =
+            AppLocalizations.of(context).xboardGiftCardRedemptionsLoadFailed);
+      }
     } finally {
       if (mounted) setState(() => _isLoadingRecords = false);
     }
@@ -182,7 +187,10 @@ class _GiftCardRecords extends StatelessWidget {
           Icon(Icons.history_outlined,
               color: theme.colorScheme.primary, size: 20),
           const SizedBox(width: 8),
-          Text('兑换记录', style: XbUiText.sectionTitle(context)),
+          Text(
+            AppLocalizations.of(context).xboardGiftCardRedemptionRecords,
+            style: XbUiText.sectionTitle(context),
+          ),
         ]),
         const SizedBox(height: 12),
         if (isLoading)
@@ -201,7 +209,8 @@ class _GiftCardRecords extends StatelessWidget {
           Padding(
             padding: const EdgeInsets.symmetric(vertical: 26),
             child: Center(
-                child: Text('暂无兑换记录',
+                child: Text(
+                    AppLocalizations.of(context).xboardNoGiftCardRedemptions,
                     style: theme.textTheme.bodyMedium?.copyWith(
                       color: theme.colorScheme.onSurfaceVariant,
                     ))),
@@ -258,7 +267,7 @@ class _GiftCardRecordTile extends StatelessWidget {
           Column(
             crossAxisAlignment: CrossAxisAlignment.end,
             children: [
-              Text(_valueLabel(),
+              Text(_valueLabel(context),
                   textAlign: TextAlign.end,
                   style: theme.textTheme.labelLarge?.copyWith(
                       color: theme.colorScheme.primary,
@@ -275,16 +284,21 @@ class _GiftCardRecordTile extends StatelessWidget {
     );
   }
 
-  String _valueLabel() => switch (record.type) {
-        1 => '账户余额 ¥${(record.value / 100).toStringAsFixed(2)}',
-        2 => '${record.value} 天订阅时长',
-        3 => '${record.value} GB 套餐流量',
-        4 => '重置套餐流量',
-        5 => record.planName?.isNotEmpty == true
-            ? '${record.planName}（${record.value} 天）'
-            : '套餐（${record.value} 天）',
-        _ => '--',
-      };
+  String _valueLabel(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+    return switch (record.type) {
+      1 => l10n.xboardGiftCardBalanceValue(
+          (record.value / 100).toStringAsFixed(2),
+        ),
+      2 => l10n.xboardGiftCardSubscriptionDuration(record.value),
+      3 => l10n.xboardGiftCardPlanTraffic(record.value),
+      4 => l10n.xboardGiftCardResetPlanTraffic,
+      5 => record.planName?.isNotEmpty == true
+          ? l10n.xboardGiftCardPlanDuration(record.planName!, record.value)
+          : l10n.xboardGiftCardPlanDurationFallback(record.value),
+      _ => '--',
+    };
+  }
 }
 
 class _GiftCardUsageGuide extends StatelessWidget {
@@ -292,34 +306,24 @@ class _GiftCardUsageGuide extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     final theme = Theme.of(context);
-    final isDark = theme.brightness == Brightness.dark;
-    return Card(
-      margin: EdgeInsets.zero,
-      elevation: isDark ? 0 : 1,
-      shadowColor: isDark ? null : Colors.black.withValues(alpha: 0.08),
-      color: isDark ? null : Colors.white,
-      shape: XbUiCardStyle.shape(context),
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(children: [
-              Icon(Icons.info_outline,
-                  color: theme.colorScheme.primary, size: 20),
-              const SizedBox(width: 8),
-              Text('使用说明', style: XbUiText.sectionTitle(context)),
-            ]),
-            const SizedBox(height: 12),
-            const _GuideItem('1. 使用礼品卡可以兑换余额、流量、套餐时长等。'),
-            const SizedBox(height: 8),
-            const _GuideItem('2. 礼品卡仅限本账户使用。'),
-            const SizedBox(height: 8),
-            const _GuideItem('3. 兑换后无法撤销。'),
-          ],
-        ),
-      ),
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(children: [
+          Icon(Icons.info_outline, color: theme.colorScheme.primary, size: 20),
+          const SizedBox(width: 8),
+          Text(l10n.xboardUsageInstructions,
+              style: XbUiText.sectionTitle(context)),
+        ]),
+        const SizedBox(height: 12),
+        _GuideItem(l10n.xboardGiftCardUsageGuideItem1),
+        const SizedBox(height: 8),
+        _GuideItem(l10n.xboardGiftCardUsageGuideItem2),
+        const SizedBox(height: 8),
+        _GuideItem(l10n.xboardGiftCardUsageGuideItem3),
+      ],
     );
   }
 }

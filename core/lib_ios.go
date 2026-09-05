@@ -220,6 +220,9 @@ func ClashCore_invoke(method *C.char, data *C.char) *C.char {
 		case resetConnectionsMethod:
 			data, _ := json.Marshal(handleResetConnections())
 			ch <- string(data)
+		case clearNetworkCachesMethod:
+			data, _ := json.Marshal(handleClearNetworkCaches())
+			ch <- string(data)
 		case closeConnectionMethod:
 			data, _ := json.Marshal(handleCloseConnection(dataStr))
 			ch <- string(data)

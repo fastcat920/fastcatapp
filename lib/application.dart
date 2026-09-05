@@ -1,7 +1,6 @@
 import 'dart:async';
 import 'dart:io';
 
-import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:fl_clash/clash/clash.dart';
 import 'package:fl_clash/common/common.dart';
 import 'package:fl_clash/common/boot_diag.dart';
@@ -641,12 +640,7 @@ class ApplicationState extends ConsumerState<Application>
       child: ClashManager(
         child: ConnectivityManager(
           onConnectivityChanged: (results) async {
-            if (!results.contains(ConnectivityResult.vpn) &&
-                !globalState.shouldSuppressConnectionCleanup) {
-              await clashCore.closeConnections();
-            }
-            globalState.appController.updateLocalIp();
-            globalState.appController.addCheckIpNumDebounce();
+            globalState.appController.handleConnectivityChanged(results);
           },
           child: child,
         ),

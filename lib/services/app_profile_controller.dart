@@ -1,12 +1,11 @@
 import 'dart:async';
-import 'dart:io';
-import 'dart:isolate';
 
 import 'package:fl_clash/common/common.dart';
 import 'package:fl_clash/enum/enum.dart';
 import 'package:fl_clash/models/models.dart';
 import 'package:fl_clash/plugins/app.dart';
 import 'package:fl_clash/providers/providers.dart';
+import 'package:fl_clash/security/profile_vault.dart';
 import 'package:fl_clash/state.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -96,19 +95,7 @@ class AppProfileController {
   }
 
   Future<void> clearEffect(String profileId) async {
-    final profilePath = await appPath.getProfilePath(profileId);
-    final providersDirPath = await appPath.getProvidersDirPath(profileId);
-    return await Isolate.run(() async {
-      final profileFile = File(profilePath);
-      final isExists = await profileFile.exists();
-      if (isExists) {
-        await profileFile.delete(recursive: true);
-      }
-      final providersFileDir = File(providersDirPath);
-      final providersFileIsExists = await providersFileDir.exists();
-      if (providersFileIsExists) {
-        await providersFileDir.delete(recursive: true);
-      }
-    });
+    await ProfileVault.instance.delete(profileId);
+    await ProfileVault.instance.removeProviders(profileId);
   }
 }

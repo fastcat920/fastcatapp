@@ -431,6 +431,20 @@ func handleResetConnections() bool {
 	return true
 }
 
+// handleClearNetworkCaches removes resolver answers and fake-IP mappings left
+// behind by the previous physical network. It is intentionally safe when the
+// active profile does not use fake-IP mode: Mihomo simply has no fake-IP pool
+// to flush in that case.
+func handleClearNetworkCaches() bool {
+	runLock.Lock()
+	defer runLock.Unlock()
+	resolver.ClearCache()
+	if err := resolver.FlushFakeIP(); err != nil {
+		log.Warnln("[Network] flush fake-IP cache failed: %v", err)
+	}
+	return true
+}
+
 func handleCloseConnection(connectionId string) bool {
 	runLock.Lock()
 	defer runLock.Unlock()
