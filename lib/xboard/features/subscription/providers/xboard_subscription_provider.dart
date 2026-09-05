@@ -175,6 +175,16 @@ class XBoardSubscriptionNotifier extends Notifier<List<DomainPlan>> {
 
   Future<void> refreshPlans() async {
     _logger.info('强制刷新套餐列表（清除缓存）...');
+    // A locale switch can happen while the initial request is still running.
+    // loadPlans() intentionally coalesces concurrent work, but that in-flight
+    // response was sent with the previous X-Locale header. Wait for it, then
+    // issue a second request with the current header so plan names update
+    // without requiring the user to reopen or manually refresh the page.
+    final inFlight = _plansLoadInFlight;
+    if (inFlight != null) {
+      await inFlight;
+    }
+
     // 清除 lastUpdated，确保 loadPlans 跳过 10 分钟缓存检查
     ref.read(userUIStateProvider.notifier).state = const UIState();
     clearGetPlansCache();

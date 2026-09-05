@@ -29,6 +29,12 @@ class _FastCatAboutPageState extends ConsumerState<FastCatAboutPage> {
     final showLogs = ref.watch(
       appSettingProvider.select((setting) => setting.logCapture),
     );
+    final configuredLocale = ref.watch(
+      appSettingProvider.select((setting) => setting.locale),
+    );
+    final brandName = localizedAppNameForLocale(
+      configuredLocale ?? Localizations.localeOf(context).toLanguageTag(),
+    );
     return Scaffold(
       backgroundColor: XbUiTokens.pageBackground(context),
       appBar: AppBar(
@@ -73,7 +79,7 @@ class _FastCatAboutPageState extends ConsumerState<FastCatAboutPage> {
                       ),
                       const SizedBox(height: 12),
                       Text(
-                        localizedAppName,
+                        brandName,
                         textAlign: TextAlign.center,
                         style: Theme.of(context).textTheme.headlineSmall,
                       ),

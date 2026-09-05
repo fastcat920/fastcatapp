@@ -798,6 +798,12 @@ class _HomeBrandHeader extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context);
+    final configuredLocale = ref.watch(
+      appSettingProvider.select((setting) => setting.locale),
+    );
+    final brandName = localizedAppNameForLocale(
+      configuredLocale ?? Localizations.localeOf(context).toLanguageTag(),
+    );
     final connectivityState = ref.watch(serviceConnectivityProvider);
     final userState = ref.watch(xboardUserProvider);
     final showServiceBadge = userState.isAuthenticated &&
@@ -877,7 +883,7 @@ class _HomeBrandHeader extends ConsumerWidget {
         ),
         const SizedBox(width: 9),
         Text(
-          localizedAppName,
+          brandName,
           style: theme.textTheme.titleMedium?.copyWith(
             fontWeight: XbFontWeight.bold,
             color: theme.colorScheme.onSurface,
