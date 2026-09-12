@@ -323,7 +323,16 @@ class Build {
       if (item.arch != null) {
         env["GOARCH"] = item.arch!.name;
       }
-      if (isLib) {
+      if (item.target == Target.macos) {
+        // Go 1.26 defaults to macOS 12 for Darwin binaries.  Use the Apple
+        // linker explicitly so both universal core slices remain compatible
+        // with the supported macOS 11 baseline.
+        env["CGO_ENABLED"] = "1";
+        env["CC"] = "clang";
+        env["MACOSX_DEPLOYMENT_TARGET"] = "11.0";
+        env["CGO_CFLAGS"] = "-mmacosx-version-min=11.0";
+        env["CGO_LDFLAGS"] = "-mmacosx-version-min=11.0";
+      } else if (isLib) {
         env["CGO_ENABLED"] = "1";
         env["CC"] = _getCc(item);
         env["CFLAGS"] = "-O3 -Werror";
@@ -334,7 +343,7 @@ class Build {
       final execLines = [
         "go",
         "build",
-        "-ldflags=-w -s -X github.com/metacubex/mihomo/constant.Version=$mihomoVersion",
+        "-ldflags=-w -s -X github.com/metacubex/mihomo/constant.Version=$mihomoVersion${item.target == Target.macos ? ' -linkmode=external -extldflags=-mmacosx-version-min=11.0' : ''}",
         "-tags=${item.target == Target.android ? '$tags,cmfa' : tags}",
         if (isLib) "-buildmode=c-shared",
         "-o",
