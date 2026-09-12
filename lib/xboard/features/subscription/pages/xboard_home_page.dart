@@ -19,6 +19,7 @@ import 'package:fl_clash/xboard/features/notice/notice.dart';
 import 'package:fl_clash/xboard/features/latency/services/auto_latency_service.dart';
 import 'package:fl_clash/xboard/features/subscription/services/subscription_status_checker.dart';
 import 'package:fl_clash/xboard/features/subscription/services/subscription_guard_service.dart';
+import 'package:fl_clash/xboard/features/subscription/utils/home_layout.dart';
 import 'package:fl_clash/xboard/features/profile/providers/profile_import_provider.dart';
 import 'package:fl_clash/xboard/features/connectivity/connectivity.dart';
 import 'package:fl_clash/xboard/config/xboard_config.dart';
@@ -290,8 +291,8 @@ class _XBoardHomePageState extends ConsumerState<XBoardHomePage>
                 // 桌面端：响应式最大宽度
                 const contentMaxWidth = double.infinity;
 
-                final compactMode =
-                    isTvHome || (!isDesktop && constraints.maxHeight < 560);
+                final compactMode = shouldUseCompactHomeLayout(context) ||
+                    (!isDesktop && constraints.maxHeight < 560);
                 final isLandscapeHome =
                     constraints.maxWidth > constraints.maxHeight;
                 final isPortraitHome =

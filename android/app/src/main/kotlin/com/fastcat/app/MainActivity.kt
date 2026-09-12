@@ -3,6 +3,8 @@ package com.fastcat.app
 import android.annotation.SuppressLint
 import android.os.Build
 import android.os.Bundle
+import android.content.Context
+import android.view.inputmethod.InputMethodManager
 import android.window.OnBackInvokedCallback
 import android.window.OnBackInvokedDispatcher
 import com.fastcat.app.plugins.AppPlugin
@@ -63,6 +65,7 @@ class MainActivity : FlutterActivity() {
             return
         }
 
+        dismissCustomerServiceKeyboard()
         customerServiceBackPending = true
         MethodChannel(
             engine.dartExecutor.binaryMessenger,
@@ -84,6 +87,14 @@ class MainActivity : FlutterActivity() {
                 dispatchDefaultBack()
             }
         })
+    }
+
+    private fun dismissCustomerServiceKeyboard() {
+        val inputMethodManager =
+            getSystemService(Context.INPUT_METHOD_SERVICE) as? InputMethodManager
+        val focusedView = currentFocus ?: window.decorView
+        inputMethodManager?.hideSoftInputFromWindow(focusedView.windowToken, 0)
+        focusedView.clearFocus()
     }
 
     private fun dispatchDefaultBack() {

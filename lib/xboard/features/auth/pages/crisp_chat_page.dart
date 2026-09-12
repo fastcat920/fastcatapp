@@ -5,6 +5,7 @@ import 'package:file_picker/file_picker.dart';
 import 'package:fl_clash/l10n/l10n.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:webview_flutter_android/webview_flutter_android.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 import 'package:webview_win_floating/webview_plugin.dart';
@@ -205,6 +206,7 @@ class _CrispChatPageState extends State<CrispChatPage> {
   }
 
   Future<void> _handleBackPressed() async {
+    await _dismissWebViewInput();
     await _setLinuxWebViewVisibility(false);
     if (!mounted) return;
     final callback = widget.onBackPressed;
@@ -213,6 +215,25 @@ class _CrispChatPageState extends State<CrispChatPage> {
     } else {
       Navigator.of(context).pop();
     }
+  }
+
+  Future<void> _dismissWebViewInput() async {
+    // The customer-service page is cached offstage rather than disposed.
+    // Explicitly blur the native WebView input before hiding it, otherwise a
+    // mobile IME can remain visible above the restored Flutter page.
+    try {
+      await _controller.runJavaScript('''
+(function() {
+  try {
+    var active = document.activeElement;
+    if (active && typeof active.blur === 'function') active.blur();
+  } catch (_) {}
+})();''');
+    } catch (_) {}
+    FocusManager.instance.primaryFocus?.unfocus();
+    try {
+      await SystemChannels.textInput.invokeMethod<void>('TextInput.hide');
+    } catch (_) {}
   }
 
   // ── Embed loading ────────────────────────────────────────────────
@@ -607,6 +628,9 @@ if (typeof window.__fastcatHideLoadingMask === 'function') {
     final themeChanged = _isDarkMode != nextIsDarkMode;
     final localeChanged = _localeTag != nextLocaleTag;
     unawaited(_setLinuxWebViewVisibility(session.isVisible));
+    if (!session.isVisible) {
+      unawaited(_dismissWebViewInput());
+    }
 
     if (themeChanged) {
       _isDarkMode = nextIsDarkMode;

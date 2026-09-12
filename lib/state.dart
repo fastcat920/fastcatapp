@@ -22,6 +22,8 @@ import 'common/common.dart';
 import 'controller.dart';
 import 'models/models.dart';
 import 'security/profile_vault.dart';
+import 'xboard/config/xboard_config.dart';
+import 'xboard/features/auth/utils/crisp_url_helper.dart';
 
 typedef UpdateTasks = List<FutureOr Function()>;
 
@@ -499,7 +501,12 @@ class GlobalState {
         rules = [...overrideData.runningRule, ...rules];
       }
     }
-    rawConfig["rule"] = rules;
+    // Keep all customer-service origins direct, including an optional Crisp
+    // reverse-proxy host supplied by remote configuration.
+    rawConfig["rule"] = [
+      ...customerServiceDirectRules(XBoardConfig.crispProxyUrl),
+      ...rules,
+    ];
 
     _migrateDeprecatedDnsFallbackFilter(rawConfig);
     return rawConfig;

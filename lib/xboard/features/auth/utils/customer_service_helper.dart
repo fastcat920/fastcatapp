@@ -775,7 +775,9 @@ class CustomerServiceHelper {
 
   static Future<_CrispRouteProbeResult> _probeCrispRoute(Uri uri) async {
     final stopwatch = Stopwatch()..start();
-    final client = HttpClient()..connectionTimeout = _crispProxyProbeTimeout;
+    final client = HttpClient()
+      ..connectionTimeout = _crispProxyProbeTimeout
+      ..findProxy = (_) => 'DIRECT';
     try {
       final request = await client.getUrl(uri).timeout(_crispProxyProbeTimeout);
       request

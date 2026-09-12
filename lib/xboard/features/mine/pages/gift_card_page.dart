@@ -249,18 +249,11 @@ class _GiftCardRecordTile extends StatelessWidget {
               child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(
-                  record.giftCardName?.isNotEmpty == true
-                      ? record.giftCardName!
-                      : record.codeMasked,
+              Text(record.codeMasked,
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                   style: theme.textTheme.titleSmall
                       ?.copyWith(fontWeight: XbFontWeight.semibold)),
-              const SizedBox(height: 3),
-              Text(record.codeMasked,
-                  style: theme.textTheme.bodySmall
-                      ?.copyWith(color: theme.colorScheme.onSurfaceVariant)),
             ],
           )),
           const SizedBox(width: 12),

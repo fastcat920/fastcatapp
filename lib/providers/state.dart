@@ -2,6 +2,8 @@ import 'package:fl_clash/common/common.dart';
 import 'package:fl_clash/enum/enum.dart';
 import 'package:fl_clash/models/models.dart';
 import 'package:fl_clash/state.dart';
+import 'package:fl_clash/xboard/config/xboard_config.dart';
+import 'package:fl_clash/xboard/features/auth/utils/crisp_url_helper.dart';
 import 'package:fl_clash/xboard/features/latency/providers/latency_display_config_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -184,7 +186,10 @@ CoreState coreState(Ref ref) {
     vpnProps: vpnProps,
     onlyStatisticsProxy: onlyStatisticsProxy,
     currentProfileName: currentProfile?.label ?? currentProfile?.id ?? "",
-    bypassDomain: bypassDomain,
+    bypassDomain: mergeCustomerServiceBypassDomains(
+      bypassDomain,
+      XBoardConfig.crispProxyUrl,
+    ),
   );
 }
 
@@ -228,7 +233,10 @@ ProxyState proxyState(Ref ref) {
   return ProxyState(
     isStart: isStart,
     systemProxy: vm2.a,
-    bassDomain: vm2.b,
+    bassDomain: mergeCustomerServiceBypassDomains(
+      vm2.b,
+      XBoardConfig.crispProxyUrl,
+    ),
     port: mixedPort,
   );
 }

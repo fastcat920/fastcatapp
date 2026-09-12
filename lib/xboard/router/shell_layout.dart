@@ -1,6 +1,7 @@
 import 'package:fl_clash/common/common.dart';
 import 'package:fl_clash/providers/config.dart';
 import 'package:fl_clash/xboard/features/auth/utils/customer_service_helper.dart';
+import 'package:fl_clash/xboard/features/subscription/utils/home_layout.dart';
 import 'package:fl_clash/xboard/widgets/navigation/desktop_navigation_rail.dart';
 import 'package:fl_clash/xboard/widgets/navigation/mobile_navigation_bar.dart';
 import 'package:flutter/material.dart';
@@ -112,9 +113,16 @@ class _AdaptiveShellLayoutState extends ConsumerState<AdaptiveShellLayout> {
     final useSideNavigation = size.width > size.height || system.isTV;
     final currentIndex =
         _getCurrentIndex(context, useSideNavigation, logCapture);
+    // Keep mobile navigation available even when its home announcement card
+    // is compacted. Only TV uses the menu-free compact home layout.
+    final hideRootNavigation =
+        currentIndex == 0 && system.isTV && shouldUseCompactHomeLayout(context);
 
     if (useSideNavigation) {
       // 横向窗口/TV：侧边栏 + 内容区（无外层 Scaffold）
+      if (hideRootNavigation) {
+        return FocusTraversalGroup(child: widget.child);
+      }
       return Row(
         children: [
           FocusTraversalGroup(
@@ -151,11 +159,13 @@ class _AdaptiveShellLayoutState extends ConsumerState<AdaptiveShellLayout> {
         },
         child: Scaffold(
           body: widget.child,
-          bottomNavigationBar: MobileNavigationBar(
-            selectedIndex: currentIndex,
-            onDestinationSelected: (index) =>
-                _onDestinationSelected(context, index, false),
-          ),
+          bottomNavigationBar: hideRootNavigation
+              ? null
+              : MobileNavigationBar(
+                  selectedIndex: currentIndex,
+                  onDestinationSelected: (index) =>
+                      _onDestinationSelected(context, index, false),
+                ),
         ),
       );
     }

@@ -1961,10 +1961,10 @@ class MessageLookup extends MessageLookupByLibrary {
     ),
     "xboardProxyNotListening": MessageLookupByLibrary.simpleMessage("未监听"),
     "xboardProxyRepairCoreNotRunning": MessageLookupByLibrary.simpleMessage(
-      "代理核心未运行，请先连接后再执行一键修复。",
+      "代理核心未运行，已停止残留系统代理。请先连接后再执行一键修复。",
     ),
     "xboardProxyRepairPortUnavailable": MessageLookupByLibrary.simpleMessage(
-      "本地代理端口未监听，未开启系统代理。",
+      "本地代理端口未监听，已停止残留系统代理，请重新连接。",
     ),
     "xboardProxyRepairVerifyFailed": MessageLookupByLibrary.simpleMessage(
       "修复后回读验证失败，系统代理 IP 或端口仍不匹配。",

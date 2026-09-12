@@ -2695,10 +2695,10 @@ class MessageLookup extends MessageLookupByLibrary {
       "Not listening",
     ),
     "xboardProxyRepairCoreNotRunning": MessageLookupByLibrary.simpleMessage(
-      "The proxy core is not running. Connect first, then run one-click repair.",
+      "The proxy core is not running and its stale system proxy has been stopped. Connect first, then run one-click repair.",
     ),
     "xboardProxyRepairPortUnavailable": MessageLookupByLibrary.simpleMessage(
-      "The local proxy port is not listening; system proxy was not enabled.",
+      "The local proxy port is not listening. Its stale system proxy has been stopped; reconnect to continue.",
     ),
     "xboardProxyRepairVerifyFailed": MessageLookupByLibrary.simpleMessage(
       "System proxy verification failed after repair; the IP or port still does not match.",

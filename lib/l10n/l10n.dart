@@ -11990,20 +11990,20 @@ class AppLocalizations {
     );
   }
 
-  /// `The proxy core is not running. Connect first, then run one-click repair.`
+  /// `The proxy core is not running and its stale system proxy has been stopped. Connect first, then run one-click repair.`
   String get xboardProxyRepairCoreNotRunning {
     return Intl.message(
-      'The proxy core is not running. Connect first, then run one-click repair.',
+      'The proxy core is not running and its stale system proxy has been stopped. Connect first, then run one-click repair.',
       name: 'xboardProxyRepairCoreNotRunning',
       desc: '',
       args: [],
     );
   }
 
-  /// `The local proxy port is not listening; system proxy was not enabled.`
+  /// `The local proxy port is not listening. Its stale system proxy has been stopped; reconnect to continue.`
   String get xboardProxyRepairPortUnavailable {
     return Intl.message(
-      'The local proxy port is not listening; system proxy was not enabled.',
+      'The local proxy port is not listening. Its stale system proxy has been stopped; reconnect to continue.',
       name: 'xboardProxyRepairPortUnavailable',
       desc: '',
       args: [],

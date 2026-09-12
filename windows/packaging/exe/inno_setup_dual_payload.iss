@@ -129,6 +129,15 @@ Source: "vc_redist.x64.exe"; DestDir: "{tmp}"; Flags: deleteafterinstall; Check:
 Source: "vc_redist.arm64.exe"; DestDir: "{tmp}"; Flags: deleteafterinstall; Check: IsArm64
 ; NOTE: Don't use "Flags: ignoreversion" on any shared system files
 
+[InstallDelete]
+; Shortcut captions are decided when the installer runs. Remove both previous
+; language variants on upgrade so a system-language change cannot leave a
+; stale desktop or Start Menu entry behind.
+Type: files; Name: "{autoprograms}\快猫.lnk"
+Type: files; Name: "{autoprograms}\FastCat.lnk"
+Type: files; Name: "{autodesktop}\快猫.lnk"
+Type: files; Name: "{autodesktop}\FastCat.lnk"
+
 [Icons]
 Name: "{autoprograms}\{code:LocalizedAppDisplayName}"; Filename: "{app}\{{EXECUTABLE_NAME}}"; IconFilename: "{app}\{{EXECUTABLE_NAME}}"; IconIndex: 0
 Name: "{autodesktop}\{code:LocalizedAppDisplayName}"; Filename: "{app}\{{EXECUTABLE_NAME}}"; IconFilename: "{app}\{{EXECUTABLE_NAME}}"; IconIndex: 0; Tasks: desktopicon

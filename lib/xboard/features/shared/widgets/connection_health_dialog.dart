@@ -85,6 +85,7 @@ class ConnectionHealthView extends ConsumerStatefulWidget {
 
 class _ConnectionHealthViewState extends ConsumerState<ConnectionHealthView> {
   bool _isRefreshing = false;
+  bool _isRepairing = false;
 
   @override
   Widget build(BuildContext context) {
@@ -240,8 +241,23 @@ class _ConnectionHealthViewState extends ConsumerState<ConnectionHealthView> {
         ),
         const SizedBox(height: 8),
         FilledButton.icon(
-          onPressed: () => _repairConnection(context, ref),
-          icon: const Icon(Icons.build_circle_outlined),
+          onPressed: _isRepairing
+              ? null
+              : () async {
+                  setState(() => _isRepairing = true);
+                  try {
+                    await _repairConnection(context, ref);
+                  } finally {
+                    if (mounted) setState(() => _isRepairing = false);
+                  }
+                },
+          icon: _isRepairing
+              ? const SizedBox(
+                  width: 18,
+                  height: 18,
+                  child: CircularProgressIndicator(strokeWidth: 2),
+                )
+              : const Icon(Icons.build_circle_outlined),
           label: Text(l10n.xboardOneClickRepair),
         ),
         const SizedBox(height: 8),
@@ -312,13 +328,24 @@ Future<void> _repairConnection(
     final proxyState = ref.read(proxyStateProvider);
     final tunActive = ref.read(realTunEnableProvider);
     if (system.isDesktop && proxy != null) {
+      // Only clear a proxy endpoint that belongs to this client. This removes
+      // stale 127.0.0.1 settings after a core crash without touching a user's
+      // unrelated manual or corporate proxy configuration.
+      Future<void> clearStaleLocalSystemProxy() async {
+        final actual = await proxy!.getSystemProxyStatus();
+        if (actual.matches('127.0.0.1', proxyState.port)) {
+          await proxy!.stopProxy();
+        }
+      }
+
       if (!proxyState.isStart) {
-        await proxy?.stopProxy();
+        await clearStaleLocalSystemProxy();
         return l10n.xboardProxyRepairCoreNotRunning;
       }
       if (!tunActive) {
         final listening = await _waitForLocalProxy(proxyState.port);
         if (!listening) {
+          await clearStaleLocalSystemProxy();
           return l10n.xboardProxyRepairPortUnavailable;
         }
         await proxy?.stopProxy();
