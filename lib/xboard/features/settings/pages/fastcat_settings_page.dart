@@ -1,9 +1,13 @@
+import 'dart:io';
+
 import 'package:fl_clash/common/common.dart';
 import 'package:fl_clash/l10n/l10n.dart';
 import 'package:fl_clash/providers/providers.dart';
 import 'package:fl_clash/xboard/features/about/pages/fastcat_about_page.dart';
 import 'package:fl_clash/xboard/features/diagnostics/pages/diagnostics_center_page.dart';
 import 'package:fl_clash/xboard/features/settings/pages/fastcat_auto_start_settings_page.dart';
+import 'package:fl_clash/xboard/features/settings/pages/fastcat_app_exclusion_page.dart';
+import 'package:fl_clash/xboard/features/settings/pages/fastcat_custom_routing_page.dart';
 import 'package:fl_clash/xboard/features/settings/pages/fastcat_dns_settings_page.dart';
 import 'package:fl_clash/xboard/features/settings/pages/privacy_center_page.dart';
 import 'package:fl_clash/xboard/features/shared/styles/styles.dart';
@@ -86,6 +90,37 @@ class FastCatSettingsPage extends ConsumerWidget {
                         subtitle: l10n.dnsDesc,
                         onTap: () =>
                             _open(context, const FastCatDnsSettingsPage()),
+                      ),
+                      if (Platform.isAndroid)
+                        _navigationTile(
+                          context,
+                          icon: Icons.app_blocking_outlined,
+                          title: Localizations.localeOf(context).languageCode ==
+                                  'zh'
+                              ? '应用排除'
+                              : 'App exclusion',
+                          subtitle:
+                              Localizations.localeOf(context).languageCode ==
+                                      'zh'
+                                  ? '让选中的应用绕过 VPN'
+                                  : 'Let selected apps bypass the VPN',
+                          onTap: () =>
+                              _open(context, const FastCatAppExclusionPage()),
+                        ),
+                      _navigationTile(
+                        context,
+                        icon: Icons.route_outlined,
+                        title:
+                            Localizations.localeOf(context).languageCode == 'zh'
+                                ? '自定义分流'
+                                : 'Custom routing',
+                        subtitle: Localizations.localeOf(context)
+                                    .languageCode ==
+                                'zh'
+                            ? '为域名和 IP 设置直连或代理'
+                            : 'Set direct or proxy routes for domains and IPs',
+                        onTap: () =>
+                            _open(context, const FastCatCustomRoutingPage()),
                       ),
                       _navigationTile(
                         context,

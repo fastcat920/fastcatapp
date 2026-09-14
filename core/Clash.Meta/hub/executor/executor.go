@@ -235,6 +235,10 @@ func updateNTP(c *config.NTP) {
 	}
 }
 
+func init() {
+	dialer.NodeCachePath = func() string { return C.Path.Resolve("node-address-cache.json") }
+}
+
 func updateDNS(c *config.DNS, generalIPv6 bool) {
 	if !c.Enable {
 		resolver.DefaultResolver = nil

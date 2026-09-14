@@ -24,9 +24,9 @@ List<String> customerServiceDirectRules(String? proxyUrl) {
     if (address == null) {
       rules.add('DOMAIN,$host,DIRECT');
     } else if (address.type == InternetAddressType.IPv4) {
-      rules.add('IP-CIDR,$host/32,DIRECT');
+      rules.add('IP-CIDR,$host/32,DIRECT,no-resolve');
     } else {
-      rules.add('IP-CIDR6,$host/128,DIRECT');
+      rules.add('IP-CIDR6,$host/128,DIRECT,no-resolve');
     }
   }
   return rules;

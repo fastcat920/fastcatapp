@@ -37,7 +37,7 @@ func GetTcpConcurrent() bool {
 	return tcpConcurrent.Load()
 }
 
-func DialContext(ctx context.Context, network, address string, options ...Option) (net.Conn, error) {
+func DialContext(ctx context.Context, network, address string, options ...Option) (conn net.Conn, dialErr error) {
 	opt := applyOptions(options...)
 
 	if opt.network == 4 || opt.network == 6 {
@@ -51,9 +51,31 @@ func DialContext(ctx context.Context, network, address string, options ...Option
 	}
 
 	ips, port, err := parseAddr(ctx, network, address, opt.resolver)
+	host, originalPort, splitErr := net.SplitHostPort(address)
+	_, literalErr := netip.ParseAddr(host)
+	nodeLookup := !opt.resolverSet && opt.resolver == nil && strings.HasPrefix(network, "tcp") && splitErr == nil && literalErr != nil
+	usedCache := false
+	if err != nil && nodeLookup && ctx.Err() == nil {
+		ips = cachedNodeIP(address, network)
+		if resolver.DisableIPv6 && len(ips) > 0 && ips[0].Is6() {
+			ips = nil
+		}
+		if len(ips) > 0 {
+			port, err, usedCache = originalPort, nil, true
+		}
+	}
 	if err != nil {
 		return nil, err
 	}
+	defer func() {
+		if nodeLookup && !usedCache && dialErr == nil && conn != nil {
+			if remote, ok := conn.RemoteAddr().(*net.TCPAddr); ok {
+				ip := remote.AddrPort().Addr().Unmap()
+				path := nodeCachePath()
+				go saveNodeIP(path, address, ip)
+			}
+		}
+	}()
 
 	tcpConcurrent := GetTcpConcurrent()
 

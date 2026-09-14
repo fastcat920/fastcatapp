@@ -107,7 +107,10 @@ class AppController {
   /// connectivity_plus. The first value is only a baseline; it must not break
   /// active sessions during app startup. Later changes are coalesced because
   /// Wi-Fi/mobile handoffs commonly emit several transient values.
-  void handleConnectivityChanged(List<ConnectivityResult> results) {
+  void handleConnectivityChanged(
+    List<ConnectivityResult> results, {
+    bool networkIdentityChanged = false,
+  }) {
     final fingerprint =
         (results.map((result) => result.name).toList()..sort()).join(',');
     final previous = _lastConnectivityFingerprint;
@@ -116,7 +119,10 @@ class AppController {
     updateLocalIp();
     addCheckIpNumDebounce();
 
-    if (previous == null || previous == fingerprint) return;
+    if (previous == null ||
+        (previous == fingerprint && !networkIdentityChanged)) {
+      return;
+    }
     if (results.contains(ConnectivityResult.vpn) ||
         globalState.shouldSuppressConnectionCleanup) {
       return;
@@ -615,10 +621,6 @@ class AppController {
     ClashConfig patchConfig,
     bool enableTun,
   ) async {
-    final profile = _ref.read(currentProfileProvider);
-    if (profile != null) {
-      await ProfileVault.instance.prepareRuntimeProviders(profile.id);
-    }
     final realPatchConfig = patchConfig.copyWith.tun(enable: enableTun);
     final params = await globalState.getSetupParams(
       pathConfig: realPatchConfig,
@@ -645,10 +647,6 @@ class AppController {
     await clashCore.requestGc();
     await _setupClashConfig();
     await Future.wait<void>([updateGroups(), updateProviders()]);
-    final profile = _ref.read(currentProfileProvider);
-    if (profile != null) {
-      await ProfileVault.instance.snapshotRuntimeProviders(profile.id);
-    }
   }
 
   /// iOS/fallback: parse profile YAML directly in Dart to build Groups.
@@ -661,7 +659,6 @@ class AppController {
       final profile = _ref.read(currentProfileProvider);
       if (profile == null) return;
       if (!await profile.check()) return;
-      await ProfileVault.instance.prepareRuntimeProviders(profile.id);
       final content = await ProfileVault.instance.readText(profile.id);
       final yamlDoc = loadYaml(content);
       if (yamlDoc is! YamlMap) return;
@@ -696,10 +693,9 @@ class AppController {
             continue;
           }
 
-          // HTTP provider caches use the vault's ephemeral runtime directory.
           final providerFile = File(
             url != null && url.isNotEmpty
-                ? await appPath.getRuntimeProvidersFilePath(
+                ? await appPath.getProvidersFilePath(
                     profile.id,
                     'proxies',
                     url,
@@ -1342,13 +1338,14 @@ class AppController {
         );
   }
 
-  Future<List<Package>> getPackages() async {
+  Future<List<Package>> getPackages({bool refresh = false}) async {
     if (_ref.read(isMobileViewProvider)) {
       await Future.delayed(commonDuration);
     }
-    if (_ref.read(packagesProvider).isEmpty) {
-      _ref.read(packagesProvider.notifier).value =
-          await app?.getPackages() ?? [];
+    if (refresh || _ref.read(packagesProvider).isEmpty) {
+      _ref.read(packagesProvider.notifier).value = refresh
+          ? await app?.refreshPackages() ?? []
+          : await app?.getPackages() ?? [];
     }
     return _ref.read(packagesProvider);
   }

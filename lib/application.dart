@@ -639,6 +639,13 @@ class ApplicationState extends ConsumerState<Application>
     return AppStateManager(
       child: ClashManager(
         child: ConnectivityManager(
+          onNetworkIdentityChanged: (results) {
+            globalState.appController.handleConnectivityChanged(
+              results, networkIdentityChanged: true,
+            );
+            unawaited(ref.read(serviceConnectivityProvider.notifier)
+                .handleConnectivityChanged(results));
+          },
           onConnectivityChanged: (results) async {
             globalState.appController.handleConnectivityChanged(results);
           },

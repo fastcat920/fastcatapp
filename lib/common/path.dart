@@ -76,12 +76,11 @@ class AppPath {
 
   Future<String> getProfilePath(String id) async {
     final directory = await profilesPath;
-    return join(directory, "$id.fcfg");
+    return join(directory, "$id.yaml");
   }
 
   Future<String> getLegacyProfilePath(String id) async {
-    final directory = await profilesPath;
-    return join(directory, "$id.yaml");
+    return getProfilePath(id);
   }
 
   Future<String> getProvidersDirPath(String id) async {

@@ -16,12 +16,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_js/flutter_js.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:url_launcher/url_launcher.dart';
-import 'package:yaml/yaml.dart';
 
 import 'common/common.dart';
 import 'controller.dart';
 import 'models/models.dart';
-import 'security/profile_vault.dart';
 import 'xboard/config/xboard_config.dart';
 import 'xboard/features/auth/utils/crisp_url_helper.dart';
 
@@ -420,7 +418,7 @@ class GlobalState {
           continue;
         }
         if (proxyProvider["url"] != null) {
-          proxyProvider["path"] = await appPath.getRuntimeProvidersFilePath(
+          proxyProvider["path"] = await appPath.getProvidersFilePath(
             profile.id,
             "proxies",
             proxyProvider["url"],
@@ -437,7 +435,7 @@ class GlobalState {
           continue;
         }
         if (ruleProvider["url"] != null) {
-          ruleProvider["path"] = await appPath.getRuntimeProvidersFilePath(
+          ruleProvider["path"] = await appPath.getProvidersFilePath(
             profile.id,
             "rules",
             ruleProvider["url"],
@@ -537,26 +535,16 @@ class GlobalState {
   }
 
   Future<Map<String, dynamic>> getProfileConfig(String profileId) async {
-    final yaml = await ProfileVault.instance.readText(profileId);
-    final decoded = loadYaml(yaml);
-    if (decoded is! YamlMap) return <String, dynamic>{};
-    final configMap = _yamlToMap(decoded);
+    // Keep Android/Desktop on the native core config loader. It resolves
+    // provider paths, proxies and rules exactly as the running Mihomo core
+    // expects; Dart YAML parsing is only needed by the iOS fallback path.
+    final configMap = await switch (clashLibHandler != null) {
+      true => clashLibHandler!.getConfig(profileId),
+      false => clashCore.getConfig(profileId),
+    };
     configMap["rules"] = configMap["rule"];
     configMap.remove("rule");
     return configMap;
-  }
-
-  Map<String, dynamic> _yamlToMap(YamlMap value) => Map<String, dynamic>.from(
-        value.map((key, dynamic item) => MapEntry(
-              key.toString(),
-              _yamlToValue(item),
-            )),
-      );
-
-  dynamic _yamlToValue(dynamic value) {
-    if (value is YamlMap) return _yamlToMap(value);
-    if (value is YamlList) return value.map(_yamlToValue).toList();
-    return value;
   }
 
   Future<Map<String, dynamic>> handleEvaluate(

@@ -195,7 +195,6 @@ class ServiceConnectivityNotifier
     }
 
     _networkLossDebounce?.cancel();
-    if (state.isOnline && state.consecutiveFailures == 0) return;
     _recoveryDebounce?.cancel();
     if (!debounce) {
       await recover();
