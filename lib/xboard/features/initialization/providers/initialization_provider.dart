@@ -26,6 +26,7 @@ const _logger = FileLogger('initialization_provider.dart');
 ///
 /// 提供统一的初始化入口和状态管理
 class XBoardInitializationNotifier extends StateNotifier<InitializationState> {
+  static const _diagnosticNetworkTimeout = Duration(seconds: 12);
   final Ref ref;
 
   /// 上次已知的域名列表，用于检测变化
@@ -511,9 +512,15 @@ class XBoardInitializationNotifier extends StateNotifier<InitializationState> {
           client = HttpClient();
           client.findProxy = (_) => 'DIRECT';
           client.connectionTimeout = const Duration(seconds: 10);
-          final request = await client.getUrl(Uri.parse(ossUrl1));
-          final response = await request.close();
-          final body = await response.transform(utf8.decoder).join();
+          final request = await client
+              .getUrl(Uri.parse(ossUrl1))
+              .timeout(_diagnosticNetworkTimeout);
+          final response =
+              await request.close().timeout(_diagnosticNetworkTimeout);
+          final body = await response
+              .transform(utf8.decoder)
+              .join()
+              .timeout(_diagnosticNetworkTimeout);
           buf.writeln('  HTTP 状态码: ${response.statusCode}');
           buf.writeln('  响应长度: ${body.length} 字符');
           buf.writeln(
@@ -552,7 +559,7 @@ class XBoardInitializationNotifier extends StateNotifier<InitializationState> {
       buf.writeln('');
       buf.writeln('=== 诊断结束 ===');
 
-      file.writeAsStringSync(buf.toString());
+      await file.writeAsString(buf.toString(), flush: true);
       _logger.info('[Initialization] 诊断文件已写入: ${file.path}');
     } catch (e) {
       _logger.warning('[Initialization] 写诊断文件失败: $e');

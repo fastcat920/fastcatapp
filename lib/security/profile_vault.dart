@@ -34,6 +34,8 @@ class ProfileVault {
     ),
   );
 
+  Future<Uint8List>? _keyLoadFuture;
+
   Future<bool> exists(String profileId) async =>
       File(await _path(profileId)).exists();
 
@@ -231,6 +233,18 @@ class ProfileVault {
   }
 
   Future<Uint8List> _loadOrCreateKey() async {
+    final inFlight = _keyLoadFuture;
+    if (inFlight != null) return inFlight;
+    final future = _loadOrCreateKeyOnce();
+    _keyLoadFuture = future;
+    try {
+      return await future;
+    } finally {
+      if (identical(_keyLoadFuture, future)) _keyLoadFuture = null;
+    }
+  }
+
+  Future<Uint8List> _loadOrCreateKeyOnce() async {
     final stored = await _secureStorage.read(key: _keyName);
     if (stored != null) {
       final key = base64Decode(stored);

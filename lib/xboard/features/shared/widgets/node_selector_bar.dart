@@ -290,7 +290,10 @@ class _NodeSelectorBarState extends ConsumerState<NodeSelectorBar> {
                   color: XbUiCardStyle.shape(context).side.color,
                 ),
               ),
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+              // The home page reserves 56px for this bar. Keep the vertical
+              // padding within that budget so the icon and two-line label fit
+              // on small Android layouts as well.
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
               child: Row(
                 children: [
                   Container(

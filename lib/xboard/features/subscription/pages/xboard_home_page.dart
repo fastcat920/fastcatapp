@@ -45,6 +45,7 @@ class _XBoardHomePageState extends ConsumerState<XBoardHomePage>
   bool _isCheckingWebsite = false;
   Timer? _noticeStartupTimer;
   Timer? _latencyStartupTimer;
+  Timer? _latencyBatchTimer;
 
   @override
   bool get wantKeepAlive => true; // 保持页面状态，防止重建
@@ -89,7 +90,9 @@ class _XBoardHomePageState extends ConsumerState<XBoardHomePage>
     });
 
     ref.listenManual(groupsProvider, (previous, next) {
-      if (next.isNotEmpty) _startLatencyTestWhenReady();
+      if (next.isNotEmpty) {
+        _startSelectedNodeLatencyTestWhenReady();
+      }
     });
 
     // 初始化订阅守护服务
@@ -121,12 +124,24 @@ class _XBoardHomePageState extends ConsumerState<XBoardHomePage>
       if (!mounted) return;
       ref.read(noticeProvider.notifier).fetchNotices();
     });
-    _latencyStartupTimer = Timer(const Duration(milliseconds: 3500), () {
+    // Test the selected node first so the home page gets useful feedback
+    // quickly. The more expensive all-node batch follows after the UI settles.
+    _latencyStartupTimer = Timer(const Duration(seconds: 1), () {
       if (!mounted) return;
       _deferredStartupTasksReady = true;
       autoLatencyService.initialize(ref);
-      _startLatencyTestWhenReady();
+      _startSelectedNodeLatencyTestWhenReady();
+      _latencyBatchTimer?.cancel();
+      _latencyBatchTimer = Timer(const Duration(seconds: 5), () {
+        if (!mounted) return;
+        _startLatencyTestWhenReady();
+      });
     });
+  }
+
+  void _startSelectedNodeLatencyTestWhenReady() {
+    if (!_deferredStartupTasksReady || ref.read(groupsProvider).isEmpty) return;
+    unawaited(autoLatencyService.testCurrentNode());
   }
 
   void _startLatencyTestWhenReady() {
@@ -140,6 +155,7 @@ class _XBoardHomePageState extends ConsumerState<XBoardHomePage>
   void dispose() {
     _noticeStartupTimer?.cancel();
     _latencyStartupTimer?.cancel();
+    _latencyBatchTimer?.cancel();
     super.dispose();
   }
 
