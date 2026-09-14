@@ -154,7 +154,7 @@ class Build {
   // Keep the runtime-reported mihomo version aligned with the vendored source.
   // mihomo's release workflow normally injects this value through ldflags, while
   // FastCat builds the embedded core directly.
-  static const mihomoVersion = "v1.19.29";
+  static const mihomoVersion = "v1.19.31";
 
   static String get libName => "libclash";
 

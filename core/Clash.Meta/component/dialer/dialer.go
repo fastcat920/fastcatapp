@@ -71,8 +71,7 @@ func DialContext(ctx context.Context, network, address string, options ...Option
 		if nodeLookup && !usedCache && dialErr == nil && conn != nil {
 			if remote, ok := conn.RemoteAddr().(*net.TCPAddr); ok {
 				ip := remote.AddrPort().Addr().Unmap()
-				path := nodeCachePath()
-				go saveNodeIP(path, address, ip)
+				go saveNodeIP(nodeCachePath(), address, ip)
 			}
 		}
 	}()
@@ -101,6 +100,23 @@ func DialContext(ctx context.Context, network, address string, options ...Option
 func ListenPacket(ctx context.Context, network, address string, rAddrPort netip.AddrPort, options ...Option) (net.PacketConn, error) {
 	opt := applyOptions(options...)
 
+	lc, address, err := listenConfig(network, address, rAddrPort, opt)
+	if err != nil {
+		return nil, err
+	}
+	return lc.ListenPacket(ctx, network, address)
+}
+
+// Listen creates a TCP listener with the same socket policy as ListenPacket.
+func Listen(ctx context.Context, network, address string, options ...Option) (net.Listener, error) {
+	lc, address, err := listenConfig(network, address, netip.AddrPort{}, applyOptions(options...))
+	if err != nil {
+		return nil, err
+	}
+	return lc.Listen(ctx, network, address)
+}
+
+func listenConfig(network, address string, rAddrPort netip.AddrPort, opt option) (*net.ListenConfig, string, error) {
 	lc := &net.ListenConfig{}
 	if opt.addrReuse {
 		addrReuseToListenConfig(lc)
@@ -116,7 +132,7 @@ func ListenPacket(ctx context.Context, network, address string, rAddrPort netip.
 				opt.interfaceName = finder.FindInterfaceName(rAddrPort.Addr().Unmap())
 			}
 		}
-		if rAddrPort.Addr().Unmap().IsLoopback() {
+		if rAddrPort.Addr().Unmap().IsLoopback() || listenAddressIsLoopback(address) {
 			// avoid "The requested address is not valid in its context."
 			opt.interfaceName = ""
 		}
@@ -127,7 +143,7 @@ func ListenPacket(ctx context.Context, network, address string, rAddrPort netip.
 			}
 			addr, err := bind(opt.interfaceName, lc, network, address, rAddrPort)
 			if err != nil {
-				return nil, err
+				return nil, "", err
 			}
 			address = addr
 		}
@@ -139,7 +155,7 @@ func ListenPacket(ctx context.Context, network, address string, rAddrPort netip.
 		}
 	}
 
-	return lc.ListenPacket(ctx, network, address)
+	return lc, address, nil
 }
 
 func dialContext(ctx context.Context, network string, destination netip.Addr, port string, opt option) (net.Conn, error) {
@@ -410,6 +426,15 @@ func parseAddr(ctx context.Context, network, address string, preferResolver reso
 		}
 	}
 	return ips, port, nil
+}
+
+func listenAddressIsLoopback(address string) bool {
+	host, _, err := net.SplitHostPort(address)
+	if err != nil {
+		host = address
+	}
+	ip, err := netip.ParseAddr(host)
+	return err == nil && ip.Unmap().IsLoopback()
 }
 
 type Dialer struct {
