@@ -2,3 +2,5 @@ libclash/macos/amd64/fastcatCore filter=lfs diff=lfs merge=lfs -text
 libclash/macos/arm64/fastcatCore filter=lfs diff=lfs merge=lfs -text
 libclash/macos/fastcatCore filter=lfs diff=lfs merge=lfs -text
 ios/Frameworks/libclash.xcframework/ios-arm64/libclash.a filter=lfs diff=lfs merge=lfs -text
+android/core/src/main/jniLibs/armeabi-v7a/libclash.so filter=lfs diff=lfs merge=lfs -text
+android/core/src/main/jniLibs/arm64-v8a/libclash.so filter=lfs diff=lfs merge=lfs -text
