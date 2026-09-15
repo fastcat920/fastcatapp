@@ -18,15 +18,6 @@ class FastCatDnsSettingsPage extends ConsumerWidget {
     final vpnSetting = ref.watch(vpnSettingProvider);
     final dns =
         ref.watch(patchClashConfigProvider.select((state) => state.dns));
-    if (overrideDns && !dns.enable) {
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        if (!context.mounted) return;
-        _update(
-          ref,
-          (state) => state.copyWith.dns(enable: true),
-        );
-      });
-    }
 
     return Scaffold(
       backgroundColor: XbUiTokens.pageBackground(context),
@@ -70,7 +61,7 @@ class FastCatDnsSettingsPage extends ConsumerWidget {
                     subtitle: Text(l10n.overrideDnsDesc),
                     value: overrideDns,
                     onChanged: (value) {
-                      if (value) {
+                      if (value && !dns.enable) {
                         _update(
                           ref,
                           (state) => state.copyWith.dns(enable: true),
@@ -324,7 +315,10 @@ class FastCatDnsSettingsPage extends ConsumerWidget {
             controller: controller,
             minLines: 5,
             maxLines: 10,
-            autofocus: true,
+            // Requesting focus while the dialog route is being inserted can
+            // deactivate an inherited element before its TextField has been
+            // detached on Android. Let the user focus the editor explicitly.
+            autofocus: false,
             decoration: InputDecoration(
               hintText: 'https://dns.alidns.com/dns-query\n1.1.1.1',
               helperText: _isChinese(context)
