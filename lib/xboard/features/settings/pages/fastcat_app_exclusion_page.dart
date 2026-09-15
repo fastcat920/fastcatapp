@@ -25,6 +25,7 @@ class _FastCatAppExclusionPageState
   bool _showSystemApps = false;
   bool _initialShowSystemApps = false;
   bool _loading = true;
+  bool _allowPop = false;
   final Map<String, Future<ImageProvider?>> _iconFutures = {};
 
   @override
@@ -69,6 +70,14 @@ class _FastCatAppExclusionPageState
     final save = await _showUnsavedChangesDialog(context);
     if (save == true) await _save(close: false);
     return save != null;
+  }
+
+  Future<void> _handlePopAttempt() async {
+    if (!await _confirmLeave() || !mounted) return;
+    setState(() => _allowPop = true);
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) Navigator.of(context).pop();
+    });
   }
 
   Future<bool?> _showUnsavedChangesDialog(BuildContext context) =>
@@ -121,7 +130,12 @@ class _FastCatAppExclusionPageState
     _initialExcluded = Set.of(_excluded);
     _initialEnabled = _enabled;
     _initialShowSystemApps = _showSystemApps;
-    if (mounted && close) Navigator.of(context).pop();
+    if (mounted && close) {
+      setState(() => _allowPop = true);
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) Navigator.of(context).pop();
+      });
+    }
   }
 
   @override
@@ -144,8 +158,11 @@ class _FastCatAppExclusionPageState
                 item.packageName.toLowerCase().contains(keyword))
             .toList();
 
-    return WillPopScope(
-      onWillPop: _confirmLeave,
+    return PopScope(
+      canPop: _allowPop || !_hasUnsavedChanges,
+      onPopInvokedWithResult: (didPop, _) {
+        if (!didPop) _handlePopAttempt();
+      },
       child: Scaffold(
         backgroundColor: XbUiTokens.pageBackground(context),
         appBar: AppBar(
