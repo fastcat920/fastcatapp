@@ -54,7 +54,7 @@ class AppSettingProps with _$AppSettingProps {
     @Default(true) bool isAnimateToPage,
     @Default(true) bool autoCheckUpdate,
     @Default(false) bool showLabel,
-    @Default(true) bool disclaimerAccepted,
+    @Default(false) bool disclaimerAccepted,
     @Default(true) bool minimizeOnExit,
     @Default(false) bool hidden,
     @Default(false) bool developerMode,

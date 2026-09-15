@@ -16,6 +16,7 @@ import 'package:fl_clash/state.dart';
 import 'package:fl_clash/widgets/dialog.dart';
 import 'package:fl_clash/xboard/features/auth/services/device_heartbeat_service.dart';
 import 'package:fl_clash/xboard/features/auth/utils/customer_service_helper.dart';
+import 'package:fl_clash/xboard/features/shared/widgets/legal_footer.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter/material.dart';
 import 'package:yaml/yaml.dart';
@@ -36,6 +37,95 @@ class _TunAdminResult {
   final bool didRestartCore;
 }
 
+class _FirstLaunchPrivacyNotice extends StatelessWidget {
+  const _FirstLaunchPrivacyNotice({required this.chinese});
+
+  final bool chinese;
+
+  @override
+  Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+    final secondaryStyle = Theme.of(context).textTheme.bodySmall?.copyWith(
+          color: colorScheme.onSurfaceVariant,
+        );
+    return ConstrainedBox(
+      constraints: const BoxConstraints(maxWidth: 460),
+      child: SingleChildScrollView(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              chinese
+                  ? '继续使用前，请阅读并同意以下数据与隐私说明：'
+                  : 'Please review and accept this data and privacy notice before continuing:',
+            ),
+            const SizedBox(height: 14),
+            _PrivacyNoticeItem(
+              title: chinese ? '账户与购买服务' : 'Account and purchases',
+              body: chinese
+                  ? '账户、订阅状态、套餐流量和订单记录仅用于身份验证、购买套餐和提供服务。'
+                  : 'Account, subscription status, plan usage, and order records are used only to authenticate you, process purchases, and provide the service.',
+            ),
+            const SizedBox(height: 12),
+            _PrivacyNoticeItem(
+              title: chinese ? '设备与连接服务' : 'Device and connection service',
+              body: chinese
+                  ? '设备标识、设备名称、系统和应用版本用于设备管理、安全保护及兼容性诊断；连接服务会处理提供 VPN 所必需的网络请求与连接信息。'
+                  : 'Device identifier, device name, OS, and app version are used for device management, security, and compatibility diagnostics; VPN service processes the network requests and connection data needed to provide it.',
+            ),
+            const SizedBox(height: 14),
+            Text(
+              chinese
+                  ? '这些信息不会用于广告追踪或出售。不同意即无法继续使用客户端。'
+                  : 'This information is not used for advertising tracking or sold. You cannot continue using the app without accepting.',
+              style: secondaryStyle,
+            ),
+            const SizedBox(height: 8),
+            Wrap(
+              spacing: 4,
+              children: [
+                TextButton.icon(
+                  onPressed: FastCatLegalLinks.openPrivacyPolicy,
+                  icon: const Icon(Icons.open_in_new, size: 16),
+                  label: Text(chinese ? '隐私政策' : 'Privacy Policy'),
+                ),
+                TextButton.icon(
+                  onPressed: FastCatLegalLinks.openTermsOfService,
+                  icon: const Icon(Icons.open_in_new, size: 16),
+                  label: Text(chinese ? '服务条款' : 'Terms of Service'),
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _PrivacyNoticeItem extends StatelessWidget {
+  const _PrivacyNoticeItem({required this.title, required this.body});
+
+  final String title;
+  final String body;
+
+  @override
+  Widget build(BuildContext context) => Text.rich(
+        TextSpan(
+          children: [
+            TextSpan(
+              text: '$title\n',
+              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                    fontWeight: FontWeight.w600,
+                  ),
+            ),
+            TextSpan(text: body),
+          ],
+        ),
+      );
+}
+
 class AppController {
   int? lastProfileModified;
 
@@ -49,6 +139,8 @@ class AppController {
   Timer? _networkRecoveryTimer;
   DateTime? _lastNetworkRecoveryAt;
   bool _isRecoveringFromNetworkChange = false;
+  bool _isExitDialogVisible = false;
+  bool _isExiting = false;
 
   bool get isCoreSwitching => _isCoreSwitching;
 
@@ -987,13 +1079,47 @@ class AppController {
     if (CustomerServiceHelper.hideEmbeddedCustomerServiceIfVisible()) {
       return;
     }
-    if (_ref.read(appSettingProvider).minimizeOnExit) {
-      if (system.isDesktop) {
-        await savePreferencesDebounce();
-      }
-      await system.back();
-    } else {
+    if (_isExiting) return;
+    if (system.isDesktop) {
+      await savePreferencesDebounce();
+    }
+    await system.back();
+  }
+
+  /// 日常关闭窗口和系统返回键只进入后台。仅桌面托盘的“退出应用”
+  /// 会调用本方法，防止用户误关窗口导致网络中断。
+  Future<void> requestExit() async {
+    if (_isExitDialogVisible || _isExiting) return;
+    if (!globalState.isStart) {
       await handleExit();
+      return;
+    }
+
+    _isExitDialogVisible = true;
+    try {
+      final confirmed = await globalState.showCommonDialog<bool>(
+        child: Builder(
+          builder: (dialogContext) => CommonDialog(
+            title: '退出并断开 VPN？',
+            child: const Text('退出应用将停止代理，并恢复设备网络设置。'),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.of(dialogContext).pop(false),
+                child: const Text('取消'),
+              ),
+              FilledButton(
+                onPressed: () => Navigator.of(dialogContext).pop(true),
+                child: const Text('退出应用'),
+              ),
+            ],
+          ),
+        ),
+      );
+      if (confirmed == true) {
+        await handleExit();
+      }
+    } finally {
+      _isExitDialogVisible = false;
     }
   }
 
@@ -1005,7 +1131,22 @@ class AppController {
     _ref.read(backBlockProvider.notifier).value = false;
   }
 
-  handleExit() => _exitService.handleExit();
+  Future<void> handleExit() async {
+    if (_isExiting) return;
+    _isExiting = true;
+    try {
+      if (globalState.isStart) {
+        try {
+          await updateStatus(false).timeout(const Duration(seconds: 5));
+        } catch (error) {
+          commonPrint.log('disconnect before exit failed: $error');
+        }
+      }
+      await _exitService.handleExit();
+    } finally {
+      _isExiting = false;
+    }
+  }
 
   Future handleClearCacheAndRestart() =>
       _exitService.handleClearCacheAndRestart();
@@ -1044,8 +1185,8 @@ class AppController {
       await applyProfile(silence: true);
     }
 
-    // Do not create or start the iOS Packet Tunnel here. The first user-
-    // initiated connection is gated by IosVpnPrivacyNotice in the connect UI.
+    // Do not create or start the iOS Packet Tunnel here. Privacy consent is
+    // collected once at first launch, before the user can use the client.
   }
 
   init() async {
@@ -1160,7 +1301,9 @@ class AppController {
     return await globalState.showCommonDialog<bool>(
           dismissible: false,
           child: CommonDialog(
-            title: appLocalizations.disclaimer,
+            title: Localizations.localeOf(context).languageCode == 'zh'
+                ? '数据与隐私说明'
+                : 'Data & Privacy Notice',
             actions: [
               TextButton(
                 onPressed: () {
@@ -1178,8 +1321,8 @@ class AppController {
                 child: Text(appLocalizations.agree),
               )
             ],
-            child: SelectableText(
-              appLocalizations.disclaimerDesc,
+            child: _FirstLaunchPrivacyNotice(
+              chinese: Localizations.localeOf(context).languageCode == 'zh',
             ),
           ),
         ) ??

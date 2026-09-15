@@ -112,10 +112,29 @@ class GlobalState {
 
   init() async {
     packageInfo = await PackageInfo.fromPlatform();
-    config = await preferences.getConfig() ??
-        Config(
-          themeProps: defaultThemeProps,
+    final savedConfig = await preferences.getConfig();
+    config = savedConfig ?? Config(themeProps: defaultThemeProps);
+    // 首次启动的 macOS Debug 使用独立端口且不接管系统代理，保证可以
+    // 与正式版同时运行。之后用户在 Debug 中的主动修改会保留。
+    if (savedConfig == null && appPath.isIsolatedDebugEnvironment) {
+      config = config.copyWith(
+        appSetting: config.appSetting.copyWith(autoRun: false),
+        networkProps: config.networkProps.copyWith(systemProxy: false),
+        patchClashConfig: config.patchClashConfig.copyWith(mixedPort: 17890),
+      );
+    }
+    if (appPath.isIsolatedDebugEnvironment && config.profiles.isEmpty) {
+      final productionConfig = await appPath.loadMacOSDebugSeedConfig();
+      if (productionConfig != null) {
+        final seed = Config.compatibleFromJson(productionConfig);
+        config = config.copyWith(
+          profiles: seed.profiles,
+          currentProfileId: seed.currentProfileId,
         );
+        await appPath.copyMacOSDebugProfilesFromProduction();
+        await preferences.saveConfig(config);
+      }
+    }
     config = config.copyWith(
       themeProps: config.themeProps.copyWith(
         // Flutter 3.27 compatibility; Color.toARGB32 was added later.

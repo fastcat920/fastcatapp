@@ -641,9 +641,11 @@ class ApplicationState extends ConsumerState<Application>
         child: ConnectivityManager(
           onNetworkIdentityChanged: (results) {
             globalState.appController.handleConnectivityChanged(
-              results, networkIdentityChanged: true,
+              results,
+              networkIdentityChanged: true,
             );
-            unawaited(ref.read(serviceConnectivityProvider.notifier)
+            unawaited(ref
+                .read(serviceConnectivityProvider.notifier)
                 .handleConnectivityChanged(results));
           },
           onConnectivityChanged: (results) async {
@@ -833,6 +835,24 @@ class ApplicationState extends ConsumerState<Application>
                     borderRadius: BorderRadius.circular(20),
                   ),
                 ),
+                dialogTheme: DialogThemeData(
+                  backgroundColor: const Color(0xFFFAFBFD),
+                  surfaceTintColor: Colors.transparent,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(24),
+                  ),
+                  titleTextStyle: const TextStyle(
+                    color: Color(0xFF1A2138),
+                    fontSize: 16,
+                    fontWeight: FontWeight.w600,
+                  ),
+                  contentTextStyle: const TextStyle(
+                    color: Color(0xFF475467),
+                    fontSize: 14,
+                    height: 1.45,
+                  ),
+                  actionsPadding: const EdgeInsets.fromLTRB(24, 0, 24, 20),
+                ),
                 navigationBarTheme: NavigationBarThemeData(
                   backgroundColor: Colors.white,
                   elevation: 0,
@@ -915,6 +935,13 @@ class ApplicationState extends ConsumerState<Application>
                 ),
                 appBarTheme: const AppBarTheme(
                   centerTitle: false,
+                ),
+                dialogTheme: DialogThemeData(
+                  surfaceTintColor: Colors.transparent,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(24),
+                  ),
+                  actionsPadding: const EdgeInsets.fromLTRB(24, 0, 24, 20),
                 ),
                 filledButtonTheme: FilledButtonThemeData(
                   style: ButtonStyle(mouseCursor: _clickableMouseCursor),

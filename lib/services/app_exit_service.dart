@@ -24,7 +24,9 @@ class AppExitService {
       system.exit();
     }
 
-    final fallbackExitTimer = Timer(commonDuration, exitOnce);
+    // 退出时必须给 VPN/TUN、系统代理和核心足够时间完成清理。超时后
+    // 仍继续退出，避免异常的底层调用永久阻塞系统关机或应用退出。
+    final fallbackExitTimer = Timer(const Duration(seconds: 5), exitOnce);
     try {
       await savePreferences();
       await system.setMacOSDns(true);

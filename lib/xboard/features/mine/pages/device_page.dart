@@ -9,6 +9,7 @@ import 'package:fl_clash/xboard/config/xboard_config.dart';
 import 'package:fl_clash/xboard/features/auth/providers/xboard_user_provider.dart';
 import 'package:fl_clash/xboard/features/shared/styles/styles.dart';
 import 'package:fl_clash/xboard/features/shared/widgets/xb_error_state.dart';
+import 'package:fl_clash/xboard/features/shared/widgets/xb_dialog.dart';
 import 'package:fl_clash/xboard/utils/xboard_notification.dart';
 import 'package:flutter_xboard_sdk/flutter_xboard_sdk.dart';
 import 'package:fl_clash/xboard/config/gateway_config.dart';
@@ -221,34 +222,19 @@ class _DeviceManagementPageState extends ConsumerState<DeviceManagementPage>
 
   Future<void> _deleteDevice(_DeviceRecordView device) async {
     if (_removingDeviceId != null || _isReleasingOfflineDevices) return;
-    final confirmed = await showDialog<bool>(
-      context: context,
-      builder: (dialogContext) => AlertDialog(
-        shape: XbUiDialog.shape(),
-        backgroundColor: XbUiDialog.background(dialogContext),
-        title: Text(AppLocalizations.of(dialogContext).xboardDeviceRemoveTitle,
-            style: XbUiText.sectionTitle(dialogContext)),
-        content: Text(
-          device.isCurrent
-              ? AppLocalizations.of(dialogContext)
-                  .xboardDeviceRemoveCurrentConfirm
-              : '${AppLocalizations.of(dialogContext).remove} "${device.deviceName}"?',
-        ),
-        actions: [
-          OutlinedButton(
-            onPressed: () => Navigator.of(dialogContext).pop(false),
-            style: XbUiButton.outlinedNeutral(dialogContext),
-            child: Text(AppLocalizations.of(dialogContext).cancel),
-          ),
-          FilledButton(
-            onPressed: () => Navigator.of(dialogContext).pop(true),
-            style: XbUiButton.filledDanger(dialogContext),
-            child: Text(AppLocalizations.of(dialogContext).remove),
-          ),
-        ],
-      ),
+    final l10n = AppLocalizations.of(context);
+    final confirmed = await XbConfirmDialog.show(
+      context,
+      title: l10n.xboardDeviceRemoveTitle,
+      message: device.isCurrent
+          ? l10n.xboardDeviceRemoveCurrentConfirm
+          : '${l10n.remove} "${device.deviceName}"?',
+      confirmLabel: l10n.remove,
+      cancelLabel: l10n.cancel,
+      tone: XbDialogTone.danger,
+      icon: Icons.devices_other_outlined,
     );
-    if (confirmed != true) return;
+    if (!confirmed) return;
 
     setState(() => _removingDeviceId = device.id);
     try {
@@ -296,33 +282,17 @@ class _DeviceManagementPageState extends ConsumerState<DeviceManagementPage>
     final targets = data.offlineActiveDevices;
     if (targets.isEmpty) return;
 
-    final confirmed = await showDialog<bool>(
-      context: context,
-      builder: (dialogContext) => AlertDialog(
-        shape: XbUiDialog.shape(),
-        backgroundColor: XbUiDialog.background(dialogContext),
-        title: Text(
-          AppLocalizations.of(dialogContext).xboardReleaseOfflineDevices,
-          style: XbUiText.sectionTitle(dialogContext),
-        ),
-        content: Text(
-          AppLocalizations.of(dialogContext).xboardReleaseOfflineDevicesConfirm,
-        ),
-        actions: [
-          OutlinedButton(
-            onPressed: () => Navigator.of(dialogContext).pop(false),
-            style: XbUiButton.outlinedNeutral(dialogContext),
-            child: Text(AppLocalizations.of(dialogContext).cancel),
-          ),
-          FilledButton(
-            onPressed: () => Navigator.of(dialogContext).pop(true),
-            style: XbUiButton.filledDanger(dialogContext),
-            child: Text(AppLocalizations.of(dialogContext).remove),
-          ),
-        ],
-      ),
+    final l10n = AppLocalizations.of(context);
+    final confirmed = await XbConfirmDialog.show(
+      context,
+      title: l10n.xboardReleaseOfflineDevices,
+      message: l10n.xboardReleaseOfflineDevicesConfirm,
+      confirmLabel: l10n.remove,
+      cancelLabel: l10n.cancel,
+      tone: XbDialogTone.danger,
+      icon: Icons.cleaning_services_outlined,
     );
-    if (confirmed != true) return;
+    if (!confirmed) return;
 
     setState(() => _isReleasingOfflineDevices = true);
     try {

@@ -66,27 +66,38 @@ class _FastCatAppExclusionPageState
 
   Future<bool> _confirmLeave() async {
     if (!_hasUnsavedChanges) return true;
-    final save = await showDialog<bool>(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('未保存的修改'),
-        content: const Text('是否保存后返回？'),
-        actions: [
-          TextButton(
-              onPressed: () => Navigator.pop(context),
-              child: const Text('继续编辑')),
-          TextButton(
-              onPressed: () => Navigator.pop(context, false),
-              child: const Text('不保存')),
-          FilledButton(
-              onPressed: () => Navigator.pop(context, true),
-              child: const Text('保存')),
-        ],
-      ),
-    );
+    final save = await _showUnsavedChangesDialog(context);
     if (save == true) await _save(close: false);
     return save != null;
   }
+
+  Future<bool?> _showUnsavedChangesDialog(BuildContext context) =>
+      showDialog<bool>(
+        context: context,
+        builder: (dialogContext) => AlertDialog(
+          shape: XbUiDialog.shape(),
+          backgroundColor: XbUiDialog.background(dialogContext),
+          title: Text('未保存的修改', style: XbUiText.sectionTitle(dialogContext)),
+          content: const Text('是否保存后返回？'),
+          actionsPadding: const EdgeInsets.fromLTRB(24, 0, 24, 20),
+          actions: [
+            OutlinedButton(
+              onPressed: () => Navigator.pop(dialogContext),
+              style: XbUiButton.outlinedNeutral(dialogContext),
+              child: const Text('继续编辑'),
+            ),
+            TextButton(
+              onPressed: () => Navigator.pop(dialogContext, false),
+              child: const Text('不保存'),
+            ),
+            FilledButton(
+              onPressed: () => Navigator.pop(dialogContext, true),
+              style: XbUiButton.filledPrimary(dialogContext),
+              child: const Text('保存'),
+            ),
+          ],
+        ),
+      );
 
   Future<void> _save({bool close = true}) async {
     final packages = ref.read(packagesProvider);

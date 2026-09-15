@@ -327,7 +327,7 @@ class _$AppSettingPropsImpl implements _AppSettingProps {
       this.isAnimateToPage = true,
       this.autoCheckUpdate = true,
       this.showLabel = false,
-      this.disclaimerAccepted = true,
+      this.disclaimerAccepted = false,
       this.minimizeOnExit = true,
       this.hidden = false,
       this.developerMode = false,

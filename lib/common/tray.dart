@@ -174,7 +174,7 @@ class Tray {
     final exitMenuItem = MenuItem(
       label: l10n.exit,
       onClick: (_) async {
-        await globalState.appController.handleExit();
+        await globalState.appController.requestExit();
       },
     );
     menuItems.add(exitMenuItem);

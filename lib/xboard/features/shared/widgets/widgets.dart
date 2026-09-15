@@ -12,4 +12,5 @@ export 'xb_card.dart';
 export 'xb_container.dart';
 export 'xb_error_state.dart';
 export 'xb_input_field.dart';
+export 'xb_dialog.dart';
 export 'xboard_outbound_mode.dart';
