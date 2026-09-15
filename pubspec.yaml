@@ -68,6 +68,7 @@ dependencies:
   flutter_widget_from_html: ^0.16.1
   uuid: ^4.4.0
   qr_flutter: ^4.1.0
+  mobile_scanner: ^7.4.2
   socks5_proxy: ^2.1.1
   webview_flutter: ^4.13.0
   # Pin the endorsed iOS implementation explicitly. 3.23.0 fails to compile

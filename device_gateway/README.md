@@ -119,6 +119,19 @@ DELETE /api/v1/user/devices/{device_record_id}
 
 Use the gateway session token in `Authorization`.
 
+## QR device login
+
+PC and TV clients create a short-lived login challenge, render `qr_data`, and
+poll it with the returned `poll_token`. A signed-in phone scans the QR code and
+confirms the device before the gateway creates a separate device session. The
+QR contains no account or session token and expires after two minutes.
+
+```text
+POST /api/v1/auth/qr/sessions              target creates a challenge
+GET  /api/v1/auth/qr/sessions/{id}         target polls with ?poll_token=
+POST /api/v1/auth/qr/sessions/{id}         signed-in phone approves it
+```
+
 ## Admin APIs
 
 Admin requests require either:

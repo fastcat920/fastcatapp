@@ -25,6 +25,7 @@ import 'package:fl_clash/xboard/features/docs/pages/docs_page.dart';
 import 'package:fl_clash/xboard/features/payment/pages/recharge_page.dart';
 import 'package:fl_clash/xboard/features/update_check/providers/update_check_provider.dart';
 import 'package:fl_clash/xboard/features/about/pages/fastcat_about_page.dart';
+import 'package:fl_clash/xboard/features/auth/pages/qr_login_scanner_page.dart';
 
 class MinePage extends ConsumerStatefulWidget {
   const MinePage({super.key});
@@ -255,6 +256,14 @@ class _MinePageState extends ConsumerState<MinePage>
         title: Text(appLocalizations.userCenter),
         automaticallyImplyLeading: false,
         actions: [
+          if (!isDesktop)
+            IconButton(
+              tooltip: '扫一扫登录设备',
+              icon: const Icon(Icons.qr_code_scanner),
+              onPressed: () => Navigator.of(context).push(
+                MaterialPageRoute(builder: (_) => const QrLoginScannerPage()),
+              ),
+            ),
           if (!isDesktop)
             Padding(
               padding: const EdgeInsets.only(right: 16),

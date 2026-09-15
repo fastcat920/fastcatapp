@@ -748,6 +748,36 @@ class XBoardUserAuthNotifier extends Notifier<UserAuthState> {
     }
   }
 
+  /// Completes a PC/TV QR authorization.  The gateway issued this token for
+  /// this device only after the already signed-in phone confirmed it.
+  Future<bool> loginWithQrToken(String token, {String? email}) async {
+    final generation = _nextAuthGeneration();
+    state = state.copyWith(isLoading: true, errorMessage: null);
+    try {
+      _clearSessionScopedProvidersForLogin();
+      await XBoardSDK.instance.saveToken(token);
+      state = state.copyWith(
+        isAuthenticated: true,
+        isInitialized: true,
+        isLoading: false,
+        email: email?.isNotEmpty == true ? email : state.email,
+      );
+      // This uses the new device token to load user data and subscribe URL,
+      // including the normal background profile import path.
+      await ensureUserSnapshotLoaded();
+      if (!_isAuthGenerationActive(generation)) return false;
+      return true;
+    } catch (e) {
+      _logger.warning('扫码登录完成失败: $e');
+      await XBoardSDK.instance.clearToken();
+      state = state.copyWith(
+          isLoading: false,
+          isAuthenticated: false,
+          errorMessage: '[NETWORK_ERROR]');
+      return false;
+    }
+  }
+
   Future<void> _refreshSdkForLogin() async {
     try {
       _logger.info('登录前刷新 SDK，确保使用最新远程 API 地址');
