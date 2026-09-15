@@ -126,7 +126,9 @@ class ApplicationState extends ConsumerState<Application>
         // 未初始化时留在登录页（Widget 层的加载遮罩盖在上方，用户不会看到登录页）
         if (!isInitialized) return '/login';
         if (!isAuthenticated && !isLoginPage) return '/login';
-        if (isAuthenticated && isLoginPage) return '/';
+        // 登录后的用户、订阅和节点初始化完成前继续停留在登录页。
+        // 账号密码和扫码登录共用该状态，避免先进入首页再闪现空节点/DIRECT。
+        if (isAuthenticated && !userState.isLoading && isLoginPage) return '/';
         return null;
       },
     );

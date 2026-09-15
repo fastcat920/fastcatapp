@@ -25,7 +25,8 @@ import 'package:fl_clash/xboard/utils/backend_message_mapper.dart';
 import 'package:fl_clash/xboard/features/connectivity/connectivity.dart';
 import 'package:fl_clash/security/profile_vault.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:fl_clash/models/profile.dart';
+import 'package:fl_clash/models/models.dart';
+import 'package:fl_clash/enum/enum.dart';
 
 // 初始化文件级日志器
 const _logger = FileLogger('xboard_user_provider.dart');
@@ -536,7 +537,6 @@ class XBoardUserAuthNotifier extends Notifier<UserAuthState> {
 
   Future<bool> login(String email, String password) async {
     final generation = _nextAuthGeneration();
-    String? subscriptionUrlForImport;
     state = state.copyWith(isLoading: true, errorMessage: null);
     try {
       // 切号前先清内存态，避免旧账号套餐/用户信息短暂闪现
@@ -580,98 +580,11 @@ class XBoardUserAuthNotifier extends Notifier<UserAuthState> {
         return false;
       }
 
-      _logger.info('登录成功，立即获取用户信息');
-      await _storageService.saveUserEmail(email);
-      if (!_isAuthGenerationActive(generation)) {
-        _logger.info('登录流程中止：认证会话已变化');
-        return false;
-      }
-      state = state.copyWith(
-        isAuthenticated: true,
-        isInitialized: true,
+      _logger.info('登录成功，开始统一登录后初始化');
+      return await _initializeAuthenticatedSession(
+        generation: generation,
         email: email,
-        isLoading: false,
       );
-
-      // 获取用户信息。用户信息失败不能影响订阅信息加载，否则连接前
-      // 会因为 subscriptionInfoProvider 为空而误判为“无可用套餐”。
-      try {
-        _logger.info('开始获取用户信息...');
-        final userModel = await ref.read(getUserInfoProvider.future);
-        if (!_isAuthGenerationActive(generation)) {
-          _logger.info('登录流程中止：认证会话已变化');
-          return false;
-        }
-        final userInfo = _mapUser(userModel);
-
-        _logger.info('用户信息API调用完成');
-        ref.read(userInfoProvider.notifier).state = userInfo;
-        state = state.copyWith(userInfo: userInfo);
-        await _storageService.saveDomainUser(userInfo);
-        _logger.info('用户信息已保存: ${SensitiveMasker.maskText(userInfo.email)}');
-      } catch (e, stackTrace) {
-        _logger.info('获取用户信息失败: $e');
-        _logger.info('错误堆栈: $stackTrace');
-      }
-
-      // 单独获取订阅信息。只要登录 token 有效，/user/getSubscribe 成功即可
-      // 让首页连接按钮正确识别当前套餐。
-      try {
-        _logger.info('开始获取订阅信息...');
-        final subscriptionModel =
-            await ref.read(getSubscriptionProvider.future);
-        if (!_isAuthGenerationActive(generation)) {
-          _logger.info('登录流程中止：认证会话已变化');
-          return false;
-        }
-        final subscriptionInfo =
-            _mergeSubscriptionWithCache(_mapSubscription(subscriptionModel));
-
-        _logger.info('订阅信息API调用完成');
-        ref.read(subscriptionInfoProvider.notifier).state = subscriptionInfo;
-        state = state.copyWith(subscriptionInfo: subscriptionInfo);
-        await _storageService.saveDomainSubscription(subscriptionInfo);
-        _logger.info(
-            '订阅信息已保存，subscribeUrl: ${SensitiveMasker.maskUrl(subscriptionInfo.subscribeUrl)}');
-
-        // 登录成功后在后台自动导入订阅配置，不阻塞登录页跳转。
-        // 不做域名重写：subscribeUrl 是后端返回的权威地址，
-        // _rewriteSubscriptionDomain 可能替换为面板域名导致订阅端点 404/403。
-        // 手动刷新（node_selector_bar）也直接用原始 URL，保持一致。
-        if (subscriptionInfo.subscribeUrl.isNotEmpty) {
-          subscriptionUrlForImport = subscriptionInfo.subscribeUrl;
-        } else {
-          _logger.info('[登录成功] 订阅URL为空，跳过配置导入');
-        }
-      } catch (e, stackTrace) {
-        _logger.info('获取订阅信息失败: $e');
-        _logger.info('错误堆栈: $stackTrace');
-        // 登录 API 已成功返回 token，token 是有效的。
-        // getSubscription 失败可能是瞬态原因，不应该否定已成功的登录。
-        // 继续登录流程，用户进入首页后可手动刷新。
-      }
-
-      _logger.info('准备更新状态...');
-      if (!_isAuthGenerationActive(generation)) {
-        _logger.info('状态更新取消：认证会话已变化');
-        return false;
-      }
-      final newState = state.copyWith(
-        isAuthenticated: true,
-        isInitialized: true,
-        email: email,
-        isLoading: false,
-      );
-      state = newState;
-      _logger.info('===== 认证状态已更新! =====');
-      _logger.info('isAuthenticated: ${state.isAuthenticated}');
-      _logger.info('isInitialized: ${state.isInitialized}');
-      _logger.info('email: ${SensitiveMasker.maskText(state.email)}');
-      _logger.info('===========================');
-
-      _startPostLoginSubscriptionImport(subscriptionUrlForImport, generation);
-
-      return true;
     } catch (e) {
       _logger.info('登录出错: $e (${e.runtimeType})');
 
@@ -759,14 +672,13 @@ class XBoardUserAuthNotifier extends Notifier<UserAuthState> {
       state = state.copyWith(
         isAuthenticated: true,
         isInitialized: true,
-        isLoading: false,
+        isLoading: true,
         email: email?.isNotEmpty == true ? email : state.email,
       );
-      // This uses the new device token to load user data and subscribe URL,
-      // including the normal background profile import path.
-      await ensureUserSnapshotLoaded();
-      if (!_isAuthGenerationActive(generation)) return false;
-      return true;
+      return await _initializeAuthenticatedSession(
+        generation: generation,
+        email: email,
+      );
     } catch (e) {
       _logger.warning('扫码登录完成失败: $e');
       await XBoardSDK.instance.clearToken();
@@ -803,6 +715,111 @@ class XBoardUserAuthNotifier extends Notifier<UserAuthState> {
     ref.invalidate(getSubscriptionProvider);
     ref.invalidate(getPlansProvider);
     ref.invalidate(getOrdersProvider);
+    ref.read(groupsProvider.notifier).value = [];
+    ref.read(delayDataSourceProvider.notifier).value = {};
+    ref.read(currentProfileIdProvider.notifier).value = null;
+    ref.read(profileImportProvider.notifier).clearState();
+    _automaticSubscriptionImportKey = null;
+    state = state.copyWith(
+      userInfo: null,
+      subscriptionInfo: null,
+      email: null,
+    );
+  }
+
+  Future<bool> _initializeAuthenticatedSession({
+    required int generation,
+    String? email,
+  }) async {
+    DomainUser? userInfo;
+    DomainSubscription? subscriptionInfo;
+
+    try {
+      clearGetUserInfoCache();
+      ref.invalidate(getUserInfoProvider);
+      final model = await ref.read(getUserInfoProvider.future);
+      if (!_isAuthGenerationActive(generation)) return false;
+      userInfo = _mapUser(model);
+      ref.read(userInfoProvider.notifier).state = userInfo;
+      await _storageService.saveDomainUser(userInfo);
+      await _storageService.saveUserEmail(userInfo.email);
+    } catch (error) {
+      _logger.warning('[登录后初始化] 获取用户信息失败，继续加载订阅: $error');
+    }
+
+    try {
+      clearGetSubscriptionCache();
+      ref.invalidate(getSubscriptionProvider);
+      final model = await ref.read(getSubscriptionProvider.future);
+      if (!_isAuthGenerationActive(generation)) return false;
+      subscriptionInfo = _mergeSubscriptionWithCache(_mapSubscription(model));
+      ref.read(subscriptionInfoProvider.notifier).state = subscriptionInfo;
+      await _storageService.saveDomainSubscription(subscriptionInfo);
+    } catch (error) {
+      _logger.warning('[登录后初始化] 获取订阅信息失败: $error');
+    }
+
+    if (!_isAuthGenerationActive(generation)) return false;
+    state = state.copyWith(
+      isAuthenticated: true,
+      isInitialized: true,
+      isLoading: true,
+      email: userInfo?.email.isNotEmpty == true ? userInfo!.email : email,
+      userInfo: userInfo,
+      subscriptionInfo: subscriptionInfo,
+    );
+
+    final url = subscriptionInfo?.subscribeUrl ?? '';
+    if (url.isEmpty) {
+      _logger.warning('[登录后初始化] 订阅地址为空，无法加载节点');
+      state = state.copyWith(isLoading: false);
+      return true;
+    }
+
+    if (!await _waitForCoreReady(generation)) {
+      _logger.warning('[登录后初始化] 内核等待超时，仍尝试导入本地可解析配置');
+    }
+
+    const delays = <Duration>[
+      Duration.zero,
+      Duration(seconds: 1),
+      Duration(seconds: 2),
+    ];
+    var imported = false;
+    for (var attempt = 0; attempt < delays.length; attempt++) {
+      if (!_isAuthGenerationActive(generation)) return false;
+      if (delays[attempt] != Duration.zero) {
+        await Future<void>.delayed(delays[attempt]);
+      }
+      _logger.info('[登录后初始化] 导入订阅 ${attempt + 1}/${delays.length}');
+      imported = await ref
+          .read(profileImportProvider.notifier)
+          .importSubscription(url);
+      if (imported && _hasUsableNodes(ref.read(groupsProvider))) break;
+      if (imported) {
+        try {
+          await globalState.appController.updateGroups();
+        } catch (error) {
+          _logger.warning('[登录后初始化] 刷新节点组失败: $error');
+        }
+        if (_hasUsableNodes(ref.read(groupsProvider))) break;
+      }
+      imported = false;
+    }
+
+    if (!imported) {
+      _logger.warning('[登录后初始化] 节点加载失败，首页可手动重试');
+    }
+    if (_isAuthGenerationActive(generation)) {
+      state = state.copyWith(isLoading: false);
+    }
+    return true;
+  }
+
+  bool _hasUsableNodes(List<Group> groups) {
+    return groups.any((group) => group.all.any((proxy) =>
+        proxy.name != UsedProxy.DIRECT.name &&
+        proxy.name != UsedProxy.REJECT.name));
   }
 
   void _startPostLoginSubscriptionImport(String? url, int generation) {

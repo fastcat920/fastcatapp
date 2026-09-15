@@ -212,6 +212,14 @@ class _NodeSelectorBarState extends ConsumerState<NodeSelectorBar> {
     if (currentGroup == null || currentGroup.all.isEmpty) {
       return _buildEmptyState(context);
     }
+    final usableProxies = currentGroup.all
+        .where((proxy) =>
+            proxy.name != UsedProxy.DIRECT.name &&
+            proxy.name != UsedProxy.REJECT.name)
+        .toList();
+    if (usableProxies.isEmpty) {
+      return _buildEmptyState(context);
+    }
     final selectedProxyName = selectedMap[currentGroup.name] ?? '';
     String realNodeName;
     // 是否选中了 URLTest 组（自动选择）：显示组名，但延迟用实际节点
@@ -408,6 +416,9 @@ class _NodeSelectorBarState extends ConsumerState<NodeSelectorBar> {
   Widget _buildEmptyState(BuildContext context) {
     final importState = ref.watch(profileImportProvider);
     final isReloading = importState.isImporting || _isReloadingNodes;
+    final failedMessage = importState.lastResult?.isSuccess == false
+        ? (importState.lastResult?.errorMessage ?? '节点加载失败')
+        : null;
     return Container(
       decoration: BoxDecoration(
         color: XbUiCardStyle.background(context),
@@ -437,7 +448,10 @@ class _NodeSelectorBarState extends ConsumerState<NodeSelectorBar> {
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 Text(
-                  AppLocalizations.of(context).xboardNoAvailableNodes,
+                  failedMessage ??
+                      AppLocalizations.of(context).xboardNoAvailableNodes,
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
                   style: Theme.of(context).textTheme.titleSmall?.copyWith(
                         fontWeight: XbFontWeight.semibold,
                         color: Theme.of(context).colorScheme.onSurface,

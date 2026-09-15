@@ -3,7 +3,6 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:fl_clash/common/common.dart';
-import 'package:flutter/foundation.dart';
 import 'package:path/path.dart';
 import 'package:path_provider/path_provider.dart';
 
@@ -32,15 +31,9 @@ class AppPath {
     return _instance!;
   }
 
-  /// macOS Debug 与正式版必须隔离运行时目录。虽然 Xcode 为 Debug
-  /// 使用了不同 Bundle ID，但原先这里固定使用 FastCat 目录，导致两者
-  /// 争用同一配置、核心端口和单实例锁。
-  bool get _isMacOSDebugBuild => Platform.isMacOS && kDebugMode;
-
-  bool get isIsolatedDebugEnvironment => _isMacOSDebugBuild;
-
-  String get _desktopDataDirectoryName =>
-      _isMacOSDebugBuild ? '$appNameEn Debug' : appNameEn;
+  // Debug 与正式版共用运行目录、端口和单实例锁。macOS 同一时间只允许
+  // 一个 FastCat 实例接管系统代理，避免诊断命中一个实例而流量走另一个。
+  String get _desktopDataDirectoryName => appNameEn;
 
   String get executableExtension {
     return Platform.isWindows ? ".exe" : "";
@@ -83,45 +76,6 @@ class AppPath {
   Future<String> get profilesPath async {
     final directory = await dataDir.future;
     return join(directory.path, profilesDirectoryName);
-  }
-
-  Future<Map<String, dynamic>?> loadMacOSDebugSeedConfig() async {
-    if (!_isMacOSDebugBuild) return null;
-    try {
-      final home = Platform.environment['HOME'] ?? Directory.current.path;
-      final source = File(join(
-        home,
-        'Library',
-        'Application Support',
-        appNameEn,
-        'shared_preferences.json',
-      ));
-      if (!await source.exists()) return null;
-      final preferences = json.decode(await source.readAsString());
-      if (preferences is! Map) return null;
-      final rawConfig = preferences['flutter.$configKey'];
-      if (rawConfig is! String) return null;
-      final config = json.decode(rawConfig);
-      return config is Map<String, dynamic>
-          ? config
-          : Map<String, dynamic>.from(config as Map);
-    } catch (_) {
-      return null;
-    }
-  }
-
-  Future<void> copyMacOSDebugProfilesFromProduction() async {
-    if (!_isMacOSDebugBuild) return;
-    final home = Platform.environment['HOME'] ?? Directory.current.path;
-    final source = Directory(join(
-      home,
-      'Library',
-      'Application Support',
-      appNameEn,
-      profilesDirectoryName,
-    ));
-    if (!await source.exists()) return;
-    await _copyDirectoryIfMissing(source, Directory(await profilesPath));
   }
 
   Future<String> getProfilePath(String id) async {
@@ -208,17 +162,13 @@ class AppPath {
       return directory;
     }
     await directory.create(recursive: true);
-    if (!_isMacOSDebugBuild) {
-      await _migrateLegacyDesktopData(directory);
-    }
+    await _migrateLegacyDesktopData(directory);
     return directory;
   }
 
   Future<Directory> _canonicalBrandedDesktopDataDirectory() async {
     final directory = Directory(_brandedDesktopDataPath());
-    if (!_isMacOSDebugBuild) {
-      await _normalizeDesktopBrandDirectoryName(directory);
-    }
+    await _normalizeDesktopBrandDirectoryName(directory);
     return directory;
   }
 
