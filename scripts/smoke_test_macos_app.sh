@@ -22,13 +22,20 @@ diagnostic_log="$smoke_home/Library/Application Support/FastCat/boot_diag.log"
 process_log="${RUNNER_TEMP:-/tmp}/fastcat-macos-smoke.log"
 rm -f "$diagnostic_log" "$process_log"
 
+open_args=(
+  -n
+  -W
+  --env "HOME=$smoke_home"
+  --stdout "$process_log"
+  --stderr "$process_log"
+)
 if [[ -n "$smoke_arch" ]]; then
-  HOME="$smoke_home" arch "-$smoke_arch" "$executable" >"$process_log" 2>&1 &
-else
-  HOME="$smoke_home" "$executable" >"$process_log" 2>&1 &
+  open_args+=(--arch "$smoke_arch")
 fi
+open "${open_args[@]}" "$app_path" &
 app_pid=$!
 cleanup() {
+  pkill -f "$executable" 2>/dev/null || true
   kill "$app_pid" 2>/dev/null || true
   wait "$app_pid" 2>/dev/null || true
   rm -rf "$smoke_home"
