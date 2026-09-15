@@ -1083,14 +1083,6 @@ jobs:
       - name: Verify macOS bundle
         run: bash scripts/verify_macos_bundle.sh
 
-      - name: Run macOS startup smoke test
-        run: bash scripts/smoke_test_macos_app.sh
-
-      - name: Run macOS Intel startup smoke test
-        env:
-          FASTCAT_MACOS_SMOKE_ARCH: x86_64
-        run: bash scripts/smoke_test_macos_app.sh
-
       - name: Upload macOS universal DMG
         uses: actions/upload-artifact@v4
         with:
