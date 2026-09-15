@@ -78,6 +78,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
   late final FocusNode _forgotPasswordFocusNode;
   late final FocusNode _loginMethodFocusNode;
   late final FocusNode _refreshQrFocusNode;
+  final _loginScrollController = ScrollController();
   bool _rememberPassword = true;
   bool _isPasswordVisible = false;
   bool _isCheckingWebsite = false;
@@ -134,7 +135,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       CustomerServiceHelper.prewarm();
       if (system.isTV && _loginMethodFocusNode.canRequestFocus) {
-        _loginMethodFocusNode.requestFocus();
+        _requestTvFocus(_loginMethodFocusNode);
       }
     });
   }
@@ -151,7 +152,21 @@ class _LoginPageState extends ConsumerState<LoginPage> {
     _forgotPasswordFocusNode.dispose();
     _loginMethodFocusNode.dispose();
     _refreshQrFocusNode.dispose();
+    _loginScrollController.dispose();
     super.dispose();
+  }
+
+  void _requestTvFocus(FocusNode node) {
+    node.requestFocus();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted || !node.hasFocus || node.context == null) return;
+      Scrollable.ensureVisible(
+        node.context!,
+        alignment: 0.35,
+        duration: const Duration(milliseconds: 180),
+        curve: Curves.easeOut,
+      );
+    });
   }
 
   KeyEventResult _moveTvFocus(
@@ -174,7 +189,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
     if (target == null || !target.canRequestFocus) {
       return KeyEventResult.ignored;
     }
-    target.requestFocus();
+    _requestTvFocus(target);
     return KeyEventResult.handled;
   }
 
@@ -188,7 +203,9 @@ class _LoginPageState extends ConsumerState<LoginPage> {
         _setLoginMethod(false);
         return KeyEventResult.handled;
       case LogicalKeyboardKey.arrowDown:
-        (_showQrLogin ? _refreshQrFocusNode : _emailFocusNode).requestFocus();
+        _requestTvFocus(
+          _showQrLogin ? _refreshQrFocusNode : _emailFocusNode,
+        );
         return KeyEventResult.handled;
       default:
         return KeyEventResult.ignored;
@@ -200,7 +217,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
     setState(() => _showQrLogin = showQr);
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted || !system.isTV) return;
-      _loginMethodFocusNode.requestFocus();
+      _requestTvFocus(_loginMethodFocusNode);
     });
   }
 
@@ -504,7 +521,8 @@ class _LoginPageState extends ConsumerState<LoginPage> {
           children: [
             Expanded(
               child: Center(
-                child: SingleChildScrollView(
+                  child: SingleChildScrollView(
+                  controller: _loginScrollController,
                   keyboardDismissBehavior:
                       ScrollViewKeyboardDismissBehavior.onDrag,
                   padding: const EdgeInsets.symmetric(
@@ -570,7 +588,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                             if (_showQrLogin)
                               _QrLoginCard(
                                 enabled: !isIniting && !userState.isLoading,
-                                refreshFocusNode: _refreshQrFocusNode,
+                              refreshFocusNode: _refreshQrFocusNode,
                                 onAuthorized: (result) => ref
                                     .read(xboardUserProvider.notifier)
                                     .loginWithQrToken(result.token,
