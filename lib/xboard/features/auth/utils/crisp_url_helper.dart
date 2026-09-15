@@ -1,5 +1,50 @@
+import 'dart:io';
+
 const crispOfficialBaseUrl = 'https://go.crisp.chat';
 const crispProxyFallbackDelay = Duration(seconds: 5);
+
+/// Support must never be routed through the user's selected proxy node.
+/// These entries are consumed by both Mihomo rules and OS proxy bypass lists.
+List<String> customerServiceDirectBypassDomains(String? proxyUrl) {
+  final domains = <String>{'crisp.chat', '*.crisp.chat'};
+  final proxy = normalizeCrispProxyUrl(proxyUrl);
+  final host = proxy.isEmpty ? '' : Uri.parse(proxy).host;
+  if (host.isNotEmpty) domains.add(host);
+  return domains.toList(growable: false);
+}
+
+List<String> customerServiceDirectRules(String? proxyUrl) {
+  final rules = <String>['DOMAIN-SUFFIX,crisp.chat,DIRECT'];
+  final proxy = normalizeCrispProxyUrl(proxyUrl);
+  final host = proxy.isEmpty ? '' : Uri.parse(proxy).host;
+  if (host.isNotEmpty &&
+      !host.endsWith('.crisp.chat') &&
+      host != 'crisp.chat') {
+    final address = InternetAddress.tryParse(host);
+    if (address == null) {
+      rules.add('DOMAIN,$host,DIRECT');
+    } else if (address.type == InternetAddressType.IPv4) {
+      rules.add('IP-CIDR,$host/32,DIRECT,no-resolve');
+    } else {
+      rules.add('IP-CIDR6,$host/128,DIRECT,no-resolve');
+    }
+  }
+  return rules;
+}
+
+List<String> mergeCustomerServiceBypassDomains(
+  Iterable<String> configured,
+  String? proxyUrl,
+) {
+  final result = <String>[];
+  for (final domain in [
+    ...configured,
+    ...customerServiceDirectBypassDomains(proxyUrl)
+  ]) {
+    if (!result.contains(domain)) result.add(domain);
+  }
+  return result;
+}
 
 String normalizeCrispProxyUrl(String? value) {
   final trimmed = value?.trim() ?? '';

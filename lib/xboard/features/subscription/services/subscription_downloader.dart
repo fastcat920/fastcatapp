@@ -7,6 +7,7 @@ import 'package:fl_clash/common/sensitive_masker.dart';
 import 'package:fl_clash/xboard/infrastructure/http/user_agent_config.dart';
 import 'package:fl_clash/xboard/features/subscription/utils/subscription_url_helper.dart';
 import 'package:fl_clash/xboard/security/fastcat_subscription_decoder.dart';
+import 'package:fl_clash/security/profile_vault.dart';
 import 'package:socks5_proxy/socks_client.dart';
 
 // 初始化文件级日志器
@@ -94,8 +95,7 @@ class SubscriptionDownloader {
       }
 
       final profile = Profile.normal(url: url);
-      final profileFile = await profile.getFile();
-      await profileFile.writeAsString(decodedContent);
+      await ProfileVault.instance.writeText(profile.id, decodedContent);
       final savedProfile = profile.copyWith(lastUpdateDate: DateTime.now());
       _logger.info('✅ 配置文件写入完成，总耗时 ${sw.elapsedMilliseconds}ms');
 

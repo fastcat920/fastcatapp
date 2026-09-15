@@ -6,7 +6,6 @@
     <key>com.apple.developer.networking.networkextension</key>
     <array>
         <string>packet-tunnel-provider</string>
-        <string>app-proxy-provider</string>
     </array>
     <!-- App Group: shared container between Runner and PacketTunnel -->
     <key>com.apple.security.application-groups</key>

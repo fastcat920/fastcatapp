@@ -23,12 +23,13 @@ const _logger = FileLogger('payment_webview_page.dart');
 Webview? _desktopPaymentWebview;
 Brightness? _desktopPaymentBrightness;
 
-/// Unified in-app payment page for all platforms.
+/// Payment page for platforms that support an in-app payment WebView.
 ///
 /// Non-Linux platforms use an embedded WebView:
-/// - Android / iOS / macOS → webview_flutter (system WebView / WKWebView)
+/// - Android / macOS → webview_flutter (system WebView / WKWebView)
 /// - Windows → webview_flutter via webview_win_floating
 /// - Linux → desktop_webview_window 独立窗口
+/// - iOS → the system browser, so no payment page is created
 ///
 /// Auto-polling runs on every platform as a reliable fallback.
 ///
@@ -43,19 +44,48 @@ class PaymentWebViewPage extends ConsumerStatefulWidget {
     required this.tradeNo,
   });
 
-  /// Opens the unified in-app payment page.
-  /// Returns `true` if the payment completed successfully.
+  /// Opens the payment flow.
+  ///
+  /// iOS always leaves the app for the system browser. The caller continues
+  /// polling the order after this returns `null`, which also covers the user
+  /// returning to the app before the payment provider has completed.
+  /// Returns `true` if an in-app payment page observes a completed payment.
   static Future<bool?> open(
     BuildContext context, {
     required String paymentUrl,
     required String tradeNo,
-  }) {
+  }) async {
+    if (Platform.isIOS) {
+      await _openIOSExternalBrowser(paymentUrl);
+      return null;
+    }
+
     return Navigator.of(context).push<bool>(
       MaterialPageRoute(
         builder: (_) =>
             PaymentWebViewPage(paymentUrl: paymentUrl, tradeNo: tradeNo),
       ),
     );
+  }
+
+  /// Apple storefront builds must not render a third-party checkout in a
+  /// WKWebView. Only HTTPS checkout URLs are allowed here: custom payment-app
+  /// schemes remain unavailable on iOS after the browser handoff.
+  static Future<void> _openIOSExternalBrowser(String paymentUrl) async {
+    final uri = Uri.tryParse(paymentUrl);
+    if (uri == null || !uri.hasAuthority || uri.scheme != 'https') {
+      throw ArgumentError.value(
+        paymentUrl,
+        'paymentUrl',
+        'iOS external payments require an HTTPS checkout URL.',
+      );
+    }
+
+    final launched = await launchUrl(uri, mode: LaunchMode.externalApplication);
+    if (!launched) {
+      throw StateError(
+          'Unable to open the payment page in the system browser.');
+    }
   }
 
   static void syncDesktopTheme(Brightness brightness) {

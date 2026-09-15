@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:fl_clash/xboard/utils/xboard_notification.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:fl_clash/xboard/features/shared/shared.dart';
+import 'package:fl_clash/xboard/features/shared/widgets/legal_footer.dart';
 import 'package:fl_clash/xboard/services/services.dart';
 import 'package:fl_clash/xboard/utils/backend_message_mapper.dart';
 import 'package:go_router/go_router.dart';
@@ -26,6 +27,7 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
   bool _isPasswordVisible = false;
   bool _isConfirmPasswordVisible = false;
   bool _isSendingEmailCode = false;
+  bool _hasAcceptedLegalTerms = false;
 
   @override
   void dispose() {
@@ -38,6 +40,16 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
   }
 
   Future<void> _register() async {
+    if (!_hasAcceptedLegalTerms) {
+      final chinese = Localizations.localeOf(context).languageCode == 'zh';
+      XBoardNotification.showError(
+        chinese
+            ? '请先阅读并同意隐私政策和服务条款'
+            : 'Please read and agree to the Privacy Policy and Terms of Service.',
+      );
+      return;
+    }
+
     // 获取配置
     final configAsync = ref.read(configProvider);
     final config = configAsync.value;
@@ -207,6 +219,7 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
   Widget _buildPage(
       BuildContext context, ColorScheme colorScheme, ConfigModel? config) {
     return Scaffold(
+      resizeToAvoidBottomInset: true,
       backgroundColor: colorScheme.brightness == Brightness.dark
           ? colorScheme.surface
           : const Color(0xFFFAFBFD),
@@ -237,6 +250,8 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
             ),
             Expanded(
               child: SingleChildScrollView(
+                keyboardDismissBehavior:
+                    ScrollViewKeyboardDismissBehavior.onDrag,
                 padding: const EdgeInsets.symmetric(horizontal: 24.0),
                 child: ConstrainedBox(
                   constraints: const BoxConstraints(maxWidth: 400),
@@ -381,7 +396,14 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
                           prefixIcon: Icons.card_giftcard_outlined,
                           enabled: true,
                         ),
-                        const SizedBox(height: 24),
+                        const SizedBox(height: 16),
+                        FastCatLegalAgreement(
+                          value: _hasAcceptedLegalTerms,
+                          onChanged: (value) {
+                            setState(() => _hasAcceptedLegalTerms = value);
+                          },
+                        ),
+                        const SizedBox(height: 16),
                         SizedBox(
                           width: double.infinity,
                           height: 48,
@@ -402,7 +424,8 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
                                   ),
                                 )
                               : FilledButton(
-                                  onPressed: _register,
+                                  onPressed:
+                                      _hasAcceptedLegalTerms ? _register : null,
                                   style: FilledButton.styleFrom(
                                     backgroundColor: colorScheme.primary,
                                     foregroundColor: colorScheme.onPrimary,

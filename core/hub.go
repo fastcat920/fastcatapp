@@ -268,7 +268,14 @@ func handleDiagnoseProxy(paramsString string) string {
 
 	dnsStarted := time.Now()
 	dnsCtx, dnsCancel := context.WithTimeout(context.Background(), timeout)
-	ips, dnsErr := resolver.LookupIP(dnsCtx, host)
+	// Diagnose the endpoint with the same resolver that real proxy dialing
+	// uses. The default resolver can be a fake-IP resolver and report a false
+	// DNS failure even while the selected node is carrying traffic normally.
+	ips, dnsErr := resolver.LookupIPWithResolver(
+		dnsCtx,
+		host,
+		resolver.ProxyServerHostResolver,
+	)
 	dnsCancel()
 	result.DNSElapsedMs = time.Since(dnsStarted).Milliseconds()
 	if dnsErr != nil {
@@ -421,6 +428,20 @@ func handleResetConnections() bool {
 	runLock.Lock()
 	defer runLock.Unlock()
 	resolver.ResetConnection()
+	return true
+}
+
+// handleClearNetworkCaches removes resolver answers and fake-IP mappings left
+// behind by the previous physical network. It is intentionally safe when the
+// active profile does not use fake-IP mode: Mihomo simply has no fake-IP pool
+// to flush in that case.
+func handleClearNetworkCaches() bool {
+	runLock.Lock()
+	defer runLock.Unlock()
+	resolver.ClearCache()
+	if err := resolver.FlushFakeIP(); err != nil {
+		log.Warnln("[Network] flush fake-IP cache failed: %v", err)
+	}
 	return true
 }
 

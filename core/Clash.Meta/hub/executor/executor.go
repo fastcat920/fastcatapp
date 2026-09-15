@@ -102,8 +102,8 @@ func ApplyConfig(cfg *config.Config, force bool) {
 	updateSniffer(cfg.Sniffer)
 	updateHosts(cfg.Hosts)
 	updateGeneral(cfg.General, true)
-	updateNTP(cfg.NTP)
 	updateDNS(cfg.DNS, cfg.General.IPv6)
+	updateNTP(cfg.NTP) // initialize NTP after DNS because an NTP server may be a hostname.
 	updateListeners(cfg.General, cfg.Listeners, force)
 	updateTun(cfg.General) // tun should not care "force"
 	updateIPTables(cfg)
@@ -233,6 +233,10 @@ func updateNTP(c *config.NTP) {
 	} else {
 		ntp.ReCreateNTPService("", 0, "", nil, false)
 	}
+}
+
+func init() {
+	dialer.NodeCachePath = func() string { return C.Path.Resolve("node-address-cache.json") }
 }
 
 func updateDNS(c *config.DNS, generalIPv6 bool) {

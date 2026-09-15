@@ -30,7 +30,6 @@ fi
 echo "→ Building IPA for ${APP_NAME_EN} ${VERSION}..."
 mkdir -p dist
 
-/usr/libexec/PlistBuddy -c "Set :CFBundleDisplayName ${APP_NAME}" ios/Runner/Info.plist
 /usr/libexec/PlistBuddy -c "Set :CFBundleName ${APP_NAME_EN}" ios/Runner/Info.plist
 
 flutter build ipa --release --no-codesign \
@@ -40,7 +39,31 @@ flutter build ipa --release --no-codesign \
   --dart-define=FASTCAT_KEY_NEXT_ID="${FASTCAT_KEY_NEXT_ID}" \
   --dart-define=FASTCAT_KEY_NEXT="${FASTCAT_KEY_NEXT}" \
   --dart-define=FASTCAT_SUBSCRIPTION_FLAG="${FASTCAT_SUBSCRIPTION_FLAG}" \
-  --dart-define=FASTCAT_REQUIRE_ENCRYPTION="${FASTCAT_REQUIRE_ENCRYPTION}"
+  --dart-define=FASTCAT_REQUIRE_ENCRYPTION="${FASTCAT_REQUIRE_ENCRYPTION}" \
+  --dart-define=FASTCAT_PRIVACY_POLICY_URL="${FASTCAT_PRIVACY_POLICY_URL:-https://www.fastcat6.com/privacy}" \
+  --dart-define=FASTCAT_TERMS_OF_SERVICE_URL="${FASTCAT_TERMS_OF_SERVICE_URL:-https://www.fastcat6.com/terms}"
+
+APP_BUNDLE="build/ios/archive/Runner.xcarchive/Products/Applications/Runner.app"
+for LOCALE in en zh-Hans zh-Hant; do
+  STRINGS_FILE="${APP_BUNDLE}/${LOCALE}.lproj/InfoPlist.strings"
+  if [ ! -f "$STRINGS_FILE" ]; then
+    echo "Missing localized app name resource: $STRINGS_FILE"
+    exit 1
+  fi
+
+  EXPECTED_NAME="$APP_NAME_EN"
+  if [ "$LOCALE" != "en" ]; then
+    EXPECTED_NAME="$APP_NAME"
+  fi
+
+  DISPLAY_NAME=$(/usr/bin/plutil -extract CFBundleDisplayName raw "$STRINGS_FILE")
+  BUNDLE_NAME=$(/usr/bin/plutil -extract CFBundleName raw "$STRINGS_FILE")
+  if [ "$DISPLAY_NAME" != "$EXPECTED_NAME" ] || [ "$BUNDLE_NAME" != "$EXPECTED_NAME" ]; then
+    echo "Invalid localized app name in $STRINGS_FILE"
+    exit 1
+  fi
+done
+echo "✓ Verified localized iOS app names"
 
 echo "→ Packaging IPA from xcarchive..."
 cd build/ios

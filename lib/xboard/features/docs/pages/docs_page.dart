@@ -8,9 +8,11 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:markdown/markdown.dart' as md;
 import 'package:fl_clash/l10n/l10n.dart';
 import 'package:fl_clash/common/webview2_check.dart';
+import 'package:fl_clash/providers/providers.dart';
 import 'package:fl_clash/xboard/adapter/state/knowledge_state.dart';
 import 'package:fl_clash/xboard/config/gateway_config.dart';
 import 'package:fl_clash/xboard/config/xboard_config.dart';
+import 'package:fl_clash/xboard/core/core.dart';
 import 'package:fl_clash/xboard/features/shared/widgets/xb_error_state.dart';
 import 'package:fl_clash/xboard/features/shared/styles/html_styles.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -26,19 +28,6 @@ String _renderMarkdownBody(String content) {
     extensionSet: md.ExtensionSet.gitHubFlavored,
     encodeHtml: false,
   );
-}
-
-/// Build the language tag expected by the V2Board knowledge API.
-///
-/// The backend stores English docs as `en-US` while Flutter's English locale is
-/// just `en`, so this must not use [Locale.toLanguageTag] directly.
-String _localeToDocsLanguage(Locale locale) {
-  final lang = locale.languageCode;
-  final country = locale.countryCode;
-  if (lang == 'en') return 'en-US';
-  if (lang == 'zh') return 'zh-CN';
-  if (country != null && country.isNotEmpty) return '$lang-$country';
-  return lang;
 }
 
 /// 文档中心页面 — 数据由 knowledgeArticlesProvider 提供（keepAlive 缓存）
@@ -73,7 +62,12 @@ class _DocsPageState extends ConsumerState<DocsPage>
     final isDesktop =
         Platform.isLinux || Platform.isWindows || Platform.isMacOS;
     final theme = Theme.of(context);
-    final language = _localeToDocsLanguage(Localizations.localeOf(context));
+    // Keep the knowledge API language identical to the panel API language.
+    // The backend accepts only zh-CN and en-US and falls back to Chinese when
+    // English content is absent.
+    final language = xboardContentLocale(
+      ref.watch(appSettingProvider.select((setting) => setting.locale)),
+    );
 
     ref.listen<AsyncValue<List<KnowledgeArticle>>>(
         knowledgeArticlesProvider(language), (

@@ -267,6 +267,7 @@ enum ActionMethod {
   getConnections,
   closeConnections,
   resetConnections,
+  clearNetworkCaches,
   closeConnection,
   getExternalProviders,
   getExternalProvider,

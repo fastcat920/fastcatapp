@@ -90,12 +90,12 @@ BEGIN
         BLOCK "040904e4"
         BEGIN
             VALUE "CompanyName", "com.follow" "\0"
-            VALUE "FileDescription", "快猫" "\0"
+            VALUE "FileDescription", "FastCat" "\0"
             VALUE "FileVersion", VERSION_AS_STRING "\0"
             VALUE "InternalName", "FastCat" "\0"
             VALUE "LegalCopyright", "Copyright (C) 2023 com.follow. All rights reserved." "\0"
             VALUE "OriginalFilename", "FastCat.exe" "\0"
-            VALUE "ProductName", "快猫" "\0"
+            VALUE "ProductName", "FastCat" "\0"
             VALUE "ProductVersion", VERSION_AS_STRING "\0"
         END
     END

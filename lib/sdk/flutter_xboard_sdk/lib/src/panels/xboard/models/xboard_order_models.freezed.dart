@@ -34,6 +34,12 @@ mixin _$Order {
   double? get refundAmount => throw _privateConstructorUsedError;
   @JsonKey(name: 'deposit_amount')
   double? get depositAmount => throw _privateConstructorUsedError;
+  @JsonKey(name: 'bounus')
+  double? get depositBonusAmount => throw _privateConstructorUsedError;
+  @JsonKey(name: 'get_amount')
+  double? get depositCreditedAmount => throw _privateConstructorUsedError;
+  @JsonKey(name: 'deposit_source')
+  String? get depositSource => throw _privateConstructorUsedError;
   @JsonKey(name: 'commission_balance')
   double? get commissionBalance => throw _privateConstructorUsedError;
   @JsonKey(name: 'actual_commission_balance')
@@ -76,6 +82,9 @@ abstract class $OrderCopyWith<$Res> {
       @JsonKey(name: 'surplus_amount') double? surplusAmount,
       @JsonKey(name: 'refund_amount') double? refundAmount,
       @JsonKey(name: 'deposit_amount') double? depositAmount,
+      @JsonKey(name: 'bounus') double? depositBonusAmount,
+      @JsonKey(name: 'get_amount') double? depositCreditedAmount,
+      @JsonKey(name: 'deposit_source') String? depositSource,
       @JsonKey(name: 'commission_balance') double? commissionBalance,
       @JsonKey(name: 'actual_commission_balance')
       double? actualCommissionBalance,
@@ -116,6 +125,9 @@ class _$OrderCopyWithImpl<$Res, $Val extends Order>
     Object? surplusAmount = freezed,
     Object? refundAmount = freezed,
     Object? depositAmount = freezed,
+    Object? depositBonusAmount = freezed,
+    Object? depositCreditedAmount = freezed,
+    Object? depositSource = freezed,
     Object? commissionBalance = freezed,
     Object? actualCommissionBalance = freezed,
     Object? period = freezed,
@@ -155,6 +167,18 @@ class _$OrderCopyWithImpl<$Res, $Val extends Order>
           ? _value.depositAmount
           : depositAmount // ignore: cast_nullable_to_non_nullable
               as double?,
+      depositBonusAmount: freezed == depositBonusAmount
+          ? _value.depositBonusAmount
+          : depositBonusAmount // ignore: cast_nullable_to_non_nullable
+              as double?,
+      depositCreditedAmount: freezed == depositCreditedAmount
+          ? _value.depositCreditedAmount
+          : depositCreditedAmount // ignore: cast_nullable_to_non_nullable
+              as double?,
+      depositSource: freezed == depositSource
+          ? _value.depositSource
+          : depositSource // ignore: cast_nullable_to_non_nullable
+              as String?,
       commissionBalance: freezed == commissionBalance
           ? _value.commissionBalance
           : commissionBalance // ignore: cast_nullable_to_non_nullable
@@ -224,6 +248,9 @@ abstract class _$$OrderImplCopyWith<$Res> implements $OrderCopyWith<$Res> {
       @JsonKey(name: 'surplus_amount') double? surplusAmount,
       @JsonKey(name: 'refund_amount') double? refundAmount,
       @JsonKey(name: 'deposit_amount') double? depositAmount,
+      @JsonKey(name: 'bounus') double? depositBonusAmount,
+      @JsonKey(name: 'get_amount') double? depositCreditedAmount,
+      @JsonKey(name: 'deposit_source') String? depositSource,
       @JsonKey(name: 'commission_balance') double? commissionBalance,
       @JsonKey(name: 'actual_commission_balance')
       double? actualCommissionBalance,
@@ -263,6 +290,9 @@ class __$$OrderImplCopyWithImpl<$Res>
     Object? surplusAmount = freezed,
     Object? refundAmount = freezed,
     Object? depositAmount = freezed,
+    Object? depositBonusAmount = freezed,
+    Object? depositCreditedAmount = freezed,
+    Object? depositSource = freezed,
     Object? commissionBalance = freezed,
     Object? actualCommissionBalance = freezed,
     Object? period = freezed,
@@ -302,6 +332,18 @@ class __$$OrderImplCopyWithImpl<$Res>
           ? _value.depositAmount
           : depositAmount // ignore: cast_nullable_to_non_nullable
               as double?,
+      depositBonusAmount: freezed == depositBonusAmount
+          ? _value.depositBonusAmount
+          : depositBonusAmount // ignore: cast_nullable_to_non_nullable
+              as double?,
+      depositCreditedAmount: freezed == depositCreditedAmount
+          ? _value.depositCreditedAmount
+          : depositCreditedAmount // ignore: cast_nullable_to_non_nullable
+              as double?,
+      depositSource: freezed == depositSource
+          ? _value.depositSource
+          : depositSource // ignore: cast_nullable_to_non_nullable
+              as String?,
       commissionBalance: freezed == commissionBalance
           ? _value.commissionBalance
           : commissionBalance // ignore: cast_nullable_to_non_nullable
@@ -353,6 +395,9 @@ class _$OrderImpl implements _Order {
       @JsonKey(name: 'surplus_amount') this.surplusAmount,
       @JsonKey(name: 'refund_amount') this.refundAmount,
       @JsonKey(name: 'deposit_amount') this.depositAmount,
+      @JsonKey(name: 'bounus') this.depositBonusAmount,
+      @JsonKey(name: 'get_amount') this.depositCreditedAmount,
+      @JsonKey(name: 'deposit_source') this.depositSource,
       @JsonKey(name: 'commission_balance') this.commissionBalance,
       @JsonKey(name: 'actual_commission_balance') this.actualCommissionBalance,
       this.period,
@@ -392,6 +437,15 @@ class _$OrderImpl implements _Order {
   @JsonKey(name: 'deposit_amount')
   final double? depositAmount;
   @override
+  @JsonKey(name: 'bounus')
+  final double? depositBonusAmount;
+  @override
+  @JsonKey(name: 'get_amount')
+  final double? depositCreditedAmount;
+  @override
+  @JsonKey(name: 'deposit_source')
+  final String? depositSource;
+  @override
   @JsonKey(name: 'commission_balance')
   final double? commissionBalance;
   @override
@@ -422,7 +476,7 @@ class _$OrderImpl implements _Order {
 
   @override
   String toString() {
-    return 'Order(planId: $planId, tradeNo: $tradeNo, totalAmount: $totalAmount, balanceAmount: $balanceAmount, surplusAmount: $surplusAmount, refundAmount: $refundAmount, depositAmount: $depositAmount, commissionBalance: $commissionBalance, actualCommissionBalance: $actualCommissionBalance, period: $period, status: $status, createdAt: $createdAt, orderPlan: $orderPlan, couponPrice: $couponPrice, couponCode: $couponCode, discountAmount: $discountAmount)';
+    return 'Order(planId: $planId, tradeNo: $tradeNo, totalAmount: $totalAmount, balanceAmount: $balanceAmount, surplusAmount: $surplusAmount, refundAmount: $refundAmount, depositAmount: $depositAmount, depositBonusAmount: $depositBonusAmount, depositCreditedAmount: $depositCreditedAmount, depositSource: $depositSource, commissionBalance: $commissionBalance, actualCommissionBalance: $actualCommissionBalance, period: $period, status: $status, createdAt: $createdAt, orderPlan: $orderPlan, couponPrice: $couponPrice, couponCode: $couponCode, discountAmount: $discountAmount)';
   }
 
   @override
@@ -442,6 +496,12 @@ class _$OrderImpl implements _Order {
                 other.refundAmount == refundAmount) &&
             (identical(other.depositAmount, depositAmount) ||
                 other.depositAmount == depositAmount) &&
+            (identical(other.depositBonusAmount, depositBonusAmount) ||
+                other.depositBonusAmount == depositBonusAmount) &&
+            (identical(other.depositCreditedAmount, depositCreditedAmount) ||
+                other.depositCreditedAmount == depositCreditedAmount) &&
+            (identical(other.depositSource, depositSource) ||
+                other.depositSource == depositSource) &&
             (identical(other.commissionBalance, commissionBalance) ||
                 other.commissionBalance == commissionBalance) &&
             (identical(
@@ -463,24 +523,28 @@ class _$OrderImpl implements _Order {
 
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
-  int get hashCode => Object.hash(
-      runtimeType,
-      planId,
-      tradeNo,
-      totalAmount,
-      balanceAmount,
-      surplusAmount,
-      refundAmount,
-      depositAmount,
-      commissionBalance,
-      actualCommissionBalance,
-      period,
-      status,
-      createdAt,
-      orderPlan,
-      couponPrice,
-      couponCode,
-      discountAmount);
+  int get hashCode => Object.hashAll([
+        runtimeType,
+        planId,
+        tradeNo,
+        totalAmount,
+        balanceAmount,
+        surplusAmount,
+        refundAmount,
+        depositAmount,
+        depositBonusAmount,
+        depositCreditedAmount,
+        depositSource,
+        commissionBalance,
+        actualCommissionBalance,
+        period,
+        status,
+        createdAt,
+        orderPlan,
+        couponPrice,
+        couponCode,
+        discountAmount
+      ]);
 
   /// Create a copy of Order
   /// with the given fields replaced by the non-null parameter values.
@@ -507,6 +571,9 @@ abstract class _Order implements Order {
           @JsonKey(name: 'surplus_amount') final double? surplusAmount,
           @JsonKey(name: 'refund_amount') final double? refundAmount,
           @JsonKey(name: 'deposit_amount') final double? depositAmount,
+          @JsonKey(name: 'bounus') final double? depositBonusAmount,
+          @JsonKey(name: 'get_amount') final double? depositCreditedAmount,
+          @JsonKey(name: 'deposit_source') final String? depositSource,
           @JsonKey(name: 'commission_balance') final double? commissionBalance,
           @JsonKey(name: 'actual_commission_balance')
           final double? actualCommissionBalance,
@@ -546,6 +613,15 @@ abstract class _Order implements Order {
   @override
   @JsonKey(name: 'deposit_amount')
   double? get depositAmount;
+  @override
+  @JsonKey(name: 'bounus')
+  double? get depositBonusAmount;
+  @override
+  @JsonKey(name: 'get_amount')
+  double? get depositCreditedAmount;
+  @override
+  @JsonKey(name: 'deposit_source')
+  String? get depositSource;
   @override
   @JsonKey(name: 'commission_balance')
   double? get commissionBalance;

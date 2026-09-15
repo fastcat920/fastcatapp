@@ -362,6 +362,14 @@ class XBoardPaymentNotifier extends Notifier<void> {
         .copyWith(currentOrderTradeNo: tradeNo);
   }
 
+  void markOrderCompletedLocally(String tradeNo) {
+    ref.read(pendingOrdersProvider.notifier).state = ref
+        .read(pendingOrdersProvider)
+        .where((order) => order.tradeNo != tradeNo)
+        .toList(growable: false);
+    _pendingOrdersLoadedAt = DateTime.now();
+  }
+
   Future<String> _createOrderWithPendingCleanupRetry({
     required int planId,
     required String period,

@@ -1,9 +1,9 @@
 script_template: inno_setup.iss
 app_id: 9534642D-C46F-4EF0-8B3F-EF152ABEC560
-app_name: 快猫
+app_name: FastCat
 publisher: FastCat
 publisher_url: https://github.com/fastcat920/fastcatapp
-display_name: 快猫
+display_name: FastCat
 executable_name: FastCat.exe
 output_base_file_name: FastCat-Windows.exe
 setup_icon_file: ..\windows\runner\resources\app_icon.ico

@@ -17,6 +17,24 @@ required_binaries=(
   "$app_path/Contents/Frameworks/FlutterMacOS.framework/Versions/A/FlutterMacOS"
 )
 
+verify_macos_minimum_version() {
+  local binary="$1"
+  local minimum
+  minimum="$(otool -l "$binary" | awk '
+    /LC_BUILD_VERSION/ { found=1; next }
+    found && /minos / { print $2; exit }
+    /LC_VERSION_MIN_MACOSX/ { legacy=1; next }
+    legacy && /version / { print $2; exit }
+  ')"
+  case "$minimum" in
+    10.*|11.*) ;;
+    *)
+      echo "Unsupported macOS deployment target for $binary: ${minimum:-unknown} (expected 11.0 or lower)"
+      exit 1
+      ;;
+  esac
+}
+
 for binary in "${required_binaries[@]}"; do
   if [[ ! -f "$binary" ]]; then
     echo "Missing required binary: $binary"
@@ -26,6 +44,7 @@ for binary in "${required_binaries[@]}"; do
   echo "$binary: $architectures"
   [[ " $architectures " == *" arm64 "* ]] || { echo "Missing arm64 slice"; exit 1; }
   [[ " $architectures " == *" x86_64 "* ]] || { echo "Missing x86_64 slice"; exit 1; }
+  verify_macos_minimum_version "$binary"
 done
 
 mach_o_count=0
@@ -39,6 +58,7 @@ while IFS= read -r -d '' binary; do
     echo "Non-universal Mach-O binary: $binary ($architectures)"
     exit 1
   fi
+  verify_macos_minimum_version "$binary"
 done < <(find "$app_path/Contents" -type f -print0)
 
 if [[ "$mach_o_count" -eq 0 ]]; then

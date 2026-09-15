@@ -103,6 +103,26 @@ void main() {
     expect(result.severity, NetworkDiagnosticSeverity.warning);
   });
 
+  test('working proxy overrides failed direct and IP probes', () {
+    final result = evaluate(
+      networkDisconnected: true,
+      directOk: false,
+      directAllOk: false,
+      ipOk: false,
+      failureStage: 'dns',
+    );
+
+    expect(result.reason, NetworkDiagnosticReason.proxyWorking);
+    expect(result.severity, NetworkDiagnosticSeverity.warning);
+  });
+
+  test('working proxy overrides a contradictory node DNS failure', () {
+    final result = evaluate(failureStage: 'dns');
+
+    expect(result.reason, NetworkDiagnosticReason.healthy);
+    expect(result.severity, NetworkDiagnosticSeverity.healthy);
+  });
+
   test('stored node diagnostics do not retain plaintext endpoints', () {
     final source = <String, dynamic>{
       'host': 'node.fastcat.wang',

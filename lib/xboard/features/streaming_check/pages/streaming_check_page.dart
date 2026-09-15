@@ -6,6 +6,7 @@ import 'package:fl_clash/providers/providers.dart';
 import 'package:fl_clash/state.dart';
 import 'package:fl_clash/xboard/features/shared/styles/styles.dart';
 import 'package:fl_clash/xboard/features/streaming_check/models/streaming_test_result.dart';
+import 'package:fl_clash/xboard/features/streaming_check/models/streaming_platform_brand.dart';
 import 'package:fl_clash/xboard/features/streaming_check/services/streaming_check_service.dart';
 import 'package:fl_clash/xboard/utils/xboard_notification.dart';
 import 'package:flutter/material.dart';
@@ -250,22 +251,6 @@ class _StreamingCheckPageState extends ConsumerState<StreamingCheckPage> {
     };
   }
 
-  IconData _serviceIcon(String id) {
-    return switch (id) {
-      'youtube' => Icons.play_circle_outline,
-      'chatgpt' ||
-      'claude' ||
-      'gemini' ||
-      'copilot' ||
-      'grok' ||
-      'google_ai_studio' =>
-        Icons.auto_awesome_outlined,
-      'tiktok' => Icons.smart_display_outlined,
-      'prime_video' => Icons.video_library_outlined,
-      _ => Icons.live_tv_outlined,
-    };
-  }
-
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
@@ -403,7 +388,6 @@ class _StreamingCheckPageState extends ConsumerState<StreamingCheckPage> {
                             width: width,
                             child: _ResultCard(
                               result: result,
-                              icon: _serviceIcon(result.target.id),
                               statusText: _statusText(l10n, result.status),
                             ),
                           ),
@@ -643,12 +627,10 @@ class _SummaryRow extends StatelessWidget {
 class _ResultCard extends StatelessWidget {
   const _ResultCard({
     required this.result,
-    required this.icon,
     required this.statusText,
   });
 
   final StreamingTestResult result;
-  final IconData icon;
   final String statusText;
 
   @override
@@ -664,6 +646,8 @@ class _ResultCard extends StatelessWidget {
         : warning
             ? XbUiStatusColor.pending(context)
             : XbUiStatusColor.error(context);
+    final brand = StreamingPlatformBrand.forId(result.target.id);
+    final brandColor = brand.colorFor(theme.brightness);
     return Container(
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
@@ -677,10 +661,12 @@ class _ResultCard extends StatelessWidget {
             width: 36,
             height: 36,
             decoration: BoxDecoration(
-              color: color.withValues(alpha: 0.12),
-              shape: BoxShape.circle,
+              color: brandColor.withValues(
+                alpha: theme.brightness == Brightness.dark ? 0.16 : 0.11,
+              ),
+              borderRadius: BorderRadius.circular(10),
             ),
-            child: Icon(icon, color: color, size: 19),
+            child: _StreamingBrandLogo(brand: brand, color: brandColor),
           ),
           const SizedBox(width: 10),
           Expanded(
@@ -745,6 +731,32 @@ class _ResultCard extends StatelessWidget {
             ),
           ),
         ],
+      ),
+    );
+  }
+}
+
+class _StreamingBrandLogo extends StatelessWidget {
+  const _StreamingBrandLogo({required this.brand, required this.color});
+
+  final StreamingPlatformBrand brand;
+  final Color color;
+
+  @override
+  Widget build(BuildContext context) {
+    if (brand.icon != null) {
+      return Icon(brand.icon, color: color, size: 21);
+    }
+    return Center(
+      child: Text(
+        brand.mark,
+        maxLines: 1,
+        style: TextStyle(
+          color: color,
+          fontSize: brand.mark.length > 2 ? 9 : 14,
+          fontWeight: FontWeight.w900,
+          letterSpacing: brand.mark.length > 2 ? -0.6 : -0.2,
+        ),
       ),
     );
   }

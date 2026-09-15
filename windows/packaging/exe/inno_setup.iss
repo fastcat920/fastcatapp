@@ -1,7 +1,7 @@
 [Setup]
 AppId={{APP_ID}}
 AppVersion={{APP_VERSION}}
-AppName={{DISPLAY_NAME}}
+AppName={code:LocalizedAppDisplayName}
 AppPublisher={{PUBLISHER_NAME}}
 AppPublisherURL={{PUBLISHER_URL}}
 AppSupportURL={{PUBLISHER_URL}}
@@ -22,6 +22,30 @@ ArchitecturesInstallIn64BitMode={{ARCH}}
 RestartIfNeededByRun=no
 
 [Code]
+function GetUserDefaultUILanguage(): Integer;
+  external 'GetUserDefaultUILanguage@kernel32.dll stdcall';
+
+function UsesChineseSystemLanguage(): Boolean;
+begin
+  Result := (GetUserDefaultUILanguage() and $3FF) = $04;
+end;
+
+function LocalizedAppDisplayName(Param: String): String;
+begin
+  if UsesChineseSystemLanguage() then
+    Result := '快猫'
+  else
+    Result := 'FastCat';
+end;
+
+function LocalizedLaunchApp(Param: String): String;
+begin
+  if UsesChineseSystemLanguage() then
+    Result := '启动快猫'
+  else
+    Result := 'Launch FastCat';
+end;
+
 procedure KillProcesses;
 var
   Processes: TArrayOfString;
@@ -129,9 +153,18 @@ Source: "{{SOURCE_DIR}}\\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdi
 Source: "vc_redist.x64.exe"; DestDir: "{tmp}"; Flags: deleteafterinstall
 ; NOTE: Don't use "Flags: ignoreversion" on any shared system files
 
+[InstallDelete]
+; Shortcut captions are decided when the installer runs. Remove both previous
+; language variants on upgrade so a system-language change cannot leave a
+; stale desktop or Start Menu entry behind.
+Type: files; Name: "{autoprograms}\\快猫.lnk"
+Type: files; Name: "{autoprograms}\\FastCat.lnk"
+Type: files; Name: "{autodesktop}\\快猫.lnk"
+Type: files; Name: "{autodesktop}\\FastCat.lnk"
+
 [Icons]
-Name: "{autoprograms}\\{{DISPLAY_NAME}}"; Filename: "{app}\\{{EXECUTABLE_NAME}}"; IconFilename: "{app}\\{{EXECUTABLE_NAME}}"; IconIndex: 0
-Name: "{autodesktop}\\{{DISPLAY_NAME}}"; Filename: "{app}\\{{EXECUTABLE_NAME}}"; IconFilename: "{app}\\{{EXECUTABLE_NAME}}"; IconIndex: 0; Tasks: desktopicon
+Name: "{autoprograms}\\{code:LocalizedAppDisplayName}"; Filename: "{app}\\{{EXECUTABLE_NAME}}"; IconFilename: "{app}\\{{EXECUTABLE_NAME}}"; IconIndex: 0
+Name: "{autodesktop}\\{code:LocalizedAppDisplayName}"; Filename: "{app}\\{{EXECUTABLE_NAME}}"; IconFilename: "{app}\\{{EXECUTABLE_NAME}}"; IconIndex: 0; Tasks: desktopicon
 [Run]
 Filename: "{tmp}\vc_redist.x64.exe"; Parameters: "/install /quiet /norestart"; StatusMsg: "正在安装 Visual C++ 运行库..."; Flags: waituntilterminated
-Filename: "{app}\\{{EXECUTABLE_NAME}}"; Description: "{cm:LaunchProgram,{{DISPLAY_NAME}}}"; Flags: {% if PRIVILEGES_REQUIRED == 'admin' %}runascurrentuser{% endif %} nowait postinstall skipifsilent
+Filename: "{app}\\{{EXECUTABLE_NAME}}"; Description: "{code:LocalizedLaunchApp}"; Flags: {% if PRIVILEGES_REQUIRED == 'admin' %}runascurrentuser{% endif %} nowait postinstall skipifsilent

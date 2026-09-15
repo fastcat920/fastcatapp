@@ -12,12 +12,21 @@ fi
 
 executable_name="$(/usr/libexec/PlistBuddy -c 'Print :CFBundleExecutable' "$app_path/Contents/Info.plist")"
 executable="$app_path/Contents/MacOS/$executable_name"
+smoke_arch="${FASTCAT_MACOS_SMOKE_ARCH:-}"
+if [[ -n "$smoke_arch" && "$smoke_arch" != "arm64" && "$smoke_arch" != "x86_64" ]]; then
+  echo "Unsupported FASTCAT_MACOS_SMOKE_ARCH: $smoke_arch"
+  exit 1
+fi
 smoke_home="$(mktemp -d "${RUNNER_TEMP:-/tmp}/fastcat-smoke-home.XXXXXX")"
 diagnostic_log="$smoke_home/Library/Application Support/FastCat/boot_diag.log"
 process_log="${RUNNER_TEMP:-/tmp}/fastcat-macos-smoke.log"
 rm -f "$diagnostic_log" "$process_log"
 
-HOME="$smoke_home" "$executable" >"$process_log" 2>&1 &
+if [[ -n "$smoke_arch" ]]; then
+  HOME="$smoke_home" arch "-$smoke_arch" "$executable" >"$process_log" 2>&1 &
+else
+  HOME="$smoke_home" "$executable" >"$process_log" 2>&1 &
+fi
 app_pid=$!
 cleanup() {
   kill "$app_pid" 2>/dev/null || true

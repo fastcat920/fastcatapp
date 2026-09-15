@@ -1,7 +1,6 @@
 import 'dart:async';
 import 'dart:io';
 
-import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:fl_clash/clash/clash.dart';
 import 'package:fl_clash/common/common.dart';
 import 'package:fl_clash/common/boot_diag.dart';
@@ -399,6 +398,17 @@ class ApplicationState extends ConsumerState<Application>
     } catch (error) {
       debugPrint('[Application] 恢复本地更新提示失败: $error');
     }
+    // 上次已由 OSS 确认的普通更新可在首帧后立即提示，
+    // 不必再等待本次远程配置下载。后台检查仍会继续校正缓存。
+    final cachedUpdate = ref.read(updateCheckProvider);
+    if (mounted &&
+        ref.read(appSettingProvider).autoCheckUpdate &&
+        cachedUpdate.hasUpdate) {
+      await WidgetsBinding.instance.endOfFrame;
+      if (mounted) {
+        await _showAutomaticUpdateDialog(ref.read(updateCheckProvider));
+      }
+    }
     if (mounted) await _initializeAutomaticUpdateCheck();
   }
 
@@ -629,13 +639,17 @@ class ApplicationState extends ConsumerState<Application>
     return AppStateManager(
       child: ClashManager(
         child: ConnectivityManager(
+          onNetworkIdentityChanged: (results) {
+            globalState.appController.handleConnectivityChanged(
+              results,
+              networkIdentityChanged: true,
+            );
+            unawaited(ref
+                .read(serviceConnectivityProvider.notifier)
+                .handleConnectivityChanged(results));
+          },
           onConnectivityChanged: (results) async {
-            if (!results.contains(ConnectivityResult.vpn) &&
-                !globalState.shouldSuppressConnectionCleanup) {
-              await clashCore.closeConnections();
-            }
-            globalState.appController.updateLocalIp();
-            globalState.appController.addCheckIpNumDebounce();
+            globalState.appController.handleConnectivityChanged(results);
           },
           child: child,
         ),
@@ -821,6 +835,24 @@ class ApplicationState extends ConsumerState<Application>
                     borderRadius: BorderRadius.circular(20),
                   ),
                 ),
+                dialogTheme: DialogThemeData(
+                  backgroundColor: const Color(0xFFFAFBFD),
+                  surfaceTintColor: Colors.transparent,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(24),
+                  ),
+                  titleTextStyle: const TextStyle(
+                    color: Color(0xFF1A2138),
+                    fontSize: 16,
+                    fontWeight: FontWeight.w600,
+                  ),
+                  contentTextStyle: const TextStyle(
+                    color: Color(0xFF475467),
+                    fontSize: 14,
+                    height: 1.45,
+                  ),
+                  actionsPadding: const EdgeInsets.fromLTRB(24, 0, 24, 20),
+                ),
                 navigationBarTheme: NavigationBarThemeData(
                   backgroundColor: Colors.white,
                   elevation: 0,
@@ -903,6 +935,13 @@ class ApplicationState extends ConsumerState<Application>
                 ),
                 appBarTheme: const AppBarTheme(
                   centerTitle: false,
+                ),
+                dialogTheme: DialogThemeData(
+                  surfaceTintColor: Colors.transparent,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(24),
+                  ),
+                  actionsPadding: const EdgeInsets.fromLTRB(24, 0, 24, 20),
                 ),
                 filledButtonTheme: FilledButtonThemeData(
                   style: ButtonStyle(mouseCursor: _clickableMouseCursor),

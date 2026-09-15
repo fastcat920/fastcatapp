@@ -27,6 +27,12 @@ const _overrideUrl = String.fromEnvironment('XBOARD_GATEWAY_URL');
 /// 网关 API 前缀（需与网关环境变量 DG_API_PREFIX 保持一致，默认 /api/v1）
 const gatewayApiPrefix = '/api/v1';
 
+/// A gateway is healthy only when its public probe endpoint completed
+/// successfully. Client errors indicate a wrong path, rejected request, or
+/// incompatible gateway and must not keep the app in the online state.
+bool isHealthyGatewayStatusCode(int statusCode) =>
+    statusCode >= HttpStatus.ok && statusCode < HttpStatus.multipleChoices;
+
 /// 上次成功通信的网关 URL（冷启动时优先尝试）
 String? _cachedGatewayUrl;
 
@@ -1149,7 +1155,7 @@ class GatewayRuntimeService {
       await response.drain<void>();
 
       final statusCode = response.statusCode;
-      if (statusCode >= 200 && statusCode < 300) {
+      if (isHealthyGatewayStatusCode(statusCode)) {
         _recordEvent(
           GatewayRuntimeEventType.verifySuccess,
           '网关候选验证成功',

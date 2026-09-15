@@ -2,6 +2,7 @@ import 'dart:async';
 import 'package:fl_clash/enum/enum.dart';
 import 'package:fl_clash/models/models.dart';
 import 'package:fl_clash/providers/providers.dart';
+import 'package:fl_clash/state.dart';
 import 'package:fl_clash/xboard/features/latency/services/mihomo_latency_runner.dart';
 // operation_coordinator已废弃，移除相关代码
 import 'package:fl_clash/xboard/core/core.dart';
@@ -16,6 +17,7 @@ class AutoLatencyService {
   AutoLatencyService._internal();
   Timer? _periodicTimer;
   String? _lastTestedProxy;
+  String? _activeProxy;
   DateTime? _lastTestTime;
   bool _isServiceActive = false;
   WidgetRef? _ref;
@@ -99,6 +101,10 @@ class AutoLatencyService {
         return;
       }
 
+      // Startup, connection recovery, and node-selection callbacks can arrive
+      // together. Never launch a second probe for the same selected node.
+      if (_activeProxy == currentProxy.name) return;
+
       if (!forceTest) {
         if (!_shouldTestProxy(currentProxy.name)) {
           _logger.debug('代理 ${currentProxy.name} 无需重复测试（缓存有效）');
@@ -116,8 +122,13 @@ class AutoLatencyService {
       }
 
       _logger.info('开始测试节点延迟: ${currentProxy.name}');
+      _activeProxy = currentProxy.name;
       final testUrl = _ref!.read(appSettingProvider).testUrl;
-      await testNodeLatency(currentProxy, testUrl);
+      try {
+        await testNodeLatency(currentProxy, testUrl);
+      } finally {
+        if (_activeProxy == currentProxy.name) _activeProxy = null;
+      }
       _lastTestedProxy = currentProxy.name;
       _lastTestTime = DateTime.now();
       _proxyTestCache[currentProxy.name] = DateTime.now();
@@ -171,7 +182,19 @@ class AutoLatencyService {
         _logger.debug('未找到当前组或组为空，跳过批量测试');
         return;
       }
-      final nodesToTest = currentGroup.all.take(maxNodes).toList();
+      final recentlyTested = _lastTestedProxy ?? _activeProxy;
+      final nodesToTest = currentGroup.all
+          .where((proxy) {
+            if (proxy.name == recentlyTested || proxy.name == _activeProxy) {
+              return false;
+            }
+            final resolved = globalState.appController
+                .getProxyCardState(proxy.name)
+                .proxyName;
+            return resolved != recentlyTested && resolved != _activeProxy;
+          })
+          .take(maxNodes)
+          .toList();
       _logger.info('AutoLatencyService',
           '开始批量测试当前组 ${currentGroup.name} 的节点，数量: ${nodesToTest.length}');
       _logger.debug('AutoLatencyService',

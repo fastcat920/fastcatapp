@@ -16,13 +16,15 @@ import 'package:fl_clash/state.dart';
 import 'package:fl_clash/widgets/dialog.dart';
 import 'package:fl_clash/xboard/features/auth/services/device_heartbeat_service.dart';
 import 'package:fl_clash/xboard/features/auth/utils/customer_service_helper.dart';
+import 'package:fl_clash/xboard/features/shared/widgets/legal_footer.dart';
+import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter/material.dart';
 import 'package:yaml/yaml.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:path/path.dart';
 
 import 'common/common.dart';
 import 'common/boot_diag.dart';
+import 'security/profile_vault.dart';
 import 'models/models.dart';
 
 class _TunAdminResult {
@@ -35,6 +37,95 @@ class _TunAdminResult {
   final bool didRestartCore;
 }
 
+class _FirstLaunchPrivacyNotice extends StatelessWidget {
+  const _FirstLaunchPrivacyNotice({required this.chinese});
+
+  final bool chinese;
+
+  @override
+  Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+    final secondaryStyle = Theme.of(context).textTheme.bodySmall?.copyWith(
+          color: colorScheme.onSurfaceVariant,
+        );
+    return ConstrainedBox(
+      constraints: const BoxConstraints(maxWidth: 460),
+      child: SingleChildScrollView(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              chinese
+                  ? '继续使用前，请阅读并同意以下数据与隐私说明：'
+                  : 'Please review and accept this data and privacy notice before continuing:',
+            ),
+            const SizedBox(height: 14),
+            _PrivacyNoticeItem(
+              title: chinese ? '账户与购买服务' : 'Account and purchases',
+              body: chinese
+                  ? '账户、订阅状态、套餐流量和订单记录仅用于身份验证、购买套餐和提供服务。'
+                  : 'Account, subscription status, plan usage, and order records are used only to authenticate you, process purchases, and provide the service.',
+            ),
+            const SizedBox(height: 12),
+            _PrivacyNoticeItem(
+              title: chinese ? '设备与连接服务' : 'Device and connection service',
+              body: chinese
+                  ? '设备标识、设备名称、系统和应用版本用于设备管理、安全保护及兼容性诊断；连接服务会处理提供 VPN 所必需的网络请求与连接信息。'
+                  : 'Device identifier, device name, OS, and app version are used for device management, security, and compatibility diagnostics; VPN service processes the network requests and connection data needed to provide it.',
+            ),
+            const SizedBox(height: 14),
+            Text(
+              chinese
+                  ? '这些信息不会用于广告追踪或出售。不同意即无法继续使用客户端。'
+                  : 'This information is not used for advertising tracking or sold. You cannot continue using the app without accepting.',
+              style: secondaryStyle,
+            ),
+            const SizedBox(height: 8),
+            Wrap(
+              spacing: 4,
+              children: [
+                TextButton.icon(
+                  onPressed: FastCatLegalLinks.openPrivacyPolicy,
+                  icon: const Icon(Icons.open_in_new, size: 16),
+                  label: Text(chinese ? '隐私政策' : 'Privacy Policy'),
+                ),
+                TextButton.icon(
+                  onPressed: FastCatLegalLinks.openTermsOfService,
+                  icon: const Icon(Icons.open_in_new, size: 16),
+                  label: Text(chinese ? '服务条款' : 'Terms of Service'),
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _PrivacyNoticeItem extends StatelessWidget {
+  const _PrivacyNoticeItem({required this.title, required this.body});
+
+  final String title;
+  final String body;
+
+  @override
+  Widget build(BuildContext context) => Text.rich(
+        TextSpan(
+          children: [
+            TextSpan(
+              text: '$title\n',
+              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                    fontWeight: FontWeight.w600,
+                  ),
+            ),
+            TextSpan(text: body),
+          ],
+        ),
+      );
+}
+
 class AppController {
   int? lastProfileModified;
 
@@ -44,6 +135,12 @@ class AppController {
   bool _tunAdminDenied = true;
   bool _isCoreSwitching = false;
   Future<void>? _disconnectCleanupFuture;
+  String? _lastConnectivityFingerprint;
+  Timer? _networkRecoveryTimer;
+  DateTime? _lastNetworkRecoveryAt;
+  bool _isRecoveringFromNetworkChange = false;
+  bool _isExitDialogVisible = false;
+  bool _isExiting = false;
 
   bool get isCoreSwitching => _isCoreSwitching;
 
@@ -96,6 +193,75 @@ class AppController {
     debouncer.call(FunctionTag.addCheckIpNum, () {
       _ref.read(checkIpNumProvider.notifier).add();
     });
+  }
+
+  /// Handles an actual physical-network transition reported by
+  /// connectivity_plus. The first value is only a baseline; it must not break
+  /// active sessions during app startup. Later changes are coalesced because
+  /// Wi-Fi/mobile handoffs commonly emit several transient values.
+  void handleConnectivityChanged(
+    List<ConnectivityResult> results, {
+    bool networkIdentityChanged = false,
+  }) {
+    final fingerprint =
+        (results.map((result) => result.name).toList()..sort()).join(',');
+    final previous = _lastConnectivityFingerprint;
+    _lastConnectivityFingerprint = fingerprint;
+
+    updateLocalIp();
+    addCheckIpNumDebounce();
+
+    if (previous == null ||
+        (previous == fingerprint && !networkIdentityChanged)) {
+      return;
+    }
+    if (results.contains(ConnectivityResult.vpn) ||
+        globalState.shouldSuppressConnectionCleanup) {
+      return;
+    }
+
+    // Remove old RTT badges at once; the actual core cleanup below is debounced
+    // to let a Wi-Fi/mobile handoff finish settling first.
+    _ref.read(delayDataSourceProvider.notifier).value = {};
+    _networkRecoveryTimer?.cancel();
+    _networkRecoveryTimer = Timer(
+      const Duration(milliseconds: 1500),
+      () => unawaited(_recoverFromNetworkChange()),
+    );
+  }
+
+  Future<void> _recoverFromNetworkChange() async {
+    if (_isRecoveringFromNetworkChange ||
+        globalState.shouldSuppressConnectionCleanup) {
+      return;
+    }
+    final lastRecoveryAt = _lastNetworkRecoveryAt;
+    if (lastRecoveryAt != null &&
+        DateTime.now().difference(lastRecoveryAt) <
+            const Duration(seconds: 8)) {
+      _networkRecoveryTimer?.cancel();
+      _networkRecoveryTimer = Timer(
+        const Duration(seconds: 8) - DateTime.now().difference(lastRecoveryAt),
+        () => unawaited(_recoverFromNetworkChange()),
+      );
+      return;
+    }
+
+    _isRecoveringFromNetworkChange = true;
+    _lastNetworkRecoveryAt = DateTime.now();
+    try {
+      if (globalState.isStart) {
+        await clashCore.closeConnections();
+        await clashCore.clearNetworkCaches();
+      }
+    } catch (error) {
+      commonPrint.log('network cache recovery failed: $error');
+    } finally {
+      _isRecoveringFromNetworkChange = false;
+    }
+
+    await updateLocalIp();
+    addCheckIpNumDebounce();
   }
 
   applyProfileDebounce({
@@ -185,8 +351,8 @@ class AppController {
           );
         }
         if (Platform.isIOS) {
-          // Traffic routing just enabled — mihomo was already running in idle mode.
-          // Refresh groups from the core and re-apply the user's selected proxy.
+          // The user-approved connection has started the Packet Tunnel. Refresh
+          // groups from the core and re-apply the selected proxy.
           await _refreshGroupsAfterConnect();
           addCheckIpNumDebounce();
           globalState.updateCoreSwitchStatus(
@@ -584,9 +750,8 @@ class AppController {
     try {
       final profile = _ref.read(currentProfileProvider);
       if (profile == null) return;
-      final file = await profile.getFile();
-      if (!await file.exists()) return;
-      final content = await file.readAsString();
+      if (!await profile.check()) return;
+      final content = await ProfileVault.instance.readText(profile.id);
       final yamlDoc = loadYaml(content);
       if (yamlDoc is! YamlMap) return;
 
@@ -610,17 +775,24 @@ class AppController {
       final providerProxies = <String, List<Proxy>>{}; // providerName → proxies
       final providers = yamlDoc['proxy-providers'] as YamlMap?;
       if (providers != null) {
-        final profileDir = dirname(file.path);
         for (final entry in providers.entries) {
           final providerName = entry.key.toString();
           final providerCfg = entry.value;
           if (providerCfg is! YamlMap) continue;
           final path = providerCfg['path']?.toString();
-          if (path == null || path.isEmpty) continue;
+          final url = providerCfg['url']?.toString();
+          if ((path == null || path.isEmpty) && (url == null || url.isEmpty)) {
+            continue;
+          }
 
-          // Provider path is relative to profile directory
           final providerFile = File(
-            path.startsWith('/') ? path : join(profileDir, path),
+            url != null && url.isNotEmpty
+                ? await appPath.getProvidersFilePath(
+                    profile.id,
+                    'proxies',
+                    url,
+                  )
+                : path!,
           );
           try {
             if (await providerFile.exists()) {
@@ -907,13 +1079,47 @@ class AppController {
     if (CustomerServiceHelper.hideEmbeddedCustomerServiceIfVisible()) {
       return;
     }
-    if (_ref.read(appSettingProvider).minimizeOnExit) {
-      if (system.isDesktop) {
-        await savePreferencesDebounce();
-      }
-      await system.back();
-    } else {
+    if (_isExiting) return;
+    if (system.isDesktop) {
+      await savePreferencesDebounce();
+    }
+    await system.back();
+  }
+
+  /// 日常关闭窗口和系统返回键只进入后台。仅桌面托盘的“退出应用”
+  /// 会调用本方法，防止用户误关窗口导致网络中断。
+  Future<void> requestExit() async {
+    if (_isExitDialogVisible || _isExiting) return;
+    if (!globalState.isStart) {
       await handleExit();
+      return;
+    }
+
+    _isExitDialogVisible = true;
+    try {
+      final confirmed = await globalState.showCommonDialog<bool>(
+        child: Builder(
+          builder: (dialogContext) => CommonDialog(
+            title: '退出并断开 VPN？',
+            child: const Text('退出应用将停止代理，并恢复设备网络设置。'),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.of(dialogContext).pop(false),
+                child: const Text('取消'),
+              ),
+              FilledButton(
+                onPressed: () => Navigator.of(dialogContext).pop(true),
+                child: const Text('退出应用'),
+              ),
+            ],
+          ),
+        ),
+      );
+      if (confirmed == true) {
+        await handleExit();
+      }
+    } finally {
+      _isExitDialogVisible = false;
     }
   }
 
@@ -925,7 +1131,22 @@ class AppController {
     _ref.read(backBlockProvider.notifier).value = false;
   }
 
-  handleExit() => _exitService.handleExit();
+  Future<void> handleExit() async {
+    if (_isExiting) return;
+    _isExiting = true;
+    try {
+      if (globalState.isStart) {
+        try {
+          await updateStatus(false).timeout(const Duration(seconds: 5));
+        } catch (error) {
+          commonPrint.log('disconnect before exit failed: $error');
+        }
+      }
+      await _exitService.handleExit();
+    } finally {
+      _isExiting = false;
+    }
+  }
 
   Future handleClearCacheAndRestart() =>
       _exitService.handleClearCacheAndRestart();
@@ -964,20 +1185,8 @@ class AppController {
       await applyProfile(silence: true);
     }
 
-    // iOS always-on: start the tunnel in idle mode so mihomo is available
-    // for IPC (delay tests, proxy queries) before the user taps "connect".
-    if (Platform.isIOS) {
-      final profileId = globalState.config.currentProfileId;
-      if (profileId != null) {
-        try {
-          final profilePath = await appPath.getProfilePath(profileId);
-          final configYaml = await File(profilePath).readAsString();
-          await service?.ensureTunnelRunning(configYaml);
-        } catch (e) {
-          commonPrint.log('iOS ensureTunnelRunning failed: $e');
-        }
-      }
-    }
+    // Do not create or start the iOS Packet Tunnel here. Privacy consent is
+    // collected once at first launch, before the user can use the client.
   }
 
   init() async {
@@ -1092,7 +1301,9 @@ class AppController {
     return await globalState.showCommonDialog<bool>(
           dismissible: false,
           child: CommonDialog(
-            title: appLocalizations.disclaimer,
+            title: Localizations.localeOf(context).languageCode == 'zh'
+                ? '数据与隐私说明'
+                : 'Data & Privacy Notice',
             actions: [
               TextButton(
                 onPressed: () {
@@ -1110,8 +1321,8 @@ class AppController {
                 child: Text(appLocalizations.agree),
               )
             ],
-            child: SelectableText(
-              appLocalizations.disclaimerDesc,
+            child: _FirstLaunchPrivacyNotice(
+              chinese: Localizations.localeOf(context).languageCode == 'zh',
             ),
           ),
         ) ??
@@ -1270,13 +1481,14 @@ class AppController {
         );
   }
 
-  Future<List<Package>> getPackages() async {
+  Future<List<Package>> getPackages({bool refresh = false}) async {
     if (_ref.read(isMobileViewProvider)) {
       await Future.delayed(commonDuration);
     }
-    if (_ref.read(packagesProvider).isEmpty) {
-      _ref.read(packagesProvider.notifier).value =
-          await app?.getPackages() ?? [];
+    if (refresh || _ref.read(packagesProvider).isEmpty) {
+      _ref.read(packagesProvider.notifier).value = refresh
+          ? await app?.refreshPackages() ?? []
+          : await app?.getPackages() ?? [];
     }
     return _ref.read(packagesProvider);
   }

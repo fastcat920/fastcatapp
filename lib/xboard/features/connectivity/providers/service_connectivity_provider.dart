@@ -1,7 +1,9 @@
 import 'dart:async';
 import 'dart:io';
 
+import 'package:fl_clash/clash/clash.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
+import 'package:fl_clash/models/models.dart';
 import 'package:fl_clash/state.dart';
 import 'package:fl_clash/services/core_switch_status.dart';
 import 'package:fl_clash/xboard/config/gateway_config.dart';
@@ -19,6 +21,7 @@ const _baseNetworkProbeUrls = <String>[
   'https://wifi.vivo.com.cn/generate_204',
   'https://connectivitycheck.platform.hicloud.com/generate_204',
 ];
+const _mobileConnectionWarmupDuration = Duration(seconds: 8);
 
 class ServiceConnectivityNotifier
     extends StateNotifier<ServiceConnectivityState> {
@@ -31,6 +34,7 @@ class ServiceConnectivityNotifier
     );
     _connectivitySubscription =
         Connectivity().onConnectivityChanged.listen(handleConnectivityChanged);
+    globalState.coreSwitchStatusNotifier.addListener(_handleCoreSwitchChanged);
     unawaited(_bootstrap());
   }
 
@@ -40,9 +44,104 @@ class ServiceConnectivityNotifier
   Timer? _networkLossDebounce;
   Timer? _retryTimer;
   Timer? _onlineConfirmationTimer;
+  Timer? _mobileConnectionWarmupTimer;
+  DateTime? _mobileConnectionWarmupUntil;
   bool _isChecking = false;
 
+  bool get _isMobile => Platform.isAndroid || Platform.isIOS;
+
+  bool get _hasActiveMobileProxy => _isMobile && globalState.isStart;
+
+  bool _deferIosProbeUntilInitializationReady() {
+    final initialization = ref.read(initializationProvider);
+    if (!Platform.isIOS ||
+        initialization.isReady ||
+        initialization.isFailed) {
+      return false;
+    }
+    // iOS 冷启动时，Network Extension 与网关配置的就绪时序晚于首帧。
+    // 此前直接探测会把“尚未准备好”累计为网关离线，随后又在隧道就绪后
+    // 切到恢复状态，造成顶部提示闪烁。初始化监听器在 ready 时会主动验证。
+    state = state.copyWith(
+      status: ServiceConnectivityStatus.recovering,
+      consecutiveFailures: 0,
+      consecutiveSuccesses: 0,
+      reason: 'ios_initialization_pending',
+      clearCause: true,
+    );
+    return true;
+  }
+
+  void _handleCoreSwitchChanged() {
+    if (!_isMobile) return;
+    final stage = globalState.coreSwitchStatusNotifier.value.stage;
+    if (stage == CoreSwitchStage.connected) {
+      _beginMobileConnectionWarmup();
+      return;
+    }
+    if (stage == CoreSwitchStage.stopping || stage == CoreSwitchStage.failed) {
+      _mobileConnectionWarmupTimer?.cancel();
+      _mobileConnectionWarmupUntil = null;
+    }
+  }
+
+  void _beginMobileConnectionWarmup() {
+    _retryTimer?.cancel();
+    _onlineConfirmationTimer?.cancel();
+    _mobileConnectionWarmupUntil =
+        DateTime.now().add(_mobileConnectionWarmupDuration);
+    state = state.copyWith(
+      status: ServiceConnectivityStatus.recovering,
+      consecutiveFailures: 0,
+      consecutiveSuccesses: 0,
+      reason: 'mobile_vpn_settling',
+      clearCause: true,
+    );
+    _scheduleMobileWarmupVerification();
+  }
+
+  DateTime? _effectiveMobileWarmupUntil() {
+    if (!_isMobile) return null;
+    final startedAt = globalState.startTime;
+    final startedWarmupUntil = startedAt?.add(_mobileConnectionWarmupDuration);
+    final explicit = _mobileConnectionWarmupUntil;
+    if (explicit == null) return startedWarmupUntil;
+    if (startedWarmupUntil == null || explicit.isAfter(startedWarmupUntil)) {
+      return explicit;
+    }
+    return startedWarmupUntil;
+  }
+
+  bool _deferForMobileConnectionWarmup() {
+    final warmupUntil = _effectiveMobileWarmupUntil();
+    if (warmupUntil == null || !warmupUntil.isAfter(DateTime.now())) {
+      _mobileConnectionWarmupUntil = null;
+      return false;
+    }
+    state = state.copyWith(
+      status: ServiceConnectivityStatus.recovering,
+      consecutiveFailures: 0,
+      consecutiveSuccesses: 0,
+      reason: 'mobile_vpn_settling',
+      clearCause: true,
+    );
+    _scheduleMobileWarmupVerification(warmupUntil: warmupUntil);
+    return true;
+  }
+
+  void _scheduleMobileWarmupVerification({DateTime? warmupUntil}) {
+    final deadline = warmupUntil ?? _effectiveMobileWarmupUntil();
+    if (deadline == null) return;
+    final remaining = deadline.difference(DateTime.now());
+    _mobileConnectionWarmupTimer?.cancel();
+    _mobileConnectionWarmupTimer = Timer(
+      remaining.isNegative ? Duration.zero : remaining,
+      () => unawaited(verifyNow()),
+    );
+  }
+
   Future<void> _bootstrap() async {
+    if (_deferIosProbeUntilInitializationReady()) return;
     final results = await Connectivity().checkConnectivity();
     await handleConnectivityChanged(results, debounce: false);
   }
@@ -96,7 +195,6 @@ class ServiceConnectivityNotifier
     }
 
     _networkLossDebounce?.cancel();
-    if (state.isOnline && state.consecutiveFailures == 0) return;
     _recoveryDebounce?.cancel();
     if (!debounce) {
       await recover();
@@ -110,7 +208,9 @@ class ServiceConnectivityNotifier
     final results = await Connectivity().checkConnectivity();
     final hasNetwork = results.isNotEmpty &&
         !results.every((result) => result == ConnectivityResult.none);
-    if (hasNetwork) {
+    final proxyNetworkReachable =
+        !hasNetwork && _hasActiveMobileProxy && await _probeActiveProxy();
+    if (hasNetwork || proxyNetworkReachable) {
       await recover();
       return;
     }
@@ -123,6 +223,10 @@ class ServiceConnectivityNotifier
   Future<void> recover() async {
     if (_isChecking) return;
     final initState = ref.read(initializationProvider);
+    if (Platform.isIOS && !initState.isReady && !initState.isFailed) {
+      _deferIosProbeUntilInitializationReady();
+      return;
+    }
     if (initState.isFailed) {
       try {
         await ref.read(initializationProvider.notifier).refresh();
@@ -146,12 +250,16 @@ class ServiceConnectivityNotifier
 
   Future<bool> verifyNow() async {
     if (_isChecking) return state.isOnline;
+    if (_deferIosProbeUntilInitializationReady()) return false;
+    if (_deferForMobileConnectionWarmup()) return false;
     _isChecking = true;
     try {
       final results = await Connectivity().checkConnectivity();
       final hasNetwork = results.isNotEmpty &&
           !results.every((result) => result == ConnectivityResult.none);
-      if (!hasNetwork) {
+      var proxyNetworkReachable =
+          !hasNetwork && _hasActiveMobileProxy && await _probeActiveProxy();
+      if (!hasNetwork && !proxyNetworkReachable) {
         await handleConnectivityChanged(results);
         return false;
       }
@@ -161,22 +269,31 @@ class ServiceConnectivityNotifier
       }
       final reachable = await _probeService();
       if (reachable) {
-        reportRequestSuccess();
+        reportRequestSuccess(authoritative: false);
         return true;
       }
       final baseNetworkReachable = await _probeBaseNetwork();
+      proxyNetworkReachable = proxyNetworkReachable ||
+          (!baseNetworkReachable &&
+              _hasActiveMobileProxy &&
+              await _probeActiveProxy());
       _recordFailure(
         'service_probe_failed',
         cause: classifyServiceConnectivityFailure(
           hasNetworkInterface: true,
           baseNetworkReachable: baseNetworkReachable,
+          proxyNetworkReachable: proxyNetworkReachable,
         ),
       );
       return false;
     } catch (error) {
+      final proxyNetworkReachable =
+          _hasActiveMobileProxy && await _probeActiveProxy();
       _recordFailure(
         error.toString(),
-        cause: ServiceConnectivityCause.networkRestricted,
+        cause: proxyNetworkReachable
+            ? ServiceConnectivityCause.gatewayUnavailable
+            : ServiceConnectivityCause.networkRestricted,
       );
       return false;
     } finally {
@@ -184,7 +301,7 @@ class ServiceConnectivityNotifier
     }
   }
 
-  void reportRequestSuccess() {
+  void reportRequestSuccess({bool authoritative = true}) {
     _retryTimer?.cancel();
     final now = DateTime.now();
     if (state.isOnline) {
@@ -200,7 +317,7 @@ class ServiceConnectivityNotifier
     }
 
     final successes = state.consecutiveSuccesses + 1;
-    final confirmedOnline = successes >= 2;
+    final confirmedOnline = authoritative || successes >= 2;
     if (confirmedOnline) {
       _onlineConfirmationTimer?.cancel();
     }
@@ -320,12 +437,16 @@ class ServiceConnectivityNotifier
           !results.every((result) => result == ConnectivityResult.none);
       final baseNetworkReachable =
           hasNetworkInterface && await _probeBaseNetwork();
+      final proxyNetworkReachable = !baseNetworkReachable &&
+          _hasActiveMobileProxy &&
+          await _probeActiveProxy();
       if (!state.isOffline || state.reason != reason) return;
       _setOffline(
         reason,
         cause: classifyServiceConnectivityFailure(
           hasNetworkInterface: hasNetworkInterface,
           baseNetworkReachable: baseNetworkReachable,
+          proxyNetworkReachable: proxyNetworkReachable,
         ),
       );
     } catch (error) {
@@ -357,6 +478,42 @@ class ServiceConnectivityNotifier
       const Duration(seconds: 6),
       onTimeout: () => false,
     );
+  }
+
+  Future<bool> _probeActiveProxy() async {
+    if (!globalState.isInit || !globalState.isStart) return false;
+    try {
+      final controller = globalState.appController;
+      for (var attempt = 0; attempt < 3; attempt++) {
+        final groups = controller.getCurrentGroups();
+        final currentGroupName = controller.getCurrentGroupName()?.toString();
+        final candidates = [
+          ...groups.where((group) => group.name == currentGroupName),
+          ...groups.where((group) => group.realNow.isNotEmpty),
+        ];
+        for (final group in candidates) {
+          final selected =
+              controller.getSelectedProxyName(group.name)?.toString();
+          final candidate =
+              selected?.isNotEmpty == true ? selected! : group.realNow;
+          if (candidate.isEmpty) continue;
+          final proxyState = controller.getProxyCardState(candidate);
+          final proxyName =
+              proxyState.proxyName.isEmpty ? candidate : proxyState.proxyName;
+          final testUrl = controller.getRealTestUrl(proxyState.testUrl);
+          final delay = await clashCore
+              .getDelay(testUrl, proxyName)
+              .timeout(const Duration(seconds: 6));
+          return (delay.value ?? -1) > 0;
+        }
+        if (attempt < 2) {
+          await Future<void>.delayed(const Duration(milliseconds: 250));
+        }
+      }
+    } catch (error) {
+      _logger.warning('[ServiceConnectivity] 代理出口复核失败: $error');
+    }
+    return false;
   }
 
   Future<bool> _probeBaseEndpoint(String url) async {
@@ -399,7 +556,7 @@ class ServiceConnectivityNotifier
             const Duration(seconds: 5),
           );
       await response.drain<void>();
-      return response.statusCode >= 200 && response.statusCode < 500;
+      return isHealthyGatewayStatusCode(response.statusCode);
     } catch (_) {
       return false;
     } finally {
@@ -413,7 +570,10 @@ class ServiceConnectivityNotifier
     _networkLossDebounce?.cancel();
     _retryTimer?.cancel();
     _onlineConfirmationTimer?.cancel();
+    _mobileConnectionWarmupTimer?.cancel();
     _connectivitySubscription?.cancel();
+    globalState.coreSwitchStatusNotifier
+        .removeListener(_handleCoreSwitchChanged);
     super.dispose();
   }
 }

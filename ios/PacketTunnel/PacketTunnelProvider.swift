@@ -53,7 +53,10 @@ class PacketTunnelProvider: NEPacketTunnelProvider {
     completionHandler: @escaping (Error?) -> Void
   ) {
     NSLog("[PacketTunnel] startTunnel called")
-    let config = loadClashConfig()
+    // The main app supplies the decoded profile only for this tunnel start.
+    // Do not restore YAML from the shared container or VPN preferences: those
+    // locations persist beyond the active session and expose node metadata.
+    let config = options?["config"] as? String ?? ""
     guard !config.isEmpty else {
       NSLog("[PacketTunnel] ERROR: No clash config available")
       completionHandler(makeError("No clash config available"))
@@ -218,10 +221,6 @@ class PacketTunnelProvider: NEPacketTunnelProvider {
       completionHandler?("error: empty config".data(using: .utf8))
       return
     }
-    // Write updated config to App Group for persistence
-    if let url = appGroupContainerURL()?.appendingPathComponent("clash.yaml") {
-      try? config.write(to: url, atomically: true, encoding: .utf8)
-    }
     // Use mihomo's built-in config reload via ClashCore_invoke
     let resultCStr = ClashCore_invoke("setupConfig", config)
     defer { ClashCore_free(resultCStr) }
@@ -305,36 +304,8 @@ class PacketTunnelProvider: NEPacketTunnelProvider {
 
   // MARK: - Helpers
 
-  private func loadClashConfig() -> String {
-    // 1. Try App Group shared container (written by main app on connect).
-    //    This is the primary path for TestFlight/App Store and well-configured TrollStore.
-    if let url = appGroupContainerURL() {
-      let configUrl = url.appendingPathComponent("clash.yaml")
-      NSLog("[PacketTunnel] loadClashConfig: trying App Group at %@", configUrl.path)
-      if let content = try? String(contentsOf: configUrl, encoding: .utf8),
-         !content.isEmpty {
-        NSLog("[PacketTunnel] loadClashConfig: loaded from App Group (%d chars)", content.count)
-        return content
-      }
-      NSLog("[PacketTunnel] loadClashConfig: App Group file missing or empty")
-    } else {
-      NSLog("[PacketTunnel] loadClashConfig: App Group container unavailable (kAppGroupId=%@)", kAppGroupId)
-    }
-
-    // 2. Fallback: providerConfiguration embedded in the tunnel protocol.
-    //    Works for small configs. TrollStore apps may rely on this path if
-    //    App Group containers aren't accessible.
-    if let config = (protocolConfiguration as? NETunnelProviderProtocol)?
-      .providerConfiguration?["config"] as? String,
-       !config.isEmpty {
-      NSLog("[PacketTunnel] loadClashConfig: loaded from providerConfiguration (%d chars)", config.count)
-      return config
-    }
-
-    NSLog("[PacketTunnel] loadClashConfig: ERROR — no config available from any source")
-    return ""
-  }
-
+  /// The App Group remains the core's runtime directory. Profile YAML is never
+  /// stored there; it is supplied only in the active tunnel start message.
   private func appGroupContainerURL() -> URL? {
     FileManager.default.containerURL(
       forSecurityApplicationGroupIdentifier: kAppGroupId

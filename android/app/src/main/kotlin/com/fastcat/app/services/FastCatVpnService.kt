@@ -94,15 +94,18 @@ class FastCatVpnService : VpnService(), BaseServiceInterface {
                 if (accessControl.enable) {
                     when (accessControl.mode) {
                         AccessControlMode.acceptSelected -> {
-                            (accessControl.acceptList + packageName).forEach {
-                                addAllowedApplication(it)
-                            }
+                            // Keep the client itself inside the VPN so its
+                            // WebView follows the same proxy path as other apps.
+                            (accessControl.acceptList + packageName)
+                                .distinct()
+                                .forEach { addAllowedApplication(it) }
                         }
-
                         AccessControlMode.rejectSelected -> {
-                            (accessControl.rejectList - packageName).forEach {
-                                addDisallowedApplication(it)
-                            }
+                            // The client must remain in the VPN; only explicitly
+                            // rejected applications bypass it.
+                            (accessControl.rejectList - packageName)
+                                .distinct()
+                                .forEach { addDisallowedApplication(it) }
                         }
                     }
                 }

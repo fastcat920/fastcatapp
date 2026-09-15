@@ -1,6 +1,18 @@
+import 'dart:async';
+
 import 'package:fl_clash/common/common.dart';
 import 'package:fl_clash/models/models.dart';
 import 'package:fl_clash/state.dart';
+import 'package:fl_clash/xboard/adapter/state/notice_state.dart';
+import 'package:fl_clash/xboard/adapter/state/order_state.dart';
+import 'package:fl_clash/xboard/adapter/state/payment_state.dart';
+import 'package:fl_clash/xboard/adapter/state/plan_state.dart';
+import 'package:fl_clash/xboard/core/core.dart';
+import 'package:fl_clash/xboard/features/auth/providers/config_provider.dart';
+import 'package:fl_clash/xboard/features/notice/providers/notice_provider.dart';
+import 'package:fl_clash/xboard/features/payment/providers/xboard_payment_provider.dart';
+import 'package:fl_clash/xboard/features/subscription/providers/xboard_subscription_provider.dart';
+import 'package:flutter_xboard_sdk/flutter_xboard_sdk.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 part 'generated/config.g.dart';
@@ -20,7 +32,39 @@ class AppSetting extends _$AppSetting with AutoDisposeNotifierMixin {
   }
 
   updateState(AppSettingProps Function(AppSettingProps state) builder) {
-    state = builder(state);
+    final previous = state;
+    final next = builder(previous);
+    state = next;
+    if (xboardContentLocale(previous.locale) !=
+        xboardContentLocale(next.locale)) {
+      _refreshLocalizedPanelContent();
+    }
+  }
+
+  void _refreshLocalizedPanelContent() {
+    final sdk = XBoardSDK.instance;
+    if (sdk.isInitialized) {
+      sdk.httpService.setContentLocale(xboardContentLocale(state.locale));
+    }
+
+    clearGetPlansCache();
+    clearAllGetPlanCaches();
+    clearGetNoticesCache();
+    clearGetPaymentMethodsCache();
+    clearGetOrdersCache();
+    ref.invalidate(getPlansProvider);
+    ref.invalidate(getNoticesProvider);
+    ref.invalidate(getPaymentMethodsProvider);
+    ref.invalidate(getOrdersProvider);
+    ref.invalidate(configProvider);
+
+    unawaited(ref.read(xboardSubscriptionProvider.notifier).refreshPlans());
+    unawaited(ref.read(noticeProvider.notifier).fetchNotices(forceRefresh: true));
+    unawaited(
+      ref.read(xboardPaymentProvider.notifier).loadPaymentMethods(
+            forceRefresh: true,
+          ),
+    );
   }
 }
 

@@ -4,6 +4,7 @@ import 'package:fl_clash/models/clash_config.dart';
 import 'package:fl_clash/models/config.dart';
 import 'package:fl_clash/providers/providers.dart';
 import 'package:fl_clash/xboard/features/shared/styles/styles.dart';
+import 'package:fl_clash/xboard/features/shared/widgets/xb_dialog.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -257,44 +258,11 @@ class FastCatDnsSettingsPage extends ConsumerWidget {
     final l10n = AppLocalizations.of(context);
     final selected = await showDialog<DnsMode>(
       context: context,
-      builder: (dialogContext) => AlertDialog(
-        shape: XbUiDialog.shape(),
-        backgroundColor: XbUiDialog.background(dialogContext),
-        title: Text(l10n.dnsMode),
-        contentPadding: const EdgeInsets.fromLTRB(12, 12, 12, 4),
-        content: SizedBox(
-          width: 360,
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: DnsMode.values
-                .map(
-                  (mode) => XbPointerCursor(
-                    child: ListTile(
-                      leading: Icon(
-                        mode == current
-                            ? Icons.radio_button_checked
-                            : Icons.radio_button_off,
-                        color: mode == current
-                            ? Theme.of(dialogContext).colorScheme.primary
-                            : null,
-                      ),
-                      title: Text(_modeLabel(mode)),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      onTap: () => Navigator.pop(dialogContext, mode),
-                    ),
-                  ),
-                )
-                .toList(),
-          ),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(dialogContext),
-            child: Text(l10n.cancel),
-          ),
-        ],
+      builder: (_) => XbChoiceDialog<DnsMode>(
+        title: l10n.dnsMode,
+        options: DnsMode.values,
+        selected: current,
+        labelBuilder: _modeLabel,
       ),
     );
     if (selected == null) return;

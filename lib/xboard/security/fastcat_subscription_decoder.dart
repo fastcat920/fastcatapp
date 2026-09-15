@@ -77,10 +77,10 @@ class FastCatSubscriptionDecoder {
     }
 
     try {
-      final key = base64Decode(encodedKey);
-      final nonce = base64Decode(_stringField(envelope, 'nonce'));
-      final data = base64Decode(_stringField(envelope, 'data'));
-      final tag = base64Decode(_stringField(envelope, 'tag'));
+      final key = _decodeBase64(encodedKey);
+      final nonce = _decodeBase64(_stringField(envelope, 'nonce'));
+      final data = _decodeBase64(_stringField(envelope, 'data'));
+      final tag = _decodeBase64(_stringField(envelope, 'tag'));
       if (key.length != 32 || nonce.length != 12 || tag.length != 16) {
         throw const FormatException('invalid cryptographic field length');
       }
@@ -115,6 +115,11 @@ class FastCatSubscriptionDecoder {
     final value = envelope[name];
     if (value is! String || value.isEmpty) throw FormatException(name);
     return value;
+  }
+
+  static Uint8List _decodeBase64(String value) {
+    final normalized = value.padRight(((value.length + 3) ~/ 4) * 4, '=');
+    return base64Decode(normalized);
   }
 
   static bool _looksLikeClashYaml(String content) {

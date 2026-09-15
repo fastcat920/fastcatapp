@@ -6,6 +6,8 @@ env:
   FASTCAT_KEY_NEXT_ID: ${{ vars.FASTCAT_KEY_NEXT_ID }}
   FASTCAT_SUBSCRIPTION_FLAG: ${{ vars.FASTCAT_SUBSCRIPTION_FLAG }}
   FASTCAT_REQUIRE_ENCRYPTION: ${{ vars.FASTCAT_REQUIRE_ENCRYPTION }}
+  FASTCAT_PRIVACY_POLICY_URL: ${{ vars.FASTCAT_PRIVACY_POLICY_URL }}
+  FASTCAT_TERMS_OF_SERVICE_URL: ${{ vars.FASTCAT_TERMS_OF_SERVICE_URL }}
 
 on:
   workflow_dispatch:
@@ -923,6 +925,7 @@ jobs:
             cmake \
             libgtk-3-dev \
             liblzma-dev \
+            libsecret-1-dev \
             libwebkit2gtk-4.1-dev \
             ninja-build \
             pkg-config
@@ -1014,6 +1017,11 @@ jobs:
         run: bash scripts/verify_macos_bundle.sh
 
       - name: Run macOS startup smoke test
+        run: bash scripts/smoke_test_macos_app.sh
+
+      - name: Run macOS Intel startup smoke test
+        env:
+          FASTCAT_MACOS_SMOKE_ARCH: x86_64
         run: bash scripts/smoke_test_macos_app.sh
 
       - name: Upload macOS universal DMG

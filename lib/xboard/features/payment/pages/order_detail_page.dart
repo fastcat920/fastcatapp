@@ -21,6 +21,14 @@ import '../services/payment_status_poller.dart';
 
 const _logger = FileLogger('order_detail_page.dart');
 
+bool isOrderPendingForDisplay(
+  int? statusCode, {
+  required bool paymentCompleted,
+}) {
+  if (paymentCompleted) return false;
+  return OrderStatus.fromCode(statusCode ?? 0) == OrderStatus.pending;
+}
+
 class OrderDetailPage extends ConsumerStatefulWidget {
   final String tradeNo;
   final DomainPlan? plan;
@@ -58,14 +66,6 @@ class _OrderDetailPageState extends ConsumerState<OrderDetailPage>
   bool _isChecking = false;
   bool _isCanceling = false;
   bool _isHandlingPaymentSuccess = false;
-  double? _couponPrice;
-  double? _refundAmount;
-  double? _surplusAmount;
-  double? _depositAmount;
-  double? _commissionBalance;
-  double? _actualCommissionBalance;
-  double? _depositBonusAmount;
-  double? _depositCreditedAmount;
   DomainPlan? _resolvedOrderPlan;
   int? _resolvedOrderPlanId;
   int? _resolvingPlanId;
@@ -75,6 +75,7 @@ class _OrderDetailPageState extends ConsumerState<OrderDetailPage>
     onSuccess: _handlePaymentSuccess,
   );
   bool _isPaymentCompleted = false;
+  bool _isPaymentFlowActive = false;
   bool _didNotifyOrderChanged = false;
   bool _didNotifyPaymentSuccess = false;
 
@@ -99,37 +100,8 @@ class _OrderDetailPageState extends ConsumerState<OrderDetailPage>
       // 先用缓存快速首屏，随后后台强刷订单级支付方式，避免后台开关变化滞后。
       unawaited(ref.read(xboardPaymentProvider.notifier).loadPaymentMethods());
       unawaited(_refreshPaymentMethodsInBackground());
-      // 套餐列表与订单额外字段互不依赖，并行加载
-      await Future.wait([
-        ref.read(xboardSubscriptionProvider.notifier).refreshPlans(),
-        _fetchOrderExtras(),
-      ]);
+      await ref.read(xboardSubscriptionProvider.notifier).refreshPlans();
     });
-  }
-
-  Future<void> _fetchOrderExtras() async {
-    try {
-      final httpService = XBoardSDK.instance.httpService;
-      final result = await httpService.getRequest(
-        '/user/order/detail?trade_no=${widget.tradeNo}',
-      );
-      final data = result['data'] as Map<String, dynamic>?;
-      if (data != null && mounted) {
-        setState(() {
-          _couponPrice = (data['coupon_price'] as num?)?.toDouble();
-          _refundAmount = (data['refund_amount'] as num?)?.toDouble();
-          _surplusAmount = (data['surplus_amount'] as num?)?.toDouble();
-          _depositAmount = (data['deposit_amount'] as num?)?.toDouble();
-          _commissionBalance = (data['commission_balance'] as num?)?.toDouble();
-          _actualCommissionBalance =
-              (data['actual_commission_balance'] as num?)?.toDouble();
-          _depositBonusAmount = (data['bounus'] as num?)?.toDouble();
-          _depositCreditedAmount = (data['get_amount'] as num?)?.toDouble();
-        });
-      }
-    } catch (_) {
-      // 无额外数据，无需更新
-    }
   }
 
   @override
@@ -142,7 +114,9 @@ class _OrderDetailPageState extends ConsumerState<OrderDetailPage>
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
     super.didChangeAppLifecycleState(state);
-    if (state == AppLifecycleState.resumed && !_isPaymentCompleted) {
+    if (state == AppLifecycleState.resumed &&
+        _isPaymentFlowActive &&
+        !_isPaymentCompleted) {
       _poller.checkNow();
     }
   }
@@ -177,14 +151,6 @@ class _OrderDetailPageState extends ConsumerState<OrderDetailPage>
                 finalPrice: widget.finalPrice,
                 discountAmount: widget.discountAmount,
                 balanceUsed: widget.balanceUsed,
-                couponPrice: _couponPrice,
-                refundAmount: _refundAmount,
-                surplusAmount: _surplusAmount,
-                depositAmount: _depositAmount,
-                commissionBalance: _commissionBalance,
-                actualCommissionBalance: _actualCommissionBalance,
-                depositBonusAmount: _depositBonusAmount,
-                depositCreditedAmount: _depositCreditedAmount,
                 methodsAsync: methodsAsync,
                 globalPaymentMethods: globalPaymentMethods,
                 plans: plans,
@@ -241,14 +207,6 @@ class _OrderDetailPageState extends ConsumerState<OrderDetailPage>
             finalPrice: widget.finalPrice,
             discountAmount: widget.discountAmount,
             balanceUsed: widget.balanceUsed,
-            couponPrice: _couponPrice,
-            refundAmount: _refundAmount,
-            surplusAmount: _surplusAmount,
-            depositAmount: _depositAmount,
-            commissionBalance: _commissionBalance,
-            actualCommissionBalance: _actualCommissionBalance,
-            depositBonusAmount: _depositBonusAmount,
-            depositCreditedAmount: _depositCreditedAmount,
             methodsAsync: methodsAsync,
             globalPaymentMethods: globalPaymentMethods,
             plans: plans,
@@ -275,14 +233,13 @@ class _OrderDetailPageState extends ConsumerState<OrderDetailPage>
     clearGetOrderPaymentMethodsCache(widget.tradeNo);
     ref.invalidate(getOrderProvider(widget.tradeNo));
     ref.invalidate(getOrderPaymentMethodsProvider(widget.tradeNo));
-    // 支付方式、套餐列表、订单、额外字段 互不依赖，全部并行
+    // 支付方式、套餐列表和订单互不依赖，全部并行刷新。
     await Future.wait([
       ref
           .read(xboardPaymentProvider.notifier)
           .loadPaymentMethods(forceRefresh: true),
       ref.read(xboardSubscriptionProvider.notifier).refreshPlans(),
       ref.read(getOrderProvider(widget.tradeNo).future),
-      _fetchOrderExtras(),
     ]);
   }
 
@@ -392,11 +349,13 @@ class _OrderDetailPageState extends ConsumerState<OrderDetailPage>
       }
 
       if (type == -1 && data == true) {
+        _isPaymentFlowActive = true;
         await _handlePaymentSuccess();
         return;
       }
 
       if (data is String && data.isNotEmpty) {
+        _isPaymentFlowActive = true;
         if (!mounted) return;
         final success = await PaymentWebViewPage.open(
           context,
@@ -410,6 +369,7 @@ class _OrderDetailPageState extends ConsumerState<OrderDetailPage>
           _poller.start();
         }
       } else if (!_isPaymentCompleted) {
+        _isPaymentFlowActive = true;
         _poller.start();
       }
     } catch (e, stackTrace) {
@@ -498,7 +458,12 @@ class _OrderDetailPageState extends ConsumerState<OrderDetailPage>
       final order = await ref.read(getOrderProvider(widget.tradeNo).future);
       final status = OrderStatus.fromCode(order?.status ?? 0);
       if (status == OrderStatus.completed || status == OrderStatus.discounted) {
-        await _handlePaymentSuccess();
+        if (_isPaymentFlowActive) {
+          await _handlePaymentSuccess();
+        } else {
+          XBoardNotification.showInfo(
+              _statusLabelWithL10n(l10n, order?.status));
+        }
       } else {
         XBoardNotification.showInfo(
           _statusLabelWithL10n(l10n, order?.status),
@@ -516,10 +481,14 @@ class _OrderDetailPageState extends ConsumerState<OrderDetailPage>
 
   Future<void> _handlePaymentSuccess() async {
     _poller.stop();
+    if (!_isPaymentFlowActive) {
+      return;
+    }
     if (_isHandlingPaymentSuccess) return;
     _isHandlingPaymentSuccess = true;
     try {
       if (mounted) setState(() => _isPaymentCompleted = true);
+      _isPaymentFlowActive = false;
       final l10n = AppLocalizations.of(context);
 
       // 立即显示成功 toast 并返回，刷新操作放到后台异步执行
@@ -527,15 +496,48 @@ class _OrderDetailPageState extends ConsumerState<OrderDetailPage>
       clearGetOrdersCache();
       ref.invalidate(getOrderProvider(widget.tradeNo));
       ref.invalidate(getOrdersProvider);
+      ref
+          .read(xboardPaymentProvider.notifier)
+          .markOrderCompletedLocally(widget.tradeNo);
       _notifyOrderChanged();
       _notifyPaymentSuccess();
       XBoardNotification.showSuccess(l10n.xboardPaymentSuccess);
 
-      // 后台异步刷新订阅信息，不阻塞 toast 和页面返回
-      unawaited(_refreshSubscriptionInBackground());
+      // 余额支付成功和订单接口的最终状态可能有短暂延迟。
+      // 页面先乐观更新，后台再确认订单并刷新订阅。
+      unawaited(_synchronizeCompletedOrder());
     } finally {
       _isHandlingPaymentSuccess = false;
     }
+  }
+
+  Future<void> _synchronizeCompletedOrder() async {
+    const delays = <Duration>[
+      Duration.zero,
+      Duration(milliseconds: 400),
+      Duration(seconds: 1),
+      Duration(seconds: 2),
+      Duration(seconds: 3),
+    ];
+    for (final delay in delays) {
+      if (delay > Duration.zero) await Future<void>.delayed(delay);
+      if (!mounted) return;
+      try {
+        clearGetOrderCache(widget.tradeNo);
+        ref.invalidate(getOrderProvider(widget.tradeNo));
+        final order = await ref.read(getOrderProvider(widget.tradeNo).future);
+        final status = OrderStatus.fromCode(order?.status ?? 0);
+        if (status == OrderStatus.completed ||
+            status == OrderStatus.discounted) {
+          clearGetOrdersCache();
+          ref.invalidate(getOrdersProvider);
+          break;
+        }
+      } catch (e) {
+        _logger.warning('支付成功后同步订单状态失败: $e');
+      }
+    }
+    if (mounted) await _refreshSubscriptionInBackground();
   }
 
   Future<void> _refreshSubscriptionInBackground() async {
@@ -559,14 +561,6 @@ class _OrderDetailContent extends StatelessWidget {
   final double? finalPrice;
   final double? discountAmount;
   final double? balanceUsed;
-  final double? couponPrice;
-  final double? refundAmount;
-  final double? surplusAmount;
-  final double? depositAmount;
-  final double? commissionBalance;
-  final double? actualCommissionBalance;
-  final double? depositBonusAmount;
-  final double? depositCreditedAmount;
   final AsyncValue<List<PaymentMethodModel>> methodsAsync;
   final List<DomainPaymentMethod> globalPaymentMethods;
   final List<DomainPlan> plans;
@@ -592,14 +586,6 @@ class _OrderDetailContent extends StatelessWidget {
     required this.finalPrice,
     required this.discountAmount,
     required this.balanceUsed,
-    required this.couponPrice,
-    required this.refundAmount,
-    required this.surplusAmount,
-    required this.depositAmount,
-    required this.commissionBalance,
-    required this.actualCommissionBalance,
-    required this.depositBonusAmount,
-    required this.depositCreditedAmount,
     required this.methodsAsync,
     required this.globalPaymentMethods,
     required this.plans,
@@ -620,9 +606,10 @@ class _OrderDetailContent extends StatelessWidget {
   Widget build(BuildContext context) {
     final effectivePlanId = order?.planId ?? widgetPlan?.id;
     final period = widgetPeriod ?? order?.period;
-    final isPending = order?.status != null
-        ? OrderStatus.fromCode(order!.status ?? 0) == OrderStatus.pending
-        : true;
+    final isPending = isOrderPendingForDisplay(
+      order?.status,
+      paymentCompleted: isPaymentCompleted,
+    );
     final latestPlan = _findPlan(plans, effectivePlanId);
     final resolvedPlan = latestPlan ?? widgetPlan;
     final trafficFallback = currentSubscription?.planId == effectivePlanId
@@ -638,15 +625,15 @@ class _OrderDetailContent extends StatelessWidget {
       balanceUsed: balanceUsed,
       orderBalanceAmount: order?.balanceAmount,
       accountBalance: userInfo?.balanceInYuan,
-      couponPrice: couponPrice,
-      refundAmount: refundAmount ?? order?.refundAmount,
-      surplusAmount: surplusAmount ?? order?.surplusAmount,
-      depositAmount: depositAmount ?? order?.depositAmount,
-      commissionBalance: commissionBalance ?? order?.commissionBalance,
-      actualCommissionBalance:
-          actualCommissionBalance ?? order?.actualCommissionBalance,
-      depositBonusAmount: depositBonusAmount,
-      depositCreditedAmount: depositCreditedAmount,
+      couponPrice: order?.couponPrice,
+      refundAmount: order?.refundAmount,
+      surplusAmount: order?.surplusAmount,
+      depositAmount: order?.depositAmount,
+      commissionBalance: order?.commissionBalance,
+      actualCommissionBalance: order?.actualCommissionBalance,
+      depositBonusAmount: order?.depositBonusAmount,
+      depositCreditedAmount: order?.depositCreditedAmount,
+      depositSource: order?.depositSource,
     );
 
     return LayoutBuilder(
@@ -654,10 +641,10 @@ class _OrderDetailContent extends StatelessWidget {
         final mediaSize = MediaQuery.sizeOf(context);
         final useSideNavigation =
             mediaSize.width > mediaSize.height || system.isTV;
-        final contentPadding = EdgeInsets.symmetric(
-          horizontal: useSideNavigation ? 32 : 16,
-          vertical: 12,
-        );
+        // 与订单列表、充值和套餐页面统一使用页面级边距；桌面端不再额外
+        // 扩大左右留白，保证内容卡片与其他界面的边界对齐。
+        const contentPadding = XbUiTokens.pagePadding;
+        const columnGap = 12.0;
         final leftColumn = Column(
           children: [
             _ProductInfoCard(
@@ -678,7 +665,10 @@ class _OrderDetailContent extends StatelessWidget {
         );
         final rightColumn = Column(
           children: [
-            _OrderStatusCard(order: order),
+            _OrderStatusCard(
+              order: order,
+              completedOverride: isPaymentCompleted,
+            ),
             if (isPending) ...[
               const SizedBox(height: 16),
               if (pricing.needExternalPayment) ...[
@@ -715,7 +705,7 @@ class _OrderDetailContent extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Expanded(child: leftColumn),
-                      const SizedBox(width: 24),
+                      SizedBox(width: columnGap),
                       Expanded(child: rightColumn),
                     ],
                   )
@@ -817,6 +807,7 @@ class _OrderPricing {
   final double payableAmount;
   final double depositBonusAmount;
   final double? depositCreditedAmount;
+  final bool isCommissionTransfer;
   final bool needExternalPayment;
 
   const _OrderPricing({
@@ -828,6 +819,7 @@ class _OrderPricing {
     required this.payableAmount,
     required this.depositBonusAmount,
     required this.depositCreditedAmount,
+    required this.isCommissionTransfer,
     required this.needExternalPayment,
   });
 
@@ -849,6 +841,7 @@ class _OrderPricing {
     double? actualCommissionBalance,
     double? depositBonusAmount,
     double? depositCreditedAmount,
+    String? depositSource,
   }) {
     final isDeposit = period == 'deposit' || order?.period == 'deposit';
     final planPrice = _priceForPeriod(plan, period);
@@ -858,6 +851,8 @@ class _OrderPricing {
     final backendDepositAmount = _amountFromCents(depositAmount);
     final backendCommissionAmount =
         _amountFromCents(actualCommissionBalance ?? commissionBalance);
+    final isCommissionTransfer =
+        isDeposit && depositSource == 'commission_transfer';
 
     // “套餐金额”优先取套餐价格口径（plan/resetPrice），
     // totalAmount 用于“订单实付/待支付”口径，不再重复扣减余额。
@@ -904,6 +899,7 @@ class _OrderPricing {
       depositCreditedAmount: depositCreditedAmount == null
           ? null
           : _amountFromCents(depositCreditedAmount),
+      isCommissionTransfer: isCommissionTransfer,
       needExternalPayment: payableAmount > 0,
     );
   }
@@ -1053,11 +1049,13 @@ class _OrderInfoCard extends StatelessWidget {
               valueColor: XbUiStatusColor.success(context),
             ),
           ],
-          if (isDeposit && pricing.depositCreditedAmount != null) ...[
+          if (isDeposit) ...[
             const SizedBox(height: 12),
             _InfoRow(
               label: l10n.xboardCreditedAmount,
-              value: '¥${pricing.depositCreditedAmount!.toStringAsFixed(2)}',
+              value: pricing.depositCreditedAmount == null
+                  ? '--'
+                  : '¥${pricing.depositCreditedAmount!.toStringAsFixed(2)}',
               valueWeight: XbFontWeight.bold,
               valueColor: XbUiStatusColor.success(context),
             ),
@@ -1117,7 +1115,9 @@ class _OrderInfoCard extends StatelessWidget {
           Row(
             children: [
               Text(
-                AppLocalizations.of(context).xboardTotal,
+                Localizations.localeOf(context).languageCode == 'zh'
+                    ? '支付金额'
+                    : 'Payment amount',
                 style: Theme.of(context).textTheme.titleSmall?.copyWith(
                       color: Theme.of(context).colorScheme.onSurfaceVariant,
                       fontWeight: FontWeight.w500,
@@ -1141,13 +1141,25 @@ class _OrderInfoCard extends StatelessWidget {
 
 class _OrderStatusCard extends StatelessWidget {
   final OrderModel? order;
+  final bool completedOverride;
 
-  const _OrderStatusCard({required this.order});
+  const _OrderStatusCard({
+    required this.order,
+    this.completedOverride = false,
+  });
 
   @override
   Widget build(BuildContext context) {
-    final color = _statusColor(order?.status, context);
-    final icon = _statusIcon(order?.status);
+    final backendStatus = order?.status;
+    final isPendingBackendStatus =
+        backendStatus == null ||
+        backendStatus == OrderStatus.pending.code ||
+        backendStatus == OrderStatus.processing.code;
+    final effectiveStatus = completedOverride && isPendingBackendStatus
+        ? OrderStatus.completed.code
+        : backendStatus;
+    final color = _statusColor(effectiveStatus, context);
+    final icon = _statusIcon(effectiveStatus);
 
     return _InfoCard(
       title: AppLocalizations.of(context).xboardOrderStatus,
@@ -1161,7 +1173,7 @@ class _OrderStatusCard extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  _statusLabel(context, order?.status),
+                  _statusLabel(context, effectiveStatus),
                   style: Theme.of(context).textTheme.titleMedium?.copyWith(
                         color: color,
                         fontWeight: XbFontWeight.bold,
@@ -1169,7 +1181,7 @@ class _OrderStatusCard extends StatelessWidget {
                 ),
                 const SizedBox(height: 6),
                 Text(
-                  _statusDescription(context, order?.status),
+                  _statusDescription(context, effectiveStatus),
                   style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                         color: Theme.of(context).colorScheme.onSurfaceVariant,
                       ),

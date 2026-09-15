@@ -78,6 +78,24 @@ type Server struct {
 	activeBusinessURL   string
 	activeBusinessSince time.Time
 	ipGeo               *IPRegionResolver
+	qrMu                sync.Mutex
+	qrSessions          map[string]*QRLoginSession
+}
+
+// QRLoginSession is deliberately short lived and stays only in memory.  It
+// contains no phone credential: the phone authorizes it with its own gateway
+// session, while the target polls with an independent secret.
+type QRLoginSession struct {
+	ID         string
+	PollToken  string
+	Device     LoginRequest
+	TargetIP   string
+	TargetUA   string
+	Status     string
+	CreatedAt  time.Time
+	ExpiresAt  time.Time
+	ApprovedBy string
+	Response   map[string]any
 }
 
 type BusinessBackendState struct {
@@ -271,6 +289,7 @@ func main() {
 		key:           deriveKey(cfg.TokenSecret),
 		log:           logger,
 		backendStates: make(map[string]*BusinessBackendState),
+		qrSessions:    make(map[string]*QRLoginSession),
 	}
 	server.syncBusinessBackends(cfg.BusinessBaseURLs)
 	if cfg.IPRegionDB != "" {
@@ -782,6 +801,8 @@ func (s *Server) routes() http.Handler {
 	mux.HandleFunc("/admin/static/", s.handleAdminStatic)
 	mux.HandleFunc("/healthz", s.handleHealth)
 	mux.HandleFunc(prefix+"/passport/auth/login", s.handleLogin)
+	mux.HandleFunc(prefix+"/auth/qr/sessions", s.handleQRSession)
+	mux.HandleFunc(prefix+"/auth/qr/sessions/", s.handleQRSessionByID)
 	mux.HandleFunc(prefix+"/client/subscribe", s.handleSubscribe)
 	mux.HandleFunc(prefix+"/user/devices/heartbeat", s.handleHeartbeat)
 	mux.HandleFunc(prefix+"/user/devices", s.handleUserDevices)
@@ -980,6 +1001,154 @@ func (s *Server) handleLogin(w http.ResponseWriter, r *http.Request) {
 		"message": "Login successful",
 		"data":    data,
 	})
+}
+
+// handleQRSession creates the one-time challenge displayed by a PC or TV.
+// The QR itself contains only the public challenge ID; the polling secret is
+// returned exclusively to the requesting target.
+func (s *Server) handleQRSession(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPost {
+		writeError(w, http.StatusMethodNotAllowed, "METHOD_NOT_ALLOWED", "Method not allowed", nil)
+		return
+	}
+	var req LoginRequest
+	if err := json.NewDecoder(io.LimitReader(r.Body, 1<<20)).Decode(&req); err != nil {
+		writeError(w, http.StatusBadRequest, "BAD_JSON", "Invalid JSON body", nil)
+		return
+	}
+	req.DeviceID = strings.TrimSpace(req.DeviceID)
+	req.DeviceName = strings.TrimSpace(req.DeviceName)
+	req.Platform = strings.TrimSpace(req.Platform)
+	if req.DeviceID == "" || req.DeviceName == "" {
+		writeError(w, http.StatusBadRequest, "DEVICE_INFO_REQUIRED", "device_id and device_name are required", nil)
+		return
+	}
+	if req.Platform == "" {
+		req.Platform = "unknown"
+	}
+	now := time.Now().UTC()
+	session := &QRLoginSession{
+		ID: "qrl_" + randomHex(16), PollToken: "qpt_" + randomHex(24),
+		Device: req, TargetIP: s.clientIP(r), TargetUA: r.UserAgent(),
+		Status: "pending", CreatedAt: now, ExpiresAt: now.Add(2 * time.Minute),
+	}
+	s.qrMu.Lock()
+	for id, item := range s.qrSessions {
+		if now.After(item.ExpiresAt) {
+			delete(s.qrSessions, id)
+		}
+	}
+	s.qrSessions[session.ID] = session
+	s.qrMu.Unlock()
+	writeJSON(w, http.StatusOK, map[string]any{"success": true, "data": map[string]any{
+		"id": session.ID, "poll_token": session.PollToken,
+		"qr_data":    "fastcat://login/qr?challenge=" + session.ID,
+		"expires_at": session.ExpiresAt.Format(time.RFC3339),
+	}})
+}
+
+func (s *Server) handleQRSessionByID(w http.ResponseWriter, r *http.Request) {
+	id := strings.TrimPrefix(r.URL.Path, s.cfg.APIPrefix+"/auth/qr/sessions/")
+	if id == "" || strings.Contains(id, "/") {
+		writeError(w, http.StatusNotFound, "QR_SESSION_NOT_FOUND", "QR login session not found", nil)
+		return
+	}
+	switch r.Method {
+	case http.MethodGet:
+		s.handleQRPoll(w, r, id)
+	case http.MethodPost:
+		s.handleQRApprove(w, r, id)
+	default:
+		writeError(w, http.StatusMethodNotAllowed, "METHOD_NOT_ALLOWED", "Method not allowed", nil)
+	}
+}
+
+func (s *Server) handleQRPoll(w http.ResponseWriter, r *http.Request, id string) {
+	pollToken := strings.TrimSpace(r.URL.Query().Get("poll_token"))
+	s.qrMu.Lock()
+	defer s.qrMu.Unlock()
+	item := s.qrSessions[id]
+	if item == nil || pollToken == "" || !hmac.Equal([]byte(item.PollToken), []byte(pollToken)) {
+		writeError(w, http.StatusNotFound, "QR_SESSION_NOT_FOUND", "QR login session not found", nil)
+		return
+	}
+	if time.Now().UTC().After(item.ExpiresAt) {
+		delete(s.qrSessions, id)
+		writeJSON(w, http.StatusOK, map[string]any{"success": true, "data": map[string]any{"status": "expired"}})
+		return
+	}
+	data := map[string]any{"status": item.Status, "expires_at": item.ExpiresAt.Format(time.RFC3339)}
+	if item.Status == "approved" && item.Response != nil {
+		data["login"] = item.Response
+		item.Status = "consumed"
+	}
+	writeJSON(w, http.StatusOK, map[string]any{"success": true, "data": data})
+}
+
+func (s *Server) handleQRApprove(w http.ResponseWriter, r *http.Request, id string) {
+	ctx, ok := s.requireSession(w, r)
+	if !ok {
+		return
+	}
+	s.qrMu.Lock()
+	item := s.qrSessions[id]
+	if item == nil || time.Now().UTC().After(item.ExpiresAt) {
+		s.qrMu.Unlock()
+		writeError(w, http.StatusGone, "QR_SESSION_EXPIRED", "二维码已过期，请刷新后重试", nil)
+		return
+	}
+	if item.Status != "pending" {
+		s.qrMu.Unlock()
+		writeError(w, http.StatusConflict, "QR_SESSION_USED", "二维码已被使用", nil)
+		return
+	}
+	// Mark it first so duplicate scanner callbacks cannot create two devices.
+	item.Status = "authorizing"
+	target := item.Device
+	targetIP, targetUA := item.TargetIP, item.TargetUA
+	s.qrMu.Unlock()
+
+	snapshot, err := s.fetchSubscriptionSnapshot(r.Context(), ctx.BusinessToken)
+	if err != nil {
+		s.finishQRSession(id, "failed", nil)
+		writeError(w, http.StatusBadGateway, "QR_SUBSCRIPTION_UNAVAILABLE", "无法验证账户订阅，请稍后重试", nil)
+		return
+	}
+	if snapshot.Email == "" {
+		snapshot.Email = ctx.User.Email
+	}
+	// Preserve the target identity; its first heartbeat will refresh the IP.
+	request := r.Clone(r.Context())
+	request.RemoteAddr = targetIP
+	request.Header.Set("User-Agent", targetUA)
+	token, device, limit, active, err := s.admitDevice(request, target, snapshot, ctx.BusinessToken)
+	if err != nil {
+		s.finishQRSession(id, "failed", nil)
+		if errors.Is(err, errDeviceLimitExceeded) {
+			writeError(w, http.StatusConflict, "DEVICE_LIMIT_EXCEEDED", "设备数量已达上限", map[string]any{"device_limit": limit, "active_count": active})
+			return
+		}
+		writeError(w, http.StatusInternalServerError, "DEVICE_ADMISSION_FAILED", "设备登录失败", nil)
+		return
+	}
+	response := map[string]any{"token": "Bearer " + token, "auth_data": "Bearer " + token,
+		"email": snapshot.Email, "device": publicDevice(device, device.ID),
+		"device_limit": nullableLimit(limit), "device_policy": s.cfg.DevicePolicy}
+	if urls := s.ossGatewayURLs(); len(urls) > 0 {
+		response["gateway_urls"] = urls
+	}
+	s.finishQRSession(id, "approved", response)
+	writeJSON(w, http.StatusOK, map[string]any{"success": true, "data": map[string]any{
+		"device_name": target.DeviceName, "platform": target.Platform,
+	}})
+}
+
+func (s *Server) finishQRSession(id, status string, response map[string]any) {
+	s.qrMu.Lock()
+	defer s.qrMu.Unlock()
+	if item := s.qrSessions[id]; item != nil {
+		item.Status, item.Response = status, response
+	}
 }
 
 func (s *Server) handleSubscribe(w http.ResponseWriter, r *http.Request) {

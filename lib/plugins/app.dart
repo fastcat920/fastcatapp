@@ -53,6 +53,16 @@ class App {
     });
   }
 
+  Future<List<Package>> refreshPackages() async {
+    final packagesString =
+        await methodChannel.invokeMethod<String>("refreshPackages");
+    return Isolate.run<List<Package>>(() {
+      final List<dynamic> packagesRaw =
+          packagesString != null ? json.decode(packagesString) : [];
+      return packagesRaw.map((e) => Package.fromJson(e)).toSet().toList();
+    });
+  }
+
   Future<List<String>> getChinaPackageNames() async {
     final packageNamesString =
         await methodChannel.invokeMethod<String>("getChinaPackageNames");

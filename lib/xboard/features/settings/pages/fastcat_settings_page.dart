@@ -1,11 +1,17 @@
+import 'dart:io';
+
 import 'package:fl_clash/common/common.dart';
 import 'package:fl_clash/l10n/l10n.dart';
 import 'package:fl_clash/providers/providers.dart';
 import 'package:fl_clash/xboard/features/about/pages/fastcat_about_page.dart';
 import 'package:fl_clash/xboard/features/diagnostics/pages/diagnostics_center_page.dart';
 import 'package:fl_clash/xboard/features/settings/pages/fastcat_auto_start_settings_page.dart';
+import 'package:fl_clash/xboard/features/settings/pages/fastcat_app_exclusion_page.dart';
+import 'package:fl_clash/xboard/features/settings/pages/fastcat_custom_routing_page.dart';
 import 'package:fl_clash/xboard/features/settings/pages/fastcat_dns_settings_page.dart';
+import 'package:fl_clash/xboard/features/settings/pages/privacy_center_page.dart';
 import 'package:fl_clash/xboard/features/shared/styles/styles.dart';
+import 'package:fl_clash/xboard/features/shared/widgets/xb_dialog.dart';
 import 'package:fl_clash/xboard/features/streaming_check/pages/streaming_check_page.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -43,6 +49,15 @@ class FastCatSettingsPage extends ConsumerWidget {
                     children: [
                       _navigationTile(
                         context,
+                        icon: Icons.privacy_tip_outlined,
+                        title:
+                            Localizations.localeOf(context).languageCode == 'zh'
+                                ? '数据与隐私'
+                                : 'Data & Privacy',
+                        onTap: () => _open(context, const PrivacyCenterPage()),
+                      ),
+                      _navigationTile(
+                        context,
                         icon: Icons.language_outlined,
                         title: l10n.language,
                         subtitle: _languageLabel(appSetting.locale, l10n),
@@ -76,6 +91,37 @@ class FastCatSettingsPage extends ConsumerWidget {
                         subtitle: l10n.dnsDesc,
                         onTap: () =>
                             _open(context, const FastCatDnsSettingsPage()),
+                      ),
+                      if (Platform.isAndroid)
+                        _navigationTile(
+                          context,
+                          icon: Icons.app_blocking_outlined,
+                          title: Localizations.localeOf(context).languageCode ==
+                                  'zh'
+                              ? '应用排除'
+                              : 'App exclusion',
+                          subtitle:
+                              Localizations.localeOf(context).languageCode ==
+                                      'zh'
+                                  ? '让选中的应用绕过 VPN'
+                                  : 'Let selected apps bypass the VPN',
+                          onTap: () =>
+                              _open(context, const FastCatAppExclusionPage()),
+                        ),
+                      _navigationTile(
+                        context,
+                        icon: Icons.route_outlined,
+                        title:
+                            Localizations.localeOf(context).languageCode == 'zh'
+                                ? '自定义分流'
+                                : 'Custom routing',
+                        subtitle: Localizations.localeOf(context)
+                                    .languageCode ==
+                                'zh'
+                            ? '为域名和 IP 设置直连或代理'
+                            : 'Set direct or proxy routes for domains and IPs',
+                        onTap: () =>
+                            _open(context, const FastCatCustomRoutingPage()),
                       ),
                       _navigationTile(
                         context,
@@ -163,44 +209,15 @@ class FastCatSettingsPage extends ConsumerWidget {
     final current = ref.read(appSettingProvider).locale ?? '';
     final value = await showDialog<String>(
       context: context,
-      builder: (dialogContext) => AlertDialog(
-        shape: XbUiDialog.shape(),
-        backgroundColor: XbUiDialog.background(dialogContext),
-        title: Text(l10n.language, style: XbUiText.sectionTitle(dialogContext)),
-        contentPadding: const EdgeInsets.fromLTRB(12, 12, 12, 4),
-        content: SizedBox(
-          width: 360,
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              _ChoiceTile<String>(
-                value: '',
-                groupValue: current,
-                title: l10n.system,
-                subtitle: 'System',
-                onSelected: (value) => Navigator.pop(dialogContext, value),
-              ),
-              _ChoiceTile<String>(
-                value: 'zh_CN',
-                groupValue: current,
-                title: '简体中文',
-                onSelected: (value) => Navigator.pop(dialogContext, value),
-              ),
-              _ChoiceTile<String>(
-                value: 'en',
-                groupValue: current,
-                title: 'English',
-                onSelected: (value) => Navigator.pop(dialogContext, value),
-              ),
-            ],
-          ),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(dialogContext),
-            child: Text(l10n.cancel),
-          ),
-        ],
+      builder: (_) => XbChoiceDialog<String>(
+        title: l10n.language,
+        options: const ['', 'zh_CN', 'en'],
+        selected: current,
+        labelBuilder: (value) => switch (value) {
+          '' => l10n.system,
+          'zh_CN' => '简体中文',
+          _ => 'English',
+        },
       ),
     );
     if (value == null) return;
@@ -217,75 +234,17 @@ class FastCatSettingsPage extends ConsumerWidget {
     final l10n = AppLocalizations.of(context);
     final value = await showDialog<ThemeMode>(
       context: context,
-      builder: (dialogContext) => AlertDialog(
-        shape: XbUiDialog.shape(),
-        backgroundColor: XbUiDialog.background(dialogContext),
-        title: Text(l10n.theme, style: XbUiText.sectionTitle(dialogContext)),
-        contentPadding: const EdgeInsets.fromLTRB(12, 12, 12, 4),
-        content: SizedBox(
-          width: 360,
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: ThemeMode.values
-                .map(
-                  (mode) => _ChoiceTile<ThemeMode>(
-                    value: mode,
-                    groupValue: current,
-                    title: _themeLabel(mode, l10n),
-                    onSelected: (value) => Navigator.pop(dialogContext, value),
-                  ),
-                )
-                .toList(),
-          ),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(dialogContext),
-            child: Text(l10n.cancel),
-          ),
-        ],
+      builder: (_) => XbChoiceDialog<ThemeMode>(
+        title: l10n.theme,
+        options: ThemeMode.values,
+        selected: current,
+        labelBuilder: (mode) => _themeLabel(mode, l10n),
       ),
     );
     if (value == null) return;
     ref.read(themeSettingProvider.notifier).updateState(
           (state) => state.copyWith(themeMode: value),
         );
-  }
-}
-
-class _ChoiceTile<T> extends StatelessWidget {
-  const _ChoiceTile({
-    required this.value,
-    required this.groupValue,
-    required this.title,
-    required this.onSelected,
-    this.subtitle,
-  });
-
-  final T value;
-  final T groupValue;
-  final String title;
-  final String? subtitle;
-  final ValueChanged<T> onSelected;
-
-  @override
-  Widget build(BuildContext context) {
-    final selected = value == groupValue;
-    return XbPointerCursor(
-      child: ListTile(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-        selected: selected,
-        selectedTileColor:
-            Theme.of(context).colorScheme.primary.withValues(alpha: 0.08),
-        leading: Icon(
-          selected ? Icons.radio_button_checked : Icons.radio_button_off,
-          color: selected ? Theme.of(context).colorScheme.primary : null,
-        ),
-        title: Text(title),
-        subtitle: subtitle == null ? null : Text(subtitle!),
-        onTap: () => onSelected(value),
-      ),
-    );
   }
 }
 

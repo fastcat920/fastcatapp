@@ -20,6 +20,8 @@ import 'package:url_launcher/url_launcher.dart';
 import 'common/common.dart';
 import 'controller.dart';
 import 'models/models.dart';
+import 'xboard/config/xboard_config.dart';
+import 'xboard/features/auth/utils/crisp_url_helper.dart';
 
 typedef UpdateTasks = List<FutureOr Function()>;
 
@@ -110,10 +112,29 @@ class GlobalState {
 
   init() async {
     packageInfo = await PackageInfo.fromPlatform();
-    config = await preferences.getConfig() ??
-        Config(
-          themeProps: defaultThemeProps,
+    final savedConfig = await preferences.getConfig();
+    config = savedConfig ?? Config(themeProps: defaultThemeProps);
+    // 首次启动的 macOS Debug 使用独立端口且不接管系统代理，保证可以
+    // 与正式版同时运行。之后用户在 Debug 中的主动修改会保留。
+    if (savedConfig == null && appPath.isIsolatedDebugEnvironment) {
+      config = config.copyWith(
+        appSetting: config.appSetting.copyWith(autoRun: false),
+        networkProps: config.networkProps.copyWith(systemProxy: false),
+        patchClashConfig: config.patchClashConfig.copyWith(mixedPort: 17890),
+      );
+    }
+    if (appPath.isIsolatedDebugEnvironment && config.profiles.isEmpty) {
+      final productionConfig = await appPath.loadMacOSDebugSeedConfig();
+      if (productionConfig != null) {
+        final seed = Config.compatibleFromJson(productionConfig);
+        config = config.copyWith(
+          profiles: seed.profiles,
+          currentProfileId: seed.currentProfileId,
         );
+        await appPath.copyMacOSDebugProfilesFromProduction();
+        await preferences.saveConfig(config);
+      }
+    }
     config = config.copyWith(
       themeProps: config.themeProps.copyWith(
         // Flutter 3.27 compatibility; Color.toARGB32 was added later.
@@ -473,6 +494,16 @@ class GlobalState {
             entry.value.splitByMultipleSeparators;
       }
     }
+    // DIRECT connections bypass the VPN on Android, so their hostnames must
+    // use the system resolver. Keep an explicit subscription setting, but add
+    // the safe default when the profile does not provide one.
+    final dnsConfig = rawConfig["dns"] as Map;
+    final directNameservers = dnsConfig["direct-nameserver"];
+    if (directNameservers == null ||
+        (directNameservers is List && directNameservers.isEmpty)) {
+      dnsConfig["direct-nameserver"] = ["system://"];
+    }
+    dnsConfig.putIfAbsent("direct-nameserver-follow-policy", () => false);
     var rules = [];
     if (rawConfig["rules"] != null) {
       rules = rawConfig["rules"];
@@ -487,7 +518,12 @@ class GlobalState {
         rules = [...overrideData.runningRule, ...rules];
       }
     }
-    rawConfig["rule"] = rules;
+    // Keep all customer-service origins direct, including an optional Crisp
+    // reverse-proxy host supplied by remote configuration.
+    rawConfig["rule"] = [
+      ...customerServiceDirectRules(XBoardConfig.crispProxyUrl),
+      ...rules,
+    ];
 
     _migrateDeprecatedDnsFallbackFilter(rawConfig);
     return rawConfig;
@@ -518,6 +554,9 @@ class GlobalState {
   }
 
   Future<Map<String, dynamic>> getProfileConfig(String profileId) async {
+    // Keep Android/Desktop on the native core config loader. It resolves
+    // provider paths, proxies and rules exactly as the running Mihomo core
+    // expects; Dart YAML parsing is only needed by the iOS fallback path.
     final configMap = await switch (clashLibHandler != null) {
       true => clashLibHandler!.getConfig(profileId),
       false => clashCore.getConfig(profileId),

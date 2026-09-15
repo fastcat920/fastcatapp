@@ -50,6 +50,17 @@ void main() {
     );
   });
 
+  test('accepts a Base64 key without padding', () {
+    const yaml = 'proxies:\n  - name: test\nproxy-groups:\n  - name: select\n';
+    expect(
+      FastCatSubscriptionDecoder.decodeWithKeys(
+        envelope(yaml),
+        keys: {kid: encodedKey.replaceAll('=', '')},
+      ),
+      yaml,
+    );
+  });
+
   test('rejects plaintext when encryption is required', () {
     expect(
       () => FastCatSubscriptionDecoder.decodeWithKeys(

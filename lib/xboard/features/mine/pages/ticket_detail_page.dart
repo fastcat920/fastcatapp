@@ -8,6 +8,7 @@ import 'package:fl_clash/xboard/adapter/state/ticket_state.dart';
 import 'package:fl_clash/xboard/adapter/initialization/sdk_provider.dart';
 import 'package:fl_clash/xboard/config/xboard_config.dart';
 import 'package:fl_clash/xboard/features/shared/widgets/tv_deferred_input.dart';
+import 'package:fl_clash/xboard/features/shared/widgets/xb_dialog.dart';
 import 'package:fl_clash/xboard/features/shared/styles/styles.dart';
 import 'package:fl_clash/xboard/features/mine/services/imgbb_service.dart';
 import 'package:fl_clash/xboard/utils/backend_message_mapper.dart';
@@ -90,26 +91,16 @@ class _TicketDetailPageState extends ConsumerState<TicketDetailPage> {
   Future<void> _closeTicket() async {
     if (_isClosingTicket) return;
     final l10n = AppLocalizations.of(context);
-    final confirm = await showDialog<bool>(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        shape: XbUiDialog.shape(),
-        backgroundColor: XbUiDialog.background(ctx),
-        title: Text(l10n.xboardCloseTicket, style: XbUiText.sectionTitle(ctx)),
-        content: Text(l10n.xboardCloseTicketConfirm),
-        actions: [
-          OutlinedButton(
-              onPressed: () => Navigator.pop(ctx, false),
-              style: XbUiButton.outlinedNeutral(ctx),
-              child: Text(l10n.cancel)),
-          FilledButton(
-              onPressed: () => Navigator.pop(ctx, true),
-              style: XbUiButton.filledPrimary(ctx),
-              child: Text(l10n.xboardConfirmClose)),
-        ],
-      ),
+    final confirm = await XbConfirmDialog.show(
+      context,
+      title: l10n.xboardCloseTicket,
+      message: l10n.xboardCloseTicketConfirm,
+      confirmLabel: l10n.xboardConfirmClose,
+      cancelLabel: l10n.cancel,
+      tone: XbDialogTone.warning,
+      icon: Icons.lock_outline,
     );
-    if (confirm != true) return;
+    if (!confirm) return;
 
     setState(() => _isClosingTicket = true);
     try {

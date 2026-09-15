@@ -4,17 +4,16 @@ import 'package:archive/archive_io.dart';
 import 'package:path/path.dart';
 
 extension ArchiveExt on Archive {
-  addDirectoryToArchive(String dirPath, String parentPath) {
+  Future<void> addDirectoryToArchive(String dirPath, String parentPath) async {
     final dir = Directory(dirPath);
-    final entities = dir.listSync(recursive: false);
-    for (final entity in entities) {
+    await for (final entity in dir.list(followLinks: false)) {
       final relativePath = relative(entity.path, from: parentPath);
       if (entity is File) {
-        final data = entity.readAsBytesSync();
+        final data = await entity.readAsBytes();
         final archiveFile = ArchiveFile(relativePath, data.length, data);
         addFile(archiveFile);
       } else if (entity is Directory) {
-        addDirectoryToArchive(entity.path, parentPath);
+        await addDirectoryToArchive(entity.path, parentPath);
       }
     }
   }

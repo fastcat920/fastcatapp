@@ -1,6 +1,7 @@
 import 'dart:math';
 
 import 'package:fl_clash/providers/app.dart';
+import 'package:fl_clash/xboard/features/shared/styles/styles.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -26,17 +27,19 @@ class CommonDialog extends ConsumerWidget {
   Widget build(BuildContext context, ref) {
     final size = ref.watch(viewSizeProvider);
     return AlertDialog(
-      title: Text(title),
+      shape: XbUiDialog.shape(),
+      backgroundColor: backgroundColor ?? XbUiDialog.background(context),
+      title: Text(title, style: XbUiText.sectionTitle(context)),
       actions: actions,
-      contentPadding: padding,
-      backgroundColor: backgroundColor,
+      actionsPadding: const EdgeInsets.fromLTRB(24, 0, 24, 20),
+      contentPadding: padding ?? const EdgeInsets.fromLTRB(24, 8, 24, 20),
       content: Container(
         constraints: BoxConstraints(
           maxHeight: min(
             size.height - 40,
             500,
           ),
-          maxWidth: 300,
+          maxWidth: 440,
         ),
         width: size.width - 40,
         child: !overrideScroll

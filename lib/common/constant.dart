@@ -16,17 +16,23 @@ const appName = "快猫";
 /// 用于 HTTP User-Agent 的英文名称（UA 不允许非 ASCII 字符）
 const appNameEn = "FastCat";
 
-/// 根据设备语言返回本地化应用名称：中文设备显示"快猫"，其他语言显示 "FastCat"
+/// 根据语言返回本地化应用名称：中文显示"快猫"，其他语言显示 "FastCat"。
+String localizedAppNameForLocale(String? locale) {
+  final normalizedLocale = locale?.toLowerCase().replaceAll('_', '-') ?? '';
+  return normalizedLocale.startsWith('zh') ? appName : appNameEn;
+}
+
+/// 根据设备语言返回本地化应用名称：中文设备显示"快猫"，其他语言显示 "FastCat"。
 String get localizedAppName {
   final locale = Platform.localeName;
-  return locale.startsWith('zh') ? appName : appNameEn;
+  return localizedAppNameForLocale(locale);
 }
 
 const appHelperService = "fastcatHelperService";
 const coreName = "clash.meta";
 
 /// 与 setup.dart 构建内核时通过 ldflags 注入的 Mihomo 版本保持一致。
-const mihomoVersion = "v1.19.29";
+const mihomoVersion = "v1.19.31";
 const packageName = "com.fastcat.app";
 final unixSocketPath = "/tmp/fastcatSocket_${Random().nextInt(10000)}.sock";
 const helperPort = 47890;

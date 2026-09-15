@@ -294,6 +294,15 @@ class HttpService {
     }
   }
 
+  /// Sets the panel content locale for subsequent requests.  V2Board uses
+  /// this header to localize plans, notices, payment methods and site config.
+  void setContentLocale(String locale) {
+    final normalized = locale.trim();
+    if (normalized.isEmpty) return;
+    _dio.options.headers['X-Locale'] = normalized;
+    _dio.options.headers['Accept-Language'] = normalized;
+  }
+
   /// 设置TokenManager
   void setTokenManager(TokenManager tokenManager) {
     _tokenManager = tokenManager;

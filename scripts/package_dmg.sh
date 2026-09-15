@@ -34,7 +34,7 @@ else
   DMG_NAME="${APP_NAME_EN}.dmg"
 fi
 
-APP="${PROJECT_DIR}/build/macos/Build/Products/Release/${APP_NAME}.app"
+APP="${PROJECT_DIR}/build/macos/Build/Products/Release/${APP_NAME_EN}.app"
 DMG_PATH="${PROJECT_DIR}/dist/${DMG_NAME}"
 # 卷标保持 ASCII（Finder 背景图 alias 要求）
 VOL_NAME="$APP_NAME_EN"
@@ -76,7 +76,7 @@ tell application \"Finder\"
     set arrangement of viewOptions to not arranged
     set icon size of viewOptions to 144
     set background picture of viewOptions to file \".background:background.png\"
-    set position of item \"${APP_NAME}.app\" of container window to {172, 236}
+    set position of item \"${APP_NAME_EN}.app\" of container window to {172, 236}
     set position of item \"Applications\" of container window to {476, 236}
     close
     open
@@ -88,7 +88,7 @@ end tell
 
 
 echo "🔏 自签名 App..."
-codesign --force --deep --sign - "/Volumes/${VOL_NAME}/${APP_NAME}.app" 2>&1 || echo "⚠️ 签名跳过（无 codesign 工具）"
+codesign --force --deep --sign - "/Volumes/${VOL_NAME}/${APP_NAME_EN}.app" 2>&1 || echo "⚠️ 签名跳过（无 codesign 工具）"
 
 echo "💿 压缩转换..."
 hdiutil detach "/Volumes/${VOL_NAME}"

@@ -70,6 +70,12 @@ android {
             applicationIdSuffix = ".debug"
         }
 
+        // Keep profile builds installable alongside the signed production app
+        // so performance profiling never requires removing user data.
+        getByName("profile") {
+            applicationIdSuffix = ".profile"
+        }
+
         release {
             isMinifyEnabled = true
             isDebuggable = false

@@ -21,6 +21,33 @@ bool get _isDesktop =>
 
 enum _ExpiryState { normal, expiringSoon, expired }
 
+bool shouldShowSubscriptionReset({
+  required DateTime? expiredAt,
+  required DateTime? nextResetAt,
+  int? resetDay,
+  DateTime? now,
+}) {
+  final current = now ?? DateTime.now();
+  if (expiredAt == null || !expiredAt.isAfter(current)) return false;
+
+  final effectiveResetDay = resetDay != null && resetDay >= 0
+      ? resetDay
+      : nextResetAt != null && nextResetAt.isAfter(current)
+          ? _calendarDayDistance(current, nextResetAt)
+          : null;
+  if (effectiveResetDay == null) return false;
+
+  return _calendarDayDistance(current, expiredAt) > effectiveResetDay;
+}
+
+int _calendarDayDistance(DateTime from, DateTime to) {
+  final localFrom = from.toLocal();
+  final localTo = to.toLocal();
+  final fromDate = DateTime(localFrom.year, localFrom.month, localFrom.day);
+  final toDate = DateTime(localTo.year, localTo.month, localTo.day);
+  return toDate.difference(fromDate).inDays;
+}
+
 final _subscriptionCardActionProvider =
     StateProvider.autoDispose<String?>((ref) => null);
 
@@ -576,7 +603,11 @@ class SubscriptionUsageCard extends ConsumerWidget {
     final expiryText = _buildExpiryText(context, expiredAt, expiryState);
     final expiryColor = _getExpiryColor(expiryState, theme);
     final isExpired = expiryState == _ExpiryState.expired;
-    final shouldShowResetText = !isExpired;
+    final shouldShowResetText = shouldShowSubscriptionReset(
+      expiredAt: expiredAt,
+      nextResetAt: nextResetAt,
+      resetDay: resetDay,
+    );
     final useNewPeriod =
         isNewPeriodEnabled(ref, subscriptionInfo: subscriptionInfo);
     final shouldShowTrafficRecoveryAction = !isExpired && progress >= 0.9;
@@ -778,7 +809,11 @@ class SubscriptionUsageCard extends ConsumerWidget {
     final expiryText = _buildExpiryText(context, expiredAt, expiryState);
     final expiryColor = _getExpiryColor(expiryState, theme);
     final isExpired = expiryState == _ExpiryState.expired;
-    final shouldShowResetText = !isExpired;
+    final shouldShowResetText = shouldShowSubscriptionReset(
+      expiredAt: expiredAt,
+      nextResetAt: nextResetAt,
+      resetDay: resetDay,
+    );
     final useNewPeriod =
         isNewPeriodEnabled(ref, subscriptionInfo: subscriptionInfo);
     final shouldShowTrafficRecoveryAction = !isExpired && progress >= 0.9;
@@ -1134,7 +1169,7 @@ class SubscriptionUsageCard extends ConsumerWidget {
     if (stateResetDay != null) return stateResetDay;
 
     if (nextResetAt != null) {
-      final days = nextResetAt.difference(DateTime.now()).inDays;
+      final days = _calendarDayDistance(DateTime.now(), nextResetAt);
       return days < 0 ? 0 : days;
     }
     return null;

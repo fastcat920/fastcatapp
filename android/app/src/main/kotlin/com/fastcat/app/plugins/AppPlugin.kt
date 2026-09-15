@@ -178,6 +178,14 @@ class AppPlugin : FlutterPlugin, MethodChannel.MethodCallHandler, ActivityAware 
                 }
             }
 
+            "refreshPackages" -> {
+                scope.launch {
+                    packages.clear()
+                    iconMap.clear()
+                    result.success(getPackagesToJson())
+                }
+            }
+
             "getChinaPackageNames" -> {
                 scope.launch {
                     result.success(getChinaPackageNames())

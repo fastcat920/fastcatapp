@@ -14,6 +14,7 @@ import 'package:fl_clash/xboard/features/subscription/utils/utils.dart';
 import 'package:fl_clash/xboard/core/core.dart';
 import 'package:fl_clash/xboard/config/utils/config_file_loader.dart';
 import 'package:fl_clash/xboard/features/connectivity/connectivity.dart';
+import 'package:fl_clash/security/profile_vault.dart';
 
 // 初始化文件级日志器
 final _logger = FileLogger('profile_import_service.dart');
@@ -201,16 +202,8 @@ class XBoardProfileImportService {
 
   Future<void> _clearProfileFiles(String profileId) async {
     try {
-      final profilePath = await appPath.getProfilePath(profileId);
-      final providersDirPath = await appPath.getProvidersDirPath(profileId);
-      final profileFile = File(profilePath);
-      if (await profileFile.exists()) {
-        await profileFile.delete(recursive: true);
-      }
-      final providersDir = Directory(providersDirPath);
-      if (await providersDir.exists()) {
-        await providersDir.delete(recursive: true);
-      }
+      await ProfileVault.instance.delete(profileId);
+      await ProfileVault.instance.removeProviders(profileId);
     } catch (e) {
       _logger.warning('清理候选配置文件失败', e);
     }
@@ -354,11 +347,10 @@ class XBoardProfileImportService {
       // 移除冗余的格式检查，让ClashMeta核心进行权威验证
       _logger.debug('⚡ 跳过客户端格式验证，将由ClashMeta核心进行权威验证');
 
-      // 直接写文件，跳过 validateConfig IPC（桌面端 ClashCore.exe 未就绪时等 30s）
-      _logger.debug('💾 直接写入解密配置内容（跳过 validateConfig IPC）...');
+      // 保存至设备密钥保护的本地 vault，跳过 validateConfig IPC（桌面端 ClashCore.exe 未就绪时等 30s）
+      _logger.debug('💾 写入加密本地配置缓存（跳过 validateConfig IPC）...');
       final profile = Profile.normal(url: url);
-      final profileFile = await profile.getFile();
-      await profileFile.writeAsString(result.content!);
+      await ProfileVault.instance.writeText(profile.id, result.content!);
       final profileWithContent =
           profile.copyWith(lastUpdateDate: DateTime.now());
       _logger.info('✅ 加密配置内容已写入，格式验证由 applyProfile 阶段完成');

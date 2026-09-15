@@ -310,6 +310,7 @@ const _$ActionMethodEnumMap = {
   ActionMethod.getConnections: 'getConnections',
   ActionMethod.closeConnections: 'closeConnections',
   ActionMethod.resetConnections: 'resetConnections',
+  ActionMethod.clearNetworkCaches: 'clearNetworkCaches',
   ActionMethod.closeConnection: 'closeConnection',
   ActionMethod.getExternalProviders: 'getExternalProviders',
   ActionMethod.getExternalProvider: 'getExternalProvider',

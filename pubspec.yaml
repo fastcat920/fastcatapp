@@ -1,7 +1,7 @@
 name: fl_clash
 description: A multi-platform proxy client based on ClashMeta, simple and easy to use, open-source and ad-free.
 publish_to: 'none'
-version: 3.5.9+8
+version: 3.6.0+8
 environment:
   sdk: '>=3.1.0 <4.0.0'
 
@@ -56,6 +56,7 @@ dependencies:
       ref: c3d4bba92278577c6cc73e7b10a69b358f23768b  # master (pinned)
   yaml: ^3.1.3
   flutter_svg: ^2.1.0
+  simple_icons: ^16.23.0
   flutter_cache_manager: ^3.4.1
   cached_network_image: ^3.4.1
   crypto: ^3.0.3
@@ -67,8 +68,12 @@ dependencies:
   flutter_widget_from_html: ^0.16.1
   uuid: ^4.4.0
   qr_flutter: ^4.1.0
+  mobile_scanner: ^7.4.2
   socks5_proxy: ^2.1.1
   webview_flutter: ^4.13.0
+  # Pin the endorsed iOS implementation explicitly. 3.23.0 fails to compile
+  # with the Xcode 26 Swift module scanner by attempting to resolve AppKit.
+  webview_flutter_wkwebview: ^3.26.1
   flutter_xboard_sdk:
     path: lib/sdk/flutter_xboard_sdk
   desktop_webview_window:

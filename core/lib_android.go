@@ -14,6 +14,7 @@ import (
 	"fmt"
 	"github.com/metacubex/mihomo/component/dialer"
 	"github.com/metacubex/mihomo/component/process"
+	"github.com/metacubex/mihomo/component/resolver"
 	"github.com/metacubex/mihomo/constant"
 	"github.com/metacubex/mihomo/dns"
 	"github.com/metacubex/mihomo/listener/sing_tun"
@@ -178,6 +179,12 @@ func handleUpdateDns(value string) {
 		log.Infoln("[DNS] updateDns %s", value)
 		dns.UpdateSystemDNS(strings.Split(value, ","))
 		dns.FlushCacheWithDefaultResolver()
+		// A physical-network DNS change also invalidates fake-IP mappings.
+		// Keep this in the native service path so it still applies while the
+		// Flutter UI process is not running.
+		if err := resolver.FlushFakeIP(); err != nil {
+			log.Warnln("[DNS] flush fake-IP cache failed: %v", err)
+		}
 	}()
 }
 

@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:fl_clash/common/common.dart';
+import 'package:flutter/foundation.dart';
 import 'package:path/path.dart';
 import 'package:path_provider/path_provider.dart';
 
@@ -30,6 +31,16 @@ class AppPath {
     _instance ??= AppPath._internal();
     return _instance!;
   }
+
+  /// macOS Debug 与正式版必须隔离运行时目录。虽然 Xcode 为 Debug
+  /// 使用了不同 Bundle ID，但原先这里固定使用 FastCat 目录，导致两者
+  /// 争用同一配置、核心端口和单实例锁。
+  bool get _isMacOSDebugBuild => Platform.isMacOS && kDebugMode;
+
+  bool get isIsolatedDebugEnvironment => _isMacOSDebugBuild;
+
+  String get _desktopDataDirectoryName =>
+      _isMacOSDebugBuild ? '$appNameEn Debug' : appNameEn;
 
   String get executableExtension {
     return Platform.isWindows ? ".exe" : "";
@@ -74,9 +85,52 @@ class AppPath {
     return join(directory.path, profilesDirectoryName);
   }
 
+  Future<Map<String, dynamic>?> loadMacOSDebugSeedConfig() async {
+    if (!_isMacOSDebugBuild) return null;
+    try {
+      final home = Platform.environment['HOME'] ?? Directory.current.path;
+      final source = File(join(
+        home,
+        'Library',
+        'Application Support',
+        appNameEn,
+        'shared_preferences.json',
+      ));
+      if (!await source.exists()) return null;
+      final preferences = json.decode(await source.readAsString());
+      if (preferences is! Map) return null;
+      final rawConfig = preferences['flutter.$configKey'];
+      if (rawConfig is! String) return null;
+      final config = json.decode(rawConfig);
+      return config is Map<String, dynamic>
+          ? config
+          : Map<String, dynamic>.from(config as Map);
+    } catch (_) {
+      return null;
+    }
+  }
+
+  Future<void> copyMacOSDebugProfilesFromProduction() async {
+    if (!_isMacOSDebugBuild) return;
+    final home = Platform.environment['HOME'] ?? Directory.current.path;
+    final source = Directory(join(
+      home,
+      'Library',
+      'Application Support',
+      appNameEn,
+      profilesDirectoryName,
+    ));
+    if (!await source.exists()) return;
+    await _copyDirectoryIfMissing(source, Directory(await profilesPath));
+  }
+
   Future<String> getProfilePath(String id) async {
     final directory = await profilesPath;
     return join(directory, "$id.yaml");
+  }
+
+  Future<String> getLegacyProfilePath(String id) async {
+    return getProfilePath(id);
   }
 
   Future<String> getProvidersDirPath(String id) async {
@@ -86,6 +140,16 @@ class AppPath {
       "providers",
       id,
     );
+  }
+
+  Future<String> getSecureProvidersDirPath(String id) async {
+    final directory = await profilesPath;
+    return join(directory, 'providers-secure', id);
+  }
+
+  Future<String> getRuntimeProvidersDirPath(String id) async {
+    final directory = await tempDir.future;
+    return join(directory.path, 'fastcat-runtime-providers', id);
   }
 
   Future<String> getProvidersFilePath(
@@ -101,6 +165,24 @@ class AppPath {
       type,
       url.toMd5(),
     );
+  }
+
+  Future<String> getSecureProvidersFilePath(
+    String id,
+    String type,
+    String url,
+  ) async {
+    final directory = await getSecureProvidersDirPath(id);
+    return join(directory, type, '${url.toMd5()}.fcfg');
+  }
+
+  Future<String> getRuntimeProvidersFilePath(
+    String id,
+    String type,
+    String url,
+  ) async {
+    final directory = await getRuntimeProvidersDirPath(id);
+    return join(directory, type, url.toMd5());
   }
 
   Future<String> get tempPath async {
@@ -126,13 +208,17 @@ class AppPath {
       return directory;
     }
     await directory.create(recursive: true);
-    await _migrateLegacyDesktopData(directory);
+    if (!_isMacOSDebugBuild) {
+      await _migrateLegacyDesktopData(directory);
+    }
     return directory;
   }
 
   Future<Directory> _canonicalBrandedDesktopDataDirectory() async {
     final directory = Directory(_brandedDesktopDataPath());
-    await _normalizeDesktopBrandDirectoryName(directory);
+    if (!_isMacOSDebugBuild) {
+      await _normalizeDesktopBrandDirectoryName(directory);
+    }
     return directory;
   }
 
@@ -206,18 +292,23 @@ class AppPath {
       final base = appData?.isNotEmpty == true
           ? appData!
           : join(userProfile ?? Directory.current.path, 'AppData', 'Roaming');
-      return join(base, appNameEn);
+      return join(base, _desktopDataDirectoryName);
     }
     if (Platform.isMacOS) {
       final home = Platform.environment['HOME'] ?? Directory.current.path;
-      return join(home, 'Library', 'Application Support', appNameEn);
+      return join(
+        home,
+        'Library',
+        'Application Support',
+        _desktopDataDirectoryName,
+      );
     }
     final xdgDataHome = Platform.environment['XDG_DATA_HOME'];
     final home = Platform.environment['HOME'] ?? Directory.current.path;
     final base = xdgDataHome?.isNotEmpty == true
         ? xdgDataHome!
         : join(home, '.local', 'share');
-    return join(base, appNameEn);
+    return join(base, _desktopDataDirectoryName);
   }
 
   Future<void> _migrateLegacyDesktopData(Directory target) async {
@@ -358,7 +449,10 @@ class AppPath {
   }
 
   String get _clearCacheMarkerPath {
-    return join(Directory.systemTemp.path, '${appNameEn}_clear_cache_on_start');
+    return join(
+      Directory.systemTemp.path,
+      '${_desktopDataDirectoryName}_clear_cache_on_start',
+    );
   }
 
   Future<void> _copyFileIfMissing(String sourcePath, String targetPath) async {

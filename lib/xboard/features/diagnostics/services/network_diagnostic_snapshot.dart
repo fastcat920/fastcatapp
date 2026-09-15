@@ -102,12 +102,28 @@ NetworkDiagnosticDecision evaluateNetworkDiagnostic({
 }) {
   const error = NetworkDiagnosticSeverity.error;
 
-  // Loss of the underlying network makes every node-layer failure a
-  // downstream symptom, so it must always win over DNS/TCP/TLS conclusions.
-  if (networkDisconnected && !directOk && !ipOk) {
+  // When every end-to-end probe fails, loss of the underlying network makes
+  // node-layer errors downstream symptoms and should win over them.
+  if (networkDisconnected && !directOk && !ipOk && !proxyOk) {
     return const NetworkDiagnosticDecision(
       NetworkDiagnosticReason.noNetwork,
       error,
+    );
+  }
+  // A successful HTTPS request through the selected node is the strongest
+  // end-to-end signal. DIRECT-only failures can still happen when the local
+  // network filters a probe target, and must not be reported as total loss of
+  // connectivity.
+  if (connected && proxyOk) {
+    if (!dnsOk || !directAllOk || !ipOk) {
+      return const NetworkDiagnosticDecision(
+        NetworkDiagnosticReason.proxyWorking,
+        NetworkDiagnosticSeverity.warning,
+      );
+    }
+    return const NetworkDiagnosticDecision(
+      NetworkDiagnosticReason.healthy,
+      NetworkDiagnosticSeverity.healthy,
     );
   }
   if (!directOk && !ipOk) {
@@ -174,12 +190,6 @@ NetworkDiagnosticDecision evaluateNetworkDiagnostic({
     return const NetworkDiagnosticDecision(
       NetworkDiagnosticReason.proxy,
       error,
-    );
-  }
-  if (!directAllOk) {
-    return const NetworkDiagnosticDecision(
-      NetworkDiagnosticReason.proxyWorking,
-      NetworkDiagnosticSeverity.warning,
     );
   }
   return const NetworkDiagnosticDecision(

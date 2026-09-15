@@ -5,6 +5,7 @@ import 'dart:isolate';
 import 'package:fl_clash/common/common.dart';
 import 'package:fl_clash/state.dart';
 import 'package:flutter/services.dart';
+import 'package:fl_clash/security/profile_vault.dart';
 
 import '../clash/lib.dart';
 
@@ -51,8 +52,7 @@ class Service {
       String configYaml = '';
       if (profileId != null) {
         try {
-          final profilePath = await appPath.getProfilePath(profileId);
-          configYaml = await File(profilePath).readAsString();
+          configYaml = await ProfileVault.instance.readText(profileId);
         } catch (_) {}
       }
       // This will throw PlatformException if VPN start fails.
@@ -70,14 +70,13 @@ class Service {
 
   Future<bool?> stopVpn() async {
     if (Platform.isIOS) {
-      // Disable traffic routing but keep tunnel alive for IPC
+      // Fully stop the user-initiated tunnel when disconnecting.
       return await methodChannel.invokeMethod<bool>("stop");
     }
     return await methodChannel.invokeMethod<bool>("stopVpn");
   }
 
-  /// iOS only: start the tunnel in idle mode so mihomo runs for IPC
-  /// (delay tests, proxy queries) before the user taps "connect".
+  /// iOS only: start the tunnel in idle mode after an explicit, disclosed use.
   Future<bool?> ensureTunnelRunning(String config) async {
     if (!Platform.isIOS) return true;
     try {

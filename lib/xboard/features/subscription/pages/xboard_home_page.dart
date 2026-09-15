@@ -19,6 +19,7 @@ import 'package:fl_clash/xboard/features/notice/notice.dart';
 import 'package:fl_clash/xboard/features/latency/services/auto_latency_service.dart';
 import 'package:fl_clash/xboard/features/subscription/services/subscription_status_checker.dart';
 import 'package:fl_clash/xboard/features/subscription/services/subscription_guard_service.dart';
+import 'package:fl_clash/xboard/features/subscription/utils/home_layout.dart';
 import 'package:fl_clash/xboard/features/profile/providers/profile_import_provider.dart';
 import 'package:fl_clash/xboard/features/connectivity/connectivity.dart';
 import 'package:fl_clash/xboard/config/xboard_config.dart';
@@ -39,8 +40,12 @@ class _XBoardHomePageState extends ConsumerState<XBoardHomePage>
   bool _hasInitialized = false;
   bool _hasCheckedSubscriptionStatus = false;
   bool _hasTriggeredLatencyTest = false;
+  bool _deferredStartupTasksReady = false;
   bool _isTokenExpiredDialogVisible = false;
   bool _isCheckingWebsite = false;
+  Timer? _noticeStartupTimer;
+  Timer? _latencyStartupTimer;
+  Timer? _latencyBatchTimer;
 
   @override
   bool get wantKeepAlive => true; // 保持页面状态，防止重建
@@ -56,9 +61,7 @@ class _XBoardHomePageState extends ConsumerState<XBoardHomePage>
         // 等待订阅导入完成后再检查订阅状态
         _waitForSubscriptionImportThenCheck();
       }
-      autoLatencyService.initialize(ref);
-      // 主动拉取公告，保证铃铛和 Banner 都能显示数据
-      ref.read(noticeProvider.notifier).fetchNotices();
+      _scheduleDeferredStartupTasks();
     });
     ref.listenManual(xboardUserProvider, (previous, next) {
       if (next.isAuthenticated && isSessionTerminationCode(next.errorMessage)) {
@@ -87,10 +90,8 @@ class _XBoardHomePageState extends ConsumerState<XBoardHomePage>
     });
 
     ref.listenManual(groupsProvider, (previous, next) {
-      if (next.isNotEmpty && !_hasTriggeredLatencyTest) {
-        _hasTriggeredLatencyTest = true;
-        autoLatencyService.initialize(ref);
-        autoLatencyService.testCurrentGroupNodes(maxNodes: 999);
+      if (next.isNotEmpty) {
+        _startSelectedNodeLatencyTestWhenReady();
       }
     });
 
@@ -112,6 +113,50 @@ class _XBoardHomePageState extends ConsumerState<XBoardHomePage>
       if (next == null) return;
       subscriptionGuardService.onSubscriptionInfoChanged();
     });
+  }
+
+  /// 更新检查和核心状态恢复属于首屏高优先级任务。公告及全节点延迟检测
+  /// 分批启动，避免它们与连接按钮的初始化动画争抢 UI isolate 和网络资源。
+  void _scheduleDeferredStartupTasks() {
+    _noticeStartupTimer?.cancel();
+    _latencyStartupTimer?.cancel();
+    _noticeStartupTimer = Timer(const Duration(milliseconds: 2500), () {
+      if (!mounted) return;
+      ref.read(noticeProvider.notifier).fetchNotices();
+    });
+    // Test the selected node first so the home page gets useful feedback
+    // quickly. The more expensive all-node batch follows after the UI settles.
+    _latencyStartupTimer = Timer(const Duration(seconds: 1), () {
+      if (!mounted) return;
+      _deferredStartupTasksReady = true;
+      autoLatencyService.initialize(ref);
+      _startSelectedNodeLatencyTestWhenReady();
+      _latencyBatchTimer?.cancel();
+      _latencyBatchTimer = Timer(const Duration(seconds: 5), () {
+        if (!mounted) return;
+        _startLatencyTestWhenReady();
+      });
+    });
+  }
+
+  void _startSelectedNodeLatencyTestWhenReady() {
+    if (!_deferredStartupTasksReady || ref.read(groupsProvider).isEmpty) return;
+    unawaited(autoLatencyService.testCurrentNode());
+  }
+
+  void _startLatencyTestWhenReady() {
+    if (!_deferredStartupTasksReady || _hasTriggeredLatencyTest) return;
+    if (ref.read(groupsProvider).isEmpty) return;
+    _hasTriggeredLatencyTest = true;
+    autoLatencyService.testCurrentGroupNodes(maxNodes: 999);
+  }
+
+  @override
+  void dispose() {
+    _noticeStartupTimer?.cancel();
+    _latencyStartupTimer?.cancel();
+    _latencyBatchTimer?.cancel();
+    super.dispose();
   }
 
   @override
@@ -262,8 +307,8 @@ class _XBoardHomePageState extends ConsumerState<XBoardHomePage>
                 // 桌面端：响应式最大宽度
                 const contentMaxWidth = double.infinity;
 
-                final compactMode =
-                    isTvHome || (!isDesktop && constraints.maxHeight < 560);
+                final compactMode = shouldUseCompactHomeLayout(context) ||
+                    (!isDesktop && constraints.maxHeight < 560);
                 final isLandscapeHome =
                     constraints.maxWidth > constraints.maxHeight;
                 final isPortraitHome =
@@ -770,6 +815,12 @@ class _HomeBrandHeader extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context);
+    final configuredLocale = ref.watch(
+      appSettingProvider.select((setting) => setting.locale),
+    );
+    final brandName = localizedAppNameForLocale(
+      configuredLocale ?? Localizations.localeOf(context).toLanguageTag(),
+    );
     final connectivityState = ref.watch(serviceConnectivityProvider);
     final userState = ref.watch(xboardUserProvider);
     final showServiceBadge = userState.isAuthenticated &&
@@ -849,7 +900,7 @@ class _HomeBrandHeader extends ConsumerWidget {
         ),
         const SizedBox(width: 9),
         Text(
-          localizedAppName,
+          brandName,
           style: theme.textTheme.titleMedium?.copyWith(
             fontWeight: XbFontWeight.bold,
             color: theme.colorScheme.onSurface,

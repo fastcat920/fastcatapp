@@ -64,7 +64,6 @@ class _NodeSelectorBarState extends ConsumerState<NodeSelectorBar> {
       }
     });
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      autoLatencyService.initialize(ref);
       unawaited(_hydrateGroupsFromLocalProfile());
     });
   }
@@ -291,7 +290,10 @@ class _NodeSelectorBarState extends ConsumerState<NodeSelectorBar> {
                   color: XbUiCardStyle.shape(context).side.color,
                 ),
               ),
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+              // The home page reserves 56px for this bar. Keep the vertical
+              // padding within that budget so the icon and two-line label fit
+              // on small Android layouts as well.
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
               child: Row(
                 children: [
                   Container(
@@ -354,7 +356,9 @@ class _NodeSelectorBarState extends ConsumerState<NodeSelectorBar> {
         borderRadius: BorderRadius.circular(XbUiTokens.radiusCard),
         border: Border.all(color: XbUiCardStyle.shape(context).side.color),
       ),
-      padding: const EdgeInsets.all(14),
+      // 首页为节点栏预留 56px；36px 图标上下各留 9px 正好适配，
+      // 避免原先 14px 垂直内边距造成 8px RenderFlex overflow。
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 9),
       child: Row(
         children: [
           Container(
@@ -410,7 +414,7 @@ class _NodeSelectorBarState extends ConsumerState<NodeSelectorBar> {
         borderRadius: BorderRadius.circular(XbUiTokens.radiusCard),
         border: Border.all(color: XbUiCardStyle.shape(context).side.color),
       ),
-      padding: const EdgeInsets.all(14),
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 9),
       child: Row(
         children: [
           Container(
@@ -555,11 +559,14 @@ class _DelayBadge extends ConsumerWidget {
     final delay = ref.watch(getDelayProvider(proxyName: proxyName));
     if (delay == null) return const SizedBox.shrink();
 
-    // delay == -1: 实际超时; delay == 0: 尚未测试/测速中, 不显示徽章
-    if (delay <= 0) return const SizedBox.shrink();
-    final Color color = delay < 500
-        ? XbUiStatusColor.success(context)
-        : XbUiStatusColor.pending(context);
+    // delay == -1: 实际超时，显示明确状态；delay == 0: 尚未测试/测速中。
+    if (delay == 0) return const SizedBox.shrink();
+    final isTimeout = delay < 0;
+    final Color color = isTimeout
+        ? Theme.of(context).colorScheme.error
+        : delay < 500
+            ? XbUiStatusColor.success(context)
+            : XbUiStatusColor.pending(context);
 
     return Container(
       margin: const EdgeInsets.only(right: 6),
@@ -570,7 +577,7 @@ class _DelayBadge extends ConsumerWidget {
         border: Border.all(color: color.withValues(alpha: 0.35)),
       ),
       child: Text(
-        '${delay}ms',
+        isTimeout ? AppLocalizations.of(context).xboardTimeout : '${delay}ms',
         style: TextStyle(
           fontSize: 11,
           fontWeight: XbFontWeight.semibold,

@@ -1,6 +1,5 @@
 // ignore_for_file: invalid_annotation_target
 import 'dart:convert';
-import 'dart:io';
 import 'dart:typed_data';
 
 import 'package:fl_clash/clash/core.dart';
@@ -9,6 +8,7 @@ import 'package:fl_clash/enum/enum.dart';
 import 'package:fl_clash/xboard/config/xboard_config.dart';
 import 'package:fl_clash/xboard/features/subscription/utils/subscription_url_helper.dart';
 import 'package:fl_clash/xboard/security/fastcat_subscription_decoder.dart';
+import 'package:fl_clash/security/profile_vault.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:flutter_xboard_sdk/flutter_xboard_sdk.dart';
 
@@ -152,23 +152,13 @@ extension ProfileExtension on Profile {
   }
 
   Future<bool> check() async {
-    final profilePath = await appPath.getProfilePath(id);
-    return await File(profilePath).exists();
-  }
-
-  Future<File> getFile() async {
-    final path = await appPath.getProfilePath(id);
-    final file = File(path);
-    final isExists = await file.exists();
-    if (!isExists) {
-      await file.create(recursive: true);
-    }
-    return file;
+    await ProfileVault.instance.migrateLegacy(id);
+    return ProfileVault.instance.exists(id);
   }
 
   Future<int> get profileLastModified async {
-    final file = await getFile();
-    return (await file.lastModified()).microsecondsSinceEpoch;
+    return (await ProfileVault.instance.lastModified(id))
+        .microsecondsSinceEpoch;
   }
 
   Future<Profile> update() async {
@@ -223,8 +213,7 @@ extension ProfileExtension on Profile {
     if (message.isNotEmpty) {
       throw message;
     }
-    final file = await getFile();
-    await file.writeAsBytes(bytes);
+    await ProfileVault.instance.writeText(id, utf8.decode(bytes));
     return copyWith(lastUpdateDate: DateTime.now());
   }
 
@@ -233,8 +222,7 @@ extension ProfileExtension on Profile {
     if (message.isNotEmpty) {
       throw message;
     }
-    final file = await getFile();
-    await file.writeAsString(value);
+    await ProfileVault.instance.writeText(id, value);
     return copyWith(lastUpdateDate: DateTime.now());
   }
 }
