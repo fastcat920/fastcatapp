@@ -12,6 +12,14 @@ import com.fastcat.app.models.VpnOptions
 
 
 class FastCatService : Service(), BaseServiceInterface {
+    override fun onCreate() {
+        super.onCreate()
+        startFastCatPlaceholderForeground()
+    }
+
+    override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
+        return START_STICKY
+    }
 
     override fun start(options: VpnOptions) = 0
 

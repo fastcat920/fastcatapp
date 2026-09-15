@@ -26,6 +26,7 @@ import 'package:fl_clash/xboard/config/xboard_config.dart';
 import 'package:fl_clash/xboard/config/utils/website_url_resolver.dart';
 import 'package:fl_clash/xboard/adapter/initialization/sdk_provider.dart';
 import 'package:fl_clash/xboard/utils/xboard_notification.dart';
+import 'package:fl_clash/plugins/service.dart';
 import '../widgets/subscription_usage_card.dart';
 import '../widgets/xboard_connect_button.dart';
 
@@ -36,7 +37,7 @@ class XBoardHomePage extends ConsumerStatefulWidget {
 }
 
 class _XBoardHomePageState extends ConsumerState<XBoardHomePage>
-    with AutomaticKeepAliveClientMixin {
+    with AutomaticKeepAliveClientMixin, WidgetsBindingObserver {
   bool _hasInitialized = false;
   bool _hasCheckedSubscriptionStatus = false;
   bool _hasTriggeredLatencyTest = false;
@@ -53,6 +54,7 @@ class _XBoardHomePageState extends ConsumerState<XBoardHomePage>
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (_hasInitialized) return;
       _hasInitialized = true;
@@ -115,6 +117,26 @@ class _XBoardHomePageState extends ConsumerState<XBoardHomePage>
     });
   }
 
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed && Platform.isAndroid) {
+      _synchronizeVpnStatus();
+    }
+  }
+
+  Future<void> _synchronizeVpnStatus() async {
+    final expectedRunning = ref.read(runTimeProvider) != null;
+    if (!expectedRunning) return;
+    final running = await service?.isVpnActuallyRunning() ?? false;
+    if (!running && mounted && ref.read(runTimeProvider) != null) {
+      // The native VPN service was reclaimed or disconnected while the TV
+      // app was backgrounded. Clear stale UI state so the user can reconnect.
+      globalState.startTime = null;
+      globalState.stopUpdateTasks();
+      ref.read(runTimeProvider.notifier).value = null;
+    }
+  }
+
   /// 更新检查和核心状态恢复属于首屏高优先级任务。公告及全节点延迟检测
   /// 分批启动，避免它们与连接按钮的初始化动画争抢 UI isolate 和网络资源。
   void _scheduleDeferredStartupTasks() {
@@ -153,6 +175,7 @@ class _XBoardHomePageState extends ConsumerState<XBoardHomePage>
 
   @override
   void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
     _noticeStartupTimer?.cancel();
     _latencyStartupTimer?.cancel();
     _latencyBatchTimer?.cancel();

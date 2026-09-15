@@ -11,6 +11,7 @@ import android.net.NetworkRequest
 import android.os.Build
 import android.os.IBinder
 import androidx.core.content.getSystemService
+import androidx.core.content.ContextCompat
 import com.fastcat.app.FastCatApplication
 import com.fastcat.app.GlobalState
 import com.fastcat.app.RunState
@@ -64,6 +65,10 @@ data object VpnPlugin : FlutterPlugin, MethodChannel.MethodCallHandler {
         override fun onServiceDisconnected(arg: ComponentName) {
             isBind = false
             fastCatService = null
+            // The VPN disappeared underneath the Flutter UI (usually a ROM
+            // reclaim or service crash). Never leave the UI showing a stale
+            // connected state.
+            GlobalState.runState.postValue(RunState.STOP)
         }
     }
 
@@ -272,6 +277,14 @@ data object VpnPlugin : FlutterPlugin, MethodChannel.MethodCallHandler {
         val intent = when (options?.enable == true) {
             true -> Intent(FastCatApplication.getAppContext(), FastCatVpnService::class.java)
             false -> Intent(FastCatApplication.getAppContext(), FastCatService::class.java)
+        }
+        // A bound-only service can be reclaimed when the TV puts the activity
+        // in the background. Start it explicitly so Android can recreate it
+        // while the VPN is still expected to run.
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            ContextCompat.startForegroundService(FastCatApplication.getAppContext(), intent)
+        } else {
+            FastCatApplication.getAppContext().startService(intent)
         }
         FastCatApplication.getAppContext().bindService(intent, connection, Context.BIND_AUTO_CREATE)
     }

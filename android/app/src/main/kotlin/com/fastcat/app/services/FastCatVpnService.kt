@@ -26,7 +26,14 @@ import kotlinx.coroutines.launch
 class FastCatVpnService : VpnService(), BaseServiceInterface {
     override fun onCreate() {
         super.onCreate()
+        // startForegroundService must promote the service immediately. The
+        // Flutter engine will replace this placeholder with live traffic text.
+        startFastCatPlaceholderForeground()
         GlobalState.initServiceEngine()
+    }
+
+    override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
+        return START_STICKY
     }
 
     override fun start(options: VpnOptions): Int {

@@ -76,6 +76,11 @@ class Service {
     return await methodChannel.invokeMethod<bool>("stopVpn");
   }
 
+  Future<bool> isVpnActuallyRunning() async {
+    if (Platform.isIOS) return globalState.isStart;
+    return await methodChannel.invokeMethod<bool>('status') ?? false;
+  }
+
   /// iOS only: start the tunnel in idle mode after an explicit, disclosed use.
   Future<bool?> ensureTunnelRunning(String config) async {
     if (!Platform.isIOS) return true;
