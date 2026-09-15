@@ -76,6 +76,8 @@ class _LoginPageState extends ConsumerState<LoginPage> {
   late final FocusNode _loginFocusNode;
   late final FocusNode _registerFocusNode;
   late final FocusNode _forgotPasswordFocusNode;
+  late final FocusNode _loginMethodFocusNode;
+  late final FocusNode _refreshQrFocusNode;
   bool _rememberPassword = true;
   bool _isPasswordVisible = false;
   bool _isCheckingWebsite = false;
@@ -95,6 +97,14 @@ class _LoginPageState extends ConsumerState<LoginPage> {
     _loginFocusNode = FocusNode(debugLabel: 'login-submit');
     _registerFocusNode = FocusNode(debugLabel: 'login-register');
     _forgotPasswordFocusNode = FocusNode(debugLabel: 'login-forgot-password');
+    _loginMethodFocusNode = FocusNode(debugLabel: 'login-method');
+    _refreshQrFocusNode = FocusNode(debugLabel: 'login-refresh-qr');
+    _loginMethodFocusNode.onKeyEvent =
+        (_, event) => _handleLoginMethodKey(event);
+    _refreshQrFocusNode.onKeyEvent = (_, event) => _moveTvFocus(
+          event,
+          up: _loginMethodFocusNode,
+        );
     _rememberFocusNode.onKeyEvent = (_, event) => _moveTvFocus(
           event,
           up: _passwordFocusNode,
@@ -123,8 +133,8 @@ class _LoginPageState extends ConsumerState<LoginPage> {
     }
     WidgetsBinding.instance.addPostFrameCallback((_) {
       CustomerServiceHelper.prewarm();
-      if (system.isTV && _emailFocusNode.canRequestFocus) {
-        _emailFocusNode.requestFocus();
+      if (system.isTV && _loginMethodFocusNode.canRequestFocus) {
+        _loginMethodFocusNode.requestFocus();
       }
     });
   }
@@ -139,6 +149,8 @@ class _LoginPageState extends ConsumerState<LoginPage> {
     _loginFocusNode.dispose();
     _registerFocusNode.dispose();
     _forgotPasswordFocusNode.dispose();
+    _loginMethodFocusNode.dispose();
+    _refreshQrFocusNode.dispose();
     super.dispose();
   }
 
@@ -164,6 +176,32 @@ class _LoginPageState extends ConsumerState<LoginPage> {
     }
     target.requestFocus();
     return KeyEventResult.handled;
+  }
+
+  KeyEventResult _handleLoginMethodKey(KeyEvent event) {
+    if (!system.isTV || event is! KeyDownEvent) return KeyEventResult.ignored;
+    switch (event.logicalKey) {
+      case LogicalKeyboardKey.arrowLeft:
+        _setLoginMethod(true);
+        return KeyEventResult.handled;
+      case LogicalKeyboardKey.arrowRight:
+        _setLoginMethod(false);
+        return KeyEventResult.handled;
+      case LogicalKeyboardKey.arrowDown:
+        (_showQrLogin ? _refreshQrFocusNode : _emailFocusNode).requestFocus();
+        return KeyEventResult.handled;
+      default:
+        return KeyEventResult.ignored;
+    }
+  }
+
+  void _setLoginMethod(bool showQr) {
+    if (_showQrLogin == showQr) return;
+    setState(() => _showQrLogin = showQr);
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted || !system.isTV) return;
+      _loginMethodFocusNode.requestFocus();
+    });
   }
 
   /// 初始化 XBoard（统一入口）
@@ -507,29 +545,32 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                           ),
                           if (system.isTV || system.isDesktop) ...[
                             const SizedBox(height: 20),
-                            SegmentedButton<bool>(
-                              segments: const [
-                                ButtonSegment(
-                                  value: true,
-                                  icon: Icon(Icons.qr_code_2_outlined),
-                                  label: Text('扫码登录'),
-                                ),
-                                ButtonSegment(
-                                  value: false,
-                                  icon: Icon(Icons.password_outlined),
-                                  label: Text('账号登录'),
-                                ),
-                              ],
-                              selected: {_showQrLogin},
-                              showSelectedIcon: false,
-                              onSelectionChanged: (selected) {
-                                setState(() => _showQrLogin = selected.first);
-                              },
+                            Focus(
+                              focusNode: _loginMethodFocusNode,
+                              child: SegmentedButton<bool>(
+                                segments: const [
+                                  ButtonSegment(
+                                    value: true,
+                                    icon: Icon(Icons.qr_code_2_outlined),
+                                    label: Text('扫码登录'),
+                                  ),
+                                  ButtonSegment(
+                                    value: false,
+                                    icon: Icon(Icons.password_outlined),
+                                    label: Text('账号登录'),
+                                  ),
+                                ],
+                                selected: {_showQrLogin},
+                                showSelectedIcon: false,
+                                onSelectionChanged: (selected) =>
+                                    _setLoginMethod(selected.first),
+                              ),
                             ),
                             const SizedBox(height: 12),
                             if (_showQrLogin)
                               _QrLoginCard(
                                 enabled: !isIniting && !userState.isLoading,
+                                refreshFocusNode: _refreshQrFocusNode,
                                 onAuthorized: (result) => ref
                                     .read(xboardUserProvider.notifier)
                                     .loginWithQrToken(result.token,
@@ -543,6 +584,9 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                               focusNode: _emailFocusNode,
                               onKeyEvent: (_, event) => _moveTvFocus(
                                 event,
+                                up: (system.isTV || system.isDesktop)
+                                    ? _loginMethodFocusNode
+                                    : null,
                                 down: _passwordFocusNode,
                               ),
                               controller: _emailController,
@@ -864,8 +908,13 @@ class _LoginPageState extends ConsumerState<LoginPage> {
 }
 
 class _QrLoginCard extends StatefulWidget {
-  const _QrLoginCard({required this.enabled, required this.onAuthorized});
+  const _QrLoginCard({
+    required this.enabled,
+    required this.refreshFocusNode,
+    required this.onAuthorized,
+  });
   final bool enabled;
+  final FocusNode refreshFocusNode;
   final Future<bool> Function(QrLoginResult result) onAuthorized;
 
   @override
@@ -973,6 +1022,7 @@ class _QrLoginCardState extends State<_QrLoginCard> {
           SizedBox(height: 180, child: Center(child: Text(_error ?? '二维码不可用'))),
         const SizedBox(height: 8),
         TextButton.icon(
+            focusNode: widget.refreshFocusNode,
             onPressed: _loading ? null : _create,
             icon: const Icon(Icons.refresh, size: 18),
             label: const Text('刷新二维码')),
