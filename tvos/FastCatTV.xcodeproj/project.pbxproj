@@ -1,0 +1,538 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 46;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		0000E091112D225C834E774E /* PacketTunnel.appex in Embed App Extensions */ = {isa = PBXBuildFile; fileRef = 6F637A4BFAF802F3D4B7C74D /* PacketTunnel.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, CodeSignOnCopy, ); }; };
+		0AA98C25ECD44D0903DC10FA /* KeychainStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 518495B47C8F64EF51B7E26A /* KeychainStore.swift */; };
+		248459DE3B850CEA7E67811C /* FastCatTVApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = DCECE88F46EC64B9F88B5F4B /* FastCatTVApp.swift */; };
+		3B5EE3115EFED6018D4B882B /* GatewayClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = EC57B8D1332B95144C744E5D /* GatewayClient.swift */; };
+		3F82B466E6D6523B310D5545 /* TVHomeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9703AC60B717040FC6FD4D21 /* TVHomeView.swift */; };
+		47D0A876B8CD807AC3C39C8C /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FB398AE7AE81B6D0C2CBEDD1 /* Foundation.framework */; };
+		7B3C3811F3944205E53D4115 /* libclash.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = 3C40389CE0DA603D8BB7BF2D /* libclash.xcframework */; };
+		7D33A359C552C6EA7A8BCCC2 /* PacketTunnelProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = B42356BBE5C71BA1404DFF46 /* PacketTunnelProvider.swift */; };
+		AD6806C3B549E64C11052488 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FB398AE7AE81B6D0C2CBEDD1 /* Foundation.framework */; };
+		B717EDAAAA5E28BEEF5EB3A0 /* TVLoginView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2980B681CF103DDC05613BE2 /* TVLoginView.swift */; };
+		C3905CFEE5DCC685953E1C01 /* SessionStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 88C5CDA4E0E4538298ACF585 /* SessionStore.swift */; };
+		D1A4260CA41B2D38123AA6C6 /* VPNManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 02DC6624238362A330F1ADAC /* VPNManager.swift */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+		D28EDCE1B3324D142148E2EB /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = AFDE6FD60B12339B46751713 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 9894AD0C0A8F9937640A14F7;
+			remoteInfo = PacketTunnel;
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXCopyFilesBuildPhase section */
+		732A829ABDFFC0025062B858 /* Embed App Extensions */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 13;
+			files = (
+				0000E091112D225C834E774E /* PacketTunnel.appex in Embed App Extensions */,
+			);
+			name = "Embed App Extensions";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXCopyFilesBuildPhase section */
+
+/* Begin PBXFileReference section */
+		02DC6624238362A330F1ADAC /* VPNManager.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = VPNManager.swift; sourceTree = "<group>"; };
+		1ABD863AC50DF31EAF8AE198 /* Info.plist */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		2980B681CF103DDC05613BE2 /* TVLoginView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = TVLoginView.swift; sourceTree = "<group>"; };
+		3C40389CE0DA603D8BB7BF2D /* libclash.xcframework */ = {isa = PBXFileReference; includeInIndex = 1; path = libclash.xcframework; sourceTree = "<group>"; };
+		518495B47C8F64EF51B7E26A /* KeychainStore.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = KeychainStore.swift; sourceTree = "<group>"; };
+		6F637A4BFAF802F3D4B7C74D /* PacketTunnel.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; name = PacketTunnel.appex; path = PacketTunnel.appex; sourceTree = BUILT_PRODUCTS_DIR; };
+		8145EC021B4586E191924EEF /* Config.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; path = Config.xcconfig; sourceTree = "<group>"; };
+		85D6CE25C57A9216C5ABF426 /* FastCatTV.entitlements */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.plist.entitlements; path = FastCatTV.entitlements; sourceTree = "<group>"; };
+		88C5CDA4E0E4538298ACF585 /* SessionStore.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = SessionStore.swift; sourceTree = "<group>"; };
+		9703AC60B717040FC6FD4D21 /* TVHomeView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = TVHomeView.swift; sourceTree = "<group>"; };
+		A383F3A3DBC54911AF197D6E /* FastCatTV.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = FastCatTV.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		B29C40ADE62DD7E003859650 /* PacketTunnel-Bridging-Header.h */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; path = "PacketTunnel-Bridging-Header.h"; sourceTree = "<group>"; };
+		B42356BBE5C71BA1404DFF46 /* PacketTunnelProvider.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = PacketTunnelProvider.swift; sourceTree = "<group>"; };
+		DCECE88F46EC64B9F88B5F4B /* FastCatTVApp.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = FastCatTVApp.swift; sourceTree = "<group>"; };
+		EC57B8D1332B95144C744E5D /* GatewayClient.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = GatewayClient.swift; sourceTree = "<group>"; };
+		F9DA15FF095D6F52495A1741 /* PacketTunnel.entitlements */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.plist.entitlements; path = PacketTunnel.entitlements; sourceTree = "<group>"; };
+		FB398AE7AE81B6D0C2CBEDD1 /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = Platforms/AppleTVOS.platform/Developer/SDKs/AppleTVOS18.0.sdk/System/Library/Frameworks/Foundation.framework; sourceTree = DEVELOPER_DIR; };
+		FE391C4D1654F1674AE1DC67 /* Info.plist */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		8557B483EA3105D2CC6CF6F1 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				AD6806C3B549E64C11052488 /* Foundation.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		EB069BDAA9D0322E61D24D05 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				47D0A876B8CD807AC3C39C8C /* Foundation.framework in Frameworks */,
+				7B3C3811F3944205E53D4115 /* libclash.xcframework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		169593E50315E5BA98654F3D /* tvOS */ = {
+			isa = PBXGroup;
+			children = (
+				FB398AE7AE81B6D0C2CBEDD1 /* Foundation.framework */,
+			);
+			name = tvOS;
+			sourceTree = "<group>";
+		};
+		901ACF030D705851CB08CFF3 /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				169593E50315E5BA98654F3D /* tvOS */,
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
+		B5D665837F212ECAB4A1C5EF /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				3C40389CE0DA603D8BB7BF2D /* libclash.xcframework */,
+			);
+			name = Frameworks;
+			path = Frameworks;
+			sourceTree = "<group>";
+		};
+		CA675D159A720845522AEC43 /* FastCatTV */ = {
+			isa = PBXGroup;
+			children = (
+				DCECE88F46EC64B9F88B5F4B /* FastCatTVApp.swift */,
+				88C5CDA4E0E4538298ACF585 /* SessionStore.swift */,
+				518495B47C8F64EF51B7E26A /* KeychainStore.swift */,
+				EC57B8D1332B95144C744E5D /* GatewayClient.swift */,
+				2980B681CF103DDC05613BE2 /* TVLoginView.swift */,
+				9703AC60B717040FC6FD4D21 /* TVHomeView.swift */,
+				02DC6624238362A330F1ADAC /* VPNManager.swift */,
+				FE391C4D1654F1674AE1DC67 /* Info.plist */,
+				85D6CE25C57A9216C5ABF426 /* FastCatTV.entitlements */,
+			);
+			name = FastCatTV;
+			path = FastCatTV;
+			sourceTree = "<group>";
+		};
+		D845F61E387DFD3EDA643B1F = {
+			isa = PBXGroup;
+			children = (
+				EA59145BE478C7E7F61910F4 /* Products */,
+				901ACF030D705851CB08CFF3 /* Frameworks */,
+				CA675D159A720845522AEC43 /* FastCatTV */,
+				DDDAC94142E7630FB3A2457A /* PacketTunnel */,
+				B5D665837F212ECAB4A1C5EF /* Frameworks */,
+				8145EC021B4586E191924EEF /* Config.xcconfig */,
+			);
+			sourceTree = "<group>";
+		};
+		DDDAC94142E7630FB3A2457A /* PacketTunnel */ = {
+			isa = PBXGroup;
+			children = (
+				B42356BBE5C71BA1404DFF46 /* PacketTunnelProvider.swift */,
+				B29C40ADE62DD7E003859650 /* PacketTunnel-Bridging-Header.h */,
+				1ABD863AC50DF31EAF8AE198 /* Info.plist */,
+				F9DA15FF095D6F52495A1741 /* PacketTunnel.entitlements */,
+			);
+			name = PacketTunnel;
+			path = PacketTunnel;
+			sourceTree = "<group>";
+		};
+		EA59145BE478C7E7F61910F4 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				A383F3A3DBC54911AF197D6E /* FastCatTV.app */,
+				6F637A4BFAF802F3D4B7C74D /* PacketTunnel.appex */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		7AC4ECFD09DBFE03FECC20BB /* FastCatTV */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 28A33613AF0B4703400C159C /* Build configuration list for PBXNativeTarget "FastCatTV" */;
+			buildPhases = (
+				7EB057193A559B32E1829BFC /* Sources */,
+				8557B483EA3105D2CC6CF6F1 /* Frameworks */,
+				8CD787B6CFA35E0375DAAB13 /* Resources */,
+				732A829ABDFFC0025062B858 /* Embed App Extensions */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				15F0BA97704D81CB1FB36DDF /* PBXTargetDependency */,
+			);
+			name = FastCatTV;
+			productName = FastCatTV;
+			productReference = A383F3A3DBC54911AF197D6E /* FastCatTV.app */;
+			productType = "com.apple.product-type.application";
+		};
+		9894AD0C0A8F9937640A14F7 /* PacketTunnel */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 4B43EF89A988DA945A132263 /* Build configuration list for PBXNativeTarget "PacketTunnel" */;
+			buildPhases = (
+				DB9E53F23D00A90C8D781BE8 /* Sources */,
+				EB069BDAA9D0322E61D24D05 /* Frameworks */,
+				C6970B75A2FEAA700F49CF88 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = PacketTunnel;
+			productName = PacketTunnel;
+			productReference = 6F637A4BFAF802F3D4B7C74D /* PacketTunnel.appex */;
+			productType = "com.apple.product-type.app-extension";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		AFDE6FD60B12339B46751713 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				LastSwiftUpdateCheck = 1600;
+				LastUpgradeCheck = 1600;
+			};
+			buildConfigurationList = BA806ED772EDE6CDA087B567 /* Build configuration list for PBXProject "FastCatTV" */;
+			compatibilityVersion = "Xcode 3.2";
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+				Base,
+			);
+			mainGroup = D845F61E387DFD3EDA643B1F;
+			minimizedProjectReferenceProxies = 0;
+			preferredProjectObjectVersion = 77;
+			productRefGroup = EA59145BE478C7E7F61910F4 /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				7AC4ECFD09DBFE03FECC20BB /* FastCatTV */,
+				9894AD0C0A8F9937640A14F7 /* PacketTunnel */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		8CD787B6CFA35E0375DAAB13 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		C6970B75A2FEAA700F49CF88 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		7EB057193A559B32E1829BFC /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				248459DE3B850CEA7E67811C /* FastCatTVApp.swift in Sources */,
+				C3905CFEE5DCC685953E1C01 /* SessionStore.swift in Sources */,
+				0AA98C25ECD44D0903DC10FA /* KeychainStore.swift in Sources */,
+				3B5EE3115EFED6018D4B882B /* GatewayClient.swift in Sources */,
+				B717EDAAAA5E28BEEF5EB3A0 /* TVLoginView.swift in Sources */,
+				3F82B466E6D6523B310D5545 /* TVHomeView.swift in Sources */,
+				D1A4260CA41B2D38123AA6C6 /* VPNManager.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		DB9E53F23D00A90C8D781BE8 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				7D33A359C552C6EA7A8BCCC2 /* PacketTunnelProvider.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		15F0BA97704D81CB1FB36DDF /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			name = PacketTunnel;
+			target = 9894AD0C0A8F9937640A14F7 /* PacketTunnel */;
+			targetProxy = D28EDCE1B3324D142148E2EB /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
+
+/* Begin XCBuildConfiguration section */
+		08C62B786C14F0BF729151F2 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_ENTITLEMENTS = PacketTunnel/PacketTunnel.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(PROJECT_DIR)/Frameworks",
+				);
+				INFOPLIST_FILE = PacketTunnel/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @executable_path/../../Frameworks";
+				MARKETING_VERSION = 3.6.0;
+				OTHER_LDFLAGS = (
+					"$(inherited)",
+					"-lclash",
+					"-lresolv",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = "$(FASTCAT_TV_BUNDLE_IDENTIFIER).PacketTunnel";
+				PRODUCT_NAME = PacketTunnel;
+				SDKROOT = appletvos;
+				SKIP_INSTALL = YES;
+				SWIFT_OBJC_BRIDGING_HEADER = "PacketTunnel/PacketTunnel-Bridging-Header.h";
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = 3;
+				TVOS_DEPLOYMENT_TARGET = 17.0;
+			};
+			name = Debug;
+		};
+		2847C7633E15935FE04BF7F7 /* Release */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = 8145EC021B4586E191924EEF /* Config.xcconfig */;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				MTL_FAST_MATH = YES;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_COMPILATION_MODE = wholemodule;
+				SWIFT_OPTIMIZATION_LEVEL = "-O";
+				SWIFT_VERSION = 5.0;
+			};
+			name = Release;
+		};
+		770D3B09C10B7BBD662A622F /* Debug */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = 8145EC021B4586E191924EEF /* Config.xcconfig */;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				SWIFT_VERSION = 5.0;
+			};
+			name = Debug;
+		};
+		B8828A6251E6F84CD7FED353 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_ENTITLEMENTS = FastCatTV/FastCatTV.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				INFOPLIST_FILE = FastCatTV/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
+				MARKETING_VERSION = 3.6.0;
+				PRODUCT_BUNDLE_IDENTIFIER = "$(FASTCAT_TV_BUNDLE_IDENTIFIER)";
+				PRODUCT_NAME = FastCat;
+				SDKROOT = appletvos;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = 3;
+				TVOS_DEPLOYMENT_TARGET = 17.0;
+			};
+			name = Debug;
+		};
+		C60A2A3F138E85B3C9B320E1 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_ENTITLEMENTS = FastCatTV/FastCatTV.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				INFOPLIST_FILE = FastCatTV/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
+				MARKETING_VERSION = 3.6.0;
+				PRODUCT_BUNDLE_IDENTIFIER = "$(FASTCAT_TV_BUNDLE_IDENTIFIER)";
+				PRODUCT_NAME = FastCat;
+				SDKROOT = appletvos;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = 3;
+				TVOS_DEPLOYMENT_TARGET = 17.0;
+				VALIDATE_PRODUCT = YES;
+			};
+			name = Release;
+		};
+		DF7FDAD16CE00F989AC64E48 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_ENTITLEMENTS = PacketTunnel/PacketTunnel.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(PROJECT_DIR)/Frameworks",
+				);
+				INFOPLIST_FILE = PacketTunnel/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @executable_path/../../Frameworks";
+				MARKETING_VERSION = 3.6.0;
+				OTHER_LDFLAGS = (
+					"$(inherited)",
+					"-lclash",
+					"-lresolv",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = "$(FASTCAT_TV_BUNDLE_IDENTIFIER).PacketTunnel";
+				PRODUCT_NAME = PacketTunnel;
+				SDKROOT = appletvos;
+				SKIP_INSTALL = YES;
+				SWIFT_OBJC_BRIDGING_HEADER = "PacketTunnel/PacketTunnel-Bridging-Header.h";
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = 3;
+				TVOS_DEPLOYMENT_TARGET = 17.0;
+				VALIDATE_PRODUCT = YES;
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		28A33613AF0B4703400C159C /* Build configuration list for PBXNativeTarget "FastCatTV" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				C60A2A3F138E85B3C9B320E1 /* Release */,
+				B8828A6251E6F84CD7FED353 /* Debug */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		4B43EF89A988DA945A132263 /* Build configuration list for PBXNativeTarget "PacketTunnel" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				DF7FDAD16CE00F989AC64E48 /* Release */,
+				08C62B786C14F0BF729151F2 /* Debug */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		BA806ED772EDE6CDA087B567 /* Build configuration list for PBXProject "FastCatTV" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				770D3B09C10B7BBD662A622F /* Debug */,
+				2847C7633E15935FE04BF7F7 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = AFDE6FD60B12339B46751713 /* Project object */;
+}

@@ -9,7 +9,6 @@ import 'package:fl_clash/xboard/features/settings/pages/fastcat_auto_start_setti
 import 'package:fl_clash/xboard/features/settings/pages/fastcat_app_exclusion_page.dart';
 import 'package:fl_clash/xboard/features/settings/pages/fastcat_custom_routing_page.dart';
 import 'package:fl_clash/xboard/features/settings/pages/fastcat_dns_settings_page.dart';
-import 'package:fl_clash/xboard/features/settings/pages/privacy_center_page.dart';
 import 'package:fl_clash/xboard/features/shared/styles/styles.dart';
 import 'package:fl_clash/xboard/features/shared/widgets/xb_dialog.dart';
 import 'package:fl_clash/xboard/features/streaming_check/pages/streaming_check_page.dart';
@@ -47,15 +46,6 @@ class FastCatSettingsPage extends ConsumerWidget {
                   _header(context, l10n.application),
                   _SettingsCard(
                     children: [
-                      _navigationTile(
-                        context,
-                        icon: Icons.privacy_tip_outlined,
-                        title:
-                            Localizations.localeOf(context).languageCode == 'zh'
-                                ? '数据与隐私'
-                                : 'Data & Privacy',
-                        onTap: () => _open(context, const PrivacyCenterPage()),
-                      ),
                       _navigationTile(
                         context,
                         icon: Icons.language_outlined,

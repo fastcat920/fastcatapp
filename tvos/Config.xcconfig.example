@@ -1,0 +1,7 @@
+// Copy this file to Config.xcconfig before signing an archive. Do not commit it.
+// Use the production API gateway selected by the FastCat bootstrap service.
+FASTCAT_API_BASE_URL = https://api.example.com/api/v1
+APP_GROUP_ID = group.com.fastcat.app
+// Keep this equal to the iOS app identifier for Universal Purchase.
+FASTCAT_TV_BUNDLE_IDENTIFIER = com.fastcat.app
+DEVELOPMENT_TEAM =

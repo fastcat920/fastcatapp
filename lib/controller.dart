@@ -17,6 +17,7 @@ import 'package:fl_clash/widgets/dialog.dart';
 import 'package:fl_clash/xboard/features/auth/services/device_heartbeat_service.dart';
 import 'package:fl_clash/xboard/features/auth/utils/customer_service_helper.dart';
 import 'package:fl_clash/xboard/features/shared/widgets/legal_footer.dart';
+import 'package:fl_clash/xboard/features/shared/styles/styles.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter/material.dart';
 import 'package:yaml/yaml.dart';
@@ -1305,19 +1306,21 @@ class AppController {
                 ? '数据与隐私说明'
                 : 'Data & Privacy Notice',
             actions: [
-              TextButton(
+              OutlinedButton(
                 onPressed: () {
                   Navigator.of(context).pop<bool>(false);
                 },
+                style: XbUiButton.outlinedNeutral(context),
                 child: Text(appLocalizations.exit),
               ),
-              TextButton(
+              FilledButton(
                 onPressed: () {
                   _ref.read(appSettingProvider.notifier).updateState(
                         (state) => state.copyWith(disclaimerAccepted: true),
                       );
                   Navigator.of(context).pop<bool>(true);
                 },
+                style: XbUiButton.filledPrimary(context),
                 child: Text(appLocalizations.agree),
               )
             ],

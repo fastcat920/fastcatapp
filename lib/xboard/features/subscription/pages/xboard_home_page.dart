@@ -472,7 +472,9 @@ class _XBoardHomePageState extends ConsumerState<XBoardHomePage>
                         ),
                       ),
                     ),
-                    if (isLandscapeHome && !showTopInfo)
+                    // 紧凑布局也会用于横屏手机；退出入口仅保留给 TV，
+                    // 避免占用移动端首页的右上角操作区。
+                    if (isTvHome && isLandscapeHome && !showTopInfo)
                       Positioned(
                         top: 8,
                         right: 16,
