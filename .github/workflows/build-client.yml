@@ -32,6 +32,10 @@ on:
         description: Build iOS IPA
         type: boolean
         default: true
+      build_tvos:
+        description: Build unsigned tvOS app
+        type: boolean
+        default: true
       build_linux:
         description: Build Linux amd64 and arm64 packages
         type: boolean
@@ -879,6 +883,61 @@ jobs:
         with:
           name: FastCat-ios-ipa
           path: dist/*.ipa
+          if-no-files-found: error
+          retention-days: 3
+
+  tvos:
+    name: tvOS App
+    runs-on: macos-15
+    if: github.event_name == 'push' || inputs.build_tvos
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: "1.20.x"
+          cache-dependency-path: core/go.sum
+
+      - name: Select Xcode
+        run: |
+          sudo xcode-select -s /Applications/Xcode.app
+          xcodebuild -version
+          xcrun --sdk appletvos --show-sdk-version
+
+      - name: Configure tvOS build
+        run: cp tvos/Config.xcconfig.example tvos/Config.xcconfig
+
+      - name: Build tvOS native core
+        run: bash scripts/build_tvos_core.sh
+
+      - name: Build unsigned tvOS app
+        run: |
+          xcodebuild \
+            -project tvos/FastCatTV.xcodeproj \
+            -scheme FastCatTV \
+            -configuration Release \
+            -sdk appletvos \
+            -derivedDataPath build/tvos-derived \
+            CODE_SIGNING_ALLOWED=NO \
+            CODE_SIGNING_REQUIRED=NO \
+            DEVELOPMENT_TEAM= \
+            build
+
+      - name: Package tvOS app
+        run: |
+          mkdir -p dist
+          app_path="$(find build/tvos-derived/Build/Products/Release-appletvos -maxdepth 1 -name '*.app' -print -quit)"
+          test -n "$app_path"
+          ditto -c -k --sequesterRsrc --keepParent "$app_path" dist/FastCat-tvOS-unsigned.app.zip
+
+      - name: Upload tvOS app
+        uses: actions/upload-artifact@v4
+        with:
+          name: FastCat-tvos-unsigned
+          path: dist/FastCat-tvOS-unsigned.app.zip
           if-no-files-found: error
           retention-days: 3
 
