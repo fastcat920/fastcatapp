@@ -34,7 +34,7 @@ struct TVLoginView: View {
         Button(action: loadChallenge) {
           Label("刷新二维码", systemImage: "arrow.clockwise")
         }
-        .buttonStyle(.borderedProminent).controlSize(.large)
+        .buttonStyle(.borderedProminent)
         .disabled(isLoading)
         Text("请在手机快猫中选择“扫一扫”，扫描此二维码完成登录")
           .foregroundStyle(.secondary).font(.footnote)

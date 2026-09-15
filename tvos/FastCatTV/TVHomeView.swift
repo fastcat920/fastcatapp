@@ -15,7 +15,7 @@ struct TVHomeView: View {
         Text(connected ? "已连接" : "未连接").font(.system(size: 48, weight: .bold))
         if let errorMessage { Text(errorMessage).foregroundStyle(.red).font(.title3) }
         Button(connected ? "断开连接" : "连接代理", action: toggleConnection)
-          .buttonStyle(.borderedProminent).controlSize(.large).disabled(isConnecting)
+          .buttonStyle(.borderedProminent).disabled(isConnecting)
         Spacer()
       }
       .navigationTitle("快猫")
