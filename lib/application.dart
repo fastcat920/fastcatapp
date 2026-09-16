@@ -246,9 +246,13 @@ class ApplicationState extends ConsumerState<Application>
             ),
           );
         }
-        if (previous?.isAuthenticated != next.isAuthenticated ||
-            previous?.isInitialized != next.isInitialized) {
+        final authStateChanged =
+            previous?.isAuthenticated != next.isAuthenticated ||
+                previous?.isInitialized != next.isInitialized;
+        if (authStateChanged) {
           syncDeviceHeartbeat();
+        }
+        if (authStateChanged || previous?.isLoading != next.isLoading) {
           WidgetsBinding.instance.addPostFrameCallback((_) {
             if (mounted) {
               _router.refresh();
