@@ -32,6 +32,10 @@ on:
         description: Build iOS IPA
         type: boolean
         default: true
+      build_ios_trollstore:
+        description: Build TrollStore-specific iOS IPA
+        type: boolean
+        default: false
       build_tvos:
         description: Build unsigned tvOS app
         type: boolean
@@ -840,7 +844,7 @@ jobs:
   ios:
     name: iOS IPA
     runs-on: macos-latest
-    if: github.event_name == 'push' || inputs.build_ios
+    if: github.event_name == 'push' || inputs.build_ios || inputs.build_ios_trollstore
 
     steps:
       - name: Checkout
@@ -872,17 +876,36 @@ jobs:
         run: bash scripts/build_ios_core.sh
 
       - name: Build IPA
+        if: github.event_name == 'push' || inputs.build_ios
         env:
           XOR_KEY: ${{ secrets.XOR_KEY }}
           FASTCAT_KEY_CURRENT: ${{ secrets.FASTCAT_KEY_CURRENT }}
           FASTCAT_KEY_NEXT: ${{ secrets.FASTCAT_KEY_NEXT }}
         run: bash scripts/package_ipa.sh
 
+      - name: Build TrollStore IPA
+        if: inputs.build_ios_trollstore
+        env:
+          XOR_KEY: ${{ secrets.XOR_KEY }}
+          FASTCAT_KEY_CURRENT: ${{ secrets.FASTCAT_KEY_CURRENT }}
+          FASTCAT_KEY_NEXT: ${{ secrets.FASTCAT_KEY_NEXT }}
+        run: bash scripts/package_trollstore_ipa.sh
+
       - name: Upload IPA
+        if: github.event_name == 'push' || inputs.build_ios
         uses: actions/upload-artifact@v4
         with:
           name: FastCat-ios-ipa
           path: dist/*.ipa
+          if-no-files-found: error
+          retention-days: 3
+
+      - name: Upload TrollStore IPA
+        if: inputs.build_ios_trollstore
+        uses: actions/upload-artifact@v4
+        with:
+          name: FastCat-ios-trollstore-ipa
+          path: dist/*-TrollStore.ipa
           if-no-files-found: error
           retention-days: 3
 
