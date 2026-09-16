@@ -58,7 +58,7 @@ DMG_SIZE=$((APP_SIZE * 3 / 1000 + 100))
 echo "📦 创建 ${DMG_SIZE}MB HFS+ 镜像..."
 hdiutil create -volname "$VOL_NAME" -size ${DMG_SIZE}m -fs "HFS+" -attach "$TMP_DMG"
 
-cp -R "$APP" "/Volumes/${VOL_NAME}/"
+cp -R "$APP" "/Volumes/${VOL_NAME}/${APP_NAME}.app"
 ln -sf /Applications "/Volumes/${VOL_NAME}/Applications"
 mkdir -p "/Volumes/${VOL_NAME}/.background"
 cp "$BG_SRC" "/Volumes/${VOL_NAME}/.background/background.png"
@@ -76,7 +76,7 @@ tell application \"Finder\"
     set arrangement of viewOptions to not arranged
     set icon size of viewOptions to 144
     set background picture of viewOptions to file \".background:background.png\"
-    set position of item \"${APP_NAME_EN}.app\" of container window to {172, 236}
+    set position of item \"${APP_NAME}.app\" of container window to {172, 236}
     set position of item \"Applications\" of container window to {476, 236}
     close
     open
@@ -88,7 +88,7 @@ end tell
 
 
 echo "🔏 自签名 App..."
-codesign --force --deep --sign - "/Volumes/${VOL_NAME}/${APP_NAME_EN}.app" 2>&1 || echo "⚠️ 签名跳过（无 codesign 工具）"
+codesign --force --deep --sign - "/Volumes/${VOL_NAME}/${APP_NAME}.app" 2>&1 || echo "⚠️ 签名跳过（无 codesign 工具）"
 
 echo "💿 压缩转换..."
 hdiutil detach "/Volumes/${VOL_NAME}"

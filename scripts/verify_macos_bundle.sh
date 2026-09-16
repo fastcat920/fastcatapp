@@ -68,4 +68,12 @@ fi
 echo "Verified $mach_o_count universal Mach-O binaries"
 
 codesign --verify --deep --strict --verbose=2 "$app_path"
+
+# An empty keychain access group makes an ad-hoc signed CI build pass
+# codesign verification but launchd rejects it at runtime (POSIX 163).
+entitlements="$(codesign -d --entitlements :- "$app_path" 2>/dev/null || true)"
+if grep -q '<key>keychain-access-groups</key>' <<<"$entitlements"; then
+  echo "Unsupported keychain-access-groups entitlement in distributable macOS bundle"
+  exit 1
+fi
 echo "macOS bundle architecture and signature verification passed"

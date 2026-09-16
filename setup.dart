@@ -1489,6 +1489,9 @@ end tell
     final productName = Platform.environment["APP_NAME_EN"]?.isNotEmpty == true
         ? Platform.environment["APP_NAME_EN"]!
         : Build.appNameEn;
+    // 保持 DMG 内的 .app 文件名与历史版本一致，Finder 才会提示覆盖安装。
+    // 可执行文件继续使用 ASCII PRODUCT_NAME，避免 Xcode/脚本的 Unicode 路径问题。
+    final installedAppName = Build.appName;
     final dmgVolumeName = _safeAsciiDmgVolumeName(productName);
     if (dmgVolumeName != productName) {
       print(
@@ -1519,7 +1522,7 @@ end tell
         "cp",
         "-R",
         builtApp.path,
-        join(dmgRoot.path, "$productName.app"),
+        join(dmgRoot.path, "$installedAppName.app"),
       ],
       name: "copy macos app to dmg root",
     );
@@ -1546,7 +1549,7 @@ end tell
       final dmgConfigPath = join(dmgRoot.path, "make_config.json");
       final dmgConfig = _macosDmgConfigWithNames(
         sourceFile: File(dmgConfigSourcePath),
-        productName: productName,
+        productName: installedAppName,
         volumeName: dmgVolumeName,
       );
       File(dmgConfigPath)
@@ -2045,8 +2048,8 @@ void _applyMacosAppName() {
         '[setup.dart]   ✅ AppInfo.xcconfig PRODUCT_NAME / DISPLAY_NAME → $productName, localized Chinese → $appName');
   }
 
-  // 2. DMG make_config.json: title 用 ASCII 卷标，.app path 用 PRODUCT_NAME。
-  // appdmg 写入的 Finder 背景图 alias 在中文卷标下可能无法解析。
+  // 2. DMG make_config.json: title 用 ASCII 卷标，.app 文件名保持历史中文名。
+  // Finder 以文件名判断覆盖目标；卷标仍保持 ASCII 以兼容背景图 alias。
   final dmgConfigPath =
       join(current, 'macos', 'packaging', 'dmg', 'make_config.json');
   final dmgConfigFile = File(dmgConfigPath);
@@ -2054,14 +2057,14 @@ void _applyMacosAppName() {
     final dmgVolumeName = _safeAsciiDmgVolumeName(appNameEn);
     final config = _macosDmgConfigWithNames(
       sourceFile: dmgConfigFile,
-      productName: productName,
+      productName: appName,
       volumeName: dmgVolumeName,
     );
     dmgConfigFile.writeAsStringSync(
       '${const JsonEncoder.withIndent('  ').convert(config)}\n',
     );
     print(
-        '[setup.dart]   ✅ make_config.json title → $dmgVolumeName, path → $productName.app');
+        '[setup.dart]   ✅ make_config.json title → $dmgVolumeName, path → $appName.app');
   }
 
   // 3. Runner.xcscheme: BuildableName 用 PRODUCT_NAME
