@@ -1,9 +1,14 @@
+import 'dart:io';
+
 import 'package:fl_clash/clash/clash.dart';
 import 'package:fl_clash/common/common.dart';
 import 'package:fl_clash/models/models.dart';
+import 'package:fl_clash/plugins/service.dart';
+import 'package:fl_clash/security/profile_vault.dart';
 import 'package:fl_clash/state.dart';
 
 Future<void> testNodeLatency(Proxy proxy, [String? testUrl]) async {
+  if (!await _ensureIOSLatencyCoreReady()) return;
   final controller = globalState.appController;
   final state = controller.getProxyCardState(proxy.name);
   final url = state.testUrl.getSafeValue(controller.getRealTestUrl(testUrl));
@@ -27,6 +32,7 @@ Future<void> testNodesLatency(
   String? testUrl,
   void Function(String proxyName)? onResult,
 ]) async {
+  if (!await _ensureIOSLatencyCoreReady()) return;
   final controller = globalState.appController;
   final testsByTarget = <String, _LatencyTestTarget>{};
 
@@ -163,6 +169,24 @@ bool _allTargetsTimedOut(List<Delay> results) {
 }
 
 bool _isTimedOut(Delay delay) => delay.value == null || delay.value! <= 0;
+
+Future<bool> _ensureIOSLatencyCoreReady() async {
+  if (!Platform.isIOS) return true;
+  final vpnService = service;
+  if (vpnService == null) return false;
+  if (await vpnService.isTunnelRunning()) return true;
+
+  final profileId = globalState.config.currentProfileId;
+  if (profileId == null) return false;
+  try {
+    final config = await ProfileVault.instance.readText(profileId);
+    if (config.trim().isEmpty) return false;
+    return await vpnService.ensureTunnelRunning(config) == true;
+  } catch (error) {
+    commonPrint.log('iOS latency core start failed: $error');
+    return false;
+  }
+}
 
 Future<void> _recoverLatencyCore() async {
   // resetConnections only resets Mihomo's resolver/idle transport cache. It

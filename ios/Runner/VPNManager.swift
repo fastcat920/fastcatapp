@@ -124,6 +124,36 @@ class VPNManager: NSObject {
     }
   }
 
+  /// startVPNTunnel() only submits the request. Provider IPC is reliable only
+  /// after NetworkExtension reports `.connected`, so never let Dart continue
+  /// while the extension is still launching.
+  private func waitForTunnelConnected(
+    timeout: TimeInterval = 15,
+    completion: @escaping (String?) -> Void
+  ) {
+    let deadline = Date().addingTimeInterval(timeout)
+
+    func poll() {
+      guard let connection = self.manager?.connection else {
+        completion("VPN manager unavailable")
+        return
+      }
+      if connection.status == .connected {
+        completion(nil)
+        return
+      }
+      if Date() >= deadline {
+        let error = "VPN tunnel connection timed out (status=\(connection.status.rawValue))"
+        self.lastError = error
+        completion(error)
+        return
+      }
+      DispatchQueue.main.asyncAfter(deadline: .now() + 0.1, execute: poll)
+    }
+
+    poll()
+  }
+
   // MARK: - Ensure tunnel running (idle mode)
 
   /// Start the tunnel in idle mode if not already running.
@@ -188,7 +218,7 @@ class VPNManager: NSObject {
           NSLog("[VPNManager] ensureTunnelRunning: starting tunnel in idle mode...")
           try mgr.connection.startVPNTunnel(options: options)
           NSLog("[VPNManager] ensureTunnelRunning: startVPNTunnel called successfully")
-          completion(nil)
+          self?.waitForTunnelConnected(completion: completion)
         } catch {
           let err = "startVPNTunnel: \(error.localizedDescription)"
           NSLog("[VPNManager] ensureTunnelRunning %@", err)
@@ -203,7 +233,18 @@ class VPNManager: NSObject {
 
   /// Supply the decoded profile only to the active tunnel; never persist YAML.
   func connect(config: String, completion: @escaping (String?) -> Void) {
-    if isTunnelRunning {
+    if manager?.connection.status == .connecting {
+      NSLog("[VPNManager] connect: tunnel is still connecting; waiting before IPC")
+      waitForTunnelConnected { [weak self] error in
+        if let error = error {
+          completion(error)
+        } else {
+          self?.connect(config: config, completion: completion)
+        }
+      }
+      return
+    }
+    if manager?.connection.status == .connected {
       // Tunnel already running — just enable traffic mode
       NSLog("[VPNManager] connect: tunnel running, enabling traffic mode")
       setTrafficMode(active: true) { [weak self] error in
@@ -267,9 +308,14 @@ class VPNManager: NSObject {
           ]
           NSLog("[VPNManager] connect: starting VPN tunnel (active mode)...")
           try mgr.connection.startVPNTunnel(options: options)
-          self?.isTrafficActive = true
           NSLog("[VPNManager] connect: startVPNTunnel called successfully")
-          completion(nil)
+          self?.waitForTunnelConnected { error in
+            if error == nil {
+              self?.isTrafficActive = true
+              self?.notifyStatusChange()
+            }
+            completion(error)
+          }
         } catch {
           let err = "startVPNTunnel: \(error.localizedDescription)"
           NSLog("[VPNManager] connect %@", err)
