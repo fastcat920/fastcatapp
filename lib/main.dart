@@ -24,8 +24,10 @@ import 'common/common.dart';
 import 'common/boot_diag.dart';
 import 'common/desktop_shared_preferences_store.dart';
 import 'common/macos_startup_diagnostics.dart';
+import 'enum/enum.dart';
 import 'security/profile_vault.dart';
 import 'models/models.dart';
+import 'models/core.dart' as core_models;
 import 'package:fl_clash/xboard/features/auth/providers/xboard_user_provider.dart';
 import 'package:fl_clash/xboard/infrastructure/infrastructure.dart';
 import 'package:fl_clash/xboard/services/services.dart';
@@ -296,6 +298,19 @@ Future<void> _service(List<String> flags) async {
   globalState.isService = true;
   WidgetsFlutterBinding.ensureInitialized();
   final quickStart = flags.contains("quick");
+  AndroidVpnOptions? recoveryVpnOptions;
+  for (final flag in flags) {
+    if (!flag.startsWith('vpn-options=')) continue;
+    try {
+      final encoded = flag.substring('vpn-options='.length);
+      final decoded = utf8.decode(base64.decode(encoded));
+      recoveryVpnOptions = AndroidVpnOptions.fromJson(
+        json.decode(decoded) as Map<String, dynamic>,
+      );
+    } catch (error) {
+      debugPrint('Unable to decode persisted VPN options: $error');
+    }
+  }
   final clashLibHandler = ClashLibHandler();
   await globalState.init();
 
@@ -313,6 +328,38 @@ Future<void> _service(List<String> flags) async {
   vpn?.handleGetStartForegroundParams = () {
     final traffic = clashLibHandler.getTraffic();
     return json.encode({"title": localizedAppName, "content": "$traffic"});
+  };
+
+  vpn?.handleHeartbeat = () {
+    try {
+      final runTime = clashLibHandler.getRunTime();
+      final totalTraffic = clashLibHandler.getTotalTraffic(true);
+      return <String, Object?>{
+        'healthy': runTime != null,
+        'runtime': runTime?.millisecondsSinceEpoch,
+        'trafficTotal': totalTraffic.up.value + totalTraffic.down.value,
+      };
+    } catch (error) {
+      debugPrint('VPN heartbeat failed: $error');
+      return const <String, Object?>{'healthy': false};
+    }
+  };
+
+  vpn?.handlePrepareRecovery = () async {
+    try {
+      final action = core_models.Action(
+        id: 'vpn-recovery-${DateTime.now().microsecondsSinceEpoch}',
+        method: ActionMethod.shutdown,
+        data: null,
+      );
+      await clashLibHandler
+          .invokeAction(json.encode(action))
+          .timeout(const Duration(seconds: 2));
+      return true;
+    } catch (error) {
+      debugPrint('Core shutdown before VPN recovery failed: $error');
+      return false;
+    }
   };
 
   vpn?.addListener(
@@ -335,30 +382,37 @@ Future<void> _service(List<String> flags) async {
       enable: true,
     );
     Future(() async {
-      final profileId = globalState.config.currentProfileId;
-      if (profileId == null) {
-        return;
-      }
-      final params = await globalState.getSetupParams(
-        pathConfig: clashConfig,
-      );
-      final res = await clashLibHandler.quickStart(
-        InitParams(
-          homeDir: homeDirPath,
-          version: version,
-        ),
-        params,
-        globalState.getCoreState(),
-      );
-      debugPrint(res);
-      if (res.isNotEmpty) {
+      try {
+        final profileId = globalState.config.currentProfileId;
+        if (profileId == null) {
+          await vpn?.stop();
+          return;
+        }
+        final params = await globalState.getSetupParams(
+          pathConfig: clashConfig,
+        );
+        final res = await clashLibHandler.quickStart(
+          InitParams(
+            homeDir: homeDirPath,
+            version: version,
+          ),
+          params,
+          globalState.getCoreState(),
+        );
+        debugPrint(res);
+        if (res.isNotEmpty) {
+          await vpn?.stop();
+          return;
+        }
+        await vpn?.start(
+          recoveryVpnOptions ?? clashLibHandler.getAndroidVpnOptions(),
+        );
+        clashLibHandler.startListener();
+      } catch (error, stack) {
+        debugPrint('Quick VPN recovery failed: $error');
+        debugPrintStack(stackTrace: stack);
         await vpn?.stop();
-        exit(0);
       }
-      await vpn?.start(
-        clashLibHandler.getAndroidVpnOptions(),
-      );
-      clashLibHandler.startListener();
     });
   }
 }

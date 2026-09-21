@@ -49,7 +49,10 @@ data object ServicePlugin : FlutterPlugin, MethodChannel.MethodCallHandler {
         }
 
         "status" -> {
-            result.success(GlobalState.runState.value == RunState.START)
+            result.success(
+                GlobalState.runState.value == RunState.START &&
+                        GlobalState.getCurrentVPNPlugin()?.isActuallyRunning() == true
+            )
         }
 
         "destroy" -> {

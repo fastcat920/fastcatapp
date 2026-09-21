@@ -1,18 +1,28 @@
 package com.fastcat.app.services
 
 import android.annotation.SuppressLint
+import android.app.UiModeManager
+import android.content.Context
 import android.content.Intent
+import android.content.res.Configuration
+import android.net.ConnectivityManager
+import android.net.NetworkCapabilities
 import android.net.ProxyInfo
 import android.net.VpnService
+import android.net.wifi.WifiManager
 import android.os.Binder
 import android.os.Build
 import android.os.IBinder
 import android.os.Parcel
+import android.os.PowerManager
 import android.os.RemoteException
 import android.util.Log
+import androidx.core.content.getSystemService
 import androidx.core.app.NotificationCompat
 import com.fastcat.app.R
 import com.fastcat.app.GlobalState
+import com.fastcat.app.RunState
+import com.fastcat.app.core.Core
 import com.fastcat.app.extensions.getIpv4RouteAddress
 import com.fastcat.app.extensions.getIpv6RouteAddress
 import com.fastcat.app.extensions.toCIDR
@@ -24,20 +34,42 @@ import kotlinx.coroutines.launch
 
 
 class FastCatVpnService : VpnService(), BaseServiceInterface {
+    @Volatile
+    private var tunActive = false
+
+    private var wakeLock: PowerManager.WakeLock? = null
+    private var wifiLock: WifiManager.WifiLock? = null
+
     override fun onCreate() {
         super.onCreate()
         // startForegroundService must promote the service immediately. The
         // Flutter engine will replace this placeholder with live traffic text.
         startFastCatPlaceholderForeground()
-        GlobalState.initServiceEngine()
+        Log.i(TAG, "VPN service created pid=${android.os.Process.myPid()}")
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
+        val systemAlwaysOn = Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q && isAlwaysOn
+        val shouldRecover = VpnRecoveryStore.isDesiredRunning() || systemAlwaysOn
+        Log.i(
+            TAG,
+            "VPN service start intent=${intent?.action} sticky=${intent == null} recover=$shouldRecover",
+        )
+        if (intent == null && shouldRecover) {
+            // START_STICKY may recreate only the Android service while the
+            // previous Flutter engine is still alive but bound to a dead TUN.
+            GlobalState.restartServiceEngineForRecovery("sticky VPN service restart")
+        } else {
+            GlobalState.initServiceEngine(
+                forceQuickStart = shouldRecover,
+                recoveryOptionsJson = VpnRecoveryStore.getOptionsJson(),
+            )
+        }
         return START_STICKY
     }
 
     override fun start(options: VpnOptions): Int {
-        return with(Builder()) {
+        val fd = with(Builder()) {
             if (options.ipv4Address.isNotEmpty()) {
                 val cidr = options.ipv4Address.toCIDR()
                 addAddress(cidr.address, cidr.prefixLength)
@@ -137,9 +169,15 @@ class FastCatVpnService : VpnService(), BaseServiceInterface {
             establish()?.detachFd()
                 ?: throw NullPointerException("Establish VPN rejected by system")
         }
+        tunActive = true
+        acquireRuntimeLocks()
+        Log.i(TAG, "TUN established fd=$fd wakeLock=${wakeLock?.isHeld == true}")
+        return fd
     }
 
     override fun stop() {
+        markTunStopped()
+        releaseRuntimeLocks()
         stopSelf()
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
             stopForeground(STOP_FOREGROUND_REMOVE)
@@ -166,7 +204,83 @@ class FastCatVpnService : VpnService(), BaseServiceInterface {
 
     override fun onTrimMemory(level: Int) {
         super.onTrimMemory(level)
+        Log.w(TAG, "onTrimMemory level=$level tunActive=$tunActive")
         GlobalState.getCurrentVPNPlugin()?.requestGc()
+    }
+
+    fun isTunActive(): Boolean = tunActive
+
+    fun markTunStopped() {
+        tunActive = false
+    }
+
+    @Synchronized
+    fun refreshWifiLock() {
+        if (!tunActive || !isTelevision() || !isUsingWifi()) {
+            releaseWifiLock()
+            return
+        }
+        if (wifiLock?.isHeld == true) return
+
+        @Suppress("DEPRECATION")
+        val nextLock = getSystemService<WifiManager>()?.createWifiLock(
+            WifiManager.WIFI_MODE_FULL_HIGH_PERF,
+            "$packageName:vpn-wifi",
+        ) ?: return
+        nextLock.setReferenceCounted(false)
+        nextLock.acquire()
+        wifiLock = nextLock
+        Log.i(TAG, "TV Wi-Fi lock acquired")
+    }
+
+    @Synchronized
+    private fun acquireRuntimeLocks() {
+        if (wakeLock?.isHeld != true) {
+            val powerManager = getSystemService<PowerManager>()
+            wakeLock = powerManager?.newWakeLock(
+                PowerManager.PARTIAL_WAKE_LOCK,
+                "$packageName:vpn-core",
+            )?.apply {
+                setReferenceCounted(false)
+                acquire()
+            }
+            Log.i(TAG, "VPN partial wake lock acquired")
+        }
+        refreshWifiLock()
+    }
+
+    @Synchronized
+    private fun releaseRuntimeLocks() {
+        releaseWifiLock()
+        wakeLock?.let { lock ->
+            if (lock.isHeld) lock.release()
+        }
+        wakeLock = null
+        Log.i(TAG, "VPN runtime locks released")
+    }
+
+    private fun releaseWifiLock() {
+        wifiLock?.let { lock ->
+            if (lock.isHeld) lock.release()
+        }
+        if (wifiLock != null) Log.i(TAG, "TV Wi-Fi lock released")
+        wifiLock = null
+    }
+
+    private fun isUsingWifi(): Boolean {
+        val connectivity = getSystemService<ConnectivityManager>() ?: return false
+        return connectivity.allNetworks.any { network ->
+            val capabilities = connectivity.getNetworkCapabilities(network)
+            capabilities?.hasTransport(NetworkCapabilities.TRANSPORT_WIFI) == true &&
+                    capabilities.hasTransport(NetworkCapabilities.TRANSPORT_VPN).not() &&
+                    capabilities.hasCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET)
+        }
+    }
+
+    private fun isTelevision(): Boolean {
+        val uiModeManager = getSystemService(Context.UI_MODE_SERVICE) as? UiModeManager
+        return uiModeManager?.currentModeType == Configuration.UI_MODE_TYPE_TELEVISION ||
+                packageManager.hasSystemFeature("android.software.leanback")
     }
 
     private val binder = LocalBinder()
@@ -198,7 +312,24 @@ class FastCatVpnService : VpnService(), BaseServiceInterface {
     }
 
     override fun onDestroy() {
-        stop()
+        Log.w(TAG, "VPN service destroyed desired=${VpnRecoveryStore.isDesiredRunning()}")
+        markTunStopped()
+        releaseRuntimeLocks()
+        Core.stopTun()
         super.onDestroy()
+    }
+
+    override fun onRevoke() {
+        Log.w(TAG, "VPN permission revoked")
+        VpnRecoveryStore.clearDesiredRunning()
+        GlobalState.runState.postValue(RunState.STOP)
+        markTunStopped()
+        releaseRuntimeLocks()
+        Core.stopTun()
+        super.onRevoke()
+    }
+
+    companion object {
+        private const val TAG = "FastCatVpnService"
     }
 }

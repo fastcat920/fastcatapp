@@ -1,9 +1,12 @@
 package com.fastcat.app
 
+import android.util.Base64
+import android.util.Log
 import androidx.lifecycle.MutableLiveData
 import com.fastcat.app.plugins.AppPlugin
 import com.fastcat.app.plugins.TilePlugin
 import com.fastcat.app.plugins.VpnPlugin
+import com.fastcat.app.services.VpnRecoveryStore
 import io.flutter.FlutterInjector
 import io.flutter.embedding.engine.FlutterEngine
 import io.flutter.embedding.engine.dart.DartExecutor
@@ -31,6 +34,8 @@ object GlobalState {
     val runState: MutableLiveData<RunState> = MutableLiveData<RunState>(RunState.STOP)
     var flutterEngine: FlutterEngine? = null
     private var serviceEngine: FlutterEngine? = null
+    @Volatile
+    private var recoveryRestartInProgress = false
 
     fun getCurrentAppPlugin(): AppPlugin? {
         val currentEngine = if (flutterEngine != null) flutterEngine else serviceEngine
@@ -102,7 +107,10 @@ object GlobalState {
         }
     }
 
-    fun initServiceEngine() {
+    fun initServiceEngine(
+        forceQuickStart: Boolean = false,
+        recoveryOptionsJson: String? = null,
+    ) {
         if (serviceEngine != null) return
         destroyServiceEngine()
         runLock.withLock {
@@ -114,12 +122,51 @@ object GlobalState {
                 FlutterInjector.instance().flutterLoader().findAppBundlePath(),
                 "_service"
             )
+            val quickStart = forceQuickStart || flutterEngine == null
+            val entrypointArgs: List<String>? = if (quickStart) {
+                val args = mutableListOf("quick")
+                recoveryOptionsJson?.takeIf { it.isNotBlank() }?.let { json ->
+                    args.add(
+                        "vpn-options=" + Base64.encodeToString(
+                            json.toByteArray(Charsets.UTF_8),
+                            Base64.NO_WRAP,
+                        ),
+                    )
+                }
+                args
+            } else {
+                null
+            }
             serviceEngine?.dartExecutor?.executeDartEntrypoint(
                 vpnService,
-                if (flutterEngine == null) listOf("quick") else null
+                entrypointArgs,
+            )
+            Log.i(
+                "FastCatGlobalState",
+                "service engine started quick=$quickStart recoveryOptions=${recoveryOptionsJson != null}",
             )
         }
     }
+
+    fun restartServiceEngineForRecovery(reason: String) {
+        if (recoveryRestartInProgress || !VpnRecoveryStore.isDesiredRunning()) return
+        recoveryRestartInProgress = true
+        CoroutineScope(Dispatchers.Main).launch {
+            try {
+                Log.w("FastCatGlobalState", "restarting VPN service engine: $reason")
+                getCurrentVPNPlugin()?.prepareForRecovery()
+                runLock.withLock {
+                    serviceEngine?.destroy()
+                    serviceEngine = null
+                    runState.value = RunState.PENDING
+                }
+                initServiceEngine(
+                    forceQuickStart = true,
+                    recoveryOptionsJson = VpnRecoveryStore.getOptionsJson(),
+                )
+            } finally {
+                recoveryRestartInProgress = false
+            }
+        }
+    }
 }
-
-

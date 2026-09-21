@@ -18,6 +18,12 @@ class FastCatService : Service(), BaseServiceInterface {
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
+        if (VpnRecoveryStore.isDesiredRunning()) {
+            GlobalState.initServiceEngine(
+                forceQuickStart = true,
+                recoveryOptionsJson = VpnRecoveryStore.getOptionsJson(),
+            )
+        }
         return START_STICKY
     }
 

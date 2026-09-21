@@ -44,6 +44,15 @@ android {
         versionName = flutter.versionName
     }
 
+    packagingOptions {
+        jniLibs {
+            // Compress large native cores inside directly distributed APKs.
+            // Android extracts them during installation, trading installed
+            // disk usage and install time for a substantially smaller APK.
+            useLegacyPackaging = true
+        }
+    }
+
     flavorDimensions += "device"
     productFlavors {
         create("mobile") {
