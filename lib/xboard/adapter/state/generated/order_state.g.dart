@@ -6,7 +6,7 @@ part of '../order_state.dart';
 // RiverpodGenerator
 // **************************************************************************
 
-String _$getOrdersHash() => r'0b73f63c2561fb60631461bf003a69a8b5763e91';
+String _$getOrdersHash() => r'8e3c71fcdfb78d3f0045941994186d9cda464be1';
 
 /// 订单状态管理
 /// 获取订单列表
@@ -25,7 +25,7 @@ final getOrdersProvider = AutoDisposeFutureProvider<List<OrderModel>>.internal(
 @Deprecated('Will be removed in 3.0. Use Ref instead')
 // ignore: unused_element
 typedef GetOrdersRef = AutoDisposeFutureProviderRef<List<OrderModel>>;
-String _$getOrderHash() => r'a8e667020bec541831a1f387ca761c26752dee54';
+String _$getOrderHash() => r'4c7748dee5ea05baa956ef0faae90f4a9185c6d4';
 
 /// Copied from Dart SDK
 class _SystemHash {
@@ -188,7 +188,7 @@ class _GetOrderProviderElement
 }
 
 String _$getOrderPaymentMethodsHash() =>
-    r'991ffc7c2b2ef49552bd40d4a83cbb1bc431a900';
+    r'611d6fde408d2f2e57136439c812ff8130c720cc';
 
 /// 获取订单支付方式
 ///

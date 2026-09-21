@@ -28,6 +28,8 @@ mixin _$Order {
   double? get totalAmount => throw _privateConstructorUsedError;
   @JsonKey(name: 'balance_amount')
   double? get balanceAmount => throw _privateConstructorUsedError;
+  @JsonKey(name: 'handling_amount')
+  double? get handlingAmount => throw _privateConstructorUsedError;
   @JsonKey(name: 'surplus_amount')
   double? get surplusAmount => throw _privateConstructorUsedError;
   @JsonKey(name: 'refund_amount')
@@ -79,6 +81,7 @@ abstract class $OrderCopyWith<$Res> {
       @JsonKey(name: 'trade_no') String? tradeNo,
       @JsonKey(name: 'total_amount') double? totalAmount,
       @JsonKey(name: 'balance_amount') double? balanceAmount,
+      @JsonKey(name: 'handling_amount') double? handlingAmount,
       @JsonKey(name: 'surplus_amount') double? surplusAmount,
       @JsonKey(name: 'refund_amount') double? refundAmount,
       @JsonKey(name: 'deposit_amount') double? depositAmount,
@@ -122,6 +125,7 @@ class _$OrderCopyWithImpl<$Res, $Val extends Order>
     Object? tradeNo = freezed,
     Object? totalAmount = freezed,
     Object? balanceAmount = freezed,
+    Object? handlingAmount = freezed,
     Object? surplusAmount = freezed,
     Object? refundAmount = freezed,
     Object? depositAmount = freezed,
@@ -154,6 +158,10 @@ class _$OrderCopyWithImpl<$Res, $Val extends Order>
       balanceAmount: freezed == balanceAmount
           ? _value.balanceAmount
           : balanceAmount // ignore: cast_nullable_to_non_nullable
+              as double?,
+      handlingAmount: freezed == handlingAmount
+          ? _value.handlingAmount
+          : handlingAmount // ignore: cast_nullable_to_non_nullable
               as double?,
       surplusAmount: freezed == surplusAmount
           ? _value.surplusAmount
@@ -245,6 +253,7 @@ abstract class _$$OrderImplCopyWith<$Res> implements $OrderCopyWith<$Res> {
       @JsonKey(name: 'trade_no') String? tradeNo,
       @JsonKey(name: 'total_amount') double? totalAmount,
       @JsonKey(name: 'balance_amount') double? balanceAmount,
+      @JsonKey(name: 'handling_amount') double? handlingAmount,
       @JsonKey(name: 'surplus_amount') double? surplusAmount,
       @JsonKey(name: 'refund_amount') double? refundAmount,
       @JsonKey(name: 'deposit_amount') double? depositAmount,
@@ -287,6 +296,7 @@ class __$$OrderImplCopyWithImpl<$Res>
     Object? tradeNo = freezed,
     Object? totalAmount = freezed,
     Object? balanceAmount = freezed,
+    Object? handlingAmount = freezed,
     Object? surplusAmount = freezed,
     Object? refundAmount = freezed,
     Object? depositAmount = freezed,
@@ -319,6 +329,10 @@ class __$$OrderImplCopyWithImpl<$Res>
       balanceAmount: freezed == balanceAmount
           ? _value.balanceAmount
           : balanceAmount // ignore: cast_nullable_to_non_nullable
+              as double?,
+      handlingAmount: freezed == handlingAmount
+          ? _value.handlingAmount
+          : handlingAmount // ignore: cast_nullable_to_non_nullable
               as double?,
       surplusAmount: freezed == surplusAmount
           ? _value.surplusAmount
@@ -392,6 +406,7 @@ class _$OrderImpl implements _Order {
       @JsonKey(name: 'trade_no') this.tradeNo,
       @JsonKey(name: 'total_amount') this.totalAmount,
       @JsonKey(name: 'balance_amount') this.balanceAmount,
+      @JsonKey(name: 'handling_amount') this.handlingAmount,
       @JsonKey(name: 'surplus_amount') this.surplusAmount,
       @JsonKey(name: 'refund_amount') this.refundAmount,
       @JsonKey(name: 'deposit_amount') this.depositAmount,
@@ -427,6 +442,9 @@ class _$OrderImpl implements _Order {
   @override
   @JsonKey(name: 'balance_amount')
   final double? balanceAmount;
+  @override
+  @JsonKey(name: 'handling_amount')
+  final double? handlingAmount;
   @override
   @JsonKey(name: 'surplus_amount')
   final double? surplusAmount;
@@ -476,7 +494,7 @@ class _$OrderImpl implements _Order {
 
   @override
   String toString() {
-    return 'Order(planId: $planId, tradeNo: $tradeNo, totalAmount: $totalAmount, balanceAmount: $balanceAmount, surplusAmount: $surplusAmount, refundAmount: $refundAmount, depositAmount: $depositAmount, depositBonusAmount: $depositBonusAmount, depositCreditedAmount: $depositCreditedAmount, depositSource: $depositSource, commissionBalance: $commissionBalance, actualCommissionBalance: $actualCommissionBalance, period: $period, status: $status, createdAt: $createdAt, orderPlan: $orderPlan, couponPrice: $couponPrice, couponCode: $couponCode, discountAmount: $discountAmount)';
+    return 'Order(planId: $planId, tradeNo: $tradeNo, totalAmount: $totalAmount, balanceAmount: $balanceAmount, handlingAmount: $handlingAmount, surplusAmount: $surplusAmount, refundAmount: $refundAmount, depositAmount: $depositAmount, depositBonusAmount: $depositBonusAmount, depositCreditedAmount: $depositCreditedAmount, depositSource: $depositSource, commissionBalance: $commissionBalance, actualCommissionBalance: $actualCommissionBalance, period: $period, status: $status, createdAt: $createdAt, orderPlan: $orderPlan, couponPrice: $couponPrice, couponCode: $couponCode, discountAmount: $discountAmount)';
   }
 
   @override
@@ -490,6 +508,8 @@ class _$OrderImpl implements _Order {
                 other.totalAmount == totalAmount) &&
             (identical(other.balanceAmount, balanceAmount) ||
                 other.balanceAmount == balanceAmount) &&
+            (identical(other.handlingAmount, handlingAmount) ||
+                other.handlingAmount == handlingAmount) &&
             (identical(other.surplusAmount, surplusAmount) ||
                 other.surplusAmount == surplusAmount) &&
             (identical(other.refundAmount, refundAmount) ||
@@ -529,6 +549,7 @@ class _$OrderImpl implements _Order {
         tradeNo,
         totalAmount,
         balanceAmount,
+        handlingAmount,
         surplusAmount,
         refundAmount,
         depositAmount,
@@ -568,6 +589,7 @@ abstract class _Order implements Order {
           @JsonKey(name: 'trade_no') final String? tradeNo,
           @JsonKey(name: 'total_amount') final double? totalAmount,
           @JsonKey(name: 'balance_amount') final double? balanceAmount,
+          @JsonKey(name: 'handling_amount') final double? handlingAmount,
           @JsonKey(name: 'surplus_amount') final double? surplusAmount,
           @JsonKey(name: 'refund_amount') final double? refundAmount,
           @JsonKey(name: 'deposit_amount') final double? depositAmount,
@@ -604,6 +626,9 @@ abstract class _Order implements Order {
   @override
   @JsonKey(name: 'balance_amount')
   double? get balanceAmount;
+  @override
+  @JsonKey(name: 'handling_amount')
+  double? get handlingAmount;
   @override
   @JsonKey(name: 'surplus_amount')
   double? get surplusAmount;
@@ -1260,6 +1285,10 @@ mixin _$PaymentMethod {
       throw _privateConstructorUsedError; // Custom fromJson/toJson for id
   String get name => throw _privateConstructorUsedError;
   String? get icon => throw _privateConstructorUsedError;
+  @JsonKey(name: 'handling_fee_fixed')
+  double? get handlingFeeFixed => throw _privateConstructorUsedError;
+  @JsonKey(name: 'handling_fee_percent')
+  double? get handlingFeePercent => throw _privateConstructorUsedError;
   @JsonKey(name: 'is_available', defaultValue: false)
   bool get isAvailable => throw _privateConstructorUsedError;
   Map<String, dynamic>? get config => throw _privateConstructorUsedError;
@@ -1284,6 +1313,8 @@ abstract class $PaymentMethodCopyWith<$Res> {
       {@JsonKey(fromJson: _idFromJson, toJson: _idToJson) String id,
       String name,
       String? icon,
+      @JsonKey(name: 'handling_fee_fixed') double? handlingFeeFixed,
+      @JsonKey(name: 'handling_fee_percent') double? handlingFeePercent,
       @JsonKey(name: 'is_available', defaultValue: false) bool isAvailable,
       Map<String, dynamic>? config});
 }
@@ -1306,6 +1337,8 @@ class _$PaymentMethodCopyWithImpl<$Res, $Val extends PaymentMethod>
     Object? id = null,
     Object? name = null,
     Object? icon = freezed,
+    Object? handlingFeeFixed = freezed,
+    Object? handlingFeePercent = freezed,
     Object? isAvailable = null,
     Object? config = freezed,
   }) {
@@ -1322,6 +1355,14 @@ class _$PaymentMethodCopyWithImpl<$Res, $Val extends PaymentMethod>
           ? _value.icon
           : icon // ignore: cast_nullable_to_non_nullable
               as String?,
+      handlingFeeFixed: freezed == handlingFeeFixed
+          ? _value.handlingFeeFixed
+          : handlingFeeFixed // ignore: cast_nullable_to_non_nullable
+              as double?,
+      handlingFeePercent: freezed == handlingFeePercent
+          ? _value.handlingFeePercent
+          : handlingFeePercent // ignore: cast_nullable_to_non_nullable
+              as double?,
       isAvailable: null == isAvailable
           ? _value.isAvailable
           : isAvailable // ignore: cast_nullable_to_non_nullable
@@ -1346,6 +1387,8 @@ abstract class _$$PaymentMethodImplCopyWith<$Res>
       {@JsonKey(fromJson: _idFromJson, toJson: _idToJson) String id,
       String name,
       String? icon,
+      @JsonKey(name: 'handling_fee_fixed') double? handlingFeeFixed,
+      @JsonKey(name: 'handling_fee_percent') double? handlingFeePercent,
       @JsonKey(name: 'is_available', defaultValue: false) bool isAvailable,
       Map<String, dynamic>? config});
 }
@@ -1366,6 +1409,8 @@ class __$$PaymentMethodImplCopyWithImpl<$Res>
     Object? id = null,
     Object? name = null,
     Object? icon = freezed,
+    Object? handlingFeeFixed = freezed,
+    Object? handlingFeePercent = freezed,
     Object? isAvailable = null,
     Object? config = freezed,
   }) {
@@ -1382,6 +1427,14 @@ class __$$PaymentMethodImplCopyWithImpl<$Res>
           ? _value.icon
           : icon // ignore: cast_nullable_to_non_nullable
               as String?,
+      handlingFeeFixed: freezed == handlingFeeFixed
+          ? _value.handlingFeeFixed
+          : handlingFeeFixed // ignore: cast_nullable_to_non_nullable
+              as double?,
+      handlingFeePercent: freezed == handlingFeePercent
+          ? _value.handlingFeePercent
+          : handlingFeePercent // ignore: cast_nullable_to_non_nullable
+              as double?,
       isAvailable: null == isAvailable
           ? _value.isAvailable
           : isAvailable // ignore: cast_nullable_to_non_nullable
@@ -1401,6 +1454,8 @@ class _$PaymentMethodImpl implements _PaymentMethod {
       {@JsonKey(fromJson: _idFromJson, toJson: _idToJson) required this.id,
       required this.name,
       this.icon,
+      @JsonKey(name: 'handling_fee_fixed') this.handlingFeeFixed,
+      @JsonKey(name: 'handling_fee_percent') this.handlingFeePercent,
       @JsonKey(name: 'is_available', defaultValue: false)
       required this.isAvailable,
       final Map<String, dynamic>? config})
@@ -1418,6 +1473,12 @@ class _$PaymentMethodImpl implements _PaymentMethod {
   @override
   final String? icon;
   @override
+  @JsonKey(name: 'handling_fee_fixed')
+  final double? handlingFeeFixed;
+  @override
+  @JsonKey(name: 'handling_fee_percent')
+  final double? handlingFeePercent;
+  @override
   @JsonKey(name: 'is_available', defaultValue: false)
   final bool isAvailable;
   final Map<String, dynamic>? _config;
@@ -1432,7 +1493,7 @@ class _$PaymentMethodImpl implements _PaymentMethod {
 
   @override
   String toString() {
-    return 'PaymentMethod(id: $id, name: $name, icon: $icon, isAvailable: $isAvailable, config: $config)';
+    return 'PaymentMethod(id: $id, name: $name, icon: $icon, handlingFeeFixed: $handlingFeeFixed, handlingFeePercent: $handlingFeePercent, isAvailable: $isAvailable, config: $config)';
   }
 
   @override
@@ -1443,6 +1504,10 @@ class _$PaymentMethodImpl implements _PaymentMethod {
             (identical(other.id, id) || other.id == id) &&
             (identical(other.name, name) || other.name == name) &&
             (identical(other.icon, icon) || other.icon == icon) &&
+            (identical(other.handlingFeeFixed, handlingFeeFixed) ||
+                other.handlingFeeFixed == handlingFeeFixed) &&
+            (identical(other.handlingFeePercent, handlingFeePercent) ||
+                other.handlingFeePercent == handlingFeePercent) &&
             (identical(other.isAvailable, isAvailable) ||
                 other.isAvailable == isAvailable) &&
             const DeepCollectionEquality().equals(other._config, _config));
@@ -1450,7 +1515,14 @@ class _$PaymentMethodImpl implements _PaymentMethod {
 
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
-  int get hashCode => Object.hash(runtimeType, id, name, icon, isAvailable,
+  int get hashCode => Object.hash(
+      runtimeType,
+      id,
+      name,
+      icon,
+      handlingFeeFixed,
+      handlingFeePercent,
+      isAvailable,
       const DeepCollectionEquality().hash(_config));
 
   /// Create a copy of PaymentMethod
@@ -1475,6 +1547,8 @@ abstract class _PaymentMethod implements PaymentMethod {
       required final String id,
       required final String name,
       final String? icon,
+      @JsonKey(name: 'handling_fee_fixed') final double? handlingFeeFixed,
+      @JsonKey(name: 'handling_fee_percent') final double? handlingFeePercent,
       @JsonKey(name: 'is_available', defaultValue: false)
       required final bool isAvailable,
       final Map<String, dynamic>? config}) = _$PaymentMethodImpl;
@@ -1489,6 +1563,12 @@ abstract class _PaymentMethod implements PaymentMethod {
   String get name;
   @override
   String? get icon;
+  @override
+  @JsonKey(name: 'handling_fee_fixed')
+  double? get handlingFeeFixed;
+  @override
+  @JsonKey(name: 'handling_fee_percent')
+  double? get handlingFeePercent;
   @override
   @JsonKey(name: 'is_available', defaultValue: false)
   bool get isAvailable;

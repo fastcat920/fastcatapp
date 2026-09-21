@@ -5,7 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:fl_clash/l10n/l10n.dart';
 import 'package:fl_clash/xboard/domain/domain.dart';
 import 'package:flutter_xboard_sdk/flutter_xboard_sdk.dart'
-    show XBoardSDK, CouponModel;
+    show XBoardSDK, CatboardOrderPreview, CatboardCoupon, CatboardFlashSale;
 import 'package:fl_clash/xboard/core/core.dart';
 import 'package:fl_clash/xboard/features/auth/providers/xboard_user_provider.dart';
 import 'package:fl_clash/xboard/features/payment/providers/xboard_payment_provider.dart';
@@ -15,9 +15,7 @@ import 'package:fl_clash/xboard/utils/backend_message_mapper.dart';
 import 'order_detail_page.dart';
 import '../widgets/plan_header_card.dart';
 import '../widgets/period_selector.dart';
-import '../widgets/coupon_input_section.dart';
 import '../widgets/price_summary_card.dart';
-import '../utils/price_calculator.dart';
 
 // 初始化文件级日志器
 final _logger = FileLogger('plan_purchase_page.dart');
@@ -47,16 +45,12 @@ class _PlanPurchasePageState extends ConsumerState<PlanPurchasePage> {
   // 周期选择
   String? _selectedPeriod;
 
-  // 优惠券相关
-  final _couponController = TextEditingController();
-  bool _isCouponValidating = false;
-  bool? _isCouponValid;
-  String? _couponErrorMessage;
-  String? _couponCode;
-  int? _couponType;
-  int? _couponValue;
-  double? _discountAmount;
-  double? _finalPrice;
+  CatboardOrderPreview? _orderPreview;
+  bool _isPreviewLoading = false;
+  int? _selectedUserCouponId;
+  bool _disableAutoCoupon = false;
+  bool _supportsOrderPreview = false;
+  int _previewRequestId = 0;
 
   // 用户余额
   @override
@@ -79,15 +73,10 @@ class _PlanPurchasePageState extends ConsumerState<PlanPurchasePage> {
         setState(() {
           _selectedPeriod = hasInitial ? initial : periods.first['period'];
         });
+        _loadCommerceCapabilities();
       }
       _refreshPlan(showLoading: false);
     });
-  }
-
-  @override
-  void dispose() {
-    _couponController.dispose();
-    super.dispose();
   }
 
   // ========== 数据加载 ==========
@@ -101,7 +90,7 @@ class _PlanPurchasePageState extends ConsumerState<PlanPurchasePage> {
       periods.add({
         'period': 'month_price',
         'label': l10n.xboardMonthlyPayment,
-        'price': plan.monthlyPrice!,
+        'price': _periodPrice('month_price', plan.monthlyPrice!),
         'description': l10n.xboardMonthlyRenewal,
       });
     }
@@ -109,7 +98,7 @@ class _PlanPurchasePageState extends ConsumerState<PlanPurchasePage> {
       periods.add({
         'period': 'quarter_price',
         'label': l10n.xboardQuarterlyPayment,
-        'price': plan.quarterlyPrice!,
+        'price': _periodPrice('quarter_price', plan.quarterlyPrice!),
         'description': l10n.xboardThreeMonthCycle,
       });
     }
@@ -117,7 +106,7 @@ class _PlanPurchasePageState extends ConsumerState<PlanPurchasePage> {
       periods.add({
         'period': 'half_year_price',
         'label': l10n.xboardHalfYearlyPayment,
-        'price': plan.halfYearlyPrice!,
+        'price': _periodPrice('half_year_price', plan.halfYearlyPrice!),
         'description': l10n.xboardSixMonthCycle,
       });
     }
@@ -125,7 +114,7 @@ class _PlanPurchasePageState extends ConsumerState<PlanPurchasePage> {
       periods.add({
         'period': 'year_price',
         'label': l10n.xboardYearlyPayment,
-        'price': plan.yearlyPrice!,
+        'price': _periodPrice('year_price', plan.yearlyPrice!),
         'description': l10n.xboardTwelveMonthCycle,
       });
     }
@@ -133,7 +122,7 @@ class _PlanPurchasePageState extends ConsumerState<PlanPurchasePage> {
       periods.add({
         'period': 'two_year_price',
         'label': l10n.xboardTwoYearPayment,
-        'price': plan.twoYearPrice!,
+        'price': _periodPrice('two_year_price', plan.twoYearPrice!),
         'description': l10n.xboardTwentyFourMonthCycle,
       });
     }
@@ -141,7 +130,7 @@ class _PlanPurchasePageState extends ConsumerState<PlanPurchasePage> {
       periods.add({
         'period': 'three_year_price',
         'label': l10n.xboardThreeYearPayment,
-        'price': plan.threeYearPrice!,
+        'price': _periodPrice('three_year_price', plan.threeYearPrice!),
         'description': l10n.xboardThirtySixMonthCycle,
       });
     }
@@ -149,7 +138,7 @@ class _PlanPurchasePageState extends ConsumerState<PlanPurchasePage> {
       periods.add({
         'period': 'onetime_price',
         'label': l10n.xboardOneTimePayment,
-        'price': plan.onetimePrice!,
+        'price': _periodPrice('onetime_price', plan.onetimePrice!),
         'description': l10n.xboardBuyoutPlan,
       });
     }
@@ -164,6 +153,17 @@ class _PlanPurchasePageState extends ConsumerState<PlanPurchasePage> {
     return periods;
   }
 
+  double _periodPrice(String period, double fallback) {
+    final sales = _plan.metadata['activeFlashSales'];
+    if (sales is! Map || sales[period] is! Map) return fallback;
+    final sale = CatboardFlashSale.fromJson(
+      (sales[period] as Map).map(
+        (key, value) => MapEntry(key.toString(), value),
+      ),
+    );
+    return sale.finalAmount > 0 ? sale.finalAmount / 100 : fallback;
+  }
+
   double _getCurrentPrice() {
     if (_selectedPeriod == null) return 0.0;
     final periods = _getAvailablePeriods(context);
@@ -174,97 +174,76 @@ class _PlanPurchasePageState extends ConsumerState<PlanPurchasePage> {
     return selectedPeriod['price']?.toDouble() ?? 0.0;
   }
 
-  // ========== 优惠券验证 ==========
+  double? _getBasePeriodPrice(String? period) => switch (period) {
+        'month_price' => _plan.monthlyPrice,
+        'quarter_price' => _plan.quarterlyPrice,
+        'half_year_price' => _plan.halfYearlyPrice,
+        'year_price' => _plan.yearlyPrice,
+        'two_year_price' => _plan.twoYearPrice,
+        'three_year_price' => _plan.threeYearPrice,
+        'onetime_price' => _plan.onetimePrice,
+        'reset_price' => _plan.resetPrice,
+        _ => null,
+      };
 
-  Future<void> _validateCoupon() async {
-    if (_couponController.text.trim().isEmpty) {
-      _clearCoupon();
-      return;
-    }
-
-    setState(() {
-      _isCouponValidating = true;
-      _isCouponValid = null;
-      _couponErrorMessage = null;
-    });
-
+  Future<void> _loadCommerceCapabilities() async {
     try {
-      final couponCode = _couponController.text.trim();
-      // TODO: 将来添加到 PaymentRepository，目前保留使用 SDK
-      final couponData = await XBoardSDK.instance.order.checkCoupon(
-        _couponController.text.trim(),
-        _plan.id,
+      final features = await XBoardSDK.instance.catboard.getFeatures();
+      if (!mounted) return;
+      setState(() => _supportsOrderPreview = features.orderPreview);
+      if (features.orderPreview) {
+        await _refreshOrderPreview();
+      } else {
+        _clearModernCommerceState();
+      }
+    } catch (error) {
+      // 旧后端没有能力标记，按旧版下单协议处理，且不探测 preview 路由。
+      _logger.info('未检测到新版订单预览能力，回退旧版下单流程: $error');
+      if (mounted) {
+        setState(() => _supportsOrderPreview = false);
+        _clearModernCommerceState();
+      }
+    }
+  }
+
+  void _clearModernCommerceState() {
+    if (!mounted) return;
+    setState(() {
+      _orderPreview = null;
+      _selectedUserCouponId = null;
+      _disableAutoCoupon = false;
+      _isPreviewLoading = false;
+    });
+  }
+
+  Future<void> _refreshOrderPreview() async {
+    final period = _selectedPeriod;
+    if (period == null || !_supportsOrderPreview) return;
+    final requestId = ++_previewRequestId;
+    if (mounted) setState(() => _isPreviewLoading = true);
+    try {
+      final preview = await XBoardSDK.instance.catboard.previewOrder(
+        planId: _plan.id,
+        period: period,
+        userCouponId: _selectedUserCouponId,
+        disableAutoCoupon: _disableAutoCoupon,
       );
-
-      if (couponData != null && mounted) {
-        _applyCoupon(couponCode, couponData);
-      } else if (mounted) {
-        _setCouponInvalid();
-      }
-    } catch (e) {
-      if (mounted) {
-        setState(() {
-          _isCouponValid = false;
-          _couponErrorMessage =
-              '${AppLocalizations.of(context).xboardValidationFailed}: ${BackendMessageMapper.mapError(
-            e,
-            context: BackendMessageContext.coupon,
-          )}';
-          _clearCouponData();
-        });
-      }
-    } finally {
-      if (mounted) {
-        setState(() => _isCouponValidating = false);
-      }
-    }
-  }
-
-  void _applyCoupon(String code, CouponModel couponData) {
-    final currentPrice = _getCurrentPrice();
-    final discountAmount = PriceCalculator.calculateDiscountAmount(
-      currentPrice,
-      couponData.type,
-      couponData.value,
-    );
-    final finalPrice = currentPrice - discountAmount;
-
-    setState(() {
-      _isCouponValid = true;
-      _couponCode = code;
-      _couponType = couponData.type;
-      _couponValue = couponData.value;
-      _discountAmount = discountAmount;
-      _finalPrice = finalPrice > 0 ? finalPrice : 0;
-      _couponErrorMessage = null;
-    });
-  }
-
-  void _setCouponInvalid() {
-    setState(() {
-      _isCouponValid = false;
-      _couponErrorMessage =
-          AppLocalizations.of(context).xboardInvalidOrExpiredCoupon;
-      _clearCouponData();
-    });
-  }
-
-  void _clearCoupon() {
-    if (mounted) {
+      if (!mounted || requestId != _previewRequestId) return;
       setState(() {
-        _isCouponValid = null;
-        _couponErrorMessage = null;
-        _clearCouponData();
+        _orderPreview = preview;
+        _selectedUserCouponId = preview.selectedCoupon?.id;
+        if (!preview.allowCoupon) _disableAutoCoupon = true;
       });
+    } catch (error) {
+      if (!mounted || requestId != _previewRequestId) return;
+      // 预览是增强能力，失败时保留基础价格与下单功能，不弹出订单错误。
+      _logger.warning('订单预览失败，使用基础价格继续: $error');
+      setState(() => _orderPreview = null);
+    } finally {
+      if (mounted && requestId == _previewRequestId) {
+        setState(() => _isPreviewLoading = false);
+      }
     }
-  }
-
-  void _clearCouponData() {
-    _discountAmount = null;
-    _finalPrice = null;
-    _couponCode = null;
-    _couponType = null;
-    _couponValue = null;
   }
 
   // ========== 购买流程 ==========
@@ -283,11 +262,18 @@ class _PlanPurchasePageState extends ConsumerState<PlanPurchasePage> {
       _logger.debug('[购买] 创建订单');
 
       final paymentNotifier = ref.read(xboardPaymentProvider.notifier);
-      final tradeNo = await paymentNotifier.createOrder(
-        planId: _plan.id,
-        period: _selectedPeriod!,
-        couponCode: _couponCode,
-      );
+      final tradeNo = _supportsOrderPreview
+          ? await paymentNotifier.createCatboardOrder(
+              planId: _plan.id,
+              period: _selectedPeriod!,
+              userCouponId: _selectedUserCouponId,
+              disableAutoCoupon: _disableAutoCoupon,
+            )
+          : await paymentNotifier.createOrder(
+              planId: _plan.id,
+              period: _selectedPeriod!,
+              couponCode: '',
+            );
 
       if (tradeNo == null) {
         final errorMessage = ref.read(paymentUIStateProvider).errorMessage;
@@ -299,8 +285,12 @@ class _PlanPurchasePageState extends ConsumerState<PlanPurchasePage> {
       _logger.debug('[购买] 订单创建成功');
 
       // 计算订单金额
-      final currentPrice = _getCurrentPrice();
-      final displayFinalPrice = _finalPrice ?? _getCurrentPrice();
+      final currentPrice = _orderPreview == null
+          ? _getCurrentPrice()
+          : _orderPreview!.originalAmount / 100;
+      final displayFinalPrice = _orderPreview == null
+          ? _getCurrentPrice()
+          : _orderPreview!.finalAmount / 100;
 
       if (!mounted) return;
       Navigator.of(context).push(
@@ -311,8 +301,11 @@ class _PlanPurchasePageState extends ConsumerState<PlanPurchasePage> {
             period: _selectedPeriod,
             originalPrice: currentPrice,
             finalPrice: displayFinalPrice,
-            discountAmount: _discountAmount,
-            balanceUsed: 0.0,
+            discountAmount: _orderPreview == null
+                ? null
+                : (_orderPreview!.originalAmount - _orderPreview!.finalAmount) /
+                    100,
+            balanceUsed: (_orderPreview?.balanceAmount ?? 0) / 100,
           ),
         ),
       );
@@ -353,6 +346,7 @@ class _PlanPurchasePageState extends ConsumerState<PlanPurchasePage> {
           .refreshPlanById(_plan.id);
       if (latest != null && mounted) {
         setState(() => _plan = latest);
+        await _refreshOrderPreview();
       }
     } catch (error) {
       _logger.warning('刷新套餐详情失败，继续使用当前快照: $error');
@@ -384,38 +378,30 @@ class _PlanPurchasePageState extends ConsumerState<PlanPurchasePage> {
           PeriodSelector(
             periods: periods,
             selectedPeriod: _selectedPeriod,
+            forceFourColumns:
+                Platform.isLinux || Platform.isWindows || Platform.isMacOS,
             onPeriodSelected: (period) {
               setState(() {
                 _selectedPeriod = period;
+                _selectedUserCouponId = null;
+                _disableAutoCoupon = false;
               });
-              // 切换周期后若有已校验的优惠券，重新向服务端校验
-              if (_isCouponValid == true && _couponCode != null) {
-                _validateCoupon();
-              }
+              _refreshOrderPreview();
             },
-            couponType: _couponType,
-            couponValue: _couponValue,
           ),
           const SizedBox(height: 16),
 
-          // 优惠券输入
-          CouponInputSection(
-            controller: _couponController,
-            isValidating: _isCouponValidating,
-            isValid: _isCouponValid,
-            errorMessage: _couponErrorMessage,
-            discountAmount: _discountAmount,
-            onValidate: _validateCoupon,
-            onChanged: _clearCoupon,
-          ),
-          const SizedBox(height: 16),
+          if (_supportsOrderPreview) ...[
+            _buildCouponSelector(context),
+            const SizedBox(height: 16),
+          ],
 
           // 价格汇总
-          if (_selectedPeriod != null)
+          if (_orderPreview != null)
+            _buildServerPriceSummary(context, _orderPreview!)
+          else if (_selectedPeriod != null)
             PriceSummaryCard(
               originalPrice: currentPrice,
-              finalPrice: _finalPrice,
-              discountAmount: _discountAmount,
               userBalance: ref.watch(userInfoProvider)?.balanceInYuan,
             ),
           const SizedBox(height: 16),
@@ -504,6 +490,219 @@ class _PlanPurchasePageState extends ConsumerState<PlanPurchasePage> {
       body: RefreshIndicator(
         onRefresh: _refreshPage,
         child: content,
+      ),
+    );
+  }
+
+  String _copy(BuildContext context, String zh, String en) =>
+      Localizations.localeOf(context).languageCode == 'zh' ? zh : en;
+
+  Widget _buildCouponSelector(BuildContext context) {
+    final preview = _orderPreview;
+    final selected = preview?.selectedCoupon;
+    final couponDiscount = preview?.couponDiscount ?? 0;
+    final String couponSubtitle;
+    if (!(preview?.allowCoupon ?? true)) {
+      couponSubtitle = _copy(context, '当前限时特价不可叠加优惠券',
+          'Coupons are unavailable for this flash sale');
+    } else if (selected != null) {
+      couponSubtitle = _copy(
+        context,
+        '当前使用：${selected.template.name}，已优惠 ¥${(couponDiscount / 100).toStringAsFixed(2)}',
+        'Using: ${selected.template.name}, saved ¥${(couponDiscount / 100).toStringAsFixed(2)}',
+      );
+    } else if (_disableAutoCoupon) {
+      couponSubtitle = _copy(context, '不使用优惠券', 'No coupon selected');
+    } else if (preview != null && preview.availableCoupons.isEmpty) {
+      couponSubtitle = _copy(
+          context, '当前订单暂无可用优惠券', 'No coupons are available for this order');
+    } else {
+      couponSubtitle =
+          _copy(context, '系统自动选择最优优惠券', 'Best coupon selected automatically');
+    }
+    return Card(
+      margin: EdgeInsets.zero,
+      child: ListTile(
+        leading: const Icon(Icons.confirmation_number_outlined),
+        title: Text(_copy(context, '优惠券', 'Coupon')),
+        subtitle: Text(couponSubtitle),
+        trailing: _isPreviewLoading
+            ? const SizedBox(
+                width: 20,
+                height: 20,
+                child: CircularProgressIndicator(strokeWidth: 2),
+              )
+            : const Icon(Icons.chevron_right),
+        enabled: !_isPreviewLoading && (_orderPreview?.allowCoupon ?? true),
+        onTap: () => _showCouponPicker(context),
+      ),
+    );
+  }
+
+  Future<void> _showCouponPicker(BuildContext context) async {
+    final preview = _orderPreview;
+    if (preview == null) return;
+    final selection = await showModalBottomSheet<int?>(
+      context: context,
+      showDragHandle: true,
+      builder: (sheetContext) => SafeArea(
+        child: ListView(
+          shrinkWrap: true,
+          padding: const EdgeInsets.only(bottom: 16),
+          children: [
+            ListTile(
+              leading: const Icon(Icons.auto_awesome_outlined),
+              title: Text(_copy(context, '自动选择最优优惠券', 'Best available coupon')),
+              trailing: !_disableAutoCoupon && _selectedUserCouponId == null
+                  ? const Icon(Icons.check)
+                  : null,
+              onTap: () => Navigator.pop(sheetContext, -2),
+            ),
+            ListTile(
+              leading: const Icon(Icons.block_outlined),
+              title: Text(_copy(context, '不使用优惠券', 'Do not use a coupon')),
+              trailing: _disableAutoCoupon ? const Icon(Icons.check) : null,
+              onTap: () => Navigator.pop(sheetContext, -1),
+            ),
+            ...preview.availableCoupons.map(
+              (coupon) => _couponTile(sheetContext, coupon, enabled: true),
+            ),
+            if (preview.unavailableCoupons.isNotEmpty)
+              Padding(
+                padding: const EdgeInsets.fromLTRB(16, 16, 16, 4),
+                child: Text(
+                  _copy(context, '当前订单不可用', 'Unavailable for this order'),
+                  style: Theme.of(context).textTheme.titleSmall,
+                ),
+              ),
+            ...preview.unavailableCoupons.map(
+              (coupon) => _couponTile(sheetContext, coupon, enabled: false),
+            ),
+          ],
+        ),
+      ),
+    );
+    if (!mounted || selection == null) return;
+    setState(() {
+      _disableAutoCoupon = selection == -1;
+      _selectedUserCouponId = selection < 0 ? null : selection;
+    });
+    await _refreshOrderPreview();
+  }
+
+  Widget _couponTile(
+    BuildContext context,
+    CatboardCoupon coupon, {
+    required bool enabled,
+  }) {
+    final template = coupon.template;
+    final value = template.discountType == 'percent'
+        ? '${template.discountValue}%'
+        : '¥${(template.discountValue / 100).toStringAsFixed(2)}';
+    return ListTile(
+      enabled: enabled,
+      leading: CircleAvatar(child: Text(value)),
+      title: Text(template.name),
+      subtitle: Text(enabled
+          ? _copy(
+              context,
+              '本单优惠 ¥${(coupon.calculatedDiscount / 100).toStringAsFixed(2)}',
+              'Save ¥${(coupon.calculatedDiscount / 100).toStringAsFixed(2)}',
+            )
+          : _couponUnavailableText(context, coupon.unavailableReason)),
+      trailing:
+          coupon.id == _selectedUserCouponId ? const Icon(Icons.check) : null,
+      onTap: enabled ? () => Navigator.pop(context, coupon.id) : null,
+    );
+  }
+
+  String _couponUnavailableText(BuildContext context, String? reason) {
+    return switch (reason) {
+      'template_disabled' => _copy(context, '优惠券已停用', 'Coupon is disabled'),
+      'plan_not_supported' =>
+        _copy(context, '不适用于当前套餐', 'Not valid for this plan'),
+      'period_not_supported' =>
+        _copy(context, '不适用于当前周期', 'Not valid for this period'),
+      'first_order_only' => _copy(context, '仅限首单', 'First order only'),
+      'renewal_not_supported' =>
+        _copy(context, '不支持续费订单', 'Not valid for renewals'),
+      _ => _copy(context, '当前订单不可用', 'Unavailable for this order'),
+    };
+  }
+
+  Widget _buildServerPriceSummary(
+    BuildContext context,
+    CatboardOrderPreview preview,
+  ) {
+    final baseAmount =
+        ((_getBasePeriodPrice(_selectedPeriod) ?? 0) * 100).round();
+    final inferredSurplus = baseAmount > preview.originalAmount
+        ? baseAmount - preview.originalAmount
+        : 0;
+    final surplusAmount =
+        preview.surplusAmount > 0 ? preview.surplusAmount : inferredSurplus;
+    final originalAmount = surplusAmount > 0 && baseAmount > 0
+        ? baseAmount
+        : preview.originalAmount;
+    Widget row(
+      String label,
+      int amount, {
+      bool discount = false,
+      bool credit = false,
+    }) =>
+        Padding(
+          padding: const EdgeInsets.symmetric(vertical: 4),
+          child: Row(
+            children: [
+              Text(label),
+              const Spacer(),
+              Text(
+                '${discount ? '-' : credit ? '+' : ''}¥${(amount / 100).toStringAsFixed(2)}',
+                style: discount
+                    ? TextStyle(color: Colors.green.shade700)
+                    : credit
+                        ? TextStyle(color: Colors.blue.shade700)
+                        : null,
+              ),
+            ],
+          ),
+        );
+    return Card(
+      margin: EdgeInsets.zero,
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          children: [
+            row(_copy(context, '套餐原价', 'Original price'), originalAmount),
+            if (preview.activityDiscount > 0)
+              row(_copy(context, '限时优惠', 'Flash sale'),
+                  preview.activityDiscount,
+                  discount: true),
+            if (surplusAmount > 0)
+              row(_copy(context, '旧套餐抵扣', 'Previous plan credit'),
+                  surplusAmount,
+                  discount: true),
+            if (preview.couponDiscount > 0)
+              row(_copy(context, '优惠券', 'Coupon'), preview.couponDiscount,
+                  discount: true),
+            if (preview.vipDiscount > 0)
+              row(_copy(context, '会员折扣', 'Member discount'),
+                  preview.vipDiscount,
+                  discount: true),
+            if (preview.refundAmount > 0)
+              row(_copy(context, '退回余额', 'Balance refund'),
+                  preview.refundAmount,
+                  credit: true),
+            const Divider(),
+            row(_copy(context, '订单金额', 'Order amount'), preview.finalAmount),
+            if (preview.balanceAmount > 0)
+              row(_copy(context, '余额抵扣', 'Balance deduction'),
+                  preview.balanceAmount,
+                  discount: true),
+            const Divider(),
+            row(_copy(context, '还需支付', 'Amount due'), preview.payableAmount),
+          ],
+        ),
       ),
     );
   }

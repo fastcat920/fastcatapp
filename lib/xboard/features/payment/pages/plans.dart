@@ -10,6 +10,9 @@ import '../widgets/plan_description_widget.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:flutter_xboard_sdk/flutter_xboard_sdk.dart'
+    show CatboardFlashSale;
+import '../widgets/coupon_entry_button.dart';
 
 final pendingPurchasePlanProvider = StateProvider<DomainPlan?>((ref) => null);
 
@@ -142,6 +145,21 @@ class _PlansViewState extends ConsumerState<PlansView> {
     return _formatPrice(lowestPrice);
   }
 
+  CatboardFlashSale? _bestFlashSale(DomainPlan plan) {
+    final raw = plan.metadata['activeFlashSales'];
+    if (raw is! Map) return null;
+    final sales = raw.values
+        .whereType<Map>()
+        .map((item) => CatboardFlashSale.fromJson(
+              item.map((key, value) => MapEntry(key.toString(), value)),
+            ))
+        .where((sale) => sale.finalAmount > 0)
+        .toList();
+    if (sales.isEmpty) return null;
+    sales.sort((a, b) => a.finalAmount.compareTo(b.finalAmount));
+    return sales.first;
+  }
+
   /// 获取最低价格对应的周期文字
   String _getLowestPricePeriod(DomainPlan plan, AppLocalizations l10n) {
     double? lowest;
@@ -199,7 +217,10 @@ class _PlansViewState extends ConsumerState<PlansView> {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final theme = Theme.of(context);
 
-    final priceText = _getLowestPrice(plan);
+    final flashSale = _bestFlashSale(plan);
+    final priceText = flashSale == null
+        ? _getLowestPrice(plan)
+        : _formatPrice(flashSale.finalAmount / 100);
     final periodText = _getLowestPricePeriod(plan, appLocalizations);
     final trafficText = _formatTraffic(plan.transferQuota.toDouble());
     final speedText = _getSpeedLimitText(plan);
@@ -242,6 +263,31 @@ class _PlansViewState extends ConsumerState<PlansView> {
                   color: theme.colorScheme.onSurface,
                 ),
               ),
+              if (flashSale != null) ...[
+                const SizedBox(height: 8),
+                Wrap(
+                  spacing: 8,
+                  runSpacing: 4,
+                  crossAxisAlignment: WrapCrossAlignment.center,
+                  children: [
+                    Chip(
+                      visualDensity: VisualDensity.compact,
+                      avatar: const Icon(Icons.bolt, size: 16),
+                      label: Text(flashSale.name.isEmpty
+                          ? (Localizations.localeOf(context).languageCode ==
+                                  'zh'
+                              ? '限时优惠'
+                              : 'Flash sale')
+                          : flashSale.name),
+                    ),
+                    if (flashSale.endsAt != null)
+                      Text(
+                        '${Localizations.localeOf(context).languageCode == 'zh' ? '截止' : 'Ends'} ${MaterialLocalizations.of(context).formatCompactDate(flashSale.endsAt!)}',
+                        style: Theme.of(context).textTheme.bodySmall,
+                      ),
+                  ],
+                ),
+              ],
               const SizedBox(height: 8),
               // ── 价格 + 周期 ──
               if (plan.hasPrice)
@@ -424,6 +470,7 @@ class _PlansViewState extends ConsumerState<PlansView> {
                   elevation: 0,
                   scrolledUnderElevation: 1,
                   actions: [
+                    const CouponEntryButton(),
                     Padding(
                       padding: const EdgeInsets.only(right: 12),
                       child: IconButton(
@@ -444,6 +491,7 @@ class _PlansViewState extends ConsumerState<PlansView> {
               // 移动端
               : AppBar(
                   title: Text(appLocalizations.xboardPlans),
+                  actions: const [CouponEntryButton()],
                   // 使用 push 路由后，自动显示返回按钮
                 ),
       body: isDesktop && _selectedPlan != null

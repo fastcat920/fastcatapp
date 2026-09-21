@@ -18,6 +18,7 @@ class OrderModel with _$OrderModel {
     @JsonKey(name: 'trade_no') String? tradeNo,
     @JsonKey(name: 'total_amount') double? totalAmount,
     @JsonKey(name: 'balance_amount') double? balanceAmount,
+    @JsonKey(name: 'handling_amount') double? handlingAmount,
     @JsonKey(name: 'surplus_amount') double? surplusAmount,
     @JsonKey(name: 'refund_amount') double? refundAmount,
     @JsonKey(name: 'deposit_amount') double? depositAmount,

@@ -4,6 +4,7 @@ import 'dart:io';
 
 import 'package:fl_clash/common/webview2_check.dart';
 import 'package:fl_clash/l10n/l10n.dart';
+import 'package:fl_clash/xboard/features/shared/widgets/xb_error_state.dart';
 import 'package:fl_clash/xboard/core/core.dart';
 import 'package:fl_clash/xboard/features/auth/utils/crisp_url_helper.dart';
 import 'package:fl_clash/xboard/features/auth/utils/customer_service_helper.dart';
@@ -483,7 +484,12 @@ class _WindowsChatPageState extends State<WindowsChatPage> {
 
   Widget _buildErrorPage(BuildContext context, String message,
       {bool canRetry = true}) {
-    final l10n = AppLocalizations.of(context);
+    if (canRetry) {
+      return XbErrorState(
+        message: message,
+        onRetry: _loadEmbed,
+      );
+    }
     final isDark = _isDarkMode;
     return Center(
       child: Padding(
@@ -492,7 +498,7 @@ class _WindowsChatPageState extends State<WindowsChatPage> {
           mainAxisSize: MainAxisSize.min,
           children: [
             Icon(
-              canRetry ? Icons.cloud_off : Icons.warning_amber_rounded,
+              Icons.warning_amber_rounded,
               size: 48,
               color: isDark ? Colors.white38 : Colors.grey,
             ),
@@ -505,14 +511,6 @@ class _WindowsChatPageState extends State<WindowsChatPage> {
                 color: isDark ? Colors.white54 : Colors.grey,
               ),
             ),
-            if (canRetry) ...[
-              const SizedBox(height: 24),
-              FilledButton.icon(
-                onPressed: () => _loadEmbed(),
-                icon: const Icon(Icons.refresh, size: 18),
-                label: Text(l10n.refresh),
-              ),
-            ],
           ],
         ),
       ),

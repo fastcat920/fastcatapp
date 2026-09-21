@@ -55,6 +55,7 @@ class XBoardPlanAdapter implements PlanApi {
       sort: plan.sort,
       createdAt: plan.createdAt,
       updatedAt: plan.updatedAt,
+      activeFlashSales: plan.activeFlashSales,
     );
   }
 }

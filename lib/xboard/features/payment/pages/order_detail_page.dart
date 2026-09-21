@@ -13,6 +13,7 @@ import 'package:fl_clash/xboard/features/auth/providers/xboard_user_provider.dar
 import 'payment_webview_page.dart';
 import 'package:fl_clash/xboard/features/payment/providers/xboard_payment_provider.dart';
 import 'package:fl_clash/xboard/features/shared/styles/styles.dart';
+import 'package:fl_clash/xboard/features/shared/widgets/xb_error_state.dart';
 import 'package:fl_clash/xboard/features/subscription/providers/xboard_subscription_provider.dart';
 import 'package:fl_clash/xboard/utils/xboard_notification.dart';
 import 'package:fl_clash/l10n/l10n.dart';
@@ -168,15 +169,14 @@ class _OrderDetailPageState extends ConsumerState<OrderDetailPage>
                 onRefresh: _refreshPage,
               )
             : const Center(child: CircularProgressIndicator()),
-        error: (error, _) => _OrderErrorView(
-          message: BackendMessageMapper.mapError(error,
-              context: BackendMessageContext.order),
+        error: (error, _) => XbErrorState(
+          message: error,
           onRetry: _retryOrder,
         ),
         data: (order) {
           // Polling starts only after payment submission (see _submitPayment)
           if (order == null) {
-            return _OrderErrorView(
+            return XbErrorState(
               message: l10n.xboardOrderNotFound,
               onRetry: _retryOrder,
             );
@@ -631,10 +631,14 @@ class _OrderDetailContent extends StatelessWidget {
       depositAmount: order?.depositAmount,
       commissionBalance: order?.commissionBalance,
       actualCommissionBalance: order?.actualCommissionBalance,
+      handlingAmount: order?.handlingAmount,
       depositBonusAmount: order?.depositBonusAmount,
       depositCreditedAmount: order?.depositCreditedAmount,
       depositSource: order?.depositSource,
     );
+    final priceChanged = order != null &&
+        finalPrice != null &&
+        (pricing.orderAmount - finalPrice!).abs() >= 0.005;
 
     return LayoutBuilder(
       builder: (context, constraints) {
@@ -645,6 +649,25 @@ class _OrderDetailContent extends StatelessWidget {
         // 扩大左右留白，保证内容卡片与其他界面的边界对齐。
         const contentPadding = XbUiTokens.pagePadding;
         const columnGap = 12.0;
+        final sdkPaymentOptions = methodsAsync.valueOrNull
+                ?.where((method) => method.isAvailable)
+                .map(_PaymentOption.fromSdk)
+                .toList() ??
+            const <_PaymentOption>[];
+        final fallbackPaymentOptions =
+            _globalPaymentOptions(globalPaymentMethods);
+        final paymentOptions = sdkPaymentOptions.isNotEmpty
+            ? sdkPaymentOptions
+            : fallbackPaymentOptions;
+        final selectedPaymentOption = paymentOptions.isEmpty
+            ? null
+            : paymentOptions.firstWhere(
+                (method) => method.id == selectedMethodId,
+                orElse: () => paymentOptions.first,
+              );
+        final paymentFee = isPending && selectedPaymentOption != null
+            ? selectedPaymentOption.feeFor(pricing.payableAmount)
+            : (pricing.lockedHandlingFee ?? 0.0);
         final leftColumn = Column(
           children: [
             _ProductInfoCard(
@@ -660,6 +683,8 @@ class _OrderDetailContent extends StatelessWidget {
               order: order,
               period: period,
               pricing: pricing,
+              paymentFee: paymentFee,
+              priceChanged: priceChanged,
             ),
           ],
         );
@@ -677,6 +702,7 @@ class _OrderDetailContent extends StatelessWidget {
                   globalPaymentMethods: globalPaymentMethods,
                   selectedMethodId: selectedMethodId,
                   onSelected: onMethodSelected,
+                  onRetry: onRefresh,
                 ),
                 const SizedBox(height: 16),
               ],
@@ -728,12 +754,14 @@ class _PaymentMethodsSection extends StatelessWidget {
   final List<DomainPaymentMethod> globalPaymentMethods;
   final String? selectedMethodId;
   final ValueChanged<_PaymentOption> onSelected;
+  final VoidCallback onRetry;
 
   const _PaymentMethodsSection({
     required this.methodsAsync,
     required this.globalPaymentMethods,
     required this.selectedMethodId,
     required this.onSelected,
+    required this.onRetry,
   });
 
   @override
@@ -769,10 +797,10 @@ class _PaymentMethodsSection extends StatelessWidget {
         return _InfoCard(
           title: AppLocalizations.of(context).xboardPaymentMethods,
           icon: Icons.payments_outlined,
-          child: _InlineError(
-            message: BackendMessageMapper.mapError(error,
-                context: BackendMessageContext.order),
-            onRetry: () {},
+          child: XbErrorState(
+            message: error,
+            onRetry: onRetry,
+            compact: true,
           ),
         );
       },
@@ -800,11 +828,13 @@ List<_PaymentOption> _globalPaymentOptions(
 
 class _OrderPricing {
   final double packageAmount;
+  final double orderAmount;
   final double discountAmount;
   final double refundAmount;
   final double surplusAmount;
   final double balanceUsed;
   final double payableAmount;
+  final double? lockedHandlingFee;
   final double depositBonusAmount;
   final double? depositCreditedAmount;
   final bool isCommissionTransfer;
@@ -812,11 +842,13 @@ class _OrderPricing {
 
   const _OrderPricing({
     required this.packageAmount,
+    required this.orderAmount,
     required this.discountAmount,
     required this.refundAmount,
     required this.surplusAmount,
     required this.balanceUsed,
     required this.payableAmount,
+    required this.lockedHandlingFee,
     required this.depositBonusAmount,
     required this.depositCreditedAmount,
     required this.isCommissionTransfer,
@@ -839,6 +871,7 @@ class _OrderPricing {
     double? depositAmount,
     double? commissionBalance,
     double? actualCommissionBalance,
+    double? handlingAmount,
     double? depositBonusAmount,
     double? depositCreditedAmount,
     String? depositSource,
@@ -882,6 +915,9 @@ class _OrderPricing {
         ? backendTotalAmount
         : ((finalPrice ?? packageAmount) - computedBalance)
             .clamp(0.0, double.infinity);
+    final orderAmount = order != null
+        ? backendTotalAmount + backendBalanceAmount
+        : (finalPrice ?? packageAmount);
 
     final couponAmount = (couponPrice != null && couponPrice > 0)
         ? _amountFromCents(couponPrice)
@@ -890,11 +926,14 @@ class _OrderPricing {
     final refund = _amountFromCents(refundAmount);
     return _OrderPricing(
       packageAmount: packageAmount,
+      orderAmount: orderAmount,
       discountAmount: discount,
       refundAmount: refund,
       surplusAmount: surplus,
       balanceUsed: computedBalance,
       payableAmount: payableAmount,
+      lockedHandlingFee:
+          handlingAmount == null ? null : _amountFromCents(handlingAmount),
       depositBonusAmount: _amountFromCents(depositBonusAmount),
       depositCreditedAmount: depositCreditedAmount == null
           ? null
@@ -968,12 +1007,16 @@ class _OrderInfoCard extends StatelessWidget {
   final OrderModel? order;
   final String? period;
   final _OrderPricing pricing;
+  final double paymentFee;
+  final bool priceChanged;
 
   const _OrderInfoCard({
     required this.tradeNo,
     required this.order,
     required this.period,
     required this.pricing,
+    required this.paymentFee,
+    required this.priceChanged,
   });
 
   @override
@@ -1030,12 +1073,35 @@ class _OrderInfoCard extends StatelessWidget {
                 ? _formatDateTime(order!.createdAt!)
                 : '-',
           ),
+          if (priceChanged) ...[
+            const SizedBox(height: 12),
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: theme.colorScheme.errorContainer,
+                borderRadius: BorderRadius.circular(10),
+              ),
+              child: Text(
+                Localizations.localeOf(context).languageCode == 'zh'
+                    ? '订单价格已发生变化，请确认下方最终账单后再支付。'
+                    : 'The order price changed. Review the final bill before paying.',
+                style: theme.textTheme.bodySmall?.copyWith(
+                  color: theme.colorScheme.onErrorContainer,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ),
+          ],
           const SizedBox(height: 12),
           _InfoRow(
             label: isDeposit
                 ? l10n.xboardRechargeAmount
-                : l10n.xboardPackageAmount,
-            value: '¥${pricing.packageAmount.toStringAsFixed(2)}',
+                : (Localizations.localeOf(context).languageCode == 'zh'
+                    ? '订单金额'
+                    : 'Order amount'),
+            value:
+                '¥${(isDeposit ? pricing.packageAmount : pricing.orderAmount).toStringAsFixed(2)}',
             valueFontSize: 14,
             valueWeight: XbFontWeight.bold,
             valueColor: amountColor,
@@ -1060,7 +1126,7 @@ class _OrderInfoCard extends StatelessWidget {
               valueColor: XbUiStatusColor.success(context),
             ),
           ],
-          if (pricing.discountAmount > 0) ...[
+          if (isDeposit && pricing.discountAmount > 0) ...[
             const SizedBox(height: 12),
             _InfoRow(
               label: l10n.xboardDiscountAmount,
@@ -1078,7 +1144,7 @@ class _OrderInfoCard extends StatelessWidget {
               ),
             ],
           ],
-          if (pricing.surplusAmount > 0) ...[
+          if (isDeposit && pricing.surplusAmount > 0) ...[
             const SizedBox(height: 12),
             _InfoRow(
               label: isDeposit
@@ -1088,10 +1154,14 @@ class _OrderInfoCard extends StatelessWidget {
               valueColor: XbUiStatusColor.muted(context),
             ),
           ],
-          if (shouldShowBalance) ...[
+          if (!isDeposit || shouldShowBalance) ...[
             const SizedBox(height: 12),
             _InfoRow(
-              label: l10n.xboardUseBalance,
+              label: isDeposit
+                  ? l10n.xboardUseBalance
+                  : (Localizations.localeOf(context).languageCode == 'zh'
+                      ? '余额已抵扣'
+                      : 'Balance deducted'),
               value: '-¥${pricing.balanceUsed.toStringAsFixed(2)}',
               valueFontSize: 14,
               valueWeight: XbFontWeight.bold,
@@ -1106,6 +1176,23 @@ class _OrderInfoCard extends StatelessWidget {
               valueColor: XbUiStatusColor.info(context),
             ),
           ],
+          if (!isDeposit) ...[
+            const SizedBox(height: 12),
+            _InfoRow(
+              label: Localizations.localeOf(context).languageCode == 'zh'
+                  ? '第三方支付金额'
+                  : 'External payment',
+              value: '¥${pricing.payableAmount.toStringAsFixed(2)}',
+              valueWeight: XbFontWeight.bold,
+            ),
+            const SizedBox(height: 12),
+            _InfoRow(
+              label: Localizations.localeOf(context).languageCode == 'zh'
+                  ? '支付手续费'
+                  : 'Payment fee',
+              value: '¥${paymentFee.toStringAsFixed(2)}',
+            ),
+          ],
           const SizedBox(height: 14),
           Divider(
             color:
@@ -1116,8 +1203,8 @@ class _OrderInfoCard extends StatelessWidget {
             children: [
               Text(
                 Localizations.localeOf(context).languageCode == 'zh'
-                    ? '支付金额'
-                    : 'Payment amount',
+                    ? '实际支付'
+                    : 'Actual payment',
                 style: Theme.of(context).textTheme.titleSmall?.copyWith(
                       color: Theme.of(context).colorScheme.onSurfaceVariant,
                       fontWeight: FontWeight.w500,
@@ -1125,7 +1212,7 @@ class _OrderInfoCard extends StatelessWidget {
               ),
               const Spacer(),
               Text(
-                '¥${pricing.payableAmount.toStringAsFixed(2)}',
+                '¥${(pricing.payableAmount + paymentFee).toStringAsFixed(2)}',
                 style: Theme.of(context).textTheme.titleLarge?.copyWith(
                       color: amountColor,
                       fontWeight: XbFontWeight.heavy,
@@ -1151,8 +1238,7 @@ class _OrderStatusCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final backendStatus = order?.status;
-    final isPendingBackendStatus =
-        backendStatus == null ||
+    final isPendingBackendStatus = backendStatus == null ||
         backendStatus == OrderStatus.pending.code ||
         backendStatus == OrderStatus.processing.code;
     final effectiveStatus = completedOverride && isPendingBackendStatus
@@ -1283,10 +1369,10 @@ class _PaymentMethodTile extends StatelessWidget {
                         fontWeight: XbFontWeight.bold,
                       ),
                     ),
-                    if (method.feePercentage > 0) ...[
+                    if (method.feePercentage > 0 || method.fixedFee > 0) ...[
                       const SizedBox(height: 3),
                       Text(
-                        '手续费 ${method.feePercentage.toStringAsFixed(1)}%',
+                        _paymentFeeDescription(method),
                         style: theme.textTheme.bodySmall?.copyWith(
                           color: theme.colorScheme.onSurfaceVariant,
                         ),
@@ -1314,13 +1400,22 @@ class _PaymentOption {
   final String name;
   final String? iconUrl;
   final double feePercentage;
+  final double fixedFee;
 
   const _PaymentOption({
     required this.id,
     required this.name,
     this.iconUrl,
     this.feePercentage = 0,
+    this.fixedFee = 0,
   });
+
+  double feeFor(double amount) {
+    final amountInCents = (amount * 100).round();
+    final fixedFeeInCents = (fixedFee * 100).round();
+    return ((amountInCents * feePercentage / 100) + fixedFeeInCents).round() /
+        100;
+  }
 
   factory _PaymentOption.fromSdk(PaymentMethodModel method) {
     return _PaymentOption(
@@ -1328,6 +1423,7 @@ class _PaymentOption {
       name: method.name,
       iconUrl: method.icon,
       feePercentage: method.handlingFeePercent ?? 0,
+      fixedFee: _amountFromCents(method.handlingFeeFixed),
     );
   }
 
@@ -1339,6 +1435,17 @@ class _PaymentOption {
       feePercentage: method.feePercentage,
     );
   }
+}
+
+String _paymentFeeDescription(_PaymentOption method) {
+  final parts = <String>[];
+  if (method.feePercentage > 0) {
+    parts.add('${method.feePercentage.toStringAsFixed(1)}%');
+  }
+  if (method.fixedFee > 0) {
+    parts.add('¥${method.fixedFee.toStringAsFixed(2)}');
+  }
+  return '手续费 ${parts.join(' + ')}';
 }
 
 class _PaymentIcon extends StatelessWidget {
@@ -1598,79 +1705,6 @@ class _InfoRow extends StatelessWidget {
           ),
         ),
       ],
-    );
-  }
-}
-
-class _InlineError extends StatelessWidget {
-  final String message;
-  final VoidCallback onRetry;
-
-  const _InlineError({
-    required this.message,
-    required this.onRetry,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      children: [
-        Text(
-          message,
-          maxLines: 3,
-          overflow: TextOverflow.ellipsis,
-          style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                color: Theme.of(context).colorScheme.error,
-              ),
-        ),
-        const SizedBox(height: 12),
-        OutlinedButton(
-            onPressed: onRetry,
-            child: Text(AppLocalizations.of(context).xboardRetry)),
-      ],
-    );
-  }
-}
-
-class _OrderErrorView extends StatelessWidget {
-  final String message;
-  final VoidCallback onRetry;
-
-  const _OrderErrorView({
-    required this.message,
-    required this.onRetry,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Center(
-      child: Padding(
-        padding: const EdgeInsets.all(24),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(
-              Icons.receipt_long_outlined,
-              size: 56,
-              color: Theme.of(context).colorScheme.outline,
-            ),
-            const SizedBox(height: 12),
-            Text(AppLocalizations.of(context).xboardOrderLoadingFailed,
-                style: Theme.of(context).textTheme.titleMedium),
-            const SizedBox(height: 6),
-            Text(
-              message,
-              textAlign: TextAlign.center,
-              maxLines: 3,
-              overflow: TextOverflow.ellipsis,
-            ),
-            const SizedBox(height: 16),
-            FilledButton(
-                onPressed: onRetry,
-                child: Text(AppLocalizations.of(context).xboardRetry)),
-          ],
-        ),
-      ),
     );
   }
 }

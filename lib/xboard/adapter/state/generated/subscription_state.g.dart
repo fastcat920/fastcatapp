@@ -6,7 +6,7 @@ part of '../subscription_state.dart';
 // RiverpodGenerator
 // **************************************************************************
 
-String _$getSubscriptionHash() => r'd07a7f196c50dba9384d2417bdcb5b2367b5e968';
+String _$getSubscriptionHash() => r'29255f1bb7aaf8072e8f2e2da34dfc422fb46c91';
 
 /// 订阅状态管理
 /// 获取订阅信息
@@ -27,7 +27,7 @@ final getSubscriptionProvider =
 @Deprecated('Will be removed in 3.0. Use Ref instead')
 // ignore: unused_element
 typedef GetSubscriptionRef = AutoDisposeFutureProviderRef<SubscriptionModel>;
-String _$getSubscribeUrlHash() => r'77288d5b3b57d2f05763579e811864dd74923f59';
+String _$getSubscribeUrlHash() => r'49fe500a93a8a8d78b9dc285a893da165ba80021';
 
 /// 获取订阅链接
 ///

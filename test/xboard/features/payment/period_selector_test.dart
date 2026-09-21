@@ -11,8 +11,9 @@ void main() {
 
   Future<SliverGridDelegateWithFixedCrossAxisCount> pumpSelector(
     WidgetTester tester,
-    double width,
-  ) async {
+    double width, {
+    bool forceFourColumns = false,
+  }) async {
     await tester.binding.setSurfaceSize(const Size(1200, 1000));
     addTearDown(() => tester.binding.setSurfaceSize(null));
 
@@ -55,6 +56,7 @@ void main() {
                   },
                 ],
                 selectedPeriod: 'month_price',
+                forceFourColumns: forceFourColumns,
                 onPeriodSelected: (_) {},
               ),
             ),
@@ -84,6 +86,18 @@ void main() {
 
   testWidgets('uses four columns on tablet content width', (tester) async {
     final delegate = await pumpSelector(tester, 900);
+
+    expect(delegate.crossAxisCount, 4);
+    expect(delegate.mainAxisExtent, 80);
+  });
+
+  testWidgets('desktop purchase layout keeps four columns at medium width',
+      (tester) async {
+    final delegate = await pumpSelector(
+      tester,
+      700,
+      forceFourColumns: true,
+    );
 
     expect(delegate.crossAxisCount, 4);
     expect(delegate.mainAxisExtent, 80);

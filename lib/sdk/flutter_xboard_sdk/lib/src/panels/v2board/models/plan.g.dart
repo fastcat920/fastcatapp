@@ -27,6 +27,9 @@ _$PlanImpl _$$PlanImplFromJson(Map<String, dynamic> json) => _$PlanImpl(
       capacityLimit: (json['capacity_limit'] as num?)?.toInt(),
       speedLimit: (json['speed_limit'] as num?)?.toInt(),
       deviceLimit: (json['device_limit'] as num?)?.toInt(),
+      activeFlashSales: json['active_flash_sales'] == null
+          ? const {}
+          : _flashSalesFromJson(json['active_flash_sales']),
     );
 
 Map<String, dynamic> _$$PlanImplToJson(_$PlanImpl instance) =>
@@ -51,4 +54,5 @@ Map<String, dynamic> _$$PlanImplToJson(_$PlanImpl instance) =>
       'capacity_limit': instance.capacityLimit,
       'speed_limit': instance.speedLimit,
       'device_limit': instance.deviceLimit,
+      'active_flash_sales': instance.activeFlashSales,
     };

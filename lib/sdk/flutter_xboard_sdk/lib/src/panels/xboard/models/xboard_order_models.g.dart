@@ -11,6 +11,7 @@ _$OrderImpl _$$OrderImplFromJson(Map<String, dynamic> json) => _$OrderImpl(
       tradeNo: json['trade_no'] as String?,
       totalAmount: (json['total_amount'] as num?)?.toDouble(),
       balanceAmount: (json['balance_amount'] as num?)?.toDouble(),
+      handlingAmount: (json['handling_amount'] as num?)?.toDouble(),
       surplusAmount: (json['surplus_amount'] as num?)?.toDouble(),
       refundAmount: (json['refund_amount'] as num?)?.toDouble(),
       depositAmount: (json['deposit_amount'] as num?)?.toDouble(),
@@ -37,6 +38,7 @@ Map<String, dynamic> _$$OrderImplToJson(_$OrderImpl instance) =>
       'trade_no': instance.tradeNo,
       'total_amount': instance.totalAmount,
       'balance_amount': instance.balanceAmount,
+      'handling_amount': instance.handlingAmount,
       'surplus_amount': instance.surplusAmount,
       'refund_amount': instance.refundAmount,
       'deposit_amount': instance.depositAmount,
@@ -105,6 +107,8 @@ _$PaymentMethodImpl _$$PaymentMethodImplFromJson(Map<String, dynamic> json) =>
       id: _idFromJson(json['id']),
       name: json['name'] as String,
       icon: json['icon'] as String?,
+      handlingFeeFixed: (json['handling_fee_fixed'] as num?)?.toDouble(),
+      handlingFeePercent: (json['handling_fee_percent'] as num?)?.toDouble(),
       isAvailable: json['is_available'] as bool? ?? false,
       config: json['config'] as Map<String, dynamic>?,
     );
@@ -114,6 +118,8 @@ Map<String, dynamic> _$$PaymentMethodImplToJson(_$PaymentMethodImpl instance) =>
       'id': _idToJson(instance.id),
       'name': instance.name,
       'icon': instance.icon,
+      'handling_fee_fixed': instance.handlingFeeFixed,
+      'handling_fee_percent': instance.handlingFeePercent,
       'is_available': instance.isAvailable,
       'config': instance.config,
     };

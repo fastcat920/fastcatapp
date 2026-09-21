@@ -91,6 +91,7 @@ dev_dependencies:
   build_runner: ^2.4.13
   args: ^2.4.2
   freezed: ^2.5.1
+  riverpod_generator: ^2.6.4
   intl_utils: ^2.8.11
 
 dependency_overrides:

@@ -25,12 +25,6 @@ build/
 dist/
 device_gateway.zip
 
-# Catboard web theme build dependencies and generated package
-theme/source/node_modules/
-theme/source/dist/
-theme/release_build/
-theme/fastcat-catboard-theme-*.zip
-
 # Platform ephemeral
 android/.gradle/
 android/core/.cxx/

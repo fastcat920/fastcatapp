@@ -35,6 +35,7 @@ export 'src/api/interfaces/plan_api.dart';
 export 'src/api/interfaces/subscription_api.dart';
 export 'src/api/interfaces/ticket_api.dart';
 export 'src/api/interfaces/user_api.dart';
+export 'src/api/catboard_api.dart';
 
 // 模型
 export 'src/api/models/config_model.dart';
@@ -47,3 +48,4 @@ export 'src/api/models/subscription_model.dart';
 export 'src/api/models/ticket_model.dart';
 export 'src/api/models/user_model.dart';
 export 'src/api/models/coupon_model.dart';
+export 'src/api/models/catboard_model.dart';

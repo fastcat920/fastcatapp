@@ -28,6 +28,8 @@ mixin _$OrderModel {
   double? get totalAmount => throw _privateConstructorUsedError;
   @JsonKey(name: 'balance_amount')
   double? get balanceAmount => throw _privateConstructorUsedError;
+  @JsonKey(name: 'handling_amount')
+  double? get handlingAmount => throw _privateConstructorUsedError;
   @JsonKey(name: 'surplus_amount')
   double? get surplusAmount => throw _privateConstructorUsedError;
   @JsonKey(name: 'refund_amount')
@@ -81,6 +83,7 @@ abstract class $OrderModelCopyWith<$Res> {
       @JsonKey(name: 'trade_no') String? tradeNo,
       @JsonKey(name: 'total_amount') double? totalAmount,
       @JsonKey(name: 'balance_amount') double? balanceAmount,
+      @JsonKey(name: 'handling_amount') double? handlingAmount,
       @JsonKey(name: 'surplus_amount') double? surplusAmount,
       @JsonKey(name: 'refund_amount') double? refundAmount,
       @JsonKey(name: 'deposit_amount') double? depositAmount,
@@ -124,6 +127,7 @@ class _$OrderModelCopyWithImpl<$Res, $Val extends OrderModel>
     Object? tradeNo = freezed,
     Object? totalAmount = freezed,
     Object? balanceAmount = freezed,
+    Object? handlingAmount = freezed,
     Object? surplusAmount = freezed,
     Object? refundAmount = freezed,
     Object? depositAmount = freezed,
@@ -156,6 +160,10 @@ class _$OrderModelCopyWithImpl<$Res, $Val extends OrderModel>
       balanceAmount: freezed == balanceAmount
           ? _value.balanceAmount
           : balanceAmount // ignore: cast_nullable_to_non_nullable
+              as double?,
+      handlingAmount: freezed == handlingAmount
+          ? _value.handlingAmount
+          : handlingAmount // ignore: cast_nullable_to_non_nullable
               as double?,
       surplusAmount: freezed == surplusAmount
           ? _value.surplusAmount
@@ -248,6 +256,7 @@ abstract class _$$OrderModelImplCopyWith<$Res>
       @JsonKey(name: 'trade_no') String? tradeNo,
       @JsonKey(name: 'total_amount') double? totalAmount,
       @JsonKey(name: 'balance_amount') double? balanceAmount,
+      @JsonKey(name: 'handling_amount') double? handlingAmount,
       @JsonKey(name: 'surplus_amount') double? surplusAmount,
       @JsonKey(name: 'refund_amount') double? refundAmount,
       @JsonKey(name: 'deposit_amount') double? depositAmount,
@@ -290,6 +299,7 @@ class __$$OrderModelImplCopyWithImpl<$Res>
     Object? tradeNo = freezed,
     Object? totalAmount = freezed,
     Object? balanceAmount = freezed,
+    Object? handlingAmount = freezed,
     Object? surplusAmount = freezed,
     Object? refundAmount = freezed,
     Object? depositAmount = freezed,
@@ -322,6 +332,10 @@ class __$$OrderModelImplCopyWithImpl<$Res>
       balanceAmount: freezed == balanceAmount
           ? _value.balanceAmount
           : balanceAmount // ignore: cast_nullable_to_non_nullable
+              as double?,
+      handlingAmount: freezed == handlingAmount
+          ? _value.handlingAmount
+          : handlingAmount // ignore: cast_nullable_to_non_nullable
               as double?,
       surplusAmount: freezed == surplusAmount
           ? _value.surplusAmount
@@ -395,6 +409,7 @@ class _$OrderModelImpl implements _OrderModel {
       @JsonKey(name: 'trade_no') this.tradeNo,
       @JsonKey(name: 'total_amount') this.totalAmount,
       @JsonKey(name: 'balance_amount') this.balanceAmount,
+      @JsonKey(name: 'handling_amount') this.handlingAmount,
       @JsonKey(name: 'surplus_amount') this.surplusAmount,
       @JsonKey(name: 'refund_amount') this.refundAmount,
       @JsonKey(name: 'deposit_amount') this.depositAmount,
@@ -430,6 +445,9 @@ class _$OrderModelImpl implements _OrderModel {
   @override
   @JsonKey(name: 'balance_amount')
   final double? balanceAmount;
+  @override
+  @JsonKey(name: 'handling_amount')
+  final double? handlingAmount;
   @override
   @JsonKey(name: 'surplus_amount')
   final double? surplusAmount;
@@ -479,7 +497,7 @@ class _$OrderModelImpl implements _OrderModel {
 
   @override
   String toString() {
-    return 'OrderModel(planId: $planId, tradeNo: $tradeNo, totalAmount: $totalAmount, balanceAmount: $balanceAmount, surplusAmount: $surplusAmount, refundAmount: $refundAmount, depositAmount: $depositAmount, depositBonusAmount: $depositBonusAmount, depositCreditedAmount: $depositCreditedAmount, depositSource: $depositSource, commissionBalance: $commissionBalance, actualCommissionBalance: $actualCommissionBalance, period: $period, status: $status, createdAt: $createdAt, orderPlan: $orderPlan, couponPrice: $couponPrice, couponCode: $couponCode, discountAmount: $discountAmount)';
+    return 'OrderModel(planId: $planId, tradeNo: $tradeNo, totalAmount: $totalAmount, balanceAmount: $balanceAmount, handlingAmount: $handlingAmount, surplusAmount: $surplusAmount, refundAmount: $refundAmount, depositAmount: $depositAmount, depositBonusAmount: $depositBonusAmount, depositCreditedAmount: $depositCreditedAmount, depositSource: $depositSource, commissionBalance: $commissionBalance, actualCommissionBalance: $actualCommissionBalance, period: $period, status: $status, createdAt: $createdAt, orderPlan: $orderPlan, couponPrice: $couponPrice, couponCode: $couponCode, discountAmount: $discountAmount)';
   }
 
   @override
@@ -493,6 +511,8 @@ class _$OrderModelImpl implements _OrderModel {
                 other.totalAmount == totalAmount) &&
             (identical(other.balanceAmount, balanceAmount) ||
                 other.balanceAmount == balanceAmount) &&
+            (identical(other.handlingAmount, handlingAmount) ||
+                other.handlingAmount == handlingAmount) &&
             (identical(other.surplusAmount, surplusAmount) ||
                 other.surplusAmount == surplusAmount) &&
             (identical(other.refundAmount, refundAmount) ||
@@ -532,6 +552,7 @@ class _$OrderModelImpl implements _OrderModel {
         tradeNo,
         totalAmount,
         balanceAmount,
+        handlingAmount,
         surplusAmount,
         refundAmount,
         depositAmount,
@@ -571,6 +592,7 @@ abstract class _OrderModel implements OrderModel {
           @JsonKey(name: 'trade_no') final String? tradeNo,
           @JsonKey(name: 'total_amount') final double? totalAmount,
           @JsonKey(name: 'balance_amount') final double? balanceAmount,
+          @JsonKey(name: 'handling_amount') final double? handlingAmount,
           @JsonKey(name: 'surplus_amount') final double? surplusAmount,
           @JsonKey(name: 'refund_amount') final double? refundAmount,
           @JsonKey(name: 'deposit_amount') final double? depositAmount,
@@ -608,6 +630,9 @@ abstract class _OrderModel implements OrderModel {
   @override
   @JsonKey(name: 'balance_amount')
   double? get balanceAmount;
+  @override
+  @JsonKey(name: 'handling_amount')
+  double? get handlingAmount;
   @override
   @JsonKey(name: 'surplus_amount')
   double? get surplusAmount;

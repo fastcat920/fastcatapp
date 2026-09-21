@@ -9,6 +9,7 @@ import 'package:fl_clash/xboard/adapter/initialization/sdk_provider.dart';
 import 'package:fl_clash/xboard/config/xboard_config.dart';
 import 'package:fl_clash/xboard/features/shared/widgets/tv_deferred_input.dart';
 import 'package:fl_clash/xboard/features/shared/widgets/xb_dialog.dart';
+import 'package:fl_clash/xboard/features/shared/widgets/xb_error_state.dart';
 import 'package:fl_clash/xboard/features/shared/styles/styles.dart';
 import 'package:fl_clash/xboard/features/mine/services/imgbb_service.dart';
 import 'package:fl_clash/xboard/utils/backend_message_mapper.dart';
@@ -138,24 +139,9 @@ class _TicketDetailPageState extends ConsumerState<TicketDetailPage> {
       ),
       body: detailAsync.when(
         loading: () => const Center(child: CircularProgressIndicator()),
-        error: (e, _) => Center(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Icon(Icons.error_outline,
-                  size: 48, color: XbUiStatusColor.error(context)),
-              const SizedBox(height: 12),
-              Text('${l10n.xboardOperationFailed}: $e',
-                  textAlign: TextAlign.center,
-                  style: Theme.of(context).textTheme.bodySmall),
-              const SizedBox(height: 12),
-              FilledButton(
-                onPressed: () =>
-                    ref.invalidate(getTicketProvider(widget.ticketId)),
-                child: Text(l10n.xboardRetry),
-              ),
-            ],
-          ),
+        error: (e, _) => XbErrorState(
+          message: e,
+          onRetry: () => ref.invalidate(getTicketProvider(widget.ticketId)),
         ),
         data: (detail) {
           final isClosed = _isClosed || detail.status == 2;

@@ -10,7 +10,9 @@ import 'package:fl_clash/xboard/utils/xboard_notification.dart';
 import 'package:fl_clash/xboard/features/shared/styles/styles.dart';
 import 'package:fl_clash/common/common.dart';
 import 'package:fl_clash/xboard/features/shared/widgets/tv_deferred_input.dart';
+import 'package:fl_clash/xboard/features/shared/widgets/xb_error_state.dart';
 import 'package:fl_clash/xboard/utils/backend_message_mapper.dart';
+import 'package:go_router/go_router.dart';
 import 'order_detail_page.dart';
 
 String _preferPunctuationBreaks(String value) {
@@ -455,6 +457,23 @@ class _RechargePageState extends ConsumerState<RechargePage> {
             },
           ),
         ),
+        const SizedBox(height: 12),
+        Card(
+          margin: EdgeInsets.zero,
+          child: ListTile(
+            leading: Icon(
+              Icons.receipt_long_outlined,
+              color: theme.colorScheme.primary,
+            ),
+            title: Text(
+              Localizations.localeOf(context).languageCode == 'zh'
+                  ? '余额明细'
+                  : 'Balance records',
+            ),
+            trailing: const Icon(Icons.chevron_right),
+            onTap: () => context.push('/mine/balance-records'),
+          ),
+        ),
         const SizedBox(height: 24),
         // 快捷金额
         Text(l10n.xboardSelectRechargeAmount,
@@ -467,12 +486,10 @@ class _RechargePageState extends ConsumerState<RechargePage> {
             child: Center(child: CircularProgressIndicator(strokeWidth: 2)),
           )
         else if (_depositBonusOptionsLoadFailed)
-          Center(
-            child: TextButton.icon(
-              onPressed: _loadDepositBonusOptions,
-              icon: const Icon(Icons.refresh, size: 18),
-              label: Text(l10n.xboardRetry),
-            ),
+          XbErrorState(
+            message: null,
+            onRetry: _loadDepositBonusOptions,
+            compact: true,
           )
         else if (_depositBonusOptions.isNotEmpty)
           LayoutBuilder(

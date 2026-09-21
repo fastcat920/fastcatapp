@@ -104,6 +104,7 @@ class XBoardOrderAdapter implements OrderApi {
       tradeNo: order.tradeNo,
       totalAmount: order.totalAmount,
       balanceAmount: order.balanceAmount,
+      handlingAmount: order.handlingAmount,
       surplusAmount: order.surplusAmount,
       refundAmount: order.refundAmount,
       depositAmount: order.depositAmount,
@@ -137,6 +138,8 @@ class XBoardOrderAdapter implements OrderApi {
       id: method.id,
       name: method.name,
       icon: method.icon,
+      handlingFeeFixed: method.handlingFeeFixed,
+      handlingFeePercent: method.handlingFeePercent,
       isAvailable: method.isAvailable,
       config: method.config,
     );

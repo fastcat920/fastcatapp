@@ -9,6 +9,7 @@ import 'package:fl_clash/xboard/core/core.dart';
 import 'package:fl_clash/xboard/domain/domain.dart';
 import 'package:flutter_xboard_sdk/flutter_xboard_sdk.dart';
 import 'package:fl_clash/xboard/adapter/state/payment_state.dart';
+import 'package:fl_clash/xboard/adapter/initialization/sdk_provider.dart';
 import 'package:fl_clash/xboard/utils/backend_message_mapper.dart';
 
 // 初始化文件级日志器
@@ -242,6 +243,57 @@ class XBoardPaymentNotifier extends Notifier<void> {
         isLoading: false,
         errorMessage: BackendMessageMapper.mapError(
           e,
+          context: BackendMessageContext.order,
+        ),
+      );
+      return null;
+    }
+  }
+
+  Future<String?> createCatboardOrder({
+    required int planId,
+    required String period,
+    int? userCouponId,
+    bool disableAutoCoupon = false,
+  }) async {
+    final userAuthState = ref.read(xboardUserAuthProvider);
+    if (!userAuthState.isAuthenticated) {
+      ref.read(paymentUIStateProvider.notifier).state =
+          const UIState(errorMessage: '请先登录');
+      return null;
+    }
+    ref.read(paymentUIStateProvider.notifier).state =
+        const UIState(isLoading: true);
+    try {
+      await cancelPendingOrders(
+        fastMode: true,
+        refreshAfterCancel: false,
+        updateUiState: false,
+      );
+      final sdk = await ref.read(xboardSdkProvider.future);
+      final tradeNo = await sdk.catboard.createOrder(
+        planId: planId,
+        period: period,
+        userCouponId: userCouponId,
+        disableAutoCoupon: disableAutoCoupon,
+      );
+      if (tradeNo.isEmpty) throw StateError('创建订单失败');
+      ref.read(paymentProcessStateProvider.notifier).state =
+          PaymentProcessState(currentOrderTradeNo: tradeNo);
+      ref.read(paymentUIStateProvider.notifier).state =
+          const UIState(isLoading: false);
+      _addLocalPendingOrder(
+        tradeNo: tradeNo,
+        planId: planId,
+        period: period,
+      );
+      unawaited(_refreshPendingOrdersInBackground());
+      return tradeNo;
+    } catch (error) {
+      ref.read(paymentUIStateProvider.notifier).state = UIState(
+        isLoading: false,
+        errorMessage: BackendMessageMapper.mapError(
+          error,
           context: BackendMessageContext.order,
         ),
       );

@@ -3,6 +3,7 @@ import 'dart:async';
 import 'dart:io';
 import 'package:file_picker/file_picker.dart';
 import 'package:fl_clash/l10n/l10n.dart';
+import 'package:fl_clash/xboard/features/shared/widgets/xb_error_state.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -771,41 +772,14 @@ if (typeof window.__fastcatHideLoadingMask === 'function') {
   }
 
   Widget _buildErrorPage(BuildContext context) {
-    final l10n = AppLocalizations.of(context);
     final strings = _strings;
     final isDark = _isDarkMode;
     return Positioned.fill(
       child: ColoredBox(
         color: _customerServiceBackgroundColor(isDark),
-        child: Center(
-          child: Padding(
-            padding: const EdgeInsets.all(32),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Icon(
-                  Icons.cloud_off,
-                  size: 48,
-                  color: isDark ? Colors.white38 : Colors.grey,
-                ),
-                const SizedBox(height: 16),
-                Text(
-                  strings.loadFailed,
-                  textAlign: TextAlign.center,
-                  style: TextStyle(
-                    fontSize: 14,
-                    color: isDark ? Colors.white54 : Colors.grey,
-                  ),
-                ),
-                const SizedBox(height: 24),
-                FilledButton.icon(
-                  onPressed: () => _loadPreferredCrispUrl(),
-                  icon: const Icon(Icons.refresh, size: 18),
-                  label: Text(l10n.refresh),
-                ),
-              ],
-            ),
-          ),
+        child: XbErrorState(
+          message: strings.loadFailed,
+          onRetry: () => _loadPreferredCrispUrl(),
         ),
       ),
     );

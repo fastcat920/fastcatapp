@@ -382,6 +382,9 @@ DomainPlan _mapPlan(PlanModel plan) {
     updatedAt: plan.updatedAt != null
         ? DateTime.fromMillisecondsSinceEpoch(plan.updatedAt! * 1000)
         : null,
+    metadata: {
+      'activeFlashSales': plan.activeFlashSales,
+    },
   );
 }
 

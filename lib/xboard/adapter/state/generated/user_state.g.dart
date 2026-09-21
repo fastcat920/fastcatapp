@@ -6,7 +6,7 @@ part of '../user_state.dart';
 // RiverpodGenerator
 // **************************************************************************
 
-String _$getUserInfoHash() => r'9f2d7f5a10b72d23ba4f0010b04b842a132dcf0f';
+String _$getUserInfoHash() => r'0cadc050cb922e3faf17301c3dc88a6976c6abdf';
 
 /// 用户状态管理
 /// 获取用户信息

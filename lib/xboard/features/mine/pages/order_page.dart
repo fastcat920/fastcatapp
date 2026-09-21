@@ -8,6 +8,7 @@ import 'package:fl_clash/xboard/adapter/state/order_state.dart';
 import 'package:fl_clash/xboard/features/auth/providers/xboard_user_provider.dart';
 import 'package:fl_clash/xboard/features/payment/pages/order_detail_page.dart';
 import 'package:fl_clash/xboard/features/shared/styles/styles.dart';
+import 'package:fl_clash/xboard/features/shared/widgets/xb_error_state.dart';
 import 'package:fl_clash/common/common.dart';
 import 'package:fl_clash/xboard/utils/backend_message_mapper.dart';
 
@@ -211,8 +212,8 @@ class _OrderPageState extends ConsumerState<OrderPage> {
       return const Center(child: CircularProgressIndicator());
     }
     if (_error != null) {
-      return _ErrorView(
-        message: _error.toString(),
+      return XbErrorState(
+        message: _error,
         onRetry: _loadFirstPage,
       );
     }
@@ -273,41 +274,6 @@ class _LoadingMoreIndicator extends StatelessWidget {
           child: isLoadingMore
               ? const CircularProgressIndicator(strokeWidth: 2)
               : null,
-        ),
-      ),
-    );
-  }
-}
-
-class _ErrorView extends StatelessWidget {
-  final String message;
-  final VoidCallback onRetry;
-  const _ErrorView({required this.message, required this.onRetry});
-
-  @override
-  Widget build(BuildContext context) {
-    return Center(
-      child: Padding(
-        padding: const EdgeInsets.all(24),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(Icons.error_outline,
-                size: 56, color: Theme.of(context).colorScheme.error),
-            const SizedBox(height: 12),
-            Text(AppLocalizations.of(context).xboardLoadingFailed,
-                style: XbUiText.sectionTitle(context)),
-            const SizedBox(height: 6),
-            Text(message,
-                style: XbUiText.bodySmall(context),
-                textAlign: TextAlign.center,
-                maxLines: 3,
-                overflow: TextOverflow.ellipsis),
-            const SizedBox(height: 16),
-            FilledButton(
-                onPressed: onRetry,
-                child: Text(AppLocalizations.of(context).xboardRetry)),
-          ],
         ),
       ),
     );

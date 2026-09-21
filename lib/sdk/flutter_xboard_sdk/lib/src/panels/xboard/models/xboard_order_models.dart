@@ -19,6 +19,7 @@ class Order with _$Order {
     @JsonKey(name: 'trade_no') String? tradeNo,
     @JsonKey(name: 'total_amount') double? totalAmount,
     @JsonKey(name: 'balance_amount') double? balanceAmount,
+    @JsonKey(name: 'handling_amount') double? handlingAmount,
     @JsonKey(name: 'surplus_amount') double? surplusAmount,
     @JsonKey(name: 'refund_amount') double? refundAmount,
     @JsonKey(name: 'deposit_amount') double? depositAmount,
@@ -86,6 +87,8 @@ class PaymentMethod with _$PaymentMethod {
     required String id, // Custom fromJson/toJson for id
     required String name,
     String? icon,
+    @JsonKey(name: 'handling_fee_fixed') double? handlingFeeFixed,
+    @JsonKey(name: 'handling_fee_percent') double? handlingFeePercent,
     @JsonKey(name: 'is_available', defaultValue: false)
     required bool isAvailable,
     Map<String, dynamic>? config,

@@ -13,6 +13,8 @@ import 'package:fl_clash/xboard/features/shared/styles/styles.dart';
 import 'package:fl_clash/xboard/features/shared/widgets/widgets.dart';
 import 'package:fl_clash/xboard/utils/xboard_notification.dart';
 import 'package:fl_clash/xboard/config/xboard_config.dart';
+import 'package:fl_clash/xboard/adapter/initialization/sdk_provider.dart';
+import 'package:flutter_xboard_sdk/flutter_xboard_sdk.dart';
 
 class InvitePage extends ConsumerStatefulWidget {
   const InvitePage({super.key});
@@ -25,6 +27,7 @@ class _InvitePageState extends ConsumerState<InvitePage>
     with AutomaticKeepAliveClientMixin, SingleTickerProviderStateMixin {
   bool _hasInitialized = false;
   bool _isRefreshing = false;
+  CatboardReferralProgram? _referralProgram;
   late final TabController _tabController;
 
   @override
@@ -33,7 +36,7 @@ class _InvitePageState extends ConsumerState<InvitePage>
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 2, vsync: this);
+    _tabController = TabController(length: 3, vsync: this);
     WidgetsBinding.instance.addPostFrameCallback((_) async {
       if (_hasInitialized) return;
       _hasInitialized = true;
@@ -52,6 +55,13 @@ class _InvitePageState extends ConsumerState<InvitePage>
     if (mounted) setState(() => _isRefreshing = true);
     try {
       await ref.read(inviteProvider.notifier).refresh();
+      try {
+        final sdk = await ref.read(xboardSdkProvider.future);
+        final program = await sdk.catboard.getReferralProgram();
+        if (mounted) setState(() => _referralProgram = program);
+      } catch (_) {
+        // Older panels do not expose the referral program extension.
+      }
     } catch (_) {
     } finally {
       if (mounted) setState(() => _isRefreshing = false);
@@ -108,6 +118,10 @@ class _InvitePageState extends ConsumerState<InvitePage>
                     // ── 邀请统计
                     _InviteStatsSection(
                         state: inviteState, isDesktop: isDesktop),
+                    if (_referralProgram != null) ...[
+                      const SizedBox(height: 12),
+                      _ReferralProgramSection(program: _referralProgram!),
+                    ],
                     const SizedBox(height: 20),
 
                     // ── Tab bar
@@ -184,6 +198,16 @@ class _InvitePageState extends ConsumerState<InvitePage>
                 const Icon(Icons.code, size: 16),
                 const SizedBox(width: 6),
                 Text(appLocalizations.inviteCode),
+              ],
+            ),
+          ),
+          Tab(
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                const Icon(Icons.group_outlined, size: 16),
+                const SizedBox(width: 6),
+                Text(_copy(context, '邀请用户', 'Users')),
               ],
             ),
           ),
@@ -674,6 +698,100 @@ class _StatCardTooltipButton extends StatelessWidget {
   }
 }
 
+class _ReferralProgramSection extends StatelessWidget {
+  final CatboardReferralProgram program;
+
+  const _ReferralProgramSection({required this.program});
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final level = program.level;
+    final nextLevel = program.nextLevel;
+    final milestone = program.nextMilestone;
+    final levelName =
+        (level?['name'] ?? level?['title'] ?? _copy(context, '普通会员', 'Member'))
+            .toString();
+    final nextName = (nextLevel?['name'] ?? nextLevel?['title'])?.toString();
+    final requiredInvites = _asInt(
+      nextLevel?['required_invites'] ?? milestone?['required_invites'],
+    );
+    final progress = requiredInvites <= 0
+        ? 1.0
+        : (program.effectiveInvites / requiredInvites).clamp(0.0, 1.0);
+    final isDark = theme.brightness == Brightness.dark;
+
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          colors: [
+            theme.colorScheme.primary.withValues(alpha: isDark ? 0.3 : 0.16),
+            theme.colorScheme.tertiary.withValues(alpha: isDark ? 0.2 : 0.1),
+          ],
+        ),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(
+          color: theme.colorScheme.primary.withValues(alpha: 0.25),
+        ),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Icon(Icons.workspace_premium_outlined,
+                  color: theme.colorScheme.primary),
+              const SizedBox(width: 8),
+              Expanded(
+                child: Text(
+                  '${_copy(context, '当前等级', 'Current level')} · $levelName',
+                  style: theme.textTheme.titleMedium
+                      ?.copyWith(fontWeight: XbFontWeight.bold),
+                ),
+              ),
+              Text('${program.commissionRate}%'),
+            ],
+          ),
+          const SizedBox(height: 12),
+          Wrap(
+            spacing: 18,
+            runSpacing: 8,
+            children: [
+              Text('${_copy(context, '有效邀请', 'Effective')} '
+                  '${program.effectiveInvites}'),
+              Text('${_copy(context, '邀请贡献', 'Revenue')} '
+                  '${_money(program.referralRevenue)}'),
+              if (program.newcomerReward != null)
+                Text('${_copy(context, '新人奖励', 'Welcome reward')} '
+                    '${program.newcomerReward!['coupon_name'] ?? program.newcomerReward!['status']}'),
+            ],
+          ),
+          if (nextName != null || requiredInvites > 0) ...[
+            const SizedBox(height: 12),
+            LinearProgressIndicator(value: progress),
+            const SizedBox(height: 6),
+            Text(
+              nextName != null
+                  ? '${_copy(context, '下一等级', 'Next level')}: $nextName'
+                  : '${_copy(context, '下一里程碑', 'Next milestone')}: $requiredInvites',
+              style: theme.textTheme.bodySmall,
+            ),
+          ],
+          if (program.recentRewards.isNotEmpty) ...[
+            const SizedBox(height: 10),
+            Text(
+              '${_copy(context, '近期奖励', 'Recent rewards')}: ${program.recentRewards.length}',
+              style: theme.textTheme.bodySmall,
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+}
+
 // ─── Tab 切换内容 ──────────────────────────────────────────────────────────────
 
 class _InviteCodesTabContent extends ConsumerStatefulWidget {
@@ -721,9 +839,9 @@ class _InviteCodesTabContentState
       final siteUrlAsync = ref.watch(panelSiteUrlProvider);
       final siteUrl = siteUrlAsync.valueOrNull ?? '';
       return _InviteCodesTab(state: state, ref: ref, siteUrl: siteUrl);
-    } else {
-      return _CommissionHistoryTab(state: state);
     }
+    if (idx == 1) return const _InviteUsersTab();
+    return const _CommissionLedgerTab();
   }
 }
 
@@ -956,8 +1074,285 @@ class _InviteCodeItem extends StatelessWidget {
   }
 }
 
-// ─── 返佣记录 ──────────────────────────────────────────────────────────────────
+// ─── 邀请用户与统一佣金账本 ────────────────────────────────────────────────────
 
+class _InviteUsersTab extends ConsumerStatefulWidget {
+  const _InviteUsersTab();
+
+  @override
+  ConsumerState<_InviteUsersTab> createState() => _InviteUsersTabState();
+}
+
+class _InviteUsersTabState extends ConsumerState<_InviteUsersTab> {
+  final List<CatboardInviteUser> _items = [];
+  int _page = 1;
+  int _total = 0;
+  bool _loading = false;
+  String? _error;
+
+  @override
+  void initState() {
+    super.initState();
+    Future<void>(_load);
+  }
+
+  Future<void> _load({bool more = false}) async {
+    if (_loading) return;
+    setState(() {
+      _loading = true;
+      _error = null;
+    });
+    try {
+      final sdk = await ref.read(xboardSdkProvider.future);
+      final nextPage = more ? _page + 1 : 1;
+      final result = await sdk.catboard.getInviteUsers(current: nextPage);
+      if (!mounted) return;
+      setState(() {
+        if (!more) _items.clear();
+        _items.addAll(result.items);
+        _page = nextPage;
+        _total = result.total;
+      });
+    } catch (error) {
+      if (mounted) setState(() => _error = error.toString());
+    } finally {
+      if (mounted) setState(() => _loading = false);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    if (_loading && _items.isEmpty) {
+      return const Center(child: CircularProgressIndicator());
+    }
+    if (_error != null && _items.isEmpty) {
+      return XbErrorState(message: _error!, onRetry: _load);
+    }
+    if (_items.isEmpty) {
+      return _EmptyLedger(
+        icon: Icons.group_off_outlined,
+        text: _copy(context, '暂无邀请用户', 'No invited users'),
+      );
+    }
+    return Column(
+      children: [
+        ..._items.map((user) => _LedgerCard(
+              icon: Icons.person_outline,
+              title: user.email,
+              subtitle: _date(user.createdAt),
+              trailing: user.status == 'effective'
+                  ? _copy(context, '有效', 'Effective')
+                  : _copy(context, '待生效', 'Pending'),
+              color: user.status == 'effective'
+                  ? XbUiStatusColor.success(context)
+                  : theme.colorScheme.outline,
+            )),
+        if (_items.length < _total)
+          TextButton.icon(
+            onPressed: _loading ? null : () => _load(more: true),
+            icon: _loading
+                ? const SizedBox(
+                    width: 16,
+                    height: 16,
+                    child: CircularProgressIndicator(strokeWidth: 2),
+                  )
+                : const Icon(Icons.expand_more),
+            label: Text(appLocalizations.loadMore),
+          ),
+      ],
+    );
+  }
+}
+
+class _CommissionLedgerTab extends ConsumerStatefulWidget {
+  const _CommissionLedgerTab();
+
+  @override
+  ConsumerState<_CommissionLedgerTab> createState() =>
+      _CommissionLedgerTabState();
+}
+
+class _CommissionLedgerTabState extends ConsumerState<_CommissionLedgerTab> {
+  final List<CatboardLedgerEntry> _items = [];
+  int _page = 1;
+  int _total = 0;
+  bool _loading = false;
+  String? _error;
+
+  @override
+  void initState() {
+    super.initState();
+    Future<void>(_load);
+  }
+
+  Future<void> _load({bool more = false}) async {
+    if (_loading) return;
+    setState(() {
+      _loading = true;
+      _error = null;
+    });
+    try {
+      final sdk = await ref.read(xboardSdkProvider.future);
+      final nextPage = more ? _page + 1 : 1;
+      final result = await sdk.catboard.getCommissionRecords(
+        current: nextPage,
+      );
+      if (!mounted) return;
+      setState(() {
+        if (!more) _items.clear();
+        _items.addAll(result.items);
+        _page = nextPage;
+        _total = result.total;
+      });
+    } catch (error) {
+      if (mounted) setState(() => _error = error.toString());
+    } finally {
+      if (mounted) setState(() => _loading = false);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        if (_loading && _items.isEmpty)
+          const Center(child: CircularProgressIndicator())
+        else if (_error != null && _items.isEmpty)
+          XbErrorState(message: _error!, onRetry: _load)
+        else if (_items.isEmpty)
+          _EmptyLedger(
+            icon: Icons.receipt_long_outlined,
+            text: appLocalizations.noCommissionRecord,
+          )
+        else ...[
+          ..._items.map((entry) {
+            final income = entry.amount >= 0;
+            return _LedgerCard(
+              icon: income
+                  ? Icons.add_circle_outline
+                  : Icons.remove_circle_outline,
+              title: _ledgerType(context, entry.type),
+              subtitle:
+                  entry.description ?? entry.tradeNo ?? _date(entry.createdAt),
+              trailing: '${income ? '+' : '-'}${_money(entry.amount.abs())}',
+              color: income
+                  ? XbUiStatusColor.success(context)
+                  : Theme.of(context).colorScheme.error,
+              footnote: entry.balanceAfter == null
+                  ? _date(entry.createdAt)
+                  : '${_copy(context, '余额', 'Balance')} ${_money(entry.balanceAfter!)} · ${_date(entry.createdAt)}',
+            );
+          }),
+          if (_items.length < _total)
+            Center(
+              child: TextButton.icon(
+                onPressed: _loading ? null : () => _load(more: true),
+                icon: const Icon(Icons.expand_more),
+                label: Text(appLocalizations.loadMore),
+              ),
+            ),
+        ],
+      ],
+    );
+  }
+}
+
+class _LedgerCard extends StatelessWidget {
+  final IconData icon;
+  final String title;
+  final String subtitle;
+  final String trailing;
+  final Color color;
+  final String? footnote;
+
+  const _LedgerCard({
+    required this.icon,
+    required this.title,
+    required this.subtitle,
+    required this.trailing,
+    required this.color,
+    this.footnote,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return Card(
+      margin: const EdgeInsets.only(bottom: 8),
+      child: ListTile(
+        leading: Icon(icon, color: color),
+        title: Text(title),
+        subtitle: Text(footnote == null ? subtitle : '$subtitle\n$footnote'),
+        trailing: Text(
+          trailing,
+          style: TextStyle(color: color, fontWeight: XbFontWeight.bold),
+        ),
+        textColor: theme.colorScheme.onSurface,
+      ),
+    );
+  }
+}
+
+class _EmptyLedger extends StatelessWidget {
+  final IconData icon;
+  final String text;
+
+  const _EmptyLedger({required this.icon, required this.text});
+
+  @override
+  Widget build(BuildContext context) => Padding(
+        padding: const EdgeInsets.all(24),
+        child: Center(
+          child: Column(
+            children: [
+              Icon(icon,
+                  size: 48, color: Theme.of(context).colorScheme.outline),
+              const SizedBox(height: 12),
+              Text(text),
+            ],
+          ),
+        ),
+      );
+}
+
+String _copy(BuildContext context, String zh, String en) =>
+    Localizations.localeOf(context).languageCode == 'zh' ? zh : en;
+
+int _asInt(dynamic value) =>
+    value is num ? value.toInt() : int.tryParse('$value') ?? 0;
+
+String _money(int cents) => '¥${(cents / 100).toStringAsFixed(2)}';
+
+String _date(DateTime? date) => date == null
+    ? '-'
+    : '${date.year}-${date.month.toString().padLeft(2, '0')}-${date.day.toString().padLeft(2, '0')}';
+
+String _ledgerType(BuildContext context, String type) {
+  switch (type) {
+    case 'commission_income':
+      return _copy(context, '邀请返佣', 'Referral commission');
+    case 'reward_income':
+      return _copy(context, '奖励佣金', 'Commission reward');
+    case 'transfer_out':
+      return _copy(context, '佣金划转', 'Wallet transfer');
+    case 'withdrawal':
+      return _copy(context, '提现申请', 'Withdrawal request');
+    case 'withdrawal_refund':
+      return _copy(context, '提现退回', 'Withdrawal refund');
+    case 'commission_reversal':
+      return _copy(context, '佣金撤销', 'Commission reversal');
+    case 'admin_adjustment':
+      return _copy(context, '后台调整', 'Admin adjustment');
+    default:
+      return type;
+  }
+}
+
+// ─── 旧版返佣记录（兼容旧面板数据模型）────────────────────────────────────────
+
+// ignore: unused_element
 class _CommissionHistoryTab extends ConsumerWidget {
   final InviteState state;
   const _CommissionHistoryTab({required this.state});

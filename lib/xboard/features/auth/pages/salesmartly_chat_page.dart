@@ -5,6 +5,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 import 'package:fl_clash/l10n/l10n.dart';
+import 'package:fl_clash/xboard/features/shared/widgets/xb_error_state.dart';
 
 /// SalesSmartly 客服嵌入页面（Android/iOS/macOS）
 ///
@@ -281,24 +282,10 @@ class _SalesmarylyChatPageState extends State<SalesmarylyChatPage> {
                   ),
                 ),
               if (_hasError)
-                Center(
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      const Icon(Icons.error_outline,
-                          size: 48, color: Colors.grey),
-                      const SizedBox(height: 16),
-                      Text(
-                          AppLocalizations.of(context)
-                              .xboardLoadFailedCheckNetwork,
-                          style: TextStyle(color: Colors.grey)),
-                      const SizedBox(height: 16),
-                      FilledButton(
-                        onPressed: _retry,
-                        child: Text(AppLocalizations.of(context).xboardRetry),
-                      ),
-                    ],
-                  ),
+                XbErrorState(
+                  message:
+                      AppLocalizations.of(context).xboardLoadFailedCheckNetwork,
+                  onRetry: _retry,
                 ),
             ],
           ),

@@ -7,6 +7,8 @@ import 'package:fl_clash/xboard/features/mine/pages/account_info_page.dart';
 import 'package:fl_clash/xboard/features/mine/pages/device_page.dart';
 import 'package:fl_clash/xboard/features/mine/pages/gift_card_page.dart';
 import 'package:fl_clash/xboard/features/mine/pages/order_page.dart';
+import 'package:fl_clash/xboard/features/mine/pages/coupon_wallet_page.dart';
+import 'package:fl_clash/xboard/features/mine/pages/balance_records_page.dart';
 import 'package:fl_clash/xboard/features/auth/pages/login_page.dart';
 import 'package:fl_clash/xboard/features/logs/pages/fastcat_logs_page.dart';
 import 'package:flutter/material.dart';
@@ -120,6 +122,20 @@ final List<RouteBase> routes = [
                 name: 'gift_card',
                 pageBuilder: (context, state) => const MaterialPage(
                   child: GiftCardPage(),
+                ),
+              ),
+              GoRoute(
+                path: 'coupons',
+                name: 'coupons',
+                pageBuilder: (context, state) => const MaterialPage(
+                  child: CouponWalletPage(),
+                ),
+              ),
+              GoRoute(
+                path: 'balance-records',
+                name: 'balance_records',
+                pageBuilder: (context, state) => const MaterialPage(
+                  child: BalanceRecordsPage(),
                 ),
               ),
             ],

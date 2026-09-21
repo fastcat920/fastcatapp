@@ -29,6 +29,7 @@ import 'package:fl_clash/xboard/utils/xboard_notification.dart';
 import 'package:fl_clash/plugins/service.dart';
 import '../widgets/subscription_usage_card.dart';
 import '../widgets/xboard_connect_button.dart';
+import 'package:fl_clash/xboard/features/payment/widgets/coupon_entry_button.dart';
 
 class XBoardHomePage extends ConsumerStatefulWidget {
   const XBoardHomePage({super.key});
@@ -219,6 +220,10 @@ class _XBoardHomePageState extends ConsumerState<XBoardHomePage>
                         : Brightness.light,
               ),
               actions: [
+                const CouponEntryButton(
+                  showOnlyWhenAvailable: true,
+                  endSpacing: 8,
+                ),
                 Padding(
                   padding: const EdgeInsets.only(right: 12),
                   child: TextButton.icon(
@@ -284,6 +289,10 @@ class _XBoardHomePageState extends ConsumerState<XBoardHomePage>
                             : Brightness.light,
                   ),
                   actions: [
+                    const CouponEntryButton(
+                      showOnlyWhenAvailable: true,
+                      endSpacing: 8,
+                    ),
                     Padding(
                       padding: const EdgeInsets.only(right: 16),
                       child: TextButton.icon(
