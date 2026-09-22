@@ -11,8 +11,8 @@ import 'package:fl_clash/xboard/features/shared/styles/styles.dart';
 import 'package:fl_clash/common/common.dart';
 import 'package:fl_clash/xboard/features/shared/widgets/tv_deferred_input.dart';
 import 'package:fl_clash/xboard/features/shared/widgets/xb_error_state.dart';
+import 'package:fl_clash/xboard/features/mine/pages/balance_records_page.dart';
 import 'package:fl_clash/xboard/utils/backend_message_mapper.dart';
-import 'package:go_router/go_router.dart';
 import 'order_detail_page.dart';
 
 String _preferPunctuationBreaks(String value) {
@@ -43,6 +43,8 @@ class _RechargePageState extends ConsumerState<RechargePage> {
   bool _isProcessing = false;
   bool _isAutoRenewalUpdating = false;
   bool _isRefreshingPage = false;
+  int _walletSection = 0;
+  final _balanceRecordsKey = GlobalKey<BalanceRecordsContentState>();
 
   @override
   void initState() {
@@ -250,6 +252,13 @@ class _RechargePageState extends ConsumerState<RechargePage> {
     if (_isRefreshingPage) return;
     setState(() => _isRefreshingPage = true);
     try {
+      if (_walletSection == 1) {
+        await Future.wait([
+          _refreshUserInfo(),
+          _balanceRecordsKey.currentState?.refresh() ?? Future<void>.value(),
+        ]);
+        return;
+      }
       await Future.wait([
         _refreshUserInfo(),
         ref
@@ -458,233 +467,230 @@ class _RechargePageState extends ConsumerState<RechargePage> {
           ),
         ),
         const SizedBox(height: 12),
-        Card(
-          margin: EdgeInsets.zero,
-          child: ListTile(
-            leading: Icon(
-              Icons.receipt_long_outlined,
-              color: theme.colorScheme.primary,
-            ),
-            title: Text(
-              Localizations.localeOf(context).languageCode == 'zh'
-                  ? '余额明细'
-                  : 'Balance records',
-            ),
-            trailing: const Icon(Icons.chevron_right),
-            onTap: () => context.push('/mine/balance-records'),
-          ),
+        _WalletSectionTabs(
+          selectedIndex: _walletSection,
+          onChanged: (index) => setState(() => _walletSection = index),
         ),
         const SizedBox(height: 24),
-        // 快捷金额
-        Text(l10n.xboardSelectRechargeAmount,
-            style: theme.textTheme.titleMedium
-                ?.copyWith(fontWeight: XbFontWeight.bold)),
-        const SizedBox(height: 12),
-        if (_isLoadingDepositBonusOptions)
-          const SizedBox(
-            height: 76,
-            child: Center(child: CircularProgressIndicator(strokeWidth: 2)),
-          )
-        else if (_depositBonusOptionsLoadFailed)
-          XbErrorState(
-            message: null,
-            onRetry: _loadDepositBonusOptions,
-            compact: true,
-          )
-        else if (_depositBonusOptions.isNotEmpty)
-          LayoutBuilder(
-            builder: (context, constraints) {
-              const spacing = 12.0;
-              final crossAxisCount = useSideNavigation ? 4 : 2;
-              final itemWidth =
-                  (constraints.maxWidth - spacing * (crossAxisCount - 1)) /
-                      crossAxisCount;
-              return Wrap(
-                spacing: spacing,
-                runSpacing: spacing,
-                children: _depositBonusOptions.map((option) {
-                  final selected =
-                      _selectedPresetAmountInCents == option.amountInCents;
-                  return GestureDetector(
-                    onTap: () {
-                      setState(() {
-                        _selectedPresetAmountInCents = option.amountInCents;
-                        _amountController.text = option.amountInputText;
-                      });
-                    },
-                    child: Stack(
-                      clipBehavior: Clip.none,
-                      children: [
-                        Container(
-                          width: itemWidth,
-                          padding: const EdgeInsets.symmetric(vertical: 16),
-                          decoration: BoxDecoration(
-                            color: selected
-                                ? theme.colorScheme.primary
-                                : (isDark
-                                    ? theme.colorScheme.surfaceContainerHighest
-                                    : Colors.white),
-                            borderRadius: BorderRadius.circular(14),
-                            border: Border.all(
+        if (_walletSection == 0) ...[
+          // 快捷金额
+          Text(l10n.xboardSelectRechargeAmount,
+              style: theme.textTheme.titleMedium
+                  ?.copyWith(fontWeight: XbFontWeight.bold)),
+          const SizedBox(height: 12),
+          if (_isLoadingDepositBonusOptions)
+            const SizedBox(
+              height: 76,
+              child: Center(child: CircularProgressIndicator(strokeWidth: 2)),
+            )
+          else if (_depositBonusOptionsLoadFailed)
+            XbErrorState(
+              message: null,
+              onRetry: _loadDepositBonusOptions,
+              compact: true,
+            )
+          else if (_depositBonusOptions.isNotEmpty)
+            LayoutBuilder(
+              builder: (context, constraints) {
+                const spacing = 12.0;
+                final crossAxisCount = useSideNavigation ? 4 : 2;
+                final itemWidth =
+                    (constraints.maxWidth - spacing * (crossAxisCount - 1)) /
+                        crossAxisCount;
+                return Wrap(
+                  spacing: spacing,
+                  runSpacing: spacing,
+                  children: _depositBonusOptions.map((option) {
+                    final selected =
+                        _selectedPresetAmountInCents == option.amountInCents;
+                    return GestureDetector(
+                      onTap: () {
+                        setState(() {
+                          _selectedPresetAmountInCents = option.amountInCents;
+                          _amountController.text = option.amountInputText;
+                        });
+                      },
+                      child: Stack(
+                        clipBehavior: Clip.none,
+                        children: [
+                          Container(
+                            width: itemWidth,
+                            padding: const EdgeInsets.symmetric(vertical: 16),
+                            decoration: BoxDecoration(
                               color: selected
-                                  ? Colors.transparent
+                                  ? theme.colorScheme.primary
                                   : (isDark
-                                      ? theme.colorScheme.outline
-                                          .withValues(alpha: 0.3)
-                                      : XbUiTokens.cardBorderLight),
-                            ),
-                            boxShadow: isDark || selected
-                                ? null
-                                : [
-                                    BoxShadow(
-                                      color:
-                                          Colors.black.withValues(alpha: 0.04),
-                                      blurRadius: 8,
-                                      offset: const Offset(0, 2),
-                                    ),
-                                  ],
-                          ),
-                          child: Center(
-                            child: Text(
-                              '$_currencySymbol${option.amountLabel}',
-                              style: TextStyle(
-                                fontSize: 18,
-                                fontWeight: XbFontWeight.semibold,
+                                      ? theme
+                                          .colorScheme.surfaceContainerHighest
+                                      : Colors.white),
+                              borderRadius: BorderRadius.circular(14),
+                              border: Border.all(
                                 color: selected
-                                    ? Colors.white
-                                    : theme.colorScheme.onSurface,
+                                    ? Colors.transparent
+                                    : (isDark
+                                        ? theme.colorScheme.outline
+                                            .withValues(alpha: 0.3)
+                                        : XbUiTokens.cardBorderLight),
                               ),
+                              boxShadow: isDark || selected
+                                  ? null
+                                  : [
+                                      BoxShadow(
+                                        color: Colors.black
+                                            .withValues(alpha: 0.04),
+                                        blurRadius: 8,
+                                        offset: const Offset(0, 2),
+                                      ),
+                                    ],
                             ),
-                          ),
-                        ),
-                        if (option.hasBonus)
-                          Positioned(
-                            top: -7,
-                            right: -5,
-                            child: Container(
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 7,
-                                vertical: 3,
-                              ),
-                              decoration: BoxDecoration(
-                                color: theme.colorScheme.error,
-                                borderRadius: BorderRadius.circular(999),
-                                border: Border.all(
-                                  color: isDark
-                                      ? theme.colorScheme.surface
-                                      : Colors.white,
-                                  width: 1.5,
-                                ),
-                              ),
+                            child: Center(
                               child: Text(
-                                '+$_currencySymbol${option.bonusLabel}',
-                                style: const TextStyle(
-                                  color: Colors.white,
-                                  fontSize: 11,
-                                  fontWeight: XbFontWeight.bold,
+                                '$_currencySymbol${option.amountLabel}',
+                                style: TextStyle(
+                                  fontSize: 18,
+                                  fontWeight: XbFontWeight.semibold,
+                                  color: selected
+                                      ? Colors.white
+                                      : theme.colorScheme.onSurface,
                                 ),
                               ),
                             ),
                           ),
+                          if (option.hasBonus)
+                            Positioned(
+                              top: -7,
+                              right: -5,
+                              child: Container(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 7,
+                                  vertical: 3,
+                                ),
+                                decoration: BoxDecoration(
+                                  color: theme.colorScheme.error,
+                                  borderRadius: BorderRadius.circular(999),
+                                  border: Border.all(
+                                    color: isDark
+                                        ? theme.colorScheme.surface
+                                        : Colors.white,
+                                    width: 1.5,
+                                  ),
+                                ),
+                                child: Text(
+                                  '+$_currencySymbol${option.bonusLabel}',
+                                  style: const TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 11,
+                                    fontWeight: XbFontWeight.bold,
+                                  ),
+                                ),
+                              ),
+                            ),
+                        ],
+                      ),
+                    );
+                  }).toList(),
+                );
+              },
+            ),
+          const SizedBox(height: 20),
+          // 自定义金额输入
+          Text(l10n.xboardCustomRechargeAmount,
+              style: theme.textTheme.titleMedium
+                  ?.copyWith(fontWeight: XbFontWeight.bold)),
+          const SizedBox(height: 12),
+          TVDeferredInput(
+            borderRadius: BorderRadius.circular(14),
+            builder: (context, focusNode, readOnly, showCursor, beginEditing) =>
+                TextField(
+              focusNode: focusNode,
+              readOnly: readOnly,
+              showCursor: showCursor,
+              onTap: beginEditing,
+              controller: _amountController,
+              keyboardType:
+                  const TextInputType.numberWithOptions(decimal: true),
+              decoration: InputDecoration(
+                prefixText: '$_currencySymbol ',
+                hintText: l10n.xboardEnterAmount,
+                filled: true,
+                fillColor: isDark ? null : XbUiTokens.inputFillLight,
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(14),
+                  borderSide: BorderSide.none,
+                ),
+                enabledBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(14),
+                  borderSide: BorderSide(
+                      color: isDark
+                          ? theme.colorScheme.outline.withValues(alpha: 0.3)
+                          : XbUiTokens.cardBorderLight),
+                ),
+                focusedBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(14),
+                  borderSide:
+                      BorderSide(color: theme.colorScheme.primary, width: 2),
+                ),
+              ),
+              onChanged: (_) {
+                setState(() => _selectedPresetAmountInCents = null);
+              },
+            ),
+          ),
+          const SizedBox(height: 32),
+          // 充值按钮
+          SizedBox(
+            width: double.infinity,
+            child: FilledButton(
+              onPressed: _isProcessing ? null : _handleRecharge,
+              style: XbUiButton.filledPrimary(
+                context,
+                busy: _isProcessing,
+              ).copyWith(
+                backgroundColor: isDark
+                    ? null
+                    : WidgetStatePropertyAll(theme.colorScheme.primary),
+              ),
+              child: _isProcessing
+                  ? SizedBox(
+                      width: 24,
+                      height: 24,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2,
+                        color: theme.colorScheme.onPrimary,
+                      ))
+                  : Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        const Icon(Icons.account_balance_wallet_outlined,
+                            size: 19),
+                        const SizedBox(width: 8),
+                        Text(l10n.xboardRechargeNow),
                       ],
                     ),
-                  );
-                }).toList(),
-              );
-            },
-          ),
-        const SizedBox(height: 20),
-        // 自定义金额输入
-        Text(l10n.xboardCustomRechargeAmount,
-            style: theme.textTheme.titleMedium
-                ?.copyWith(fontWeight: XbFontWeight.bold)),
-        const SizedBox(height: 12),
-        TVDeferredInput(
-          borderRadius: BorderRadius.circular(14),
-          builder: (context, focusNode, readOnly, showCursor, beginEditing) =>
-              TextField(
-            focusNode: focusNode,
-            readOnly: readOnly,
-            showCursor: showCursor,
-            onTap: beginEditing,
-            controller: _amountController,
-            keyboardType: const TextInputType.numberWithOptions(decimal: true),
-            decoration: InputDecoration(
-              prefixText: '$_currencySymbol ',
-              hintText: l10n.xboardEnterAmount,
-              filled: true,
-              fillColor: isDark ? null : XbUiTokens.inputFillLight,
-              border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(14),
-                borderSide: BorderSide.none,
-              ),
-              enabledBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(14),
-                borderSide: BorderSide(
-                    color: isDark
-                        ? theme.colorScheme.outline.withValues(alpha: 0.3)
-                        : XbUiTokens.cardBorderLight),
-              ),
-              focusedBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(14),
-                borderSide:
-                    BorderSide(color: theme.colorScheme.primary, width: 2),
-              ),
             ),
-            onChanged: (_) {
-              setState(() => _selectedPresetAmountInCents = null);
-            },
           ),
-        ),
-        const SizedBox(height: 32),
-        // 充值按钮
-        SizedBox(
-          width: double.infinity,
-          child: FilledButton(
-            onPressed: _isProcessing ? null : _handleRecharge,
-            style: XbUiButton.filledPrimary(
-              context,
-              busy: _isProcessing,
-            ).copyWith(
-              backgroundColor: isDark
-                  ? null
-                  : WidgetStatePropertyAll(theme.colorScheme.primary),
+          const SizedBox(height: 16),
+          // 提示文字
+          Center(
+            child: Text(
+              l10n.xboardRechargeBalanceTip,
+              style: theme.textTheme.bodySmall
+                  ?.copyWith(color: theme.colorScheme.onSurfaceVariant),
             ),
-            child: _isProcessing
-                ? SizedBox(
-                    width: 24,
-                    height: 24,
-                    child: CircularProgressIndicator(
-                      strokeWidth: 2,
-                      color: theme.colorScheme.onPrimary,
-                    ))
-                : Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      const Icon(Icons.account_balance_wallet_outlined,
-                          size: 19),
-                      const SizedBox(width: 8),
-                      Text(l10n.xboardRechargeNow),
-                    ],
-                  ),
           ),
-        ),
-        const SizedBox(height: 16),
-        // 提示文字
-        Center(
-          child: Text(
-            l10n.xboardRechargeBalanceTip,
-            style: theme.textTheme.bodySmall
-                ?.copyWith(color: theme.colorScheme.onSurfaceVariant),
-          ),
-        ),
+        ] else
+          BalanceRecordsContent(key: _balanceRecordsKey),
       ],
     );
 
     return Scaffold(
       backgroundColor: isDark ? null : const Color(0xFFFAFBFD),
       appBar: AppBar(
-        title: Text(l10n.xboardRechargeBalance),
+        title: Text(
+          Localizations.localeOf(context).languageCode == 'zh'
+              ? '钱包余额'
+              : 'Wallet balance',
+        ),
         leading: const BackButton(),
         actions: [
           if (Platform.isLinux ||
@@ -712,6 +718,103 @@ class _RechargePageState extends ConsumerState<RechargePage> {
           physics: const AlwaysScrollableScrollPhysics(),
           padding: XbUiTokens.pagePadding,
           child: content,
+        ),
+      ),
+    );
+  }
+}
+
+class _WalletSectionTabs extends StatelessWidget {
+  const _WalletSectionTabs({
+    required this.selectedIndex,
+    required this.onChanged,
+  });
+
+  final int selectedIndex;
+  final ValueChanged<int> onChanged;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+    final zh = Localizations.localeOf(context).languageCode == 'zh';
+    return Container(
+      padding: const EdgeInsets.all(4),
+      decoration: BoxDecoration(
+        color: isDark
+            ? theme.colorScheme.surfaceContainerHighest.withValues(alpha: 0.4)
+            : XbUiTokens.tabBarBackgroundLight,
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Row(
+        children: [
+          _WalletSectionTab(
+            selected: selectedIndex == 0,
+            icon: Icons.add_card_outlined,
+            label: zh ? '余额充值' : 'Recharge',
+            onTap: () => onChanged(0),
+          ),
+          _WalletSectionTab(
+            selected: selectedIndex == 1,
+            icon: Icons.receipt_long_outlined,
+            label: zh ? '余额明细' : 'Balance records',
+            onTap: () => onChanged(1),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _WalletSectionTab extends StatelessWidget {
+  const _WalletSectionTab({
+    required this.selected,
+    required this.icon,
+    required this.label,
+    required this.onTap,
+  });
+
+  final bool selected;
+  final IconData icon;
+  final String label;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+    final foreground = selected
+        ? (isDark ? theme.colorScheme.onPrimary : Colors.white)
+        : theme.colorScheme.onSurfaceVariant;
+    return Expanded(
+      child: Semantics(
+        button: true,
+        selected: selected,
+        child: Material(
+          color: selected ? theme.colorScheme.primary : Colors.transparent,
+          borderRadius: BorderRadius.circular(8),
+          child: InkWell(
+            onTap: onTap,
+            borderRadius: BorderRadius.circular(8),
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 11),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(icon, size: 16, color: foreground),
+                  const SizedBox(width: 6),
+                  Flexible(
+                    child: Text(
+                      label,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(color: foreground),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
         ),
       ),
     );

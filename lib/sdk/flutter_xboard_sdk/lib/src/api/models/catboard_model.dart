@@ -72,7 +72,6 @@ class CatboardCouponTemplate {
   final List<int> planIds;
   final List<String> periods;
   final bool firstOrderOnly;
-  final bool allowRenewal;
   final bool stackable;
 
   const CatboardCouponTemplate({
@@ -86,7 +85,6 @@ class CatboardCouponTemplate {
     this.planIds = const [],
     this.periods = const [],
     this.firstOrderOnly = false,
-    this.allowRenewal = true,
     this.stackable = false,
   });
 
@@ -107,7 +105,6 @@ class CatboardCouponTemplate {
             .map((item) => item.toString())
             .toList(),
         firstOrderOnly: _boolValue(json['first_order_only']),
-        allowRenewal: _boolValue(json['allow_renewal'], true),
         stackable: _boolValue(json['stackable']),
       );
 }
@@ -120,6 +117,7 @@ class CatboardCoupon {
   final DateTime? startsAt;
   final DateTime? expiresAt;
   final int? orderId;
+  final String? lockedTradeNo;
   final int calculatedDiscount;
   final String? unavailableReason;
   final CatboardCouponTemplate template;
@@ -132,6 +130,7 @@ class CatboardCoupon {
     this.startsAt,
     this.expiresAt,
     this.orderId,
+    this.lockedTradeNo,
     this.calculatedDiscount = 0,
     this.unavailableReason,
     required this.template,
@@ -145,6 +144,7 @@ class CatboardCoupon {
         startsAt: parseCatboardDate(json['starts_at']),
         expiresAt: parseCatboardDate(json['expires_at']),
         orderId: json['order_id'] == null ? null : _intValue(json['order_id']),
+        lockedTradeNo: json['locked_trade_no']?.toString(),
         calculatedDiscount: _intValue(json['calculated_discount']),
         unavailableReason: json['unavailable_reason']?.toString(),
         template: CatboardCouponTemplate.fromJson(_map(json['template'])),
@@ -160,6 +160,7 @@ class CatboardFlashSale {
   final int finalAmount;
   final int discountAmount;
   final bool allowCoupon;
+  final bool allowMemberDiscount;
 
   const CatboardFlashSale({
     required this.id,
@@ -170,6 +171,7 @@ class CatboardFlashSale {
     this.finalAmount = 0,
     this.discountAmount = 0,
     this.allowCoupon = true,
+    this.allowMemberDiscount = true,
   });
 
   factory CatboardFlashSale.fromJson(Map<String, dynamic> json) =>
@@ -182,6 +184,57 @@ class CatboardFlashSale {
         finalAmount: _intValue(json['final_amount']),
         discountAmount: _intValue(json['discount_amount']),
         allowCoupon: _boolValue(json['allow_coupon'], true),
+        allowMemberDiscount: _boolValue(json['allow_member_discount'], true),
+      );
+}
+
+class CatboardPromotionOption {
+  final String key;
+  final String type;
+  final int? couponId;
+  final String? name;
+  final String? nameEn;
+  final String? description;
+  final String? descriptionEn;
+  final int activityDiscount;
+  final int couponDiscount;
+  final int memberDiscount;
+  final int discountAmount;
+  final int finalAmount;
+  final bool recommended;
+
+  const CatboardPromotionOption({
+    required this.key,
+    required this.type,
+    this.couponId,
+    this.name,
+    this.nameEn,
+    this.description,
+    this.descriptionEn,
+    this.activityDiscount = 0,
+    this.couponDiscount = 0,
+    this.memberDiscount = 0,
+    this.discountAmount = 0,
+    this.finalAmount = 0,
+    this.recommended = false,
+  });
+
+  factory CatboardPromotionOption.fromJson(Map<String, dynamic> json) =>
+      CatboardPromotionOption(
+        key: json['key']?.toString() ?? '',
+        type: json['type']?.toString() ?? 'standard',
+        couponId:
+            json['coupon_id'] == null ? null : _intValue(json['coupon_id']),
+        name: json['name']?.toString(),
+        nameEn: json['name_en']?.toString(),
+        description: json['description']?.toString(),
+        descriptionEn: json['description_en']?.toString(),
+        activityDiscount: _intValue(json['activity_discount']),
+        couponDiscount: _intValue(json['coupon_discount']),
+        memberDiscount: _intValue(json['member_discount']),
+        discountAmount: _intValue(json['discount_amount']),
+        finalAmount: _intValue(json['final_amount']),
+        recommended: _boolValue(json['recommended']),
       );
 }
 
@@ -192,12 +245,17 @@ class CatboardOrderPreview {
   final int refundAmount;
   final int couponDiscount;
   final int memberDiscountRate;
+  final int memberDiscount;
   final int vipDiscount;
   final int finalAmount;
   final int balanceAmount;
   final int payableAmount;
   final bool allowCoupon;
+  final bool allowMemberDiscount;
+  final bool promotionExclusive;
   final CatboardFlashSale? flashSale;
+  final CatboardPromotionOption? selectedPromotion;
+  final List<CatboardPromotionOption> promotionOptions;
   final CatboardCoupon? selectedCoupon;
   final List<CatboardCoupon> availableCoupons;
   final List<CatboardCoupon> unavailableCoupons;
@@ -209,12 +267,17 @@ class CatboardOrderPreview {
     this.refundAmount = 0,
     this.couponDiscount = 0,
     this.memberDiscountRate = 0,
+    this.memberDiscount = 0,
     this.vipDiscount = 0,
     required this.finalAmount,
     this.balanceAmount = 0,
     required this.payableAmount,
     this.allowCoupon = true,
+    this.allowMemberDiscount = true,
+    this.promotionExclusive = false,
     this.flashSale,
+    this.selectedPromotion,
+    this.promotionOptions = const [],
     this.selectedCoupon,
     this.availableCoupons = const [],
     this.unavailableCoupons = const [],
@@ -223,8 +286,11 @@ class CatboardOrderPreview {
   factory CatboardOrderPreview.fromJson(Map<String, dynamic> json) {
     final flash = _map(json['flash_sale']);
     final selected = _map(json['selected_coupon']);
+    final selectedPromotion = _map(json['selected_promotion']);
     final finalAmount = _intValue(json['final_amount']);
     final balanceAmount = _intValue(json['balance_amount']);
+    final memberDiscount =
+        _intValue(json['member_discount'] ?? json['vip_discount']);
     return CatboardOrderPreview(
       originalAmount: _intValue(json['original_amount']),
       activityDiscount: _intValue(json['activity_discount']),
@@ -232,14 +298,21 @@ class CatboardOrderPreview {
       refundAmount: _intValue(json['refund_amount']),
       couponDiscount: _intValue(json['coupon_discount']),
       memberDiscountRate: _intValue(json['member_discount_rate']),
-      vipDiscount: _intValue(json['vip_discount']),
+      memberDiscount: memberDiscount,
+      vipDiscount: memberDiscount,
       finalAmount: finalAmount,
       balanceAmount: balanceAmount,
-      payableAmount: json.containsKey('payable_amount')
-          ? _intValue(json['payable_amount'])
-          : (finalAmount - balanceAmount).clamp(0, finalAmount),
+      payableAmount: _intValue(json['payable_amount']),
       allowCoupon: _boolValue(json['allow_coupon'], true),
+      allowMemberDiscount: _boolValue(json['allow_member_discount'], true),
+      promotionExclusive: _boolValue(json['promotion_exclusive']),
       flashSale: flash.isEmpty ? null : CatboardFlashSale.fromJson(flash),
+      selectedPromotion: selectedPromotion.isEmpty
+          ? null
+          : CatboardPromotionOption.fromJson(selectedPromotion),
+      promotionOptions: _mapList(json['promotion_options'])
+          .map(CatboardPromotionOption.fromJson)
+          .toList(),
       selectedCoupon:
           selected.isEmpty ? null : CatboardCoupon.fromJson(selected),
       availableCoupons: _mapList(json['available_coupons'])
@@ -330,6 +403,22 @@ class CatboardInviteUser {
         status: json['status']?.toString() ?? 'pending',
         createdAt: parseCatboardDate(json['created_at']),
       );
+
+  String get maskedEmail => maskCatboardInviteEmail(email);
+}
+
+String maskCatboardInviteEmail(String email) {
+  final separator = email.lastIndexOf('@');
+  if (separator <= 0 || separator == email.length - 1) return email;
+  final local = email.substring(0, separator);
+  final domain = email.substring(separator + 1);
+  if (local.contains('*')) return '$local@$domain';
+  final headLength = local.length < 2 ? local.length : 2;
+  final tailLength = (local.length - headLength).clamp(0, 2).toInt();
+  final head = local.substring(0, headLength);
+  final tail =
+      tailLength == 0 ? '' : local.substring(local.length - tailLength);
+  return '$head***$tail@$domain';
 }
 
 class CatboardReferralProgram {
@@ -339,9 +428,9 @@ class CatboardReferralProgram {
   final Map<String, dynamic>? level;
   final DateTime? levelExpiresAt;
   final Map<String, dynamic>? nextLevel;
-  final Map<String, dynamic>? nextMilestone;
   final List<Map<String, dynamic>> recentRewards;
   final Map<String, dynamic>? newcomerReward;
+  final String? rewardRestrictionPolicy;
 
   const CatboardReferralProgram({
     this.effectiveInvites = 0,
@@ -350,9 +439,9 @@ class CatboardReferralProgram {
     this.level,
     this.levelExpiresAt,
     this.nextLevel,
-    this.nextMilestone,
     this.recentRewards = const [],
     this.newcomerReward,
+    this.rewardRestrictionPolicy,
   });
 
   factory CatboardReferralProgram.fromJson(Map<String, dynamic> json) =>
@@ -364,12 +453,30 @@ class CatboardReferralProgram {
         levelExpiresAt: parseCatboardDate(json['level_expires_at']),
         nextLevel:
             _map(json['next_level']).isEmpty ? null : _map(json['next_level']),
-        nextMilestone: _map(json['next_milestone']).isEmpty
-            ? null
-            : _map(json['next_milestone']),
         recentRewards: _mapList(json['recent_rewards']),
         newcomerReward: _map(json['newcomer_reward']).isEmpty
             ? null
             : _map(json['newcomer_reward']),
+        rewardRestrictionPolicy:
+            _map(json['reward_restriction'])['policy']?.toString(),
       );
+
+  Map<String, dynamic> toJson() => {
+        'effective_invites': effectiveInvites,
+        'referral_revenue': referralRevenue,
+        'commission_rate': commissionRate,
+        'level': level,
+        'level_expires_at': levelExpiresAt?.toIso8601String(),
+        'next_level': nextLevel,
+        'recent_rewards': recentRewards,
+        'newcomer_reward': newcomerReward,
+        'reward_restriction': rewardRestrictionPolicy == null
+            ? null
+            : {'policy': rewardRestrictionPolicy},
+      };
+
+  Map<String, dynamic>? get nextLevelReward {
+    final reward = _map(nextLevel?['reward']);
+    return reward.isEmpty ? null : reward;
+  }
 }

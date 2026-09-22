@@ -5,6 +5,7 @@ import 'package:fl_clash/common/common.dart';
 import 'package:fl_clash/models/models.dart' as fl_models;
 import 'package:fl_clash/providers/providers.dart';
 import 'package:fl_clash/state.dart';
+import 'package:fl_clash/services/core_switch_status.dart';
 import 'package:fl_clash/xboard/features/auth/providers/xboard_user_provider.dart';
 import 'package:fl_clash/xboard/features/auth/models/session_termination.dart';
 import 'package:fl_clash/xboard/features/settings/widgets/fastcat_tun_toggle.dart';
@@ -48,6 +49,7 @@ class _XBoardHomePageState extends ConsumerState<XBoardHomePage>
   Timer? _noticeStartupTimer;
   Timer? _latencyStartupTimer;
   Timer? _latencyBatchTimer;
+  Timer? _vpnHealthSyncTimer;
 
   @override
   bool get wantKeepAlive => true; // 保持页面状态，防止重建
@@ -59,6 +61,9 @@ class _XBoardHomePageState extends ConsumerState<XBoardHomePage>
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (_hasInitialized) return;
       _hasInitialized = true;
+      if (Platform.isAndroid) {
+        unawaited(_synchronizeVpnStatus());
+      }
       final userState = ref.read(xboardUserProvider);
       if (userState.isAuthenticated) {
         // 等待订阅导入完成后再检查订阅状态
@@ -121,17 +126,45 @@ class _XBoardHomePageState extends ConsumerState<XBoardHomePage>
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
     if (state == AppLifecycleState.resumed && Platform.isAndroid) {
-      _synchronizeVpnStatus();
+      unawaited(_synchronizeVpnStatus());
+    } else if (state == AppLifecycleState.paused ||
+        state == AppLifecycleState.hidden) {
+      _vpnHealthSyncTimer?.cancel();
     }
   }
 
   Future<void> _synchronizeVpnStatus() async {
     final expectedRunning = ref.read(runTimeProvider) != null;
     if (!expectedRunning) return;
+    final recoveringMessage =
+        AppLocalizations.of(context).xboardServiceRecovering;
+    final connectionState =
+        await service?.getVpnConnectionState() ?? 'disconnected';
+    if (!mounted) return;
+    if (connectionState == 'recovering' || connectionState == 'degraded') {
+      globalState.updateCoreSwitchStatus(
+        CoreSwitchStage.coreConnecting,
+        message: recoveringMessage,
+      );
+      _vpnHealthSyncTimer?.cancel();
+      _vpnHealthSyncTimer = Timer(
+        const Duration(seconds: 5),
+        () => unawaited(_synchronizeVpnStatus()),
+      );
+      return;
+    }
+    _vpnHealthSyncTimer?.cancel();
     final running = await service?.isVpnActuallyRunning() ?? false;
+    if (!mounted) return;
+    if (running &&
+        globalState.coreSwitchStatusNotifier.value.message ==
+            recoveringMessage) {
+      globalState.updateCoreSwitchStatus(CoreSwitchStage.connected);
+    }
     if (!running && mounted && ref.read(runTimeProvider) != null) {
       // The native VPN service was reclaimed or disconnected while the TV
       // app was backgrounded. Clear stale UI state so the user can reconnect.
+      globalState.updateCoreSwitchStatus(CoreSwitchStage.failed);
       globalState.startTime = null;
       globalState.stopUpdateTasks();
       ref.read(runTimeProvider.notifier).value = null;
@@ -180,6 +213,7 @@ class _XBoardHomePageState extends ConsumerState<XBoardHomePage>
     _noticeStartupTimer?.cancel();
     _latencyStartupTimer?.cancel();
     _latencyBatchTimer?.cancel();
+    _vpnHealthSyncTimer?.cancel();
     super.dispose();
   }
 

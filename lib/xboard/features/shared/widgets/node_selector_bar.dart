@@ -460,17 +460,10 @@ class _NodeSelectorBarState extends ConsumerState<NodeSelectorBar> {
               ],
             ),
           ),
-          TextButton.icon(
+          TextButton(
             onPressed: isReloading ? null : _reloadNodes,
             style: XbUiButton.textChipPrimary(context),
-            icon: isReloading
-                ? const SizedBox(
-                    width: 14,
-                    height: 14,
-                    child: CircularProgressIndicator(strokeWidth: 2),
-                  )
-                : const Icon(Icons.refresh, size: 16),
-            label: Text(
+            child: Text(
               AppLocalizations.of(context).xboardReloadNodes,
               style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w500),
             ),

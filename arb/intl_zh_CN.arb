@@ -1429,7 +1429,7 @@
   "xboardReleaseOfflineDevices": "释放离线设备",
   "xboardReleaseOfflineDevicesConfirm": "将移除离线但仍占用名额的设备，不会影响当前设备。继续吗？",
   "xboardOfflineButActive": "离线占用",
-  "xboardReloadNodes": "重新加载节点",
+  "xboardReloadNodes": "重新加载",
   "xboardGotIt": "知道了",
   "xboardDeviceUnit": "{count}台",
   "xboardLoginErrorNetwork": "服务暂时不可用，请稍后重试",

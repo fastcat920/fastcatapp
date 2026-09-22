@@ -1,10 +1,7 @@
 package com.fastcat.app.services
 
 import android.annotation.SuppressLint
-import android.app.UiModeManager
-import android.content.Context
 import android.content.Intent
-import android.content.res.Configuration
 import android.net.ConnectivityManager
 import android.net.NetworkCapabilities
 import android.net.ProxyInfo
@@ -20,6 +17,7 @@ import android.util.Log
 import androidx.core.content.getSystemService
 import androidx.core.app.NotificationCompat
 import com.fastcat.app.R
+import com.fastcat.app.DeviceCapabilities
 import com.fastcat.app.GlobalState
 import com.fastcat.app.RunState
 import com.fastcat.app.core.Core
@@ -210,13 +208,21 @@ class FastCatVpnService : VpnService(), BaseServiceInterface {
 
     fun isTunActive(): Boolean = tunActive
 
+    fun isTelevisionDevice(): Boolean = DeviceCapabilities.isTelevision(this)
+
+    fun isUsingWifiConnection(): Boolean = isUsingWifi()
+
+    fun isWakeLockHeld(): Boolean = wakeLock?.isHeld == true
+
+    fun isWifiLockHeld(): Boolean = wifiLock?.isHeld == true
+
     fun markTunStopped() {
         tunActive = false
     }
 
     @Synchronized
     fun refreshWifiLock() {
-        if (!tunActive || !isTelevision() || !isUsingWifi()) {
+        if (!tunActive || !isTelevisionDevice() || !isUsingWifi()) {
             releaseWifiLock()
             return
         }
@@ -275,12 +281,6 @@ class FastCatVpnService : VpnService(), BaseServiceInterface {
                     capabilities.hasTransport(NetworkCapabilities.TRANSPORT_VPN).not() &&
                     capabilities.hasCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET)
         }
-    }
-
-    private fun isTelevision(): Boolean {
-        val uiModeManager = getSystemService(Context.UI_MODE_SERVICE) as? UiModeManager
-        return uiModeManager?.currentModeType == Configuration.UI_MODE_TYPE_TELEVISION ||
-                packageManager.hasSystemFeature("android.software.leanback")
     }
 
     private val binder = LocalBinder()

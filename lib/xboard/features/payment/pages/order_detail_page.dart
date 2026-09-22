@@ -11,6 +11,7 @@ import 'package:fl_clash/xboard/core/core.dart';
 import 'package:fl_clash/xboard/domain/domain.dart';
 import 'package:fl_clash/xboard/features/auth/providers/xboard_user_provider.dart';
 import 'payment_webview_page.dart';
+import 'package:fl_clash/xboard/features/payment/models/order_bill.dart';
 import 'package:fl_clash/xboard/features/payment/providers/xboard_payment_provider.dart';
 import 'package:fl_clash/xboard/features/shared/styles/styles.dart';
 import 'package:fl_clash/xboard/features/shared/widgets/xb_error_state.dart';
@@ -183,6 +184,7 @@ class _OrderDetailPageState extends ConsumerState<OrderDetailPage>
           }
           final planId = order.planId ?? widget.plan?.id;
           final period = widget.period ?? order.period;
+          _restoreLockedPaymentMethod(order.paymentId);
           _resolveOrderPlanIfNeeded(
             planId: planId,
             period: period,
@@ -212,7 +214,7 @@ class _OrderDetailPageState extends ConsumerState<OrderDetailPage>
             plans: plans,
             currentSubscription: currentSubscription,
             userInfo: userInfo,
-            selectedMethodId: _selectedMethodId,
+            selectedMethodId: _selectedMethodId ?? order.paymentId,
             isSubmitting: _isSubmitting,
             isChecking: _isChecking,
             isCanceling: _isCanceling,
@@ -257,6 +259,17 @@ class _OrderDetailPageState extends ConsumerState<OrderDetailPage>
     ref.invalidate(getOrderProvider(widget.tradeNo));
   }
 
+  void _restoreLockedPaymentMethod(String? paymentId) {
+    final methodId = paymentId?.trim();
+    if (methodId == null || methodId.isEmpty || _selectedMethodId != null) {
+      return;
+    }
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted || _selectedMethodId != null) return;
+      setState(() => _selectedMethodId = methodId);
+    });
+  }
+
   // Polling handled by PaymentStatusPoller — see _poller field
 
   void _resolveOrderPlanIfNeeded({
@@ -266,12 +279,12 @@ class _OrderDetailPageState extends ConsumerState<OrderDetailPage>
   }) {
     if (planId == null || planId <= 0) return;
     if (widget.plan?.id == planId &&
-        _priceForPeriod(widget.plan, period) != null) {
+        priceForOrderPeriod(widget.plan, period) != null) {
       return;
     }
     if (_resolvedOrderPlanId == planId || _resolvingPlanId == planId) return;
     final visiblePlan = _findPlan(plans, planId);
-    if (_priceForPeriod(visiblePlan, period) != null) return;
+    if (priceForOrderPeriod(visiblePlan, period) != null) return;
 
     _resolvingPlanId = planId;
     Future<void>(() async {
@@ -294,7 +307,7 @@ class _OrderDetailPageState extends ConsumerState<OrderDetailPage>
   }) {
     if (planId == null || planId <= 0) return false;
     if (period == null || period == 'deposit') return false;
-    if (_priceForPeriod(plan, period) != null) return false;
+    if (priceForOrderPeriod(plan, period) != null) return false;
     return _resolvedOrderPlanId != planId;
   }
 
@@ -309,18 +322,24 @@ class _OrderDetailPageState extends ConsumerState<OrderDetailPage>
         methods = await _loadFreshPaymentOptions();
       }
 
-      if (methods.isEmpty) {
+      final currentOrder =
+          ref.read(getOrderProvider(widget.tradeNo)).valueOrNull;
+      final needsExternalPayment =
+          currentOrder == null || (currentOrder.totalAmount ?? 0) > 0;
+
+      if (needsExternalPayment && methods.isEmpty) {
         XBoardNotification.showError(l10n.xboardNoPaymentMethods);
         return;
       }
 
       final selectedMethodId = _selectedMethodId;
       String methodId;
-      if (selectedMethodId == null) {
-        methodId = methods.first.id;
-        if (mounted) {
-          setState(() => _selectedMethodId = methodId);
-        }
+      if (!needsExternalPayment) {
+        methodId =
+            selectedMethodId ?? (methods.isNotEmpty ? methods.first.id : '');
+      } else if (selectedMethodId == null) {
+        XBoardNotification.showError(l10n.xboardSelectPaymentMethod);
+        return;
       } else if (methods.any((method) => method.id == selectedMethodId)) {
         methodId = selectedMethodId;
       } else {
@@ -615,26 +634,15 @@ class _OrderDetailContent extends StatelessWidget {
     final trafficFallback = currentSubscription?.planId == effectivePlanId
         ? currentSubscription?.formattedTotalTraffic
         : null;
-    final pricing = _OrderPricing.resolve(
+    final pricing = OrderBill.resolve(
       order: order,
       plan: resolvedPlan,
       period: period,
       originalPrice: originalPrice,
       finalPrice: finalPrice,
-      discountAmount: discountAmount,
+      previewDiscountAmount: discountAmount,
       balanceUsed: balanceUsed,
-      orderBalanceAmount: order?.balanceAmount,
       accountBalance: userInfo?.balanceInYuan,
-      couponPrice: order?.couponPrice,
-      refundAmount: order?.refundAmount,
-      surplusAmount: order?.surplusAmount,
-      depositAmount: order?.depositAmount,
-      commissionBalance: order?.commissionBalance,
-      actualCommissionBalance: order?.actualCommissionBalance,
-      handlingAmount: order?.handlingAmount,
-      depositBonusAmount: order?.depositBonusAmount,
-      depositCreditedAmount: order?.depositCreditedAmount,
-      depositSource: order?.depositSource,
     );
     final priceChanged = order != null &&
         finalPrice != null &&
@@ -659,15 +667,18 @@ class _OrderDetailContent extends StatelessWidget {
         final paymentOptions = sdkPaymentOptions.isNotEmpty
             ? sdkPaymentOptions
             : fallbackPaymentOptions;
-        final selectedPaymentOption = paymentOptions.isEmpty
-            ? null
-            : paymentOptions.firstWhere(
-                (method) => method.id == selectedMethodId,
-                orElse: () => paymentOptions.first,
-              );
-        final paymentFee = isPending && selectedPaymentOption != null
-            ? selectedPaymentOption.feeFor(pricing.payableAmount)
-            : (pricing.lockedHandlingFee ?? 0.0);
+        final selectedPaymentOption = _findPaymentOption(
+          paymentOptions,
+          selectedMethodId,
+        );
+        final lockedPaymentId = order?.paymentId?.trim();
+        final useLockedFee = pricing.lockedHandlingFee != null &&
+            (lockedPaymentId == null || selectedMethodId == lockedPaymentId);
+        final paymentFee = useLockedFee
+            ? pricing.lockedHandlingFee!
+            : (isPending && selectedPaymentOption != null
+                ? selectedPaymentOption.feeFor(pricing.payableAmount)
+                : 0.0);
         final leftColumn = Column(
           children: [
             _ProductInfoCard(
@@ -826,122 +837,15 @@ List<_PaymentOption> _globalPaymentOptions(
   return paymentMethods.map(_PaymentOption.fromDomain).toList();
 }
 
-class _OrderPricing {
-  final double packageAmount;
-  final double orderAmount;
-  final double discountAmount;
-  final double refundAmount;
-  final double surplusAmount;
-  final double balanceUsed;
-  final double payableAmount;
-  final double? lockedHandlingFee;
-  final double depositBonusAmount;
-  final double? depositCreditedAmount;
-  final bool isCommissionTransfer;
-  final bool needExternalPayment;
-
-  const _OrderPricing({
-    required this.packageAmount,
-    required this.orderAmount,
-    required this.discountAmount,
-    required this.refundAmount,
-    required this.surplusAmount,
-    required this.balanceUsed,
-    required this.payableAmount,
-    required this.lockedHandlingFee,
-    required this.depositBonusAmount,
-    required this.depositCreditedAmount,
-    required this.isCommissionTransfer,
-    required this.needExternalPayment,
-  });
-
-  factory _OrderPricing.resolve({
-    required OrderModel? order,
-    required DomainPlan? plan,
-    required String? period,
-    required double? originalPrice,
-    required double? finalPrice,
-    required double? discountAmount,
-    required double? balanceUsed,
-    required double? orderBalanceAmount,
-    required double? accountBalance,
-    double? couponPrice,
-    double? refundAmount,
-    double? surplusAmount,
-    double? depositAmount,
-    double? commissionBalance,
-    double? actualCommissionBalance,
-    double? handlingAmount,
-    double? depositBonusAmount,
-    double? depositCreditedAmount,
-    String? depositSource,
-  }) {
-    final isDeposit = period == 'deposit' || order?.period == 'deposit';
-    final planPrice = _priceForPeriod(plan, period);
-    final backendTotalAmount = _amountFromCents(order?.totalAmount);
-    final backendBalanceAmount = _amountFromCents(orderBalanceAmount);
-    final surplus = _amountFromCents(surplusAmount);
-    final backendDepositAmount = _amountFromCents(depositAmount);
-    final backendCommissionAmount =
-        _amountFromCents(actualCommissionBalance ?? commissionBalance);
-    final isCommissionTransfer =
-        isDeposit && depositSource == 'commission_transfer';
-
-    // “套餐金额”优先取套餐价格口径（plan/resetPrice），
-    // totalAmount 用于“订单实付/待支付”口径，不再重复扣减余额。
-    final orderPackageFallback = backendTotalAmount + backendBalanceAmount;
-    final depositPackageFallback = backendDepositAmount > 0
-        ? backendDepositAmount
-        : (orderPackageFallback + surplus > 0
-            ? orderPackageFallback + surplus
-            : backendCommissionAmount);
-    final packageAmount = isDeposit
-        ? (originalPrice ??
-            (depositPackageFallback > 0 ? depositPackageFallback : 0.0))
-        : (planPrice ??
-            originalPrice ??
-            (orderPackageFallback > 0 ? orderPackageFallback : 0.0));
-
-    final computedBalance = order != null
-        ? backendBalanceAmount
-        : (balanceUsed != null && balanceUsed > 0
-            ? balanceUsed
-            : (accountBalance == null
-                ? 0.0
-                : (accountBalance > (finalPrice ?? packageAmount)
-                    ? (finalPrice ?? packageAmount)
-                    : accountBalance)));
-    final payableAmount = order != null
-        ? backendTotalAmount
-        : ((finalPrice ?? packageAmount) - computedBalance)
-            .clamp(0.0, double.infinity);
-    final orderAmount = order != null
-        ? backendTotalAmount + backendBalanceAmount
-        : (finalPrice ?? packageAmount);
-
-    final couponAmount = (couponPrice != null && couponPrice > 0)
-        ? _amountFromCents(couponPrice)
-        : null;
-    final discount = couponAmount ?? discountAmount ?? 0;
-    final refund = _amountFromCents(refundAmount);
-    return _OrderPricing(
-      packageAmount: packageAmount,
-      orderAmount: orderAmount,
-      discountAmount: discount,
-      refundAmount: refund,
-      surplusAmount: surplus,
-      balanceUsed: computedBalance,
-      payableAmount: payableAmount,
-      lockedHandlingFee:
-          handlingAmount == null ? null : _amountFromCents(handlingAmount),
-      depositBonusAmount: _amountFromCents(depositBonusAmount),
-      depositCreditedAmount: depositCreditedAmount == null
-          ? null
-          : _amountFromCents(depositCreditedAmount),
-      isCommissionTransfer: isCommissionTransfer,
-      needExternalPayment: payableAmount > 0,
-    );
+_PaymentOption? _findPaymentOption(
+  List<_PaymentOption> options,
+  String? selectedMethodId,
+) {
+  if (selectedMethodId == null) return null;
+  for (final option in options) {
+    if (option.id == selectedMethodId) return option;
   }
+  return null;
 }
 
 class _ProductInfoCard extends StatelessWidget {
@@ -1006,7 +910,7 @@ class _OrderInfoCard extends StatelessWidget {
   final String tradeNo;
   final OrderModel? order;
   final String? period;
-  final _OrderPricing pricing;
+  final OrderBill pricing;
   final double paymentFee;
   final bool priceChanged;
 
@@ -1098,14 +1002,53 @@ class _OrderInfoCard extends StatelessWidget {
             label: isDeposit
                 ? l10n.xboardRechargeAmount
                 : (Localizations.localeOf(context).languageCode == 'zh'
-                    ? '订单金额'
-                    : 'Order amount'),
-            value:
-                '¥${(isDeposit ? pricing.packageAmount : pricing.orderAmount).toStringAsFixed(2)}',
+                    ? '套餐原价'
+                    : 'Original package price'),
+            value: '¥${pricing.packageAmount.toStringAsFixed(2)}',
             valueFontSize: 14,
             valueWeight: XbFontWeight.bold,
             valueColor: amountColor,
           ),
+          if (!isDeposit && pricing.activityDiscount > 0) ...[
+            const SizedBox(height: 12),
+            _InfoRow(
+              label: Localizations.localeOf(context).languageCode == 'zh'
+                  ? '限时优惠'
+                  : 'Limited-time offer',
+              value: '-¥${pricing.activityDiscount.toStringAsFixed(2)}',
+              valueColor: XbUiStatusColor.success(context),
+            ),
+          ],
+          if (!isDeposit && pricing.surplusAmount > 0) ...[
+            const SizedBox(height: 12),
+            _InfoRow(
+              label: Localizations.localeOf(context).languageCode == 'zh'
+                  ? '旧套餐抵扣'
+                  : 'Previous package credit',
+              value: '-¥${pricing.surplusAmount.toStringAsFixed(2)}',
+              valueColor: XbUiStatusColor.success(context),
+            ),
+          ],
+          if (!isDeposit && pricing.couponDiscount > 0) ...[
+            const SizedBox(height: 12),
+            _InfoRow(
+              label: Localizations.localeOf(context).languageCode == 'zh'
+                  ? '优惠券优惠'
+                  : 'Coupon discount',
+              value: '-¥${pricing.couponDiscount.toStringAsFixed(2)}',
+              valueColor: XbUiStatusColor.success(context),
+            ),
+          ],
+          if (!isDeposit && pricing.memberDiscount > 0) ...[
+            const SizedBox(height: 12),
+            _InfoRow(
+              label: Localizations.localeOf(context).languageCode == 'zh'
+                  ? '会员等级优惠'
+                  : 'Member discount',
+              value: '-¥${pricing.memberDiscount.toStringAsFixed(2)}',
+              valueColor: XbUiStatusColor.success(context),
+            ),
+          ],
           if (isDeposit && pricing.depositBonusAmount > 0) ...[
             const SizedBox(height: 12),
             _InfoRow(
@@ -1133,16 +1076,6 @@ class _OrderInfoCard extends StatelessWidget {
               value: '-¥${pricing.discountAmount.toStringAsFixed(2)}',
               valueColor: XbUiStatusColor.success(context),
             ),
-            if (order != null &&
-                order!.couponCode != null &&
-                order!.couponCode!.isNotEmpty) ...[
-              const SizedBox(height: 12),
-              _InfoRow(
-                label: '优惠码',
-                value: order!.couponCode!,
-                valueFontSize: 12,
-              ),
-            ],
           ],
           if (isDeposit && pricing.surplusAmount > 0) ...[
             const SizedBox(height: 12),
@@ -1154,25 +1087,11 @@ class _OrderInfoCard extends StatelessWidget {
               valueColor: XbUiStatusColor.muted(context),
             ),
           ],
-          if (!isDeposit || shouldShowBalance) ...[
-            const SizedBox(height: 12),
-            _InfoRow(
-              label: isDeposit
-                  ? l10n.xboardUseBalance
-                  : (Localizations.localeOf(context).languageCode == 'zh'
-                      ? '余额已抵扣'
-                      : 'Balance deducted'),
-              value: '-¥${pricing.balanceUsed.toStringAsFixed(2)}',
-              valueFontSize: 14,
-              valueWeight: XbFontWeight.bold,
-              valueColor: amountColor,
-            ),
-          ],
           if (pricing.refundAmount > 0) ...[
             const SizedBox(height: 12),
             _InfoRow(
               label: l10n.xboardRefundAmount,
-              value: '¥${pricing.refundAmount.toStringAsFixed(2)}',
+              value: '+¥${pricing.refundAmount.toStringAsFixed(2)}',
               valueColor: XbUiStatusColor.info(context),
             ),
           ],
@@ -1180,11 +1099,27 @@ class _OrderInfoCard extends StatelessWidget {
             const SizedBox(height: 12),
             _InfoRow(
               label: Localizations.localeOf(context).languageCode == 'zh'
-                  ? '第三方支付金额'
-                  : 'External payment',
-              value: '¥${pricing.payableAmount.toStringAsFixed(2)}',
+                  ? '订单金额'
+                  : 'Order amount',
+              value: '¥${pricing.orderAmount.toStringAsFixed(2)}',
               valueWeight: XbFontWeight.bold,
             ),
+          ],
+          if (shouldShowBalance) ...[
+            const SizedBox(height: 12),
+            _InfoRow(
+              label: isDeposit
+                  ? l10n.xboardUseBalance
+                  : (Localizations.localeOf(context).languageCode == 'zh'
+                      ? '余额抵扣'
+                      : 'Balance deduction'),
+              value: '-¥${pricing.balanceUsed.toStringAsFixed(2)}',
+              valueFontSize: 14,
+              valueWeight: XbFontWeight.bold,
+              valueColor: amountColor,
+            ),
+          ],
+          if (paymentFee > 0) ...[
             const SizedBox(height: 12),
             _InfoRow(
               label: Localizations.localeOf(context).languageCode == 'zh'
@@ -1423,7 +1358,7 @@ class _PaymentOption {
       name: method.name,
       iconUrl: method.icon,
       feePercentage: method.handlingFeePercent ?? 0,
-      fixedFee: _amountFromCents(method.handlingFeeFixed),
+      fixedFee: amountFromCents(method.handlingFeeFixed),
     );
   }
 
@@ -1717,31 +1652,6 @@ DomainPlan? _findPlan(List<DomainPlan> plans, int? planId) {
     return null;
   }
 }
-
-double? _priceForPeriod(DomainPlan? plan, String? period) {
-  if (plan == null) return null;
-  switch (period) {
-    case 'month_price':
-      return plan.monthlyPrice;
-    case 'quarter_price':
-      return plan.quarterlyPrice;
-    case 'half_year_price':
-      return plan.halfYearlyPrice;
-    case 'year_price':
-      return plan.yearlyPrice;
-    case 'two_year_price':
-      return plan.twoYearPrice;
-    case 'three_year_price':
-      return plan.threeYearPrice;
-    case 'onetime_price':
-      return plan.onetimePrice;
-    case 'reset_price':
-      return plan.resetPrice;
-  }
-  return null;
-}
-
-double _amountFromCents(double? amount) => (amount ?? 0) / 100;
 
 String _formatPeriod(BuildContext context, String? period) {
   final l10n = AppLocalizations.of(context);

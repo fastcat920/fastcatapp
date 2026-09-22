@@ -44,9 +44,17 @@ object GlobalState {
 
     fun syncStatus() {
         CoroutineScope(Dispatchers.Default).launch {
-            val status = getCurrentVPNPlugin()?.getStatus() ?: false
+            val plugin = getCurrentVPNPlugin()
+            plugin?.getStatus()
+            val connectionState = plugin?.getConnectionState() ?: "disconnected"
             withContext(Dispatchers.Main){
-                runState.value = if (status) RunState.START else RunState.STOP
+                runState.value = when {
+                    connectionState == "connected" ||
+                            connectionState == "degraded" -> RunState.START
+                    connectionState == "recovering" ->
+                        runState.value ?: RunState.PENDING
+                    else -> RunState.STOP
+                }
             }
         }
     }

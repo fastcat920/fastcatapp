@@ -30,6 +30,11 @@ mixin _$OrderModel {
   double? get balanceAmount => throw _privateConstructorUsedError;
   @JsonKey(name: 'handling_amount')
   double? get handlingAmount => throw _privateConstructorUsedError;
+  @JsonKey(
+      name: 'payment_id',
+      fromJson: _nullableIdFromJson,
+      toJson: _nullableIdToJson)
+  String? get paymentId => throw _privateConstructorUsedError;
   @JsonKey(name: 'surplus_amount')
   double? get surplusAmount => throw _privateConstructorUsedError;
   @JsonKey(name: 'refund_amount')
@@ -61,6 +66,10 @@ mixin _$OrderModel {
   String? get couponCode => throw _privateConstructorUsedError;
   @JsonKey(name: 'discount_amount')
   double? get discountAmount => throw _privateConstructorUsedError;
+  @JsonKey(name: 'flash_sale_discount_amount')
+  double? get flashSaleDiscountAmount => throw _privateConstructorUsedError;
+  @JsonKey(name: 'coupon_discount_amount')
+  double? get couponDiscountAmount => throw _privateConstructorUsedError;
 
   /// Serializes this OrderModel to a JSON map.
   Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
@@ -84,6 +93,11 @@ abstract class $OrderModelCopyWith<$Res> {
       @JsonKey(name: 'total_amount') double? totalAmount,
       @JsonKey(name: 'balance_amount') double? balanceAmount,
       @JsonKey(name: 'handling_amount') double? handlingAmount,
+      @JsonKey(
+          name: 'payment_id',
+          fromJson: _nullableIdFromJson,
+          toJson: _nullableIdToJson)
+      String? paymentId,
       @JsonKey(name: 'surplus_amount') double? surplusAmount,
       @JsonKey(name: 'refund_amount') double? refundAmount,
       @JsonKey(name: 'deposit_amount') double? depositAmount,
@@ -103,7 +117,10 @@ abstract class $OrderModelCopyWith<$Res> {
       @JsonKey(name: 'plan') OrderPlanModel? orderPlan,
       @JsonKey(name: 'coupon_price') double? couponPrice,
       @JsonKey(name: 'coupon_code') String? couponCode,
-      @JsonKey(name: 'discount_amount') double? discountAmount});
+      @JsonKey(name: 'discount_amount') double? discountAmount,
+      @JsonKey(name: 'flash_sale_discount_amount')
+      double? flashSaleDiscountAmount,
+      @JsonKey(name: 'coupon_discount_amount') double? couponDiscountAmount});
 
   $OrderPlanModelCopyWith<$Res>? get orderPlan;
 }
@@ -128,6 +145,7 @@ class _$OrderModelCopyWithImpl<$Res, $Val extends OrderModel>
     Object? totalAmount = freezed,
     Object? balanceAmount = freezed,
     Object? handlingAmount = freezed,
+    Object? paymentId = freezed,
     Object? surplusAmount = freezed,
     Object? refundAmount = freezed,
     Object? depositAmount = freezed,
@@ -143,6 +161,8 @@ class _$OrderModelCopyWithImpl<$Res, $Val extends OrderModel>
     Object? couponPrice = freezed,
     Object? couponCode = freezed,
     Object? discountAmount = freezed,
+    Object? flashSaleDiscountAmount = freezed,
+    Object? couponDiscountAmount = freezed,
   }) {
     return _then(_value.copyWith(
       planId: freezed == planId
@@ -165,6 +185,10 @@ class _$OrderModelCopyWithImpl<$Res, $Val extends OrderModel>
           ? _value.handlingAmount
           : handlingAmount // ignore: cast_nullable_to_non_nullable
               as double?,
+      paymentId: freezed == paymentId
+          ? _value.paymentId
+          : paymentId // ignore: cast_nullable_to_non_nullable
+              as String?,
       surplusAmount: freezed == surplusAmount
           ? _value.surplusAmount
           : surplusAmount // ignore: cast_nullable_to_non_nullable
@@ -224,6 +248,14 @@ class _$OrderModelCopyWithImpl<$Res, $Val extends OrderModel>
       discountAmount: freezed == discountAmount
           ? _value.discountAmount
           : discountAmount // ignore: cast_nullable_to_non_nullable
+              as double?,
+      flashSaleDiscountAmount: freezed == flashSaleDiscountAmount
+          ? _value.flashSaleDiscountAmount
+          : flashSaleDiscountAmount // ignore: cast_nullable_to_non_nullable
+              as double?,
+      couponDiscountAmount: freezed == couponDiscountAmount
+          ? _value.couponDiscountAmount
+          : couponDiscountAmount // ignore: cast_nullable_to_non_nullable
               as double?,
     ) as $Val);
   }
@@ -257,6 +289,11 @@ abstract class _$$OrderModelImplCopyWith<$Res>
       @JsonKey(name: 'total_amount') double? totalAmount,
       @JsonKey(name: 'balance_amount') double? balanceAmount,
       @JsonKey(name: 'handling_amount') double? handlingAmount,
+      @JsonKey(
+          name: 'payment_id',
+          fromJson: _nullableIdFromJson,
+          toJson: _nullableIdToJson)
+      String? paymentId,
       @JsonKey(name: 'surplus_amount') double? surplusAmount,
       @JsonKey(name: 'refund_amount') double? refundAmount,
       @JsonKey(name: 'deposit_amount') double? depositAmount,
@@ -276,7 +313,10 @@ abstract class _$$OrderModelImplCopyWith<$Res>
       @JsonKey(name: 'plan') OrderPlanModel? orderPlan,
       @JsonKey(name: 'coupon_price') double? couponPrice,
       @JsonKey(name: 'coupon_code') String? couponCode,
-      @JsonKey(name: 'discount_amount') double? discountAmount});
+      @JsonKey(name: 'discount_amount') double? discountAmount,
+      @JsonKey(name: 'flash_sale_discount_amount')
+      double? flashSaleDiscountAmount,
+      @JsonKey(name: 'coupon_discount_amount') double? couponDiscountAmount});
 
   @override
   $OrderPlanModelCopyWith<$Res>? get orderPlan;
@@ -300,6 +340,7 @@ class __$$OrderModelImplCopyWithImpl<$Res>
     Object? totalAmount = freezed,
     Object? balanceAmount = freezed,
     Object? handlingAmount = freezed,
+    Object? paymentId = freezed,
     Object? surplusAmount = freezed,
     Object? refundAmount = freezed,
     Object? depositAmount = freezed,
@@ -315,6 +356,8 @@ class __$$OrderModelImplCopyWithImpl<$Res>
     Object? couponPrice = freezed,
     Object? couponCode = freezed,
     Object? discountAmount = freezed,
+    Object? flashSaleDiscountAmount = freezed,
+    Object? couponDiscountAmount = freezed,
   }) {
     return _then(_$OrderModelImpl(
       planId: freezed == planId
@@ -337,6 +380,10 @@ class __$$OrderModelImplCopyWithImpl<$Res>
           ? _value.handlingAmount
           : handlingAmount // ignore: cast_nullable_to_non_nullable
               as double?,
+      paymentId: freezed == paymentId
+          ? _value.paymentId
+          : paymentId // ignore: cast_nullable_to_non_nullable
+              as String?,
       surplusAmount: freezed == surplusAmount
           ? _value.surplusAmount
           : surplusAmount // ignore: cast_nullable_to_non_nullable
@@ -397,6 +444,14 @@ class __$$OrderModelImplCopyWithImpl<$Res>
           ? _value.discountAmount
           : discountAmount // ignore: cast_nullable_to_non_nullable
               as double?,
+      flashSaleDiscountAmount: freezed == flashSaleDiscountAmount
+          ? _value.flashSaleDiscountAmount
+          : flashSaleDiscountAmount // ignore: cast_nullable_to_non_nullable
+              as double?,
+      couponDiscountAmount: freezed == couponDiscountAmount
+          ? _value.couponDiscountAmount
+          : couponDiscountAmount // ignore: cast_nullable_to_non_nullable
+              as double?,
     ));
   }
 }
@@ -410,6 +465,11 @@ class _$OrderModelImpl implements _OrderModel {
       @JsonKey(name: 'total_amount') this.totalAmount,
       @JsonKey(name: 'balance_amount') this.balanceAmount,
       @JsonKey(name: 'handling_amount') this.handlingAmount,
+      @JsonKey(
+          name: 'payment_id',
+          fromJson: _nullableIdFromJson,
+          toJson: _nullableIdToJson)
+      this.paymentId,
       @JsonKey(name: 'surplus_amount') this.surplusAmount,
       @JsonKey(name: 'refund_amount') this.refundAmount,
       @JsonKey(name: 'deposit_amount') this.depositAmount,
@@ -428,7 +488,9 @@ class _$OrderModelImpl implements _OrderModel {
       @JsonKey(name: 'plan') this.orderPlan,
       @JsonKey(name: 'coupon_price') this.couponPrice,
       @JsonKey(name: 'coupon_code') this.couponCode,
-      @JsonKey(name: 'discount_amount') this.discountAmount});
+      @JsonKey(name: 'discount_amount') this.discountAmount,
+      @JsonKey(name: 'flash_sale_discount_amount') this.flashSaleDiscountAmount,
+      @JsonKey(name: 'coupon_discount_amount') this.couponDiscountAmount});
 
   factory _$OrderModelImpl.fromJson(Map<String, dynamic> json) =>
       _$$OrderModelImplFromJson(json);
@@ -448,6 +510,12 @@ class _$OrderModelImpl implements _OrderModel {
   @override
   @JsonKey(name: 'handling_amount')
   final double? handlingAmount;
+  @override
+  @JsonKey(
+      name: 'payment_id',
+      fromJson: _nullableIdFromJson,
+      toJson: _nullableIdToJson)
+  final String? paymentId;
   @override
   @JsonKey(name: 'surplus_amount')
   final double? surplusAmount;
@@ -494,10 +562,16 @@ class _$OrderModelImpl implements _OrderModel {
   @override
   @JsonKey(name: 'discount_amount')
   final double? discountAmount;
+  @override
+  @JsonKey(name: 'flash_sale_discount_amount')
+  final double? flashSaleDiscountAmount;
+  @override
+  @JsonKey(name: 'coupon_discount_amount')
+  final double? couponDiscountAmount;
 
   @override
   String toString() {
-    return 'OrderModel(planId: $planId, tradeNo: $tradeNo, totalAmount: $totalAmount, balanceAmount: $balanceAmount, handlingAmount: $handlingAmount, surplusAmount: $surplusAmount, refundAmount: $refundAmount, depositAmount: $depositAmount, depositBonusAmount: $depositBonusAmount, depositCreditedAmount: $depositCreditedAmount, depositSource: $depositSource, commissionBalance: $commissionBalance, actualCommissionBalance: $actualCommissionBalance, period: $period, status: $status, createdAt: $createdAt, orderPlan: $orderPlan, couponPrice: $couponPrice, couponCode: $couponCode, discountAmount: $discountAmount)';
+    return 'OrderModel(planId: $planId, tradeNo: $tradeNo, totalAmount: $totalAmount, balanceAmount: $balanceAmount, handlingAmount: $handlingAmount, paymentId: $paymentId, surplusAmount: $surplusAmount, refundAmount: $refundAmount, depositAmount: $depositAmount, depositBonusAmount: $depositBonusAmount, depositCreditedAmount: $depositCreditedAmount, depositSource: $depositSource, commissionBalance: $commissionBalance, actualCommissionBalance: $actualCommissionBalance, period: $period, status: $status, createdAt: $createdAt, orderPlan: $orderPlan, couponPrice: $couponPrice, couponCode: $couponCode, discountAmount: $discountAmount, flashSaleDiscountAmount: $flashSaleDiscountAmount, couponDiscountAmount: $couponDiscountAmount)';
   }
 
   @override
@@ -513,6 +587,8 @@ class _$OrderModelImpl implements _OrderModel {
                 other.balanceAmount == balanceAmount) &&
             (identical(other.handlingAmount, handlingAmount) ||
                 other.handlingAmount == handlingAmount) &&
+            (identical(other.paymentId, paymentId) ||
+                other.paymentId == paymentId) &&
             (identical(other.surplusAmount, surplusAmount) ||
                 other.surplusAmount == surplusAmount) &&
             (identical(other.refundAmount, refundAmount) ||
@@ -541,7 +617,12 @@ class _$OrderModelImpl implements _OrderModel {
             (identical(other.couponCode, couponCode) ||
                 other.couponCode == couponCode) &&
             (identical(other.discountAmount, discountAmount) ||
-                other.discountAmount == discountAmount));
+                other.discountAmount == discountAmount) &&
+            (identical(
+                    other.flashSaleDiscountAmount, flashSaleDiscountAmount) ||
+                other.flashSaleDiscountAmount == flashSaleDiscountAmount) &&
+            (identical(other.couponDiscountAmount, couponDiscountAmount) ||
+                other.couponDiscountAmount == couponDiscountAmount));
   }
 
   @JsonKey(includeFromJson: false, includeToJson: false)
@@ -553,6 +634,7 @@ class _$OrderModelImpl implements _OrderModel {
         totalAmount,
         balanceAmount,
         handlingAmount,
+        paymentId,
         surplusAmount,
         refundAmount,
         depositAmount,
@@ -567,7 +649,9 @@ class _$OrderModelImpl implements _OrderModel {
         orderPlan,
         couponPrice,
         couponCode,
-        discountAmount
+        discountAmount,
+        flashSaleDiscountAmount,
+        couponDiscountAmount
       ]);
 
   /// Create a copy of OrderModel
@@ -588,32 +672,40 @@ class _$OrderModelImpl implements _OrderModel {
 
 abstract class _OrderModel implements OrderModel {
   const factory _OrderModel(
-          {@JsonKey(name: 'plan_id') final int? planId,
-          @JsonKey(name: 'trade_no') final String? tradeNo,
-          @JsonKey(name: 'total_amount') final double? totalAmount,
-          @JsonKey(name: 'balance_amount') final double? balanceAmount,
-          @JsonKey(name: 'handling_amount') final double? handlingAmount,
-          @JsonKey(name: 'surplus_amount') final double? surplusAmount,
-          @JsonKey(name: 'refund_amount') final double? refundAmount,
-          @JsonKey(name: 'deposit_amount') final double? depositAmount,
-          @JsonKey(name: 'bounus') final double? depositBonusAmount,
-          @JsonKey(name: 'get_amount') final double? depositCreditedAmount,
-          @JsonKey(name: 'deposit_source') final String? depositSource,
-          @JsonKey(name: 'commission_balance') final double? commissionBalance,
-          @JsonKey(name: 'actual_commission_balance')
-          final double? actualCommissionBalance,
-          final String? period,
-          final int? status,
-          @JsonKey(
-              name: 'created_at',
-              fromJson: _fromUnixTimestamp,
-              toJson: _toUnixTimestamp)
-          final DateTime? createdAt,
-          @JsonKey(name: 'plan') final OrderPlanModel? orderPlan,
-          @JsonKey(name: 'coupon_price') final double? couponPrice,
-          @JsonKey(name: 'coupon_code') final String? couponCode,
-          @JsonKey(name: 'discount_amount') final double? discountAmount}) =
-      _$OrderModelImpl;
+      {@JsonKey(name: 'plan_id') final int? planId,
+      @JsonKey(name: 'trade_no') final String? tradeNo,
+      @JsonKey(name: 'total_amount') final double? totalAmount,
+      @JsonKey(name: 'balance_amount') final double? balanceAmount,
+      @JsonKey(name: 'handling_amount') final double? handlingAmount,
+      @JsonKey(
+          name: 'payment_id',
+          fromJson: _nullableIdFromJson,
+          toJson: _nullableIdToJson)
+      final String? paymentId,
+      @JsonKey(name: 'surplus_amount') final double? surplusAmount,
+      @JsonKey(name: 'refund_amount') final double? refundAmount,
+      @JsonKey(name: 'deposit_amount') final double? depositAmount,
+      @JsonKey(name: 'bounus') final double? depositBonusAmount,
+      @JsonKey(name: 'get_amount') final double? depositCreditedAmount,
+      @JsonKey(name: 'deposit_source') final String? depositSource,
+      @JsonKey(name: 'commission_balance') final double? commissionBalance,
+      @JsonKey(name: 'actual_commission_balance')
+      final double? actualCommissionBalance,
+      final String? period,
+      final int? status,
+      @JsonKey(
+          name: 'created_at',
+          fromJson: _fromUnixTimestamp,
+          toJson: _toUnixTimestamp)
+      final DateTime? createdAt,
+      @JsonKey(name: 'plan') final OrderPlanModel? orderPlan,
+      @JsonKey(name: 'coupon_price') final double? couponPrice,
+      @JsonKey(name: 'coupon_code') final String? couponCode,
+      @JsonKey(name: 'discount_amount') final double? discountAmount,
+      @JsonKey(name: 'flash_sale_discount_amount')
+      final double? flashSaleDiscountAmount,
+      @JsonKey(name: 'coupon_discount_amount')
+      final double? couponDiscountAmount}) = _$OrderModelImpl;
 
   factory _OrderModel.fromJson(Map<String, dynamic> json) =
       _$OrderModelImpl.fromJson;
@@ -633,6 +725,12 @@ abstract class _OrderModel implements OrderModel {
   @override
   @JsonKey(name: 'handling_amount')
   double? get handlingAmount;
+  @override
+  @JsonKey(
+      name: 'payment_id',
+      fromJson: _nullableIdFromJson,
+      toJson: _nullableIdToJson)
+  String? get paymentId;
   @override
   @JsonKey(name: 'surplus_amount')
   double? get surplusAmount;
@@ -679,6 +777,12 @@ abstract class _OrderModel implements OrderModel {
   @override
   @JsonKey(name: 'discount_amount')
   double? get discountAmount;
+  @override
+  @JsonKey(name: 'flash_sale_discount_amount')
+  double? get flashSaleDiscountAmount;
+  @override
+  @JsonKey(name: 'coupon_discount_amount')
+  double? get couponDiscountAmount;
 
   /// Create a copy of OrderModel
   /// with the given fields replaced by the non-null parameter values.

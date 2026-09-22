@@ -7,6 +7,7 @@ import 'dart:convert';
 import 'package:fl_clash/xboard/core/core.dart';
 import 'package:fl_clash/xboard/infrastructure/infrastructure.dart';
 import 'package:fl_clash/xboard/domain/domain.dart';
+import 'package:flutter_xboard_sdk/flutter_xboard_sdk.dart';
 
 /// XBoard 存储服务
 ///
@@ -27,6 +28,8 @@ class XBoardStorageService {
   static const String _domainInviteKey = 'xboard_domain_invite';
   static const String _domainCommissionHistoryKey =
       'xboard_domain_commission_history';
+  static const String _catboardReferralProgramKey =
+      'xboard_catboard_referral_program';
   static const String _tunFirstUseKey = 'xboard_tun_first_use_shown';
   static const String _savedEmailKey = 'xboard_saved_email';
   static const String _savedPasswordKey = 'xboard_saved_password';
@@ -243,6 +246,52 @@ class XBoardStorageService {
     );
   }
 
+  Future<Result<bool>> saveCatboardReferralProgram(
+    CatboardReferralProgram program,
+  ) async {
+    try {
+      return await _storage.setString(
+        _catboardReferralProgramKey,
+        jsonEncode(program.toJson()),
+      );
+    } catch (e, stackTrace) {
+      return Result.failure(XBoardStorageException(
+        message: '保存推广等级信息失败',
+        operation: 'write',
+        key: _catboardReferralProgramKey,
+        originalError: e,
+        stackTrace: stackTrace,
+      ));
+    }
+  }
+
+  Future<Result<CatboardReferralProgram?>> getCatboardReferralProgram() async {
+    final result = await _storage.getString(_catboardReferralProgramKey);
+    return result.when(
+      success: (programJson) {
+        if (programJson == null || programJson.isEmpty) {
+          return Result.success(null);
+        }
+        try {
+          final programMap = jsonDecode(programJson) as Map<String, dynamic>;
+          return Result.success(CatboardReferralProgram.fromJson(programMap));
+        } catch (e, stackTrace) {
+          return Result.failure(XBoardParseException(
+            message: '解析推广等级信息失败',
+            dataType: 'CatboardReferralProgram',
+            originalError: e,
+            stackTrace: stackTrace,
+          ));
+        }
+      },
+      failure: (error) => Result.failure(error),
+    );
+  }
+
+  Future<Result<bool>> clearCatboardReferralProgram() async {
+    return _storage.remove(_catboardReferralProgramKey);
+  }
+
   // ===== 订阅信息（已移除，使用DomainSubscription代替） =====
 
   // ===== 认证数据清理 =====
@@ -257,6 +306,7 @@ class XBoardStorageService {
       _storage.remove(_domainPlansKey),
       _storage.remove(_domainInviteKey),
       _storage.remove(_domainCommissionHistoryKey),
+      _storage.remove(_catboardReferralProgramKey),
     ]);
 
     final allSuccess = results.every((r) => r.dataOrNull == true);

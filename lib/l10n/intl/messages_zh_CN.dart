@@ -2031,7 +2031,7 @@ class MessageLookup extends MessageLookupByLibrary {
       "将移除离线但仍占用名额的设备，不会影响当前设备。继续吗？",
     ),
     "xboardReload": MessageLookupByLibrary.simpleMessage("重新获取"),
-    "xboardReloadNodes": MessageLookupByLibrary.simpleMessage("重新加载节点"),
+    "xboardReloadNodes": MessageLookupByLibrary.simpleMessage("重新加载"),
     "xboardRelogin": MessageLookupByLibrary.simpleMessage("重新登录"),
     "xboardRemainingBalance": MessageLookupByLibrary.simpleMessage("剩余"),
     "xboardRememberPassword": MessageLookupByLibrary.simpleMessage("记住密码"),

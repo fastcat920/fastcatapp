@@ -10,6 +10,13 @@ int? _toUnixTimestamp(DateTime? date) => date?.millisecondsSinceEpoch == null
 DateTime? _fromUnixTimestamp(int? timestamp) => timestamp != null
     ? DateTime.fromMillisecondsSinceEpoch(timestamp * 1000)
     : null;
+String? _nullableIdFromJson(dynamic value) {
+  if (value == null) return null;
+  final id = value.toString().trim();
+  return id.isEmpty ? null : id;
+}
+
+dynamic _nullableIdToJson(String? value) => value;
 
 @freezed
 class OrderModel with _$OrderModel {
@@ -19,6 +26,12 @@ class OrderModel with _$OrderModel {
     @JsonKey(name: 'total_amount') double? totalAmount,
     @JsonKey(name: 'balance_amount') double? balanceAmount,
     @JsonKey(name: 'handling_amount') double? handlingAmount,
+    @JsonKey(
+      name: 'payment_id',
+      fromJson: _nullableIdFromJson,
+      toJson: _nullableIdToJson,
+    )
+    String? paymentId,
     @JsonKey(name: 'surplus_amount') double? surplusAmount,
     @JsonKey(name: 'refund_amount') double? refundAmount,
     @JsonKey(name: 'deposit_amount') double? depositAmount,
@@ -38,6 +51,9 @@ class OrderModel with _$OrderModel {
     @JsonKey(name: 'coupon_price') double? couponPrice,
     @JsonKey(name: 'coupon_code') String? couponCode,
     @JsonKey(name: 'discount_amount') double? discountAmount,
+    @JsonKey(name: 'flash_sale_discount_amount')
+    double? flashSaleDiscountAmount,
+    @JsonKey(name: 'coupon_discount_amount') double? couponDiscountAmount,
   }) = _OrderModel;
 
   factory OrderModel.fromJson(Map<String, dynamic> json) =>

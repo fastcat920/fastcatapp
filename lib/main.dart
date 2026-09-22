@@ -345,6 +345,31 @@ Future<void> _service(List<String> flags) async {
     }
   };
 
+  vpn?.handleRecoverDataPlane = () async {
+    try {
+      final closeConnections = core_models.Action(
+        id: 'vpn-dataplane-close-${DateTime.now().microsecondsSinceEpoch}',
+        method: ActionMethod.closeConnections,
+        data: null,
+      );
+      final clearCaches = core_models.Action(
+        id: 'vpn-dataplane-cache-${DateTime.now().microsecondsSinceEpoch}',
+        method: ActionMethod.clearNetworkCaches,
+        data: null,
+      );
+      await clashLibHandler
+          .invokeAction(json.encode(closeConnections))
+          .timeout(const Duration(seconds: 2));
+      await clashLibHandler
+          .invokeAction(json.encode(clearCaches))
+          .timeout(const Duration(seconds: 2));
+      return true;
+    } catch (error) {
+      debugPrint('VPN data-plane soft recovery failed: $error');
+      return false;
+    }
+  };
+
   vpn?.handlePrepareRecovery = () async {
     try {
       final action = core_models.Action(

@@ -21,6 +21,7 @@ import 'package:fl_clash/common/sensitive_masker.dart';
 import 'package:fl_clash/state.dart';
 import 'package:fl_clash/providers/providers.dart';
 import 'package:fl_clash/xboard/features/subscription/services/subscription_guard_service.dart';
+import 'package:fl_clash/xboard/features/invite/providers/referral_program_provider.dart';
 import 'package:fl_clash/xboard/utils/backend_message_mapper.dart';
 import 'package:fl_clash/xboard/features/connectivity/connectivity.dart';
 import 'package:fl_clash/security/profile_vault.dart';
@@ -1403,6 +1404,7 @@ class XBoardUserAuthNotifier extends Notifier<UserAuthState> {
       ref.invalidate(getSubscriptionProvider);
       ref.invalidate(getPlansProvider);
       ref.invalidate(getOrdersProvider);
+      await ref.read(referralProgramProvider.notifier).clear();
     } catch (e) {
       _logger.warning('清理 Provider 缓存失败: $e');
     }

@@ -20,6 +20,12 @@ class Order with _$Order {
     @JsonKey(name: 'total_amount') double? totalAmount,
     @JsonKey(name: 'balance_amount') double? balanceAmount,
     @JsonKey(name: 'handling_amount') double? handlingAmount,
+    @JsonKey(
+      name: 'payment_id',
+      fromJson: _nullableIdFromJson,
+      toJson: _nullableIdToJson,
+    )
+    String? paymentId,
     @JsonKey(name: 'surplus_amount') double? surplusAmount,
     @JsonKey(name: 'refund_amount') double? refundAmount,
     @JsonKey(name: 'deposit_amount') double? depositAmount,
@@ -39,6 +45,9 @@ class Order with _$Order {
     @JsonKey(name: 'coupon_price') double? couponPrice,
     @JsonKey(name: 'coupon_code') String? couponCode,
     @JsonKey(name: 'discount_amount') double? discountAmount,
+    @JsonKey(name: 'flash_sale_discount_amount')
+    double? flashSaleDiscountAmount,
+    @JsonKey(name: 'coupon_discount_amount') double? couponDiscountAmount,
   }) = _Order;
 
   factory Order.fromJson(Map<String, dynamic> json) => _$OrderFromJson(json);
@@ -110,6 +119,14 @@ String _idFromJson(dynamic value) {
 
 dynamic _idToJson(String value) =>
     value; // No special conversion needed for toJson
+
+String? _nullableIdFromJson(dynamic value) {
+  if (value == null) return null;
+  final id = value.toString().trim();
+  return id.isEmpty ? null : id;
+}
+
+dynamic _nullableIdToJson(String? value) => value;
 
 @freezed
 class OrderPaymentInfoResponse with _$OrderPaymentInfoResponse {

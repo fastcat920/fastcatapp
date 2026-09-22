@@ -45,7 +45,8 @@ class _XBoardConnectButtonState extends ConsumerState<XBoardConnectButton>
       !globalState.coreStatusReadyNotifier.value ||
       _isCheckingSubscription ||
       _isSwitching ||
-      globalState.isCoreSwitchingNotifier.value;
+      globalState.isCoreSwitchingNotifier.value ||
+      globalState.coreSwitchStatusNotifier.value.isBusy;
 
   @override
   void initState() {

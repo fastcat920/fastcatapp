@@ -5,9 +5,11 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:fl_clash/common/common.dart';
 import 'package:fl_clash/l10n/l10n.dart';
 import 'package:fl_clash/xboard/features/invite/providers/invite_provider.dart';
+import 'package:fl_clash/xboard/features/invite/providers/referral_program_provider.dart';
 import 'package:fl_clash/xboard/features/invite/dialogs/transfer_dialog.dart';
 import 'package:fl_clash/xboard/features/invite/dialogs/withdraw_dialog.dart';
 import 'package:fl_clash/xboard/features/invite/widgets/adaptive_amount_text.dart';
+import 'package:fl_clash/xboard/features/invite/widgets/referral_growth_card.dart';
 import 'package:fl_clash/xboard/features/mine/pages/ticket_page.dart';
 import 'package:fl_clash/xboard/features/shared/styles/styles.dart';
 import 'package:fl_clash/xboard/features/shared/widgets/widgets.dart';
@@ -27,7 +29,6 @@ class _InvitePageState extends ConsumerState<InvitePage>
     with AutomaticKeepAliveClientMixin, SingleTickerProviderStateMixin {
   bool _hasInitialized = false;
   bool _isRefreshing = false;
-  CatboardReferralProgram? _referralProgram;
   late final TabController _tabController;
 
   @override
@@ -54,14 +55,10 @@ class _InvitePageState extends ConsumerState<InvitePage>
     if (_isRefreshing) return;
     if (mounted) setState(() => _isRefreshing = true);
     try {
-      await ref.read(inviteProvider.notifier).refresh();
-      try {
-        final sdk = await ref.read(xboardSdkProvider.future);
-        final program = await sdk.catboard.getReferralProgram();
-        if (mounted) setState(() => _referralProgram = program);
-      } catch (_) {
-        // Older panels do not expose the referral program extension.
-      }
+      await Future.wait([
+        ref.read(inviteProvider.notifier).refresh(),
+        ref.read(referralProgramProvider.notifier).refresh(),
+      ]);
     } catch (_) {
     } finally {
       if (mounted) setState(() => _isRefreshing = false);
@@ -75,6 +72,9 @@ class _InvitePageState extends ConsumerState<InvitePage>
         Platform.isLinux || Platform.isWindows || Platform.isMacOS;
     final theme = Theme.of(context);
     final inviteState = ref.watch(inviteProvider);
+    final referralProgram = ref.watch(
+      referralProgramProvider.select((state) => state.program),
+    );
 
     // 数据未就绪且无错误 → body 整体显示 spinner，避免任何闪烁
     final bool dataReady =
@@ -107,6 +107,12 @@ class _InvitePageState extends ConsumerState<InvitePage>
                   children: [
                     // Desktop title + refresh are now in the fixed AppBar.
 
+                    // ── 会员等级成长
+                    if (referralProgram != null) ...[
+                      ReferralGrowthCard(program: referralProgram),
+                      const SizedBox(height: 12),
+                    ],
+
                     // ── 余额卡片
                     _BalanceCards(state: inviteState),
                     const SizedBox(height: 12),
@@ -117,11 +123,10 @@ class _InvitePageState extends ConsumerState<InvitePage>
 
                     // ── 邀请统计
                     _InviteStatsSection(
-                        state: inviteState, isDesktop: isDesktop),
-                    if (_referralProgram != null) ...[
-                      const SizedBox(height: 12),
-                      _ReferralProgramSection(program: _referralProgram!),
-                    ],
+                      state: inviteState,
+                      isDesktop: isDesktop,
+                      effectiveInvites: referralProgram?.effectiveInvites,
+                    ),
                     const SizedBox(height: 20),
 
                     // ── Tab bar
@@ -132,6 +137,8 @@ class _InvitePageState extends ConsumerState<InvitePage>
                     _InviteCodesTabContent(
                       tabController: _tabController,
                       state: inviteState,
+                      rewardRestrictionPolicy:
+                          referralProgram?.rewardRestrictionPolicy,
                     ),
                   ],
                 ),
@@ -217,7 +224,7 @@ class _InvitePageState extends ConsumerState<InvitePage>
               children: [
                 const Icon(Icons.receipt_long_outlined, size: 16),
                 const SizedBox(width: 6),
-                Text(appLocalizations.commissionHistory),
+                Text(_copy(context, '佣金记录', 'Commission records')),
               ],
             ),
           ),
@@ -280,36 +287,34 @@ class _BalanceCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
-    final tintBg = theme.colorScheme.primary.withValues(
-      alpha: isDark ? 0.24 : 0.12,
-    );
-    final iconBg = theme.colorScheme.primary.withValues(
+    final backgroundColor = isDark
+        ? theme.colorScheme.primary.withValues(alpha: 0.24)
+        : Colors.white;
+    final iconBg = color.withValues(
       alpha: isDark ? 0.32 : 0.18,
     );
     final titleColor = isDark
         ? theme.colorScheme.onSurface.withValues(alpha: 0.78)
-        : theme.colorScheme.primary.withValues(alpha: 0.88);
-    final valueColor = isDark
-        ? theme.colorScheme.onSurface
-        : theme.colorScheme.primary.withValues(alpha: 0.96);
-    final iconColor =
-        isDark ? theme.colorScheme.onSurface : theme.colorScheme.primary;
+        : theme.colorScheme.onSurfaceVariant;
+    final valueColor = isDark ? theme.colorScheme.onSurface : color;
+    final iconColor = isDark ? theme.colorScheme.onSurface : color;
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: tintBg,
+        color: backgroundColor,
         borderRadius: BorderRadius.circular(20),
         border: Border.all(
-          color:
-              theme.colorScheme.primary.withValues(alpha: isDark ? 0.38 : 0.28),
+          color: isDark
+              ? theme.colorScheme.primary.withValues(alpha: 0.38)
+              : XbUiTokens.cardBorderLight,
         ),
         boxShadow: isDark
             ? null
             : [
                 BoxShadow(
-                  color: theme.colorScheme.primary.withValues(alpha: 0.12),
-                  blurRadius: 16,
-                  offset: const Offset(0, 4),
+                  color: Colors.black.withValues(alpha: 0.04),
+                  blurRadius: 10,
+                  offset: const Offset(0, 2),
                 ),
               ],
       ),
@@ -465,7 +470,12 @@ class _ResponsiveActionButton extends StatelessWidget {
 class _InviteStatsSection extends StatelessWidget {
   final InviteState state;
   final bool isDesktop;
-  const _InviteStatsSection({required this.state, required this.isDesktop});
+  final int? effectiveInvites;
+  const _InviteStatsSection({
+    required this.state,
+    required this.isDesktop,
+    required this.effectiveInvites,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -502,9 +512,14 @@ class _InviteStatsSection extends StatelessWidget {
                   const SizedBox(width: 10),
                   Expanded(
                     child: _StatCard(
-                      label: appLocalizations.commissionRate,
-                      value: '${state.commissionRate.toStringAsFixed(0)}%',
-                      icon: Icons.percent,
+                      label: _copy(context, '有效邀请数', 'Effective invites'),
+                      value: effectiveInvites?.toString() ?? '···',
+                      icon: Icons.how_to_reg_outlined,
+                      tooltipMessage: _copy(
+                        context,
+                        '被邀请人有首次购买订单',
+                        'The invited user has placed their first order',
+                      ),
                     ),
                   ),
                   const SizedBox(width: 10),
@@ -543,9 +558,14 @@ class _InviteStatsSection extends StatelessWidget {
                       const SizedBox(width: 10),
                       Expanded(
                         child: _StatCard(
-                          label: appLocalizations.commissionRate,
-                          value: '${state.commissionRate.toStringAsFixed(0)}%',
-                          icon: Icons.percent,
+                          label: _copy(context, '有效邀请数', 'Effective invites'),
+                          value: effectiveInvites?.toString() ?? '···',
+                          icon: Icons.how_to_reg_outlined,
+                          tooltipMessage: _copy(
+                            context,
+                            '被邀请人有首次购买订单',
+                            'The invited user has placed their first order',
+                          ),
                         ),
                       ),
                     ],
@@ -698,107 +718,16 @@ class _StatCardTooltipButton extends StatelessWidget {
   }
 }
 
-class _ReferralProgramSection extends StatelessWidget {
-  final CatboardReferralProgram program;
-
-  const _ReferralProgramSection({required this.program});
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final level = program.level;
-    final nextLevel = program.nextLevel;
-    final milestone = program.nextMilestone;
-    final levelName =
-        (level?['name'] ?? level?['title'] ?? _copy(context, '普通会员', 'Member'))
-            .toString();
-    final nextName = (nextLevel?['name'] ?? nextLevel?['title'])?.toString();
-    final requiredInvites = _asInt(
-      nextLevel?['required_invites'] ?? milestone?['required_invites'],
-    );
-    final progress = requiredInvites <= 0
-        ? 1.0
-        : (program.effectiveInvites / requiredInvites).clamp(0.0, 1.0);
-    final isDark = theme.brightness == Brightness.dark;
-
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          colors: [
-            theme.colorScheme.primary.withValues(alpha: isDark ? 0.3 : 0.16),
-            theme.colorScheme.tertiary.withValues(alpha: isDark ? 0.2 : 0.1),
-          ],
-        ),
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(
-          color: theme.colorScheme.primary.withValues(alpha: 0.25),
-        ),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Icon(Icons.workspace_premium_outlined,
-                  color: theme.colorScheme.primary),
-              const SizedBox(width: 8),
-              Expanded(
-                child: Text(
-                  '${_copy(context, '当前等级', 'Current level')} · $levelName',
-                  style: theme.textTheme.titleMedium
-                      ?.copyWith(fontWeight: XbFontWeight.bold),
-                ),
-              ),
-              Text('${program.commissionRate}%'),
-            ],
-          ),
-          const SizedBox(height: 12),
-          Wrap(
-            spacing: 18,
-            runSpacing: 8,
-            children: [
-              Text('${_copy(context, '有效邀请', 'Effective')} '
-                  '${program.effectiveInvites}'),
-              Text('${_copy(context, '邀请贡献', 'Revenue')} '
-                  '${_money(program.referralRevenue)}'),
-              if (program.newcomerReward != null)
-                Text('${_copy(context, '新人奖励', 'Welcome reward')} '
-                    '${program.newcomerReward!['coupon_name'] ?? program.newcomerReward!['status']}'),
-            ],
-          ),
-          if (nextName != null || requiredInvites > 0) ...[
-            const SizedBox(height: 12),
-            LinearProgressIndicator(value: progress),
-            const SizedBox(height: 6),
-            Text(
-              nextName != null
-                  ? '${_copy(context, '下一等级', 'Next level')}: $nextName'
-                  : '${_copy(context, '下一里程碑', 'Next milestone')}: $requiredInvites',
-              style: theme.textTheme.bodySmall,
-            ),
-          ],
-          if (program.recentRewards.isNotEmpty) ...[
-            const SizedBox(height: 10),
-            Text(
-              '${_copy(context, '近期奖励', 'Recent rewards')}: ${program.recentRewards.length}',
-              style: theme.textTheme.bodySmall,
-            ),
-          ],
-        ],
-      ),
-    );
-  }
-}
-
 // ─── Tab 切换内容 ──────────────────────────────────────────────────────────────
 
 class _InviteCodesTabContent extends ConsumerStatefulWidget {
   final TabController tabController;
   final InviteState state;
+  final String? rewardRestrictionPolicy;
   const _InviteCodesTabContent(
-      {required this.tabController, required this.state});
+      {required this.tabController,
+      required this.state,
+      this.rewardRestrictionPolicy});
 
   @override
   ConsumerState<_InviteCodesTabContent> createState() =>
@@ -838,7 +767,12 @@ class _InviteCodesTabContentState
     if (idx == 0) {
       final siteUrlAsync = ref.watch(panelSiteUrlProvider);
       final siteUrl = siteUrlAsync.valueOrNull ?? '';
-      return _InviteCodesTab(state: state, ref: ref, siteUrl: siteUrl);
+      return _InviteCodesTab(
+        state: state,
+        ref: ref,
+        siteUrl: siteUrl,
+        rewardRestrictionPolicy: widget.rewardRestrictionPolicy,
+      );
     }
     if (idx == 1) return const _InviteUsersTab();
     return const _CommissionLedgerTab();
@@ -851,17 +785,39 @@ class _InviteCodesTab extends StatelessWidget {
   final InviteState state;
   final WidgetRef ref;
   final String siteUrl;
-  const _InviteCodesTab(
-      {required this.state, required this.ref, required this.siteUrl});
+  final String? rewardRestrictionPolicy;
+  const _InviteCodesTab({
+    required this.state,
+    required this.ref,
+    required this.siteUrl,
+    this.rewardRestrictionPolicy,
+  });
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final codes = state.inviteData?.codes ?? [];
+    final rewardRestrictionText =
+        _rewardRestrictionText(context, rewardRestrictionPolicy);
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
+        if (rewardRestrictionText != null) ...[
+          SizedBox(
+            width: double.infinity,
+            child: Text(
+              rewardRestrictionText,
+              textAlign: TextAlign.center,
+              style: theme.textTheme.bodySmall?.copyWith(
+                color: theme.colorScheme.error,
+                fontWeight: XbFontWeight.medium,
+                height: 1.6,
+              ),
+            ),
+          ),
+          const SizedBox(height: 12),
+        ],
         Row(
           children: [
             Icon(Icons.link, size: 16, color: theme.colorScheme.primary),
@@ -1096,7 +1052,9 @@ class _InviteUsersTabState extends ConsumerState<_InviteUsersTab> {
     Future<void>(_load);
   }
 
-  Future<void> _load({bool more = false}) async {
+  static const _pageSize = 10;
+
+  Future<void> _load({int page = 1}) async {
     if (_loading) return;
     setState(() {
       _loading = true;
@@ -1104,13 +1062,16 @@ class _InviteUsersTabState extends ConsumerState<_InviteUsersTab> {
     });
     try {
       final sdk = await ref.read(xboardSdkProvider.future);
-      final nextPage = more ? _page + 1 : 1;
-      final result = await sdk.catboard.getInviteUsers(current: nextPage);
+      final result = await sdk.catboard.getInviteUsers(
+        current: page,
+        pageSize: _pageSize,
+      );
       if (!mounted) return;
       setState(() {
-        if (!more) _items.clear();
-        _items.addAll(result.items);
-        _page = nextPage;
+        _items
+          ..clear()
+          ..addAll(result.items);
+        _page = page;
         _total = result.total;
       });
     } catch (error) {
@@ -1123,43 +1084,59 @@ class _InviteUsersTabState extends ConsumerState<_InviteUsersTab> {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final Widget content;
     if (_loading && _items.isEmpty) {
-      return const Center(child: CircularProgressIndicator());
-    }
-    if (_error != null && _items.isEmpty) {
-      return XbErrorState(message: _error!, onRetry: _load);
-    }
-    if (_items.isEmpty) {
-      return _EmptyLedger(
+      content = const Center(child: CircularProgressIndicator());
+    } else if (_error != null && _items.isEmpty) {
+      content = XbErrorState(message: _error!, onRetry: _load);
+    } else if (_items.isEmpty) {
+      content = _EmptyLedger(
         icon: Icons.group_off_outlined,
         text: _copy(context, '暂无邀请用户', 'No invited users'),
       );
+    } else {
+      content = Column(
+        children: [
+          ..._items.map((user) => _LedgerCard(
+                title: user.maskedEmail,
+                subtitle: _date(user.createdAt),
+                trailing: user.status == 'effective'
+                    ? _copy(context, '有效邀请', 'Effective invite')
+                    : _copy(context, '待首购', 'Awaiting first order'),
+                color: user.status == 'effective'
+                    ? XbUiStatusColor.success(context)
+                    : theme.colorScheme.outline,
+              )),
+          _PaginationBar(
+            page: _page,
+            total: _total,
+            pageSize: _pageSize,
+            loading: _loading,
+            onPageChanged: (page) => _load(page: page),
+          ),
+        ],
+      );
     }
     return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        ..._items.map((user) => _LedgerCard(
-              icon: Icons.person_outline,
-              title: user.email,
-              subtitle: _date(user.createdAt),
-              trailing: user.status == 'effective'
-                  ? _copy(context, '有效', 'Effective')
-                  : _copy(context, '待生效', 'Pending'),
-              color: user.status == 'effective'
-                  ? XbUiStatusColor.success(context)
-                  : theme.colorScheme.outline,
-            )),
-        if (_items.length < _total)
-          TextButton.icon(
-            onPressed: _loading ? null : () => _load(more: true),
-            icon: _loading
-                ? const SizedBox(
-                    width: 16,
-                    height: 16,
-                    child: CircularProgressIndicator(strokeWidth: 2),
-                  )
-                : const Icon(Icons.expand_more),
-            label: Text(appLocalizations.loadMore),
+        Padding(
+          padding: const EdgeInsets.fromLTRB(4, 2, 4, 10),
+          child: Center(
+            child: Text(
+              _copy(
+                context,
+                '有效邀请指被邀请人有首次购买订单',
+                'An effective invite means the invited user has placed their first order',
+              ),
+              textAlign: TextAlign.center,
+              style: theme.textTheme.bodySmall?.copyWith(
+                color: theme.colorScheme.onSurfaceVariant,
+              ),
+            ),
           ),
+        ),
+        content,
       ],
     );
   }
@@ -1186,7 +1163,9 @@ class _CommissionLedgerTabState extends ConsumerState<_CommissionLedgerTab> {
     Future<void>(_load);
   }
 
-  Future<void> _load({bool more = false}) async {
+  static const _pageSize = 10;
+
+  Future<void> _load({int page = 1}) async {
     if (_loading) return;
     setState(() {
       _loading = true;
@@ -1194,15 +1173,16 @@ class _CommissionLedgerTabState extends ConsumerState<_CommissionLedgerTab> {
     });
     try {
       final sdk = await ref.read(xboardSdkProvider.future);
-      final nextPage = more ? _page + 1 : 1;
       final result = await sdk.catboard.getCommissionRecords(
-        current: nextPage,
+        current: page,
+        pageSize: _pageSize,
       );
       if (!mounted) return;
       setState(() {
-        if (!more) _items.clear();
-        _items.addAll(result.items);
-        _page = nextPage;
+        _items
+          ..clear()
+          ..addAll(result.items);
+        _page = page;
         _total = result.total;
       });
     } catch (error) {
@@ -1230,29 +1210,23 @@ class _CommissionLedgerTabState extends ConsumerState<_CommissionLedgerTab> {
           ..._items.map((entry) {
             final income = entry.amount >= 0;
             return _LedgerCard(
-              icon: income
-                  ? Icons.add_circle_outline
-                  : Icons.remove_circle_outline,
               title: _ledgerType(context, entry.type),
-              subtitle:
-                  entry.description ?? entry.tradeNo ?? _date(entry.createdAt),
+              subtitle: _date(entry.createdAt),
               trailing: '${income ? '+' : '-'}${_money(entry.amount.abs())}',
               color: income
-                  ? XbUiStatusColor.success(context)
+                  ? Theme.of(context).colorScheme.primary
                   : Theme.of(context).colorScheme.error,
-              footnote: entry.balanceAfter == null
-                  ? _date(entry.createdAt)
-                  : '${_copy(context, '余额', 'Balance')} ${_money(entry.balanceAfter!)} · ${_date(entry.createdAt)}',
+              status: _ledgerStatus(context, entry.status),
+              statusColor: _ledgerStatusColor(context, entry.status),
             );
           }),
-          if (_items.length < _total)
-            Center(
-              child: TextButton.icon(
-                onPressed: _loading ? null : () => _load(more: true),
-                icon: const Icon(Icons.expand_more),
-                label: Text(appLocalizations.loadMore),
-              ),
-            ),
+          _PaginationBar(
+            page: _page,
+            total: _total,
+            pageSize: _pageSize,
+            loading: _loading,
+            onPageChanged: (page) => _load(page: page),
+          ),
         ],
       ],
     );
@@ -1260,36 +1234,163 @@ class _CommissionLedgerTabState extends ConsumerState<_CommissionLedgerTab> {
 }
 
 class _LedgerCard extends StatelessWidget {
-  final IconData icon;
   final String title;
   final String subtitle;
   final String trailing;
   final Color color;
-  final String? footnote;
+  final String? status;
+  final Color? statusColor;
 
   const _LedgerCard({
-    required this.icon,
     required this.title,
     required this.subtitle,
     required this.trailing,
     required this.color,
-    this.footnote,
+    this.status,
+    this.statusColor,
   });
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
     return Card(
-      margin: const EdgeInsets.only(bottom: 8),
-      child: ListTile(
-        leading: Icon(icon, color: color),
-        title: Text(title),
-        subtitle: Text(footnote == null ? subtitle : '$subtitle\n$footnote'),
-        trailing: Text(
-          trailing,
-          style: TextStyle(color: color, fontWeight: XbFontWeight.bold),
+      elevation: 0,
+      margin: XbUiTokens.listCardGapBottom10,
+      color: isDark ? null : Colors.white,
+      shape: XbUiCardStyle.shape(
+        context,
+        radius: XbUiTokens.radiusCardCompact,
+      ),
+      clipBehavior: Clip.antiAlias,
+      child: Padding(
+        padding: const EdgeInsets.all(14),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    title,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: XbUiText.cardTitle(context),
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    subtitle,
+                    style: theme.textTheme.bodySmall?.copyWith(
+                      color:
+                          theme.colorScheme.onSurface.withValues(alpha: 0.45),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(width: 12),
+            Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.end,
+              children: [
+                _StatusBadge(
+                  label: status ?? trailing,
+                  color: statusColor ?? color,
+                ),
+                if (status != null) ...[
+                  const SizedBox(height: 5),
+                  Text(
+                    trailing,
+                    style: theme.textTheme.titleSmall?.copyWith(
+                      color: color,
+                      fontWeight: XbFontWeight.bold,
+                    ),
+                  ),
+                ],
+              ],
+            ),
+          ],
         ),
-        textColor: theme.colorScheme.onSurface,
+      ),
+    );
+  }
+}
+
+class _StatusBadge extends StatelessWidget {
+  final String label;
+  final Color color;
+
+  const _StatusBadge({required this.label, required this.color});
+
+  @override
+  Widget build(BuildContext context) => Container(
+        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+        decoration: BoxDecoration(
+          color: color.withValues(alpha: 0.12),
+          borderRadius: BorderRadius.circular(8),
+        ),
+        child: Text(
+          label,
+          style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                color: color,
+                fontWeight: XbFontWeight.semibold,
+              ),
+        ),
+      );
+}
+
+class _PaginationBar extends StatelessWidget {
+  final int page;
+  final int total;
+  final int pageSize;
+  final bool loading;
+  final ValueChanged<int> onPageChanged;
+
+  const _PaginationBar({
+    required this.page,
+    required this.total,
+    required this.pageSize,
+    required this.loading,
+    required this.onPageChanged,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final totalPages = total == 0 ? 1 : (total / pageSize).ceil();
+    return Padding(
+      padding: const EdgeInsets.only(top: 8),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          IconButton(
+            tooltip: _copy(context, '上一页', 'Previous page'),
+            onPressed:
+                !loading && page > 1 ? () => onPageChanged(page - 1) : null,
+            icon: const Icon(Icons.chevron_left),
+          ),
+          const SizedBox(width: 8),
+          if (loading)
+            const SizedBox(
+              width: 18,
+              height: 18,
+              child: CircularProgressIndicator(strokeWidth: 2),
+            )
+          else
+            Text(
+              _copy(context, '第 $page / $totalPages 页',
+                  'Page $page / $totalPages'),
+              style: Theme.of(context).textTheme.bodySmall,
+            ),
+          const SizedBox(width: 8),
+          IconButton(
+            tooltip: _copy(context, '下一页', 'Next page'),
+            onPressed: !loading && page < totalPages
+                ? () => onPageChanged(page + 1)
+                : null,
+            icon: const Icon(Icons.chevron_right),
+          ),
+        ],
       ),
     );
   }
@@ -1320,33 +1421,90 @@ class _EmptyLedger extends StatelessWidget {
 String _copy(BuildContext context, String zh, String en) =>
     Localizations.localeOf(context).languageCode == 'zh' ? zh : en;
 
-int _asInt(dynamic value) =>
-    value is num ? value.toInt() : int.tryParse('$value') ?? 0;
+String? _rewardRestrictionText(BuildContext context, String? policy) =>
+    switch (policy) {
+      'block_inviter_commission' => _copy(
+          context,
+          '您当前没有有效套餐，好友购买套餐后您将无法获得订单返佣。',
+          'You do not have an active plan. Orders from newly registered friends will not earn you commission.',
+        ),
+      'block_invitee_rewards' => _copy(
+          context,
+          '您当前没有有效套餐，通过您的邀请码注册的好友将无法获得新人奖励。',
+          'You do not have an active plan. Newly registered friends will not receive newcomer referral rewards.',
+        ),
+      'block_both' => _copy(
+          context,
+          '您当前没有有效套餐，您将无法获得订单返佣，受邀好友也无法获得新人奖励。',
+          'You do not have an active plan. Orders from newly registered friends will not earn you commission, and they will not receive newcomer referral rewards.',
+        ),
+      _ => null,
+    };
 
 String _money(int cents) => '¥${(cents / 100).toStringAsFixed(2)}';
 
 String _date(DateTime? date) => date == null
     ? '-'
-    : '${date.year}-${date.month.toString().padLeft(2, '0')}-${date.day.toString().padLeft(2, '0')}';
+    : '${date.year}-${date.month.toString().padLeft(2, '0')}-'
+        '${date.day.toString().padLeft(2, '0')} '
+        '${date.hour.toString().padLeft(2, '0')}:'
+        '${date.minute.toString().padLeft(2, '0')}';
 
 String _ledgerType(BuildContext context, String type) {
   switch (type) {
     case 'commission_income':
       return _copy(context, '邀请返佣', 'Referral commission');
     case 'reward_income':
-      return _copy(context, '奖励佣金', 'Commission reward');
+      return _copy(context, '邀请奖励', 'Referral reward');
     case 'transfer_out':
-      return _copy(context, '佣金划转', 'Wallet transfer');
+      return _copy(context, '划转至余额', 'Transfer to balance');
     case 'withdrawal':
-      return _copy(context, '提现申请', 'Withdrawal request');
+      return _copy(context, '佣金提现', 'Commission withdrawal');
     case 'withdrawal_refund':
       return _copy(context, '提现退回', 'Withdrawal refund');
     case 'commission_reversal':
-      return _copy(context, '佣金撤销', 'Commission reversal');
+      return _copy(context, '佣金冲正', 'Commission reversal');
     case 'admin_adjustment':
       return _copy(context, '后台调整', 'Admin adjustment');
     default:
       return type;
+  }
+}
+
+String _ledgerStatus(BuildContext context, String status) {
+  switch (status) {
+    case 'pending':
+    case 'processing':
+      return _copy(context, '处理中', 'Processing');
+    case 'failed':
+    case 'rejected':
+      return _copy(context, '已失败', 'Failed');
+    case 'cancelled':
+    case 'canceled':
+      return _copy(context, '已取消', 'Cancelled');
+    case 'completed':
+    case 'success':
+    case 'granted':
+      return _copy(context, '已完成', 'Completed');
+    default:
+      return status;
+  }
+}
+
+Color _ledgerStatusColor(BuildContext context, String status) {
+  switch (status) {
+    case 'failed':
+    case 'rejected':
+      return Theme.of(context).colorScheme.error;
+    case 'pending':
+    case 'processing':
+      return Colors.orange.shade700;
+    case 'completed':
+    case 'success':
+    case 'granted':
+      return XbUiStatusColor.success(context);
+    default:
+      return Theme.of(context).colorScheme.outline;
   }
 }
 

@@ -2785,7 +2785,7 @@ class MessageLookup extends MessageLookupByLibrary {
       "This will remove offline devices that still occupy your device limit. Your current device will not be affected. Continue?",
     ),
     "xboardReload": MessageLookupByLibrary.simpleMessage("Reload"),
-    "xboardReloadNodes": MessageLookupByLibrary.simpleMessage("Reload nodes"),
+    "xboardReloadNodes": MessageLookupByLibrary.simpleMessage("Reload"),
     "xboardRelogin": MessageLookupByLibrary.simpleMessage("Login Again"),
     "xboardRemainingBalance": MessageLookupByLibrary.simpleMessage("Remaining"),
     "xboardRememberPassword": MessageLookupByLibrary.simpleMessage(

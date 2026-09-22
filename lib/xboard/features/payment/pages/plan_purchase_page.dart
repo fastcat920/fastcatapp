@@ -5,17 +5,22 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:fl_clash/l10n/l10n.dart';
 import 'package:fl_clash/xboard/domain/domain.dart';
 import 'package:flutter_xboard_sdk/flutter_xboard_sdk.dart'
-    show XBoardSDK, CatboardOrderPreview, CatboardCoupon, CatboardFlashSale;
+    show
+        XBoardSDK,
+        CatboardOrderPreview,
+        CatboardCoupon,
+        CatboardFlashSale,
+        CatboardPromotionOption;
 import 'package:fl_clash/xboard/core/core.dart';
 import 'package:fl_clash/xboard/features/auth/providers/xboard_user_provider.dart';
 import 'package:fl_clash/xboard/features/payment/providers/xboard_payment_provider.dart';
 import 'package:fl_clash/xboard/features/subscription/providers/xboard_subscription_provider.dart';
 import 'package:fl_clash/xboard/features/shared/styles/styles.dart';
+import 'package:fl_clash/xboard/features/shared/widgets/xb_error_state.dart';
 import 'package:fl_clash/xboard/utils/backend_message_mapper.dart';
 import 'order_detail_page.dart';
 import '../widgets/plan_header_card.dart';
 import '../widgets/period_selector.dart';
-import '../widgets/price_summary_card.dart';
 
 // 初始化文件级日志器
 final _logger = FileLogger('plan_purchase_page.dart');
@@ -47,9 +52,10 @@ class _PlanPurchasePageState extends ConsumerState<PlanPurchasePage> {
 
   CatboardOrderPreview? _orderPreview;
   bool _isPreviewLoading = false;
+  Object? _previewError;
   int? _selectedUserCouponId;
   bool _disableAutoCoupon = false;
-  bool _supportsOrderPreview = false;
+  String _promotionMode = 'auto';
   int _previewRequestId = 0;
 
   // 用户余额
@@ -63,7 +69,7 @@ class _PlanPurchasePageState extends ConsumerState<PlanPurchasePage> {
     paymentNotifier.loadPaymentMethods();
     paymentNotifier.loadPendingOrders(updateUiState: false);
 
-    WidgetsBinding.instance.addPostFrameCallback((_) {
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
       final periods = _getAvailablePeriods(context);
       if (periods.isNotEmpty && _selectedPeriod == null) {
         // 优先使用 initialPeriod
@@ -72,10 +78,15 @@ class _PlanPurchasePageState extends ConsumerState<PlanPurchasePage> {
             initial != null && periods.any((p) => p['period'] == initial);
         setState(() {
           _selectedPeriod = hasInitial ? initial : periods.first['period'];
+          _isPreviewLoading = true;
+          _previewError = null;
         });
-        _loadCommerceCapabilities();
+        // 最新后端固定支持订单预览。套餐快照与价格并行刷新，且价格只请求一次。
+        await Future.wait([
+          _refreshPlan(showLoading: false),
+          _refreshOrderPreview(),
+        ]);
       }
-      _refreshPlan(showLoading: false);
     });
   }
 
@@ -164,16 +175,6 @@ class _PlanPurchasePageState extends ConsumerState<PlanPurchasePage> {
     return sale.finalAmount > 0 ? sale.finalAmount / 100 : fallback;
   }
 
-  double _getCurrentPrice() {
-    if (_selectedPeriod == null) return 0.0;
-    final periods = _getAvailablePeriods(context);
-    final selectedPeriod = periods.firstWhere(
-      (period) => period['period'] == _selectedPeriod,
-      orElse: () => {},
-    );
-    return selectedPeriod['price']?.toDouble() ?? 0.0;
-  }
-
   double? _getBasePeriodPrice(String? period) => switch (period) {
         'month_price' => _plan.monthlyPrice,
         'quarter_price' => _plan.quarterlyPrice,
@@ -186,59 +187,44 @@ class _PlanPurchasePageState extends ConsumerState<PlanPurchasePage> {
         _ => null,
       };
 
-  Future<void> _loadCommerceCapabilities() async {
-    try {
-      final features = await XBoardSDK.instance.catboard.getFeatures();
-      if (!mounted) return;
-      setState(() => _supportsOrderPreview = features.orderPreview);
-      if (features.orderPreview) {
-        await _refreshOrderPreview();
-      } else {
-        _clearModernCommerceState();
-      }
-    } catch (error) {
-      // 旧后端没有能力标记，按旧版下单协议处理，且不探测 preview 路由。
-      _logger.info('未检测到新版订单预览能力，回退旧版下单流程: $error');
-      if (mounted) {
-        setState(() => _supportsOrderPreview = false);
-        _clearModernCommerceState();
-      }
-    }
-  }
-
-  void _clearModernCommerceState() {
-    if (!mounted) return;
-    setState(() {
-      _orderPreview = null;
-      _selectedUserCouponId = null;
-      _disableAutoCoupon = false;
-      _isPreviewLoading = false;
-    });
-  }
-
   Future<void> _refreshOrderPreview() async {
     final period = _selectedPeriod;
-    if (period == null || !_supportsOrderPreview) return;
+    if (period == null) return;
     final requestId = ++_previewRequestId;
-    if (mounted) setState(() => _isPreviewLoading = true);
+    if (mounted) {
+      setState(() {
+        _isPreviewLoading = true;
+        _previewError = null;
+      });
+    }
     try {
       final preview = await XBoardSDK.instance.catboard.previewOrder(
         planId: _plan.id,
         period: period,
         userCouponId: _selectedUserCouponId,
         disableAutoCoupon: _disableAutoCoupon,
+        promotionMode: _promotionMode,
       );
       if (!mounted || requestId != _previewRequestId) return;
       setState(() {
         _orderPreview = preview;
+        _previewError = null;
         _selectedUserCouponId = preview.selectedCoupon?.id;
-        if (!preview.allowCoupon) _disableAutoCoupon = true;
+        // 互斥模式下 allow_coupon=false 表示不能与限时活动叠加，
+        // 并不代表用户明确禁用优惠券；否则提交 auto 时会排除券方案。
+        if (preview.promotionExclusive) {
+          _disableAutoCoupon = false;
+        } else if (!preview.allowCoupon) {
+          _disableAutoCoupon = true;
+        }
       });
     } catch (error) {
       if (!mounted || requestId != _previewRequestId) return;
-      // 预览是增强能力，失败时保留基础价格与下单功能，不弹出订单错误。
-      _logger.warning('订单预览失败，使用基础价格继续: $error');
-      setState(() => _orderPreview = null);
+      _logger.warning('订单预览失败: $error');
+      setState(() {
+        _orderPreview = null;
+        _previewError = error;
+      });
     } finally {
       if (mounted && requestId == _previewRequestId) {
         setState(() => _isPreviewLoading = false);
@@ -254,6 +240,14 @@ class _PlanPurchasePageState extends ConsumerState<PlanPurchasePage> {
           AppLocalizations.of(context).xboardPleaseSelectPaymentPeriod);
       return;
     }
+    final preview = _orderPreview;
+    if (preview == null) {
+      XBoardNotification.showError(
+        _copy(context, '订单金额尚未加载，请重试',
+            'Order pricing is not ready. Please retry.'),
+      );
+      return;
+    }
 
     try {
       _logger.debug('[购买] 开始购买流程，套餐ID: ${_plan.id}, 周期: $_selectedPeriod');
@@ -262,18 +256,13 @@ class _PlanPurchasePageState extends ConsumerState<PlanPurchasePage> {
       _logger.debug('[购买] 创建订单');
 
       final paymentNotifier = ref.read(xboardPaymentProvider.notifier);
-      final tradeNo = _supportsOrderPreview
-          ? await paymentNotifier.createCatboardOrder(
-              planId: _plan.id,
-              period: _selectedPeriod!,
-              userCouponId: _selectedUserCouponId,
-              disableAutoCoupon: _disableAutoCoupon,
-            )
-          : await paymentNotifier.createOrder(
-              planId: _plan.id,
-              period: _selectedPeriod!,
-              couponCode: '',
-            );
+      final tradeNo = await paymentNotifier.createCatboardOrder(
+        planId: _plan.id,
+        period: _selectedPeriod!,
+        userCouponId: _selectedUserCouponId,
+        disableAutoCoupon: _disableAutoCoupon,
+        promotionMode: _promotionMode,
+      );
 
       if (tradeNo == null) {
         final errorMessage = ref.read(paymentUIStateProvider).errorMessage;
@@ -284,14 +273,6 @@ class _PlanPurchasePageState extends ConsumerState<PlanPurchasePage> {
 
       _logger.debug('[购买] 订单创建成功');
 
-      // 计算订单金额
-      final currentPrice = _orderPreview == null
-          ? _getCurrentPrice()
-          : _orderPreview!.originalAmount / 100;
-      final displayFinalPrice = _orderPreview == null
-          ? _getCurrentPrice()
-          : _orderPreview!.finalAmount / 100;
-
       if (!mounted) return;
       Navigator.of(context).push(
         MaterialPageRoute(
@@ -299,13 +280,11 @@ class _PlanPurchasePageState extends ConsumerState<PlanPurchasePage> {
             tradeNo: tradeNo,
             plan: _plan,
             period: _selectedPeriod,
-            originalPrice: currentPrice,
-            finalPrice: displayFinalPrice,
-            discountAmount: _orderPreview == null
-                ? null
-                : (_orderPreview!.originalAmount - _orderPreview!.finalAmount) /
-                    100,
-            balanceUsed: (_orderPreview?.balanceAmount ?? 0) / 100,
+            originalPrice: preview.originalAmount / 100,
+            finalPrice: preview.finalAmount / 100,
+            discountAmount:
+                (preview.originalAmount - preview.finalAmount) / 100,
+            balanceUsed: preview.balanceAmount / 100,
           ),
         ),
       );
@@ -331,6 +310,7 @@ class _PlanPurchasePageState extends ConsumerState<PlanPurchasePage> {
       await Future.wait([
         ref.read(xboardUserAuthProvider.notifier).refreshUserInfo(),
         _refreshPlan(showLoading: false),
+        _refreshOrderPreview(),
       ]);
     } catch (_) {
     } finally {
@@ -346,7 +326,6 @@ class _PlanPurchasePageState extends ConsumerState<PlanPurchasePage> {
           .refreshPlanById(_plan.id);
       if (latest != null && mounted) {
         setState(() => _plan = latest);
-        await _refreshOrderPreview();
       }
     } catch (error) {
       _logger.warning('刷新套餐详情失败，继续使用当前快照: $error');
@@ -359,7 +338,6 @@ class _PlanPurchasePageState extends ConsumerState<PlanPurchasePage> {
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final periods = _getAvailablePeriods(context);
-    final currentPrice = _getCurrentPrice();
     // 用于判断平台类型
     final isPlatformDesktop =
         Platform.isLinux || Platform.isWindows || Platform.isMacOS;
@@ -383,27 +361,26 @@ class _PlanPurchasePageState extends ConsumerState<PlanPurchasePage> {
             onPeriodSelected: (period) {
               setState(() {
                 _selectedPeriod = period;
+                _orderPreview = null;
+                _previewError = null;
+                _isPreviewLoading = true;
                 _selectedUserCouponId = null;
                 _disableAutoCoupon = false;
+                _promotionMode = 'auto';
               });
               _refreshOrderPreview();
             },
           ),
           const SizedBox(height: 16),
 
-          if (_supportsOrderPreview) ...[
+          if (_orderPreview != null) ...[
             _buildCouponSelector(context),
             const SizedBox(height: 16),
-          ],
-
-          // 价格汇总
-          if (_orderPreview != null)
-            _buildServerPriceSummary(context, _orderPreview!)
+            _buildServerPriceSummary(context, _orderPreview!),
+          ] else if (_previewError != null)
+            _buildPreviewError(context)
           else if (_selectedPeriod != null)
-            PriceSummaryCard(
-              originalPrice: currentPrice,
-              userBalance: ref.watch(userInfoProvider)?.balanceInYuan,
-            ),
+            _buildPricingSkeleton(context),
           const SizedBox(height: 16),
 
           // 提交订单按钮
@@ -413,7 +390,11 @@ class _PlanPurchasePageState extends ConsumerState<PlanPurchasePage> {
               builder: (context, ref, child) {
                 final paymentState = ref.watch(paymentUIStateProvider);
                 return FilledButton(
-                  onPressed: paymentState.isLoading ? null : _proceedToPurchase,
+                  onPressed: paymentState.isLoading ||
+                          _isPreviewLoading ||
+                          _orderPreview == null
+                      ? null
+                      : _proceedToPurchase,
                   style: XbUiButton.filledPrimary(
                     context,
                     busy: paymentState.isLoading,
@@ -497,8 +478,99 @@ class _PlanPurchasePageState extends ConsumerState<PlanPurchasePage> {
   String _copy(BuildContext context, String zh, String en) =>
       Localizations.localeOf(context).languageCode == 'zh' ? zh : en;
 
+  Widget _buildPricingSkeleton(BuildContext context) {
+    final color = Theme.of(context)
+        .colorScheme
+        .surfaceContainerHighest
+        .withValues(alpha: 0.7);
+    Widget line(double width, double height) => Container(
+          width: width,
+          height: height,
+          decoration: BoxDecoration(
+            color: color,
+            borderRadius: BorderRadius.circular(6),
+          ),
+        );
+
+    return Semantics(
+      liveRegion: true,
+      label: _copy(context, '正在加载订单金额', 'Loading order pricing'),
+      child: Column(
+        children: [
+          Card(
+            margin: EdgeInsets.zero,
+            child: Padding(
+              padding: const EdgeInsets.all(16),
+              child: Row(
+                children: [
+                  Container(
+                    width: 40,
+                    height: 40,
+                    decoration: BoxDecoration(
+                      color: color,
+                      borderRadius: BorderRadius.circular(20),
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        line(92, 14),
+                        const SizedBox(height: 8),
+                        line(180, 11),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+          const SizedBox(height: 16),
+          Card(
+            margin: EdgeInsets.zero,
+            child: Padding(
+              padding: const EdgeInsets.all(16),
+              child: Column(
+                children: List.generate(
+                  5,
+                  (index) => Padding(
+                    padding: EdgeInsets.only(bottom: index == 4 ? 0 : 14),
+                    child: Row(
+                      children: [
+                        line(index == 4 ? 88 : 72, 12),
+                        const Spacer(),
+                        line(index == 4 ? 96 : 70, index == 4 ? 18 : 12),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildPreviewError(BuildContext context) => Card(
+        margin: EdgeInsets.zero,
+        child: SizedBox(
+          height: 240,
+          child: XbErrorState(
+            message: _previewError,
+            compact: true,
+            onRetry: _refreshOrderPreview,
+          ),
+        ),
+      );
+
   Widget _buildCouponSelector(BuildContext context) {
     final preview = _orderPreview;
+    if (preview?.promotionExclusive == true &&
+        preview!.promotionOptions.isNotEmpty) {
+      return _buildPromotionSelector(context, preview);
+    }
     final selected = preview?.selectedCoupon;
     final couponDiscount = preview?.couponDiscount ?? 0;
     final String couponSubtitle;
@@ -545,40 +617,94 @@ class _PlanPurchasePageState extends ConsumerState<PlanPurchasePage> {
     final selection = await showModalBottomSheet<int?>(
       context: context,
       showDragHandle: true,
+      isScrollControlled: true,
       builder: (sheetContext) => SafeArea(
-        child: ListView(
-          shrinkWrap: true,
-          padding: const EdgeInsets.only(bottom: 16),
-          children: [
-            ListTile(
-              leading: const Icon(Icons.auto_awesome_outlined),
-              title: Text(_copy(context, '自动选择最优优惠券', 'Best available coupon')),
-              trailing: !_disableAutoCoupon && _selectedUserCouponId == null
-                  ? const Icon(Icons.check)
-                  : null,
-              onTap: () => Navigator.pop(sheetContext, -2),
-            ),
-            ListTile(
-              leading: const Icon(Icons.block_outlined),
-              title: Text(_copy(context, '不使用优惠券', 'Do not use a coupon')),
-              trailing: _disableAutoCoupon ? const Icon(Icons.check) : null,
-              onTap: () => Navigator.pop(sheetContext, -1),
-            ),
-            ...preview.availableCoupons.map(
-              (coupon) => _couponTile(sheetContext, coupon, enabled: true),
-            ),
-            if (preview.unavailableCoupons.isNotEmpty)
-              Padding(
-                padding: const EdgeInsets.fromLTRB(16, 16, 16, 4),
-                child: Text(
-                  _copy(context, '当前订单不可用', 'Unavailable for this order'),
-                  style: Theme.of(context).textTheme.titleSmall,
-                ),
+        child: ConstrainedBox(
+          constraints: BoxConstraints(
+            maxHeight: MediaQuery.sizeOf(sheetContext).height * 0.82,
+          ),
+          child: ListView(
+            shrinkWrap: true,
+            padding: const EdgeInsets.fromLTRB(16, 0, 16, 24),
+            children: [
+              Text(
+                _copy(context, '选择优惠券', 'Choose a coupon'),
+                style: XbUiText.pageTitle(sheetContext),
               ),
-            ...preview.unavailableCoupons.map(
-              (coupon) => _couponTile(sheetContext, coupon, enabled: false),
-            ),
-          ],
+              const SizedBox(height: 6),
+              Text(
+                _copy(
+                  context,
+                  '系统会优先推荐本单优惠金额最高的优惠券。',
+                  'The coupon with the highest saving for this order is recommended first.',
+                ),
+                style: Theme.of(sheetContext).textTheme.bodySmall?.copyWith(
+                      color:
+                          Theme.of(sheetContext).colorScheme.onSurfaceVariant,
+                    ),
+              ),
+              const SizedBox(height: 16),
+              _couponPickerControl(
+                sheetContext,
+                icon: Icons.auto_awesome_outlined,
+                title: _copy(
+                  context,
+                  '自动选择最优优惠券',
+                  'Best available coupon',
+                ),
+                subtitle: _copy(
+                  context,
+                  '套餐或优惠变化时自动重新匹配',
+                  'Re-evaluates when the package or offer changes',
+                ),
+                selected: !_disableAutoCoupon && _selectedUserCouponId == null,
+                onTap: () => Navigator.pop(sheetContext, -2),
+              ),
+              const SizedBox(height: 8),
+              _couponPickerControl(
+                sheetContext,
+                icon: Icons.block_outlined,
+                title: _copy(context, '不使用优惠券', 'Do not use a coupon'),
+                selected: _disableAutoCoupon,
+                onTap: () => Navigator.pop(sheetContext, -1),
+              ),
+              if (preview.availableCoupons.isNotEmpty) ...[
+                const SizedBox(height: 20),
+                Text(
+                  _copy(context, '当前可用', 'Available now'),
+                  style: XbUiText.sectionTitle(sheetContext),
+                ),
+                const SizedBox(height: 10),
+                ...preview.availableCoupons.asMap().entries.map(
+                      (entry) => _couponTile(
+                        sheetContext,
+                        entry.value,
+                        enabled: true,
+                        recommended: entry.key == 0,
+                        selected: !_disableAutoCoupon &&
+                            entry.value.id == _selectedUserCouponId,
+                      ),
+                    ),
+              ],
+              if (preview.unavailableCoupons.isNotEmpty) ...[
+                const SizedBox(height: 12),
+                Text(
+                  _copy(context, '当前订单不可用', 'Unavailable for this order'),
+                  style: XbUiText.sectionTitle(sheetContext),
+                ),
+                const SizedBox(height: 10),
+                ...preview.unavailableCoupons.map(
+                  (coupon) => _couponTile(
+                    sheetContext,
+                    coupon,
+                    enabled: false,
+                    recommended: false,
+                    selected: false,
+                  ),
+                ),
+              ],
+            ],
+          ),
         ),
       ),
     );
@@ -586,34 +712,534 @@ class _PlanPurchasePageState extends ConsumerState<PlanPurchasePage> {
     setState(() {
       _disableAutoCoupon = selection == -1;
       _selectedUserCouponId = selection < 0 ? null : selection;
+      _promotionMode = selection >= 0 ? 'coupon' : 'auto';
     });
     await _refreshOrderPreview();
+  }
+
+  Widget _buildPromotionSelector(
+    BuildContext context,
+    CatboardOrderPreview preview,
+  ) {
+    final selected = preview.selectedPromotion;
+    final subtitle = selected == null
+        ? _copy(context, '系统正在比较最优优惠方案', 'Comparing the best promotion options')
+        : '${_promotionName(context, selected)} · ${_copy(context, '实付', 'Final')} ¥${(selected.finalAmount / 100).toStringAsFixed(2)}';
+    return Card(
+      margin: EdgeInsets.zero,
+      child: ListTile(
+        leading: const Icon(Icons.auto_awesome_outlined),
+        title: Row(
+          children: [
+            Text(_copy(context, '优惠方案', 'Promotion option')),
+            if (selected?.recommended == true) ...[
+              const SizedBox(width: 8),
+              _promotionRecommendedBadge(context),
+            ],
+          ],
+        ),
+        subtitle: Text(subtitle),
+        trailing: _isPreviewLoading
+            ? const SizedBox(
+                width: 20,
+                height: 20,
+                child: CircularProgressIndicator(strokeWidth: 2),
+              )
+            : const Icon(Icons.chevron_right),
+        enabled: !_isPreviewLoading,
+        onTap: () => _showPromotionPicker(context, preview),
+      ),
+    );
+  }
+
+  Future<void> _showPromotionPicker(
+    BuildContext context,
+    CatboardOrderPreview preview,
+  ) async {
+    final selectedKey = preview.selectedPromotion?.key;
+    final selection = await showModalBottomSheet<CatboardPromotionOption>(
+      context: context,
+      showDragHandle: true,
+      isScrollControlled: true,
+      builder: (sheetContext) => SafeArea(
+        child: ConstrainedBox(
+          constraints: BoxConstraints(
+            maxHeight: MediaQuery.sizeOf(sheetContext).height * 0.72,
+          ),
+          child: ListView(
+            shrinkWrap: true,
+            padding: const EdgeInsets.fromLTRB(16, 0, 16, 20),
+            children: [
+              Padding(
+                padding: const EdgeInsets.only(bottom: 12),
+                child: Text(
+                  _copy(context, '选择优惠方案', 'Choose a promotion'),
+                  style: Theme.of(context).textTheme.titleLarge,
+                ),
+              ),
+              Text(
+                _copy(
+                  context,
+                  '限时优惠、优惠券和会员折扣不可同时使用时，系统会推荐实付最低的方案。',
+                  'When offers cannot be combined, the option with the lowest final price is recommended.',
+                ),
+                style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                      color: Theme.of(context).colorScheme.onSurfaceVariant,
+                    ),
+              ),
+              const SizedBox(height: 12),
+              ...preview.promotionOptions.map(
+                (option) => _promotionOptionTile(
+                  sheetContext,
+                  option,
+                  selected: option.key == selectedKey,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+    if (!mounted || selection == null) return;
+    setState(() {
+      _promotionMode = selection.type;
+      _selectedUserCouponId =
+          selection.type == 'coupon' ? selection.couponId : null;
+      _disableAutoCoupon = false;
+    });
+    await _refreshOrderPreview();
+  }
+
+  Widget _promotionOptionTile(
+    BuildContext context,
+    CatboardPromotionOption option, {
+    required bool selected,
+  }) {
+    final theme = Theme.of(context);
+    return Card(
+      margin: const EdgeInsets.only(bottom: 10),
+      color: selected
+          ? theme.colorScheme.primaryContainer.withValues(alpha: 0.45)
+          : null,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(14),
+        side: BorderSide(
+          color: selected
+              ? theme.colorScheme.primary
+              : theme.colorScheme.outlineVariant,
+        ),
+      ),
+      child: InkWell(
+        borderRadius: BorderRadius.circular(14),
+        onTap: () => Navigator.pop(context, option),
+        child: Padding(
+          padding: const EdgeInsets.all(14),
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              SizedBox(
+                width: 82,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      option.discountAmount > 0
+                          ? '-¥${(option.discountAmount / 100).toStringAsFixed(2)}'
+                          : _copy(context, '无优惠', 'No discount'),
+                      style: theme.textTheme.titleMedium?.copyWith(
+                        color: theme.colorScheme.primary,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    const SizedBox(height: 3),
+                    Text(
+                      _copy(context, '已优惠', 'Saved'),
+                      style: theme.textTheme.bodySmall,
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(width: 10),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Wrap(
+                      spacing: 8,
+                      runSpacing: 4,
+                      crossAxisAlignment: WrapCrossAlignment.center,
+                      children: [
+                        Text(
+                          _promotionName(context, option),
+                          style: theme.textTheme.titleSmall?.copyWith(
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                        if (option.recommended)
+                          _promotionRecommendedBadge(context),
+                      ],
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      _promotionDescription(context, option),
+                      style: theme.textTheme.bodySmall?.copyWith(
+                        color: theme.colorScheme.onSurfaceVariant,
+                      ),
+                    ),
+                    const SizedBox(height: 6),
+                    Text(
+                      '${_copy(context, '实付', 'Final')} ¥${(option.finalAmount / 100).toStringAsFixed(2)}',
+                      style: theme.textTheme.bodyMedium?.copyWith(
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              if (selected) ...[
+                const SizedBox(width: 8),
+                Icon(Icons.check_circle, color: theme.colorScheme.primary),
+              ],
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _promotionRecommendedBadge(BuildContext context) => Container(
+        padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
+        decoration: BoxDecoration(
+          color: Theme.of(context).colorScheme.primary,
+          borderRadius: BorderRadius.circular(999),
+        ),
+        child: Text(
+          _copy(context, '最优推荐', 'Best choice'),
+          style: TextStyle(
+            color: Theme.of(context).colorScheme.onPrimary,
+            fontSize: 11,
+            fontWeight: FontWeight.w600,
+          ),
+        ),
+      );
+
+  String _promotionName(
+    BuildContext context,
+    CatboardPromotionOption option,
+  ) {
+    if (option.type == 'standard') {
+      return option.memberDiscount > 0
+          ? _copy(context, '会员等级优惠', 'Membership discount')
+          : _copy(context, '标准价格', 'Standard price');
+    }
+    final zh = Localizations.localeOf(context).languageCode == 'zh';
+    final preferred = zh ? option.name : option.nameEn;
+    final fallback = zh ? option.nameEn : option.name;
+    return preferred?.trim().isNotEmpty == true
+        ? preferred!
+        : fallback?.trim().isNotEmpty == true
+            ? fallback!
+            : option.type == 'coupon'
+                ? _copy(context, '优惠券方案', 'Coupon option')
+                : _copy(context, '限时优惠', 'Flash sale');
+  }
+
+  String _promotionDescription(
+    BuildContext context,
+    CatboardPromotionOption option,
+  ) {
+    if (option.type == 'standard') {
+      return option.memberDiscount > 0
+          ? _copy(context, '仅使用当前会员等级折扣',
+              'Uses your current membership discount only')
+          : _copy(context, '不使用限时优惠或优惠券', 'No flash sale or coupon applied');
+    }
+    final zh = Localizations.localeOf(context).languageCode == 'zh';
+    final preferred = zh ? option.description : option.descriptionEn;
+    final fallback = zh ? option.descriptionEn : option.description;
+    return preferred?.trim().isNotEmpty == true
+        ? preferred!
+        : fallback?.trim().isNotEmpty == true
+            ? fallback!
+            : option.type == 'coupon'
+                ? _copy(context, '使用此优惠券结算', 'Checkout with this coupon')
+                : _copy(context, '使用当前限时优惠', 'Use the current flash sale');
   }
 
   Widget _couponTile(
     BuildContext context,
     CatboardCoupon coupon, {
     required bool enabled,
+    required bool recommended,
+    required bool selected,
   }) {
+    final theme = Theme.of(context);
     final template = coupon.template;
     final value = template.discountType == 'percent'
         ? '${template.discountValue}%'
         : '¥${(template.discountValue / 100).toStringAsFixed(2)}';
-    return ListTile(
-      enabled: enabled,
-      leading: CircleAvatar(child: Text(value)),
-      title: Text(template.name),
-      subtitle: Text(enabled
-          ? _copy(
-              context,
-              '本单优惠 ¥${(coupon.calculatedDiscount / 100).toStringAsFixed(2)}',
-              'Save ¥${(coupon.calculatedDiscount / 100).toStringAsFixed(2)}',
-            )
-          : _couponUnavailableText(context, coupon.unavailableReason)),
-      trailing:
-          coupon.id == _selectedUserCouponId ? const Icon(Icons.check) : null,
-      onTap: enabled ? () => Navigator.pop(context, coupon.id) : null,
+    final description = _localizedCouponField(
+      context,
+      template.description,
+      template.descriptionEn,
     );
+    final title = _localizedCouponField(
+      context,
+      template.name,
+      template.nameEn,
+    );
+    final primary = theme.colorScheme.primary;
+    final foreground = theme.colorScheme.onPrimary;
+    final borderColor = selected ? primary : XbUiTokens.cardBorder(context);
+
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 10),
+      child: Opacity(
+        opacity: enabled ? 1 : 0.58,
+        child: Semantics(
+          button: true,
+          enabled: enabled,
+          selected: selected,
+          label: title,
+          child: Material(
+            color: selected
+                ? theme.colorScheme.primaryContainer.withValues(alpha: 0.2)
+                : XbUiCardStyle.background(context),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(XbUiTokens.radiusMd),
+              side: BorderSide(
+                color: borderColor,
+                width: selected ? 1.5 : 1,
+              ),
+            ),
+            clipBehavior: Clip.antiAlias,
+            child: InkWell(
+              onTap: enabled ? () => Navigator.pop(context, coupon.id) : null,
+              child: IntrinsicHeight(
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    Container(
+                      width: 88,
+                      constraints: const BoxConstraints(minHeight: 104),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 8,
+                        vertical: 14,
+                      ),
+                      decoration: BoxDecoration(
+                        gradient: enabled
+                            ? LinearGradient(
+                                begin: Alignment.topLeft,
+                                end: Alignment.bottomRight,
+                                colors: [
+                                  primary,
+                                  primary.withValues(alpha: 0.72),
+                                ],
+                              )
+                            : null,
+                        color: enabled
+                            ? null
+                            : theme.colorScheme.surfaceContainerHighest,
+                      ),
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          FittedBox(
+                            fit: BoxFit.scaleDown,
+                            child: Text(
+                              value,
+                              maxLines: 1,
+                              style: theme.textTheme.titleLarge?.copyWith(
+                                color: enabled
+                                    ? foreground
+                                    : theme.colorScheme.onSurfaceVariant,
+                                fontWeight: XbFontWeight.bold,
+                              ),
+                            ),
+                          ),
+                          const SizedBox(height: 6),
+                          Text(
+                            template.discountType == 'percent'
+                                ? _copy(context, '折扣券', 'Discount')
+                                : _copy(context, '金额券', 'Amount'),
+                            style: theme.textTheme.labelSmall?.copyWith(
+                              color: enabled
+                                  ? foreground.withValues(alpha: 0.86)
+                                  : theme.colorScheme.onSurfaceVariant,
+                              fontWeight: XbFontWeight.semibold,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    Expanded(
+                      child: Padding(
+                        padding: const EdgeInsets.fromLTRB(12, 12, 8, 12),
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Row(
+                              children: [
+                                Expanded(
+                                  child: Text(
+                                    title,
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                    style: theme.textTheme.titleSmall?.copyWith(
+                                      fontWeight: XbFontWeight.semibold,
+                                    ),
+                                  ),
+                                ),
+                                if (recommended && enabled) ...[
+                                  const SizedBox(width: 6),
+                                  _promotionRecommendedBadge(context),
+                                ],
+                              ],
+                            ),
+                            if (description.isNotEmpty) ...[
+                              const SizedBox(height: 5),
+                              Text(
+                                description,
+                                maxLines: 2,
+                                overflow: TextOverflow.ellipsis,
+                                style: theme.textTheme.bodySmall?.copyWith(
+                                  color: theme.colorScheme.onSurfaceVariant,
+                                ),
+                              ),
+                            ],
+                            const SizedBox(height: 7),
+                            Text(
+                              enabled
+                                  ? _copy(
+                                      context,
+                                      '本单优惠 ¥${(coupon.calculatedDiscount / 100).toStringAsFixed(2)}',
+                                      'Save ¥${(coupon.calculatedDiscount / 100).toStringAsFixed(2)}',
+                                    )
+                                  : _couponUnavailableText(
+                                      context,
+                                      coupon.unavailableReason,
+                                    ),
+                              style: theme.textTheme.bodySmall?.copyWith(
+                                color: enabled
+                                    ? primary
+                                    : theme.colorScheme.onSurfaceVariant,
+                                fontWeight: XbFontWeight.semibold,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                    SizedBox(
+                      width: 34,
+                      child: AnimatedSwitcher(
+                        duration: const Duration(milliseconds: 160),
+                        child: selected
+                            ? Icon(
+                                Icons.check_circle,
+                                key: const ValueKey('selected'),
+                                color: primary,
+                                size: 22,
+                              )
+                            : const SizedBox.shrink(
+                                key: ValueKey('unselected'),
+                              ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _couponPickerControl(
+    BuildContext context, {
+    required IconData icon,
+    required String title,
+    String? subtitle,
+    required bool selected,
+    required VoidCallback onTap,
+  }) {
+    final theme = Theme.of(context);
+    return Semantics(
+      button: true,
+      selected: selected,
+      child: Material(
+        color: selected
+            ? theme.colorScheme.primaryContainer.withValues(alpha: 0.24)
+            : XbUiCardStyle.background(context),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(XbUiTokens.radiusMd),
+          side: BorderSide(
+            color: selected
+                ? theme.colorScheme.primary
+                : XbUiTokens.cardBorder(context),
+          ),
+        ),
+        clipBehavior: Clip.antiAlias,
+        child: InkWell(
+          onTap: onTap,
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(minHeight: 54),
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 9),
+              child: Row(
+                children: [
+                  Icon(icon, color: theme.colorScheme.primary, size: 22),
+                  const SizedBox(width: 11),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          title,
+                          style: theme.textTheme.titleSmall?.copyWith(
+                            fontWeight: XbFontWeight.semibold,
+                          ),
+                        ),
+                        if (subtitle?.isNotEmpty == true) ...[
+                          const SizedBox(height: 2),
+                          Text(
+                            subtitle!,
+                            style: theme.textTheme.bodySmall?.copyWith(
+                              color: theme.colorScheme.onSurfaceVariant,
+                            ),
+                          ),
+                        ],
+                      ],
+                    ),
+                  ),
+                  if (selected)
+                    Icon(
+                      Icons.check_circle,
+                      color: theme.colorScheme.primary,
+                      size: 22,
+                    ),
+                ],
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  String _localizedCouponField(
+    BuildContext context,
+    String? zh,
+    String? en,
+  ) {
+    final useChinese =
+        Localizations.localeOf(context).languageCode.toLowerCase() == 'zh';
+    final preferred = useChinese ? zh : en;
+    final fallback = useChinese ? en : zh;
+    if (preferred?.trim().isNotEmpty == true) return preferred!.trim();
+    return fallback?.trim() ?? '';
   }
 
   String _couponUnavailableText(BuildContext context, String? reason) {
@@ -624,8 +1250,6 @@ class _PlanPurchasePageState extends ConsumerState<PlanPurchasePage> {
       'period_not_supported' =>
         _copy(context, '不适用于当前周期', 'Not valid for this period'),
       'first_order_only' => _copy(context, '仅限首单', 'First order only'),
-      'renewal_not_supported' =>
-        _copy(context, '不支持续费订单', 'Not valid for renewals'),
       _ => _copy(context, '当前订单不可用', 'Unavailable for this order'),
     };
   }

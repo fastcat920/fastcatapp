@@ -90,7 +90,7 @@ class _CouponEntryButtonState extends ConsumerState<CouponEntryButton>
       child: IconButton(
         tooltip: tooltip,
         onPressed: () async {
-          await context.push('/mine/coupons');
+          await context.push('/plans/coupons');
           ref.invalidate(couponWalletProvider);
         },
         icon: AnimatedBuilder(

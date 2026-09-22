@@ -16,6 +16,7 @@ class Vpn {
   late MethodChannel methodChannel;
   FutureOr<String> Function()? handleGetStartForegroundParams;
   FutureOr<Map<String, Object?>> Function()? handleHeartbeat;
+  FutureOr<bool> Function()? handleRecoverDataPlane;
   FutureOr<bool> Function()? handlePrepareRecovery;
 
   Vpn._internal() {
@@ -34,6 +35,8 @@ class Vpn {
         case "heartbeat":
           return await handleHeartbeat?.call() ??
               const <String, Object?>{'healthy': false};
+        case "recoverDataPlane":
+          return await handleRecoverDataPlane?.call() ?? false;
         case "prepareRecovery":
           return await handlePrepareRecovery?.call() ?? false;
         default:

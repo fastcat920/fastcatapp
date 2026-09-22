@@ -255,6 +255,7 @@ class XBoardPaymentNotifier extends Notifier<void> {
     required String period,
     int? userCouponId,
     bool disableAutoCoupon = false,
+    required String promotionMode,
   }) async {
     final userAuthState = ref.read(xboardUserAuthProvider);
     if (!userAuthState.isAuthenticated) {
@@ -276,6 +277,7 @@ class XBoardPaymentNotifier extends Notifier<void> {
         period: period,
         userCouponId: userCouponId,
         disableAutoCoupon: disableAutoCoupon,
+        promotionMode: promotionMode,
       );
       if (tradeNo.isEmpty) throw StateError('创建订单失败');
       ref.read(paymentProcessStateProvider.notifier).state =

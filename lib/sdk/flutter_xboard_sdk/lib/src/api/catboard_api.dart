@@ -23,12 +23,14 @@ class CatboardApi {
     required String period,
     int? userCouponId,
     bool disableAutoCoupon = false,
+    String promotionMode = 'auto',
   }) async {
     final response = await _http.postRequest('/user/order/preview', {
       'plan_id': planId,
       'period': period,
       if (userCouponId != null) 'user_coupon_id': userCouponId,
       'disable_auto_coupon': disableAutoCoupon,
+      'promotion_mode': promotionMode,
     });
     return CatboardOrderPreview.fromJson(_asMap(response['data']));
   }
@@ -38,34 +40,38 @@ class CatboardApi {
     required String period,
     int? userCouponId,
     bool disableAutoCoupon = false,
+    String promotionMode = 'auto',
   }) async {
     final response = await _http.postRequest('/user/order/save', {
       'plan_id': planId,
       'period': period,
       if (userCouponId != null) 'user_coupon_id': userCouponId,
       'disable_auto_coupon': disableAutoCoupon,
+      'promotion_mode': promotionMode,
     });
     return response['data']?.toString() ?? '';
   }
 
   Future<CatboardPagedResult<CatboardLedgerEntry>> getBalanceRecords({
     int current = 1,
+    int pageSize = 10,
   }) async {
-    final response =
-        await _http.getRequest('/user/balance/records?current=$current');
+    final response = await _http.getRequest(
+      '/user/balance/records?current=$current&page_size=$pageSize',
+    );
     final items =
         _asList(response['data']).map(CatboardLedgerEntry.fromJson).toList();
     return CatboardPagedResult(
       items: items,
       total: _int(response['total']),
       current: _int(response['current'], current),
-      pageSize: _int(response['pageSize'], 10),
+      pageSize: _int(response['pageSize'], pageSize),
     );
   }
 
   Future<CatboardPagedResult<CatboardLedgerEntry>> getCommissionRecords({
     int current = 1,
-    int pageSize = 20,
+    int pageSize = 10,
     String? type,
   }) async {
     final query = StringBuffer(
@@ -95,7 +101,7 @@ class CatboardApi {
 
   Future<CatboardPagedResult<CatboardInviteUser>> getInviteUsers({
     int current = 1,
-    int pageSize = 20,
+    int pageSize = 10,
   }) async {
     final response = await _http.getRequest(
       '/user/invite/users?current=$current&page_size=$pageSize',
@@ -120,7 +126,11 @@ class CatboardApi {
     }
     final data = _asMap(response['data']);
     final program = _asMap(data['program']);
-    return program.isEmpty ? null : CatboardReferralProgram.fromJson(program);
+    if (program.isEmpty) return null;
+    return CatboardReferralProgram.fromJson({
+      ...program,
+      'reward_restriction': _asMap(data['reward_restriction']),
+    });
   }
 
   static int _int(dynamic value, [int fallback = 0]) => value is num

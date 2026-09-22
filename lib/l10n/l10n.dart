@@ -10525,10 +10525,10 @@ class AppLocalizations {
     );
   }
 
-  /// `Reload nodes`
+  /// `Reload`
   String get xboardReloadNodes {
     return Intl.message(
-      'Reload nodes',
+      'Reload',
       name: 'xboardReloadNodes',
       desc: '',
       args: [],

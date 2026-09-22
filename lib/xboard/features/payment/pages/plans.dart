@@ -322,6 +322,30 @@ class _PlansViewState extends ConsumerState<PlansView> {
                     ),
                   ],
                 ),
+              if (flashSale != null && !flashSale.allowCoupon) ...[
+                const SizedBox(height: 8),
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Icon(
+                      Icons.auto_awesome_outlined,
+                      size: 15,
+                      color: theme.colorScheme.primary,
+                    ),
+                    const SizedBox(width: 6),
+                    Expanded(
+                      child: Text(
+                        Localizations.localeOf(context).languageCode == 'zh'
+                            ? '结算时自动比较优惠券与会员折扣'
+                            : 'Coupons and membership discounts are compared at checkout',
+                        style: theme.textTheme.bodySmall?.copyWith(
+                          color: theme.colorScheme.onSurfaceVariant,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ],
               const SizedBox(height: 16),
               // ── 三个特性指标 ──
               Row(
@@ -470,7 +494,7 @@ class _PlansViewState extends ConsumerState<PlansView> {
                   elevation: 0,
                   scrolledUnderElevation: 1,
                   actions: [
-                    const CouponEntryButton(),
+                    const CouponEntryButton(endSpacing: 4),
                     Padding(
                       padding: const EdgeInsets.only(right: 12),
                       child: IconButton(
@@ -491,7 +515,7 @@ class _PlansViewState extends ConsumerState<PlansView> {
               // 移动端
               : AppBar(
                   title: Text(appLocalizations.xboardPlans),
-                  actions: const [CouponEntryButton()],
+                  actions: const [CouponEntryButton(endSpacing: 8)],
                   // 使用 push 路由后，自动显示返回按钮
                 ),
       body: isDesktop && _selectedPlan != null

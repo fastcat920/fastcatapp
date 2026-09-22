@@ -55,6 +55,12 @@ data object ServicePlugin : FlutterPlugin, MethodChannel.MethodCallHandler {
             )
         }
 
+        "connectionState" -> {
+            result.success(
+                GlobalState.getCurrentVPNPlugin()?.getConnectionState() ?: "disconnected"
+            )
+        }
+
         "destroy" -> {
             handleDestroy()
             result.success(true)

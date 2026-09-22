@@ -1429,7 +1429,7 @@
   "xboardReleaseOfflineDevices": "Release offline devices",
   "xboardReleaseOfflineDevicesConfirm": "This will remove offline devices that still occupy your device limit. Your current device will not be affected. Continue?",
   "xboardOfflineButActive": "Offline, using slot",
-  "xboardReloadNodes": "Reload nodes",
+  "xboardReloadNodes": "Reload",
   "xboardGotIt": "Got it",
   "xboardDeviceUnit": "{count} devices",
   "xboardLoginErrorNetwork": "Service is temporarily unavailable, please try again later.",

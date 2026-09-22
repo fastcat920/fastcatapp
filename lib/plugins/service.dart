@@ -81,6 +81,14 @@ class Service {
     return await methodChannel.invokeMethod<bool>('status') ?? false;
   }
 
+  Future<String> getVpnConnectionState() async {
+    if (Platform.isIOS) {
+      return globalState.isStart ? 'connected' : 'disconnected';
+    }
+    return await methodChannel.invokeMethod<String>('connectionState') ??
+        'disconnected';
+  }
+
   /// iOS only: start the tunnel in idle mode after an explicit, disclosed use.
   Future<bool?> ensureTunnelRunning(String config) async {
     if (!Platform.isIOS) return true;

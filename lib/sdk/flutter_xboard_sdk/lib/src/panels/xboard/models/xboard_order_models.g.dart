@@ -12,6 +12,7 @@ _$OrderImpl _$$OrderImplFromJson(Map<String, dynamic> json) => _$OrderImpl(
       totalAmount: (json['total_amount'] as num?)?.toDouble(),
       balanceAmount: (json['balance_amount'] as num?)?.toDouble(),
       handlingAmount: (json['handling_amount'] as num?)?.toDouble(),
+      paymentId: _nullableIdFromJson(json['payment_id']),
       surplusAmount: (json['surplus_amount'] as num?)?.toDouble(),
       refundAmount: (json['refund_amount'] as num?)?.toDouble(),
       depositAmount: (json['deposit_amount'] as num?)?.toDouble(),
@@ -30,6 +31,10 @@ _$OrderImpl _$$OrderImplFromJson(Map<String, dynamic> json) => _$OrderImpl(
       couponPrice: (json['coupon_price'] as num?)?.toDouble(),
       couponCode: json['coupon_code'] as String?,
       discountAmount: (json['discount_amount'] as num?)?.toDouble(),
+      flashSaleDiscountAmount:
+          (json['flash_sale_discount_amount'] as num?)?.toDouble(),
+      couponDiscountAmount:
+          (json['coupon_discount_amount'] as num?)?.toDouble(),
     );
 
 Map<String, dynamic> _$$OrderImplToJson(_$OrderImpl instance) =>
@@ -39,6 +44,7 @@ Map<String, dynamic> _$$OrderImplToJson(_$OrderImpl instance) =>
       'total_amount': instance.totalAmount,
       'balance_amount': instance.balanceAmount,
       'handling_amount': instance.handlingAmount,
+      'payment_id': _nullableIdToJson(instance.paymentId),
       'surplus_amount': instance.surplusAmount,
       'refund_amount': instance.refundAmount,
       'deposit_amount': instance.depositAmount,
@@ -54,6 +60,8 @@ Map<String, dynamic> _$$OrderImplToJson(_$OrderImpl instance) =>
       'coupon_price': instance.couponPrice,
       'coupon_code': instance.couponCode,
       'discount_amount': instance.discountAmount,
+      'flash_sale_discount_amount': instance.flashSaleDiscountAmount,
+      'coupon_discount_amount': instance.couponDiscountAmount,
     };
 
 _$OrderPlanImpl _$$OrderPlanImplFromJson(Map<String, dynamic> json) =>

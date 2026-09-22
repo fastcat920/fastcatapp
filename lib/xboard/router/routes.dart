@@ -21,7 +21,7 @@ import 'shell_layout.dart';
 ///
 /// 分支布局（StatefulShellRoute）：
 ///   Branch 0: /        — 首页（桌面 idx 0，移动 idx 0）
-///   Branch 1: /plans   — 套餐（桌面 idx 1，移动 idx 1）
+///   Branch 1: /plans   — 套餐（桌面 idx 1，移动 idx 1），子路由 /plans/coupons
 ///   Branch 2: /invite  — 邀请（idx 2）
 ///   Branch 3: /mine    — 我的（idx 3），子路由 /mine/gift-card
 ///   Branch 4: /logs    — 日志（logCapture 开启时可见，idx 4）
@@ -55,6 +55,15 @@ final List<RouteBase> routes = [
             pageBuilder: (context, state) => const NoTransitionPage(
               child: PlansView(),
             ),
+            routes: [
+              GoRoute(
+                path: 'coupons',
+                name: 'coupons',
+                pageBuilder: (context, state) => const MaterialPage(
+                  child: CouponWalletPage(),
+                ),
+              ),
+            ],
           ),
         ],
       ),
@@ -122,13 +131,6 @@ final List<RouteBase> routes = [
                 name: 'gift_card',
                 pageBuilder: (context, state) => const MaterialPage(
                   child: GiftCardPage(),
-                ),
-              ),
-              GoRoute(
-                path: 'coupons',
-                name: 'coupons',
-                pageBuilder: (context, state) => const MaterialPage(
-                  child: CouponWalletPage(),
                 ),
               ),
               GoRoute(
