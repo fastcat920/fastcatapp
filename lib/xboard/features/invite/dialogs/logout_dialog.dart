@@ -35,6 +35,7 @@ class _LogoutDialogState extends ConsumerState<LogoutDialog> {
       ),
       actions: [
         OutlinedButton(
+          autofocus: system.isTV,
           onPressed: _isLoggingOut ? null : () => Navigator.of(context).pop(),
           style: XbUiButton.outlinedNeutral(context),
           child: Text(appLocalizations.cancel),
@@ -98,6 +99,7 @@ class _LogoutDialogState extends ConsumerState<LogoutDialog> {
             content: Text(appLocalizations.xboardLogoutForceConfirmContent),
             actions: [
               OutlinedButton(
+                autofocus: system.isTV,
                 onPressed: () => Navigator.of(context).pop(false),
                 style: XbUiButton.outlinedNeutral(context),
                 child: Text(appLocalizations.cancel),

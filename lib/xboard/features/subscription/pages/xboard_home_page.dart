@@ -28,6 +28,7 @@ import 'package:fl_clash/xboard/config/utils/website_url_resolver.dart';
 import 'package:fl_clash/xboard/adapter/initialization/sdk_provider.dart';
 import 'package:fl_clash/xboard/utils/xboard_notification.dart';
 import 'package:fl_clash/plugins/service.dart';
+import 'package:fl_clash/widgets/widgets.dart';
 import '../widgets/subscription_usage_card.dart';
 import '../widgets/xboard_connect_button.dart';
 import 'package:fl_clash/xboard/features/payment/widgets/coupon_entry_button.dart';
@@ -503,14 +504,30 @@ class _XBoardHomePageState extends ConsumerState<XBoardHomePage>
                               ),
                             ),
                             SizedBox(height: adaptiveBottomGap / 2),
-                            // ── 节点选择器保持在下方，作为最后的线路切换入口 ──
+                            // ── 节点选择器保持在下方；TV 在右侧保留退出入口 ──
                             const SizedBox(height: sectionGap),
-                            const SizedBox(
+                            SizedBox(
                               height: nodeSelectorHeight,
                               child: Padding(
-                                padding: EdgeInsets.symmetric(
+                                padding: const EdgeInsets.symmetric(
                                     horizontal: horizontalPadding),
-                                child: NodeSelectorBar(),
+                                child: isTvHome
+                                    ? Row(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.stretch,
+                                        children: [
+                                          const Expanded(
+                                            child: NodeSelectorBar(),
+                                          ),
+                                          const SizedBox(width: 12),
+                                          SizedBox(
+                                            width: 144,
+                                            child:
+                                                _buildTvLogoutButton(context),
+                                          ),
+                                        ],
+                                      )
+                                    : const NodeSelectorBar(),
                               ),
                             ),
                             SizedBox(height: nodeBottomInset),
@@ -518,18 +535,6 @@ class _XBoardHomePageState extends ConsumerState<XBoardHomePage>
                         ),
                       ),
                     ),
-                    // 紧凑布局也会用于横屏手机；退出入口仅保留给 TV，
-                    // 避免占用移动端首页的右上角操作区。
-                    if (isTvHome && isLandscapeHome && !showTopInfo)
-                      Positioned(
-                        top: 8,
-                        right: 16,
-                        child: SafeArea(
-                          bottom: false,
-                          left: false,
-                          child: _buildCompactExitButton(context),
-                        ),
-                      ),
                   ],
                 );
               },
@@ -540,25 +545,30 @@ class _XBoardHomePageState extends ConsumerState<XBoardHomePage>
     );
   }
 
-  Widget _buildCompactExitButton(BuildContext context) {
+  Widget _buildTvLogoutButton(BuildContext context) {
     final l10n = AppLocalizations.of(context);
-    return XbPointerCursor(
-      child: TextButton.icon(
-        style: XbUiButton.textChipPrimary(context),
-        onPressed: () => showDialog<void>(
+    final colorScheme = Theme.of(context).colorScheme;
+    final radius = BorderRadius.circular(14);
+    void showLogoutDialog() => showDialog<void>(
           context: context,
           builder: (_) => const LogoutDialog(),
-        ),
-        icon: Icon(
-          Icons.logout_outlined,
-          size: 18,
-          color: Theme.of(context).colorScheme.primary,
-        ),
-        label: Text(
-          l10n.xboardLogout,
-          style: TextStyle(
-            color: Theme.of(context).colorScheme.primary,
+        );
+
+    return TVFocusable(
+      borderRadius: radius,
+      onPressed: showLogoutDialog,
+      child: ExcludeFocus(
+        child: OutlinedButton.icon(
+          style: XbUiButton.outlinedNeutral(context).copyWith(
+            foregroundColor:
+                WidgetStatePropertyAll(colorScheme.onSurfaceVariant),
+            shape: WidgetStatePropertyAll(
+              RoundedRectangleBorder(borderRadius: radius),
+            ),
           ),
+          onPressed: showLogoutDialog,
+          icon: const Icon(Icons.logout_outlined, size: 18),
+          label: Text(l10n.xboardLogout),
         ),
       ),
     );
