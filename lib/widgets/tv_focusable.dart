@@ -60,6 +60,8 @@ class _TVFocusableState extends State<TVFocusable> {
       // D-pad center / Enter / Select
       if (event.logicalKey == LogicalKeyboardKey.select ||
           event.logicalKey == LogicalKeyboardKey.enter ||
+          event.logicalKey == LogicalKeyboardKey.numpadEnter ||
+          event.logicalKey == LogicalKeyboardKey.space ||
           event.logicalKey == LogicalKeyboardKey.gameButtonA) {
         widget.onPressed?.call();
         return KeyEventResult.handled;
@@ -75,39 +77,50 @@ class _TVFocusableState extends State<TVFocusable> {
       return widget.child;
     }
 
-    return Focus(
-      focusNode: _focusNode,
-      autofocus: widget.autofocus,
-      onKeyEvent: _handleKeyEvent,
-      onFocusChange: (focused) {
-        setState(() => _isFocused = focused);
-      },
-      child: GestureDetector(
-        onTap: widget.onPressed,
-        child: AnimatedContainer(
-          duration: const Duration(milliseconds: 150),
-          decoration: BoxDecoration(
-            borderRadius: widget.borderRadius ?? BorderRadius.circular(12),
-            border: _isFocused
-                ? Border.all(
-                    color: Theme.of(context).colorScheme.primary,
-                    width: 2.5,
-                  )
-                : Border.all(color: Colors.transparent, width: 2.5),
-            boxShadow: _isFocused
-                ? [
-                    BoxShadow(
-                      color: Theme.of(context)
-                          .colorScheme
-                          .primary
-                          .withValues(alpha: 0.3),
-                      blurRadius: 12,
-                      spreadRadius: 1,
-                    ),
-                  ]
-                : null,
+    return Semantics(
+      button: widget.onPressed != null,
+      enabled: widget.onPressed != null,
+      onTap: widget.onPressed,
+      child: Focus(
+        focusNode: _focusNode,
+        autofocus: widget.autofocus,
+        onKeyEvent: _handleKeyEvent,
+        onFocusChange: (focused) {
+          if (mounted) setState(() => _isFocused = focused);
+        },
+        child: GestureDetector(
+          onTap: () {
+            _focusNode.requestFocus();
+            widget.onPressed?.call();
+          },
+          child: AnimatedContainer(
+            duration: const Duration(milliseconds: 150),
+            decoration: BoxDecoration(
+              borderRadius: widget.borderRadius ?? BorderRadius.circular(12),
+              border: _isFocused
+                  ? Border.all(
+                      color: Theme.of(context).colorScheme.primary,
+                      width: 2.5,
+                    )
+                  : Border.all(color: Colors.transparent, width: 2.5),
+              boxShadow: _isFocused
+                  ? [
+                      BoxShadow(
+                        color: Theme.of(context)
+                            .colorScheme
+                            .primary
+                            .withValues(alpha: 0.3),
+                        blurRadius: 12,
+                        spreadRadius: 1,
+                      ),
+                    ]
+                  : null,
+            ),
+            // The wrapper owns the TV focus node. Excluding focus from nested
+            // InkWells/buttons prevents one visual control from becoming two
+            // separate D-pad stops.
+            child: ExcludeFocus(child: widget.child),
           ),
-          child: widget.child,
         ),
       ),
     );
@@ -157,6 +170,8 @@ class _TVFocusableScaleState extends State<TVFocusableScale> {
     if (event is KeyDownEvent) {
       if (event.logicalKey == LogicalKeyboardKey.select ||
           event.logicalKey == LogicalKeyboardKey.enter ||
+          event.logicalKey == LogicalKeyboardKey.numpadEnter ||
+          event.logicalKey == LogicalKeyboardKey.space ||
           event.logicalKey == LogicalKeyboardKey.gameButtonA) {
         widget.onPressed?.call();
         return KeyEventResult.handled;
@@ -171,19 +186,27 @@ class _TVFocusableScaleState extends State<TVFocusableScale> {
       return widget.child;
     }
 
-    return Focus(
-      focusNode: _focusNode,
-      autofocus: widget.autofocus,
-      onKeyEvent: _handleKeyEvent,
-      onFocusChange: (focused) {
-        setState(() => _isFocused = focused);
-      },
-      child: GestureDetector(
-        onTap: widget.onPressed,
-        child: AnimatedScale(
-          scale: _isFocused ? widget.focusScale : 1.0,
-          duration: const Duration(milliseconds: 150),
-          child: widget.child,
+    return Semantics(
+      button: widget.onPressed != null,
+      enabled: widget.onPressed != null,
+      onTap: widget.onPressed,
+      child: Focus(
+        focusNode: _focusNode,
+        autofocus: widget.autofocus,
+        onKeyEvent: _handleKeyEvent,
+        onFocusChange: (focused) {
+          if (mounted) setState(() => _isFocused = focused);
+        },
+        child: GestureDetector(
+          onTap: () {
+            _focusNode.requestFocus();
+            widget.onPressed?.call();
+          },
+          child: AnimatedScale(
+            scale: _isFocused ? widget.focusScale : 1.0,
+            duration: const Duration(milliseconds: 150),
+            child: ExcludeFocus(child: widget.child),
+          ),
         ),
       ),
     );

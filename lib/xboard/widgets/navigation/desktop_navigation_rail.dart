@@ -6,8 +6,8 @@ import 'package:fl_clash/xboard/features/shared/styles/font_weights.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-/// 桌面端侧边导航栏
-/// 导航项：主页 / 套餐 / 邀请 / 我的
+/// 桌面端侧边导航栏。
+/// 桌面显示主页 / 套餐 / 邀请 / 我的，TV 精简为主页 / 套餐 / 我的。
 class DesktopNavigationRail extends ConsumerWidget {
   final int selectedIndex;
   final Function(int) onDestinationSelected;
@@ -138,10 +138,13 @@ class DesktopNavigationRail extends ConsumerWidget {
       );
 
       if (system.isTV) {
-        return TVFocusable(
-          onPressed: onTap ?? () => onDestinationSelected(index),
-          borderRadius: BorderRadius.circular(12),
-          child: itemChild,
+        return FocusTraversalOrder(
+          order: NumericFocusOrder(index.toDouble()),
+          child: TVFocusable(
+            onPressed: onTap ?? () => onDestinationSelected(index),
+            borderRadius: BorderRadius.circular(12),
+            child: itemChild,
+          ),
         );
       }
 
@@ -152,24 +155,33 @@ class DesktopNavigationRail extends ConsumerWidget {
       );
     }
 
-    const inviteIdx = 2;
-    const mineIdx = 3;
+    final items = system.isTV
+        ? <Widget>[
+            buildItem(0, Icons.home_outlined, Icons.home,
+                appLocalizations.xboardHome),
+            buildItem(1, Icons.shopping_bag_outlined, Icons.shopping_bag,
+                appLocalizations.xboardPlans),
+            buildItem(2, Icons.person_outline, Icons.person,
+                appLocalizations.xboardMine,
+                showBadge: hasUpdate),
+          ]
+        : <Widget>[
+            buildItem(0, Icons.home_outlined, Icons.home,
+                appLocalizations.xboardHome),
+            buildItem(1, Icons.shopping_bag_outlined, Icons.shopping_bag,
+                appLocalizations.xboardPlans),
+            buildItem(2, Icons.group_add_outlined, Icons.group_add,
+                appLocalizations.invite),
+            buildItem(3, Icons.person_outline, Icons.person,
+                appLocalizations.xboardMine,
+                showBadge: hasUpdate),
+          ];
 
     return FocusTraversalGroup(
       policy: OrderedTraversalPolicy(),
       child: Column(
         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-        children: [
-          buildItem(
-              0, Icons.home_outlined, Icons.home, appLocalizations.xboardHome),
-          buildItem(1, Icons.shopping_bag_outlined, Icons.shopping_bag,
-              appLocalizations.xboardPlans),
-          buildItem(inviteIdx, Icons.group_add_outlined, Icons.group_add,
-              appLocalizations.invite),
-          buildItem(mineIdx, Icons.person_outline, Icons.person,
-              appLocalizations.xboardMine,
-              showBadge: hasUpdate),
-        ],
+        children: items,
       ),
     );
   }

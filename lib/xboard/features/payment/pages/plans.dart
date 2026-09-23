@@ -122,6 +122,49 @@ class _PlansViewState extends ConsumerState<PlansView> {
     });
   }
 
+  Widget _buildTvStoreActions() {
+    return SafeArea(
+      bottom: false,
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(16, 8, 16, 0),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.end,
+          children: [
+            const CouponEntryButton(endSpacing: 8),
+            IconButton.filledTonal(
+              icon: _isRefreshingPlans
+                  ? const SizedBox(
+                      width: 20,
+                      height: 20,
+                      child: CircularProgressIndicator(strokeWidth: 2),
+                    )
+                  : const Icon(Icons.refresh),
+              onPressed: _isRefreshingPlans ? null : _refreshPlans,
+              tooltip: appLocalizations.refresh,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildTvPurchaseBackButton() {
+    return SafeArea(
+      bottom: false,
+      child: Align(
+        alignment: Alignment.centerLeft,
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(16, 8, 16, 0),
+          child: OutlinedButton.icon(
+            onPressed: _backToPlans,
+            icon: const Icon(Icons.arrow_back),
+            label: Text(appLocalizations.xboardBack),
+          ),
+        ),
+      ),
+    );
+  }
+
   String _formatPrice(double? price) {
     if (price == null) return '-';
     return '¥${price.toStringAsFixed(2)}';
@@ -473,63 +516,83 @@ class _PlansViewState extends ConsumerState<PlansView> {
     final useSideNavigation = size.width > size.height || system.isTV;
     final isDarkMode = Theme.of(context).brightness == Brightness.dark;
 
+    final isTv = system.isTV;
     final scaffold = Scaffold(
       backgroundColor: isDarkMode ? null : XbUiTokens.pageBackgroundLight,
-      appBar: _selectedPlan != null && isDesktop
-          // 桌面端购买页面：显示返回按钮的 AppBar
-          ? AppBar(
-              leading: IconButton(
-                icon: const Icon(Icons.arrow_back),
-                onPressed: _backToPlans,
-                tooltip: appLocalizations.xboardBack,
-              ),
-              title: Text(appLocalizations.xboardPurchaseSubscription),
-              elevation: 0,
-              scrolledUnderElevation: 1,
-            )
-          // 桌面端套餐列表：显示固定 AppBar + 刷新按钮
-          : isDesktop
+      appBar: isTv
+          ? null
+          : _selectedPlan != null && isDesktop
+              // 桌面端购买页面：显示返回按钮的 AppBar
               ? AppBar(
-                  title: Text(appLocalizations.xboardPlans),
+                  leading: IconButton(
+                    icon: const Icon(Icons.arrow_back),
+                    onPressed: _backToPlans,
+                    tooltip: appLocalizations.xboardBack,
+                  ),
+                  title: Text(appLocalizations.xboardPurchaseSubscription),
                   elevation: 0,
                   scrolledUnderElevation: 1,
-                  actions: [
-                    const CouponEntryButton(endSpacing: 4),
-                    Padding(
-                      padding: const EdgeInsets.only(right: 12),
-                      child: IconButton(
-                        icon: _isRefreshingPlans
-                            ? const SizedBox(
-                                width: 20,
-                                height: 20,
-                                child:
-                                    CircularProgressIndicator(strokeWidth: 2),
-                              )
-                            : const Icon(Icons.refresh),
-                        onPressed: _isRefreshingPlans ? null : _refreshPlans,
-                        tooltip: appLocalizations.refresh,
+                )
+              // 桌面端套餐列表：显示固定 AppBar + 刷新按钮
+              : isDesktop
+                  ? AppBar(
+                      title: Text(appLocalizations.xboardPlans),
+                      elevation: 0,
+                      scrolledUnderElevation: 1,
+                      actions: [
+                        const CouponEntryButton(endSpacing: 4),
+                        Padding(
+                          padding: const EdgeInsets.only(right: 12),
+                          child: IconButton(
+                            icon: _isRefreshingPlans
+                                ? const SizedBox(
+                                    width: 20,
+                                    height: 20,
+                                    child: CircularProgressIndicator(
+                                        strokeWidth: 2),
+                                  )
+                                : const Icon(Icons.refresh),
+                            onPressed:
+                                _isRefreshingPlans ? null : _refreshPlans,
+                            tooltip: appLocalizations.refresh,
+                          ),
+                        ),
+                      ],
+                    )
+                  // 移动端
+                  : AppBar(
+                      title: Text(appLocalizations.xboardPlans),
+                      actions: const [CouponEntryButton(endSpacing: 8)],
+                      // 使用 push 路由后，自动显示返回按钮
+                    ),
+      body: isDesktop && _selectedPlan != null
+          // 桌面端：显示购买页面（嵌入模式，无 Scaffold）
+          ? isTv
+              ? Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    _buildTvPurchaseBackButton(),
+                    Expanded(
+                      child: PlanPurchasePage(
+                        plan: _selectedPlan!,
+                        embedded: true,
+                        onBack: _backToPlans,
+                        initialPeriod: _initialPeriod,
                       ),
                     ),
                   ],
                 )
-              // 移动端
-              : AppBar(
-                  title: Text(appLocalizations.xboardPlans),
-                  actions: const [CouponEntryButton(endSpacing: 8)],
-                  // 使用 push 路由后，自动显示返回按钮
-                ),
-      body: isDesktop && _selectedPlan != null
-          // 桌面端：显示购买页面（嵌入模式，无 Scaffold）
-          ? PlanPurchasePage(
-              plan: _selectedPlan!,
-              embedded: true,
-              onBack: _backToPlans,
-              initialPeriod: _initialPeriod,
-            )
+              : PlanPurchasePage(
+                  plan: _selectedPlan!,
+                  embedded: true,
+                  onBack: _backToPlans,
+                  initialPeriod: _initialPeriod,
+                )
           // 显示套餐列表
           : Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
+                if (isTv) _buildTvStoreActions(),
                 Expanded(
                   child: RefreshIndicator(
                     onRefresh: _refreshPlans,
@@ -606,6 +669,14 @@ class _PlansViewState extends ConsumerState<PlansView> {
             ),
     );
 
-    return scaffold;
+    if (!isTv) return scaffold;
+    return BackButtonListener(
+      onBackButtonPressed: () async {
+        if (_selectedPlan == null) return false;
+        _backToPlans();
+        return true;
+      },
+      child: scaffold,
+    );
   }
 }

@@ -9,7 +9,6 @@ import 'package:fl_clash/services/core_switch_status.dart';
 import 'package:fl_clash/xboard/features/auth/providers/xboard_user_provider.dart';
 import 'package:fl_clash/xboard/features/auth/models/session_termination.dart';
 import 'package:fl_clash/xboard/features/settings/widgets/fastcat_tun_toggle.dart';
-import 'package:fl_clash/xboard/features/invite/dialogs/logout_dialog.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -515,48 +514,12 @@ class _XBoardHomePageState extends ConsumerState<XBoardHomePage>
                         ),
                       ),
                     ),
-                    // 紧凑布局也会用于横屏手机；退出入口仅保留给 TV，
-                    // 避免占用移动端首页的右上角操作区。
-                    if (isTvHome && isLandscapeHome && !showTopInfo)
-                      Positioned(
-                        top: 8,
-                        right: 16,
-                        child: SafeArea(
-                          bottom: false,
-                          left: false,
-                          child: _buildCompactExitButton(context),
-                        ),
-                      ),
                   ],
                 );
               },
             ),
           );
         },
-      ),
-    );
-  }
-
-  Widget _buildCompactExitButton(BuildContext context) {
-    final l10n = AppLocalizations.of(context);
-    return XbPointerCursor(
-      child: TextButton.icon(
-        style: XbUiButton.textChipPrimary(context),
-        onPressed: () => showDialog<void>(
-          context: context,
-          builder: (_) => const LogoutDialog(),
-        ),
-        icon: Icon(
-          Icons.logout_outlined,
-          size: 18,
-          color: Theme.of(context).colorScheme.primary,
-        ),
-        label: Text(
-          l10n.xboardLogout,
-          style: TextStyle(
-            color: Theme.of(context).colorScheme.primary,
-          ),
-        ),
       ),
     );
   }

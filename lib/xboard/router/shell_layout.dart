@@ -3,7 +3,6 @@ import 'package:fl_clash/providers/config.dart';
 import 'package:fl_clash/state.dart';
 import 'package:fl_clash/xboard/features/auth/utils/customer_service_helper.dart';
 import 'package:fl_clash/xboard/features/invite/providers/referral_program_provider.dart';
-import 'package:fl_clash/xboard/features/subscription/utils/home_layout.dart';
 import 'package:fl_clash/xboard/widgets/navigation/desktop_navigation_rail.dart';
 import 'package:fl_clash/xboard/widgets/navigation/mobile_navigation_bar.dart';
 import 'package:flutter/material.dart';
@@ -12,6 +11,7 @@ import 'package:go_router/go_router.dart';
 
 /// 适配性的 Shell 布局
 /// 桌面端：侧边栏（主页/套餐/邀请/我的）+ 内容区
+/// TV 端：侧边栏（主页/套餐/我的）+ 内容区
 /// 移动端：底部导航栏（主页/套餐/邀请/我的）+ 内容区
 class AdaptiveShellLayout extends ConsumerStatefulWidget {
   final StatefulNavigationShell child;
@@ -49,6 +49,20 @@ class _AdaptiveShellLayoutState extends ConsumerState<AdaptiveShellLayout> {
   }
 
   void _onDestinationSelected(BuildContext context, int index, bool isDesktop) {
+    if (system.isTV) {
+      switch (index) {
+        case 0:
+          context.go('/');
+          break;
+        case 1:
+          context.go('/plans');
+          break;
+        case 2:
+          context.go('/mine');
+          break;
+      }
+      return;
+    }
     if (isDesktop) {
       // 桌面端索引动态调整：
       // Home(0) Plans(1) Invite(2) Mine(3)
@@ -85,6 +99,12 @@ class _AdaptiveShellLayoutState extends ConsumerState<AdaptiveShellLayout> {
 
   int _getCurrentIndex(BuildContext context, bool isDesktop, bool logCapture) {
     final location = GoRouterState.of(context).uri.path;
+
+    if (system.isTV) {
+      if (location.startsWith('/plans')) return 1;
+      if (location.startsWith('/mine')) return 2;
+      return 0;
+    }
 
     if (isDesktop) {
       // 桌面端索引与 _onDestinationSelected 一致
@@ -127,22 +147,9 @@ class _AdaptiveShellLayoutState extends ConsumerState<AdaptiveShellLayout> {
     final useSideNavigation = size.width > size.height || system.isTV;
     final currentIndex =
         _getCurrentIndex(context, useSideNavigation, logCapture);
-    // Keep mobile navigation available even when its home announcement card
-    // is compacted. Only TV uses the menu-free compact home layout.
-    final hideRootNavigation =
-        currentIndex == 0 && system.isTV && shouldUseCompactHomeLayout(context);
 
     if (useSideNavigation) {
       // 横向窗口/TV：侧边栏 + 内容区（无外层 Scaffold）
-      if (hideRootNavigation) {
-        return PopScope(
-          canPop: false,
-          onPopInvokedWithResult: (didPop, _) async {
-            if (!didPop) await _handleSystemBack(context);
-          },
-          child: FocusTraversalGroup(child: widget.child),
-        );
-      }
       return PopScope(
         canPop: false,
         onPopInvokedWithResult: (didPop, _) async {
@@ -177,13 +184,11 @@ class _AdaptiveShellLayoutState extends ConsumerState<AdaptiveShellLayout> {
         },
         child: Scaffold(
           body: widget.child,
-          bottomNavigationBar: hideRootNavigation
-              ? null
-              : MobileNavigationBar(
-                  selectedIndex: currentIndex,
-                  onDestinationSelected: (index) =>
-                      _onDestinationSelected(context, index, false),
-                ),
+          bottomNavigationBar: MobileNavigationBar(
+            selectedIndex: currentIndex,
+            onDestinationSelected: (index) =>
+                _onDestinationSelected(context, index, false),
+          ),
         ),
       );
     }
