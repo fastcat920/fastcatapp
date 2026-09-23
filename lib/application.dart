@@ -776,20 +776,16 @@ class ApplicationState extends ConsumerState<Application>
                   ),
                 );
 
-                // TV 10ft UI: text scale 1.3x + overscan-safe padding (5%)
+                // TV 10ft UI keeps the larger text scale, but the application
+                // itself remains full-bleed. Individual pages own their content
+                // padding so backgrounds and navigation can fill the display.
                 if (system.isTV) {
                   final mq = MediaQuery.of(context);
                   content = MediaQuery(
                     data: mq.copyWith(
                       textScaler: const TextScaler.linear(1.3),
                     ),
-                    child: SafeArea(
-                      minimum: EdgeInsets.symmetric(
-                        horizontal: mq.size.width * 0.05,
-                        vertical: mq.size.height * 0.05,
-                      ),
-                      child: content,
-                    ),
+                    child: content,
                   );
                 }
 

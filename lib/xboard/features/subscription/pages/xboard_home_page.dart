@@ -379,7 +379,10 @@ class _XBoardHomePageState extends ConsumerState<XBoardHomePage>
                     constraints.maxWidth > constraints.maxHeight;
                 final isPortraitHome =
                     constraints.maxHeight >= constraints.maxWidth;
-                final showTopInfo = !compactMode;
+                // TV keeps the compact control layout but still shows the
+                // announcement/subscription slot. Only short mobile viewports
+                // hide it to protect the primary controls from overflow.
+                final showTopInfo = isTvHome || !compactMode;
                 final topInfoTopGap = 12.0;
                 final shouldCompactConnectButton =
                     compactMode || isLandscapeHome;
