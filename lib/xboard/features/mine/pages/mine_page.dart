@@ -26,9 +26,7 @@ import 'package:fl_clash/xboard/features/payment/pages/recharge_page.dart';
 import 'package:fl_clash/xboard/features/update_check/providers/update_check_provider.dart';
 import 'package:fl_clash/xboard/features/about/pages/fastcat_about_page.dart';
 import 'package:fl_clash/xboard/features/invite/providers/referral_program_provider.dart';
-import 'package:fl_clash/xboard/features/invite/dialogs/logout_dialog.dart';
 import 'package:flutter_xboard_sdk/flutter_xboard_sdk.dart';
-import 'package:fl_clash/widgets/widgets.dart';
 
 class MinePage extends ConsumerStatefulWidget {
   const MinePage({super.key});
@@ -255,100 +253,6 @@ class _MinePageState extends ConsumerState<MinePage>
     );
   }
 
-  Widget _buildTvLogoutButton(BuildContext context) {
-    final theme = Theme.of(context);
-    final colorScheme = theme.colorScheme;
-    final radius = BorderRadius.circular(14);
-    return TVFocusable(
-      borderRadius: radius,
-      onPressed: () => showDialog<void>(
-        context: context,
-        builder: (_) => const LogoutDialog(),
-      ),
-      child: Container(
-        width: double.infinity,
-        constraints: const BoxConstraints(minHeight: 52),
-        decoration: BoxDecoration(
-          color: colorScheme.errorContainer.withValues(alpha: 0.42),
-          borderRadius: radius,
-          border: Border.all(
-            color: colorScheme.error.withValues(alpha: 0.45),
-          ),
-        ),
-        alignment: Alignment.center,
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(Icons.logout_outlined, color: colorScheme.error),
-            const SizedBox(width: 10),
-            Text(
-              appLocalizations.xboardLogout,
-              style: theme.textTheme.titleSmall?.copyWith(
-                color: colorScheme.error,
-                fontWeight: XbFontWeight.semibold,
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildTvMineBody(
-    BuildContext context, {
-    required DomainSubscription? subscriptionInfo,
-    required DomainUser? userInfo,
-    required fl_models.SubscriptionInfo? profileSubscriptionInfo,
-    required String version,
-  }) {
-    return RefreshIndicator(
-      onRefresh: _doRefresh,
-      child: CustomScrollView(
-        physics: const AlwaysScrollableScrollPhysics(),
-        slivers: [
-          SliverPadding(
-            padding: const EdgeInsets.fromLTRB(20, 16, 20, 0),
-            sliver: SliverToBoxAdapter(
-              child: Center(
-                child: ConstrainedBox(
-                  constraints: const BoxConstraints(maxWidth: 900),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
-                    children: [
-                      _buildSubscriptionSection(
-                        context,
-                        subscriptionInfo,
-                        userInfo,
-                        profileSubscriptionInfo,
-                      ),
-                      const SizedBox(height: 16),
-                      _buildTvLogoutButton(context),
-                    ],
-                  ),
-                ),
-              ),
-            ),
-          ),
-          SliverFillRemaining(
-            hasScrollBody: false,
-            child: Align(
-              alignment: Alignment.bottomCenter,
-              child: Padding(
-                padding: const EdgeInsets.fromLTRB(16, 24, 16, 14),
-                child: _buildVersionFooter(
-                  context,
-                  version: version,
-                  hasUpdate: false,
-                  interactive: false,
-                ),
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
     final appLocalizations = AppLocalizations.of(context);
@@ -364,7 +268,6 @@ class _MinePageState extends ConsumerState<MinePage>
         Platform.isWindows ||
         Platform.isMacOS ||
         system.isTV;
-    final isTv = system.isTV;
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
     final updateState = ref.watch(updateCheckProvider);
@@ -385,83 +288,73 @@ class _MinePageState extends ConsumerState<MinePage>
 
     return Scaffold(
       backgroundColor: isDark ? null : const Color(0xFFFAFBFD),
-      appBar: isTv
-          ? null
-          : AppBar(
-              title: Text(appLocalizations.userCenter),
-              automaticallyImplyLeading: false,
-              actions: [
-                Padding(
-                  padding: const EdgeInsets.only(right: 8),
-                  child: IconButton(
-                    tooltip: appLocalizations.xboardToolsSettings,
-                    icon: const Icon(Icons.settings_outlined),
-                    onPressed: () => Navigator.of(context).push(
-                      MaterialPageRoute(
-                          builder: (_) => const FastCatSettingsPage()),
-                    ),
-                  ),
-                ),
-                if (!isDesktop)
-                  Padding(
-                    padding: const EdgeInsets.only(right: 16),
-                    child: _buildCustomerServiceButton(context),
-                  ),
-                if (isDesktop) ...[
-                  Padding(
-                    padding: const EdgeInsets.only(right: 12),
-                    child: _buildCustomerServiceButton(context),
-                  ),
-                  Padding(
-                    padding: const EdgeInsets.only(right: 12),
-                    child: _buildRefreshButton(),
-                  ),
-                ],
-              ],
-            ),
-      body: isTv
-          ? _buildTvMineBody(
-              context,
-              subscriptionInfo: subscriptionInfo,
-              userInfo: userInfo,
-              profileSubscriptionInfo: profileSubscriptionInfo,
-              version: globalState.packageInfo.version,
-            )
-          : RefreshIndicator(
-              onRefresh: _doRefresh,
-              child: ListView(
-                physics: const AlwaysScrollableScrollPhysics(),
-                padding: const EdgeInsets.fromLTRB(16, 12, 16, 12),
-                children: [
-                  _buildAccountInfoCard(
-                    context,
-                    userState,
-                    userInfo,
-                    subscriptionInfo,
-                    theme,
-                    isDark,
-                    referralProgram,
-                  ),
-                  const SizedBox(height: 8),
-                  _buildSubscriptionSection(
-                    context,
-                    subscriptionInfo,
-                    userInfo,
-                    profileSubscriptionInfo,
-                  ),
-                  const SizedBox(height: 16),
-                  _buildSectionHeader(appLocalizations.xboardMyServices, theme),
-                  _buildServicesCard(context, ref, userInfo, theme, isDark),
-                  const SizedBox(height: 20),
-                  _buildVersionFooter(
-                    context,
-                    version: globalState.packageInfo.version,
-                    hasUpdate: updateState.hasUpdate,
-                  ),
-                  const SizedBox(height: 8),
-                ],
+      appBar: AppBar(
+        title: Text(appLocalizations.userCenter),
+        automaticallyImplyLeading: false,
+        actions: [
+          Padding(
+            padding: const EdgeInsets.only(right: 8),
+            child: IconButton(
+              tooltip: appLocalizations.xboardToolsSettings,
+              icon: const Icon(Icons.settings_outlined),
+              onPressed: () => Navigator.of(context).push(
+                MaterialPageRoute(builder: (_) => const FastCatSettingsPage()),
               ),
             ),
+          ),
+          if (!isDesktop)
+            Padding(
+              padding: const EdgeInsets.only(right: 16),
+              child: _buildCustomerServiceButton(context),
+            ),
+          if (isDesktop) ...[
+            Padding(
+              padding: const EdgeInsets.only(right: 12),
+              child: _buildCustomerServiceButton(context),
+            ),
+            Padding(
+              padding: const EdgeInsets.only(right: 12),
+              child: _buildRefreshButton(),
+            ),
+          ],
+        ],
+      ),
+      body: RefreshIndicator(
+        onRefresh: _doRefresh,
+        child: ListView(
+          physics: const AlwaysScrollableScrollPhysics(),
+          padding: const EdgeInsets.fromLTRB(16, 12, 16, 12),
+          children: [
+// Desktop title + actions are now in the fixed AppBar.
+            _buildAccountInfoCard(
+              context,
+              userState,
+              userInfo,
+              subscriptionInfo,
+              theme,
+              isDark,
+              referralProgram,
+            ),
+            const SizedBox(height: 8),
+            _buildSubscriptionSection(
+              context,
+              subscriptionInfo,
+              userInfo,
+              profileSubscriptionInfo,
+            ),
+            const SizedBox(height: 16),
+            _buildSectionHeader(appLocalizations.xboardMyServices, theme),
+            _buildServicesCard(context, ref, userInfo, theme, isDark),
+            const SizedBox(height: 20),
+            _buildVersionFooter(
+              context,
+              version: globalState.packageInfo.version,
+              hasUpdate: updateState.hasUpdate,
+            ),
+            const SizedBox(height: 8),
+          ],
+        ),
+      ),
     );
   }
 
@@ -469,32 +362,8 @@ class _MinePageState extends ConsumerState<MinePage>
     BuildContext context, {
     required String version,
     required bool hasUpdate,
-    bool interactive = true,
   }) {
     final theme = Theme.of(context);
-    final content = Row(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        Text(
-          appLocalizations.updateCheckCurrentVersion('V$version'),
-          style: theme.textTheme.bodySmall?.copyWith(
-            color: theme.colorScheme.onSurfaceVariant,
-          ),
-        ),
-        if (hasUpdate) ...[
-          const SizedBox(width: 6),
-          Container(
-            width: 7,
-            height: 7,
-            decoration: const BoxDecoration(
-              color: Colors.redAccent,
-              shape: BoxShape.circle,
-            ),
-          ),
-        ],
-      ],
-    );
-    if (!interactive) return Center(child: content);
     return Center(
       child: XbPointerCursor(
         child: InkWell(
@@ -506,7 +375,28 @@ class _MinePageState extends ConsumerState<MinePage>
           ),
           child: Padding(
             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-            child: content,
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  appLocalizations.updateCheckCurrentVersion('V$version'),
+                  style: theme.textTheme.bodySmall?.copyWith(
+                    color: theme.colorScheme.onSurfaceVariant,
+                  ),
+                ),
+                if (hasUpdate) ...[
+                  const SizedBox(width: 6),
+                  Container(
+                    width: 7,
+                    height: 7,
+                    decoration: const BoxDecoration(
+                      color: Colors.redAccent,
+                      shape: BoxShape.circle,
+                    ),
+                  ),
+                ],
+              ],
+            ),
           ),
         ),
       ),
