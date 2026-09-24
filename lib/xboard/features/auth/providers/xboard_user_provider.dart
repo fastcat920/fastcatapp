@@ -24,6 +24,7 @@ import 'package:fl_clash/xboard/features/subscription/services/subscription_guar
 import 'package:fl_clash/xboard/features/invite/providers/referral_program_provider.dart';
 import 'package:fl_clash/xboard/utils/backend_message_mapper.dart';
 import 'package:fl_clash/xboard/features/connectivity/connectivity.dart';
+import 'package:fl_clash/xboard/features/notice/providers/notice_provider.dart';
 import 'package:fl_clash/security/profile_vault.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:fl_clash/models/models.dart';
@@ -768,6 +769,14 @@ class XBoardUserAuthNotifier extends Notifier<UserAuthState> {
       email: userInfo?.email.isNotEmpty == true ? userInfo!.email : email,
       userInfo: userInfo,
       subscriptionInfo: subscriptionInfo,
+    );
+
+    // Login may complete immediately after a locale switch while an older
+    // anonymous notice request is still in flight. The notice notifier queues
+    // this forced refresh behind that request and fetches authenticated content
+    // using the current locale before the home-page cache can be reused.
+    unawaited(
+      ref.read(noticeProvider.notifier).fetchNotices(forceRefresh: true),
     );
 
     final url = subscriptionInfo?.subscribeUrl ?? '';

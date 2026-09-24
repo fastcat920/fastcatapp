@@ -88,6 +88,7 @@ class NoticeNotifier extends StateNotifier<NoticeState> {
 
   final Ref _ref;
   DateTime? _lastFetchedAt;
+  Future<void>? _fetchInFlight;
 
   /// 启动时从 SharedPrefs 加载已关闭的公告 ID
   Future<void> _loadDismissedIds() async {
@@ -102,8 +103,38 @@ class NoticeNotifier extends StateNotifier<NoticeState> {
   }
 
   /// 获取公告列表（5 分钟内有缓存时跳过重复请求）
-  Future<void> fetchNotices({bool forceRefresh = false}) async {
-    if (state.isLoading) return;
+  Future<void> fetchNotices({bool forceRefresh = false}) {
+    final inFlight = _fetchInFlight;
+    if (inFlight != null) {
+      // A locale change can arrive while the previous-language request is
+      // still running. Wait for it, then force a second request so the stale
+      // response can never win the race or activate the five-minute cache.
+      if (forceRefresh) {
+        return _refreshAfter(inFlight);
+      }
+      return inFlight;
+    }
+
+    final operation = _fetchNotices(forceRefresh: forceRefresh);
+    _fetchInFlight = operation;
+    return operation.whenComplete(() {
+      if (identical(_fetchInFlight, operation)) {
+        _fetchInFlight = null;
+      }
+    });
+  }
+
+  Future<void> _refreshAfter(Future<void> inFlight) async {
+    try {
+      await inFlight;
+    } catch (_) {
+      // The current-locale refresh must still run if the superseded request
+      // failed, otherwise a cached notice in the previous locale can remain.
+    }
+    await fetchNotices(forceRefresh: true);
+  }
+
+  Future<void> _fetchNotices({required bool forceRefresh}) async {
     // 缓存命中：已有数据且未超过 5 分钟，且不是强制刷新
     if (!forceRefresh &&
         state.notices.isNotEmpty &&

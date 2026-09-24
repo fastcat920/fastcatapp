@@ -32,6 +32,12 @@ app_group.new_file('FastCatTV.entitlements')
 # copies the file as config.yaml at the root of the tvOS application bundle.
 shared_config = main.new_file('../assets/config/config.yaml')
 app.resources_build_phase.add_file_reference(shared_config)
+brand_icon = main.new_file('../assets/images/icon.png')
+app.resources_build_phase.add_file_reference(brand_icon)
+%w[Roboto-Regular.ttf Roboto-Medium.ttf MaterialIcons-Regular.otf].each do |name|
+  font = app_group.new_file("Fonts/#{name}")
+  app.resources_build_phase.add_file_reference(font)
+end
 
 %w[PacketTunnelProvider.swift].each { |name| tunnel.source_build_phase.add_file_reference(tunnel_group.new_file(name)) }
 tunnel_group.new_file('PacketTunnel-Bridging-Header.h')

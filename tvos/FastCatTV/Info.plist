@@ -27,5 +27,11 @@
     <dict>
         <key>NSAllowsArbitraryLoads</key><true/>
     </dict>
+    <key>UIAppFonts</key>
+    <array>
+        <string>Roboto-Regular.ttf</string>
+        <string>Roboto-Medium.ttf</string>
+        <string>MaterialIcons-Regular.otf</string>
+    </array>
 </dict>
 </plist>

@@ -384,6 +384,39 @@ class VPNManager: NSObject {
     sendClashMessage(method: "getProxies", data: nil, completion: completion)
   }
 
+  /// Measure one proxy with the same Mihomo action used by the Android TV client.
+  func testDelay(
+    proxyName: String,
+    testURL: String = "https://www.gstatic.com/generate_204",
+    timeoutMilliseconds: Int = 5_000,
+    completion: @escaping (Int?) -> Void
+  ) {
+    guard isTunnelRunning else {
+      completion(nil)
+      return
+    }
+    let value: [String: Any] = [
+      "proxy-name": proxyName,
+      "test-url": testURL,
+      "timeout": timeoutMilliseconds,
+    ]
+    guard let data = try? JSONSerialization.data(withJSONObject: value),
+          let payload = String(data: data, encoding: .utf8) else {
+      completion(nil)
+      return
+    }
+    sendClashMessage(method: "asyncTestDelay", data: payload) { response in
+      guard let response,
+            let responseData = response.data(using: .utf8),
+            let result = try? JSONSerialization.jsonObject(with: responseData) as? [String: Any],
+            let value = result["value"] as? Int else {
+        completion(nil)
+        return
+      }
+      completion(value)
+    }
+  }
+
   /// Reconcile the in-memory state with the Network Extension after app launch.
   func refreshStatus(completion: @escaping (String) -> Void) {
     loadManager(createIfMissing: false) { [weak self] in

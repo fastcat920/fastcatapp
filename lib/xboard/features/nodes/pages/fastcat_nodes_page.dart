@@ -5,7 +5,7 @@ import 'package:fl_clash/common/common.dart';
 import 'package:fl_clash/enum/enum.dart';
 import 'package:fl_clash/mihomo/mihomo.dart';
 import 'package:fl_clash/providers/providers.dart';
-import 'package:fl_clash/widgets/text.dart';
+import 'package:fl_clash/widgets/widgets.dart';
 import 'package:fl_clash/xboard/features/latency/services/auto_latency_service.dart';
 import 'package:fl_clash/xboard/features/nodes/utils/node_country_resolver.dart';
 import 'package:fl_clash/xboard/features/profile/providers/profile_import_provider.dart';
@@ -68,35 +68,82 @@ class _FastCatNodesPageState extends ConsumerState<FastCatNodesPage> {
     final group =
         visibleGroups.where((item) => item.name == currentName).firstOrNull ??
             (visibleGroups.isEmpty ? null : visibleGroups.first);
+    final toolbarRadius = BorderRadius.circular(XbUiTokens.radiusSm);
+
+    Widget toolbarAction({
+      required Widget child,
+      required VoidCallback? onPressed,
+    }) {
+      if (!system.isTV) return child;
+      return TVFocusable(
+        borderRadius: toolbarRadius,
+        onPressed: onPressed,
+        child: ExcludeFocus(child: child),
+      );
+    }
 
     return Scaffold(
       backgroundColor: XbUiTokens.pageBackground(context),
       appBar: AppBar(
+        leadingWidth: system.isTV ? 68 : null,
+        leading: system.isTV
+            ? Padding(
+                padding: const EdgeInsets.fromLTRB(10, 6, 0, 6),
+                child: TVFocusable(
+                  borderRadius: toolbarRadius,
+                  onPressed: () => Navigator.of(context).maybePop(),
+                  child: ExcludeFocus(
+                    child: IconButton(
+                      onPressed: () => Navigator.of(context).maybePop(),
+                      style: IconButton.styleFrom(
+                        backgroundColor: Theme.of(context)
+                            .colorScheme
+                            .primary
+                            .withValues(alpha: 0.10),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: toolbarRadius,
+                        ),
+                      ),
+                      icon: const Icon(Icons.arrow_back),
+                    ),
+                  ),
+                ),
+              )
+            : null,
         title: Text(l10n.xboardNodeSelection),
         backgroundColor: XbUiTokens.pageBackground(context),
         surfaceTintColor: Colors.transparent,
         actions: [
-          TextButton.icon(
+          toolbarAction(
             onPressed: _updating || _testing ? null : _runUpdate,
-            icon: _updating
-                ? const SizedBox.square(
-                    dimension: 18,
-                    child: CircularProgressIndicator(strokeWidth: 2),
-                  )
-                : const Icon(Icons.refresh),
-            label: Text(l10n.xboardUpdateNodes),
+            child: TextButton.icon(
+              style: XbUiButton.textChipPrimary(context),
+              onPressed: _updating || _testing ? null : _runUpdate,
+              icon: _updating
+                  ? const SizedBox.square(
+                      dimension: 18,
+                      child: CircularProgressIndicator(strokeWidth: 2),
+                    )
+                  : const Icon(Icons.refresh),
+              label: Text(l10n.xboardUpdateNodes),
+            ),
           ),
-          TextButton.icon(
+          const SizedBox(width: 8),
+          toolbarAction(
             onPressed: _testing || _updating ? null : _runLatencyTest,
-            icon: _testing
-                ? const SizedBox.square(
-                    dimension: 18,
-                    child: CircularProgressIndicator(strokeWidth: 2),
-                  )
-                : const Icon(Icons.network_check),
-            label: Text(l10n.xboardTestLatency),
+            child: TextButton.icon(
+              style: XbUiButton.textChipPrimary(context),
+              onPressed: _testing || _updating ? null : _runLatencyTest,
+              icon: _testing
+                  ? const SizedBox.square(
+                      dimension: 18,
+                      child: CircularProgressIndicator(strokeWidth: 2),
+                    )
+                  : const Icon(Icons.network_check),
+              label: Text(l10n.xboardTestLatency),
+            ),
           ),
-          const SizedBox(width: 4),
+          const SizedBox(width: 12),
         ],
       ),
       body: _buildPageBody(group, mode),
@@ -258,86 +305,111 @@ class _FastCatNodesPageState extends ConsumerState<FastCatNodesPage> {
                           ),
                         ),
                         clipBehavior: Clip.antiAlias,
-                        child: XbPointerCursor(
-                          enabled: !selected && !_selecting,
-                          child: InkWell(
-                            focusNode: system.isTV && selected
-                                ? _selectedNodeFocusNode
-                                : null,
-                            autofocus: system.isTV && selected,
-                            onTap: _selecting
-                                ? null
-                                : selected
-                                    ? (system.isTV ? () {} : null)
-                                    : () => _selectNode(group.name, node.name),
-                            child: Padding(
-                              padding:
-                                  const EdgeInsets.symmetric(horizontal: 14),
-                              child: Row(
-                                children: [
-                                  Icon(
-                                    selected
-                                        ? Icons.check_circle
-                                        : Icons.circle_outlined,
-                                    size: 21,
-                                    color: selected
-                                        ? primary
-                                        : Theme.of(context).colorScheme.outline,
-                                  ),
-                                  const SizedBox(width: 9),
-                                  EmojiText(
-                                    NodeCountryResolver.resolveFlag(node.name),
-                                    style: const TextStyle(fontSize: 20),
-                                  ),
-                                  const SizedBox(width: 9),
-                                  Expanded(
-                                    child: Column(
-                                      mainAxisAlignment:
-                                          MainAxisAlignment.center,
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.start,
-                                      children: [
-                                        Text(
-                                          node.name,
-                                          maxLines: 1,
-                                          overflow: TextOverflow.ellipsis,
-                                          style: Theme.of(context)
-                                              .textTheme
-                                              .bodyMedium
-                                              ?.copyWith(
-                                                fontWeight: selected
-                                                    ? XbFontWeight.semibold
-                                                    : null,
-                                              ),
-                                        ),
-                                        const SizedBox(height: 5),
-                                        Row(
+                        child: TVFocusable(
+                          focusNode: system.isTV && selected
+                              ? _selectedNodeFocusNode
+                              : null,
+                          autofocus: system.isTV && selected,
+                          borderRadius: BorderRadius.circular(16),
+                          onPressed: _selecting
+                              ? null
+                              : selected
+                                  ? (system.isTV ? () {} : null)
+                                  : () => _selectNode(group.name, node.name),
+                          child: ExcludeFocus(
+                            excluding: system.isTV,
+                            child: XbPointerCursor(
+                              enabled: !selected && !_selecting,
+                              child: InkWell(
+                                focusColor: Colors.transparent,
+                                overlayColor: system.isTV
+                                    ? const WidgetStatePropertyAll(
+                                        Colors.transparent,
+                                      )
+                                    : null,
+                                onTap: _selecting
+                                    ? null
+                                    : selected
+                                        ? (system.isTV ? () {} : null)
+                                        : () =>
+                                            _selectNode(group.name, node.name),
+                                child: Padding(
+                                  padding: const EdgeInsets.symmetric(
+                                      horizontal: 14),
+                                  child: Row(
+                                    children: [
+                                      Icon(
+                                        selected
+                                            ? Icons.check_circle
+                                            : Icons.circle_outlined,
+                                        size: 21,
+                                        color: selected
+                                            ? primary
+                                            : Theme.of(context)
+                                                .colorScheme
+                                                .outline,
+                                      ),
+                                      const SizedBox(width: 9),
+                                      EmojiText(
+                                        NodeCountryResolver.resolveFlag(
+                                            node.name),
+                                        style: const TextStyle(fontSize: 20),
+                                      ),
+                                      const SizedBox(width: 9),
+                                      Expanded(
+                                        child: Column(
+                                          mainAxisAlignment:
+                                              MainAxisAlignment.center,
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.start,
                                           children: [
-                                            _SmallTag(label: node.type),
-                                            if (selected) ...[
-                                              const SizedBox(width: 6),
-                                              _SmallTag(
-                                                label: l10n.xboardCurrentNode,
-                                                color: primary,
-                                              ),
-                                            ],
+                                            Text(
+                                              node.name,
+                                              maxLines: 1,
+                                              overflow: TextOverflow.ellipsis,
+                                              style: Theme.of(context)
+                                                  .textTheme
+                                                  .bodyMedium
+                                                  ?.copyWith(
+                                                    fontWeight: selected
+                                                        ? XbFontWeight.semibold
+                                                        : null,
+                                                  ),
+                                            ),
+                                            const SizedBox(height: 5),
+                                            Row(
+                                              children: [
+                                                _SmallTag(label: node.type),
+                                                if (selected) ...[
+                                                  const SizedBox(width: 6),
+                                                  _SmallTag(
+                                                    label:
+                                                        l10n.xboardCurrentNode,
+                                                    color: primary,
+                                                  ),
+                                                ],
+                                              ],
+                                            ),
                                           ],
                                         ),
-                                      ],
-                                    ),
+                                      ),
+                                      const SizedBox(width: 10),
+                                      _DelayBadge(
+                                        node: node,
+                                        testing:
+                                            _testingNodes.contains(node.name),
+                                        onTap: system.isTV ||
+                                                _testing ||
+                                                _updating
+                                            ? null
+                                            : () => _runSingleNodeLatencyTest(
+                                                  group.name,
+                                                  node.name,
+                                                ),
+                                      ),
+                                    ],
                                   ),
-                                  const SizedBox(width: 10),
-                                  _DelayBadge(
-                                    node: node,
-                                    testing: _testingNodes.contains(node.name),
-                                    onTap: system.isTV || _testing || _updating
-                                        ? null
-                                        : () => _runSingleNodeLatencyTest(
-                                              group.name,
-                                              node.name,
-                                            ),
-                                  ),
-                                ],
+                                ),
                               ),
                             ),
                           ),

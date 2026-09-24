@@ -4,7 +4,31 @@ struct QRLoginChallenge: Decodable {
   let id: String
   let pollToken: String
   let qrData: String
-  enum CodingKeys: String, CodingKey { case id; case pollToken = "poll_token"; case qrData = "qr_data" }
+  let expiresAt: Date
+
+  enum CodingKeys: String, CodingKey {
+    case id
+    case pollToken = "poll_token"
+    case qrData = "qr_data"
+    case expiresAt = "expires_at"
+  }
+
+  init(from decoder: Decoder) throws {
+    let values = try decoder.container(keyedBy: CodingKeys.self)
+    id = try values.decode(String.self, forKey: .id)
+    pollToken = try values.decode(String.self, forKey: .pollToken)
+    qrData = try values.decode(String.self, forKey: .qrData)
+    if let raw = try? values.decode(String.self, forKey: .expiresAt) {
+      let formatter = ISO8601DateFormatter()
+      let standard = formatter.date(from: raw)
+      formatter.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
+      expiresAt = standard ?? formatter.date(from: raw) ?? Date().addingTimeInterval(120)
+    } else if let seconds = values.flexibleDouble(forKey: .expiresAt) {
+      expiresAt = Date(timeIntervalSince1970: seconds > 10_000_000_000 ? seconds / 1_000 : seconds)
+    } else {
+      expiresAt = Date().addingTimeInterval(120)
+    }
+  }
 }
 
 struct QRLoginResponse: Decodable {
@@ -23,6 +47,27 @@ struct TVLoginCredentials: Decodable {
   let token: String?
   let email: String?
   enum CodingKeys: String, CodingKey { case authData = "auth_data", token, email }
+}
+
+struct TVGuestConfig: Decodable {
+  let requiresEmailVerification: Bool
+  let requiresInviteCode: Bool
+
+  private enum CodingKeys: String, CodingKey {
+    case requiresEmailVerification = "is_email_verify"
+    case requiresInviteCode = "is_invite_force"
+  }
+
+  init(requiresEmailVerification: Bool, requiresInviteCode: Bool) {
+    self.requiresEmailVerification = requiresEmailVerification
+    self.requiresInviteCode = requiresInviteCode
+  }
+
+  init(from decoder: Decoder) throws {
+    let values = try decoder.container(keyedBy: CodingKeys.self)
+    requiresEmailVerification = values.flexibleBool(forKey: .requiresEmailVerification) ?? false
+    requiresInviteCode = values.flexibleBool(forKey: .requiresInviteCode) ?? false
+  }
 }
 
 struct TVNotice: Decodable, Identifiable {
@@ -146,6 +191,49 @@ struct GatewayClient {
     return try await send(path: "/auth/qr/sessions/\(challenge.id)?poll_token=\(token)")
   }
 
+  func cancelQRSession(_ challenge: QRLoginChallenge) async throws {
+    let token = challenge.pollToken.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? ""
+    try await sendVoidRequest(
+      path: "/auth/qr/sessions/\(challenge.id)?poll_token=\(token)",
+      method: "DELETE"
+    )
+  }
+
+  func fetchGuestConfig() async throws -> TVGuestConfig {
+    try await send(path: "/guest/comm/config")
+  }
+
+  func sendEmailVerification(to email: String) async throws {
+    struct Request: Encodable { let email: String }
+    try await sendVoidOrEnvelope(path: "/passport/comm/sendEmailVerify", body: Request(email: email))
+  }
+
+  func register(
+    email: String,
+    password: String,
+    emailCode: String?,
+    inviteCode: String?
+  ) async throws {
+    struct Request: Encodable {
+      let email: String
+      let password: String
+      let email_code: String?
+      let invite_code: String?
+    }
+    try await sendVoidOrEnvelope(
+      path: "/passport/auth/register",
+      body: Request(email: email, password: password, email_code: emailCode, invite_code: inviteCode)
+    )
+  }
+
+  func resetPassword(email: String, password: String, emailCode: String) async throws {
+    struct Request: Encodable { let email: String; let password: String; let email_code: String }
+    try await sendVoidOrEnvelope(
+      path: "/passport/auth/forget",
+      body: Request(email: email, password: password, email_code: emailCode)
+    )
+  }
+
   func login(email: String, password: String) async throws -> TVLoginCredentials {
     struct Request: Encodable {
       let email: String
@@ -256,6 +344,40 @@ struct GatewayClient {
     return value
   }
 
+  private func sendVoidOrEnvelope<Body: Encodable>(path: String, body: Body) async throws {
+    try await sendVoidRequest(path: path, method: "POST", body: AnyEncodable(body))
+  }
+
+  private func sendVoidRequest(path: String, method: String, body: AnyEncodable? = nil) async throws {
+    var request = URLRequest(
+      url: try endpointURL(path),
+      cachePolicy: .reloadIgnoringLocalCacheData,
+      timeoutInterval: 20
+    )
+    request.httpMethod = method
+    request.setValue("application/json", forHTTPHeaderField: "Accept")
+    if let body {
+      request.httpBody = try JSONEncoder().encode(body)
+      request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+    }
+    let (data, response) = try await URLSession.shared.data(for: request)
+    guard let http = response as? HTTPURLResponse else { throw GatewayError.invalidResponse }
+    guard (200..<300).contains(http.statusCode) else {
+      throw GatewayError.server("服务暂时不可用（\(http.statusCode)）")
+    }
+    guard !data.isEmpty,
+          let object = try? JSONSerialization.jsonObject(with: data) as? [String: Any] else { return }
+    if let success = object["success"] as? Bool, !success {
+      throw GatewayError.server((object["message"] ?? object["msg"] ?? "请求失败") as? String ?? "请求失败")
+    }
+    if let code = object["code"] as? Int, code != 0, code != 200 {
+      throw GatewayError.server((object["message"] ?? object["msg"] ?? "请求失败") as? String ?? "请求失败")
+    }
+    if let value = object["data"] as? Bool, !value {
+      throw GatewayError.server((object["message"] ?? object["msg"] ?? "请求失败") as? String ?? "请求失败")
+    }
+  }
+
   /// `URL.appending(path:)` percent-encodes `?`, which turns poll_token into
   /// part of the route and makes every QR poll return 404. Preserve an already
   /// encoded query while appending only the route to the configured API base.
@@ -308,6 +430,15 @@ private extension KeyedDecodingContainer {
     if let value = try? decode(Double.self, forKey: key) { return value }
     if let value = try? decode(Int64.self, forKey: key) { return Double(value) }
     if let value = try? decode(String.self, forKey: key) { return Double(value) }
+    return nil
+  }
+
+  func flexibleBool(forKey key: Key) -> Bool? {
+    if let value = try? decode(Bool.self, forKey: key) { return value }
+    if let value = try? decode(Int.self, forKey: key) { return value != 0 }
+    if let value = try? decode(String.self, forKey: key) {
+      return ["1", "true", "yes", "on"].contains(value.lowercased())
+    }
     return nil
   }
 }

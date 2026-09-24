@@ -47,6 +47,7 @@ class _XBoardHomePageState extends ConsumerState<XBoardHomePage>
   bool _deferredStartupTasksReady = false;
   bool _isTokenExpiredDialogVisible = false;
   bool _isCheckingWebsite = false;
+  bool _isRefreshingTvSubscription = false;
   Timer? _noticeStartupTimer;
   Timer? _latencyStartupTimer;
   Timer? _latencyBatchTimer;
@@ -631,7 +632,7 @@ class _XBoardHomePageState extends ConsumerState<XBoardHomePage>
               children: [
                 SizedBox(
                   height: topInfoHeight,
-                  child: _buildTopInfoSection(),
+                  child: _buildTvTopInfoSection(),
                 ),
                 const SizedBox(height: 16),
                 Expanded(
@@ -647,7 +648,6 @@ class _XBoardHomePageState extends ConsumerState<XBoardHomePage>
                         flex: 6,
                         child: _buildTvControlPanel(
                           isShort: isShort,
-                          connectButtonSize: connectButtonSize,
                         ),
                       ),
                     ],
@@ -688,89 +688,90 @@ class _XBoardHomePageState extends ConsumerState<XBoardHomePage>
 
   Widget _buildTvControlPanel({
     required bool isShort,
-    required double connectButtonSize,
   }) {
     final modeHeight = isShort ? 96.0 : 116.0;
     final nodeHeight = isShort ? 62.0 : 72.0;
     final accountHeight = isShort ? 70.0 : 82.0;
-    const cardGap = 14.0;
     const versionLineHeight = 20.0;
-    final cardsHeight = modeHeight + nodeHeight + accountHeight + cardGap * 2;
+    final l10n = AppLocalizations.of(context);
+    final chinese = Localizations.localeOf(context).languageCode == 'zh';
 
-    return LayoutBuilder(
-      builder: (context, constraints) {
-        // The left panel centers the connection button above a small status
-        // line. Reuse that geometry so the version line follows the button's
-        // lower edge at both 720p and 1080p instead of relying on a fixed gap.
-        const panelVerticalPadding = 36.0;
-        const buttonStatusGap = 6.0;
-        const statusLineHeight = 24.0;
-        final flexibleButtonHeight = constraints.maxHeight -
-            panelVerticalPadding -
-            buttonStatusGap -
-            statusLineHeight;
-        final connectButtonBottom =
-            18 + (flexibleButtonHeight + connectButtonSize) / 2;
-        final availableGap =
-            constraints.maxHeight - cardsHeight - versionLineHeight;
-        final minimumGap = isShort ? 8.0 : 10.0;
-        final maximumGap =
-            availableGap > minimumGap ? availableGap : minimumGap;
-        final versionGap =
-            (connectButtonBottom - cardsHeight - versionLineHeight)
-                .clamp(minimumGap, maximumGap)
-                .toDouble();
-        final l10n = AppLocalizations.of(context);
-        final chinese = Localizations.localeOf(context).languageCode == 'zh';
-
-        return Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            SizedBox(
-              height: modeHeight,
-              child: _buildTvModeCard(),
-            ),
-            const SizedBox(height: cardGap),
-            SizedBox(
-              height: nodeHeight,
-              child: const NodeSelectorBar(),
-            ),
-            const SizedBox(height: cardGap),
-            SizedBox(
-              height: accountHeight,
-              child: Row(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  Expanded(child: _buildTvAccountCard()),
-                  const SizedBox(width: 12),
-                  SizedBox(
-                    width: 154,
-                    child: _buildTvLogoutButton(context),
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        SizedBox(
+          height: modeHeight,
+          child: _buildTvModeCard(),
+        ),
+        const Spacer(),
+        SizedBox(
+          height: nodeHeight,
+          child: const NodeSelectorBar(),
+        ),
+        const Spacer(),
+        SizedBox(
+          height: accountHeight,
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Expanded(child: _buildTvAccountCard()),
+              const SizedBox(width: 12),
+              SizedBox(
+                width: 154,
+                child: _buildTvLogoutButton(context),
+              ),
+            ],
+          ),
+        ),
+        const Spacer(),
+        SizedBox(
+          height: versionLineHeight,
+          child: Center(
+            child: Text(
+              '${l10n.xboardCurrentVersion}${chinese ? '：' : ': '}V${globalState.packageInfo.version}',
+              key: const Key('tv-current-version'),
+              style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                    color: Theme.of(context)
+                        .colorScheme
+                        .onSurfaceVariant
+                        .withValues(alpha: 0.72),
                   ),
-                ],
-              ),
             ),
-            SizedBox(height: versionGap),
-            SizedBox(
-              height: versionLineHeight,
-              child: Center(
-                child: Text(
-                  '${l10n.xboardCurrentVersion}${chinese ? '：' : ': '}V${globalState.packageInfo.version}',
-                  key: const Key('tv-current-version'),
-                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                        color: Theme.of(context)
-                            .colorScheme
-                            .onSurfaceVariant
-                            .withValues(alpha: 0.72),
-                      ),
-                ),
-              ),
-            ),
-            const Spacer(),
-          ],
-        );
-      },
+          ),
+        ),
+      ],
     );
+  }
+
+  Widget _buildTvTopInfoSection() {
+    final radius = BorderRadius.circular(XbUiTokens.radiusCard);
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        const Expanded(child: _HomeNoticeCard()),
+        const SizedBox(width: 18),
+        Expanded(
+          child: TVFocusable(
+            borderRadius: radius,
+            onPressed: _refreshTvSubscriptionInfo,
+            child: ExcludeFocus(child: _buildUsageSection()),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Future<void> _refreshTvSubscriptionInfo() async {
+    if (_isRefreshingTvSubscription) return;
+    setState(() => _isRefreshingTvSubscription = true);
+    try {
+      await ref.read(xboardUserProvider.notifier).refreshSubscriptionInfo(
+            importProfile: false,
+            source: 'TV 首页套餐卡片',
+          );
+    } finally {
+      if (mounted) setState(() => _isRefreshingTvSubscription = false);
+    }
   }
 
   Widget _buildTvModeCard() {
@@ -1031,6 +1032,7 @@ class _XBoardHomePageState extends ConsumerState<XBoardHomePage>
           usePlainBackground: true,
           prefixUsedTraffic: true,
           fixedHeight: isDesktop ? 136 : 148,
+          isSyncing: system.isTV && _isRefreshingTvSubscription,
         );
       },
     );
@@ -1453,6 +1455,14 @@ class _HomeNoticeCardState extends ConsumerState<_HomeNoticeCard> {
     final isDark = theme.brightness == Brightness.dark;
     final isDesktop =
         Platform.isLinux || Platform.isWindows || Platform.isMacOS;
+    void openCurrentNotice() {
+      if (notices.isEmpty) return;
+      final notice = notices[_index];
+      showDialog(
+        context: context,
+        builder: (_) => NoticeDetailDialog(notices: [notice]),
+      );
+    }
 
     final card = Container(
       decoration: BoxDecoration(
@@ -1479,17 +1489,7 @@ class _HomeNoticeCardState extends ConsumerState<_HomeNoticeCard> {
           color: Colors.transparent,
           child: InkWell(
             borderRadius: BorderRadius.circular(20),
-            onTap: notices.isEmpty
-                ? null
-                : () {
-                    final notice = notices[_index];
-                    showDialog(
-                      context: context,
-                      builder: (_) => NoticeDetailDialog(
-                        notices: [notice],
-                      ),
-                    );
-                  },
+            onTap: notices.isEmpty ? null : openCurrentNotice,
             child: SizedBox(
               height: 136,
               child: Stack(
@@ -1546,9 +1546,17 @@ class _HomeNoticeCardState extends ConsumerState<_HomeNoticeCard> {
       ),
     );
 
+    final focusedCard = system.isTV
+        ? TVFocusable(
+            borderRadius: BorderRadius.circular(XbUiTokens.radiusCard),
+            onPressed: notices.isEmpty ? null : openCurrentNotice,
+            child: ExcludeFocus(child: card),
+          )
+        : card;
+
     return SizedBox(
       height: isDesktop ? 136 : 148,
-      child: card,
+      child: focusedCard,
     );
   }
 

@@ -77,7 +77,7 @@ enum TVSubscriptionNodes {
       let type = value?["type"] as? String ?? ""
       let history = value?["history"] as? [[String: Any]]
       let delay = history?.last?["delay"] as? Int
-      return TVProxyNode(name, type: type, delayMS: delay.flatMap { $0 > 0 ? $0 : nil })
+      return TVProxyNode(name, type: type, delayMS: delay)
     }
     return TVProxySnapshot(
       groupName: selectedGroup.name,
@@ -194,100 +194,192 @@ struct TVNodeSelectorView: View {
   let nodes: [TVProxyNode]
   let selectedName: String?
   let isLoading: Bool
+  let isRefreshing: Bool
+  let isTesting: Bool
+  let testingNodeNames: Set<String>
   let errorMessage: String?
   let onClose: () -> Void
   let onRefresh: () -> Void
+  let onTest: () -> Void
   let onSelect: (TVProxyNode) -> Void
+  @AppStorage(TVLanguage.preferenceKey) private var language = TVLanguage.system.rawValue
 
-  private let columns = [GridItem(.flexible(), spacing: 18), GridItem(.flexible(), spacing: 18)]
+  private let columns = [GridItem(.flexible(), spacing: tv(10)), GridItem(.flexible(), spacing: tv(10))]
 
   var body: some View {
     ZStack {
-      TVTheme.background.ignoresSafeArea()
-      VStack(alignment: .leading, spacing: 28) {
-        HStack {
-          TVFocusButton(cornerRadius: 18, action: onClose) { focused in
-            Image(systemName: "chevron.left")
-              .font(.system(size: 24, weight: .bold))
-              .frame(width: 58, height: 58)
-              .background(focused ? TVTheme.primary.opacity(0.45) : TVTheme.surfaceStrong)
-              .clipShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
+      TVTheme.background
+      VStack(alignment: .leading, spacing: tv(0)) {
+        HStack(spacing: tv(8)) {
+          TVFocusButton(cornerRadius: tv(12), action: onClose) { _ in
+            MaterialIcon(glyph: .arrowBack, size: 24, color: TVTheme.textPrimary)
+              .frame(width: tv(48), height: tv(48))
           }
-          VStack(alignment: .leading, spacing: 6) {
-            Text("节点选择").font(.system(size: 38, weight: .bold))
-            Text("使用方向键选择线路，按确认键切换").font(.system(size: 18)).foregroundStyle(TVTheme.textSecondary)
-          }
+          Text(tvText("节点选择", "Node Selection", language: language))
+            .font(TVFont.regular(22))
+            .foregroundStyle(TVTheme.textPrimary)
           Spacer()
-          TVFocusButton(cornerRadius: 18, action: onRefresh) { focused in
-            Label("刷新", systemImage: "arrow.clockwise")
-              .font(.system(size: 18, weight: .semibold))
-              .padding(.horizontal, 24)
-              .frame(height: 58)
-              .background(focused ? TVTheme.primary.opacity(0.45) : TVTheme.surfaceStrong)
-              .clipShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
-          }
+          nodeToolbarButton(
+            title: tvText("更新节点", "Update Nodes", language: language),
+            icon: .refresh,
+            loading: isRefreshing,
+            disabled: isRefreshing || isTesting,
+            action: onRefresh
+          )
+          nodeToolbarButton(
+            title: tvText("测试延迟", "Test Latency", language: language),
+            icon: .networkCheck,
+            loading: isTesting,
+            disabled: isRefreshing || isTesting,
+            action: onTest
+          )
         }
+        .frame(height: tv(56))
 
         if isLoading {
           Spacer()
-          HStack { Spacer(); ProgressView("正在加载线路…").controlSize(.large); Spacer() }
+          HStack { Spacer(); ProgressView(tvText("正在加载线路…", "Loading nodes…", language: language)).controlSize(.large).font(TVFont.regular(14)); Spacer() }
           Spacer()
         } else if let errorMessage {
           Spacer()
-          VStack(spacing: 18) {
-            Image(systemName: "exclamationmark.triangle.fill").font(.system(size: 44)).foregroundStyle(.orange)
-            Text(errorMessage).font(.system(size: 20, weight: .medium))
+          VStack(spacing: tv(18)) {
+            MaterialIcon(glyph: .wifiOff, size: 44, color: TVTheme.warning)
+            Text(errorMessage).font(TVFont.regular(14))
           }
           .frame(maxWidth: .infinity)
           Spacer()
         } else if nodes.isEmpty {
           Spacer()
-          VStack(spacing: 18) {
-            Image(systemName: "wifi.slash").font(.system(size: 46)).foregroundStyle(TVTheme.textSecondary)
-            Text("订阅中没有可用线路").font(.system(size: 20, weight: .medium))
-            Text("请选择刷新重试").font(.system(size: 16)).foregroundStyle(TVTheme.textSecondary)
+          VStack(spacing: tv(18)) {
+            MaterialIcon(glyph: .wifiOff, size: 46, color: TVTheme.textSecondary)
+            Text(tvText("订阅中没有可用线路", "No available nodes in this subscription", language: language)).font(TVFont.regular(14))
+            Text(tvText("请选择更新节点重试", "Select Update Nodes to try again", language: language)).font(TVFont.regular(12)).foregroundStyle(TVTheme.textSecondary)
           }
           .frame(maxWidth: .infinity)
           Spacer()
         } else {
           ScrollView {
-            LazyVGrid(columns: columns, spacing: 18) {
+            overviewCard
+              .padding(.top, tv(4))
+              .padding(.bottom, tv(10))
+            LazyVGrid(columns: columns, spacing: tv(8)) {
               ForEach(Array(nodes.enumerated()), id: \.element.id) { offset, node in
-                TVFocusButton(cornerRadius: 20, autofocus: selectedName == node.name || (selectedName == nil && offset == 0), action: {
+                let selected = selectedName == node.name
+                TVFocusButton(cornerRadius: tv(16), autofocus: selected || (selectedName == nil && offset == 0), action: {
                   onSelect(node)
-                }) { focused in
-                  HStack(spacing: 18) {
-                    Image(systemName: "network").font(.system(size: 27, weight: .semibold)).foregroundStyle(TVTheme.primaryBright)
-                    VStack(alignment: .leading, spacing: 4) {
-                      Text(node.name).font(.system(size: 20, weight: .semibold)).lineLimit(1)
-                      if !node.type.isEmpty {
-                        Text(node.type).font(.system(size: 13, weight: .medium)).foregroundStyle(TVTheme.textSecondary)
+                }) { _ in
+                  HStack(spacing: tv(9)) {
+                    MaterialIcon(glyph: selected ? .checkCircle : .circleOutlined, size: 21, color: selected ? TVTheme.primary : TVTheme.outline)
+                    Text(nodeCountryFlag(node.name)).font(.system(size: tv(20)))
+                    VStack(alignment: .leading, spacing: tv(5)) {
+                      Text(node.name).font(selected ? TVFont.medium(14) : TVFont.regular(14)).lineLimit(1)
+                      HStack(spacing: tv(6)) {
+                        nodeTag(node.type.isEmpty ? "Proxy" : node.type, color: TVTheme.outline)
+                        if selected { nodeTag(tvText("当前节点", "Current Node", language: language), color: TVTheme.primary) }
                       }
                     }
                     Spacer()
-                    if let delay = node.delayMS {
+                    if testingNodeNames.contains(node.name) {
+                      ProgressView()
+                        .controlSize(.small)
+                        .tint(TVTheme.primary)
+                        .frame(width: tv(64), height: tv(42))
+                    } else if let delay = node.delayMS, delay < 0 {
+                      Text(tvText("超时", "Timeout", language: language))
+                        .font(TVFont.medium(11))
+                        .foregroundStyle(TVTheme.danger)
+                        .frame(width: tv(64), height: tv(42))
+                    } else if let delay = node.delayMS, delay > 0 {
                       Text("\(delay)ms")
-                        .font(.system(size: 14, weight: .semibold))
-                        .foregroundStyle(delay < 500 ? TVTheme.success : Color.orange)
-                    }
-                    if selectedName == node.name {
-                      Image(systemName: "checkmark.circle.fill").font(.system(size: 24)).foregroundStyle(TVTheme.success)
+                        .font(TVFont.medium(11))
+                        .foregroundStyle(delay < 500 ? TVTheme.success : TVTheme.warning)
+                        .frame(width: tv(64), height: tv(42))
+                    } else {
+                      Text("--").font(TVFont.medium(11)).foregroundStyle(TVTheme.outline).frame(width: tv(64), height: tv(42))
                     }
                   }
-                  .padding(.horizontal, 22)
-                  .frame(maxWidth: .infinity, minHeight: 82)
-                  .background(focused ? TVTheme.primary.opacity(0.32) : TVTheme.surface)
-                  .clipShape(RoundedRectangle(cornerRadius: 20, style: .continuous))
+                  .padding(.horizontal, tv(14))
+                  .frame(maxWidth: .infinity, minHeight: tv(66), maxHeight: tv(66))
+                  .background(selected ? TVTheme.primary.opacity(0.08) : TVTheme.surface)
+                  .clipShape(RoundedRectangle(cornerRadius: tv(16), style: .continuous))
+                  .overlay { RoundedRectangle(cornerRadius: tv(16), style: .continuous).strokeBorder(selected ? TVTheme.primary.opacity(0.65) : TVTheme.stroke, lineWidth: selected ? tv(1.4) : tv(1)) }
                 }
               }
             }
-            .padding(3)
+            .padding(.bottom, tv(24))
           }
+          .padding(.horizontal, tv(16))
         }
       }
-      .padding(.horizontal, 78)
-      .padding(.vertical, 58)
     }
     .onExitCommand(perform: onClose)
+  }
+
+  private var overviewCard: some View {
+    TVGlassCard {
+      HStack(spacing: tv(12)) {
+        ZStack {
+          RoundedRectangle(cornerRadius: tv(13), style: .continuous).fill(TVTheme.primary.opacity(0.12))
+          MaterialIcon(glyph: .hubOutlined, size: 22, color: TVTheme.primary)
+        }
+        .frame(width: tv(42), height: tv(42))
+        VStack(alignment: .leading, spacing: tv(4)) {
+          HStack(spacing: tv(0)) {
+            Text(tvText("当前代理模式：", "Current Proxy Mode: ", language: language)).font(TVFont.medium(14))
+            Text(tvText("规则", "Rule", language: language)).font(TVFont.medium(14)).foregroundStyle(TVTheme.primary)
+          }
+          Text(tvText("按规则自动分流，国内直连、其他流量按规则选择线路", "Route traffic automatically according to rules", language: language))
+            .font(TVFont.regular(12)).foregroundStyle(TVTheme.textSecondary).lineSpacing(tv(4.2))
+        }
+        Spacer()
+      }
+      .padding(tv(14))
+    }
+  }
+
+  private func nodeToolbarButton(
+    title: String,
+    icon: MaterialGlyph,
+    loading: Bool,
+    disabled: Bool,
+    action: @escaping () -> Void
+  ) -> some View {
+    TVFocusButton(cornerRadius: tv(10), action: action) { _ in
+      HStack(spacing: tv(8)) {
+        if loading {
+          ProgressView().controlSize(.small).tint(TVTheme.primary).frame(width: tv(18), height: tv(18))
+        } else {
+          MaterialIcon(glyph: icon, size: 18, color: TVTheme.primary)
+        }
+        Text(title).font(TVFont.regular(14)).foregroundStyle(TVTheme.primary)
+      }
+      .padding(.horizontal, tv(10))
+      .frame(height: tv(40))
+    }
+    .disabled(disabled)
+    .opacity(disabled && !loading ? 0.38 : 1)
+  }
+
+  private func nodeTag(_ title: String, color: Color) -> some View {
+    Text(title)
+      .font(TVFont.regular(10))
+      .foregroundStyle(color)
+      .padding(.horizontal, tv(7)).padding(.vertical, tv(2))
+      .background(color.opacity(0.10))
+      .clipShape(RoundedRectangle(cornerRadius: tv(7), style: .continuous))
+  }
+
+  private func nodeCountryFlag(_ name: String) -> String {
+    let upper = name.uppercased()
+    let rules: [(String, [String])] = [
+      ("🇭🇰", ["香港", "HONG KONG", " HK ", "HKG"]), ("🇲🇴", ["澳门", "澳門", "MACAU"]),
+      ("🇹🇼", ["台湾", "台灣", "TAIWAN", " TW "]), ("🇨🇳", ["中国", "中國", "CHINA", " CN "]),
+      ("🇯🇵", ["日本", "JAPAN", "TOKYO", "OSAKA", " JP "]), ("🇸🇬", ["新加坡", "SINGAPORE", " SG "]),
+      ("🇰🇷", ["韩国", "韓國", "KOREA", "SEOUL"]), ("🇺🇸", ["美国", "美國", "UNITED STATES", "AMERICA", " USA"]),
+      ("🇬🇧", ["英国", "英國", "UNITED KINGDOM", "BRITAIN"]), ("🇩🇪", ["德国", "德國", "GERMANY"]),
+      ("🇫🇷", ["法国", "法國", "FRANCE"]), ("🇨🇦", ["加拿大", "CANADA"]), ("🇦🇺", ["澳大利亚", "澳大利亞", "AUSTRALIA"])
+    ]
+    if let scalarPair = name.range(of: "[🇦-🇿]{2}", options: .regularExpression).map({ String(name[$0]) }) { return scalarPair }
+    return rules.first(where: { $0.1.contains(where: upper.contains) })?.0 ?? "🌐"
   }
 }
