@@ -193,6 +193,7 @@ enum TVSubscriptionNodes {
 struct TVNodeSelectorView: View {
   let nodes: [TVProxyNode]
   let selectedName: String?
+  let routeMode: String
   let isLoading: Bool
   let isRefreshing: Bool
   let isTesting: Bool
@@ -220,14 +221,14 @@ struct TVNodeSelectorView: View {
             .foregroundStyle(TVTheme.textPrimary)
           Spacer()
           nodeToolbarButton(
-            title: tvText("更新节点", "Update Nodes", language: language),
+            title: tvText("更新节点", "Update nodes", language: language),
             icon: .refresh,
             loading: isRefreshing,
             disabled: isRefreshing || isTesting,
             action: onRefresh
           )
           nodeToolbarButton(
-            title: tvText("测试延迟", "Test Latency", language: language),
+            title: tvText("测试延迟", "Test latency", language: language),
             icon: .networkCheck,
             loading: isTesting,
             disabled: isRefreshing || isTesting,
@@ -252,8 +253,7 @@ struct TVNodeSelectorView: View {
           Spacer()
           VStack(spacing: tv(18)) {
             MaterialIcon(glyph: .wifiOff, size: 46, color: TVTheme.textSecondary)
-            Text(tvText("订阅中没有可用线路", "No available nodes in this subscription", language: language)).font(TVFont.regular(14))
-            Text(tvText("请选择更新节点重试", "Select Update Nodes to try again", language: language)).font(TVFont.regular(12)).foregroundStyle(TVTheme.textSecondary)
+            Text(tvText("暂无可用节点", "No available nodes", language: language)).font(TVFont.regular(14))
           }
           .frame(maxWidth: .infinity)
           Spacer()
@@ -275,7 +275,7 @@ struct TVNodeSelectorView: View {
                       Text(node.name).font(selected ? TVFont.medium(14) : TVFont.regular(14)).lineLimit(1)
                       HStack(spacing: tv(6)) {
                         nodeTag(node.type.isEmpty ? "Proxy" : node.type, color: TVTheme.outline)
-                        if selected { nodeTag(tvText("当前节点", "Current Node", language: language), color: TVTheme.primary) }
+                        if selected { nodeTag(tvText("当前节点", "Current node", language: language), color: TVTheme.primary) }
                       }
                     }
                     Spacer()
@@ -326,15 +326,35 @@ struct TVNodeSelectorView: View {
         VStack(alignment: .leading, spacing: tv(4)) {
           HStack(spacing: tv(0)) {
             Text(tvText("当前代理模式：", "Current Proxy Mode: ", language: language)).font(TVFont.medium(14))
-            Text(tvText("规则", "Rule", language: language)).font(TVFont.medium(14)).foregroundStyle(TVTheme.primary)
+            Text(overviewModeTitle).font(TVFont.medium(14)).foregroundStyle(TVTheme.primary)
           }
-          Text(tvText("按规则自动分流，国内直连、其他流量按规则选择线路", "Route traffic automatically according to rules", language: language))
+          Text(overviewModeDescription)
             .font(TVFont.regular(12)).foregroundStyle(TVTheme.textSecondary).lineSpacing(tv(4.2))
         }
         Spacer()
       }
       .padding(tv(14))
     }
+  }
+
+  private var overviewModeTitle: String {
+    routeMode == "global"
+      ? tvText("全局代理", "Global Proxy", language: language)
+      : tvText("智能分流", "Smart Routing", language: language)
+  }
+
+  private var overviewModeDescription: String {
+    routeMode == "global"
+      ? tvText(
+        "全球网络均通过代理进行访问（建议特殊网址无法访问时使用）",
+        "Route all network traffic through the proxy (recommended when specific sites are inaccessible)",
+        language: language
+      )
+      : tvText(
+        "智能区分目标网络地区实现加速（推荐使用）",
+        "Intelligently route traffic by destination region for acceleration (recommended)",
+        language: language
+      )
   }
 
   private func nodeToolbarButton(

@@ -562,14 +562,14 @@ class _XBoardHomePageState extends ConsumerState<XBoardHomePage>
     return AppBar(
       automaticallyImplyLeading: false,
       toolbarHeight: 64,
-      titleSpacing: 20,
+      titleSpacing: 25,
       title: const _HomeBrandHeader(),
       backgroundColor: XbUiTokens.pageBackground(context),
       elevation: 0,
       scrolledUnderElevation: 0,
       actions: [
         Padding(
-          padding: const EdgeInsets.only(right: 20),
+          padding: const EdgeInsets.only(right: 25),
           child: TVFocusable(
             borderRadius: radius,
             onPressed: _toggleTvTheme,
@@ -617,15 +617,15 @@ class _XBoardHomePageState extends ConsumerState<XBoardHomePage>
         builder: (context, constraints) {
           final isShort = constraints.maxHeight < 620;
           final topInfoHeight = isShort ? 124.0 : 148.0;
-          final horizontalPadding = constraints.maxWidth >= 1400 ? 28.0 : 20.0;
+          final horizontalPadding = constraints.maxWidth >= 1400 ? 33.0 : 25.0;
           final connectButtonSize = isShort ? 150.0 : 188.0;
 
           return Padding(
             padding: EdgeInsets.fromLTRB(
               horizontalPadding,
-              14,
+              19,
               horizontalPadding,
-              18,
+              23,
             ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -711,17 +711,7 @@ class _XBoardHomePageState extends ConsumerState<XBoardHomePage>
         const Spacer(),
         SizedBox(
           height: accountHeight,
-          child: Row(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              Expanded(child: _buildTvAccountCard()),
-              const SizedBox(width: 12),
-              SizedBox(
-                width: 154,
-                child: _buildTvLogoutButton(context),
-              ),
-            ],
-          ),
+          child: _buildTvAccountCard(),
         ),
         const Spacer(),
         SizedBox(
@@ -745,19 +735,15 @@ class _XBoardHomePageState extends ConsumerState<XBoardHomePage>
 
   Widget _buildTvTopInfoSection() {
     final radius = BorderRadius.circular(XbUiTokens.radiusCard);
-    return Row(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: [
-        const Expanded(child: _HomeNoticeCard()),
-        const SizedBox(width: 18),
-        Expanded(
-          child: TVFocusable(
-            borderRadius: radius,
-            onPressed: _refreshTvSubscriptionInfo,
-            child: ExcludeFocus(child: _buildUsageSection()),
-          ),
-        ),
-      ],
+    final isRunning =
+        ref.watch(runTimeProvider.select((state) => state != null));
+    if (!isRunning) {
+      return const _HomeNoticeCard();
+    }
+    return TVFocusable(
+      borderRadius: radius,
+      onPressed: _refreshTvSubscriptionInfo,
+      child: ExcludeFocus(child: _buildUsageSection()),
     );
   }
 
@@ -822,52 +808,83 @@ class _XBoardHomePageState extends ConsumerState<XBoardHomePage>
                     : AppLocalizations.of(context).account;
         final theme = Theme.of(context);
         final colorScheme = theme.colorScheme;
+        final l10n = AppLocalizations.of(context);
+        final radius = BorderRadius.circular(XbUiTokens.radiusCard);
+        void showLogoutDialog() => showDialog<void>(
+              context: context,
+              builder: (_) => const LogoutDialog(),
+            );
 
         return Semantics(
-          label: '${AppLocalizations.of(context).xboardAccountInfo}，$email',
-          child: Container(
-            decoration: _tvCardDecoration(context),
-            padding: const EdgeInsets.symmetric(horizontal: 18),
-            child: Row(
-              children: [
-                Container(
-                  width: 44,
-                  height: 44,
-                  decoration: BoxDecoration(
-                    color: colorScheme.primary.withValues(alpha: 0.14),
-                    shape: BoxShape.circle,
-                  ),
-                  child: Icon(
-                    Icons.person_outline,
-                    size: 24,
-                    color: colorScheme.primary,
-                  ),
-                ),
-                const SizedBox(width: 13),
-                Expanded(
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        AppLocalizations.of(context).xboardAccountInfo,
-                        style: theme.textTheme.bodySmall?.copyWith(
-                          color: colorScheme.onSurfaceVariant,
-                        ),
+          button: true,
+          label: '${l10n.xboardAccountInfo}，$email，${l10n.xboardLogout}',
+          child: TVFocusable(
+            borderRadius: radius,
+            onPressed: showLogoutDialog,
+            child: ExcludeFocus(
+              child: Container(
+                decoration: _tvCardDecoration(context),
+                padding: const EdgeInsets.symmetric(horizontal: 18),
+                child: Row(
+                  children: [
+                    Container(
+                      width: 44,
+                      height: 44,
+                      decoration: BoxDecoration(
+                        color: colorScheme.primary.withValues(alpha: 0.14),
+                        shape: BoxShape.circle,
                       ),
-                      const SizedBox(height: 2),
-                      Text(
-                        email,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: theme.textTheme.titleSmall?.copyWith(
-                          fontWeight: XbFontWeight.semibold,
-                        ),
+                      child: Icon(
+                        Icons.person_outline,
+                        size: 24,
+                        color: colorScheme.primary,
                       ),
-                    ],
-                  ),
+                    ),
+                    const SizedBox(width: 13),
+                    Expanded(
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            l10n.xboardAccountInfo,
+                            style: theme.textTheme.bodySmall?.copyWith(
+                              color: colorScheme.onSurfaceVariant,
+                            ),
+                          ),
+                          const SizedBox(height: 2),
+                          Text(
+                            email,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: theme.textTheme.titleSmall?.copyWith(
+                              fontWeight: XbFontWeight.semibold,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    Container(
+                      width: 1,
+                      height: 32,
+                      color: XbUiTokens.cardBorder(context),
+                    ),
+                    const SizedBox(width: 16),
+                    Icon(
+                      Icons.logout_outlined,
+                      size: 18,
+                      color: colorScheme.onSurfaceVariant,
+                    ),
+                    const SizedBox(width: 8),
+                    Text(
+                      l10n.xboardLogout,
+                      style: theme.textTheme.bodyMedium?.copyWith(
+                        color: colorScheme.onSurfaceVariant,
+                      ),
+                    ),
+                  ],
                 ),
-              ],
+              ),
             ),
           ),
         );

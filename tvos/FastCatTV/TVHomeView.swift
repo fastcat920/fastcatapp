@@ -5,6 +5,14 @@ private enum TVRouteMode: String, CaseIterable {
   case global
 }
 
+private struct NoticeContentHeightPreferenceKey: PreferenceKey {
+  static var defaultValue: CGFloat = 0
+
+  static func reduce(value: inout CGFloat, nextValue: () -> CGFloat) {
+    value = max(value, nextValue())
+  }
+}
+
 struct TVHomeView: View {
   @EnvironmentObject private var session: SessionStore
   @Environment(\.colorScheme) private var colorScheme
@@ -36,6 +44,7 @@ struct TVHomeView: View {
   @State private var isRefreshingSubscription = false
   @State private var homeInfoError: String?
   @State private var showNoticeDetail = false
+  @State private var noticeContentHeight: CGFloat = 0
   @State private var hasAssignedInitialHomeFocus = false
   @FocusState private var connectButtonFocused: Bool
   @FocusState private var routeCardFocused: Bool
@@ -61,49 +70,59 @@ struct TVHomeView: View {
 
   var body: some View {
     TVDesignCanvas {
-      ZStack {
-        TVTheme.background
+      GeometryReader { geometry in
+        let bodyHeight = max(0, geometry.size.height - tv(64))
+        let isShort = bodyHeight < tv(620)
+        let topInfoHeight: CGFloat = isShort ? tv(124) : tv(148)
+        let horizontalPadding: CGFloat = geometry.size.width >= tv(1400) ? tv(33) : tv(25)
+        let mainHeight = max(0, bodyHeight - tv(19) - topInfoHeight - tv(16) - tv(23))
 
-        Group {
-          if showNodeSelector {
-            TVNodeSelectorView(
-              nodes: nodes,
-              selectedName: selectedNodeName,
-              isLoading: isLoadingNodes,
-              isRefreshing: isRefreshingNodes,
-              isTesting: isTestingNodes,
-              testingNodeNames: testingNodeNames,
-              errorMessage: nodeLoadError,
-              onClose: { showNodeSelector = false },
-              onRefresh: { Task { await refreshNodesFromToolbar() } },
-              onTest: { Task { await runLatencyTest() } },
-              onSelect: { selectNode($0) }
-            )
-          } else {
-            VStack(spacing: tv(0)) {
-              header
-                .padding(.horizontal, tv(20))
-                .frame(height: tv(64))
-              VStack(spacing: tv(16)) {
-                serviceBanner.frame(height: tv(148))
-                mainDashboard.frame(height: tv(460))
+        ZStack {
+          TVTheme.background
+
+          Group {
+            if showNodeSelector {
+              TVNodeSelectorView(
+                nodes: nodes,
+                selectedName: selectedNodeName,
+                routeMode: routeMode.rawValue,
+                isLoading: isLoadingNodes,
+                isRefreshing: isRefreshingNodes,
+                isTesting: isTestingNodes,
+                testingNodeNames: testingNodeNames,
+                errorMessage: nodeLoadError,
+                onClose: { showNodeSelector = false },
+                onRefresh: { Task { await refreshNodesFromToolbar() } },
+                onTest: { Task { await runLatencyTest() } },
+                onSelect: { selectNode($0) }
+              )
+            } else {
+              VStack(spacing: tv(0)) {
+                header
+                  .padding(.horizontal, tv(25))
+                  .frame(height: tv(64))
+                VStack(spacing: tv(16)) {
+                  serviceBanner.frame(height: topInfoHeight)
+                  mainDashboard(isShort: isShort).frame(height: mainHeight)
+                }
+                .padding(.horizontal, horizontalPadding)
+                .padding(.top, tv(19))
+                .padding(.bottom, tv(23))
               }
-              .padding(.horizontal, tv(20))
-              .padding(.top, tv(14))
-              .padding(.bottom, tv(18))
             }
           }
-        }
-        .disabled(isModalPresented)
-        .allowsHitTesting(!isModalPresented)
+          .disabled(isModalPresented)
+          .allowsHitTesting(!isModalPresented)
 
-        if showNoticeDetail {
-          noticeDialog
-        } else if showLogoutConfirmation {
-          logoutDialog
-        } else if let subscriptionBlockMessage {
-          messageDialog(subscriptionBlockMessage)
+          if showNoticeDetail {
+            noticeDialog
+          } else if showLogoutConfirmation {
+            logoutDialog
+          } else if let subscriptionBlockMessage {
+            messageDialog(subscriptionBlockMessage)
+          }
         }
+        .frame(width: geometry.size.width, height: geometry.size.height)
       }
     }
     .onAppear {
@@ -138,7 +157,10 @@ struct TVHomeView: View {
       }
     }
     .onChange(of: showNoticeDetail) { _, presented in
-      if presented { focusModalButton { noticeActionFocused = true } }
+      if presented {
+        noticeContentHeight = 0
+        focusModalButton { noticeActionFocused = true }
+      }
       else { noticeActionFocused = false }
     }
     .onChange(of: showLogoutConfirmation) { _, presented in
@@ -194,11 +216,12 @@ struct TVHomeView: View {
   }
 
   private var serviceBanner: some View {
-    HStack(spacing: tv(18)) {
-      announcementCard
-        .frame(maxWidth: .infinity)
-      subscriptionCard
-        .frame(maxWidth: .infinity)
+    Group {
+      if connected {
+        subscriptionCard
+      } else {
+        announcementCard
+      }
     }
     .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
   }
@@ -255,7 +278,7 @@ struct TVHomeView: View {
           .stroke(TVTheme.stroke, lineWidth: tv(1))
       }
     }
-    .frame(height: tv(148))
+    .frame(maxHeight: .infinity)
     .shadow(color: prefersDarkTheme ? .clear : .black.opacity(0.08), radius: tv(16), y: tv(4))
     .accessibilityLabel("公告，\(currentNotice?.title ?? "暂无公告")")
   }
@@ -308,32 +331,36 @@ struct TVHomeView: View {
       .overlay { RoundedRectangle(cornerRadius: TVTheme.cardRadius, style: .continuous).strokeBorder(TVTheme.stroke, lineWidth: tv(1)) }
     }
     .shadow(color: prefersDarkTheme ? .clear : .black.opacity(0.08), radius: tv(16), y: tv(4))
-    .frame(height: tv(148))
+    .frame(maxHeight: .infinity)
     .accessibilityLabel("套餐信息，\(subscriptionTitle)，\(remainingText)")
   }
 
-  private var mainDashboard: some View {
+  private func mainDashboard(isShort: Bool) -> some View {
     GeometryReader { geometry in
       let spacing: CGFloat = tv(18)
       let availableWidth = max(0, geometry.size.width - spacing)
       HStack(spacing: spacing) {
-        connectionPanel.frame(width: availableWidth * 5 / 11)
-        controlsPanel.frame(width: availableWidth * 6 / 11)
+        connectionPanel(connectButtonSize: isShort ? tv(150) : tv(188))
+          .frame(width: availableWidth * 5 / 11)
+        controlsPanel(isShort: isShort)
+          .frame(width: availableWidth * 6 / 11)
       }
     }
   }
 
-  private var connectionPanel: some View {
+  private func connectionPanel(connectButtonSize: CGFloat) -> some View {
     TVGlassCard {
       VStack(spacing: tv(0)) {
-        Spacer(minLength: 0)
-        connectButton
+        ZStack {
+          connectButton(size: connectButtonSize)
+        }
+        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .center)
         Spacer().frame(height: tv(6))
         Text(isConnecting ? tvText("正在连接", "Connecting", language: language) : connected ? tvText("已连接", "Connected", language: language) : tvText("未连接", "Disconnected", language: language))
           .font(TVFont.medium(14))
           .foregroundStyle(connected ? TVTheme.success : TVTheme.textPrimary)
           .frame(height: tv(40))
-        Spacer(minLength: 0)
+          .offset(y: -tv(22))
       }
       .padding(.horizontal, tv(24))
       .padding(.vertical, tv(18))
@@ -341,32 +368,36 @@ struct TVHomeView: View {
     }
   }
 
-  private var connectButton: some View {
-    TVFocusButton(cornerRadius: tv(94), focus: $connectButtonFocused, action: toggleConnection) { _ in
+  private func connectButton(size: CGFloat) -> some View {
+    let middleSize = size * 0.89
+    let innerSize = size * 0.75
+    let iconSize = size * 0.34 * 0.75
+    let labelSize = min(max(size * 0.07, 9), 12)
+    return TVFocusButton(cornerRadius: size / 2, focus: $connectButtonFocused, action: toggleConnection) { _ in
       ZStack {
         Circle().fill(connected ? TVTheme.primary.opacity(0.10) : .clear)
         Circle().fill(connected ? TVTheme.primary.opacity(0.10) : .clear)
-          .frame(width: tv(167.32), height: tv(167.32))
+          .frame(width: middleSize, height: middleSize)
         Circle()
           .fill(connected ? TVTheme.primary : (prefersDarkTheme ? Color(red: 58/255, green: 58/255, blue: 58/255) : Color(red: 240/255, green: 244/255, blue: 248/255)))
-          .frame(width: tv(141), height: tv(141))
+          .frame(width: innerSize, height: innerSize)
           .shadow(color: connected ? TVTheme.primary.opacity(prefersDarkTheme ? 0.36 : 0.30) : Color.black.opacity(prefersDarkTheme ? 0.30 : 0.10), radius: connected ? tv(18) : tv(12), y: tv(4))
         if isConnecting {
           VStack(spacing: tv(5)) {
             ProgressView().controlSize(.small).tint(connected ? TVTheme.onPrimary : TVTheme.primary)
-            Text(tvText("正在连接", "Connecting", language: language)).font(TVFont.regular(12))
+            Text(tvText("正在连接", "Connecting", language: language)).font(TVFont.regular(labelSize))
           }
           .foregroundStyle(connected ? TVTheme.onPrimary : TVTheme.primary)
         } else {
           VStack(spacing: tv(4)) {
-            MaterialIcon(glyph: .powerSettingsNew, size: 48, color: connected ? TVTheme.onPrimary : (prefersDarkTheme ? TVTheme.primary : Color(red: 69/255, green: 90/255, blue: 100/255)))
+            MaterialIcon(glyph: .powerSettingsNew, size: iconSize, color: connected ? TVTheme.onPrimary : (prefersDarkTheme ? TVTheme.primary : Color(red: 69/255, green: 90/255, blue: 100/255)))
             Text(connected ? tvText("已连接", "Connected", language: language) : tvText("点击连接", "Tap to connect", language: language))
-              .font(TVFont.regular(12))
+              .font(TVFont.regular(labelSize))
               .foregroundStyle(connected ? TVTheme.onPrimary : (prefersDarkTheme ? TVTheme.primary : Color(red: 69/255, green: 90/255, blue: 100/255)))
           }
         }
       }
-      .frame(width: tv(188), height: tv(188))
+      .frame(width: size, height: size)
     }
     .buttonBorderShape(.circle)
     .disabled(isConnecting)
@@ -381,13 +412,16 @@ struct TVHomeView: View {
       : tvText("按遥控器确认键开始连接", "Press Select to connect", language: language)
   }
 
-  private var controlsPanel: some View {
-    VStack(spacing: tv(0)) {
-      modeCard.frame(height: tv(116))
+  private func controlsPanel(isShort: Bool) -> some View {
+    let modeHeight: CGFloat = isShort ? tv(96) : tv(116)
+    let nodeHeight: CGFloat = isShort ? tv(62) : tv(72)
+    let accountHeight: CGFloat = isShort ? tv(70) : tv(82)
+    return VStack(spacing: tv(0)) {
+      modeCard.frame(height: modeHeight)
       Spacer(minLength: tv(10))
-      routeCard.frame(height: tv(72))
+      routeCard.frame(height: nodeHeight)
       Spacer(minLength: tv(10))
-      accountCard.frame(height: tv(82))
+      accountCard.frame(height: accountHeight)
       Spacer(minLength: tv(10))
       Text(tvText("当前版本：V\(appVersion)", "Current version: V\(appVersion)", language: language))
         .font(TVFont.regular(12))
@@ -407,7 +441,7 @@ struct TVHomeView: View {
         HStack(spacing: tv(0)) {
           ForEach(TVRouteMode.allCases, id: \.self) { mode in
             TVFocusButton(cornerRadius: tv(16), action: { changeRouteMode(to: mode) }) { _ in
-              Text(mode == .rule ? tvText("智能分类", "Smart Routing", language: language) : tvText("全局代理", "Global Proxy", language: language))
+              Text(mode == .rule ? tvText("智能分流", "Smart routing", language: language) : tvText("全局代理", "Global proxy", language: language))
                 .font(TVFont.medium(13))
                 .foregroundStyle(routeMode == mode ? TVTheme.textPrimary : TVTheme.textPrimary.opacity(0.45))
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
@@ -423,6 +457,7 @@ struct TVHomeView: View {
         .clipShape(RoundedRectangle(cornerRadius: tv(19), style: .continuous))
       }
       .padding(.leading, tv(18)).padding(.trailing, tv(18)).padding(.top, tv(12)).padding(.bottom, tv(10))
+      .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .center)
     }
   }
 
@@ -463,39 +498,48 @@ struct TVHomeView: View {
   }
 
   private var accountCard: some View {
-    HStack(spacing: tv(12)) {
-      TVGlassCard {
-        HStack(spacing: tv(13)) {
-          ZStack {
-            Circle().fill(TVTheme.primary.opacity(0.14))
-            MaterialIcon(glyph: .personOutline, size: 24, color: TVTheme.primary)
-          }.frame(width: tv(44), height: tv(44))
-          VStack(alignment: .leading, spacing: tv(2)) {
-            Text(tvText("我的账号", "My Account", language: language)).font(TVFont.regular(12)).foregroundStyle(TVTheme.textSecondary)
-            Text(session.email ?? tvText("已登录账户", "Signed-in account", language: language)).font(TVFont.medium(14)).lineLimit(1)
-          }
-          Spacer()
+    TVFocusButton(cornerRadius: TVTheme.cardRadius, action: {
+      if !isLoggingOut { showLogoutConfirmation = true }
+    }) { _ in
+      HStack(spacing: tv(13)) {
+        ZStack {
+          Circle().fill(TVTheme.primary.opacity(0.14))
+          MaterialIcon(glyph: .personOutline, size: 24, color: TVTheme.primary)
         }
-        .padding(.horizontal, tv(18))
-        .frame(maxWidth: .infinity, maxHeight: .infinity)
-      }
-
-      TVFocusButton(cornerRadius: TVTheme.compactRadius, action: { if !isLoggingOut { showLogoutConfirmation = true } }) { _ in
+        .frame(width: tv(44), height: tv(44))
+        VStack(alignment: .leading, spacing: tv(2)) {
+          Text(tvText("我的账号", "My Account", language: language))
+            .font(TVFont.regular(12))
+            .foregroundStyle(TVTheme.textSecondary)
+          Text(session.email ?? tvText("已登录账户", "Signed-in account", language: language))
+            .font(TVFont.medium(14))
+            .lineLimit(1)
+        }
+        Spacer(minLength: tv(16))
+        Rectangle()
+          .fill(TVTheme.stroke)
+          .frame(width: tv(1), height: tv(32))
         HStack(spacing: tv(8)) {
           if isLoggingOut {
             ProgressView().controlSize(.small)
           } else {
             MaterialIcon(glyph: .logoutOutlined, size: 18, color: TVTheme.textSecondary)
           }
-          Text(tvText("退出登录", "Sign Out", language: language)).font(TVFont.regular(14))
+          Text(tvText("退出登录", "Sign out", language: language)).font(TVFont.regular(14))
         }
         .foregroundStyle(TVTheme.textSecondary)
-        .frame(width: tv(154), height: tv(82))
-        .background(TVTheme.background)
-        .clipShape(RoundedRectangle(cornerRadius: TVTheme.compactRadius, style: .continuous))
-        .overlay { RoundedRectangle(cornerRadius: TVTheme.compactRadius, style: .continuous).strokeBorder(TVTheme.stroke, lineWidth: tv(1)) }
+      }
+      .padding(.horizontal, tv(18))
+      .frame(maxWidth: .infinity, maxHeight: .infinity)
+      .background(TVTheme.surface)
+      .clipShape(RoundedRectangle(cornerRadius: TVTheme.cardRadius, style: .continuous))
+      .overlay {
+        RoundedRectangle(cornerRadius: TVTheme.cardRadius, style: .continuous)
+          .strokeBorder(TVTheme.stroke, lineWidth: tv(1))
       }
     }
+    .shadow(color: prefersDarkTheme ? .clear : .black.opacity(0.08), radius: tv(14), y: tv(4))
+    .disabled(isLoggingOut)
   }
 
   private var appVersion: String {
@@ -533,8 +577,19 @@ struct TVHomeView: View {
               .frame(maxWidth: .infinity, alignment: .leading)
           }
           .padding(tv(20))
+          .background {
+            GeometryReader { proxy in
+              Color.clear.preference(
+                key: NoticeContentHeightPreferenceKey.self,
+                value: proxy.size.height
+              )
+            }
+          }
         }
-        .frame(maxHeight: tv(360))
+        .frame(height: min(max(noticeContentHeight, tv(1)), tv(360)))
+        .onPreferenceChange(NoticeContentHeightPreferenceKey.self) { height in
+          noticeContentHeight = height
+        }
 
         Rectangle().fill(TVTheme.outline.opacity(0.12)).frame(height: tv(1))
 
@@ -543,7 +598,7 @@ struct TVHomeView: View {
           TVFocusButton(cornerRadius: tv(12), autofocus: true, focus: $noticeActionFocused, action: {
             showNoticeDetail = false
           }) { _ in
-            Text(tvText("知道了", "Got It", language: language))
+            Text(tvText("知道了", "Got it", language: language))
               .font(TVFont.regular(14))
               .foregroundStyle(TVTheme.onPrimary)
               .padding(.horizontal, tv(24))
@@ -573,10 +628,10 @@ struct TVHomeView: View {
 
   private var logoutDialog: some View {
     TVDialog(
-      title: tvText("退出登录？", "Sign out?", language: language),
+      title: tvText("确认退出", "Confirm sign out", language: language),
       icon: nil
     ) {
-      Text(tvText("退出后将断开 VPN，并需要重新登录。", "VPN will disconnect and you will need to sign in again.", language: language))
+      Text(tvText("确定要退出当前账户吗？退出后需要重新登录。", "Are you sure you want to sign out? You will need to sign in again.", language: language))
     } actions: {
       HStack(spacing: tv(10)) {
         TVFocusButton(cornerRadius: TVTheme.compactRadius, autofocus: true, focus: $logoutCancelFocused, action: {
@@ -593,7 +648,7 @@ struct TVHomeView: View {
           showLogoutConfirmation = false
           performLogout()
         }) { focused in
-          Text(tvText("退出登录", "Sign Out", language: language))
+          Text(tvText("退出", "Exit", language: language))
             .font(TVFont.regular(14))
             .foregroundStyle(.white)
             .padding(.horizontal, tv(18))
@@ -607,7 +662,7 @@ struct TVHomeView: View {
 
   private func messageDialog(_ message: String) -> some View {
     TVDialog(
-      title: tvText("暂时无法连接", "Unable to Connect", language: language),
+      title: subscriptionBlockTitle,
       icon: nil
     ) {
       Text(message)
@@ -615,7 +670,7 @@ struct TVHomeView: View {
       TVFocusButton(cornerRadius: TVTheme.compactRadius, autofocus: true, focus: $messageActionFocused, action: {
         subscriptionBlockMessage = nil
       }) { focused in
-        Text(tvText("知道了", "Got It", language: language))
+        Text(tvText("知道了", "Got it", language: language))
           .font(TVFont.regular(14))
           .foregroundStyle(.white)
           .padding(.horizontal, tv(24))
@@ -664,16 +719,29 @@ struct TVHomeView: View {
   private var subscriptionBlockReason: String? {
     guard let summary = subscriptionSummary else { return nil }
     if let expiredAt = expirationDate, expiredAt <= Date() {
-      return tvText("当前套餐已过期，请续费后再连接", "Your plan has expired. Renew it before connecting.", language: language)
+      return tvText("请续费后继续使用", "Please renew to continue using", language: language)
     }
     if summary.transferLimit > 0, summary.remainingBytes <= 0 {
-      return tvText("当前套餐流量已用完，请恢复流量后再连接", "Your data allowance is exhausted.", language: language)
+      return tvText("套餐流量已用完，请重置流量或更换套餐", "Plan traffic has been used up, please reset traffic or change plan", language: language)
     }
     let hasPlanName = summary.planName?.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty == false
     if (summary.planID ?? 0) <= 0, !hasPlanName, summary.transferLimit <= 0 {
-      return tvText("当前账号暂无可用套餐", "No active plan is available for this account.", language: language)
+      return tvText("请购买套餐后使用", "Please purchase a subscription to use", language: language)
     }
     return nil
+  }
+
+  private var subscriptionBlockTitle: String {
+    guard let summary = subscriptionSummary else {
+      return tvText("无可用套餐", "No available subscription", language: language)
+    }
+    if let expiredAt = expirationDate, expiredAt <= Date() {
+      return tvText("订阅已过期", "Subscription has expired", language: language)
+    }
+    if summary.transferLimit > 0, summary.remainingBytes <= 0 {
+      return tvText("流量已用完", "Traffic used up", language: language)
+    }
+    return tvText("无可用套餐", "No available subscription", language: language)
   }
 
   private var subscriptionTitle: String {

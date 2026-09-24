@@ -32,26 +32,38 @@ func tvText(_ chinese: String, _ english: String, language: String) -> String {
   TVLanguage.resolved(from: language) == .simplifiedChinese ? chinese : english
 }
 
-/// Converts Android TV's 1280×720 design units into native tvOS layout units.
-/// Values are aligned to the output pixel grid so text, strokes, and icons are
-/// laid out at their final size instead of scaling an already-rendered view.
+/// Uses the same 1280×720 logical design density as Android TV while keeping
+/// the native tvOS canvas. A 1920×1080 Apple TV viewport therefore renders the
+/// component system at 1.5× instead of leaving Android-sized controls floating
+/// in a much larger point canvas. The scale is derived from both axes, so other
+/// 16:9 resolutions retain the same proportions without bitmap stretching.
 enum TVLayout {
-  static let referenceSize = CGSize(width: 1280, height: 720)
-
-  static var scale: CGFloat {
-    let size = UIScreen.main.bounds.size
-    guard size.width > 0, size.height > 0 else { return 1 }
-    return min(size.width / referenceSize.width, size.height / referenceSize.height)
-  }
+  static let interfaceScale: CGFloat = {
+    let bounds = UIScreen.main.bounds
+    let widthScale = bounds.width / 1280
+    let heightScale = bounds.height / 720
+    return min(max(min(widthScale, heightScale), 1), 1.5)
+  }()
+  static let textScale: CGFloat = 1.3
 
   static func value(_ designValue: CGFloat) -> CGFloat {
     let outputScale = max(UIScreen.main.scale, 1)
-    return (designValue * scale * outputScale).rounded() / outputScale
+    return (designValue * outputScale).rounded() / outputScale
+  }
+
+  static func interfaceValue(_ designValue: CGFloat) -> CGFloat {
+    value(designValue * interfaceScale)
   }
 }
 
 @inline(__always)
 func tv(_ designValue: CGFloat) -> CGFloat {
+  TVLayout.interfaceValue(designValue)
+}
+
+/// Structural values use the same logical-pixel scale as reusable controls.
+@inline(__always)
+func tvLayout(_ designValue: CGFloat) -> CGFloat {
   TVLayout.value(designValue)
 }
 
@@ -110,16 +122,12 @@ enum TVTheme {
 }
 
 enum TVFont {
-  /// Matches Android TV's global `TextScaler.linear(1.3)` while keeping
-  /// icons, cards, focus rings, and other layout geometry unchanged.
-  static let televisionTextScale: CGFloat = 1.3
-
   static func regular(_ size: CGFloat) -> Font {
-    .custom("Roboto-Regular", fixedSize: tv(size * televisionTextScale))
+    .custom("Roboto-Regular", fixedSize: tv(size * TVLayout.textScale))
   }
 
   static func medium(_ size: CGFloat) -> Font {
-    .custom("Roboto-Medium", fixedSize: tv(size * televisionTextScale))
+    .custom("Roboto-Medium", fixedSize: tv(size * TVLayout.textScale))
   }
 }
 
@@ -164,19 +172,14 @@ struct MaterialIcon: View {
   }
 }
 
-/// Android TV is authored against a 1280×720 canvas. Every descendant uses
-/// native, scaled layout values; this container only centers the aspect-fit
-/// canvas and never applies a rendering transform.
+/// A full-screen native canvas. Individual pages own their responsive
+/// breakpoints just like their Android TV counterparts.
 struct TVDesignCanvas<Content: View>: View {
   @ViewBuilder let content: () -> Content
 
   var body: some View {
-    GeometryReader { geometry in
-      let scale = min(geometry.size.width / 1280, geometry.size.height / 720)
-      content()
-        .frame(width: 1280 * scale, height: 720 * scale)
-        .position(x: geometry.size.width / 2, y: geometry.size.height / 2)
-    }
+    content()
+      .frame(maxWidth: .infinity, maxHeight: .infinity)
     .ignoresSafeArea()
   }
 }
