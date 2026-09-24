@@ -5,6 +5,7 @@ import 'package:fl_clash/xboard/features/shared/styles/styles.dart';
 import 'package:fl_clash/xboard/utils/xboard_notification.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:fl_clash/widgets/widgets.dart';
 
 class LogoutDialog extends ConsumerStatefulWidget {
   const LogoutDialog({super.key});
@@ -34,13 +35,20 @@ class _LogoutDialogState extends ConsumerState<LogoutDialog> {
             : appLocalizations.xboardLogoutConfirmContent,
       ),
       actions: [
-        OutlinedButton(
+        TVFocusable(
           autofocus: system.isTV,
           onPressed: _isLoggingOut ? null : () => Navigator.of(context).pop(),
-          style: XbUiButton.outlinedNeutral(context),
-          child: Text(appLocalizations.cancel),
+          borderRadius: BorderRadius.circular(14),
+          child: OutlinedButton(
+            onPressed: _isLoggingOut ? null : () => Navigator.of(context).pop(),
+            style: XbUiButton.outlinedNeutral(context).copyWith(
+              overlayColor: const WidgetStatePropertyAll(Colors.transparent),
+            ),
+            child: Text(appLocalizations.cancel),
+          ),
         ),
-        FilledButton(
+        TVFocusable(
+          borderRadius: BorderRadius.circular(14),
           onPressed: _isLoggingOut
               ? null
               : () async {
@@ -59,27 +67,50 @@ class _LogoutDialogState extends ConsumerState<LogoutDialog> {
                     setState(() => _isLoggingOut = false);
                   }
                 },
-          style: XbUiButton.filledDanger(context, busy: _isLoggingOut),
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              if (_isLoggingOut) ...[
-                const SizedBox(
-                  width: 18,
-                  height: 18,
-                  child: CircularProgressIndicator(
-                    strokeWidth: 2,
-                    color: Colors.white,
+          child: FilledButton(
+            onPressed: _isLoggingOut
+                ? null
+                : () async {
+                    if (isProtected) {
+                      final confirmed = await _confirmForcedLogout(context);
+                      if (!confirmed || !context.mounted) return;
+                    }
+                    setState(() => _isLoggingOut = true);
+                    final succeeded = await _performLogout(force: isProtected);
+                    if (!context.mounted) return;
+                    if (succeeded) {
+                      Navigator.of(context).pop();
+                      XBoardNotification.showSuccess(
+                          appLocalizations.loggedOutSuccess);
+                    } else {
+                      setState(() => _isLoggingOut = false);
+                    }
+                  },
+            style:
+                XbUiButton.filledDanger(context, busy: _isLoggingOut).copyWith(
+              overlayColor: const WidgetStatePropertyAll(Colors.transparent),
+            ),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                if (_isLoggingOut) ...[
+                  const SizedBox(
+                    width: 18,
+                    height: 18,
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2,
+                      color: Colors.white,
+                    ),
                   ),
+                  const SizedBox(width: 8),
+                ],
+                Text(
+                  isProtected
+                      ? appLocalizations.xboardLogoutForceAction
+                      : appLocalizations.exit,
                 ),
-                const SizedBox(width: 8),
               ],
-              Text(
-                isProtected
-                    ? appLocalizations.xboardLogoutForceAction
-                    : appLocalizations.exit,
-              ),
-            ],
+            ),
           ),
         ),
       ],
@@ -98,16 +129,30 @@ class _LogoutDialogState extends ConsumerState<LogoutDialog> {
             ),
             content: Text(appLocalizations.xboardLogoutForceConfirmContent),
             actions: [
-              OutlinedButton(
+              TVFocusable(
                 autofocus: system.isTV,
                 onPressed: () => Navigator.of(context).pop(false),
-                style: XbUiButton.outlinedNeutral(context),
-                child: Text(appLocalizations.cancel),
+                borderRadius: BorderRadius.circular(14),
+                child: OutlinedButton(
+                  onPressed: () => Navigator.of(context).pop(false),
+                  style: XbUiButton.outlinedNeutral(context).copyWith(
+                    overlayColor:
+                        const WidgetStatePropertyAll(Colors.transparent),
+                  ),
+                  child: Text(appLocalizations.cancel),
+                ),
               ),
-              FilledButton(
+              TVFocusable(
                 onPressed: () => Navigator.of(context).pop(true),
-                style: XbUiButton.filledDanger(context),
-                child: Text(appLocalizations.xboardLogoutForceAction),
+                borderRadius: BorderRadius.circular(14),
+                child: FilledButton(
+                  onPressed: () => Navigator.of(context).pop(true),
+                  style: XbUiButton.filledDanger(context).copyWith(
+                    overlayColor:
+                        const WidgetStatePropertyAll(Colors.transparent),
+                  ),
+                  child: Text(appLocalizations.xboardLogoutForceAction),
+                ),
               ),
             ],
           ),

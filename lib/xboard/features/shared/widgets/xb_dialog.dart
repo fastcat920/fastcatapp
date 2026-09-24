@@ -1,4 +1,5 @@
 import 'package:fl_clash/xboard/features/shared/styles/styles.dart';
+import 'package:fl_clash/widgets/widgets.dart';
 import 'package:flutter/material.dart';
 
 enum XbDialogTone { neutral, warning, danger }
@@ -151,15 +152,22 @@ class _ChoiceTile<T> extends StatelessWidget {
   final String label;
 
   @override
-  Widget build(BuildContext context) => ListTile(
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(XbUiTokens.radiusSm),
-        ),
+  Widget build(BuildContext context) {
+    final radius = BorderRadius.circular(XbUiTokens.radiusSm);
+    void select() => Navigator.of(context).pop(value);
+    return TVFocusable(
+      borderRadius: radius,
+      onPressed: select,
+      child: ListTile(
+        shape: RoundedRectangleBorder(borderRadius: radius),
+        focusColor: Colors.transparent,
         leading: Icon(
           selected ? Icons.radio_button_checked : Icons.radio_button_off,
           color: selected ? Theme.of(context).colorScheme.primary : null,
         ),
         title: Text(label),
-        onTap: () => Navigator.of(context).pop(value),
-      );
+        onTap: select,
+      ),
+    );
+  }
 }

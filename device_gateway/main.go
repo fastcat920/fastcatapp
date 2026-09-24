@@ -1058,9 +1058,35 @@ func (s *Server) handleQRSessionByID(w http.ResponseWriter, r *http.Request) {
 		s.handleQRPoll(w, r, id)
 	case http.MethodPost:
 		s.handleQRApprove(w, r, id)
+	case http.MethodDelete:
+		s.handleQRCancel(w, r, id)
 	default:
 		writeError(w, http.StatusMethodNotAllowed, "METHOD_NOT_ALLOWED", "Method not allowed", nil)
 	}
+}
+
+// handleQRCancel invalidates a pending challenge before the target creates a
+// replacement. The polling secret prevents another device from cancelling a
+// QR code that it did not create.
+func (s *Server) handleQRCancel(w http.ResponseWriter, r *http.Request, id string) {
+	pollToken := strings.TrimSpace(r.URL.Query().Get("poll_token"))
+	s.qrMu.Lock()
+	defer s.qrMu.Unlock()
+	item := s.qrSessions[id]
+	if item == nil {
+		writeJSON(w, http.StatusOK, map[string]any{"success": true, "data": map[string]any{"status": "cancelled"}})
+		return
+	}
+	if pollToken == "" || !hmac.Equal([]byte(item.PollToken), []byte(pollToken)) {
+		writeError(w, http.StatusNotFound, "QR_SESSION_NOT_FOUND", "QR login session not found", nil)
+		return
+	}
+	if item.Status != "pending" {
+		writeError(w, http.StatusConflict, "QR_SESSION_USED", "二维码已被使用", nil)
+		return
+	}
+	delete(s.qrSessions, id)
+	writeJSON(w, http.StatusOK, map[string]any{"success": true, "data": map[string]any{"status": "cancelled"}})
 }
 
 func (s *Server) handleQRPoll(w http.ResponseWriter, r *http.Request, id string) {

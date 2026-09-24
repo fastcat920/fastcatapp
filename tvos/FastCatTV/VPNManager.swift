@@ -19,6 +19,7 @@ private let kAppGroupId: String = {
 /// launch; the first connection is initiated only after the in-app data notice.
 class VPNManager: NSObject {
   static let shared = VPNManager()
+  static let statusDidChangeNotification = Notification.Name("fastcat.vpn.statusChanged")
   private var manager: NETunnelProviderManager?
   /// Last error message from VPN operations, readable from Dart.
   var lastError: String = ""
@@ -132,7 +133,9 @@ class VPNManager: NSObject {
     // Already running — just make sure config is up to date
     if isTunnelRunning {
       NSLog("[VPNManager] ensureTunnelRunning: tunnel already running")
-      if !config.isEmpty { sendConfigUpdate(config) }
+      if !config.isEmpty {
+        sendConfigUpdate(config) { _ in }
+      }
       completion(nil)
       return
     }
@@ -203,15 +206,23 @@ class VPNManager: NSObject {
   /// Supply the decoded profile only to the active tunnel; never persist YAML.
   func connect(config: String, completion: @escaping (String?) -> Void) {
     if isTunnelRunning {
-      // Tunnel already running — just enable traffic mode
-      NSLog("[VPNManager] connect: tunnel running, enabling traffic mode")
-      setTrafficMode(active: true) { [weak self] error in
-        if let error = error {
-          completion(error)
-        } else {
-          self?.isTrafficActive = true
-          self?.notifyStatusChange()
-          completion(nil)
+      // The subscription or mode may have changed while the tunnel was idle.
+      // Reload the supplied profile before enabling traffic so reconnecting never
+      // resumes a stale configuration.
+      NSLog("[VPNManager] connect: tunnel running, updating config before enabling traffic")
+      sendConfigUpdate(config) { [weak self] updateError in
+        if let updateError {
+          completion(updateError)
+          return
+        }
+        self?.setTrafficMode(active: true) { error in
+          if let error = error {
+            completion(error)
+          } else {
+            self?.isTrafficActive = true
+            self?.notifyStatusChange()
+            completion(nil)
+          }
         }
       }
       return
@@ -318,10 +329,78 @@ class VPNManager: NSObject {
   // MARK: - Traffic mode IPC
 
   /// Reconfigure an already-running tunnel without writing YAML to disk.
-  private func sendConfigUpdate(_ config: String) {
+  private func sendConfigUpdate(_ config: String, completion: @escaping (String?) -> Void) {
     sendClashMessage(method: "_updateConfig", data: config) { response in
       if (response ?? "").hasPrefix("error") {
         NSLog("[VPNManager] config update failed: %@", response ?? "unknown")
+        completion(response)
+      } else {
+        completion(nil)
+      }
+    }
+  }
+
+  /// Apply a Clash routing mode without reconnecting the packet tunnel.
+  func updateMode(_ mode: String, completion: @escaping (String?) -> Void) {
+    guard isTunnelRunning else {
+      completion(nil)
+      return
+    }
+    guard let data = try? JSONSerialization.data(withJSONObject: ["mode": mode]),
+          let payload = String(data: data, encoding: .utf8) else {
+      completion("代理模式参数无效")
+      return
+    }
+    sendClashMessage(method: "updateConfig", data: payload) { response in
+      let value = response ?? ""
+      completion(value.isEmpty ? nil : value)
+    }
+  }
+
+  /// Select a proxy in a live Mihomo group.
+  func changeProxy(groupName: String, proxyName: String, completion: @escaping (String?) -> Void) {
+    guard isTunnelRunning else {
+      completion("VPN 核心尚未启动")
+      return
+    }
+    let value = ["group-name": groupName, "proxy-name": proxyName]
+    guard let data = try? JSONSerialization.data(withJSONObject: value),
+          let payload = String(data: data, encoding: .utf8) else {
+      completion("线路参数无效")
+      return
+    }
+    sendClashMessage(method: "changeProxy", data: payload) { response in
+      let result = response ?? ""
+      completion(result.isEmpty ? nil : result)
+    }
+  }
+
+  /// Return Mihomo's live proxy/group graph as JSON.
+  func getProxies(completion: @escaping (String?) -> Void) {
+    guard isTunnelRunning else {
+      completion(nil)
+      return
+    }
+    sendClashMessage(method: "getProxies", data: nil, completion: completion)
+  }
+
+  /// Reconcile the in-memory state with the Network Extension after app launch.
+  func refreshStatus(completion: @escaping (String) -> Void) {
+    loadManager(createIfMissing: false) { [weak self] in
+      guard let self else {
+        completion("disconnected")
+        return
+      }
+      guard self.isTunnelRunning else {
+        self.isTrafficActive = false
+        self.notifyStatusChange()
+        completion(self.statusString)
+        return
+      }
+      self.sendClashMessage(method: "_getTrafficMode", data: nil) { response in
+        self.isTrafficActive = response == "active"
+        self.notifyStatusChange()
+        completion(self.statusString)
       }
     }
   }
@@ -378,15 +457,25 @@ class VPNManager: NSObject {
   // MARK: - Status notification
 
   @objc private func vpnStatusDidChange() {
-    let status = statusString
-    NSLog("[VPNManager] VPN status changed: %@ (tunnelRunning=%d, trafficActive=%d)",
-          status, isTunnelRunning ? 1 : 0, isTrafficActive ? 1 : 0)
-    notifyStatusChange()
+    if !isTunnelRunning {
+      isTrafficActive = false
+      notifyStatusChange()
+      return
+    }
+    sendClashMessage(method: "_getTrafficMode", data: nil) { [weak self] response in
+      guard let self else { return }
+      if response == "active" || response == "idle" {
+        self.isTrafficActive = response == "active"
+      }
+      NSLog("[VPNManager] VPN status changed: %@ (tunnelRunning=%d, trafficActive=%d)",
+            self.statusString, self.isTunnelRunning ? 1 : 0, self.isTrafficActive ? 1 : 0)
+      self.notifyStatusChange()
+    }
   }
 
   private func notifyStatusChange() {
     NotificationCenter.default.post(
-      name: Notification.Name("fastcat.vpn.statusChanged"),
+      name: Self.statusDidChangeNotification,
       object: statusString
     )
   }

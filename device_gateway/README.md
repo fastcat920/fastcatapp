@@ -130,6 +130,7 @@ QR contains no account or session token and expires after two minutes.
 POST /api/v1/auth/qr/sessions              target creates a challenge
 GET  /api/v1/auth/qr/sessions/{id}         target polls with ?poll_token=
 POST /api/v1/auth/qr/sessions/{id}         signed-in phone approves it
+DELETE /api/v1/auth/qr/sessions/{id}       target cancels it with ?poll_token=
 ```
 
 ## Admin APIs

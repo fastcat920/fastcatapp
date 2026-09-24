@@ -22,6 +22,9 @@ import 'package:fl_clash/xboard/features/shared/widgets/legal_footer.dart';
 import 'package:flutter/services.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 import 'package:fl_clash/xboard/features/auth/services/qr_login_service.dart';
+import 'package:fl_clash/xboard/features/auth/widgets/auth_tv_layout.dart';
+import 'package:fl_clash/providers/providers.dart';
+import 'package:fl_clash/widgets/widgets.dart';
 
 const _gatewayOverrideUrl = String.fromEnvironment('XBOARD_GATEWAY_URL');
 
@@ -44,6 +47,7 @@ class LoginResponsiveScaffold extends StatelessWidget {
     return LayoutBuilder(
       builder: (context, constraints) {
         final showPageActions = (isDesktop ?? system.isDesktop) ||
+            system.isTV ||
             constraints.maxHeight >= fullLayoutMinHeight;
 
         return Scaffold(
@@ -80,6 +84,8 @@ class _LoginPageState extends ConsumerState<LoginPage> {
   late final FocusNode _forgotPasswordFocusNode;
   late final FocusNode _loginMethodFocusNode;
   late final FocusNode _refreshQrFocusNode;
+  late final FocusNode _languageFocusNode;
+  late final FocusNode _themeFocusNode;
   final _loginScrollController = ScrollController();
   bool _rememberPassword = true;
   bool _isPasswordVisible = false;
@@ -102,32 +108,8 @@ class _LoginPageState extends ConsumerState<LoginPage> {
     _forgotPasswordFocusNode = FocusNode(debugLabel: 'login-forgot-password');
     _loginMethodFocusNode = FocusNode(debugLabel: 'login-method');
     _refreshQrFocusNode = FocusNode(debugLabel: 'login-refresh-qr');
-    _loginMethodFocusNode.onKeyEvent =
-        (_, event) => _handleLoginMethodKey(event);
-    _refreshQrFocusNode.onKeyEvent = (_, event) => _moveTvFocus(
-          event,
-          up: _loginMethodFocusNode,
-        );
-    _rememberFocusNode.onKeyEvent = (_, event) => _moveTvFocus(
-          event,
-          up: _passwordFocusNode,
-          down: _loginFocusNode,
-        );
-    _loginFocusNode.onKeyEvent = (_, event) => _moveTvFocus(
-          event,
-          up: _rememberFocusNode,
-          down: _registerFocusNode,
-        );
-    _registerFocusNode.onKeyEvent = (_, event) => _moveTvFocus(
-          event,
-          up: _loginFocusNode,
-          right: _forgotPasswordFocusNode,
-        );
-    _forgotPasswordFocusNode.onKeyEvent = (_, event) => _moveTvFocus(
-          event,
-          up: _loginFocusNode,
-          left: _registerFocusNode,
-        );
+    _languageFocusNode = FocusNode(debugLabel: 'login-language');
+    _themeFocusNode = FocusNode(debugLabel: 'login-theme');
     _storageService = ref.read(storageServiceProvider);
     _loadSavedCredentials();
     // 根 Application 已在首帧后预热初始化；这里仅在非网关调试模式下兜底。
@@ -154,6 +136,8 @@ class _LoginPageState extends ConsumerState<LoginPage> {
     _forgotPasswordFocusNode.dispose();
     _loginMethodFocusNode.dispose();
     _refreshQrFocusNode.dispose();
+    _languageFocusNode.dispose();
+    _themeFocusNode.dispose();
     _loginScrollController.dispose();
     super.dispose();
   }
@@ -209,6 +193,9 @@ class _LoginPageState extends ConsumerState<LoginPage> {
           _showQrLogin ? _refreshQrFocusNode : _emailFocusNode,
         );
         return KeyEventResult.handled;
+      case LogicalKeyboardKey.arrowUp:
+        _requestTvFocus(_languageFocusNode);
+        return KeyEventResult.handled;
       default:
         return KeyEventResult.ignored;
     }
@@ -221,6 +208,112 @@ class _LoginPageState extends ConsumerState<LoginPage> {
       if (!mounted || !system.isTV) return;
       _requestTvFocus(_loginMethodFocusNode);
     });
+  }
+
+  Future<void> _chooseTvLanguage() async {
+    final current = ref.read(appSettingProvider).locale ?? '';
+    final selected = await showDialog<String>(
+      context: context,
+      builder: (_) => XbChoiceDialog<String>(
+        title: appLocalizations.language,
+        options: const ['', 'zh_CN', 'en'],
+        selected: current,
+        labelBuilder: (value) => switch (value) {
+          '' => appLocalizations.system,
+          'zh_CN' => '简体中文',
+          _ => 'English',
+        },
+      ),
+    );
+    if (selected == null) return;
+    ref.read(appSettingProvider.notifier).updateState(
+          (state) => state.copyWith(locale: selected.isEmpty ? null : selected),
+        );
+  }
+
+  void _toggleTvTheme() {
+    final nextMode = Theme.of(context).brightness == Brightness.dark
+        ? ThemeMode.light
+        : ThemeMode.dark;
+    ref.read(themeSettingProvider.notifier).updateState(
+          (state) => state.copyWith(themeMode: nextMode),
+        );
+  }
+
+  PreferredSizeWidget _buildTvLoginAppBar(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+    final isDark = theme.brightness == Brightness.dark;
+    final radius = BorderRadius.circular(XbUiTokens.radiusSm);
+
+    Widget action({
+      required FocusNode focusNode,
+      required VoidCallback onPressed,
+      required IconData icon,
+      required String label,
+      required KeyEventResult Function(FocusNode, KeyEvent) onKeyEvent,
+    }) {
+      return TVFocusable(
+        focusNode: focusNode,
+        borderRadius: radius,
+        onPressed: onPressed,
+        onKeyEvent: onKeyEvent,
+        child: TextButton.icon(
+          style: XbUiButton.textChipPrimary(context).copyWith(
+            overlayColor: const WidgetStatePropertyAll(Colors.transparent),
+            padding: const WidgetStatePropertyAll(
+              EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+            ),
+          ),
+          onPressed: onPressed,
+          icon: Icon(icon, size: 20, color: colorScheme.primary),
+          label: Text(
+            label,
+            style: TextStyle(
+              color: colorScheme.primary,
+              fontWeight: XbFontWeight.semibold,
+            ),
+          ),
+        ),
+      );
+    }
+
+    return AppBar(
+      key: const Key('login-page-app-bar'),
+      automaticallyImplyLeading: false,
+      toolbarHeight: AuthTvLayout.toolbarHeight,
+      titleSpacing: 20,
+      backgroundColor: XbUiTokens.pageBackground(context),
+      elevation: 0,
+      scrolledUnderElevation: 0,
+      title: action(
+        focusNode: _languageFocusNode,
+        onPressed: _chooseTvLanguage,
+        icon: Icons.language_outlined,
+        label: appLocalizations.language,
+        onKeyEvent: (_, event) => _moveTvFocus(
+          event,
+          right: _themeFocusNode,
+          down: _loginMethodFocusNode,
+        ),
+      ),
+      actions: [
+        Padding(
+          padding: const EdgeInsets.only(right: 20),
+          child: action(
+            focusNode: _themeFocusNode,
+            onPressed: _toggleTvTheme,
+            icon: isDark ? Icons.light_mode_outlined : Icons.dark_mode_outlined,
+            label: appLocalizations.switchTheme,
+            onKeyEvent: (_, event) => _moveTvFocus(
+              event,
+              left: _languageFocusNode,
+              down: _loginMethodFocusNode,
+            ),
+          ),
+        ),
+      ],
+    );
   }
 
   /// 初始化 XBoard（统一入口）
@@ -418,7 +511,8 @@ class _LoginPageState extends ConsumerState<LoginPage> {
 
   Widget _buildLogo(ColorScheme colorScheme, {bool compact = false}) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final size = compact ? 64.0 : 80.0;
+    final size = system.isTV ? 50.0 : (compact ? 64.0 : 80.0);
+    final imageSize = system.isTV ? 42.0 : (compact ? 54.0 : 64.0);
     return Container(
       width: size,
       height: size,
@@ -428,13 +522,13 @@ class _LoginPageState extends ConsumerState<LoginPage> {
             : colorScheme.primary.withValues(alpha: 0.10),
         shape: BoxShape.circle,
       ),
-      padding: EdgeInsets.all(compact ? 5 : 6),
+      padding: EdgeInsets.all(system.isTV ? 4 : (compact ? 5 : 6)),
       child: ClipRRect(
         borderRadius: BorderRadius.circular(14),
         child: Image.asset(
           'assets/images/icon.png',
-          width: compact ? 54 : 64,
-          height: compact ? 54 : 64,
+          width: imageSize,
+          height: imageSize,
         ),
       ),
     );
@@ -469,60 +563,63 @@ class _LoginPageState extends ConsumerState<LoginPage> {
     final isShortViewport = viewportHeight < 760;
     final compactBrand = isShortViewport || system.isTV;
     final showCopyright = !system.isTV && !isShortViewport;
-    final verticalPadding = isShortViewport ? 12.0 : 20.0;
+    final verticalPadding = system.isTV ? 8.0 : (isShortViewport ? 12.0 : 20.0);
 
-    return LoginResponsiveScaffold(
-      appBar: AppBar(
-        key: const Key('login-page-app-bar'),
-        backgroundColor: isDark ? null : Colors.white,
-        elevation: 0,
-        automaticallyImplyLeading: false,
-        titleSpacing: 16,
-        title: Row(
-          children: [
-            TextButton.icon(
-              onPressed: _isCheckingWebsite
-                  ? null
-                  : () => _openOfficialWebsite(context),
-              icon: _isCheckingWebsite
-                  ? const SizedBox(
-                      width: 18,
-                      height: 18,
-                      child: CircularProgressIndicator(strokeWidth: 2),
-                    )
-                  : const Icon(Icons.language_outlined, size: 18),
-              label: Text(_isCheckingWebsite
-                  ? appLocalizations.checking
-                  : appLocalizations.officialWebsite),
-              style: XbUiButton.textChipPrimary(context),
-            ),
-            const Spacer(),
-            // 初始化时：右上角显示小转圈
-            if (isIniting)
-              Padding(
-                padding: const EdgeInsets.only(right: 16),
-                child: SizedBox(
-                  width: 20,
-                  height: 20,
-                  child: CircularProgressIndicator(
-                    strokeWidth: 2,
-                    valueColor: AlwaysStoppedAnimation(colorScheme.primary),
+    final page = LoginResponsiveScaffold(
+      appBar: system.isTV
+          ? _buildTvLoginAppBar(context)
+          : AppBar(
+              key: const Key('login-page-app-bar'),
+              backgroundColor: isDark ? null : Colors.white,
+              elevation: 0,
+              automaticallyImplyLeading: false,
+              titleSpacing: 16,
+              title: Row(
+                children: [
+                  TextButton.icon(
+                    onPressed: _isCheckingWebsite
+                        ? null
+                        : () => _openOfficialWebsite(context),
+                    icon: _isCheckingWebsite
+                        ? const SizedBox(
+                            width: 18,
+                            height: 18,
+                            child: CircularProgressIndicator(strokeWidth: 2),
+                          )
+                        : const Icon(Icons.language_outlined, size: 18),
+                    label: Text(_isCheckingWebsite
+                        ? appLocalizations.checking
+                        : appLocalizations.officialWebsite),
+                    style: XbUiButton.textChipPrimary(context),
                   ),
-                ),
-              )
-            else ...[
-              // 客服按钮固定显示（远程 Crisp 优先，本地 Crisp 兜底）
-              TextButton.icon(
-                style: XbUiButton.textChipPrimary(context),
-                icon: const Icon(Icons.support_agent_outlined, size: 18),
-                label: Text(appLocalizations.contactSupport),
-                onPressed: () => CustomerServiceHelper.open(context),
+                  const Spacer(),
+                  // 初始化时：右上角显示小转圈
+                  if (isIniting)
+                    Padding(
+                      padding: const EdgeInsets.only(right: 16),
+                      child: SizedBox(
+                        width: 20,
+                        height: 20,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                          valueColor:
+                              AlwaysStoppedAnimation(colorScheme.primary),
+                        ),
+                      ),
+                    )
+                  else ...[
+                    // 客服按钮固定显示（远程 Crisp 优先，本地 Crisp 兜底）
+                    TextButton.icon(
+                      style: XbUiButton.textChipPrimary(context),
+                      icon: const Icon(Icons.support_agent_outlined, size: 18),
+                      label: Text(appLocalizations.contactSupport),
+                      onPressed: () => CustomerServiceHelper.open(context),
+                    ),
+                  ],
+                  const SizedBox(width: 8),
+                ],
               ),
-            ],
-            const SizedBox(width: 8),
-          ],
-        ),
-      ),
+            ),
       body: Container(
         color: isDark ? colorScheme.surface : const Color(0xFFFAFBFD),
         child: Column(
@@ -539,11 +636,15 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                   keyboardDismissBehavior:
                       ScrollViewKeyboardDismissBehavior.onDrag,
                   padding: EdgeInsets.symmetric(
-                    horizontal: 32,
+                    horizontal:
+                        system.isTV ? AuthTvLayout.horizontalPadding : 32,
                     vertical: verticalPadding,
                   ),
                   child: ConstrainedBox(
-                    constraints: const BoxConstraints(maxWidth: 400),
+                    constraints: BoxConstraints(
+                      maxWidth:
+                          system.isTV ? AuthTvLayout.contentMaxWidth : 400,
+                    ),
                     child: Form(
                       key: _formKey,
                       child: Column(
@@ -576,9 +677,26 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                           ),
                           if (system.isTV || system.isDesktop) ...[
                             SizedBox(height: compactBrand ? 16 : 20),
-                            Focus(
+                            TVFocusable(
                               focusNode: _loginMethodFocusNode,
+                              borderRadius: BorderRadius.circular(14),
+                              onPressed: () => _setLoginMethod(!_showQrLogin),
+                              onKeyEvent: (_, event) =>
+                                  _handleLoginMethodKey(event),
                               child: SegmentedButton<bool>(
+                                style: ButtonStyle(
+                                  overlayColor: const WidgetStatePropertyAll(
+                                    Colors.transparent,
+                                  ),
+                                  side: WidgetStateProperty.resolveWith(
+                                    (states) => BorderSide(
+                                      color:
+                                          states.contains(WidgetState.selected)
+                                              ? colorScheme.primary
+                                              : colorScheme.outlineVariant,
+                                    ),
+                                  ),
+                                ),
                                 segments: const [
                                   ButtonSegment(
                                     value: true,
@@ -613,6 +731,10 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                                       !isIniting &&
                                       !userState.isLoading,
                                   refreshFocusNode: _refreshQrFocusNode,
+                                  onRefreshKeyEvent: (_, event) => _moveTvFocus(
+                                    event,
+                                    up: _loginMethodFocusNode,
+                                  ),
                                   onAuthorized: (result) => ref
                                       .read(xboardUserProvider.notifier)
                                       .loginWithQrToken(result.token,
@@ -709,38 +831,56 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                                             MainAxisAlignment.spaceBetween,
                                         children: [
                                           // 记住密码
-                                          GestureDetector(
-                                            onTap: () {
+                                          TVFocusable(
+                                            focusNode: _rememberFocusNode,
+                                            borderRadius:
+                                                BorderRadius.circular(8),
+                                            onKeyEvent: (_, event) =>
+                                                _moveTvFocus(
+                                              event,
+                                              up: _passwordFocusNode,
+                                              down: _loginFocusNode,
+                                            ),
+                                            onPressed: () {
                                               setState(() {
                                                 _rememberPassword =
                                                     !_rememberPassword;
                                               });
                                             },
-                                            child: Row(
-                                              mainAxisSize: MainAxisSize.min,
-                                              children: [
-                                                SizedBox(
-                                                  width: 24,
-                                                  height: 24,
-                                                  child: Checkbox(
-                                                    focusNode:
-                                                        _rememberFocusNode,
-                                                    value: _rememberPassword,
-                                                    onChanged: (value) {
-                                                      setState(() {
-                                                        _rememberPassword =
-                                                            value ?? false;
-                                                      });
-                                                    },
+                                            child: GestureDetector(
+                                              onTap: () {
+                                                setState(() {
+                                                  _rememberPassword =
+                                                      !_rememberPassword;
+                                                });
+                                              },
+                                              child: Row(
+                                                mainAxisSize: MainAxisSize.min,
+                                                children: [
+                                                  SizedBox(
+                                                    width: 24,
+                                                    height: 24,
+                                                    child: Checkbox(
+                                                      focusNode: system.isTV
+                                                          ? null
+                                                          : _rememberFocusNode,
+                                                      value: _rememberPassword,
+                                                      onChanged: (value) {
+                                                        setState(() {
+                                                          _rememberPassword =
+                                                              value ?? false;
+                                                        });
+                                                      },
+                                                    ),
                                                   ),
-                                                ),
-                                                const SizedBox(width: 8),
-                                                Text(
-                                                  appLocalizations
-                                                      .xboardRememberPassword,
-                                                  style: textTheme.bodyMedium,
-                                                ),
-                                              ],
+                                                  const SizedBox(width: 8),
+                                                  Text(
+                                                    appLocalizations
+                                                        .xboardRememberPassword,
+                                                    style: textTheme.bodyMedium,
+                                                  ),
+                                                ],
+                                              ),
                                             ),
                                           ),
                                         ],
@@ -825,9 +965,22 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                                         ),
                                       ),
                                     ],
-                                    SizedBox(
+                                    TVFocusable(
+                                      focusNode: _loginFocusNode,
+                                      borderRadius: BorderRadius.circular(14),
+                                      onKeyEvent: (_, event) => _moveTvFocus(
+                                        event,
+                                        up: _rememberFocusNode,
+                                        down: _registerFocusNode,
+                                      ),
+                                      onPressed:
+                                          (isIniting || userState.isLoading)
+                                              ? null
+                                              : _login,
                                       child: FilledButton(
-                                        focusNode: _loginFocusNode,
+                                        focusNode: system.isTV
+                                            ? null
+                                            : _loginFocusNode,
                                         onPressed:
                                             (isIniting || userState.isLoading)
                                                 ? null
@@ -836,6 +989,10 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                                           context,
                                           busy: userState.isLoading,
                                         ).copyWith(
+                                          overlayColor:
+                                              const WidgetStatePropertyAll(
+                                            Colors.transparent,
+                                          ),
                                           shape: WidgetStatePropertyAll(
                                             RoundedRectangleBorder(
                                               borderRadius:
@@ -902,29 +1059,73 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                                         mainAxisAlignment:
                                             MainAxisAlignment.spaceBetween,
                                         children: [
-                                          TextButton.icon(
+                                          TVFocusable(
                                             focusNode: _registerFocusNode,
+                                            borderRadius:
+                                                BorderRadius.circular(10),
+                                            onKeyEvent: (_, event) =>
+                                                _moveTvFocus(
+                                              event,
+                                              up: _loginFocusNode,
+                                              right: _forgotPasswordFocusNode,
+                                            ),
                                             onPressed: isIniting
                                                 ? null
                                                 : _navigateToRegister,
-                                            icon: const Icon(
-                                              Icons.person_add_outlined,
-                                              size: 18,
+                                            child: TextButton.icon(
+                                              focusNode: system.isTV
+                                                  ? null
+                                                  : _registerFocusNode,
+                                              style: const ButtonStyle(
+                                                overlayColor:
+                                                    WidgetStatePropertyAll(
+                                                  Colors.transparent,
+                                                ),
+                                              ),
+                                              onPressed: isIniting
+                                                  ? null
+                                                  : _navigateToRegister,
+                                              icon: const Icon(
+                                                Icons.person_add_outlined,
+                                                size: 18,
+                                              ),
+                                              label: Text(appLocalizations
+                                                  .xboardRegister),
                                             ),
-                                            label: Text(appLocalizations
-                                                .xboardRegister),
                                           ),
-                                          TextButton.icon(
+                                          TVFocusable(
                                             focusNode: _forgotPasswordFocusNode,
+                                            borderRadius:
+                                                BorderRadius.circular(10),
+                                            onKeyEvent: (_, event) =>
+                                                _moveTvFocus(
+                                              event,
+                                              up: _loginFocusNode,
+                                              left: _registerFocusNode,
+                                            ),
                                             onPressed: isIniting
                                                 ? null
                                                 : _navigateToForgotPassword,
-                                            icon: const Icon(
-                                              Icons.help_outline,
-                                              size: 18,
+                                            child: TextButton.icon(
+                                              focusNode: system.isTV
+                                                  ? null
+                                                  : _forgotPasswordFocusNode,
+                                              style: const ButtonStyle(
+                                                overlayColor:
+                                                    WidgetStatePropertyAll(
+                                                  Colors.transparent,
+                                                ),
+                                              ),
+                                              onPressed: isIniting
+                                                  ? null
+                                                  : _navigateToForgotPassword,
+                                              icon: const Icon(
+                                                Icons.help_outline,
+                                                size: 18,
+                                              ),
+                                              label: Text(appLocalizations
+                                                  .xboardForgotPassword),
                                             ),
-                                            label: Text(appLocalizations
-                                                .xboardForgotPassword),
                                           ),
                                         ],
                                       ),
@@ -964,6 +1165,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
         ),
       ),
     );
+    return AuthTvLayout.apply(context, page);
   }
 
   Widget _buildLoginFooter(BuildContext context) {
@@ -972,24 +1174,33 @@ class _LoginPageState extends ConsumerState<LoginPage> {
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
-        InkWell(
+        TVFocusable(
           borderRadius: BorderRadius.circular(16),
-          onTap: () => Navigator.of(context).push(
+          onPressed: () => Navigator.of(context).push(
             MaterialPageRoute(
               builder: (_) => const FastCatAboutPage(),
             ),
           ),
-          child: Padding(
-            padding: const EdgeInsets.symmetric(
-              horizontal: 12,
-              vertical: 4,
-            ),
-            child: Text(
-              appLocalizations.updateCheckCurrentVersion(
-                'V${globalState.packageInfo.version}',
+          child: InkWell(
+            borderRadius: BorderRadius.circular(16),
+            onTap: () => Navigator.of(context).push(
+              MaterialPageRoute(
+                builder: (_) => const FastCatAboutPage(),
               ),
-              style: textTheme.bodySmall?.copyWith(
-                color: colorScheme.onSurfaceVariant,
+            ),
+            overlayColor: const WidgetStatePropertyAll(Colors.transparent),
+            child: Padding(
+              padding: const EdgeInsets.symmetric(
+                horizontal: 12,
+                vertical: 4,
+              ),
+              child: Text(
+                appLocalizations.updateCheckCurrentVersion(
+                  'V${globalState.packageInfo.version}',
+                ),
+                style: textTheme.bodySmall?.copyWith(
+                  color: colorScheme.onSurfaceVariant,
+                ),
               ),
             ),
           ),
@@ -1005,11 +1216,13 @@ class _QrLoginCard extends StatefulWidget {
   const _QrLoginCard({
     required this.enabled,
     required this.refreshFocusNode,
+    required this.onRefreshKeyEvent,
     required this.onAuthorized,
   });
   final bool enabled;
 
   final FocusNode refreshFocusNode;
+  final FocusOnKeyEventCallback onRefreshKeyEvent;
   final Future<bool> Function(QrLoginResult result) onAuthorized;
 
   @override
@@ -1017,9 +1230,15 @@ class _QrLoginCard extends StatefulWidget {
 }
 
 class _QrLoginCardState extends State<_QrLoginCard> {
+  static const _refreshCooldown = Duration(seconds: 5);
+
   QrLoginChallenge? _challenge;
   Timer? _pollTimer;
+  Timer? _countdownTimer;
   bool _loading = false;
+  bool _expired = false;
+  Duration _remaining = Duration.zero;
+  DateTime? _refreshAvailableAt;
   String? _error;
 
   @override
@@ -1031,47 +1250,131 @@ class _QrLoginCardState extends State<_QrLoginCard> {
   @override
   void didUpdateWidget(covariant _QrLoginCard oldWidget) {
     super.didUpdateWidget(oldWidget);
-    if (!oldWidget.enabled && widget.enabled && _challenge == null) _create();
+    if (!oldWidget.enabled && widget.enabled) {
+      final challenge = _challenge;
+      if (challenge == null) {
+        _create();
+      } else if (_hasExpired(challenge)) {
+        _markExpired();
+      } else {
+        _startTimers(challenge);
+      }
+    }
+    if (oldWidget.enabled && !widget.enabled) _stopTimers();
   }
 
   @override
   void dispose() {
-    _pollTimer?.cancel();
+    _stopTimers();
     super.dispose();
   }
 
-  Future<void> _create() async {
+  void _stopTimers() {
+    _pollTimer?.cancel();
+    _countdownTimer?.cancel();
+    _pollTimer = null;
+    _countdownTimer = null;
+  }
+
+  bool _hasExpired(QrLoginChallenge challenge) {
+    return !DateTime.now().toUtc().isBefore(challenge.expiresAt);
+  }
+
+  void _startTimers(QrLoginChallenge challenge) {
+    _stopTimers();
+    _refreshAvailableAt = DateTime.now().add(_refreshCooldown);
+    _updateCountdown();
+    _countdownTimer = Timer.periodic(
+      const Duration(seconds: 1),
+      (_) => _updateCountdown(),
+    );
+    _pollTimer = Timer.periodic(const Duration(seconds: 2), (_) => _poll());
+  }
+
+  void _updateCountdown() {
+    if (!mounted) return;
+    final challenge = _challenge;
+    if (challenge == null) return;
+    final milliseconds =
+        challenge.expiresAt.difference(DateTime.now().toUtc()).inMilliseconds;
+    final seconds = milliseconds <= 0 ? 0 : (milliseconds + 999) ~/ 1000;
+    final expired = seconds == 0;
+    setState(() {
+      _remaining = Duration(seconds: seconds);
+      _expired = expired;
+    });
+    if (expired) _stopTimers();
+  }
+
+  void _markExpired() {
+    if (!mounted) return;
+    _stopTimers();
+    setState(() {
+      _remaining = Duration.zero;
+      _expired = true;
+    });
+  }
+
+  Future<void> _create({bool invalidateCurrent = false}) async {
     if (_loading || !widget.enabled) return;
+    final previous = _challenge;
+    var previousInvalidated = previous == null;
     setState(() {
       _loading = true;
       _error = null;
     });
     try {
+      if (invalidateCurrent && previous != null) {
+        await QrLoginService.cancel(previous);
+        previousInvalidated = true;
+      }
+      if (invalidateCurrent && previous != null && previousInvalidated) {
+        _stopTimers();
+        if (!mounted) return;
+        setState(() {
+          _challenge = null;
+          _remaining = Duration.zero;
+          _expired = false;
+        });
+      }
       final challenge = await QrLoginService.create();
       if (!mounted) return;
       setState(() {
         _challenge = challenge;
         _loading = false;
+        _expired = false;
+        _error = null;
       });
-      _pollTimer?.cancel();
-      _pollTimer = Timer.periodic(const Duration(seconds: 2), (_) => _poll());
+      _startTimers(challenge);
     } catch (_) {
       if (mounted) {
         setState(() {
           _loading = false;
-          _error = '二维码加载失败';
+          if (previousInvalidated) _challenge = null;
+          _error = invalidateCurrent ? '二维码刷新失败，请稍后重试' : '二维码加载失败';
         });
       }
     }
   }
 
+  Future<void> _refresh() async {
+    if (_loading || !widget.enabled) return;
+    final availableAt = _refreshAvailableAt;
+    if (!_expired &&
+        availableAt != null &&
+        DateTime.now().isBefore(availableAt)) {
+      return;
+    }
+    await _create(invalidateCurrent: true);
+  }
+
   Future<void> _poll() async {
     final challenge = _challenge;
-    if (!widget.enabled || challenge == null || _loading) return;
+    if (!widget.enabled || challenge == null || _loading || _expired) return;
     try {
       final result = await QrLoginService.poll(challenge);
       if (result == null) return;
-      _pollTimer?.cancel();
+      _stopTimers();
       if (!mounted) return;
       setState(() => _loading = true);
       final success = await widget.onAuthorized(result);
@@ -1079,22 +1382,122 @@ class _QrLoginCardState extends State<_QrLoginCard> {
         setState(() {
           _loading = false;
           _error = '登录失败，请刷新二维码';
+          _remaining = Duration.zero;
+          _expired = true;
         });
       }
+    } on QrLoginExpiredException {
+      _markExpired();
     } catch (_) {
       // An expired/consumed challenge is replaced explicitly so transient
       // polling failures do not make the login page flicker.
     }
   }
 
+  String get _countdownText {
+    if (_expired) return '二维码已过期';
+    if (_challenge == null) return _loading ? '正在生成二维码…' : (_error ?? '二维码不可用');
+    if (_error != null) return _error!;
+    final minutes =
+        _remaining.inMinutes.remainder(60).toString().padLeft(2, '0');
+    final seconds =
+        _remaining.inSeconds.remainder(60).toString().padLeft(2, '0');
+    return '$minutes:$seconds';
+  }
+
+  Widget _buildQrSurface(
+    BuildContext context,
+    ThemeData theme,
+    double qrSize,
+  ) {
+    final challenge = _challenge;
+    final canInteract = widget.enabled;
+    final radius = BorderRadius.circular(12);
+    return Semantics(
+      button: true,
+      label:
+          _expired ? '二维码已过期，按确认键刷新二维码' : '登录二维码，剩余$_countdownText，按确认键刷新二维码',
+      child: TVFocusable(
+        focusNode: widget.refreshFocusNode,
+        borderRadius: radius,
+        onPressed: canInteract ? _refresh : null,
+        onKeyEvent: widget.onRefreshKeyEvent,
+        child: SizedBox.square(
+          dimension: qrSize,
+          child: ClipRRect(
+            borderRadius: radius,
+            child: Stack(
+              fit: StackFit.expand,
+              children: [
+                if (challenge != null)
+                  ColoredBox(
+                    color: Colors.white,
+                    child: QrImageView(
+                      data: challenge.qrData,
+                      size: qrSize,
+                      backgroundColor: Colors.white,
+                    ),
+                  )
+                else
+                  ColoredBox(
+                    color: theme.colorScheme.surfaceContainerHighest,
+                    child: Center(
+                      child: Text(
+                        _error ?? '二维码不可用',
+                        textAlign: TextAlign.center,
+                        style: theme.textTheme.bodySmall,
+                      ),
+                    ),
+                  ),
+                if (_loading)
+                  ColoredBox(
+                    color: Colors.black.withValues(alpha: 0.42),
+                    child: const Center(
+                      child: CircularProgressIndicator(color: Colors.white),
+                    ),
+                  )
+                else if (_expired && challenge != null)
+                  ColoredBox(
+                    color: Colors.black.withValues(alpha: 0.52),
+                    child: Center(
+                      child: FilledButton.icon(
+                        style: FilledButton.styleFrom(
+                          backgroundColor: theme.colorScheme.primary,
+                          foregroundColor: theme.colorScheme.onPrimary,
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 14,
+                            vertical: 10,
+                          ),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                        ).copyWith(
+                          overlayColor: const WidgetStatePropertyAll(
+                            Colors.transparent,
+                          ),
+                        ),
+                        onPressed: _refresh,
+                        icon: const Icon(Icons.refresh, size: 18),
+                        label: const Text('刷新二维码'),
+                      ),
+                    ),
+                  ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final challenge = _challenge;
+    final qrSize = system.isTV ? 160.0 : 180.0;
     return Container(
       // 与账号密码表单使用同一父级最大宽度，内容高度仍由二维码区域决定。
       width: double.infinity,
-      padding: const EdgeInsets.all(16),
+      padding: EdgeInsets.all(system.isTV ? 12 : 16),
       decoration: BoxDecoration(
         color: theme.colorScheme.surfaceContainerLow,
         borderRadius: BorderRadius.circular(16),
@@ -1108,22 +1511,17 @@ class _QrLoginCardState extends State<_QrLoginCard> {
         const SizedBox(height: 4),
         Text('使用已登录快猫的手机扫描并确认', style: theme.textTheme.bodySmall),
         const SizedBox(height: 12),
-        if (_loading && challenge == null)
-          const SizedBox(
-              width: 180,
-              height: 180,
-              child: Center(child: CircularProgressIndicator()))
-        else if (challenge != null)
-          QrImageView(
-              data: challenge.qrData, size: 180, backgroundColor: Colors.white)
-        else
-          SizedBox(height: 180, child: Center(child: Text(_error ?? '二维码不可用'))),
+        _buildQrSurface(context, theme, qrSize),
         const SizedBox(height: 8),
-        TextButton.icon(
-            focusNode: widget.refreshFocusNode,
-            onPressed: _loading ? null : _create,
-            icon: const Icon(Icons.refresh, size: 18),
-            label: const Text('刷新二维码')),
+        Text(
+          _countdownText,
+          style: theme.textTheme.bodySmall?.copyWith(
+            color: _expired
+                ? theme.colorScheme.error
+                : theme.colorScheme.onSurfaceVariant,
+            fontWeight: _expired ? XbFontWeight.semibold : FontWeight.normal,
+          ),
+        ),
       ]),
     );
   }

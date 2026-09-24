@@ -23,6 +23,7 @@ class TVFocusable extends StatefulWidget {
   final bool autofocus;
   final FocusNode? focusNode;
   final BorderRadius? borderRadius;
+  final FocusOnKeyEventCallback? onKeyEvent;
 
   const TVFocusable({
     super.key,
@@ -31,6 +32,7 @@ class TVFocusable extends StatefulWidget {
     this.autofocus = false,
     this.focusNode,
     this.borderRadius,
+    this.onKeyEvent,
   });
 
   @override
@@ -56,6 +58,10 @@ class _TVFocusableState extends State<TVFocusable> {
   }
 
   KeyEventResult _handleKeyEvent(FocusNode node, KeyEvent event) {
+    final delegatedResult = widget.onKeyEvent?.call(node, event);
+    if (delegatedResult == KeyEventResult.handled) {
+      return KeyEventResult.handled;
+    }
     if (event is KeyDownEvent) {
       // D-pad center / Enter / Select
       if (event.logicalKey == LogicalKeyboardKey.select ||
@@ -78,6 +84,8 @@ class _TVFocusableState extends State<TVFocusable> {
     return Focus(
       focusNode: _focusNode,
       autofocus: widget.autofocus,
+      canRequestFocus: widget.onPressed != null,
+      descendantsAreFocusable: false,
       onKeyEvent: _handleKeyEvent,
       onFocusChange: (focused) {
         setState(() => _isFocused = focused);
@@ -86,26 +94,14 @@ class _TVFocusableState extends State<TVFocusable> {
         onTap: widget.onPressed,
         child: AnimatedContainer(
           duration: const Duration(milliseconds: 150),
-          decoration: BoxDecoration(
+          foregroundDecoration: BoxDecoration(
             borderRadius: widget.borderRadius ?? BorderRadius.circular(12),
             border: _isFocused
                 ? Border.all(
                     color: Theme.of(context).colorScheme.primary,
-                    width: 2.5,
+                    width: 2,
                   )
-                : Border.all(color: Colors.transparent, width: 2.5),
-            boxShadow: _isFocused
-                ? [
-                    BoxShadow(
-                      color: Theme.of(context)
-                          .colorScheme
-                          .primary
-                          .withValues(alpha: 0.3),
-                      blurRadius: 12,
-                      spreadRadius: 1,
-                    ),
-                  ]
-                : null,
+                : Border.all(color: Colors.transparent, width: 2),
           ),
           child: widget.child,
         ),

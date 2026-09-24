@@ -3,12 +3,13 @@ import SwiftUI
 @main
 struct FastCatTVApp: App {
   @StateObject private var session = SessionStore()
+  @AppStorage(TVTheme.preferenceKey) private var prefersDarkTheme = true
 
   var body: some Scene {
     WindowGroup {
       RootView()
         .environmentObject(session)
-        .preferredColorScheme(.dark)
+        .preferredColorScheme(prefersDarkTheme ? .dark : .light)
     }
   }
 }

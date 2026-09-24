@@ -53,6 +53,80 @@ func TestClientIPFallsBackToRemoteAddrWhenUntrusted(t *testing.T) {
 	}
 }
 
+func TestQRCancelInvalidatesPendingSession(t *testing.T) {
+	server := &Server{
+		cfg:        Config{APIPrefix: "/api/v1"},
+		qrSessions: map[string]*QRLoginSession{},
+	}
+	server.qrSessions["qrl_test"] = &QRLoginSession{
+		ID:        "qrl_test",
+		PollToken: "qpt_secret",
+		Status:    "pending",
+		ExpiresAt: time.Now().UTC().Add(time.Minute),
+	}
+
+	req := httptest.NewRequest(
+		http.MethodDelete,
+		"/api/v1/auth/qr/sessions/qrl_test?poll_token=qpt_secret",
+		nil,
+	)
+	recorder := httptest.NewRecorder()
+	server.handleQRSessionByID(recorder, req)
+
+	if recorder.Code != http.StatusOK {
+		t.Fatalf("status = %d, want %d: %s", recorder.Code, http.StatusOK, recorder.Body.String())
+	}
+	if _, exists := server.qrSessions["qrl_test"]; exists {
+		t.Fatal("cancelled QR session still exists")
+	}
+}
+
+func TestQRCancelRejectsWrongPollingSecret(t *testing.T) {
+	server := &Server{
+		cfg:        Config{APIPrefix: "/api/v1"},
+		qrSessions: map[string]*QRLoginSession{},
+	}
+	server.qrSessions["qrl_test"] = &QRLoginSession{
+		ID:        "qrl_test",
+		PollToken: "qpt_secret",
+		Status:    "pending",
+		ExpiresAt: time.Now().UTC().Add(time.Minute),
+	}
+
+	req := httptest.NewRequest(
+		http.MethodDelete,
+		"/api/v1/auth/qr/sessions/qrl_test?poll_token=wrong",
+		nil,
+	)
+	recorder := httptest.NewRecorder()
+	server.handleQRSessionByID(recorder, req)
+
+	if recorder.Code != http.StatusNotFound {
+		t.Fatalf("status = %d, want %d", recorder.Code, http.StatusNotFound)
+	}
+	if _, exists := server.qrSessions["qrl_test"]; !exists {
+		t.Fatal("QR session was removed with the wrong polling secret")
+	}
+}
+
+func TestQRCancelIsIdempotentAfterSessionRemoval(t *testing.T) {
+	server := &Server{
+		cfg:        Config{APIPrefix: "/api/v1"},
+		qrSessions: map[string]*QRLoginSession{},
+	}
+	req := httptest.NewRequest(
+		http.MethodDelete,
+		"/api/v1/auth/qr/sessions/qrl_missing?poll_token=qpt_old",
+		nil,
+	)
+	recorder := httptest.NewRecorder()
+	server.handleQRSessionByID(recorder, req)
+
+	if recorder.Code != http.StatusOK {
+		t.Fatalf("status = %d, want %d", recorder.Code, http.StatusOK)
+	}
+}
+
 func TestSessionAuthorizationErrorDistinguishesTerminationReason(t *testing.T) {
 	store, _, err := LoadStore(filepath.Join(t.TempDir(), "store.json"), "")
 	if err != nil {

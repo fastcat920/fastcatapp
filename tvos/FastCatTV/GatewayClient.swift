@@ -18,6 +18,13 @@ struct QRLoginResponse: Decodable {
   }
 }
 
+struct TVLoginCredentials: Decodable {
+  let authData: String?
+  let token: String?
+  let email: String?
+  enum CodingKeys: String, CodingKey { case authData = "auth_data", token, email }
+}
+
 struct TVNotice: Decodable, Identifiable {
   let id: Int
   let title: String
@@ -104,11 +111,12 @@ struct TVSubscriptionSummary: Decodable {
 
 struct GatewayClient {
   enum GatewayError: LocalizedError {
-    case missingBaseURL, invalidResponse, server(String)
+    case missingBaseURL, invalidResponse, unauthorized, server(String)
     var errorDescription: String? {
       switch self {
       case .missingBaseURL: return "未配置服务地址"
       case .invalidResponse: return "服务响应无效"
+      case .unauthorized: return "登录状态已失效，请重新登录"
       case .server(let message): return message
       }
     }
@@ -136,6 +144,41 @@ struct GatewayClient {
   func pollQRSession(_ challenge: QRLoginChallenge) async throws -> QRLoginResponse {
     let token = challenge.pollToken.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? ""
     return try await send(path: "/auth/qr/sessions/\(challenge.id)?poll_token=\(token)")
+  }
+
+  func login(email: String, password: String) async throws -> TVLoginCredentials {
+    struct Request: Encodable {
+      let email: String
+      let password: String
+      let device_id: String
+      let device_name: String
+      let platform: String
+      let app_version: String
+      let build_number: String
+      let os_version: String
+    }
+    let id = KeychainStore.read(key: "device-id") ?? "fastcat-" + UUID().uuidString.lowercased()
+    KeychainStore.write(id, key: "device-id")
+    let bundle = Bundle.main
+    let request = Request(
+      email: email,
+      password: password,
+      device_id: id,
+      device_name: "Apple TV",
+      platform: "tvos",
+      app_version: bundle.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? "1.0",
+      build_number: bundle.object(forInfoDictionaryKey: "CFBundleVersion") as? String ?? "1",
+      os_version: ProcessInfo.processInfo.operatingSystemVersionString
+    )
+    let result: TVLoginCredentials = try await send(
+      path: "/passport/auth/login",
+      method: "POST",
+      body: request
+    )
+    guard result.authData?.isEmpty == false || result.token?.isEmpty == false else {
+      throw GatewayError.server("邮箱或密码错误")
+    }
+    return result
   }
 
   /// The panel returns the per-user subscription URL after QR authorization.
@@ -206,6 +249,7 @@ struct GatewayClient {
     }
     let (data, response) = try await URLSession.shared.data(for: request)
     guard let http = response as? HTTPURLResponse else { throw GatewayError.invalidResponse }
+    if http.statusCode == 401 { throw GatewayError.unauthorized }
     guard (200..<300).contains(http.statusCode) else { throw GatewayError.server("服务暂时不可用（\(http.statusCode)）") }
     let envelope = try JSONDecoder().decode(APIEnvelope<T>.self, from: data)
     guard let value = envelope.data else { throw GatewayError.server(envelope.message ?? "请求失败") }

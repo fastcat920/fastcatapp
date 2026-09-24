@@ -4,7 +4,7 @@ private enum TVRouteMode: String, CaseIterable {
   case rule
   case global
 
-  var title: String { self == .rule ? "智能模式" : "全局模式" }
+  var title: String { self == .rule ? "智能分流" : "全局代理" }
   var subtitle: String { self == .rule ? "按规则自动分流" : "全部流量走代理" }
   var icon: String { self == .rule ? "point.3.connected.trianglepath.dotted" : "globe.asia.australia.fill" }
 }
@@ -14,11 +14,17 @@ struct TVHomeView: View {
   @State private var connected = false
   @State private var isConnecting = false
   @State private var routeMode: TVRouteMode = .rule
+  @AppStorage(TVTheme.preferenceKey) private var prefersDarkTheme = true
+  @AppStorage("fastcat.tv.route-mode") private var savedRouteMode = TVRouteMode.rule.rawValue
+  @AppStorage("fastcat.tv.selected-node") private var savedSelectedNode = ""
   @State private var errorMessage: String?
   @State private var showLogoutConfirmation = false
+  @State private var isLoggingOut = false
+  @State private var subscriptionBlockMessage: String?
   @State private var showNodeSelector = false
   @State private var nodes: [TVProxyNode] = []
   @State private var selectedNodeName: String?
+  @State private var selectedGroupName: String?
   @State private var isLoadingNodes = false
   @State private var nodeLoadError: String?
   @State private var cachedSubscription: String?
@@ -47,12 +53,7 @@ struct TVHomeView: View {
 
   var body: some View {
     ZStack {
-      LinearGradient(
-        colors: [Color(red: 0.055, green: 0.16, blue: 0.29), TVTheme.background, Color.black],
-        startPoint: .topLeading,
-        endPoint: .bottomTrailing
-      )
-      .ignoresSafeArea()
+      TVTheme.background.ignoresSafeArea()
 
       if showNodeSelector {
         TVNodeSelectorView(
@@ -62,32 +63,31 @@ struct TVHomeView: View {
           errorMessage: nodeLoadError,
           onClose: { showNodeSelector = false },
           onRefresh: { Task { await loadNodes(forceRefresh: true) } },
-          onSelect: {
-            selectedNodeName = $0.name
-            showNodeSelector = false
-          }
+          onSelect: { selectNode($0) }
         )
       } else {
-        Circle()
-          .fill(TVTheme.primary.opacity(0.13))
-          .frame(width: 720, height: 720)
-          .blur(radius: 100)
-          .offset(x: -700, y: 390)
-
-        VStack(spacing: 26) {
+        VStack(spacing: 20) {
           header
           serviceBanner
           mainDashboard
         }
         .padding(.horizontal, 72)
-        .padding(.vertical, 42)
+        .padding(.vertical, 32)
       }
     }
     .alert("退出登录？", isPresented: $showLogoutConfirmation) {
       Button("取消", role: .cancel) {}
-      Button("退出登录", role: .destructive) { session.signOut() }
+      Button("退出登录", role: .destructive) { performLogout() }
     } message: {
-      Text("退出后需要重新扫描二维码登录。")
+      Text("确定要退出当前账户吗？退出后将断开 VPN，并需要重新登录。")
+    }
+    .alert("暂时无法连接", isPresented: Binding(
+      get: { subscriptionBlockMessage != nil },
+      set: { if !$0 { subscriptionBlockMessage = nil } }
+    )) {
+      Button("知道了", role: .cancel) { subscriptionBlockMessage = nil }
+    } message: {
+      Text(subscriptionBlockMessage ?? "请检查套餐状态后重试")
     }
     .alert(currentNotice?.title ?? "公告", isPresented: $showNoticeDetail) {
       Button("知道了", role: .cancel) {}
@@ -95,6 +95,9 @@ struct TVHomeView: View {
       Text(currentNotice.map { plainText($0.content) } ?? "暂无公告内容")
     }
     .task {
+      routeMode = TVRouteMode(rawValue: savedRouteMode) ?? .rule
+      selectedNodeName = savedSelectedNode.isEmpty ? nil : savedSelectedNode
+      syncVPNStatus()
 #if DEBUG
       if ProcessInfo.processInfo.environment["FASTCAT_PREVIEW_NODES"] == "1" {
         showNodeSelector = true
@@ -102,6 +105,9 @@ struct TVHomeView: View {
       }
 #endif
       await loadHomeInfo()
+    }
+    .onReceive(NotificationCenter.default.publisher(for: VPNManager.statusDidChangeNotification)) { notification in
+      syncVPNStatus(notification.object as? String)
     }
     .task(id: notices.count) {
       guard notices.count > 1 else { return }
@@ -120,37 +126,44 @@ struct TVHomeView: View {
   private var header: some View {
     HStack(spacing: 18) {
       ZStack {
-        RoundedRectangle(cornerRadius: 16, style: .continuous).fill(TVTheme.primary)
-        Image(systemName: "bolt.shield.fill").font(.system(size: 31, weight: .semibold))
+        RoundedRectangle(cornerRadius: 13, style: .continuous).fill(TVTheme.primary)
+        Image(systemName: "bolt.shield.fill")
+          .font(.system(size: 25, weight: .semibold))
+          .foregroundStyle(TVTheme.onPrimary)
       }
-      .frame(width: 62, height: 62)
+      .frame(width: 52, height: 52)
 
-      VStack(alignment: .leading, spacing: 2) {
-        Text("快猫").font(.system(size: 34, weight: .bold))
-        Text("FastCat for Apple TV")
-          .font(.system(size: 17, weight: .medium))
-          .foregroundStyle(TVTheme.textSecondary)
-      }
+      Text("快猫")
+        .font(.system(size: 30, weight: .bold))
+        .foregroundStyle(TVTheme.textPrimary)
 
       Spacer()
 
-      HStack(spacing: 10) {
-        Circle().fill(connected ? TVTheme.success : Color.white.opacity(0.25)).frame(width: 10, height: 10)
-        Text(connected ? "VPN 已连接" : simulatorPreview ? "模拟器预览" : "VPN 未连接")
-          .font(.system(size: 18, weight: .semibold))
+      TVFocusButton(cornerRadius: 16, action: { prefersDarkTheme.toggle() }) { focused in
+        HStack(spacing: 10) {
+          Image(systemName: prefersDarkTheme ? "sun.max" : "moon")
+          Text("切换主题")
+        }
+        .font(.system(size: 17, weight: .semibold))
+        .foregroundStyle(TVTheme.primaryBright)
+        .padding(.horizontal, 20)
+        .frame(height: 52)
+        .background(focused ? TVTheme.surfaceStrong : TVTheme.surface)
+        .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
       }
-      .padding(.horizontal, 20)
-      .frame(height: 48)
-      .background(TVTheme.surface)
-      .clipShape(Capsule())
     }
+    .frame(height: 64)
   }
 
   private var serviceBanner: some View {
-    HStack(spacing: 20) {
-      announcementCard.frame(maxWidth: .infinity)
-      subscriptionCard.frame(width: 690)
+    Group {
+      if connected {
+        subscriptionCard
+      } else {
+        announcementCard
+      }
     }
+    .frame(maxWidth: .infinity)
     .frame(height: 142)
   }
 
@@ -224,7 +237,7 @@ struct TVHomeView: View {
           }
           GeometryReader { proxy in
             ZStack(alignment: .leading) {
-              Capsule().fill(Color.white.opacity(0.10))
+              Capsule().fill(TVTheme.stroke)
               Capsule().fill(TVTheme.primaryBright)
                 .frame(width: proxy.size.width * (subscriptionSummary?.usageFraction ?? 0))
             }
@@ -259,10 +272,15 @@ struct TVHomeView: View {
   }
 
   private var mainDashboard: some View {
-    HStack(spacing: 28) {
-      connectionPanel.frame(maxWidth: .infinity)
-      controlsPanel.frame(maxWidth: .infinity)
+    GeometryReader { geometry in
+      let spacing: CGFloat = 24
+      let availableWidth = max(0, geometry.size.width - spacing)
+      HStack(spacing: spacing) {
+        connectionPanel.frame(width: availableWidth * 5 / 11)
+        controlsPanel.frame(width: availableWidth * 6 / 11)
+      }
     }
+    .frame(minHeight: 500)
   }
 
   private var connectionPanel: some View {
@@ -271,9 +289,9 @@ struct TVHomeView: View {
         Spacer(minLength: 12)
         connectButton
         VStack(spacing: 6) {
-          Text(isConnecting ? "正在连接" : connected ? "已安全连接" : "未连接")
+          Text(isConnecting ? "正在连接" : connected ? "已连接" : "未连接")
             .font(.system(size: 30, weight: .bold))
-            .foregroundStyle(connected ? TVTheme.success : .white)
+            .foregroundStyle(connected ? TVTheme.success : TVTheme.textPrimary)
           Text(connectionDetail)
             .font(.system(size: 17, weight: .medium))
             .foregroundStyle(errorMessage == nil ? TVTheme.textSecondary : Color.orange)
@@ -296,11 +314,11 @@ struct TVHomeView: View {
           .padding(14)
         Circle().stroke(TVTheme.focusRing.opacity(focused ? 0.34 : 0.10), lineWidth: 2).padding(34)
         if isConnecting {
-          ProgressView().controlSize(.large).tint(.white).scaleEffect(1.5)
+          ProgressView().controlSize(.large).tint(TVTheme.onPrimary).scaleEffect(1.5)
         } else {
           Image(systemName: "power")
             .font(.system(size: 82, weight: .medium))
-            .foregroundStyle(connected ? Color.white : TVTheme.primaryBright)
+            .foregroundStyle(connected ? TVTheme.onPrimary : TVTheme.primaryBright)
         }
       }
       .frame(width: 270, height: 270)
@@ -317,7 +335,7 @@ struct TVHomeView: View {
   }
 
   private var controlsPanel: some View {
-    VStack(spacing: 20) {
+    VStack(spacing: 16) {
       modeCard
       routeCard
       accountCard
@@ -327,30 +345,31 @@ struct TVHomeView: View {
 
   private var modeCard: some View {
     TVGlassCard {
-      VStack(alignment: .leading, spacing: 18) {
-        sectionTitle(icon: "arrow.triangle.branch", title: "代理模式", subtitle: "选择适合当前场景的路由策略")
-        HStack(spacing: 14) {
+      VStack(alignment: .leading, spacing: 14) {
+        HStack(spacing: 10) {
+          Image(systemName: "arrow.triangle.branch")
+            .font(.system(size: 20, weight: .semibold))
+            .foregroundStyle(TVTheme.primaryBright)
+          Text("代理模式").font(.system(size: 20, weight: .bold))
+        }
+        HStack(spacing: 8) {
           ForEach(TVRouteMode.allCases, id: \.self) { mode in
-            TVFocusButton(cornerRadius: 18, action: { routeMode = mode }) { focused in
-              HStack(spacing: 13) {
-                Image(systemName: mode.icon).font(.system(size: 24, weight: .semibold))
-                VStack(alignment: .leading, spacing: 2) {
-                  Text(mode.title).font(.system(size: 19, weight: .bold))
-                  Text(mode.subtitle).font(.system(size: 13, weight: .medium)).opacity(0.62)
-                }
-                Spacer()
+            TVFocusButton(cornerRadius: 16, action: { changeRouteMode(to: mode) }) { focused in
+              HStack(spacing: 10) {
+                Image(systemName: mode.icon).font(.system(size: 20, weight: .semibold))
+                Text(mode.title).font(.system(size: 18, weight: .bold))
                 if routeMode == mode { Image(systemName: "checkmark.circle.fill").font(.system(size: 22)) }
               }
-              .foregroundStyle(routeMode == mode ? Color.white : Color.white.opacity(0.78))
+              .foregroundStyle(routeMode == mode ? TVTheme.onPrimary : TVTheme.textPrimary)
               .padding(.horizontal, 18)
-              .frame(maxWidth: .infinity, minHeight: 82)
+              .frame(maxWidth: .infinity, minHeight: 64)
               .background(routeMode == mode ? TVTheme.primary.opacity(focused ? 1 : 0.78) : TVTheme.surfaceStrong)
-              .clipShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
+              .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
             }
           }
         }
       }
-      .padding(24)
+      .padding(22)
     }
   }
 
@@ -363,11 +382,16 @@ struct TVHomeView: View {
         }
         .frame(width: 68, height: 68)
         VStack(alignment: .leading, spacing: 4) {
-          Text("当前线路").font(.system(size: 15, weight: .medium)).foregroundStyle(TVTheme.textSecondary)
-          Text(selectedNodeName ?? "自动选择 · 最优节点").font(.system(size: 23, weight: .bold)).lineLimit(1)
-          Text("按 Return 选择订阅线路").font(.system(size: 14)).foregroundStyle(TVTheme.textSecondary)
+          Text("节点选择").font(.system(size: 15, weight: .medium)).foregroundStyle(TVTheme.textSecondary)
+          Text(routeDisplayName).font(.system(size: 23, weight: .bold)).lineLimit(1)
+          Text("按确认键选择订阅线路").font(.system(size: 14)).foregroundStyle(TVTheme.textSecondary)
         }
         Spacer()
+        if let delay = selectedNodeDelay {
+          Text("\(delay)ms")
+            .font(.system(size: 14, weight: .semibold))
+            .foregroundStyle(delay < 500 ? TVTheme.success : Color.orange)
+        }
         if isLoadingNodes {
           ProgressView().controlSize(.small)
         } else {
@@ -388,7 +412,7 @@ struct TVHomeView: View {
         HStack(spacing: 16) {
           Image(systemName: "person.crop.circle.fill").font(.system(size: 42)).foregroundStyle(TVTheme.primaryBright)
           VStack(alignment: .leading, spacing: 3) {
-            Text("当前账户").font(.system(size: 14)).foregroundStyle(TVTheme.textSecondary)
+            Text("我的账号").font(.system(size: 14)).foregroundStyle(TVTheme.textSecondary)
             Text(session.email ?? "已登录账户").font(.system(size: 18, weight: .semibold)).lineLimit(1)
           }
           Spacer()
@@ -397,25 +421,19 @@ struct TVHomeView: View {
         .frame(maxWidth: .infinity, minHeight: 104)
       }
 
-      TVFocusButton(cornerRadius: 22, action: { showLogoutConfirmation = true }) { focused in
-        VStack(spacing: 8) {
-          Image(systemName: "rectangle.portrait.and.arrow.right").font(.system(size: 27, weight: .semibold))
+      TVFocusButton(cornerRadius: 22, action: { if !isLoggingOut { showLogoutConfirmation = true } }) { focused in
+        HStack(spacing: 10) {
+          if isLoggingOut {
+            ProgressView().controlSize(.small)
+          } else {
+            Image(systemName: "rectangle.portrait.and.arrow.right").font(.system(size: 23, weight: .semibold))
+          }
           Text("退出登录").font(.system(size: 15, weight: .semibold))
         }
-        .foregroundStyle(focused ? Color.white : Color.white.opacity(0.72))
-        .frame(width: 142, height: 104)
-        .background(focused ? Color.red.opacity(0.72) : TVTheme.surfaceStrong)
+        .foregroundStyle(focused ? TVTheme.onPrimary : TVTheme.danger)
+        .frame(width: 172, height: 104)
+        .background(focused ? TVTheme.danger : TVTheme.surfaceStrong)
         .clipShape(RoundedRectangle(cornerRadius: 22, style: .continuous))
-      }
-    }
-  }
-
-  private func sectionTitle(icon: String, title: String, subtitle: String) -> some View {
-    HStack(spacing: 13) {
-      Image(systemName: icon).font(.system(size: 22, weight: .semibold)).foregroundStyle(TVTheme.primaryBright)
-      VStack(alignment: .leading, spacing: 2) {
-        Text(title).font(.system(size: 21, weight: .bold))
-        Text(subtitle).font(.system(size: 14)).foregroundStyle(TVTheme.textSecondary)
       }
     }
   }
@@ -431,6 +449,32 @@ struct TVHomeView: View {
       return text.isEmpty ? "按确认键查看公告详情" : text
     }
     return homeInfoError ?? "暂时没有新的服务公告"
+  }
+
+  private var routeDisplayName: String {
+    if isLoadingNodes { return "正在加载线路…" }
+    if let nodeLoadError, nodes.isEmpty { return nodeLoadError }
+    return selectedNodeName ?? "自动选择 · 最优节点"
+  }
+
+  private var selectedNodeDelay: Int? {
+    guard let selectedNodeName else { return nil }
+    return nodes.first(where: { $0.name == selectedNodeName })?.delayMS
+  }
+
+  private var subscriptionBlockReason: String? {
+    guard let summary = subscriptionSummary else { return nil }
+    if let expiredAt = expirationDate, expiredAt <= Date() {
+      return "当前套餐已过期，请续费后再连接"
+    }
+    if summary.transferLimit > 0, summary.remainingBytes <= 0 {
+      return "当前套餐流量已用完，请恢复流量后再连接"
+    }
+    let hasPlanName = summary.planName?.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty == false
+    if (summary.planID ?? 0) <= 0, !hasPlanName, summary.transferLimit <= 0 {
+      return "当前账号暂无可用套餐"
+    }
+    return nil
   }
 
   private var subscriptionTitle: String {
@@ -545,6 +589,7 @@ struct TVHomeView: View {
         homeInfoError = "公告与套餐信息暂时无法获取"
       }
     } catch {
+      if handleExpiredSession(error) { return }
       homeInfoError = error.localizedDescription
     }
   }
@@ -559,48 +604,145 @@ struct TVHomeView: View {
     if connected {
       isConnecting = true
       VPNManager.shared.disconnect { _ in
-        Task { @MainActor in connected = false; isConnecting = false }
+        Task { @MainActor in
+          connected = false
+          isConnecting = false
+        }
       }
       return
     }
-    guard let token = session.token else { return }
-    isConnecting = true
+    Task { await prepareAndConnect() }
+  }
+
+  private func presentNodeSelector() {
+    if let reason = subscriptionBlockReason {
+      subscriptionBlockMessage = reason
+      return
+    }
+    showNodeSelector = true
+    Task { await loadNodes(forceRefresh: false) }
+  }
+
+  private func selectNode(_ node: TVProxyNode) {
+    selectedNodeName = node.name
+    savedSelectedNode = node.name
+    showNodeSelector = false
+    guard connected else { return }
     Task {
-      do {
-        let downloaded: String
-        if let cachedSubscription {
-          downloaded = cachedSubscription
-        } else {
-          let client = try await GatewayClient.configured()
-          downloaded = try await client.downloadSubscription(token: token)
-          cachedSubscription = downloaded
-        }
-        let selectedConfig = TVSubscriptionNodes.prioritizing(selectedNodeName, in: downloaded)
-        let config = applyingRouteMode(to: selectedConfig)
-        VPNManager.shared.connect(config: config) { error in
-          Task { @MainActor in
-            isConnecting = false
-            connected = error == nil
-            errorMessage = error
-          }
-        }
-      } catch {
-        isConnecting = false
-        errorMessage = error.localizedDescription
+      if let failure = await applySelectedNodeIfNeeded() {
+        await MainActor.run { errorMessage = "线路切换失败：\(failure)" }
+      } else {
+        await refreshLiveNodes()
       }
     }
   }
 
-  private func presentNodeSelector() {
-    showNodeSelector = true
-    Task { await loadNodes(forceRefresh: false) }
+  private func changeRouteMode(to mode: TVRouteMode) {
+    guard routeMode != mode else { return }
+    let previous = routeMode
+    routeMode = mode
+    savedRouteMode = mode.rawValue
+    selectedGroupName = nil
+    guard connected else { return }
+
+    VPNManager.shared.updateMode(mode.rawValue) { failure in
+      Task { @MainActor in
+        if let failure {
+          routeMode = previous
+          savedRouteMode = previous.rawValue
+          errorMessage = "代理模式切换失败：\(failure)"
+        } else {
+          errorMessage = nil
+          await refreshLiveNodes()
+        }
+      }
+    }
+  }
+
+  private func syncVPNStatus(_ deliveredStatus: String? = nil) {
+    if let deliveredStatus {
+      connected = deliveredStatus == "connected"
+      isConnecting = deliveredStatus == "connecting" || deliveredStatus == "disconnecting"
+      if connected { Task { await refreshLiveNodes() } }
+      return
+    }
+    VPNManager.shared.refreshStatus { status in
+      Task { @MainActor in
+        connected = status == "connected"
+        isConnecting = status == "connecting" || status == "disconnecting"
+        if connected { await refreshLiveNodes() }
+      }
+    }
+  }
+
+  private func performLogout() {
+    guard !isLoggingOut else { return }
+    isLoggingOut = true
+    VPNManager.shared.disconnect { _ in
+      Task { @MainActor in
+        savedSelectedNode = ""
+        savedRouteMode = TVRouteMode.rule.rawValue
+        cachedSubscription = nil
+        nodes = []
+        selectedNodeName = nil
+        selectedGroupName = nil
+        connected = false
+        isLoggingOut = false
+        session.signOut()
+      }
+    }
+  }
+
+  @MainActor
+  private func prepareAndConnect() async {
+    guard let token = session.token else {
+      errorMessage = "登录状态已失效，请重新登录"
+      return
+    }
+    if subscriptionSummary == nil {
+      await loadHomeInfo(forceRefresh: true)
+    }
+    if let reason = subscriptionBlockReason {
+      subscriptionBlockMessage = reason
+      return
+    }
+
+    isConnecting = true
+    defer { isConnecting = false }
+    do {
+      let downloaded: String
+      if let cachedSubscription {
+        downloaded = cachedSubscription
+      } else {
+        let client = try await GatewayClient.configured()
+        downloaded = try await client.downloadSubscription(token: token)
+        cachedSubscription = downloaded
+      }
+      let config = applyingRouteMode(to: downloaded)
+      if let failure = await connectVPN(config: config) {
+        errorMessage = failure
+        connected = false
+        return
+      }
+      connected = true
+      if let failure = await applySelectedNodeIfNeeded(retries: 6) {
+        errorMessage = "VPN 已连接，但线路切换失败：\(failure)"
+      } else {
+        errorMessage = nil
+      }
+      await refreshLiveNodes(retries: 3)
+    } catch {
+      if handleExpiredSession(error) { return }
+      connected = false
+      errorMessage = error.localizedDescription
+    }
   }
 
   @MainActor
   private func loadNodes(forceRefresh: Bool) async {
     if isDebugPreviewSession {
       nodes = ["香港 · 高速 01", "香港 · 高速 02", "日本 · 东京", "新加坡 · 优选", "美国 · 洛杉矶", "自动选择"]
-        .map(TVProxyNode.init)
+        .map { TVProxyNode($0) }
       nodeLoadError = nil
       return
     }
@@ -613,6 +755,7 @@ struct TVHomeView: View {
     nodeLoadError = nil
     defer { isLoadingNodes = false }
     do {
+      if connected, await refreshLiveNodes(), !nodes.isEmpty { return }
       let client = try await GatewayClient.configured()
       let configuration = try await client.downloadSubscription(token: token)
       let parsed = TVSubscriptionNodes.parse(from: configuration)
@@ -622,12 +765,90 @@ struct TVHomeView: View {
       }
       cachedSubscription = configuration
       nodes = parsed
+      selectedGroupName = TVSubscriptionNodes.preferredGroupName(
+        from: configuration,
+        mode: routeMode.rawValue
+      )
       if let selectedNodeName, !parsed.contains(where: { $0.name == selectedNodeName }) {
         self.selectedNodeName = nil
+        savedSelectedNode = ""
       }
     } catch {
+      if handleExpiredSession(error) { return }
       nodeLoadError = error.localizedDescription
     }
+  }
+
+  @discardableResult
+  @MainActor
+  private func refreshLiveNodes(retries: Int = 1) async -> Bool {
+    for attempt in 0..<max(1, retries) {
+      if let response = await liveProxies(),
+         let snapshot = TVSubscriptionNodes.liveSnapshot(from: response, mode: routeMode.rawValue),
+         !snapshot.nodes.isEmpty {
+        selectedGroupName = snapshot.groupName
+        nodes = snapshot.nodes
+        if let liveSelection = snapshot.selectedName,
+           liveSelection != "DIRECT", liveSelection != "REJECT" {
+          selectedNodeName = liveSelection
+          savedSelectedNode = liveSelection
+        }
+        nodeLoadError = nil
+        return true
+      }
+      if attempt + 1 < retries {
+        try? await Task.sleep(for: .milliseconds(350))
+      }
+    }
+    return false
+  }
+
+  private func applySelectedNodeIfNeeded(retries: Int = 1) async -> String? {
+    guard let selectedNodeName, !selectedNodeName.isEmpty else { return nil }
+    for attempt in 0..<max(1, retries) {
+      if selectedGroupName == nil, let response = await liveProxies(),
+         let snapshot = TVSubscriptionNodes.liveSnapshot(from: response, mode: routeMode.rawValue) {
+        await MainActor.run { selectedGroupName = snapshot.groupName }
+      }
+      if let selectedGroupName {
+        let failure = await changeProxy(groupName: selectedGroupName, proxyName: selectedNodeName)
+        if failure == nil { return nil }
+        if attempt + 1 == retries { return failure }
+      }
+      if attempt + 1 < retries {
+        try? await Task.sleep(for: .milliseconds(350))
+      }
+    }
+    return "未找到可切换的代理组"
+  }
+
+  private func connectVPN(config: String) async -> String? {
+    await withCheckedContinuation { continuation in
+      VPNManager.shared.connect(config: config) { continuation.resume(returning: $0) }
+    }
+  }
+
+  private func liveProxies() async -> String? {
+    await withCheckedContinuation { continuation in
+      VPNManager.shared.getProxies { continuation.resume(returning: $0) }
+    }
+  }
+
+  private func changeProxy(groupName: String, proxyName: String) async -> String? {
+    await withCheckedContinuation { continuation in
+      VPNManager.shared.changeProxy(groupName: groupName, proxyName: proxyName) {
+        continuation.resume(returning: $0)
+      }
+    }
+  }
+
+  @MainActor
+  private func handleExpiredSession(_ error: Error) -> Bool {
+    guard case GatewayClient.GatewayError.unauthorized = error else { return false }
+    VPNManager.shared.disconnect { _ in
+      Task { @MainActor in session.signOut() }
+    }
+    return true
   }
 
   private func applyingRouteMode(to config: String) -> String {

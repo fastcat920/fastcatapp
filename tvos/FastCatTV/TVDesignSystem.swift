@@ -1,16 +1,42 @@
 import SwiftUI
+import UIKit
 
 enum TVTheme {
-  static let background = Color(red: 0.025, green: 0.055, blue: 0.105)
-  static let surface = Color.white.opacity(0.075)
-  static let surfaceStrong = Color.white.opacity(0.12)
-  static let stroke = Color.white.opacity(0.13)
+  static let preferenceKey = "fastcat.tv.prefers-dark-theme"
+  static let background = dynamicColor(
+    light: UIColor(red: 0.98, green: 0.984, blue: 0.992, alpha: 1),
+    dark: UIColor(red: 0.025, green: 0.055, blue: 0.105, alpha: 1)
+  )
+  static let surface = dynamicColor(
+    light: .white,
+    dark: UIColor(white: 1, alpha: 0.075)
+  )
+  static let surfaceStrong = dynamicColor(
+    light: UIColor(red: 0.93, green: 0.945, blue: 0.975, alpha: 1),
+    dark: UIColor(white: 1, alpha: 0.12)
+  )
+  static let stroke = dynamicColor(
+    light: UIColor(white: 0, alpha: 0.10),
+    dark: UIColor(white: 1, alpha: 0.13)
+  )
   static let primary = Color(red: 0.27, green: 0.50, blue: 0.96)
-  static let primaryBright = Color(red: 0.36, green: 0.66, blue: 1.0)
+  static let primaryBright = dynamicColor(
+    light: UIColor(red: 0.16, green: 0.38, blue: 0.86, alpha: 1),
+    dark: UIColor(red: 0.36, green: 0.66, blue: 1.0, alpha: 1)
+  )
   static let focusRing = Color(red: 0.27, green: 0.78, blue: 1.0)
   static let success = Color(red: 0.25, green: 0.84, blue: 0.55)
-  static let textSecondary = Color.white.opacity(0.62)
+  static let danger = Color(red: 0.90, green: 0.24, blue: 0.24)
+  static let textPrimary = Color.primary
+  static let textSecondary = Color.secondary
+  static let onPrimary = Color.white
   static let cardRadius: CGFloat = 26
+
+  private static func dynamicColor(light: UIColor, dark: UIColor) -> Color {
+    Color(uiColor: UIColor { traits in
+      traits.userInterfaceStyle == .dark ? dark : light
+    })
+  }
 }
 
 private struct TVBareButtonStyle: ButtonStyle {

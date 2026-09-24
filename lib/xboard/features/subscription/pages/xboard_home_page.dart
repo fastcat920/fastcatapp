@@ -715,6 +715,19 @@ class _XBoardHomePageState extends ConsumerState<XBoardHomePage>
             ],
           ),
         ),
+        SizedBox(height: isShort ? 6 : 10),
+        Center(
+          child: Text(
+            '${Localizations.localeOf(context).languageCode == 'zh' ? '当前版本：' : 'Current version: '}V${globalState.packageInfo.version}',
+            key: const Key('tv-current-version'),
+            style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                  color: Theme.of(context)
+                      .colorScheme
+                      .onSurfaceVariant
+                      .withValues(alpha: 0.72),
+                ),
+          ),
+        ),
         const Spacer(),
       ],
     );

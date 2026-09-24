@@ -8,17 +8,23 @@ class QrLoginChallenge {
     required this.id,
     required this.pollToken,
     required this.qrData,
+    required this.expiresAt,
   });
 
   final String id;
   final String pollToken;
   final String qrData;
+  final DateTime expiresAt;
 }
 
 class QrLoginResult {
   const QrLoginResult({required this.token, required this.email});
   final String token;
   final String email;
+}
+
+class QrLoginExpiredException implements Exception {
+  const QrLoginExpiredException();
 }
 
 class QrLoginService {
@@ -32,10 +38,19 @@ class QrLoginService {
       payload,
     );
     final data = Map<String, dynamic>.from(response['data'] as Map);
+    final expiresAt = DateTime.tryParse((data['expires_at'] ?? '').toString());
     return QrLoginChallenge(
       id: data['id'] as String,
       pollToken: data['poll_token'] as String,
       qrData: data['qr_data'] as String,
+      expiresAt: expiresAt?.toUtc() ??
+          DateTime.now().toUtc().add(const Duration(minutes: 2)),
+    );
+  }
+
+  static Future<void> cancel(QrLoginChallenge challenge) async {
+    await XBoardSDK.instance.httpService.deleteRequest(
+      '/auth/qr/sessions/${challenge.id}?poll_token=${Uri.encodeQueryComponent(challenge.pollToken)}',
     );
   }
 
@@ -44,6 +59,9 @@ class QrLoginService {
       '/auth/qr/sessions/${challenge.id}?poll_token=${Uri.encodeQueryComponent(challenge.pollToken)}',
     );
     final data = Map<String, dynamic>.from(response['data'] as Map);
+    if (data['status'] == 'expired') {
+      throw const QrLoginExpiredException();
+    }
     if (data['status'] != 'approved') return null;
     final login = Map<String, dynamic>.from(data['login'] as Map);
     final token = (login['auth_data'] ?? login['token'] ?? '').toString();

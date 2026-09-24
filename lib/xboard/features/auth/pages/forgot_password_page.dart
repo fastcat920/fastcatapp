@@ -6,6 +6,9 @@ import 'package:flutter_xboard_sdk/flutter_xboard_sdk.dart';
 import 'package:fl_clash/l10n/l10n.dart';
 import 'package:fl_clash/xboard/utils/backend_message_mapper.dart';
 import 'package:go_router/go_router.dart';
+import 'package:fl_clash/common/common.dart';
+import 'package:fl_clash/xboard/features/auth/widgets/auth_tv_layout.dart';
+import 'package:fl_clash/widgets/widgets.dart';
 
 class ForgotPasswordPage extends ConsumerStatefulWidget {
   const ForgotPasswordPage({super.key});
@@ -138,6 +141,7 @@ class _ForgotPasswordPageState extends ConsumerState<ForgotPasswordPage> {
   }
 
   Widget _buildSendCodeStep() {
+    final sectionGap = system.isTV ? AuthTvLayout.sectionGap : 32.0;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
@@ -147,7 +151,7 @@ class _ForgotPasswordPageState extends ConsumerState<ForgotPasswordPage> {
                 color: Theme.of(context).colorScheme.onSurfaceVariant,
               ),
         ),
-        const SizedBox(height: 32),
+        SizedBox(height: sectionGap),
         XBInputField(
           controller: _emailController,
           labelText: AppLocalizations.of(context).emailAddress,
@@ -165,46 +169,55 @@ class _ForgotPasswordPageState extends ConsumerState<ForgotPasswordPage> {
             return null;
           },
         ),
-        const SizedBox(height: 32),
-        SizedBox(
-          width: double.infinity,
-          height: 48,
-          child: _isLoading
-              ? FilledButton(
-                  onPressed: null,
-                  style: XbUiButton.filledPrimary(context, busy: true),
-                  child: SizedBox(
-                    width: 20,
-                    height: 20,
-                    child: CircularProgressIndicator(
-                      strokeWidth: 2,
-                      color: Theme.of(context).colorScheme.onPrimary,
+        SizedBox(height: sectionGap),
+        TVFocusable(
+          borderRadius: BorderRadius.circular(14),
+          onPressed: _isLoading ? null : _sendVerificationCode,
+          child: SizedBox(
+            width: double.infinity,
+            height: 48,
+            child: _isLoading
+                ? FilledButton(
+                    onPressed: null,
+                    style: XbUiButton.filledPrimary(context, busy: true),
+                    child: SizedBox(
+                      width: 20,
+                      height: 20,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2,
+                        color: Theme.of(context).colorScheme.onPrimary,
+                      ),
+                    ),
+                  )
+                : FilledButton(
+                    onPressed: _sendVerificationCode,
+                    style: FilledButton.styleFrom(
+                      backgroundColor: Theme.of(context).colorScheme.primary,
+                      foregroundColor: Theme.of(context).colorScheme.onPrimary,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(14),
+                      ),
+                    ).copyWith(
+                      overlayColor:
+                          const WidgetStatePropertyAll(Colors.transparent),
+                    ),
+                    child: Text(
+                      AppLocalizations.of(context).sendVerificationCode,
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: XbFontWeight.semibold,
+                      ),
                     ),
                   ),
-                )
-              : FilledButton(
-                  onPressed: _sendVerificationCode,
-                  style: FilledButton.styleFrom(
-                    backgroundColor: Theme.of(context).colorScheme.primary,
-                    foregroundColor: Theme.of(context).colorScheme.onPrimary,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(14),
-                    ),
-                  ),
-                  child: Text(
-                    AppLocalizations.of(context).sendVerificationCode,
-                    style: TextStyle(
-                      fontSize: 16,
-                      fontWeight: XbFontWeight.semibold,
-                    ),
-                  ),
-                ),
+          ),
         ),
       ],
     );
   }
 
   Widget _buildResetPasswordStep() {
+    final sectionGap = system.isTV ? AuthTvLayout.sectionGap : 32.0;
+    final fieldGap = system.isTV ? AuthTvLayout.compactGap : 16.0;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
@@ -215,7 +228,7 @@ class _ForgotPasswordPageState extends ConsumerState<ForgotPasswordPage> {
                 color: Theme.of(context).colorScheme.onSurfaceVariant,
               ),
         ),
-        const SizedBox(height: 32),
+        SizedBox(height: sectionGap),
         XBInputField(
           controller: _codeController,
           labelText: AppLocalizations.of(context).verificationCode,
@@ -234,7 +247,7 @@ class _ForgotPasswordPageState extends ConsumerState<ForgotPasswordPage> {
             return null;
           },
         ),
-        const SizedBox(height: 16),
+        SizedBox(height: fieldGap),
         XBInputField(
           controller: _passwordController,
           labelText: AppLocalizations.of(context).newPassword,
@@ -264,7 +277,7 @@ class _ForgotPasswordPageState extends ConsumerState<ForgotPasswordPage> {
             return null;
           },
         ),
-        const SizedBox(height: 16),
+        SizedBox(height: fieldGap),
         XBInputField(
           controller: _confirmPasswordController,
           labelText: AppLocalizations.of(context).confirmNewPassword,
@@ -294,49 +307,63 @@ class _ForgotPasswordPageState extends ConsumerState<ForgotPasswordPage> {
             return null;
           },
         ),
-        const SizedBox(height: 32),
-        SizedBox(
-          width: double.infinity,
-          height: 48,
-          child: _isLoading
-              ? FilledButton(
-                  onPressed: null,
-                  style: XbUiButton.filledPrimary(context, busy: true),
-                  child: SizedBox(
-                    width: 20,
-                    height: 20,
-                    child: CircularProgressIndicator(
-                      strokeWidth: 2,
-                      color: Theme.of(context).colorScheme.onPrimary,
+        SizedBox(height: sectionGap),
+        TVFocusable(
+          borderRadius: BorderRadius.circular(14),
+          onPressed: _isLoading ? null : _resetPassword,
+          child: SizedBox(
+            width: double.infinity,
+            height: 48,
+            child: _isLoading
+                ? FilledButton(
+                    onPressed: null,
+                    style: XbUiButton.filledPrimary(context, busy: true),
+                    child: SizedBox(
+                      width: 20,
+                      height: 20,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2,
+                        color: Theme.of(context).colorScheme.onPrimary,
+                      ),
+                    ),
+                  )
+                : FilledButton(
+                    onPressed: _resetPassword,
+                    style: FilledButton.styleFrom(
+                      backgroundColor: Theme.of(context).colorScheme.primary,
+                      foregroundColor: Theme.of(context).colorScheme.onPrimary,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(14),
+                      ),
+                    ).copyWith(
+                      overlayColor:
+                          const WidgetStatePropertyAll(Colors.transparent),
+                    ),
+                    child: Text(
+                      AppLocalizations.of(context).resetPassword,
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: XbFontWeight.semibold,
+                      ),
                     ),
                   ),
-                )
-              : FilledButton(
-                  onPressed: _resetPassword,
-                  style: FilledButton.styleFrom(
-                    backgroundColor: Theme.of(context).colorScheme.primary,
-                    foregroundColor: Theme.of(context).colorScheme.onPrimary,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(14),
-                    ),
-                  ),
-                  child: Text(
-                    AppLocalizations.of(context).resetPassword,
-                    style: TextStyle(
-                      fontSize: 16,
-                      fontWeight: XbFontWeight.semibold,
-                    ),
-                  ),
-                ),
+          ),
         ),
-        const SizedBox(height: 16),
-        TextButton(
+        SizedBox(height: fieldGap),
+        TVFocusable(
+          borderRadius: BorderRadius.circular(10),
           onPressed: _isLoading ? null : _goBackToSendCode,
-          child: Text(
-            AppLocalizations.of(context).resendVerificationCode,
-            style: TextStyle(
-              color: Theme.of(context).colorScheme.primary,
-              fontWeight: XbFontWeight.semibold,
+          child: TextButton(
+            style: const ButtonStyle(
+              overlayColor: WidgetStatePropertyAll(Colors.transparent),
+            ),
+            onPressed: _isLoading ? null : _goBackToSendCode,
+            child: Text(
+              AppLocalizations.of(context).resendVerificationCode,
+              style: TextStyle(
+                color: Theme.of(context).colorScheme.primary,
+                fontWeight: XbFontWeight.semibold,
+              ),
             ),
           ),
         ),
@@ -347,7 +374,8 @@ class _ForgotPasswordPageState extends ConsumerState<ForgotPasswordPage> {
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
-    return Scaffold(
+    final isTv = system.isTV;
+    final page = Scaffold(
       backgroundColor: colorScheme.brightness == Brightness.dark
           ? colorScheme.surface
           : const Color(0xFFFAFBFD),
@@ -355,10 +383,11 @@ class _ForgotPasswordPageState extends ConsumerState<ForgotPasswordPage> {
         child: Column(
           children: [
             Padding(
-              padding: const EdgeInsets.all(16.0),
+              padding: EdgeInsets.all(isTv ? 10 : 16),
               child: Row(
                 children: [
-                  IconButton(
+                  TVFocusable(
+                    borderRadius: BorderRadius.circular(14),
                     onPressed: () {
                       if (_currentStep == ResetPasswordStep.resetPassword) {
                         _goBackToSendCode();
@@ -366,73 +395,104 @@ class _ForgotPasswordPageState extends ConsumerState<ForgotPasswordPage> {
                         context.pop();
                       }
                     },
-                    icon: const Icon(Icons.arrow_back),
-                    style: IconButton.styleFrom(
-                      backgroundColor: colorScheme.surfaceContainerLow,
+                    child: IconButton(
+                      onPressed: () {
+                        if (_currentStep == ResetPasswordStep.resetPassword) {
+                          _goBackToSendCode();
+                        } else {
+                          context.pop();
+                        }
+                      },
+                      icon: const Icon(Icons.arrow_back),
+                      style: IconButton.styleFrom(
+                        backgroundColor: colorScheme.surfaceContainerLow,
+                      ).copyWith(
+                        overlayColor: const WidgetStatePropertyAll(
+                          Colors.transparent,
+                        ),
+                      ),
                     ),
                   ),
-                  const SizedBox(width: 16),
+                  SizedBox(width: isTv ? 12 : 16),
                   Text(
                     _currentStep == ResetPasswordStep.sendCode
                         ? AppLocalizations.of(context).resetPassword
                         : AppLocalizations.of(context).setNewPassword,
-                    style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                          color: colorScheme.onSurface,
-                          fontWeight: XbFontWeight.bold,
-                        ),
+                    style: (isTv
+                            ? Theme.of(context).textTheme.titleLarge
+                            : Theme.of(context).textTheme.headlineMedium)
+                        ?.copyWith(
+                      color: colorScheme.onSurface,
+                      fontWeight: XbFontWeight.bold,
+                    ),
                   ),
                 ],
               ),
             ),
             Expanded(
               child: SingleChildScrollView(
-                padding: const EdgeInsets.symmetric(horizontal: 24.0),
-                child: ConstrainedBox(
-                  constraints: const BoxConstraints(maxWidth: 400),
-                  child: Form(
-                    key: _formKey,
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.stretch,
-                      children: [
-                        AnimatedSwitcher(
-                          duration: const Duration(milliseconds: 300),
-                          child: _currentStep == ResetPasswordStep.sendCode
-                              ? KeyedSubtree(
-                                  key: const ValueKey('send'),
-                                  child: _buildSendCodeStep(),
-                                )
-                              : KeyedSubtree(
-                                  key: const ValueKey('reset'),
-                                  child: _buildResetPasswordStep(),
-                                ),
-                        ),
-                        const SizedBox(height: 24),
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Text(
-                              AppLocalizations.of(context).rememberPassword,
-                              style: Theme.of(context)
-                                  .textTheme
-                                  .bodyMedium
-                                  ?.copyWith(
-                                    color: colorScheme.onSurfaceVariant,
+                padding: EdgeInsets.symmetric(
+                  horizontal: isTv ? AuthTvLayout.horizontalPadding : 24,
+                ),
+                child: Center(
+                  child: ConstrainedBox(
+                    constraints: BoxConstraints(
+                      maxWidth: isTv ? AuthTvLayout.contentMaxWidth : 400,
+                    ),
+                    child: Form(
+                      key: _formKey,
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        children: [
+                          AnimatedSwitcher(
+                            duration: const Duration(milliseconds: 300),
+                            child: _currentStep == ResetPasswordStep.sendCode
+                                ? KeyedSubtree(
+                                    key: const ValueKey('send'),
+                                    child: _buildSendCodeStep(),
+                                  )
+                                : KeyedSubtree(
+                                    key: const ValueKey('reset'),
+                                    child: _buildResetPasswordStep(),
                                   ),
-                            ),
-                            TextButton(
-                              onPressed: () => context.pop(),
-                              child: Text(
-                                AppLocalizations.of(context).backToLogin,
-                                style: TextStyle(
-                                  color: colorScheme.primary,
-                                  fontWeight: XbFontWeight.semibold,
+                          ),
+                          SizedBox(height: isTv ? 12 : 24),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Text(
+                                AppLocalizations.of(context).rememberPassword,
+                                style: Theme.of(context)
+                                    .textTheme
+                                    .bodyMedium
+                                    ?.copyWith(
+                                      color: colorScheme.onSurfaceVariant,
+                                    ),
+                              ),
+                              TVFocusable(
+                                borderRadius: BorderRadius.circular(10),
+                                onPressed: () => context.pop(),
+                                child: TextButton(
+                                  style: const ButtonStyle(
+                                    overlayColor: WidgetStatePropertyAll(
+                                      Colors.transparent,
+                                    ),
+                                  ),
+                                  onPressed: () => context.pop(),
+                                  child: Text(
+                                    AppLocalizations.of(context).backToLogin,
+                                    style: TextStyle(
+                                      color: colorScheme.primary,
+                                      fontWeight: XbFontWeight.semibold,
+                                    ),
+                                  ),
                                 ),
                               ),
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: 24),
-                      ],
+                            ],
+                          ),
+                          SizedBox(height: isTv ? 12 : 24),
+                        ],
+                      ),
                     ),
                   ),
                 ),
@@ -442,5 +502,6 @@ class _ForgotPasswordPageState extends ConsumerState<ForgotPasswordPage> {
         ),
       ),
     );
+    return AuthTvLayout.apply(context, page);
   }
 }
