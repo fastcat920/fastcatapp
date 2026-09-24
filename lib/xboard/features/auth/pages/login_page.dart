@@ -4,6 +4,7 @@ import 'package:fl_clash/xboard/services/services.dart';
 import 'package:fl_clash/xboard/features/auth/providers/xboard_user_provider.dart';
 import 'package:fl_clash/xboard/features/initialization/initialization.dart';
 import 'package:fl_clash/common/common.dart';
+import 'package:fl_clash/l10n/l10n.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'register_page.dart';
@@ -511,8 +512,10 @@ class _LoginPageState extends ConsumerState<LoginPage> {
 
   Widget _buildLogo(ColorScheme colorScheme, {bool compact = false}) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final size = system.isTV ? 50.0 : (compact ? 64.0 : 80.0);
-    final imageSize = system.isTV ? 42.0 : (compact ? 54.0 : 64.0);
+    // TV keeps the same brand mark size as the full desktop login page. Only
+    // short non-TV windows use the compact logo.
+    final size = system.isTV ? 80.0 : (compact ? 64.0 : 80.0);
+    final imageSize = system.isTV ? 64.0 : (compact ? 54.0 : 64.0);
     return Container(
       width: size,
       height: size,
@@ -522,7 +525,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
             : colorScheme.primary.withValues(alpha: 0.10),
         shape: BoxShape.circle,
       ),
-      padding: EdgeInsets.all(system.isTV ? 4 : (compact ? 5 : 6)),
+      padding: EdgeInsets.all(system.isTV ? 6 : (compact ? 5 : 6)),
       child: ClipRRect(
         borderRadius: BorderRadius.circular(14),
         child: Image.asset(
@@ -657,7 +660,10 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                                 _buildLogo(colorScheme, compact: compactBrand),
                                 SizedBox(height: compactBrand ? 8 : 12),
                                 Text(
-                                  localizedAppName,
+                                  localizedAppNameForLocale(
+                                    Localizations.localeOf(context)
+                                        .toLanguageTag(),
+                                  ),
                                   style: textTheme.headlineMedium?.copyWith(
                                     color: colorScheme.onSurface,
                                     fontWeight: XbFontWeight.bold,
@@ -679,12 +685,21 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                             SizedBox(height: compactBrand ? 16 : 20),
                             TVFocusable(
                               focusNode: _loginMethodFocusNode,
-                              borderRadius: BorderRadius.circular(14),
+                              borderRadius: BorderRadius.circular(
+                                AuthTvLayout.controlRadius,
+                              ),
                               onPressed: () => _setLoginMethod(!_showQrLogin),
                               onKeyEvent: (_, event) =>
                                   _handleLoginMethodKey(event),
                               child: SegmentedButton<bool>(
                                 style: ButtonStyle(
+                                  shape: WidgetStatePropertyAll(
+                                    RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(
+                                        AuthTvLayout.controlRadius,
+                                      ),
+                                    ),
+                                  ),
                                   overlayColor: const WidgetStatePropertyAll(
                                     Colors.transparent,
                                   ),
@@ -697,16 +712,17 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                                     ),
                                   ),
                                 ),
-                                segments: const [
+                                segments: [
                                   ButtonSegment(
                                     value: true,
-                                    icon: Icon(Icons.qr_code_2_outlined),
-                                    label: Text('扫码登录'),
+                                    icon: const Icon(Icons.qr_code_2_outlined),
+                                    label: Text(appLocalizations.xboardQrLogin),
                                   ),
                                   ButtonSegment(
                                     value: false,
-                                    icon: Icon(Icons.password_outlined),
-                                    label: Text('账号登录'),
+                                    icon: const Icon(Icons.password_outlined),
+                                    label: Text(
+                                        appLocalizations.xboardAccountLogin),
                                   ),
                                 ],
                                 selected: {_showQrLogin},
@@ -967,7 +983,11 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                                     ],
                                     TVFocusable(
                                       focusNode: _loginFocusNode,
-                                      borderRadius: BorderRadius.circular(14),
+                                      borderRadius: BorderRadius.circular(
+                                        system.isTV
+                                            ? AuthTvLayout.controlRadius
+                                            : 14,
+                                      ),
                                       onKeyEvent: (_, event) => _moveTvFocus(
                                         event,
                                         up: _rememberFocusNode,
@@ -996,9 +1016,20 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                                           shape: WidgetStatePropertyAll(
                                             RoundedRectangleBorder(
                                               borderRadius:
-                                                  BorderRadius.circular(14),
+                                                  BorderRadius.circular(
+                                                system.isTV
+                                                    ? AuthTvLayout.controlRadius
+                                                    : 14,
+                                              ),
                                             ),
                                           ),
+                                          minimumSize: system.isTV
+                                              ? const WidgetStatePropertyAll(
+                                                  Size.fromHeight(
+                                                    AuthTvLayout.buttonHeight,
+                                                  ),
+                                                )
+                                              : null,
                                         ),
                                         child: isIniting
                                             ? Row(
@@ -1318,10 +1349,16 @@ class _QrLoginCardState extends State<_QrLoginCard> {
   Future<void> _create({bool invalidateCurrent = false}) async {
     if (_loading || !widget.enabled) return;
     final previous = _challenge;
+    final previousWasExpired = previous != null && _hasExpired(previous);
     var previousInvalidated = previous == null;
     setState(() {
       _loading = true;
       _error = null;
+      if (previousWasExpired) {
+        _challenge = null;
+        _remaining = Duration.zero;
+        _expired = false;
+      }
     });
     try {
       if (invalidateCurrent && previous != null) {
@@ -1350,8 +1387,16 @@ class _QrLoginCardState extends State<_QrLoginCard> {
       if (mounted) {
         setState(() {
           _loading = false;
-          if (previousInvalidated) _challenge = null;
-          _error = invalidateCurrent ? '二维码刷新失败，请稍后重试' : '二维码加载失败';
+          if (previousWasExpired) {
+            _challenge = previous;
+            _remaining = Duration.zero;
+            _expired = true;
+          } else if (previousInvalidated) {
+            _challenge = null;
+          }
+          _error = invalidateCurrent
+              ? AppLocalizations.of(context).xboardQrRefreshFailed
+              : AppLocalizations.of(context).xboardQrLoadFailed;
         });
       }
     }
@@ -1365,7 +1410,10 @@ class _QrLoginCardState extends State<_QrLoginCard> {
         DateTime.now().isBefore(availableAt)) {
       return;
     }
-    await _create(invalidateCurrent: true);
+    // Expired challenges are already unusable and do not need a cancellation
+    // round-trip. Skipping it prevents a failed cancel request from blocking
+    // creation of the replacement QR code.
+    await _create(invalidateCurrent: !_expired);
   }
 
   Future<void> _poll() async {
@@ -1381,7 +1429,7 @@ class _QrLoginCardState extends State<_QrLoginCard> {
       if (mounted && !success) {
         setState(() {
           _loading = false;
-          _error = '登录失败，请刷新二维码';
+          _error = AppLocalizations.of(context).xboardQrLoginFailed;
           _remaining = Duration.zero;
           _expired = true;
         });
@@ -1395,14 +1443,16 @@ class _QrLoginCardState extends State<_QrLoginCard> {
   }
 
   String get _countdownText {
-    if (_expired) return '二维码已过期';
-    if (_challenge == null) return _loading ? '正在生成二维码…' : (_error ?? '二维码不可用');
+    final l10n = AppLocalizations.of(context);
+    if (_loading && _challenge == null) return l10n.xboardQrGenerating;
+    if (_expired) return _error ?? l10n.xboardQrExpired;
+    if (_challenge == null) return _error ?? l10n.xboardQrUnavailable;
     if (_error != null) return _error!;
     final minutes =
         _remaining.inMinutes.remainder(60).toString().padLeft(2, '0');
     final seconds =
         _remaining.inSeconds.remainder(60).toString().padLeft(2, '0');
-    return '$minutes:$seconds';
+    return l10n.xboardQrExpiresIn('$minutes:$seconds');
   }
 
   Widget _buildQrSurface(
@@ -1413,10 +1463,16 @@ class _QrLoginCardState extends State<_QrLoginCard> {
     final challenge = _challenge;
     final canInteract = widget.enabled;
     final radius = BorderRadius.circular(12);
+    final l10n = AppLocalizations.of(context);
+    final minutes =
+        _remaining.inMinutes.remainder(60).toString().padLeft(2, '0');
+    final seconds =
+        _remaining.inSeconds.remainder(60).toString().padLeft(2, '0');
     return Semantics(
       button: true,
-      label:
-          _expired ? '二维码已过期，按确认键刷新二维码' : '登录二维码，剩余$_countdownText，按确认键刷新二维码',
+      label: _expired
+          ? l10n.xboardQrExpiredSemantics
+          : l10n.xboardQrReadySemantics('$minutes:$seconds'),
       child: TVFocusable(
         focusNode: widget.refreshFocusNode,
         borderRadius: radius,
@@ -1443,7 +1499,7 @@ class _QrLoginCardState extends State<_QrLoginCard> {
                     color: theme.colorScheme.surfaceContainerHighest,
                     child: Center(
                       child: Text(
-                        _error ?? '二维码不可用',
+                        _error ?? l10n.xboardQrUnavailable,
                         textAlign: TextAlign.center,
                         style: theme.textTheme.bodySmall,
                       ),
@@ -1478,7 +1534,7 @@ class _QrLoginCardState extends State<_QrLoginCard> {
                         ),
                         onPressed: _refresh,
                         icon: const Icon(Icons.refresh, size: 18),
-                        label: const Text('刷新二维码'),
+                        label: Text(l10n.xboardQrRefresh),
                       ),
                     ),
                   ),
@@ -1493,6 +1549,7 @@ class _QrLoginCardState extends State<_QrLoginCard> {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final l10n = AppLocalizations.of(context);
     final qrSize = system.isTV ? 160.0 : 180.0;
     return Container(
       // 与账号密码表单使用同一父级最大宽度，内容高度仍由二维码区域决定。
@@ -1505,11 +1562,15 @@ class _QrLoginCardState extends State<_QrLoginCard> {
       ),
       // 卡片按内容收紧，等高差额由外层 IndexedStack 留在边框外。
       child: Column(mainAxisSize: MainAxisSize.min, children: [
-        Text('扫码登录',
+        Text(l10n.xboardQrLogin,
             style: theme.textTheme.titleMedium
                 ?.copyWith(fontWeight: FontWeight.w600)),
         const SizedBox(height: 4),
-        Text('使用已登录快猫的手机扫描并确认', style: theme.textTheme.bodySmall),
+        Text(
+          l10n.xboardQrLoginDescription,
+          style: theme.textTheme.bodySmall,
+          textAlign: TextAlign.center,
+        ),
         const SizedBox(height: 12),
         _buildQrSurface(context, theme, qrSize),
         const SizedBox(height: 8),

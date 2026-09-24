@@ -10540,6 +10540,131 @@ class AppLocalizations {
     return Intl.message('Got it', name: 'xboardGotIt', desc: '', args: []);
   }
 
+  /// `QR Login`
+  String get xboardQrLogin {
+    return Intl.message('QR Login', name: 'xboardQrLogin', desc: '', args: []);
+  }
+
+  /// `Account Login`
+  String get xboardAccountLogin {
+    return Intl.message(
+      'Account Login',
+      name: 'xboardAccountLogin',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Scan and confirm with a phone already signed in to FastCat`
+  String get xboardQrLoginDescription {
+    return Intl.message(
+      'Scan and confirm with a phone already signed in to FastCat',
+      name: 'xboardQrLoginDescription',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Generating QR code…`
+  String get xboardQrGenerating {
+    return Intl.message(
+      'Generating QR code…',
+      name: 'xboardQrGenerating',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `QR code unavailable`
+  String get xboardQrUnavailable {
+    return Intl.message(
+      'QR code unavailable',
+      name: 'xboardQrUnavailable',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `QR code expired`
+  String get xboardQrExpired {
+    return Intl.message(
+      'QR code expired',
+      name: 'xboardQrExpired',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Refresh QR code`
+  String get xboardQrRefresh {
+    return Intl.message(
+      'Refresh QR code',
+      name: 'xboardQrRefresh',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Could not refresh the QR code. Try again later.`
+  String get xboardQrRefreshFailed {
+    return Intl.message(
+      'Could not refresh the QR code. Try again later.',
+      name: 'xboardQrRefreshFailed',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Could not load the QR code`
+  String get xboardQrLoadFailed {
+    return Intl.message(
+      'Could not load the QR code',
+      name: 'xboardQrLoadFailed',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Login failed. Refresh the QR code.`
+  String get xboardQrLoginFailed {
+    return Intl.message(
+      'Login failed. Refresh the QR code.',
+      name: 'xboardQrLoginFailed',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Expires in {time}`
+  String xboardQrExpiresIn(String time) {
+    return Intl.message(
+      'Expires in $time',
+      name: 'xboardQrExpiresIn',
+      desc: '',
+      args: [time],
+    );
+  }
+
+  /// `QR code expired. Press Select to refresh it.`
+  String get xboardQrExpiredSemantics {
+    return Intl.message(
+      'QR code expired. Press Select to refresh it.',
+      name: 'xboardQrExpiredSemantics',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Login QR code. Expires in {time}. Press Select to refresh it.`
+  String xboardQrReadySemantics(String time) {
+    return Intl.message(
+      'Login QR code. Expires in $time. Press Select to refresh it.',
+      name: 'xboardQrReadySemantics',
+      desc: '',
+      args: [time],
+    );
+  }
+
   /// `{count} devices`
   String xboardDeviceUnit(Object count) {
     return Intl.message(

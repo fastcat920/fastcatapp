@@ -171,11 +171,13 @@ class _ForgotPasswordPageState extends ConsumerState<ForgotPasswordPage> {
         ),
         SizedBox(height: sectionGap),
         TVFocusable(
-          borderRadius: BorderRadius.circular(14),
+          borderRadius: BorderRadius.circular(
+            system.isTV ? AuthTvLayout.controlRadius : 14,
+          ),
           onPressed: _isLoading ? null : _sendVerificationCode,
           child: SizedBox(
             width: double.infinity,
-            height: 48,
+            height: system.isTV ? AuthTvLayout.buttonHeight : 48,
             child: _isLoading
                 ? FilledButton(
                     onPressed: null,
@@ -195,7 +197,9 @@ class _ForgotPasswordPageState extends ConsumerState<ForgotPasswordPage> {
                       backgroundColor: Theme.of(context).colorScheme.primary,
                       foregroundColor: Theme.of(context).colorScheme.onPrimary,
                       shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(14),
+                        borderRadius: BorderRadius.circular(
+                          system.isTV ? AuthTvLayout.controlRadius : 14,
+                        ),
                       ),
                     ).copyWith(
                       overlayColor:
@@ -204,7 +208,7 @@ class _ForgotPasswordPageState extends ConsumerState<ForgotPasswordPage> {
                     child: Text(
                       AppLocalizations.of(context).sendVerificationCode,
                       style: TextStyle(
-                        fontSize: 16,
+                        fontSize: system.isTV ? 15 : 16,
                         fontWeight: XbFontWeight.semibold,
                       ),
                     ),
@@ -309,11 +313,13 @@ class _ForgotPasswordPageState extends ConsumerState<ForgotPasswordPage> {
         ),
         SizedBox(height: sectionGap),
         TVFocusable(
-          borderRadius: BorderRadius.circular(14),
+          borderRadius: BorderRadius.circular(
+            system.isTV ? AuthTvLayout.controlRadius : 14,
+          ),
           onPressed: _isLoading ? null : _resetPassword,
           child: SizedBox(
             width: double.infinity,
-            height: 48,
+            height: system.isTV ? AuthTvLayout.buttonHeight : 48,
             child: _isLoading
                 ? FilledButton(
                     onPressed: null,
@@ -333,7 +339,9 @@ class _ForgotPasswordPageState extends ConsumerState<ForgotPasswordPage> {
                       backgroundColor: Theme.of(context).colorScheme.primary,
                       foregroundColor: Theme.of(context).colorScheme.onPrimary,
                       shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(14),
+                        borderRadius: BorderRadius.circular(
+                          system.isTV ? AuthTvLayout.controlRadius : 14,
+                        ),
                       ),
                     ).copyWith(
                       overlayColor:
@@ -342,7 +350,7 @@ class _ForgotPasswordPageState extends ConsumerState<ForgotPasswordPage> {
                     child: Text(
                       AppLocalizations.of(context).resetPassword,
                       style: TextStyle(
-                        fontSize: 16,
+                        fontSize: system.isTV ? 15 : 16,
                         fontWeight: XbFontWeight.semibold,
                       ),
                     ),
@@ -387,7 +395,9 @@ class _ForgotPasswordPageState extends ConsumerState<ForgotPasswordPage> {
               child: Row(
                 children: [
                   TVFocusable(
-                    borderRadius: BorderRadius.circular(14),
+                    borderRadius: BorderRadius.circular(
+                      isTv ? AuthTvLayout.controlRadius : 14,
+                    ),
                     onPressed: () {
                       if (_currentStep == ResetPasswordStep.resetPassword) {
                         _goBackToSendCode();

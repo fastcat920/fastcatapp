@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:io';
 import 'package:fl_clash/common/common.dart';
+import 'package:fl_clash/widgets/widgets.dart';
 import 'package:fl_clash/xboard/features/shared/styles/font_weights.dart';
 import 'package:flutter/material.dart';
 import 'package:fl_clash/xboard/utils/xboard_notification.dart';
@@ -275,6 +276,12 @@ class _NoticeDetailDialogState extends State<NoticeDetailDialog>
 
   Widget _buildDismissButton() {
     final l10n = AppLocalizations.of(context);
+    final radius = BorderRadius.circular(12);
+    void dismiss() {
+      widget.onDismiss?.call();
+      Navigator.of(context).pop();
+    }
+
     return Container(
       padding: const EdgeInsets.fromLTRB(16, 12, 16, 16),
       decoration: BoxDecoration(
@@ -295,18 +302,22 @@ class _NoticeDetailDialogState extends State<NoticeDetailDialog>
       child: Row(
         mainAxisAlignment: MainAxisAlignment.end,
         children: [
-          FilledButton(
-            onPressed: () {
-              widget.onDismiss?.call();
-              Navigator.of(context).pop();
-            },
-            style: FilledButton.styleFrom(
-              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 10),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12),
+          TVFocusable(
+            autofocus: system.isTV,
+            borderRadius: radius,
+            onPressed: dismiss,
+            child: FilledButton(
+              onPressed: dismiss,
+              style: FilledButton.styleFrom(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 24, vertical: 10),
+                shape: RoundedRectangleBorder(borderRadius: radius),
+              ).copyWith(
+                overlayColor: const WidgetStatePropertyAll(Colors.transparent),
               ),
+              child:
+                  Text(l10n.xboardGotIt, style: const TextStyle(fontSize: 14)),
             ),
-            child: Text(l10n.xboardGotIt, style: const TextStyle(fontSize: 14)),
           ),
         ],
       ),
@@ -449,32 +460,6 @@ class _NoticeDetailDialogState extends State<NoticeDetailDialog>
                   ),
               maxLines: 2,
               overflow: TextOverflow.ellipsis,
-            ),
-          ),
-          const SizedBox(width: 8),
-          XbPointerCursor(
-            child: Material(
-              color: Colors.transparent,
-              child: InkWell(
-                onTap: () {
-                  if (!system.isTV) {
-                    FocusScope.of(context).unfocus();
-                  }
-                  Navigator.of(context).pop();
-                },
-                borderRadius: BorderRadius.circular(12),
-                child: Padding(
-                  padding: const EdgeInsets.all(6.0),
-                  child: Icon(
-                    Icons.close_rounded,
-                    color: Theme.of(context)
-                        .colorScheme
-                        .onSurface
-                        .withValues(alpha: 0.6),
-                    size: 20,
-                  ),
-                ),
-              ),
             ),
           ),
         ],

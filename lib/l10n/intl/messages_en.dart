@@ -134,21 +134,26 @@ class MessageLookup extends MessageLookupByLibrary {
 
   static String m52(count) => "${count} nodes";
 
-  static String m53(error) => "Redeem failed: ${error}";
+  static String m53(time) => "Expires in ${time}";
 
-  static String m54(days) => "Used traffic will reset in ${days} days";
+  static String m54(time) =>
+      "Login QR code. Expires in ${time}. Press Select to refresh it.";
 
-  static String m55(time) => "Running time: ${time}";
+  static String m55(error) => "Redeem failed: ${error}";
 
-  static String m56(healthy, total) => "${healthy}/${total} available";
+  static String m56(days) => "Used traffic will reset in ${days} days";
 
-  static String m57(index) => "Backup ${index}";
+  static String m57(time) => "Running time: ${time}";
 
-  static String m58(seconds) => "Retry check in ${seconds}s";
+  static String m58(healthy, total) => "${healthy}/${total} available";
 
-  static String m59(latency) => "${latency}ms";
+  static String m59(index) => "Backup ${index}";
 
-  static String m60(current, required) => "Recovery ${current}/${required}";
+  static String m60(seconds) => "Retry check in ${seconds}s";
+
+  static String m61(latency) => "${latency}ms";
+
+  static String m62(current, required) => "Recovery ${current}/${required}";
 
   final messages = _notInlinedMessages(_notInlinedMessages);
   static Map<String, Function> _notInlinedMessages(_) => <String, Function>{
@@ -1465,6 +1470,7 @@ class MessageLookup extends MessageLookupByLibrary {
       "This account has been banned. Please contact support.",
     ),
     "xboardAccountInfo": MessageLookupByLibrary.simpleMessage("My Account"),
+    "xboardAccountLogin": MessageLookupByLibrary.simpleMessage("Account Login"),
     "xboardAccountManagement": MessageLookupByLibrary.simpleMessage(
       "Account management",
     ),
@@ -2740,6 +2746,32 @@ class MessageLookup extends MessageLookupByLibrary {
     "xboardPurchaseTraffic": MessageLookupByLibrary.simpleMessage(
       "Purchase traffic",
     ),
+    "xboardQrExpired": MessageLookupByLibrary.simpleMessage("QR code expired"),
+    "xboardQrExpiredSemantics": MessageLookupByLibrary.simpleMessage(
+      "QR code expired. Press Select to refresh it.",
+    ),
+    "xboardQrExpiresIn": m53,
+    "xboardQrGenerating": MessageLookupByLibrary.simpleMessage(
+      "Generating QR code…",
+    ),
+    "xboardQrLoadFailed": MessageLookupByLibrary.simpleMessage(
+      "Could not load the QR code",
+    ),
+    "xboardQrLogin": MessageLookupByLibrary.simpleMessage("QR Login"),
+    "xboardQrLoginDescription": MessageLookupByLibrary.simpleMessage(
+      "Scan and confirm with a phone already signed in to FastCat",
+    ),
+    "xboardQrLoginFailed": MessageLookupByLibrary.simpleMessage(
+      "Login failed. Refresh the QR code.",
+    ),
+    "xboardQrReadySemantics": m54,
+    "xboardQrRefresh": MessageLookupByLibrary.simpleMessage("Refresh QR code"),
+    "xboardQrRefreshFailed": MessageLookupByLibrary.simpleMessage(
+      "Could not refresh the QR code. Try again later.",
+    ),
+    "xboardQrUnavailable": MessageLookupByLibrary.simpleMessage(
+      "QR code unavailable",
+    ),
     "xboardQuarterlyPayment": MessageLookupByLibrary.simpleMessage("Quarterly"),
     "xboardRecharge": MessageLookupByLibrary.simpleMessage("Recharge"),
     "xboardRechargeAmount": MessageLookupByLibrary.simpleMessage(
@@ -2756,7 +2788,7 @@ class MessageLookup extends MessageLookupByLibrary {
     ),
     "xboardRechargeNow": MessageLookupByLibrary.simpleMessage("Recharge now"),
     "xboardRedeemFailed": MessageLookupByLibrary.simpleMessage("Redeem failed"),
-    "xboardRedeemFailedWithError": m53,
+    "xboardRedeemFailedWithError": m55,
     "xboardRedeemNow": MessageLookupByLibrary.simpleMessage("Redeem now"),
     "xboardRedeemSuccess": MessageLookupByLibrary.simpleMessage(
       "Redeem successful",
@@ -2819,7 +2851,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "xboardResetTrafficConfirmContent": MessageLookupByLibrary.simpleMessage(
       "This will reset the used traffic, but will not extend the plan duration. Continue?",
     ),
-    "xboardResetTrafficInDays": m54,
+    "xboardResetTrafficInDays": m56,
     "xboardResetTrafficToday": MessageLookupByLibrary.simpleMessage(
       "Used traffic has been reset today",
     ),
@@ -2830,7 +2862,7 @@ class MessageLookup extends MessageLookupByLibrary {
       "3. Return to app after payment, system will detect automatically",
     ),
     "xboardRunDiagnosis": MessageLookupByLibrary.simpleMessage("Run check"),
-    "xboardRunningTime": m55,
+    "xboardRunningTime": m57,
     "xboardSecureEncryption": MessageLookupByLibrary.simpleMessage(
       "Secure encryption",
     ),
@@ -2851,15 +2883,15 @@ class MessageLookup extends MessageLookupByLibrary {
     ),
     "xboardServerError": MessageLookupByLibrary.simpleMessage("Server error"),
     "xboardServerStatus": MessageLookupByLibrary.simpleMessage("Server status"),
-    "xboardServiceAvailableCount": m56,
-    "xboardServiceBackup": m57,
+    "xboardServiceAvailableCount": m58,
+    "xboardServiceBackup": m59,
     "xboardServiceCheckedAt": MessageLookupByLibrary.simpleMessage(
       "Checked at",
     ),
     "xboardServiceCheckingEndpoints": MessageLookupByLibrary.simpleMessage(
       "Checking all endpoints",
     ),
-    "xboardServiceCircuitRemaining": m58,
+    "xboardServiceCircuitRemaining": m60,
     "xboardServiceConnectionDegraded": MessageLookupByLibrary.simpleMessage(
       "Service connection unstable",
     ),
@@ -2867,7 +2899,7 @@ class MessageLookup extends MessageLookupByLibrary {
       "A business request failed. The client is checking the local network and business gateways.",
     ),
     "xboardServiceInUse": MessageLookupByLibrary.simpleMessage("In use"),
-    "xboardServiceLatency": m59,
+    "xboardServiceLatency": m61,
     "xboardServiceNetworkRestricted": MessageLookupByLibrary.simpleMessage(
       "Network access restricted",
     ),
@@ -2893,7 +2925,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "xboardServiceRecoveringTooltip": MessageLookupByLibrary.simpleMessage(
       "The network has recovered. The client is confirming business gateway availability.",
     ),
-    "xboardServiceRecoveryProgress": m60,
+    "xboardServiceRecoveryProgress": m62,
     "xboardServiceStateCircuitOpen": MessageLookupByLibrary.simpleMessage(
       "Circuit open",
     ),

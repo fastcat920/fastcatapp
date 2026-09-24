@@ -1431,6 +1431,33 @@
   "xboardOfflineButActive": "离线占用",
   "xboardReloadNodes": "重新加载",
   "xboardGotIt": "知道了",
+  "xboardQrLogin": "扫码登录",
+  "xboardAccountLogin": "账号登录",
+  "xboardQrLoginDescription": "使用已登录快猫的手机扫描并确认",
+  "xboardQrGenerating": "正在生成二维码…",
+  "xboardQrUnavailable": "二维码不可用",
+  "xboardQrExpired": "二维码已过期",
+  "xboardQrRefresh": "刷新二维码",
+  "xboardQrRefreshFailed": "二维码刷新失败，请稍后重试",
+  "xboardQrLoadFailed": "二维码加载失败",
+  "xboardQrLoginFailed": "登录失败，请刷新二维码",
+  "xboardQrExpiresIn": "{time}秒后过期",
+  "@xboardQrExpiresIn": {
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "xboardQrExpiredSemantics": "二维码已过期，按确认键刷新二维码",
+  "xboardQrReadySemantics": "登录二维码，{time}秒后过期，按确认键刷新二维码",
+  "@xboardQrReadySemantics": {
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
   "xboardDeviceUnit": "{count}台",
   "xboardLoginErrorNetwork": "服务暂时不可用，请稍后重试",
   "xboardLoginErrorConfigLoad": "配置加载失败，请稍后再试",

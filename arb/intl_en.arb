@@ -1431,6 +1431,33 @@
   "xboardOfflineButActive": "Offline, using slot",
   "xboardReloadNodes": "Reload",
   "xboardGotIt": "Got it",
+  "xboardQrLogin": "QR Login",
+  "xboardAccountLogin": "Account Login",
+  "xboardQrLoginDescription": "Scan and confirm with a phone already signed in to FastCat",
+  "xboardQrGenerating": "Generating QR code…",
+  "xboardQrUnavailable": "QR code unavailable",
+  "xboardQrExpired": "QR code expired",
+  "xboardQrRefresh": "Refresh QR code",
+  "xboardQrRefreshFailed": "Could not refresh the QR code. Try again later.",
+  "xboardQrLoadFailed": "Could not load the QR code",
+  "xboardQrLoginFailed": "Login failed. Refresh the QR code.",
+  "xboardQrExpiresIn": "Expires in {time}",
+  "@xboardQrExpiresIn": {
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "xboardQrExpiredSemantics": "QR code expired. Press Select to refresh it.",
+  "xboardQrReadySemantics": "Login QR code. Expires in {time}. Press Select to refresh it.",
+  "@xboardQrReadySemantics": {
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
   "xboardDeviceUnit": "{count} devices",
   "xboardLoginErrorNetwork": "Service is temporarily unavailable, please try again later.",
   "xboardLoginErrorConfigLoad": "Configuration load failed, please try again later",

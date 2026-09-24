@@ -3,11 +3,17 @@ import 'package:flutter/material.dart';
 
 /// Shared Android TV sizing for authentication screens.
 abstract final class AuthTvLayout {
-  static const double contentMaxWidth = 360;
-  static const double toolbarHeight = 60;
-  static const double horizontalPadding = 24;
-  static const double compactGap = 12;
-  static const double sectionGap = 16;
+  static const double contentMaxWidth = 332;
+  static const double toolbarHeight = 56;
+  static const double horizontalPadding = 20;
+  static const double compactGap = 9;
+  static const double sectionGap = 12;
+  static const double controlRadius = 12;
+  static const double buttonHeight = 44;
+  static const EdgeInsets fieldContentPadding = EdgeInsets.symmetric(
+    horizontal: 14,
+    vertical: 11,
+  );
 
   /// Authentication forms are intentionally denser than the rest of the TV UI.
   /// The application-level TV scaler is designed for dashboard content and makes

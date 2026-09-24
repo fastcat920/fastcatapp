@@ -645,7 +645,10 @@ class _XBoardHomePageState extends ConsumerState<XBoardHomePage>
                       const SizedBox(width: 18),
                       Expanded(
                         flex: 6,
-                        child: _buildTvControlPanel(isShort: isShort),
+                        child: _buildTvControlPanel(
+                          isShort: isShort,
+                          connectButtonSize: connectButtonSize,
+                        ),
                       ),
                     ],
                   ),
@@ -683,53 +686,90 @@ class _XBoardHomePageState extends ConsumerState<XBoardHomePage>
     );
   }
 
-  Widget _buildTvControlPanel({required bool isShort}) {
+  Widget _buildTvControlPanel({
+    required bool isShort,
+    required double connectButtonSize,
+  }) {
     final modeHeight = isShort ? 96.0 : 116.0;
     final nodeHeight = isShort ? 62.0 : 72.0;
     final accountHeight = isShort ? 70.0 : 82.0;
+    const cardGap = 14.0;
+    const versionLineHeight = 20.0;
+    final cardsHeight = modeHeight + nodeHeight + accountHeight + cardGap * 2;
 
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: [
-        SizedBox(
-          height: modeHeight,
-          child: _buildTvModeCard(),
-        ),
-        const SizedBox(height: 14),
-        SizedBox(
-          height: nodeHeight,
-          child: const NodeSelectorBar(),
-        ),
-        const SizedBox(height: 14),
-        SizedBox(
-          height: accountHeight,
-          child: Row(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              Expanded(child: _buildTvAccountCard()),
-              const SizedBox(width: 12),
-              SizedBox(
-                width: 154,
-                child: _buildTvLogoutButton(context),
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        // The left panel centers the connection button above a small status
+        // line. Reuse that geometry so the version line follows the button's
+        // lower edge at both 720p and 1080p instead of relying on a fixed gap.
+        const panelVerticalPadding = 36.0;
+        const buttonStatusGap = 6.0;
+        const statusLineHeight = 24.0;
+        final flexibleButtonHeight = constraints.maxHeight -
+            panelVerticalPadding -
+            buttonStatusGap -
+            statusLineHeight;
+        final connectButtonBottom =
+            18 + (flexibleButtonHeight + connectButtonSize) / 2;
+        final availableGap =
+            constraints.maxHeight - cardsHeight - versionLineHeight;
+        final minimumGap = isShort ? 8.0 : 10.0;
+        final maximumGap =
+            availableGap > minimumGap ? availableGap : minimumGap;
+        final versionGap =
+            (connectButtonBottom - cardsHeight - versionLineHeight)
+                .clamp(minimumGap, maximumGap)
+                .toDouble();
+        final l10n = AppLocalizations.of(context);
+        final chinese = Localizations.localeOf(context).languageCode == 'zh';
+
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            SizedBox(
+              height: modeHeight,
+              child: _buildTvModeCard(),
+            ),
+            const SizedBox(height: cardGap),
+            SizedBox(
+              height: nodeHeight,
+              child: const NodeSelectorBar(),
+            ),
+            const SizedBox(height: cardGap),
+            SizedBox(
+              height: accountHeight,
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  Expanded(child: _buildTvAccountCard()),
+                  const SizedBox(width: 12),
+                  SizedBox(
+                    width: 154,
+                    child: _buildTvLogoutButton(context),
+                  ),
+                ],
               ),
-            ],
-          ),
-        ),
-        SizedBox(height: isShort ? 6 : 10),
-        Center(
-          child: Text(
-            '${Localizations.localeOf(context).languageCode == 'zh' ? '当前版本：' : 'Current version: '}V${globalState.packageInfo.version}',
-            key: const Key('tv-current-version'),
-            style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                  color: Theme.of(context)
-                      .colorScheme
-                      .onSurfaceVariant
-                      .withValues(alpha: 0.72),
+            ),
+            SizedBox(height: versionGap),
+            SizedBox(
+              height: versionLineHeight,
+              child: Center(
+                child: Text(
+                  '${l10n.xboardCurrentVersion}${chinese ? '：' : ': '}V${globalState.packageInfo.version}',
+                  key: const Key('tv-current-version'),
+                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                        color: Theme.of(context)
+                            .colorScheme
+                            .onSurfaceVariant
+                            .withValues(alpha: 0.72),
+                      ),
                 ),
-          ),
-        ),
-        const Spacer(),
-      ],
+              ),
+            ),
+            const Spacer(),
+          ],
+        );
+      },
     );
   }
 

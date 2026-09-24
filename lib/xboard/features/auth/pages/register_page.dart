@@ -236,7 +236,9 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
               child: Row(
                 children: [
                   TVFocusable(
-                    borderRadius: BorderRadius.circular(14),
+                    borderRadius: BorderRadius.circular(
+                      isTv ? AuthTvLayout.controlRadius : 14,
+                    ),
                     onPressed: () => context.pop(),
                     child: IconButton(
                       onPressed: () => context.pop(),
@@ -428,13 +430,15 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
                           ),
                           SizedBox(height: isTv ? 10 : 16),
                           TVFocusable(
-                            borderRadius: BorderRadius.circular(14),
+                            borderRadius: BorderRadius.circular(
+                              isTv ? AuthTvLayout.controlRadius : 14,
+                            ),
                             onPressed: _isRegistering || !_hasAcceptedLegalTerms
                                 ? null
                                 : _register,
                             child: SizedBox(
                               width: double.infinity,
-                              height: 48,
+                              height: isTv ? AuthTvLayout.buttonHeight : 48,
                               child: _isRegistering
                                   ? FilledButton(
                                       onPressed: null,
@@ -459,8 +463,11 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
                                         backgroundColor: colorScheme.primary,
                                         foregroundColor: colorScheme.onPrimary,
                                         shape: RoundedRectangleBorder(
-                                          borderRadius:
-                                              BorderRadius.circular(14),
+                                          borderRadius: BorderRadius.circular(
+                                            isTv
+                                                ? AuthTvLayout.controlRadius
+                                                : 14,
+                                          ),
                                         ),
                                       ).copyWith(
                                         overlayColor:
@@ -471,7 +478,7 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
                                       child: Text(
                                         appLocalizations.registerAccount,
                                         style: TextStyle(
-                                          fontSize: 16,
+                                          fontSize: isTv ? 15 : 16,
                                           fontWeight: XbFontWeight.semibold,
                                         ),
                                       ),
