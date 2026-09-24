@@ -1,0 +1,30 @@
+#!/bin/bash
+set -euo pipefail
+cd "$(dirname "$0")/.."
+
+: "${XOR_KEY:?XOR_KEY is required}"
+: "${FASTCAT_KEY_CURRENT_ID:?FASTCAT_KEY_CURRENT_ID is required}"
+: "${FASTCAT_KEY_CURRENT:?FASTCAT_KEY_CURRENT is required}"
+: "${FASTCAT_KEY_NEXT_ID:?FASTCAT_KEY_NEXT_ID is required}"
+: "${FASTCAT_KEY_NEXT:?FASTCAT_KEY_NEXT is required}"
+: "${FASTCAT_SUBSCRIPTION_FLAG:=fastcat-v1}"
+: "${FASTCAT_REQUIRE_ENCRYPTION:=true}"
+
+SDK="${TVOS_SDK:-appletvsimulator}"
+CONFIGURATION="${TVOS_CONFIGURATION:-Debug}"
+DESTINATION="${TVOS_DESTINATION:-generic/platform=tvOS Simulator}"
+
+xcodebuild \
+  -project tvos/FastCatTV.xcodeproj \
+  -scheme FastCatTV \
+  -configuration "$CONFIGURATION" \
+  -sdk "$SDK" \
+  -destination "$DESTINATION" \
+  XOR_KEY="$XOR_KEY" \
+  FASTCAT_KEY_CURRENT_ID="$FASTCAT_KEY_CURRENT_ID" \
+  FASTCAT_KEY_CURRENT="$FASTCAT_KEY_CURRENT" \
+  FASTCAT_KEY_NEXT_ID="$FASTCAT_KEY_NEXT_ID" \
+  FASTCAT_KEY_NEXT="$FASTCAT_KEY_NEXT" \
+  FASTCAT_SUBSCRIPTION_FLAG="$FASTCAT_SUBSCRIPTION_FLAG" \
+  FASTCAT_REQUIRE_ENCRYPTION="$FASTCAT_REQUIRE_ENCRYPTION" \
+  build

@@ -232,6 +232,12 @@ class _XBoardHomePageState extends ConsumerState<XBoardHomePage>
 
     final bool showDesktopAppBar = isDesktop && !isCompactMobileHome;
     final bool showMobileAppBar = !(isDesktop || isCompactMobileHome);
+    if (isTvHome) {
+      return Scaffold(
+        appBar: _buildTvAppBar(context),
+        body: _buildTvHomeBody(),
+      );
+    }
     return Scaffold(
       appBar: showDesktopAppBar
           ? AppBar(
@@ -542,6 +548,293 @@ class _XBoardHomePageState extends ConsumerState<XBoardHomePage>
           );
         },
       ),
+    );
+  }
+
+  PreferredSizeWidget _buildTvAppBar(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+    final isDark = theme.brightness == Brightness.dark;
+    final l10n = AppLocalizations.of(context);
+    final radius = BorderRadius.circular(14);
+
+    return AppBar(
+      automaticallyImplyLeading: false,
+      toolbarHeight: 64,
+      titleSpacing: 20,
+      title: const _HomeBrandHeader(),
+      backgroundColor: XbUiTokens.pageBackground(context),
+      elevation: 0,
+      scrolledUnderElevation: 0,
+      actions: [
+        Padding(
+          padding: const EdgeInsets.only(right: 20),
+          child: TVFocusable(
+            borderRadius: radius,
+            onPressed: _toggleTvTheme,
+            child: ExcludeFocus(
+              child: TextButton.icon(
+                style: XbUiButton.textChipPrimary(context).copyWith(
+                  padding: const WidgetStatePropertyAll(
+                    EdgeInsets.symmetric(horizontal: 18, vertical: 12),
+                  ),
+                ),
+                onPressed: _toggleTvTheme,
+                icon: Icon(
+                  isDark ? Icons.light_mode_outlined : Icons.dark_mode_outlined,
+                  size: 20,
+                  color: colorScheme.primary,
+                ),
+                label: Text(
+                  l10n.switchTheme,
+                  style: TextStyle(
+                    color: colorScheme.primary,
+                    fontWeight: XbFontWeight.semibold,
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  void _toggleTvTheme() {
+    final nextMode = Theme.of(context).brightness == Brightness.dark
+        ? ThemeMode.light
+        : ThemeMode.dark;
+    ref.read(themeSettingProvider.notifier).updateState(
+          (state) => state.copyWith(themeMode: nextMode),
+        );
+  }
+
+  Widget _buildTvHomeBody() {
+    return Container(
+      color: XbUiTokens.pageBackground(context),
+      child: LayoutBuilder(
+        builder: (context, constraints) {
+          final isShort = constraints.maxHeight < 620;
+          final topInfoHeight = isShort ? 124.0 : 148.0;
+          final horizontalPadding = constraints.maxWidth >= 1400 ? 28.0 : 20.0;
+          final connectButtonSize = isShort ? 150.0 : 188.0;
+
+          return Padding(
+            padding: EdgeInsets.fromLTRB(
+              horizontalPadding,
+              14,
+              horizontalPadding,
+              18,
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                SizedBox(
+                  height: topInfoHeight,
+                  child: _buildTopInfoSection(),
+                ),
+                const SizedBox(height: 16),
+                Expanded(
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      Expanded(
+                        flex: 5,
+                        child: _buildTvConnectionPanel(connectButtonSize),
+                      ),
+                      const SizedBox(width: 18),
+                      Expanded(
+                        flex: 6,
+                        child: _buildTvControlPanel(isShort: isShort),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          );
+        },
+      ),
+    );
+  }
+
+  Widget _buildTvConnectionPanel(double connectButtonSize) {
+    return Container(
+      decoration: _tvCardDecoration(context),
+      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 18),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Flexible(
+            child: Center(
+              child: SizedBox.square(
+                dimension: connectButtonSize,
+                child: XBoardConnectButton(
+                  isFloating: false,
+                  outerSize: connectButtonSize,
+                ),
+              ),
+            ),
+          ),
+          const SizedBox(height: 6),
+          _buildConnectionStatusRow(),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildTvControlPanel({required bool isShort}) {
+    final modeHeight = isShort ? 96.0 : 116.0;
+    final nodeHeight = isShort ? 62.0 : 72.0;
+    final accountHeight = isShort ? 70.0 : 82.0;
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        SizedBox(
+          height: modeHeight,
+          child: _buildTvModeCard(),
+        ),
+        const SizedBox(height: 14),
+        SizedBox(
+          height: nodeHeight,
+          child: const NodeSelectorBar(),
+        ),
+        const SizedBox(height: 14),
+        SizedBox(
+          height: accountHeight,
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Expanded(child: _buildTvAccountCard()),
+              const SizedBox(width: 12),
+              SizedBox(
+                width: 154,
+                child: _buildTvLogoutButton(context),
+              ),
+            ],
+          ),
+        ),
+        const Spacer(),
+      ],
+    );
+  }
+
+  Widget _buildTvModeCard() {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+    return Container(
+      decoration: _tvCardDecoration(context),
+      padding: const EdgeInsets.fromLTRB(18, 12, 18, 10),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Icon(Icons.alt_route, size: 20, color: colorScheme.primary),
+              const SizedBox(width: 9),
+              Text(
+                AppLocalizations.of(context).xboardProxyMode,
+                style: theme.textTheme.titleSmall?.copyWith(
+                  fontWeight: XbFontWeight.bold,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 8),
+          const Expanded(
+            child: XBoardOutboundMode(
+              maxWidth: double.infinity,
+              height: 44,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildTvAccountCard() {
+    return Consumer(
+      builder: (context, ref, _) {
+        final authState = ref.watch(xboardUserProvider);
+        final userInfo = ref.watch(userInfoProvider);
+        final subscriptionInfo = ref.watch(subscriptionInfoProvider);
+        final email = authState.email?.trim().isNotEmpty == true
+            ? authState.email!
+            : userInfo?.email.trim().isNotEmpty == true
+                ? userInfo!.email
+                : subscriptionInfo?.email.trim().isNotEmpty == true
+                    ? subscriptionInfo!.email
+                    : AppLocalizations.of(context).account;
+        final theme = Theme.of(context);
+        final colorScheme = theme.colorScheme;
+
+        return Semantics(
+          label: '${AppLocalizations.of(context).xboardAccountInfo}，$email',
+          child: Container(
+            decoration: _tvCardDecoration(context),
+            padding: const EdgeInsets.symmetric(horizontal: 18),
+            child: Row(
+              children: [
+                Container(
+                  width: 44,
+                  height: 44,
+                  decoration: BoxDecoration(
+                    color: colorScheme.primary.withValues(alpha: 0.14),
+                    shape: BoxShape.circle,
+                  ),
+                  child: Icon(
+                    Icons.person_outline,
+                    size: 24,
+                    color: colorScheme.primary,
+                  ),
+                ),
+                const SizedBox(width: 13),
+                Expanded(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        AppLocalizations.of(context).xboardAccountInfo,
+                        style: theme.textTheme.bodySmall?.copyWith(
+                          color: colorScheme.onSurfaceVariant,
+                        ),
+                      ),
+                      const SizedBox(height: 2),
+                      Text(
+                        email,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: theme.textTheme.titleSmall?.copyWith(
+                          fontWeight: XbFontWeight.semibold,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  BoxDecoration _tvCardDecoration(BuildContext context) {
+    return BoxDecoration(
+      color: XbUiCardStyle.background(context),
+      borderRadius: BorderRadius.circular(XbUiTokens.radiusCard),
+      border: Border.all(color: XbUiTokens.cardBorder(context)),
+      boxShadow: XbUiCardStyle.shadowColor(context) == null
+          ? null
+          : [
+              BoxShadow(
+                color: XbUiCardStyle.shadowColor(context)!,
+                blurRadius: 14,
+                offset: const Offset(0, 4),
+              ),
+            ],
     );
   }
 

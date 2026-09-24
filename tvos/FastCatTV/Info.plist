@@ -14,6 +14,18 @@
     <key>CFBundleIcons</key>
     <dict><key>CFBundlePrimaryIcon</key><dict><key>CFBundleIconName</key><string>AppIcon</string></dict></dict>
     <key>FastCatAPIBaseURL</key><string>$(FASTCAT_API_BASE_URL)</string>
+    <key>FastCatXORKey</key><string>$(XOR_KEY)</string>
+    <key>FastCatKeyCurrentID</key><string>$(FASTCAT_KEY_CURRENT_ID)</string>
+    <key>FastCatKeyCurrent</key><string>$(FASTCAT_KEY_CURRENT)</string>
+    <key>FastCatKeyNextID</key><string>$(FASTCAT_KEY_NEXT_ID)</string>
+    <key>FastCatKeyNext</key><string>$(FASTCAT_KEY_NEXT)</string>
+    <key>FastCatSubscriptionFlag</key><string>$(FASTCAT_SUBSCRIPTION_FLAG)</string>
+    <key>FastCatRequireEncryption</key><string>$(FASTCAT_REQUIRE_ENCRYPTION)</string>
     <key>AppGroupIdentifier</key><string>$(APP_GROUP_ID)</string>
+    <!-- Current shared remote configuration contains HTTP gateway URLs. -->
+    <key>NSAppTransportSecurity</key>
+    <dict>
+        <key>NSAllowsArbitraryLoads</key><true/>
+    </dict>
 </dict>
 </plist>

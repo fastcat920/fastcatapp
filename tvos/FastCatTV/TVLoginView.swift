@@ -32,7 +32,7 @@ struct TVLoginView: View {
           }
         }
         Button(action: loadChallenge) {
-          Label("刷新二维码", systemImage: "arrow.clockwise")
+          Label(isLoading ? "正在刷新…" : "刷新二维码", systemImage: "arrow.clockwise")
         }
         .buttonStyle(.borderedProminent)
         .disabled(isLoading)
@@ -50,7 +50,8 @@ struct TVLoginView: View {
     challenge = nil; isLoading = true; errorMessage = nil
     Task {
       do {
-        let next = try await GatewayClient().createQRSession()
+        let client = try await GatewayClient.configured()
+        let next = try await client.createQRSession()
         guard !Task.isCancelled else { return }
         challenge = next; isLoading = false
         beginPolling(next)
@@ -64,7 +65,8 @@ struct TVLoginView: View {
     pollTask = Task {
       while !Task.isCancelled {
         do {
-          let status = try await GatewayClient().pollQRSession(challenge)
+          let client = try await GatewayClient.configured()
+          let status = try await client.pollQRSession(challenge)
           if status.status == "approved", let login = status.login,
              let token = login.authData ?? login.token, !token.isEmpty {
             session.signIn(token: token, email: login.email)

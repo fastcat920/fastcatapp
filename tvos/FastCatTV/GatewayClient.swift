@@ -18,6 +18,90 @@ struct QRLoginResponse: Decodable {
   }
 }
 
+struct TVNotice: Decodable, Identifiable {
+  let id: Int
+  let title: String
+  let content: String
+  let isVisible: Bool
+  let createdAt: TimeInterval?
+
+  private enum CodingKeys: String, CodingKey {
+    case id, title, content, show
+    case createdAt = "created_at"
+  }
+
+  init(id: Int, title: String, content: String, isVisible: Bool = true, createdAt: TimeInterval? = nil) {
+    self.id = id
+    self.title = title
+    self.content = content
+    self.isVisible = isVisible
+    self.createdAt = createdAt
+  }
+
+  init(from decoder: Decoder) throws {
+    let values = try decoder.container(keyedBy: CodingKeys.self)
+    id = values.flexibleInt(forKey: .id) ?? 0
+    title = (try? values.decode(String.self, forKey: .title)) ?? "公告"
+    content = (try? values.decode(String.self, forKey: .content)) ?? ""
+    if let flag = try? values.decode(Bool.self, forKey: .show) {
+      isVisible = flag
+    } else {
+      isVisible = (values.flexibleInt(forKey: .show) ?? 1) == 1
+    }
+    createdAt = values.flexibleDouble(forKey: .createdAt)
+  }
+}
+
+struct TVSubscriptionSummary: Decodable {
+  let planID: Int?
+  let planName: String?
+  let uploadedBytes: Int64
+  let downloadedBytes: Int64
+  let transferLimit: Int64
+  let expiredAt: TimeInterval?
+
+  var usedBytes: Int64 { max(0, uploadedBytes + downloadedBytes) }
+  var remainingBytes: Int64 { max(0, transferLimit - usedBytes) }
+  var usageFraction: Double {
+    guard transferLimit > 0 else { return 0 }
+    return min(1, max(0, Double(usedBytes) / Double(transferLimit)))
+  }
+
+  private struct Plan: Decodable {
+    let name: String?
+  }
+
+  private enum CodingKeys: String, CodingKey {
+    case plan
+    case planID = "plan_id"
+    case planName = "plan_name"
+    case uploadedBytes = "u"
+    case downloadedBytes = "d"
+    case transferLimit = "transfer_enable"
+    case expiredAt = "expired_at"
+  }
+
+  init(planID: Int?, planName: String?, uploadedBytes: Int64, downloadedBytes: Int64, transferLimit: Int64, expiredAt: TimeInterval?) {
+    self.planID = planID
+    self.planName = planName
+    self.uploadedBytes = uploadedBytes
+    self.downloadedBytes = downloadedBytes
+    self.transferLimit = transferLimit
+    self.expiredAt = expiredAt
+  }
+
+  init(from decoder: Decoder) throws {
+    let values = try decoder.container(keyedBy: CodingKeys.self)
+    planID = values.flexibleInt(forKey: .planID)
+    let nestedPlan = try? values.decode(Plan.self, forKey: .plan)
+    planName = (try? values.decode(String.self, forKey: .planName)) ?? nestedPlan?.name
+    uploadedBytes = Int64(values.flexibleDouble(forKey: .uploadedBytes) ?? 0)
+    downloadedBytes = Int64(values.flexibleDouble(forKey: .downloadedBytes) ?? 0)
+    transferLimit = Int64(values.flexibleDouble(forKey: .transferLimit) ?? 0)
+    expiredAt = values.flexibleDouble(forKey: .expiredAt)
+  }
+}
+
 struct GatewayClient {
   enum GatewayError: LocalizedError {
     case missingBaseURL, invalidResponse, server(String)
@@ -32,12 +116,12 @@ struct GatewayClient {
 
   private let baseURL: URL
 
-  init() throws {
-    guard let raw = Bundle.main.object(forInfoDictionaryKey: "FastCatAPIBaseURL") as? String,
-          !raw.isEmpty, !raw.contains("$") , let url = URL(string: raw) else {
-      throw GatewayError.missingBaseURL
-    }
-    baseURL = url
+  private init(baseURL: URL) {
+    self.baseURL = baseURL
+  }
+
+  static func configured() async throws -> GatewayClient {
+    GatewayClient(baseURL: try await TVRemoteConfigManager.shared.apiBaseURL())
   }
 
   func createQRSession() async throws -> QRLoginChallenge {
@@ -62,17 +146,39 @@ struct GatewayClient {
     let info: Subscription = try await sendRequest(
       path: "/user/getSubscribe", method: "GET", body: nil, authorization: token
     )
-    guard let rawURL = info.subscribeURL, let url = URL(string: rawURL) else {
+    guard let rawURL = info.subscribeURL, var components = URLComponents(string: rawURL) else {
       throw GatewayError.server("未获取到订阅链接")
     }
+    let buildConfiguration = try TVBuildConfiguration.load()
+    var queryItems = components.queryItems ?? []
+    queryItems.removeAll { $0.name == "flag" }
+    queryItems.append(URLQueryItem(name: "flag", value: buildConfiguration.subscriptionFlag))
+    components.queryItems = queryItems
+    guard let url = components.url else { throw GatewayError.server("订阅链接无效") }
     var request = URLRequest(url: url)
-    request.setValue("FastCatTV/\(Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? "1.0")", forHTTPHeaderField: "User-Agent")
+    request.setValue("FastCat 3.5.9 · Windows", forHTTPHeaderField: "User-Agent")
     let (data, response) = try await URLSession.shared.data(for: request)
     guard let http = response as? HTTPURLResponse, (200..<300).contains(http.statusCode),
           let config = String(data: data, encoding: .utf8), !config.isEmpty else {
       throw GatewayError.server("订阅下载失败")
     }
-    return config
+    return try FastCatSubscriptionDecoder.decode(
+      config,
+      configuration: buildConfiguration
+    )
+  }
+
+  func fetchNotices(token: String) async throws -> [TVNotice] {
+    let collection: TVNoticeCollection = try await sendRequest(
+      path: "/user/notice/fetch", method: "GET", body: nil, authorization: token
+    )
+    return collection.items.filter(\.isVisible)
+  }
+
+  func fetchSubscriptionSummary(token: String) async throws -> TVSubscriptionSummary {
+    try await sendRequest(
+      path: "/user/getSubscribe", method: "GET", body: nil, authorization: token
+    )
   }
 
   private func send<T: Decodable>(path: String) async throws -> T {
@@ -84,7 +190,11 @@ struct GatewayClient {
   }
 
   private func sendRequest<T: Decodable>(path: String, method: String, body: AnyEncodable?, authorization: String? = nil) async throws -> T {
-    var request = URLRequest(url: baseURL.appending(path: path))
+    var request = URLRequest(
+      url: try endpointURL(path),
+      cachePolicy: .reloadIgnoringLocalCacheData,
+      timeoutInterval: 20
+    )
     request.httpMethod = method
     request.setValue("application/json", forHTTPHeaderField: "Accept")
     if let authorization, !authorization.isEmpty {
@@ -101,9 +211,63 @@ struct GatewayClient {
     guard let value = envelope.data else { throw GatewayError.server(envelope.message ?? "请求失败") }
     return value
   }
+
+  /// `URL.appending(path:)` percent-encodes `?`, which turns poll_token into
+  /// part of the route and makes every QR poll return 404. Preserve an already
+  /// encoded query while appending only the route to the configured API base.
+  private func endpointURL(_ endpoint: String) throws -> URL {
+    let parts = endpoint.split(separator: "?", maxSplits: 1, omittingEmptySubsequences: false)
+    guard var components = URLComponents(url: baseURL, resolvingAgainstBaseURL: false) else {
+      throw GatewayError.missingBaseURL
+    }
+    let basePath = components.path.trimmingCharacters(in: CharacterSet(charactersIn: "/"))
+    let endpointPath = String(parts[0]).trimmingCharacters(in: CharacterSet(charactersIn: "/"))
+    components.path = "/" + [basePath, endpointPath].filter { !$0.isEmpty }.joined(separator: "/")
+    components.percentEncodedQuery = parts.count == 2 ? String(parts[1]) : nil
+    guard let url = components.url else { throw GatewayError.invalidResponse }
+    return url
+  }
 }
 
 private struct APIEnvelope<T: Decodable>: Decodable { let data: T?; let message: String? }
+
+private struct TVNoticeCollection: Decodable {
+  let items: [TVNotice]
+
+  private enum CodingKeys: String, CodingKey { case data, notices, items, list, records }
+
+  init(from decoder: Decoder) throws {
+    if let array = try? decoder.singleValueContainer().decode([TVNotice].self) {
+      items = array
+      return
+    }
+    let values = try decoder.container(keyedBy: CodingKeys.self)
+    for key in [CodingKeys.data, .notices, .items, .list, .records] {
+      if let array = try? values.decode([TVNotice].self, forKey: key) {
+        items = array
+        return
+      }
+    }
+    items = []
+  }
+}
+
+private extension KeyedDecodingContainer {
+  func flexibleInt(forKey key: Key) -> Int? {
+    if let value = try? decode(Int.self, forKey: key) { return value }
+    if let value = try? decode(Double.self, forKey: key) { return Int(value) }
+    if let value = try? decode(String.self, forKey: key) { return Int(value) }
+    return nil
+  }
+
+  func flexibleDouble(forKey key: Key) -> Double? {
+    if let value = try? decode(Double.self, forKey: key) { return value }
+    if let value = try? decode(Int64.self, forKey: key) { return Double(value) }
+    if let value = try? decode(String.self, forKey: key) { return Double(value) }
+    return nil
+  }
+}
+
 private struct AnyEncodable: Encodable {
   private let encodeBody: (Encoder) throws -> Void
   init(_ value: some Encodable) { encodeBody = value.encode }

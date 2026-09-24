@@ -22,11 +22,16 @@ tunnel = project.new_target(:app_extension, 'PacketTunnel', :tvos, '17.0')
 tunnel.product_reference.path = 'PacketTunnel.appex'
 tunnel.product_reference.name = 'PacketTunnel.appex'
 
-%w[FastCatTVApp.swift SessionStore.swift KeychainStore.swift GatewayClient.swift TVLoginView.swift TVHomeView.swift VPNManager.swift].each do |name|
+%w[FastCatTVApp.swift SessionStore.swift KeychainStore.swift TVBuildConfiguration.swift TVRemoteConfigManager.swift FastCatSubscriptionDecoder.swift TVDesignSystem.swift TVNodeSelection.swift GatewayClient.swift TVLoginView.swift TVHomeView.swift VPNManager.swift].each do |name|
   app.source_build_phase.add_file_reference(app_group.new_file(name))
 end
 app_group.new_file('Info.plist')
 app_group.new_file('FastCatTV.entitlements')
+
+# Share the exact same client bootstrap configuration with Flutter. Xcode
+# copies the file as config.yaml at the root of the tvOS application bundle.
+shared_config = main.new_file('../assets/config/config.yaml')
+app.resources_build_phase.add_file_reference(shared_config)
 
 %w[PacketTunnelProvider.swift].each { |name| tunnel.source_build_phase.add_file_reference(tunnel_group.new_file(name)) }
 tunnel_group.new_file('PacketTunnel-Bridging-Header.h')
@@ -61,6 +66,10 @@ app.build_configurations.each do |config|
     'PRODUCT_BUNDLE_IDENTIFIER' => '$(FASTCAT_TV_BUNDLE_IDENTIFIER)',
     'PRODUCT_NAME' => 'FastCat',
   )
+  if config.name == 'Debug'
+    config.build_settings['EXCLUDED_EXPLICIT_TARGET_DEPENDENCIES[sdk=appletvsimulator*]'] = 'PacketTunnel'
+    config.build_settings['EXCLUDED_SOURCE_FILE_NAMES[sdk=appletvsimulator*]'] = 'PacketTunnel.appex'
+  end
 end
 tunnel.build_configurations.each do |config|
   config.build_settings.merge!(common).merge!(

@@ -9,6 +9,14 @@ final class SessionStore: ObservableObject {
   var isSignedIn: Bool { token?.isEmpty == false }
 
   func restore() async {
+#if DEBUG
+    if ProcessInfo.processInfo.arguments.contains("-FastCatPreviewHome")
+      || ProcessInfo.processInfo.environment["FASTCAT_PREVIEW_HOME"] == "1" {
+      token = "preview-token"
+      email = "preview@fastcat.tv"
+      return
+    }
+#endif
     token = KeychainStore.read(key: "auth-token")
     email = KeychainStore.read(key: "account-email")
   }
