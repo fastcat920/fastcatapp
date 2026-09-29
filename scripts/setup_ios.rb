@@ -86,7 +86,7 @@ tunnel_target = project.new_target(
   :app_extension,
   'PacketTunnel',
   :ios,
-  '14.0'
+  '15.0'
 )
 # Ensure product reference has the correct name
 tunnel_target.product_reference.path = 'PacketTunnel.appex'
@@ -124,7 +124,7 @@ tunnel_target.build_configurations.each do |config|
   config.build_settings['CODE_SIGN_ENTITLEMENTS']            = 'PacketTunnel/PacketTunnel.entitlements'
   config.build_settings['LD_RUNPATH_SEARCH_PATHS']           = ['$(inherited)', '@executable_path/Frameworks', '@executable_path/../../Frameworks']
   config.build_settings['SWIFT_VERSION']                     = '5.0'
-  config.build_settings['IPHONEOS_DEPLOYMENT_TARGET']        = '14.0'
+  config.build_settings['IPHONEOS_DEPLOYMENT_TARGET']        = '15.0'
   config.build_settings['CODE_SIGNING_REQUIRED']             = 'NO'
   config.build_settings['CODE_SIGNING_ALLOWED']              = 'NO'
   config.build_settings['SKIP_INSTALL']                      = 'YES'

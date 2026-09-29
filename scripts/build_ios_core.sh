@@ -22,8 +22,8 @@ echo "→ Building current iOS mihomo core..."
     GOOS=ios \
     GOARCH=arm64 \
     CC="$CLANG_PATH" \
-    CGO_CFLAGS="-isysroot $SDK_PATH -miphoneos-version-min=13.0" \
-    CGO_LDFLAGS="-isysroot $SDK_PATH -miphoneos-version-min=13.0" \
+    CGO_CFLAGS="-isysroot $SDK_PATH -miphoneos-version-min=15.0" \
+    CGO_LDFLAGS="-isysroot $SDK_PATH -miphoneos-version-min=15.0" \
     go build \
       -trimpath \
       -buildmode=c-archive \

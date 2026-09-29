@@ -27,9 +27,9 @@ verify_macos_minimum_version() {
     legacy && /version / { print $2; exit }
   ')"
   case "$minimum" in
-    10.*|11.*) ;;
+    10.*|11.*|12.*) ;;
     *)
-      echo "Unsupported macOS deployment target for $binary: ${minimum:-unknown} (expected 11.0 or lower)"
+      echo "Unsupported macOS deployment target for $binary: ${minimum:-unknown} (expected 12.0 or lower)"
       exit 1
       ;;
   esac
