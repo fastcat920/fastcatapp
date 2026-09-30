@@ -350,7 +350,14 @@ class XBoardProfileImportService {
       // 保存至设备密钥保护的本地 vault，跳过 validateConfig IPC（桌面端 ClashCore.exe 未就绪时等 30s）
       _logger.debug('💾 写入加密本地配置缓存（跳过 validateConfig IPC）...');
       final profile = Profile.normal(url: url);
-      await ProfileVault.instance.writeText(profile.id, result.content!);
+      if (result.encryptedEnvelope != null) {
+        await ProfileVault.instance.writeEncryptedEnvelope(
+          profile.id,
+          result.encryptedEnvelope!,
+        );
+      } else {
+        await ProfileVault.instance.writeText(profile.id, result.content!);
+      }
       final profileWithContent =
           profile.copyWith(lastUpdateDate: DateTime.now());
       _logger.info('✅ 加密配置内容已写入，格式验证由 applyProfile 阶段完成');

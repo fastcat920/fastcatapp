@@ -1,5 +1,12 @@
 import Foundation
 
+struct TVUpdateInfo: Equatable, Sendable {
+  let latestVersion: String
+  let updateURL: URL
+  let releaseNotes: String
+  let force: Bool
+}
+
 actor TVRemoteConfigManager {
   static let shared = TVRemoteConfigManager()
 
@@ -16,9 +23,74 @@ actor TVRemoteConfigManager {
 
   private static let cachedConfigKey = "fastcat.tv.remote-config.v1"
   private var resolvedBaseURL: URL?
+  private var resolvedConfig: [String: Any]?
 
   func apiBaseURL() async throws -> URL {
     if let resolvedBaseURL { return resolvedBaseURL }
+    if let json = try? await remoteConfig(), let url = apiBaseURL(from: json) {
+      resolvedBaseURL = url
+      return url
+    }
+    let build = try TVBuildConfiguration.load()
+
+    if let fallback = build.fallbackAPIBaseURL {
+      resolvedBaseURL = fallback
+      return fallback
+    }
+    throw RemoteConfigError.unavailable
+  }
+
+  func availableTVUpdate(language: TVLanguage) async -> TVUpdateInfo? {
+    guard let json = try? await remoteConfig(),
+          let update = json["update"] as? [String: Any] else { return nil }
+
+    let legacy = (update["latest"] as? [String: Any])?["tvos"] as? [String: Any]
+    let modernPlatforms = update["platforms"] as? [String: Any]
+    let hasModernTVOS = modernPlatforms?.keys.contains("tvos") == true
+    let modern = modernPlatforms?["tvos"] as? [String: Any]
+    let selected = hasModernTVOS ? modern : legacy
+
+    guard let platform = selected else { return nil }
+    if hasModernTVOS, platform["enabled"] as? Bool == false { return nil }
+
+    let latest = cleanString(platform["latest_version"] ?? platform["version"])
+    let current = cleanString(Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString"))
+    guard !latest.isEmpty, isNewerVersion(current: current, latest: latest) else { return nil }
+
+    let rawURL = cleanString(platform["url"])
+    let appID = cleanString(platform["app_id"])
+    let updateURL: URL?
+    if !rawURL.isEmpty {
+      updateURL = URL(string: rawURL)
+    } else if !appID.isEmpty {
+      let normalizedID = appID.hasPrefix("id") ? appID : "id\(appID)"
+      updateURL = URL(string: "https://apps.apple.com/app/\(normalizedID)")
+    } else {
+      updateURL = nil
+    }
+    guard let updateURL,
+          ["https", "http"].contains(updateURL.scheme?.lowercased() ?? "") else { return nil }
+
+    let platformMin = cleanString(platform["min_supported_version"])
+    let legacyMin = cleanString(update["min_version"])
+    let minimum = platformMin.isEmpty ? legacyMin : platformMin
+    let belowMinimum = !minimum.isEmpty && isNewerVersion(current: current, latest: minimum)
+    let force = (platform["force"] as? Bool == true) || belowMinimum
+
+    return TVUpdateInfo(
+      latestVersion: latest,
+      updateURL: updateURL,
+      releaseNotes: localizedChangelog(
+        platform["changelog"],
+        fallback: update["changelog"],
+        language: language
+      ),
+      force: force
+    )
+  }
+
+  private func remoteConfig() async throws -> [String: Any] {
+    if let resolvedConfig { return resolvedConfig }
     let build = try TVBuildConfiguration.load()
 
     for source in try bundledSources() {
@@ -26,10 +98,10 @@ actor TVRemoteConfigManager {
         let (data, response) = try await URLSession.shared.data(from: source)
         guard let http = response as? HTTPURLResponse, (200..<300).contains(http.statusCode) else { continue }
         let json = try decodeRemoteConfig(data, xorKey: build.xorKey)
-        if let url = apiBaseURL(from: json) {
+        if apiBaseURL(from: json) != nil {
           UserDefaults.standard.set(data, forKey: Self.cachedConfigKey)
-          resolvedBaseURL = url
-          return url
+          resolvedConfig = json
+          return json
         }
       } catch {
         NSLog("[TVRemoteConfig] source failed (%@): %@", source.host ?? "unknown", error.localizedDescription)
@@ -38,15 +110,56 @@ actor TVRemoteConfigManager {
 
     if let cached = UserDefaults.standard.data(forKey: Self.cachedConfigKey),
        let json = try? decodeRemoteConfig(cached, xorKey: build.xorKey),
-       let url = apiBaseURL(from: json) {
-      resolvedBaseURL = url
-      return url
-    }
-    if let fallback = build.fallbackAPIBaseURL {
-      resolvedBaseURL = fallback
-      return fallback
+       apiBaseURL(from: json) != nil {
+      resolvedConfig = json
+      return json
     }
     throw RemoteConfigError.unavailable
+  }
+
+  private func cleanString(_ value: Any?) -> String {
+    (value as? String)?.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
+  }
+
+  private func localizedChangelog(
+    _ value: Any?,
+    fallback: Any?,
+    language: TVLanguage
+  ) -> String {
+    if let map = value as? [String: Any] {
+      let keys = language == .simplifiedChinese
+        ? ["zh_CN", "zh-CN", "zh"] : ["en_US", "en-US", "en"]
+      for key in keys {
+        let text = cleanString(map[key])
+        if !text.isEmpty { return text }
+      }
+      for candidate in map.values {
+        let text = cleanString(candidate)
+        if !text.isEmpty { return text }
+      }
+    } else {
+      let text = cleanString(value)
+      if !text.isEmpty { return text }
+    }
+    return cleanString(fallback)
+  }
+
+  private func isNewerVersion(current: String, latest: String) -> Bool {
+    func components(_ value: String) -> [Int] {
+      let normalized = value
+        .trimmingCharacters(in: .whitespacesAndNewlines)
+        .replacingOccurrences(of: "^[vV]", with: "", options: .regularExpression)
+        .components(separatedBy: CharacterSet(charactersIn: "+-"))[0]
+      return normalized.split(separator: ".").map { Int($0) ?? 0 }
+    }
+    let currentParts = components(current)
+    let latestParts = components(latest)
+    for index in 0..<max(currentParts.count, latestParts.count, 3) {
+      let currentValue = index < currentParts.count ? currentParts[index] : 0
+      let latestValue = index < latestParts.count ? latestParts[index] : 0
+      if latestValue != currentValue { return latestValue > currentValue }
+    }
+    return false
   }
 
   /// The same assets/config/config.yaml is embedded in both Flutter and tvOS.

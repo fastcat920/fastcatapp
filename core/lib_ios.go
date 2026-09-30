@@ -252,6 +252,14 @@ func ClashCore_invoke(method *C.char, data *C.char) *C.char {
 				data, _ := json.Marshal(config)
 				ch <- string(data)
 			}
+		case getConfigContentMethod:
+			config, err := handleGetConfigContent(dataStr)
+			if err != nil {
+				ch <- ""
+			} else {
+				data, _ := json.Marshal(config)
+				ch <- string(data)
+			}
 		case setStateMethod:
 			handleSetState(dataStr)
 			ch <- "true"

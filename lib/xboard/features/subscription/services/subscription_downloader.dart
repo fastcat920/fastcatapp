@@ -73,8 +73,6 @@ class SubscriptionDownloader {
           _logger.error('   这通常是因为服务端未识别客户端的 Mihomo 兼容标识。');
           _logger.error(
               '   当前 UA: ${await UserAgentConfig.get(UserAgentScenario.subscription)}');
-          _logger.error(
-              '   前200字符: ${trimmedContent.substring(0, trimmedContent.length > 200 ? 200 : trimmedContent.length)}');
           throw Exception('订阅格式错误：服务端返回了通用订阅格式，而非 Clash Meta 配置。\n'
               '请检查：\n'
               '1. 服务端是否支持 Clash Meta 订阅格式\n'
@@ -95,7 +93,10 @@ class SubscriptionDownloader {
       }
 
       final profile = Profile.normal(url: url);
-      await ProfileVault.instance.writeText(profile.id, decodedContent);
+      await ProfileVault.instance.writeEncryptedEnvelope(
+        profile.id,
+        result.content,
+      );
       final savedProfile = profile.copyWith(lastUpdateDate: DateTime.now());
       _logger.info('✅ 配置文件写入完成，总耗时 ${sw.elapsedMilliseconds}ms');
 

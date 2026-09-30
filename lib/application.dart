@@ -464,13 +464,22 @@ class ApplicationState extends ConsumerState<Application>
       _ => 'unknown',
     };
     final info = config.platformInfo(platform);
-    if (info == null || info.version.trim().isEmpty) return null;
+    if (info == null || (info.enabled && info.version.trim().isEmpty)) {
+      return null;
+    }
     return [
       platform,
       info.version.trim(),
-      info.url.trim(),
+      info.resolvedUrl,
       info.force,
+      info.enabled,
+      info.source.trim(),
+      info.minSupportedVersion?.trim() ?? '',
+      info.changelog.entries
+          .map((entry) => '${entry.key}:${entry.value}')
+          .join(','),
       config.minVersion?.trim() ?? '',
+      config.changelog?.trim() ?? '',
     ].join('|');
   }
 

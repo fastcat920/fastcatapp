@@ -30,12 +30,18 @@ class FastCatSubscriptionDecoder {
   static const String _nextKey =
       String.fromEnvironment('FASTCAT_KEY_NEXT', defaultValue: '');
 
+  static String get currentKeyId => _currentKid;
+
+  static String get currentEncodedKey => _currentKey;
+
+  static Map<String, String> get configuredKeys => {
+        if (_currentKid.isNotEmpty) _currentKid: _currentKey,
+        if (_nextKid.isNotEmpty) _nextKid: _nextKey,
+      };
+
   static String decode(String responseBody) => decodeWithKeys(
         responseBody,
-        keys: {
-          if (_currentKid.isNotEmpty) _currentKid: _currentKey,
-          if (_nextKid.isNotEmpty) _nextKid: _nextKey,
-        },
+        keys: configuredKeys,
         requireEncrypted: requireEncryption,
       );
 

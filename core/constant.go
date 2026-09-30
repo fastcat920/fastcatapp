@@ -132,6 +132,7 @@ const (
 	crashMethod                    Method = "crash"
 	setupConfigMethod              Method = "setupConfig"
 	getConfigMethod                Method = "getConfig"
+	getConfigContentMethod         Method = "getConfigContent"
 )
 
 type Method string

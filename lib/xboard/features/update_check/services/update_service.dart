@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'dart:ui';
 import 'package:fl_clash/xboard/core/core.dart';
 import 'package:fl_clash/xboard/config/xboard_config.dart';
 import 'package:package_info_plus/package_info_plus.dart';
@@ -16,6 +17,12 @@ class UpdateConfigurationUnavailableException implements Exception {
 }
 
 class UpdateService {
+  UpdateService({String Function()? languageCodeProvider})
+      : _languageCodeProvider = languageCodeProvider ??
+            (() => PlatformDispatcher.instance.locale.languageCode);
+
+  final String Function() _languageCodeProvider;
+
   Future<String> getCurrentVersion() async {
     final packageInfo = await PackageInfo.fromPlatform();
     return packageInfo.version;
@@ -55,6 +62,18 @@ class UpdateService {
     return false;
   }
 
+  bool shouldForceUpdate({
+    required String currentVersion,
+    required String latestVersion,
+    required bool platformForce,
+    String minimumVersion = '',
+  }) {
+    final hasUpdate = isNewerVersion(currentVersion, latestVersion);
+    final belowMinimum = minimumVersion.isNotEmpty &&
+        isNewerVersion(currentVersion, minimumVersion);
+    return hasUpdate && (platformForce || belowMinimum);
+  }
+
   /// 检查更新（从 OSS 配置中读取，无需额外网络请求）
   Future<Map<String, dynamic>> checkForUpdates() async {
     return checkForUpdatesWithFallback();
@@ -72,19 +91,49 @@ class UpdateService {
     final platform = getPlatformName();
 
     final platformInfo = updateConfig.platformInfo(platform);
-    if (platformInfo == null || platformInfo.version.isEmpty) {
+    if (platformInfo == null) {
       throw UpdateConfigurationUnavailableException(
         'Update configuration is unavailable for $platform',
       );
     }
 
+    if (!platformInfo.enabled) {
+      _logger.info('更新检查: $platform 已在远程配置中停用');
+      return {
+        "currentVersion": currentVersion,
+        "latestVersion": platformInfo.version,
+        "hasUpdate": false,
+        "updateUrl": platformInfo.resolvedUrl,
+        "releaseNotes": '',
+        "forceUpdate": false,
+      };
+    }
+    if (platformInfo.version.isEmpty) {
+      throw UpdateConfigurationUnavailableException(
+        'Latest version is unavailable for $platform',
+      );
+    }
+
     final hasUpdate = isNewerVersion(currentVersion, platformInfo.version);
 
-    // minVersion 强制更新逻辑：当前版本低于最低要求版本时强制更新
-    final minVersion = updateConfig.minVersion ?? '';
-    final belowMin =
-        minVersion.isNotEmpty && isNewerVersion(currentVersion, minVersion);
-    final forceUpdate = platformInfo.force || belowMin;
+    final updateUrl = platformInfo.resolvedUrl;
+    if (hasUpdate && updateUrl.isEmpty) {
+      throw UpdateConfigurationUnavailableException(
+        'Update URL is unavailable for $platform',
+      );
+    }
+
+    // 新版按平台最低版本优先，旧版全局 min_version 作为兼容回退。
+    final minVersion =
+        platformInfo.minSupportedVersion ?? updateConfig.minVersion ?? '';
+    // force 只控制“已发现的新版本”是否允许跳过，不能让旧版本配置
+    // 对一个更新的客户端反向弹出强制更新。
+    final forceUpdate = shouldForceUpdate(
+      currentVersion: currentVersion,
+      latestVersion: platformInfo.version,
+      platformForce: platformInfo.force,
+      minimumVersion: minVersion,
+    );
 
     _logger.info(
       '更新检查: 当前=$currentVersion, 最新=${platformInfo.version}, '
@@ -95,8 +144,11 @@ class UpdateService {
       "currentVersion": currentVersion,
       "latestVersion": platformInfo.version,
       "hasUpdate": hasUpdate,
-      "updateUrl": platformInfo.url,
-      "releaseNotes": updateConfig.changelog ?? "",
+      "updateUrl": updateUrl,
+      "releaseNotes": updateConfig.localizedChangelog(
+        platform,
+        _languageCodeProvider(),
+      ),
       "forceUpdate": forceUpdate,
     };
   }

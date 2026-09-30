@@ -1,3 +1,4 @@
+import CryptoKit
 import Foundation
 
 struct QRLoginChallenge: Decodable {
@@ -269,9 +270,22 @@ struct GatewayClient {
     return result
   }
 
-  /// The panel returns the per-user subscription URL after QR authorization.
-  /// The profile itself is deliberately kept in memory and is passed only to
-  /// the Packet Tunnel when a connection is started.
+  /// Returns a locally cached subscription after authenticating and decrypting
+  /// its server envelope entirely in memory.
+  static func cachedSubscription(token: String) async throws -> String? {
+    let buildConfiguration = try TVBuildConfiguration.load()
+    return try await TVSubscriptionCache.shared.read(
+      token: token,
+      configuration: buildConfiguration
+    )
+  }
+
+  static func clearCachedSubscriptions() async {
+    await TVSubscriptionCache.shared.clearAll()
+  }
+
+  /// The panel returns the per-user subscription URL after authorization. The
+  /// original authenticated envelope is cached; plaintext remains in memory.
   func downloadSubscription(token: String) async throws -> String {
     struct Subscription: Decodable { let subscribeURL: String?; enum CodingKeys: String, CodingKey { case subscribeURL = "subscribe_url" } }
     let info: Subscription = try await sendRequest(
@@ -293,10 +307,12 @@ struct GatewayClient {
           let config = String(data: data, encoding: .utf8), !config.isEmpty else {
       throw GatewayError.server("订阅下载失败")
     }
-    return try FastCatSubscriptionDecoder.decode(
+    let plaintext = try FastCatSubscriptionDecoder.decode(
       config,
       configuration: buildConfiguration
     )
+    try await TVSubscriptionCache.shared.write(envelope: config, token: token)
+    return plaintext
   }
 
   func fetchNotices(token: String) async throws -> [TVNotice] {
@@ -392,6 +408,101 @@ struct GatewayClient {
     components.percentEncodedQuery = parts.count == 2 ? String(parts[1]) : nil
     guard let url = components.url else { throw GatewayError.invalidResponse }
     return url
+  }
+}
+
+private actor TVSubscriptionCache {
+  static let shared = TVSubscriptionCache()
+
+  private let fileManager = FileManager.default
+
+  func read(token: String, configuration: TVBuildConfiguration) throws -> String? {
+    let paths = try cachePaths(token: token)
+    var currentError: Error?
+    for url in [paths.current, paths.previous] {
+      guard fileManager.fileExists(atPath: url.path) else { continue }
+      do {
+        let envelope = try String(contentsOf: url, encoding: .utf8)
+        let plaintext = try FastCatSubscriptionDecoder.decode(
+          envelope,
+          configuration: configuration
+        )
+        if url == paths.previous {
+          try? restorePrevious(paths: paths)
+        }
+        return plaintext
+      } catch {
+        currentError = currentError ?? error
+      }
+    }
+    if let currentError { throw currentError }
+    return nil
+  }
+
+  func write(envelope: String, token: String) throws {
+    let paths = try cachePaths(token: token)
+    try fileManager.createDirectory(
+      at: paths.directory,
+      withIntermediateDirectories: true
+    )
+    try Data(envelope.utf8).write(to: paths.staging, options: .atomic)
+    do {
+      if fileManager.fileExists(atPath: paths.previous.path) {
+        try fileManager.removeItem(at: paths.previous)
+      }
+      if fileManager.fileExists(atPath: paths.current.path) {
+        try fileManager.moveItem(at: paths.current, to: paths.previous)
+      }
+      try fileManager.moveItem(at: paths.staging, to: paths.current)
+    } catch {
+      if !fileManager.fileExists(atPath: paths.current.path),
+         fileManager.fileExists(atPath: paths.previous.path) {
+        try? fileManager.moveItem(at: paths.previous, to: paths.current)
+      }
+      throw error
+    }
+  }
+
+  func clearAll() {
+    guard let root = try? cacheRoot(), fileManager.fileExists(atPath: root.path) else { return }
+    try? fileManager.removeItem(at: root)
+  }
+
+  private func restorePrevious(paths: CachePaths) throws {
+    if fileManager.fileExists(atPath: paths.current.path) {
+      try fileManager.removeItem(at: paths.current)
+    }
+    try fileManager.copyItem(at: paths.previous, to: paths.current)
+  }
+
+  private func cachePaths(token: String) throws -> CachePaths {
+    let digest = SHA256.hash(data: Data(token.utf8))
+      .map { String(format: "%02x", $0) }
+      .joined()
+    let directory = try cacheRoot().appendingPathComponent(digest, isDirectory: true)
+    return CachePaths(
+      directory: directory,
+      current: directory.appendingPathComponent("current.fcat"),
+      previous: directory.appendingPathComponent("previous.fcat"),
+      staging: directory.appendingPathComponent("current.fcat.new")
+    )
+  }
+
+  private func cacheRoot() throws -> URL {
+    let support = try fileManager.url(
+      for: .applicationSupportDirectory,
+      in: .userDomainMask,
+      appropriateFor: nil,
+      create: true
+    )
+    return support.appendingPathComponent("FastCat/Subscriptions", isDirectory: true)
+  }
+
+  private struct CachePaths {
+    let directory: URL
+    let current: URL
+    let previous: URL
+    let staging: URL
   }
 }
 

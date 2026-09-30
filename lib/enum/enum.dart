@@ -256,6 +256,7 @@ enum ActionMethod {
   validateConfig,
   updateConfig,
   getConfig,
+  getConfigContent,
   getProxies,
   changeProxy,
   getTraffic,

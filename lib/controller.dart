@@ -753,6 +753,7 @@ class AppController {
       if (profile == null) return;
       if (!await profile.check()) return;
       final content = await ProfileVault.instance.readText(profile.id);
+      await ProfileVault.instance.prepareRuntimeProviders(profile.id);
       final yamlDoc = loadYaml(content);
       if (yamlDoc is! YamlMap) return;
 
@@ -788,7 +789,7 @@ class AppController {
 
           final providerFile = File(
             url != null && url.isNotEmpty
-                ? await appPath.getProvidersFilePath(
+                ? await appPath.getRuntimeProvidersFilePath(
                     profile.id,
                     'proxies',
                     url,

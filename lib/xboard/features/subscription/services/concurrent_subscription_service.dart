@@ -282,6 +282,7 @@ class ConcurrentSubscriptionService {
       return SubscriptionResult.success(
         content: decoded,
         encryptionUsed: true,
+        encryptedEnvelope: dataResult.data,
         keyUsed: null,
         originalUrl: url,
         subscriptionUserInfo: dataResult.subscriptionUserInfo,

@@ -199,13 +199,17 @@ extension ProfileExtension on Profile {
         SubscriptionUrlHelper.ensureFastCatFlag(updateUrl));
     final disposition = response.headers.value("content-disposition");
     final userinfo = response.headers.value('subscription-userinfo');
-    return await copyWith(
+    final encryptedEnvelope = utf8.decode(response.data);
+    final decodedContent = FastCatSubscriptionDecoder.decode(encryptedEnvelope);
+    final updatedProfile = copyWith(
       url: updateUrl, // 同步更新存储的URL为最新的
       label: label ?? utils.getFileNameForDisposition(disposition) ?? id,
       subscriptionInfo: SubscriptionInfo.formHString(userinfo),
-    ).saveFile(Uint8List.fromList(utf8.encode(
-      FastCatSubscriptionDecoder.decode(utf8.decode(response.data)),
-    )));
+    );
+    final message = await clashCore.validateConfig(decodedContent);
+    if (message.isNotEmpty) throw message;
+    await ProfileVault.instance.writeEncryptedEnvelope(id, encryptedEnvelope);
+    return updatedProfile.copyWith(lastUpdateDate: DateTime.now());
   }
 
   Future<Profile> saveFile(Uint8List bytes) async {

@@ -1067,6 +1067,7 @@ struct TVHomeView: View {
     isLoggingOut = true
     VPNManager.shared.disconnect { _ in
       Task { @MainActor in
+        await GatewayClient.clearCachedSubscriptions()
         savedSelectedNode = ""
         savedRouteMode = TVRouteMode.rule.rawValue
         cachedSubscription = nil
@@ -1100,6 +1101,9 @@ struct TVHomeView: View {
       let downloaded: String
       if let cachedSubscription {
         downloaded = cachedSubscription
+      } else if let cached = try await GatewayClient.cachedSubscription(token: token) {
+        downloaded = cached
+        cachedSubscription = cached
       } else {
         let client = try await GatewayClient.configured()
         downloaded = try await client.downloadSubscription(token: token)
@@ -1144,8 +1148,17 @@ struct TVHomeView: View {
     defer { isLoadingNodes = false }
     do {
       if connected, await refreshLiveNodes(), !nodes.isEmpty { return }
-      let client = try await GatewayClient.configured()
-      let configuration = try await client.downloadSubscription(token: token)
+      let configuration: String
+      var cached = cachedSubscription
+      if !forceRefresh, cached == nil {
+        cached = try await GatewayClient.cachedSubscription(token: token)
+      }
+      if !forceRefresh, let cached {
+        configuration = cached
+      } else {
+        let client = try await GatewayClient.configured()
+        configuration = try await client.downloadSubscription(token: token)
+      }
       let parsed = TVSubscriptionNodes.parse(from: configuration)
       guard !parsed.isEmpty else {
         nodeLoadError = "订阅中没有可用线路"
@@ -1246,7 +1259,10 @@ struct TVHomeView: View {
   private func handleExpiredSession(_ error: Error) -> Bool {
     guard case GatewayClient.GatewayError.unauthorized = error else { return false }
     VPNManager.shared.disconnect { _ in
-      Task { @MainActor in session.signOut() }
+      Task { @MainActor in
+        await GatewayClient.clearCachedSubscriptions()
+        session.signOut()
+      }
     }
     return true
   }

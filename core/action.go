@@ -2,6 +2,7 @@ package main
 
 import (
 	"encoding/json"
+	"fmt"
 )
 
 type Action struct {
@@ -117,6 +118,15 @@ func handleAction(action *Action, result ActionResult) {
 		}
 		result.success(config)
 		return
+	case getConfigContentMethod:
+		content := action.Data.(string)
+		config, err := handleGetConfigContent(content)
+		if err != nil {
+			result.error(err)
+			return
+		}
+		result.success(config)
+		return
 	case closeConnectionMethod:
 		id := action.Data.(string)
 		result.success(handleCloseConnection(id))
@@ -197,6 +207,8 @@ func handleAction(action *Action, result ActionResult) {
 		result.success(true)
 		handleCrash()
 	default:
-		nextHandle(action, result)
+		if !nextHandle(action, result) {
+			result.error(fmt.Sprintf("unsupported action method: %s", action.Method))
+		}
 	}
 }

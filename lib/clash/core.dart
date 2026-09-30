@@ -276,6 +276,14 @@ class ClashCore {
     }
   }
 
+  Future<Map<String, dynamic>> getConfigContent(String content) async {
+    final res = await clashInterface.getConfigContent(content);
+    if (res.isSuccess) {
+      return Map<String, dynamic>.from(res.data as Map);
+    }
+    throw res.message;
+  }
+
   Future<Traffic> getTraffic() async {
     final trafficString = await clashInterface.getTraffic();
     if (trafficString.isEmpty) {

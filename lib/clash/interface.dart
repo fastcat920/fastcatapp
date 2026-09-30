@@ -22,6 +22,8 @@ mixin ClashInterface {
 
   FutureOr<Result> getConfig(String path);
 
+  FutureOr<Result> getConfigContent(String content);
+
   Future<String> asyncTestDelay(String url, String proxyName);
 
   Future<String> diagnoseProxy(String url, String proxyName);
@@ -115,6 +117,7 @@ abstract class ClashHandlerInterface with ClashInterface {
           completer?.complete(true);
           return;
         case ActionMethod.getConfig:
+        case ActionMethod.getConfigContent:
           completer?.complete(result.toResult);
           return;
         default:
@@ -241,6 +244,18 @@ abstract class ClashHandlerInterface with ClashInterface {
       defaultValue: Result.success(<String, dynamic>{}),
     );
     return res;
+  }
+
+  @override
+  Future<Result> getConfigContent(String content) async {
+    return invoke<Result>(
+      method: ActionMethod.getConfigContent,
+      data: content,
+      timeout: const Duration(seconds: 3),
+      onTimeout: () => Result.error(
+        'CORE_METHOD_UNAVAILABLE:getConfigContent',
+      ),
+    );
   }
 
   @override

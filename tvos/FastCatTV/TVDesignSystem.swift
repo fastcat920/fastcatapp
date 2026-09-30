@@ -1,7 +1,7 @@
 import SwiftUI
 import UIKit
 
-enum TVLanguage: String, CaseIterable {
+enum TVLanguage: String, CaseIterable, Sendable {
   case system
   case simplifiedChinese = "zh-CN"
   case english = "en"

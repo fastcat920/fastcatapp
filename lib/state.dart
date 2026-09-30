@@ -20,6 +20,8 @@ import 'package:url_launcher/url_launcher.dart';
 import 'common/common.dart';
 import 'controller.dart';
 import 'models/models.dart';
+import 'security/profile_vault.dart';
+import 'security/profile_yaml_parser.dart';
 import 'xboard/config/xboard_config.dart';
 import 'xboard/features/auth/utils/crisp_url_helper.dart';
 
@@ -344,6 +346,11 @@ class GlobalState {
   Future<SetupParams> getSetupParams({
     required ClashConfig pathConfig,
   }) async {
+    final profileId = config.currentProfile?.id;
+    if (profileId != null) {
+      await ProfileVault.instance.snapshotRuntimeProviders(profileId);
+      await ProfileVault.instance.prepareRuntimeProviders(profileId);
+    }
     final clashConfig = await patchRawConfig(
       patchConfig: pathConfig,
     );
@@ -416,7 +423,7 @@ class GlobalState {
           continue;
         }
         if (proxyProvider["url"] != null) {
-          proxyProvider["path"] = await appPath.getProvidersFilePath(
+          proxyProvider["path"] = await appPath.getRuntimeProvidersFilePath(
             profile.id,
             "proxies",
             proxyProvider["url"],
@@ -433,7 +440,7 @@ class GlobalState {
           continue;
         }
         if (ruleProvider["url"] != null) {
-          ruleProvider["path"] = await appPath.getProvidersFilePath(
+          ruleProvider["path"] = await appPath.getRuntimeProvidersFilePath(
             profile.id,
             "rules",
             ruleProvider["url"],
@@ -533,14 +540,25 @@ class GlobalState {
   }
 
   Future<Map<String, dynamic>> getProfileConfig(String profileId) async {
-    // Keep Android/Desktop on the native core config loader. It resolves
-    // provider paths, proxies and rules exactly as the running Mihomo core
-    // expects; Dart YAML parsing is only needed by the iOS fallback path.
-    final configMap = await switch (clashLibHandler != null) {
-      true => clashLibHandler!.getConfig(profileId),
-      false => clashCore.getConfig(profileId),
-    };
-    configMap["rules"] = configMap["rule"];
+    final content = await ProfileVault.instance.readText(profileId);
+    // Parse in the native core directly from memory. This preserves Mihomo's
+    // exact config semantics without creating a plaintext YAML file.
+    late Map<String, dynamic> configMap;
+    try {
+      configMap = await clashCore.getConfigContent(content);
+    } catch (error) {
+      final message = error.toString();
+      final unavailable = message.contains('CORE_METHOD_UNAVAILABLE') ||
+          message.contains('unsupported action method');
+      if (!unavailable) rethrow;
+      commonPrint.log(
+        'Native core does not support getConfigContent; using secure in-memory YAML fallback.',
+      );
+      configMap = parseProfileYaml(content);
+    }
+    if (configMap.containsKey("rule")) {
+      configMap["rules"] = configMap["rule"];
+    }
     configMap.remove("rule");
     return configMap;
   }

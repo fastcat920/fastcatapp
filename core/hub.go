@@ -641,7 +641,11 @@ func handleGetConfig(path string) (*config.RawConfig, error) {
 	if err != nil {
 		return nil, err
 	}
-	prof, err := config.UnmarshalRawConfig(bytes)
+	return handleGetConfigContent(string(bytes))
+}
+
+func handleGetConfigContent(content string) (*config.RawConfig, error) {
+	prof, err := config.UnmarshalRawConfig([]byte(content))
 	if err != nil {
 		return nil, err
 	}
