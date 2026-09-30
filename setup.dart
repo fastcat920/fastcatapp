@@ -1870,18 +1870,9 @@ end tell
           ],
           name: "build windows app",
         );
-        // Build zip via flutter_distributor; exe is built in CI workflow directly
-        await _buildDistributor(
-          target: target,
-          targets: "zip",
-          args: " --build-dart-define=CORE_SHA256=$token$ddArgs",
-          env: env,
-        );
-
-        _normalizeArtifactNames(
-          osName: 'Windows',
-          extensions: ['zip'],
-        );
+        // Windows release artifacts are produced by Inno Setup in CI. Keep the
+        // architecture-specific EXE installers only; do not also build a
+        // portable ZIP containing the same payload.
         return;
       case Target.linux:
         _applyDartConstant();
