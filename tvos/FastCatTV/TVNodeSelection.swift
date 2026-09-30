@@ -239,7 +239,7 @@ struct TVNodeSelectorView: View {
 
         if isLoading {
           Spacer()
-          HStack { Spacer(); ProgressView(tvText("正在加载线路…", "Loading nodes…", language: language)).controlSize(.large).font(TVFont.regular(14)); Spacer() }
+          HStack { Spacer(); ProgressView(tvText("正在加载线路…", "Loading nodes…", language: language)).scaleEffect(1.3).font(TVFont.regular(14)); Spacer() }
           Spacer()
         } else if let errorMessage {
           Spacer()
@@ -281,7 +281,7 @@ struct TVNodeSelectorView: View {
                     Spacer()
                     if testingNodeNames.contains(node.name) {
                       ProgressView()
-                        .controlSize(.small)
+                        .scaleEffect(0.8)
                         .tint(TVTheme.primary)
                         .frame(width: tv(64), height: tv(42))
                     } else if let delay = node.delayMS, delay < 0 {
@@ -367,7 +367,7 @@ struct TVNodeSelectorView: View {
     TVFocusButton(cornerRadius: tv(10), action: action) { _ in
       HStack(spacing: tv(8)) {
         if loading {
-          ProgressView().controlSize(.small).tint(TVTheme.primary).frame(width: tv(18), height: tv(18))
+          ProgressView().scaleEffect(0.8).tint(TVTheme.primary).frame(width: tv(18), height: tv(18))
         } else {
           MaterialIcon(glyph: icon, size: 18, color: TVTheme.primary)
         }

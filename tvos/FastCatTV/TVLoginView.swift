@@ -259,7 +259,7 @@ struct TVLoginView: View {
         if isLoading {
           RoundedRectangle(cornerRadius: TVTheme.controlRadius, style: .continuous)
             .fill(Color.black.opacity(0.40))
-          ProgressView().tint(.white).controlSize(.large)
+          ProgressView().tint(.white).scaleEffect(1.3)
         }
       }
       .frame(width: tv(160), height: tv(160))
@@ -411,7 +411,7 @@ struct TVLoginView: View {
   private func primaryButton(title: String, loadingTitle: String, action: @escaping () -> Void) -> some View {
     TVFocusButton(cornerRadius: TVTheme.controlRadius, action: action) { _ in
       HStack(spacing: tv(7)) {
-        if isLoading { ProgressView().controlSize(.small).tint(.white) }
+        if isLoading { ProgressView().scaleEffect(0.8).tint(.white) }
         Text(isLoading ? loadingTitle : title)
       }
       .font(TVFont.medium(15))

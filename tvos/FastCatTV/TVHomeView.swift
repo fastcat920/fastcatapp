@@ -246,7 +246,7 @@ struct TVHomeView: View {
             if let date = noticeDateText {
               Text(date).font(TVFont.medium(12)).foregroundStyle(TVTheme.textSecondary)
             } else if isLoadingHomeInfo {
-              ProgressView().controlSize(.small).tint(TVTheme.primary)
+              ProgressView().scaleEffect(0.8).tint(TVTheme.primary)
             }
           }
           Text(announcementSubtitle)
@@ -296,7 +296,7 @@ struct TVHomeView: View {
           Text(subscriptionTitle).font(TVFont.medium(14)).lineLimit(1)
           Spacer()
           if isRefreshingSubscription {
-            ProgressView().controlSize(.small).tint(TVTheme.primary)
+            ProgressView().scaleEffect(0.8).tint(TVTheme.primary)
           }
         }
         if expirationDate != nil {
@@ -384,7 +384,7 @@ struct TVHomeView: View {
           .shadow(color: connected ? TVTheme.primary.opacity(prefersDarkTheme ? 0.36 : 0.30) : Color.black.opacity(prefersDarkTheme ? 0.30 : 0.10), radius: connected ? tv(18) : tv(12), y: tv(4))
         if isConnecting {
           VStack(spacing: tv(5)) {
-            ProgressView().controlSize(.small).tint(connected ? TVTheme.onPrimary : TVTheme.primary)
+            ProgressView().scaleEffect(0.8).tint(connected ? TVTheme.onPrimary : TVTheme.primary)
             Text(tvText("正在连接", "Connecting", language: language)).font(TVFont.regular(labelSize))
           }
           .foregroundStyle(connected ? TVTheme.onPrimary : TVTheme.primary)
@@ -480,7 +480,7 @@ struct TVHomeView: View {
             .foregroundStyle(delay < 500 ? TVTheme.success : TVTheme.warning)
         }
         if isLoadingNodes {
-          ProgressView().controlSize(.small)
+          ProgressView().scaleEffect(0.8)
         } else {
           MaterialIcon(glyph: .chevronRight, size: 22, color: TVTheme.textSecondary)
         }
@@ -521,7 +521,7 @@ struct TVHomeView: View {
           .frame(width: tv(1), height: tv(32))
         HStack(spacing: tv(8)) {
           if isLoggingOut {
-            ProgressView().controlSize(.small)
+            ProgressView().scaleEffect(0.8)
           } else {
             MaterialIcon(glyph: .logoutOutlined, size: 18, color: TVTheme.textSecondary)
           }
