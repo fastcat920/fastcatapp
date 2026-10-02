@@ -10,6 +10,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:fl_clash/xboard/features/auth/auth.dart';
 import 'package:fl_clash/xboard/features/latency/services/auto_latency_service.dart';
 import 'package:fl_clash/xboard/features/profile/providers/profile_import_provider.dart';
+import 'package:fl_clash/xboard/features/profile/models/import_models.dart';
 import 'package:fl_clash/xboard/features/subscription/services/traffic_recovery_service.dart';
 import 'package:fl_clash/xboard/features/subscription/services/subscription_guard_service.dart';
 import 'package:fl_clash/xboard/features/subscription/services/subscription_status_checker.dart';
@@ -417,7 +418,10 @@ class _NodeSelectorBarState extends ConsumerState<NodeSelectorBar> {
     final importState = ref.watch(profileImportProvider);
     final isReloading = importState.isImporting || _isReloadingNodes;
     final failedMessage = importState.lastResult?.isSuccess == false
-        ? (importState.lastResult?.errorMessage ?? '节点加载失败')
+        ? _localizedImportError(
+            context,
+            importState.lastResult?.errorType,
+          )
         : null;
     return Container(
       decoration: BoxDecoration(
@@ -485,6 +489,22 @@ class _NodeSelectorBarState extends ConsumerState<NodeSelectorBar> {
         ],
       ),
     );
+  }
+
+  String _localizedImportError(
+    BuildContext context,
+    ImportErrorType? errorType,
+  ) {
+    final l10n = AppLocalizations.of(context);
+    return switch (errorType) {
+      ImportErrorType.networkError => l10n.xboardNetworkConnectionFailed,
+      ImportErrorType.downloadError => l10n.xboardConfigDownloadFailed,
+      ImportErrorType.validationError => l10n.xboardConfigFormatError,
+      ImportErrorType.storageError => l10n.xboardConfigSaveFailed,
+      ImportErrorType.concurrentImport => l10n.xboardImportFailed,
+      ImportErrorType.unknownError => l10n.xboardUnknownErrorRetry,
+      null => l10n.xboardImportFailed,
+    };
   }
 
   Future<void> _reloadNodes() async {

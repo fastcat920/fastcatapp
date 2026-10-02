@@ -28,37 +28,44 @@ class CouponEntryButton extends ConsumerStatefulWidget {
 
 class _CouponEntryButtonState extends ConsumerState<CouponEntryButton>
     with SingleTickerProviderStateMixin {
-  late final AnimationController _pulseController;
-  late final Animation<double> _pulse;
-  bool _pulseEnabled = false;
+  late final AnimationController _shakeController;
+  late final Animation<double> _shakeAngle;
+  bool _shakeEnabled = false;
 
   @override
   void initState() {
     super.initState();
-    _pulseController = AnimationController(
+    _shakeController = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 1500),
+      duration: const Duration(milliseconds: 1600),
     );
-    _pulse = Tween<double>(begin: 1, end: 1.08).animate(
-      CurvedAnimation(parent: _pulseController, curve: Curves.easeInOut),
-    );
+    _shakeAngle = TweenSequence<double>([
+      TweenSequenceItem(tween: ConstantTween(0), weight: 45),
+      TweenSequenceItem(tween: Tween(begin: 0, end: -0.12), weight: 7),
+      TweenSequenceItem(tween: Tween(begin: -0.12, end: 0.10), weight: 7),
+      TweenSequenceItem(tween: Tween(begin: 0.10, end: -0.08), weight: 7),
+      TweenSequenceItem(tween: Tween(begin: -0.08, end: 0.06), weight: 7),
+      TweenSequenceItem(tween: Tween(begin: 0.06, end: -0.04), weight: 7),
+      TweenSequenceItem(tween: Tween(begin: -0.04, end: 0), weight: 7),
+      TweenSequenceItem(tween: ConstantTween(0), weight: 13),
+    ]).animate(_shakeController);
   }
 
   @override
   void dispose() {
-    _pulseController.dispose();
+    _shakeController.dispose();
     super.dispose();
   }
 
-  void _syncPulse(bool enabled) {
-    if (_pulseEnabled == enabled) return;
-    _pulseEnabled = enabled;
+  void _syncShake(bool enabled) {
+    if (_shakeEnabled == enabled) return;
+    _shakeEnabled = enabled;
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (!mounted || _pulseEnabled != enabled) return;
+      if (!mounted || _shakeEnabled != enabled) return;
       if (enabled) {
-        _pulseController.repeat(reverse: true);
+        _shakeController.repeat();
       } else {
-        _pulseController
+        _shakeController
           ..stop()
           ..value = 0;
       }
@@ -73,7 +80,7 @@ class _CouponEntryButtonState extends ConsumerState<CouponEntryButton>
     final hasAvailable = availableCount > 0;
     final disableAnimations = MediaQuery.disableAnimationsOf(context);
 
-    _syncPulse(hasAvailable && !disableAnimations);
+    _syncShake(hasAvailable && !disableAnimations);
 
     if (widget.showOnlyWhenAvailable && !hasAvailable) {
       return const SizedBox.shrink();
@@ -94,9 +101,9 @@ class _CouponEntryButtonState extends ConsumerState<CouponEntryButton>
           ref.invalidate(couponWalletProvider);
         },
         icon: AnimatedBuilder(
-          animation: _pulse,
-          builder: (context, child) => Transform.scale(
-            scale: hasAvailable && !disableAnimations ? _pulse.value : 1,
+          animation: _shakeAngle,
+          builder: (context, child) => Transform.rotate(
+            angle: hasAvailable && !disableAnimations ? _shakeAngle.value : 0,
             child: child,
           ),
           child: Stack(

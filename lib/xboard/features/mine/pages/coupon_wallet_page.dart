@@ -1,6 +1,5 @@
 import 'package:fl_clash/xboard/features/payment/widgets/coupon_entry_button.dart';
 import 'package:fl_clash/xboard/features/payment/pages/order_detail_page.dart';
-import 'package:fl_clash/xboard/features/shared/styles/styles.dart';
 import 'package:fl_clash/xboard/features/shared/widgets/xb_error_state.dart';
 import 'package:fl_clash/xboard/features/subscription/providers/xboard_subscription_provider.dart';
 import 'package:flutter/material.dart';
@@ -83,21 +82,6 @@ class _CouponWalletPageState extends ConsumerState<CouponWalletPage> {
               physics: const AlwaysScrollableScrollPhysics(),
               padding: const EdgeInsets.fromLTRB(16, 14, 16, 32),
               children: [
-                Text(
-                  _t('我的优惠券', 'My coupons'),
-                  style: XbUiText.sectionTitle(context).copyWith(fontSize: 22),
-                ),
-                const SizedBox(height: 5),
-                Text(
-                  _t(
-                    '购买套餐时会自动推荐符合条件的优惠券，也可以手动选择其他优惠方案。',
-                    'Eligible coupons are recommended automatically at checkout, and you can choose another offer.',
-                  ),
-                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                        color: Theme.of(context).colorScheme.onSurfaceVariant,
-                      ),
-                ),
-                const SizedBox(height: 18),
                 _filterBar(coupons),
                 const SizedBox(height: 16),
                 if (wallet.isLoading && coupons.isEmpty)
@@ -579,9 +563,17 @@ class _CouponWalletPageState extends ConsumerState<CouponWalletPage> {
     return fallback?.trim() ?? '';
   }
 
-  String _date(DateTime? value) => value == null
-      ? '—'
-      : MaterialLocalizations.of(context).formatMediumDate(value);
+  String _date(DateTime? value) {
+    if (value == null) return '—';
+    final local = value.toLocal();
+    String twoDigits(int number) => number.toString().padLeft(2, '0');
+    return '${local.year.toString().padLeft(4, '0')}-'
+        '${twoDigits(local.month)}-'
+        '${twoDigits(local.day)} '
+        '${twoDigits(local.hour)}:'
+        '${twoDigits(local.minute)}:'
+        '${twoDigits(local.second)}';
+  }
 
   String _periodText(String period) => switch (period) {
         'month_price' => _t('月付', 'Monthly'),

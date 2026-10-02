@@ -1176,23 +1176,24 @@ class SubscriptionUsageCard extends ConsumerWidget {
   }
 
   String _resolvePlanName(WidgetRef ref) {
-    final directName = subscriptionInfo?.planName?.trim() ?? '';
-    if (directName.isNotEmpty) return directName;
-
     final stateSubscription = ref.read(xboardUserProvider).subscriptionInfo;
-    final stateName = stateSubscription?.planName?.trim() ?? '';
-    if (stateName.isNotEmpty) return stateName;
-
     final planId = subscriptionInfo?.planId ??
         stateSubscription?.planId ??
         userInfo?.planId ??
         0;
     if (planId > 0) {
-      final plans = ref.read(xboardSubscriptionProvider);
+      final plans = ref.watch(xboardSubscriptionProvider);
       final matched = plans.where((plan) => plan.id == planId).firstOrNull;
       final planName = matched?.name.trim() ?? '';
       if (planName.isNotEmpty) return planName;
     }
+
+    final directName = subscriptionInfo?.planName?.trim() ?? '';
+    if (directName.isNotEmpty) return directName;
+
+    final stateName = stateSubscription?.planName?.trim() ?? '';
+    if (stateName.isNotEmpty) return stateName;
+
     return '';
   }
 

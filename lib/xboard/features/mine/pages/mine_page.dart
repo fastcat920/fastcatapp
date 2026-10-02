@@ -25,41 +25,12 @@ import 'package:fl_clash/xboard/features/docs/pages/docs_page.dart';
 import 'package:fl_clash/xboard/features/payment/pages/recharge_page.dart';
 import 'package:fl_clash/xboard/features/update_check/providers/update_check_provider.dart';
 import 'package:fl_clash/xboard/features/about/pages/fastcat_about_page.dart';
-import 'package:fl_clash/xboard/features/invite/providers/referral_program_provider.dart';
-import 'package:flutter_xboard_sdk/flutter_xboard_sdk.dart';
 
 class MinePage extends ConsumerStatefulWidget {
   const MinePage({super.key});
 
   @override
   ConsumerState<MinePage> createState() => _MinePageState();
-}
-
-class _ReferralLevelLabel extends StatelessWidget {
-  const _ReferralLevelLabel({required this.program});
-
-  final CatboardReferralProgram program;
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final zh = Localizations.localeOf(context).languageCode == 'zh';
-    final level = program.level;
-    final preferred = level?[zh ? 'name' : 'name_en']?.toString().trim();
-    final name = preferred?.isNotEmpty == true
-        ? preferred!
-        : (level?['name'] ?? level?['name_en'] ?? (zh ? '普通会员' : 'Member'))
-            .toString();
-    return Text(
-      name,
-      maxLines: 1,
-      overflow: TextOverflow.ellipsis,
-      style: theme.textTheme.labelSmall?.copyWith(
-        color: theme.colorScheme.onSurface,
-        fontWeight: XbFontWeight.semibold,
-      ),
-    );
-  }
 }
 
 class _MinePageState extends ConsumerState<MinePage>
@@ -97,10 +68,7 @@ class _MinePageState extends ConsumerState<MinePage>
   Future<void> _doRefresh() async {
     _refreshAnim.repeat();
     try {
-      await Future.wait([
-        ref.read(xboardUserAuthProvider.notifier).refreshUserInfo(),
-        ref.read(referralProgramProvider.notifier).refresh(),
-      ]);
+      await ref.read(xboardUserAuthProvider.notifier).refreshUserInfo();
     } finally {
       // 补完当前整圈后停止，避免猛然定格
       if (_refreshAnim.isAnimating) {
@@ -180,7 +148,6 @@ class _MinePageState extends ConsumerState<MinePage>
     DomainSubscription? subscriptionInfo,
     ThemeData theme,
     bool isDark,
-    CatboardReferralProgram? referralProgram,
   ) {
     final email = userState.email ??
         userInfo?.email ??
@@ -204,6 +171,19 @@ class _MinePageState extends ConsumerState<MinePage>
             : const BorderSide(color: Color(0xFFEEF0F4), width: 1),
       ),
       child: ListTile(
+        leading: Container(
+          width: 36,
+          height: 36,
+          decoration: BoxDecoration(
+            color: theme.colorScheme.primary.withValues(alpha: 0.1),
+            borderRadius: BorderRadius.circular(10),
+          ),
+          child: Icon(
+            Icons.person_outline,
+            color: theme.colorScheme.primary,
+            size: 20,
+          ),
+        ),
         title: Text(
           appLocalizations.xboardAccountInfo,
           style: theme.textTheme.titleSmall?.copyWith(
@@ -215,20 +195,11 @@ class _MinePageState extends ConsumerState<MinePage>
           maxLines: 1,
           overflow: TextOverflow.ellipsis,
         ),
-        trailing: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            if (referralProgram != null) ...[
-              _ReferralLevelLabel(program: referralProgram),
-              const SizedBox(width: 4),
-            ],
-            Icon(
-              Icons.chevron_right,
-              color: isDark
-                  ? theme.colorScheme.onSurfaceVariant
-                  : XbUiTokens.chevronLight,
-            ),
-          ],
+        trailing: Icon(
+          Icons.chevron_right,
+          color: isDark
+              ? theme.colorScheme.onSurfaceVariant
+              : XbUiTokens.chevronLight,
         ),
         onTap: () => context.push('/mine/account'),
         contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 2),
@@ -261,9 +232,6 @@ class _MinePageState extends ConsumerState<MinePage>
         ref.watch(subscriptionInfoProvider) ?? userState.subscriptionInfo;
     final userInfo = ref.watch(userInfoProvider) ?? userState.userInfo;
     final currentProfile = ref.watch(currentProfileProvider);
-    final referralProgram = ref.watch(
-      referralProgramProvider.select((state) => state.program),
-    );
     final isDesktop = Platform.isLinux ||
         Platform.isWindows ||
         Platform.isMacOS ||
@@ -333,7 +301,6 @@ class _MinePageState extends ConsumerState<MinePage>
               subscriptionInfo,
               theme,
               isDark,
-              referralProgram,
             ),
             const SizedBox(height: 8),
             _buildSubscriptionSection(

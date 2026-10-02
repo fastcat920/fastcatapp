@@ -6,6 +6,7 @@ import 'package:go_router/go_router.dart';
 import 'package:fl_clash/l10n/l10n.dart';
 import 'package:fl_clash/xboard/adapter/initialization/sdk_provider.dart';
 import 'package:fl_clash/xboard/config/xboard_config.dart';
+import 'package:fl_clash/xboard/features/auth/pages/qr_login_scanner_page.dart';
 import 'package:fl_clash/xboard/features/auth/providers/xboard_user_provider.dart';
 import 'package:fl_clash/xboard/features/shared/styles/styles.dart';
 import 'package:fl_clash/xboard/features/shared/widgets/xb_error_state.dart';
@@ -343,12 +344,26 @@ class _DeviceManagementPageState extends ConsumerState<DeviceManagementPage>
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
+    final isMobile = Platform.isAndroid || Platform.isIOS;
 
     return Scaffold(
       backgroundColor: isDark ? null : XbUiTokens.pageBackgroundLight,
       appBar: AppBar(
         title: Text(AppLocalizations.of(context).xboardDeviceManagement),
         actions: [
+          if (isMobile)
+            Padding(
+              padding: const EdgeInsets.only(right: 4),
+              child: IconButton(
+                tooltip: AppLocalizations.of(context).xboardQrLogin,
+                icon: const Icon(Icons.qr_code_scanner),
+                onPressed: () => Navigator.of(context).push(
+                  MaterialPageRoute(
+                    builder: (_) => const QrLoginScannerPage(),
+                  ),
+                ),
+              ),
+            ),
           if (Platform.isLinux ||
               Platform.isWindows ||
               Platform.isMacOS ||
