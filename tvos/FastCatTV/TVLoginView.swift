@@ -147,7 +147,7 @@ struct TVLoginView: View {
       }
       .frame(width: tv(80), height: tv(80))
       Text(tvText("快猫", "FastCat", language: language))
-        .font(TVFont.medium(28))
+        .font(TVAuthFont.medium(28))
         .foregroundStyle(TVTheme.textPrimary)
         .frame(height: tv(36))
     }
@@ -182,7 +182,7 @@ struct TVLoginView: View {
   private func methodSegment(_ method: TVLoginMethod, title: String, icon: MaterialGlyph) -> some View {
     HStack(spacing: tv(8)) {
       MaterialIcon(glyph: icon, size: 18, color: loginMethod == method ? TVTheme.onPrimaryContainer : TVTheme.textPrimary)
-      Text(title).font(TVFont.medium(14))
+      Text(title).font(TVAuthFont.medium(14))
     }
     .foregroundStyle(loginMethod == method ? TVTheme.onPrimaryContainer : TVTheme.textPrimary)
     .frame(maxWidth: .infinity, maxHeight: .infinity)
@@ -207,16 +207,16 @@ struct TVLoginView: View {
     TVGlassCard(cornerRadius: tv(16), showsShadow: false) {
       VStack(spacing: tv(0)) {
         Text(tvText("扫码登录", "QR Sign In", language: language))
-          .font(TVFont.medium(16))
+          .font(TVAuthFont.medium(16))
         Spacer().frame(height: tv(4))
         Text(tvText("使用已登录快猫的手机扫描并确认", "Scan and confirm with a signed-in FastCat phone", language: language))
-          .font(TVFont.regular(12))
+          .font(TVAuthFont.regular(12))
           .foregroundStyle(TVTheme.textSecondary)
         Spacer().frame(height: tv(12))
         qrFocusArea
         Spacer().frame(height: tv(8))
         Text(qrStatusText)
-          .font(qrExpired ? TVFont.medium(12) : TVFont.regular(12))
+          .font(qrExpired ? TVAuthFont.medium(12) : TVAuthFont.regular(12))
           .foregroundStyle(qrExpired ? TVTheme.error : TVTheme.textSecondary)
           .frame(height: tv(16))
       }
@@ -234,13 +234,13 @@ struct TVLoginView: View {
       ZStack {
         RoundedRectangle(cornerRadius: TVTheme.controlRadius, style: .continuous).fill(.white)
         if let challenge {
-          QRCodeView(payload: challenge.qrData)
+          TVQRCodeView(payload: challenge.qrData)
         } else if !isLoading {
           VStack(spacing: tv(6)) {
             MaterialIcon(glyph: .wifiOff, size: 18, color: Color.gray)
             Text(tvText("二维码不可用", "QR code unavailable", language: language))
           }
-          .font(TVFont.medium(12))
+          .font(TVAuthFont.medium(12))
           .foregroundStyle(Color.gray)
         }
         if qrExpired {
@@ -248,7 +248,7 @@ struct TVLoginView: View {
             .fill(Color.black.opacity(0.52))
           HStack(spacing: tv(7)) {
             MaterialIcon(glyph: .refresh, size: 18, color: TVTheme.onPrimary)
-            Text(tvText("刷新二维码", "Refresh QR Code", language: language)).font(TVFont.regular(14))
+            Text(tvText("刷新二维码", "Refresh QR Code", language: language)).font(TVAuthFont.regular(14))
           }
           .padding(.horizontal, tv(14))
           .frame(height: tv(40))
@@ -292,7 +292,7 @@ struct TVLoginView: View {
               MaterialIcon(glyph: rememberPassword ? .checkBox : .checkBoxOutlineBlank, size: 24, color: rememberPassword ? TVTheme.primary : TVTheme.textSecondary)
               Text(tvText("记住密码", "Remember password", language: language))
             }
-            .font(TVFont.regular(14))
+            .font(TVAuthFont.regular(14))
             .foregroundStyle(TVTheme.textSecondary)
             .frame(height: tv(32))
           }
@@ -309,7 +309,7 @@ struct TVLoginView: View {
             .foregroundStyle(TVTheme.textSecondary)
           textAction(tvText("注册", "Register", language: language)) { open(.register) }
         }
-        .font(TVFont.regular(14))
+        .font(TVAuthFont.regular(14))
         .frame(maxWidth: .infinity)
     }
     .frame(width: tv(332))
@@ -325,7 +325,7 @@ struct TVLoginView: View {
             .clipShape(RoundedRectangle(cornerRadius: TVTheme.controlRadius, style: .continuous))
         }
         Text(isReset ? tvText("找回密码", "Reset Password", language: language) : tvText("创建账号", "Create Account", language: language))
-          .font(TVFont.medium(22))
+          .font(TVAuthFont.medium(22))
         Spacer()
       }
       .padding(tv(10))
@@ -333,7 +333,7 @@ struct TVLoginView: View {
       ScrollView {
         VStack(alignment: .leading, spacing: tv(0)) {
           Text(isReset ? tvText("输入邮箱以重置密码", "Enter your email to reset your password", language: language) : tvText("填写以下信息以创建账号", "Fill in the information below to create an account", language: language))
-            .font(TVFont.regular(14)).foregroundStyle(TVTheme.textSecondary)
+            .font(TVAuthFont.regular(14)).foregroundStyle(TVTheme.textSecondary)
           Spacer().frame(height: tv(14))
           compactTextField(tvText("邮箱", "Email", language: language), text: $email, secure: false, icon: .emailOutlined)
           if guestConfig.requiresEmailVerification || isReset {
@@ -342,7 +342,7 @@ struct TVLoginView: View {
               compactTextField(tvText("邮箱验证码", "Email code", language: language), text: $emailCode, secure: false, icon: .verifiedUserOutlined)
               TVFocusButton(cornerRadius: TVTheme.controlRadius, action: sendVerificationCode) { _ in
                 Text(isSendingCode ? tvText("发送中…", "Sending…", language: language) : tvText("发送验证码", "Send Code", language: language))
-                  .font(TVFont.medium(11))
+                  .font(TVAuthFont.medium(11))
                   .foregroundStyle(TVTheme.primary)
                   .frame(width: tv(90), height: tv(44))
                   .background(TVTheme.primary.opacity(0.10))
@@ -384,7 +384,7 @@ struct TVLoginView: View {
       .textFieldStyle(.plain)
       .focusEffectDisabled()
     }
-    .font(TVFont.regular(14))
+    .font(TVAuthFont.regular(14))
     .textInputAutocapitalization(.never)
     .padding(.horizontal, tv(14))
     .frame(height: tv(44))
@@ -404,7 +404,7 @@ struct TVLoginView: View {
         Text(successMessage).foregroundStyle(TVTheme.success)
       }
     }
-    .font(TVFont.medium(11))
+    .font(TVAuthFont.medium(11))
     .lineLimit(2)
   }
 
@@ -414,7 +414,7 @@ struct TVLoginView: View {
         if isLoading { ProgressView().scaleEffect(0.8).tint(.white) }
         Text(isLoading ? loadingTitle : title)
       }
-      .font(TVFont.medium(15))
+      .font(TVAuthFont.medium(15))
       .foregroundStyle(TVTheme.onPrimary)
       .frame(maxWidth: .infinity, minHeight: tv(44))
       .background(TVTheme.primary)
@@ -426,7 +426,7 @@ struct TVLoginView: View {
   private func textAction(_ title: String, action: @escaping () -> Void) -> some View {
     TVFocusButton(cornerRadius: tv(7), action: action) { focused in
       Text(title)
-        .font(TVFont.medium(14))
+        .font(TVAuthFont.medium(14))
         .foregroundStyle(TVTheme.primary)
         .padding(.horizontal, tv(5)).padding(.vertical, tv(4))
         .background(Color.clear)
@@ -447,7 +447,7 @@ struct TVLoginView: View {
               Spacer()
               if language == item.rawValue { MaterialIcon(glyph: .checkCircle, size: 20, color: TVTheme.primary) }
             }
-            .font(TVFont.medium(15))
+            .font(TVAuthFont.medium(15))
             .foregroundStyle(TVTheme.textPrimary)
             .padding(.horizontal, tv(14))
             .frame(height: tv(44))
@@ -693,7 +693,7 @@ struct TVLoginView: View {
   }
 }
 
-private struct QRCodeView: View {
+struct TVQRCodeView: View {
   let payload: String
   private let context = CIContext()
   private let filter = CIFilter.qrCodeGenerator()

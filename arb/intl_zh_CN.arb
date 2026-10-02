@@ -1689,4 +1689,13 @@
   "xboardTunRuleRecommendation": "日常使用：规则 + TUN，智能分流且性能最佳",
   "xboardTunGlobalRecommendation": "备用方案：全局 + TUN，规则模式异常时使用",
   "xboardMaybeLater": "稍后再说"
+,
+  "xboardQrAuthorizeTitle": "登录新设备",
+  "xboardQrAuthorizeMessage": "确认允许这台电脑或电视登录你的快猫账号吗？",
+  "xboardQrAuthorizeConfirm": "确认登录",
+  "xboardQrAuthorizeSuccess": "已允许设备登录",
+  "xboardQrAuthorizeFailed": "授权失败，请重试",
+  "xboardQrScannerTitle": "扫一扫登录设备",
+  "xboardQrScannerHint": "扫描电脑或电视上的登录二维码",
+  "xboardQrInvalidCode": "请扫描有效的快猫电脑或电视登录二维码"
 }

@@ -310,6 +310,68 @@ Future<void> _repairConnection(
   WidgetRef ref,
 ) async {
   final l10n = AppLocalizations.of(context);
+  final isChinese = Localizations.localeOf(context).languageCode == 'zh';
+  final steps = <String>[
+    if (Platform.isWindows)
+      isChinese
+          ? '检查并修复 Windows 后台服务'
+          : 'Check and repair the Windows helper service',
+    if (Platform.isWindows)
+      isChinese ? '刷新系统 DNS 缓存' : 'Flush the system DNS cache',
+    if (Platform.isMacOS)
+      isChinese ? '重新应用 macOS DNS 设置' : 'Reapply macOS DNS settings',
+    isChinese ? '重新加载当前代理配置' : 'Reload the current proxy configuration',
+    if (system.isDesktop)
+      isChinese
+          ? '仅修复属于 FastCat 的本地系统代理设置'
+          : 'Repair only local system proxy settings owned by FastCat',
+    isChinese
+        ? '刷新服务、订阅与网关状态'
+        : 'Refresh service, subscription and gateway status',
+  ];
+  final confirmed = await showDialog<bool>(
+    context: context,
+    builder: (dialogContext) => AlertDialog(
+      shape: XbUiDialog.shape(),
+      backgroundColor: XbUiDialog.background(dialogContext),
+      title: Text(l10n.xboardOneClickRepair),
+      content: SizedBox(
+        width: 480,
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(isChinese
+                ? '将按顺序执行以下操作：'
+                : 'The following actions will run in order:'),
+            const SizedBox(height: 12),
+            for (final step in steps)
+              Padding(
+                padding: const EdgeInsets.only(bottom: 8),
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text('•  '),
+                    Expanded(child: Text(step)),
+                  ],
+                ),
+              ),
+          ],
+        ),
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.pop(dialogContext, false),
+          child: Text(l10n.cancel),
+        ),
+        FilledButton(
+          onPressed: () => Navigator.pop(dialogContext, true),
+          child: Text(isChinese ? '开始修复' : 'Start repair'),
+        ),
+      ],
+    ),
+  );
+  if (confirmed != true || !context.mounted) return;
 
   Future<String?> runRepair() async {
     if (Platform.isWindows) {

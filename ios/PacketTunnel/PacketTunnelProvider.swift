@@ -1,5 +1,6 @@
 import NetworkExtension
 import Foundation
+import Darwin
 
 // App Group identifier — must match Runner's entitlements.
 // Dynamically derived from the extension's bundle ID at runtime.
@@ -46,6 +47,11 @@ class PacketTunnelProvider: NEPacketTunnelProvider {
   /// Cached mixed-port from mihomo, used when toggling traffic on/off.
   private var cachedMixedPort: Int = 0
 
+  /// Literal bootstrap resolvers derived from the active Mihomo config.
+  /// NEDNSSettings only accepts IP addresses, so encrypted DNS hostnames remain
+  /// inside Mihomo while their bootstrap IPs come from default-nameserver.
+  private var cachedDnsServers = ["223.5.5.5", "119.29.29.29"]
+
   // MARK: - Tunnel start
 
   override func startTunnel(
@@ -63,6 +69,7 @@ class PacketTunnelProvider: NEPacketTunnelProvider {
       return
     }
     NSLog("[PacketTunnel] Config loaded: %d chars", config.count)
+    cachedDnsServers = extractDnsServers(from: config)
 
     let homeDir = appGroupContainerURL()?.path ?? NSTemporaryDirectory()
     NSLog("[PacketTunnel] homeDir: %@", homeDir)
@@ -169,6 +176,16 @@ class PacketTunnelProvider: NEPacketTunnelProvider {
       return
     }
 
+    // A probe can take seconds. Do not block delivery of its cancellation IPC.
+    if method == "streamingProbe" {
+      DispatchQueue.global(qos: .utility).async {
+        let result = ClashCore_invoke(method, data)
+        defer { ClashCore_free(result) }
+        let value = result.map { String(cString: $0) } ?? ""
+        completionHandler?(value.data(using: .utf8))
+      }
+      return
+    }
     let resultCStr = ClashCore_invoke(method, data)
     defer { ClashCore_free(resultCStr) }
 
@@ -225,6 +242,19 @@ class PacketTunnelProvider: NEPacketTunnelProvider {
     let resultCStr = ClashCore_invoke("setupConfig", config)
     defer { ClashCore_free(resultCStr) }
     let resultString = resultCStr.map { String(cString: $0) } ?? "ok"
+    guard resultString.isEmpty || resultString == "ok" else {
+      completionHandler?(resultString.data(using: .utf8))
+      return
+    }
+    cachedDnsServers = extractDnsServers(from: config)
+    cachedMixedPort = Int(ClashCore_get_mixed_port())
+    if isTrafficEnabled && cachedMixedPort > 0 {
+      setTunnelNetworkSettings(buildNetworkSettings(mixedPort: cachedMixedPort)) { error in
+        let result = error.map { "error: \($0.localizedDescription)" } ?? resultString
+        completionHandler?(result.data(using: .utf8))
+      }
+      return
+    }
     completionHandler?(resultString.data(using: .utf8))
   }
 
@@ -236,7 +266,7 @@ class PacketTunnelProvider: NEPacketTunnelProvider {
     // DNS servers must be Chinese-accessible (8.8.8.8 is blocked/polluted).
     // DNS pollution doesn't matter: HTTP CONNECT proxy sends hostnames,
     // not resolved IPs, so mihomo resolves the real address remotely.
-    let dnsServers = ["223.5.5.5", "119.29.29.29"]
+    let dnsServers = cachedDnsServers
 
     // IPv4: minimal TUN interface — needed for the VPN to appear "active".
     // We do NOT use NEIPv4Route.default() because:
@@ -281,6 +311,52 @@ class PacketTunnelProvider: NEPacketTunnelProvider {
     settings.mtu = 1500
 
     return settings
+  }
+
+  private func extractDnsServers(from setupPayload: String) -> [String] {
+    guard
+      let data = setupPayload.data(using: .utf8),
+      let root = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
+      let dns = ((root["config"] as? [String: Any]) ?? root)["dns"] as? [String: Any]
+    else { return ["223.5.5.5", "119.29.29.29"] }
+
+    let values = (dns["default-nameserver"] as? [Any] ?? []) +
+      (dns["nameserver"] as? [Any] ?? [])
+    var result: [String] = []
+    for case let value as String in values {
+      if let ip = literalIp(from: value), !result.contains(ip) {
+        result.append(ip)
+      }
+      if result.count == 4 { break }
+    }
+    return result.isEmpty ? ["223.5.5.5", "119.29.29.29"] : result
+  }
+
+  private func literalIp(from endpoint: String) -> String? {
+    let value = endpoint.trimmingCharacters(in: .whitespacesAndNewlines)
+    if isLiteralIp(value) { return value }
+    if value.hasPrefix("["), let closing = value.firstIndex(of: "]") {
+      let start = value.index(after: value.startIndex)
+      let candidate = String(value[start..<closing])
+      return isLiteralIp(candidate) ? candidate : nil
+    }
+    if value.filter({ $0 == ":" }).count == 1,
+       let separator = value.lastIndex(of: ":") {
+      let candidate = String(value[..<separator])
+      return isLiteralIp(candidate) ? candidate : nil
+    }
+    if let host = URLComponents(string: value)?.host, isLiteralIp(host) {
+      return host
+    }
+    return nil
+  }
+
+  private func isLiteralIp(_ value: String) -> Bool {
+    var ipv4 = in_addr()
+    var ipv6 = in6_addr()
+    return value.withCString {
+      inet_pton(AF_INET, $0, &ipv4) == 1 || inet_pton(AF_INET6, $0, &ipv6) == 1
+    }
   }
 
   // MARK: - Idle network settings (no traffic routing)

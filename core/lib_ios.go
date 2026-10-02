@@ -189,7 +189,19 @@ func ClashCore_invoke(method *C.char, data *C.char) *C.char {
 		case updateConfigMethod:
 			ch <- handleUpdateConfig([]byte(dataStr))
 		case setupConfigMethod:
-			ch <- handleSetupConfig([]byte(dataStr))
+			params := defaultSetupParams()
+			if err := UnmarshalJson([]byte(dataStr), params); err != nil {
+				ch <- err.Error()
+			} else if params.Config == nil {
+				ch <- "missing configuration"
+			} else {
+				patchConfigForIOS(params.Config)
+				if err := setupConfig(params); err != nil {
+					ch <- err.Error()
+				} else {
+					ch <- ""
+				}
+			}
 		case getProxiesMethod:
 			data, _ := json.Marshal(handleGetProxies())
 			ch <- string(data)
@@ -210,6 +222,9 @@ func ClashCore_invoke(method *C.char, data *C.char) *C.char {
 			})
 		case diagnoseProxyMethod:
 			ch <- handleDiagnoseProxy(dataStr)
+		case cancelStreamingProbesMethod:
+			cancelStreamingProbes(dataStr)
+			ch <- "ok"
 		case streamingProbeMethod:
 			ch <- handleStreamingProbe(dataStr)
 		case getConnectionsMethod:

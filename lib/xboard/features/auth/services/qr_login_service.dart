@@ -79,11 +79,16 @@ class QrLoginService {
       throw const FormatException('请扫描快猫电脑或电视上的登录二维码');
     }
     final id = uri.queryParameters['challenge']?.trim() ?? '';
-    if (id.isEmpty) throw const FormatException('登录二维码无效');
+    if (!RegExp(r'^[A-Za-z0-9_-]{1,128}$').hasMatch(id)) {
+      throw const FormatException('登录二维码无效');
+    }
     return ScannedQrLoginChallenge(id);
   }
 
   static Future<Map<String, dynamic>> approve(String challengeID) async {
+    if (!RegExp(r'^[A-Za-z0-9_-]{1,128}$').hasMatch(challengeID)) {
+      throw const FormatException('Invalid challenge');
+    }
     final token = await XBoardSDK.instance.getToken();
     if (token == null || token.isEmpty) throw StateError('请先登录账号');
     return XBoardSDK.instance.httpService.postRequest(

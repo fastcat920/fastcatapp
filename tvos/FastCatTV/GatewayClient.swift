@@ -159,19 +159,23 @@ struct GatewayClient {
   enum GatewayError: LocalizedError {
     case missingBaseURL, invalidResponse, unauthorized, server(String)
     var errorDescription: String? {
+      let language = UserDefaults.standard.string(forKey: TVLanguage.preferenceKey) ?? "system"
       switch self {
-      case .missingBaseURL: return "未配置服务地址"
-      case .invalidResponse: return "服务响应无效"
-      case .unauthorized: return "登录状态已失效，请重新登录"
+      case .missingBaseURL: return tvText("未配置服务地址", "Service address is not configured", language: language)
+      case .invalidResponse: return tvText("服务响应无效", "Invalid server response", language: language)
+      case .unauthorized: return tvText("登录状态已失效，请重新登录", "Your session has expired. Please sign in again.", language: language)
       case .server(let message): return message
       }
     }
   }
 
   private let baseURL: URL
+  private let contentLanguage: String
 
   private init(baseURL: URL) {
     self.baseURL = baseURL
+    let language = UserDefaults.standard.string(forKey: TVLanguage.preferenceKey) ?? "system"
+    contentLanguage = TVLanguage.resolved(from: language) == .simplifiedChinese ? "zh-CN" : "en-US"
   }
 
   static func configured() async throws -> GatewayClient {
@@ -328,6 +332,15 @@ struct GatewayClient {
     )
   }
 
+  func heartbeat(token: String) async throws -> String? {
+    struct Status: Decodable { let device_policy: String? }
+    let status: Status = try await sendRequest(
+      path: "/user/devices/heartbeat", method: "POST",
+      body: AnyEncodable([String: String]()), authorization: token
+    )
+    return status.device_policy
+  }
+
   private func send<T: Decodable>(path: String) async throws -> T {
     try await sendRequest(path: path, method: "GET", body: nil)
   }
@@ -344,6 +357,8 @@ struct GatewayClient {
     )
     request.httpMethod = method
     request.setValue("application/json", forHTTPHeaderField: "Accept")
+    request.setValue(contentLanguage, forHTTPHeaderField: "Accept-Language")
+    request.setValue(contentLanguage, forHTTPHeaderField: "X-Locale")
     if let authorization, !authorization.isEmpty {
       request.setValue(authorization, forHTTPHeaderField: "Authorization")
     }
@@ -419,7 +434,7 @@ private actor TVSubscriptionCache {
   func read(token: String, configuration: TVBuildConfiguration) throws -> String? {
     let paths = try cachePaths(token: token)
     var currentError: Error?
-    for url in [paths.current, paths.previous] {
+    for url in [paths.current, paths.previous, paths.older] {
       guard fileManager.fileExists(atPath: url.path) else { continue }
       do {
         let envelope = try String(contentsOf: url, encoding: .utf8)
@@ -427,8 +442,8 @@ private actor TVSubscriptionCache {
           envelope,
           configuration: configuration
         )
-        if url == paths.previous {
-          try? restorePrevious(paths: paths)
+        if url != paths.current {
+          try? restoreFallback(from: url, paths: paths)
         }
         return plaintext
       } catch {
@@ -445,19 +460,26 @@ private actor TVSubscriptionCache {
       at: paths.directory,
       withIntermediateDirectories: true
     )
+    if fileManager.fileExists(atPath: paths.staging.path) {
+      try fileManager.removeItem(at: paths.staging)
+    }
     try Data(envelope.utf8).write(to: paths.staging, options: .atomic)
     do {
+      if fileManager.fileExists(atPath: paths.older.path) {
+        try fileManager.removeItem(at: paths.older)
+      }
       if fileManager.fileExists(atPath: paths.previous.path) {
-        try fileManager.removeItem(at: paths.previous)
+        try fileManager.moveItem(at: paths.previous, to: paths.older)
       }
       if fileManager.fileExists(atPath: paths.current.path) {
         try fileManager.moveItem(at: paths.current, to: paths.previous)
       }
       try fileManager.moveItem(at: paths.staging, to: paths.current)
+      try? pruneOtherTokenDirectories(keeping: paths.directory)
     } catch {
       if !fileManager.fileExists(atPath: paths.current.path),
          fileManager.fileExists(atPath: paths.previous.path) {
-        try? fileManager.moveItem(at: paths.previous, to: paths.current)
+        try? fileManager.copyItem(at: paths.previous, to: paths.current)
       }
       throw error
     }
@@ -468,11 +490,26 @@ private actor TVSubscriptionCache {
     try? fileManager.removeItem(at: root)
   }
 
-  private func restorePrevious(paths: CachePaths) throws {
+  private func restoreFallback(from fallback: URL, paths: CachePaths) throws {
     if fileManager.fileExists(atPath: paths.current.path) {
       try fileManager.removeItem(at: paths.current)
     }
-    try fileManager.copyItem(at: paths.previous, to: paths.current)
+    try fileManager.copyItem(at: fallback, to: paths.current)
+  }
+
+  private func pruneOtherTokenDirectories(keeping retainedDirectory: URL) throws {
+    let root = try cacheRoot()
+    guard fileManager.fileExists(atPath: root.path) else { return }
+    let entries = try fileManager.contentsOfDirectory(
+      at: root,
+      includingPropertiesForKeys: [.isDirectoryKey],
+      options: [.skipsHiddenFiles]
+    )
+    for entry in entries where entry.standardizedFileURL != retainedDirectory.standardizedFileURL {
+      let values = try entry.resourceValues(forKeys: [.isDirectoryKey])
+      guard values.isDirectory == true else { continue }
+      try fileManager.removeItem(at: entry)
+    }
   }
 
   private func cachePaths(token: String) throws -> CachePaths {
@@ -484,6 +521,7 @@ private actor TVSubscriptionCache {
       directory: directory,
       current: directory.appendingPathComponent("current.fcat"),
       previous: directory.appendingPathComponent("previous.fcat"),
+      older: directory.appendingPathComponent("previous-2.fcat"),
       staging: directory.appendingPathComponent("current.fcat.new")
     )
   }
@@ -502,6 +540,7 @@ private actor TVSubscriptionCache {
     let directory: URL
     let current: URL
     let previous: URL
+    let older: URL
     let staging: URL
   }
 }

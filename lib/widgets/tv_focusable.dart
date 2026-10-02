@@ -50,6 +50,16 @@ class _TVFocusableState extends State<TVFocusable> {
   }
 
   @override
+  void didUpdateWidget(covariant TVFocusable oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.focusNode != widget.focusNode) {
+      if (oldWidget.focusNode == null) _focusNode.dispose();
+      _focusNode = widget.focusNode ?? FocusNode();
+      _isFocused = _focusNode.hasFocus;
+    }
+  }
+
+  @override
   void dispose() {
     if (widget.focusNode == null) {
       _focusNode.dispose();
@@ -93,7 +103,9 @@ class _TVFocusableState extends State<TVFocusable> {
       child: GestureDetector(
         onTap: widget.onPressed,
         child: AnimatedContainer(
-          duration: const Duration(milliseconds: 150),
+          duration: MediaQuery.disableAnimationsOf(context)
+              ? Duration.zero
+              : const Duration(milliseconds: 150),
           foregroundDecoration: BoxDecoration(
             borderRadius: widget.borderRadius ?? BorderRadius.circular(12),
             border: _isFocused

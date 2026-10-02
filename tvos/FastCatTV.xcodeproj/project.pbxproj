@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		FA57CA710000000000000001 /* tv_design_contract.json in Resources */ = {isa = PBXBuildFile; fileRef = FA57CA710000000000000002 /* tv_design_contract.json */; };
 		1BF82943385F910990125546 /* MaterialIcons-Regular.otf in Resources */ = {isa = PBXBuildFile; fileRef = 3D5F5DE22F87F724C42B159F /* MaterialIcons-Regular.otf */; };
 		1D392A56603115CF69107170 /* TVLoginView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0FA2C476CA0F2DF189D3F99B /* TVLoginView.swift */; };
 		1FB638B8D6F6C8FC6AE7969A /* TVBuildConfiguration.swift in Sources */ = {isa = PBXBuildFile; fileRef = C867A35A9B0F0CD4C4E71178 /* TVBuildConfiguration.swift */; };
@@ -56,6 +57,7 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		FA57CA710000000000000002 /* tv_design_contract.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = "../assets/config/tv_design_contract.json"; sourceTree = "<group>"; };
 		0674424692C256D4D855A944 /* PacketTunnel.entitlements */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.plist.entitlements; path = PacketTunnel.entitlements; sourceTree = "<group>"; };
 		0FA2C476CA0F2DF189D3F99B /* TVLoginView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = TVLoginView.swift; sourceTree = "<group>"; };
 		1E7A9A66ABF181989DCF3666 /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = Platforms/AppleTVOS.platform/Developer/SDKs/AppleTVOS18.0.sdk/System/Library/Frameworks/Foundation.framework; sourceTree = DEVELOPER_DIR; };
@@ -166,6 +168,7 @@
 				BFBDCB49D45BE4F8FD367296 /* PacketTunnel */,
 				C7C4F3D0F02A9E4183D34D11 /* Frameworks */,
 				39B83D42B5CA71EC42095A3B /* config.yaml */,
+				FA57CA710000000000000002 /* tv_design_contract.json */,
 				5A65F00F5B551810E780C416 /* icon.png */,
 				8A0C7A3613E7F0060730F353 /* Config.xcconfig */,
 			);
@@ -267,6 +270,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				C72B77458FAFE8A30940E0BF /* config.yaml in Resources */,
+				FA57CA710000000000000001 /* tv_design_contract.json in Resources */,
 				9D8529D9821FE76870350742 /* icon.png in Resources */,
 				9C307498A48F40B79D7E79F7 /* Roboto-Regular.ttf in Resources */,
 				6B9BF897184B833130F259CD /* Roboto-Medium.ttf in Resources */,

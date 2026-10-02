@@ -12964,6 +12964,86 @@ class AppLocalizations {
       args: [],
     );
   }
+
+  /// `Sign in on a new device`
+  String get xboardQrAuthorizeTitle {
+    return Intl.message(
+      'Sign in on a new device',
+      name: 'xboardQrAuthorizeTitle',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Allow this computer or TV to sign in to your FastCat account?`
+  String get xboardQrAuthorizeMessage {
+    return Intl.message(
+      'Allow this computer or TV to sign in to your FastCat account?',
+      name: 'xboardQrAuthorizeMessage',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Allow sign-in`
+  String get xboardQrAuthorizeConfirm {
+    return Intl.message(
+      'Allow sign-in',
+      name: 'xboardQrAuthorizeConfirm',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Device sign-in approved`
+  String get xboardQrAuthorizeSuccess {
+    return Intl.message(
+      'Device sign-in approved',
+      name: 'xboardQrAuthorizeSuccess',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Authorization failed. Please try again.`
+  String get xboardQrAuthorizeFailed {
+    return Intl.message(
+      'Authorization failed. Please try again.',
+      name: 'xboardQrAuthorizeFailed',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Scan to sign in on a device`
+  String get xboardQrScannerTitle {
+    return Intl.message(
+      'Scan to sign in on a device',
+      name: 'xboardQrScannerTitle',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Scan the sign-in QR code on your computer or TV`
+  String get xboardQrScannerHint {
+    return Intl.message(
+      'Scan the sign-in QR code on your computer or TV',
+      name: 'xboardQrScannerHint',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Scan a valid FastCat sign-in QR code on your computer or TV`
+  String get xboardQrInvalidCode {
+    return Intl.message(
+      'Scan a valid FastCat sign-in QR code on your computer or TV',
+      name: 'xboardQrInvalidCode',
+      desc: '',
+      args: [],
+    );
+  }
 }
 
 class AppLocalizationDelegate extends LocalizationsDelegate<AppLocalizations> {

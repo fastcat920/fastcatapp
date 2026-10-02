@@ -107,6 +107,7 @@ const (
 	asyncTestDelayMethod           Method = "asyncTestDelay"
 	diagnoseProxyMethod            Method = "diagnoseProxy"
 	streamingProbeMethod           Method = "streamingProbe"
+	cancelStreamingProbesMethod    Method = "cancelStreamingProbes"
 	getConnectionsMethod           Method = "getConnections"
 	closeConnectionsMethod         Method = "closeConnections"
 	resetConnectionsMethod         Method = "resetConnections"

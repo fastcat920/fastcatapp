@@ -25,6 +25,7 @@ class _FastCatAppExclusionPageState
   bool _showSystemApps = false;
   bool _initialShowSystemApps = false;
   bool _loading = true;
+  bool _saving = false;
   bool _allowPop = false;
   final Map<String, Future<ImageProvider?>> _iconFutures = {};
 
@@ -68,8 +69,8 @@ class _FastCatAppExclusionPageState
   Future<bool> _confirmLeave() async {
     if (!_hasUnsavedChanges) return true;
     final save = await _showUnsavedChangesDialog(context);
-    if (save == true) await _save(close: false);
-    return save != null;
+    if (save == true) return _save(close: false);
+    return save == false;
   }
 
   Future<void> _handlePopAttempt() async {
@@ -80,35 +81,43 @@ class _FastCatAppExclusionPageState
     });
   }
 
-  Future<bool?> _showUnsavedChangesDialog(BuildContext context) =>
-      showDialog<bool>(
-        context: context,
-        builder: (dialogContext) => AlertDialog(
-          shape: XbUiDialog.shape(),
-          backgroundColor: XbUiDialog.background(dialogContext),
-          title: Text('未保存的修改', style: XbUiText.sectionTitle(dialogContext)),
-          content: const Text('是否保存后返回？'),
-          actionsPadding: const EdgeInsets.fromLTRB(24, 0, 24, 20),
-          actions: [
-            OutlinedButton(
-              onPressed: () => Navigator.pop(dialogContext),
-              style: XbUiButton.outlinedNeutral(dialogContext),
-              child: const Text('继续编辑'),
-            ),
-            TextButton(
-              onPressed: () => Navigator.pop(dialogContext, false),
-              child: const Text('不保存'),
-            ),
-            FilledButton(
-              onPressed: () => Navigator.pop(dialogContext, true),
-              style: XbUiButton.filledPrimary(dialogContext),
-              child: const Text('保存'),
-            ),
-          ],
+  Future<bool?> _showUnsavedChangesDialog(BuildContext context) {
+    final isChinese = Localizations.localeOf(context).languageCode == 'zh';
+    return showDialog<bool>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        shape: XbUiDialog.shape(),
+        backgroundColor: XbUiDialog.background(dialogContext),
+        title: Text(
+          isChinese ? '未保存的修改' : 'Unsaved changes',
+          style: XbUiText.sectionTitle(dialogContext),
         ),
-      );
+        content:
+            Text(isChinese ? '是否保存后返回？' : 'Save your changes before leaving?'),
+        actionsPadding: const EdgeInsets.fromLTRB(24, 0, 24, 20),
+        actions: [
+          OutlinedButton(
+            onPressed: () => Navigator.pop(dialogContext),
+            style: XbUiButton.outlinedNeutral(dialogContext),
+            child: Text(isChinese ? '继续编辑' : 'Keep editing'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(dialogContext, false),
+            child: Text(isChinese ? '不保存' : 'Discard'),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.pop(dialogContext, true),
+            style: XbUiButton.filledPrimary(dialogContext),
+            child: Text(isChinese ? '保存' : 'Save'),
+          ),
+        ],
+      ),
+    );
+  }
 
-  Future<void> _save({bool close = true}) async {
+  Future<bool> _save({bool close = true}) async {
+    if (_saving) return false;
+    final isChinese = Localizations.localeOf(context).languageCode == 'zh';
     final packages = ref.read(packagesProvider);
     final validPackageNames = packages.map((item) => item.packageName).toSet();
     final rejectList = _excluded
@@ -116,25 +125,95 @@ class _FastCatAppExclusionPageState
         .where((name) => name != globalState.packageInfo.packageName)
         .toList()
       ..sort();
-    ref.read(vpnSettingProvider.notifier).updateState(
-          (state) => state.copyWith(
-            accessControl: state.accessControl.copyWith(
-              enable: _enabled && rejectList.isNotEmpty,
-              mode: AccessControlMode.rejectSelected,
-              rejectList: rejectList,
-              isFilterSystemApp: !_showSystemApps,
+    final previous = ref.read(vpnSettingProvider);
+    final next = previous.copyWith(
+      accessControl: previous.accessControl.copyWith(
+        enable: _enabled && rejectList.isNotEmpty,
+        mode: AccessControlMode.rejectSelected,
+        rejectList: rejectList,
+        isFilterSystemApp: !_showSystemApps,
+      ),
+    );
+    final wasConnected = ref.read(runTimeProvider) != null;
+    if (wasConnected) {
+      final confirmed = await showDialog<bool>(
+        context: context,
+        builder: (dialogContext) => AlertDialog(
+          shape: XbUiDialog.shape(),
+          backgroundColor: XbUiDialog.background(dialogContext),
+          title: Text(
+            isChinese ? '重新连接以应用规则？' : 'Reconnect to apply rules?',
+            style: XbUiText.sectionTitle(dialogContext),
+          ),
+          content: Text(isChinese
+              ? 'Android 需要短暂重建 VPN 隧道，当前连接会自动断开并重新连接。'
+              : 'Android must briefly rebuild the VPN tunnel. The current connection will reconnect automatically.'),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(dialogContext, false),
+              child: Text(isChinese ? '取消' : 'Cancel'),
             ),
+            FilledButton(
+              onPressed: () => Navigator.pop(dialogContext, true),
+              style: XbUiButton.filledPrimary(dialogContext),
+              child: Text(isChinese ? '应用并重连' : 'Apply and reconnect'),
+            ),
+          ],
+        ),
+      );
+      if (confirmed != true) return false;
+    }
+
+    if (mounted) setState(() => _saving = true);
+    ref.read(vpnSettingProvider.notifier).updateState((_) => next);
+    try {
+      if (wasConnected) {
+        final stopped = await globalState.appController.updateStatus(false);
+        if (!stopped) throw StateError('VPN stop failed');
+      }
+      await globalState.appController.updateClashConfig();
+      if (wasConnected) {
+        final started = await globalState.appController.updateStatus(true);
+        if (!started) throw StateError('VPN restart failed');
+      }
+      _initialExcluded = Set.of(_excluded);
+      _initialEnabled = _enabled;
+      _initialShowSystemApps = _showSystemApps;
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+                isChinese ? '应用排除规则已生效' : 'App exclusion rules are now active'),
           ),
         );
-    await globalState.appController.updateClashConfig();
-    _initialExcluded = Set.of(_excluded);
-    _initialEnabled = _enabled;
-    _initialShowSystemApps = _showSystemApps;
-    if (mounted && close) {
-      setState(() => _allowPop = true);
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        if (mounted) Navigator.of(context).pop();
-      });
+      }
+      if (mounted && close) {
+        setState(() => _allowPop = true);
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          if (mounted) Navigator.of(context).pop();
+        });
+      }
+      return true;
+    } catch (_) {
+      ref.read(vpnSettingProvider.notifier).updateState((_) => previous);
+      try {
+        await globalState.appController.updateClashConfig();
+        if (wasConnected && ref.read(runTimeProvider) == null) {
+          await globalState.appController.updateStatus(true);
+        }
+      } catch (_) {}
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(isChinese
+                ? '规则应用失败，已恢复之前的设置'
+                : 'Could not apply rules. Previous settings were restored.'),
+          ),
+        );
+      }
+      return false;
+    } finally {
+      if (mounted) setState(() => _saving = false);
     }
   }
 
@@ -171,8 +250,13 @@ class _FastCatAppExclusionPageState
           surfaceTintColor: Colors.transparent,
           actions: [
             TextButton(
-              onPressed: _loading ? null : _save,
-              child: Text(isChinese ? '保存' : 'Save'),
+              onPressed: _loading || _saving ? null : _save,
+              child: _saving
+                  ? const SizedBox.square(
+                      dimension: 18,
+                      child: CircularProgressIndicator(strokeWidth: 2),
+                    )
+                  : Text(isChinese ? '保存' : 'Save'),
             ),
             const SizedBox(width: 8),
           ],

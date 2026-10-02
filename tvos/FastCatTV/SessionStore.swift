@@ -35,4 +35,35 @@ final class SessionStore: ObservableObject {
     token = nil
     email = nil
   }
+
+  /// Keep device leases and revocation behavior in sync with the Flutter client.
+  func maintainSession() async {
+    guard let currentToken = token, currentToken.contains("dg_") else { return }
+    var failures = 0
+    var strict = false
+    while !Task.isCancelled && token == currentToken {
+      do {
+        let client = try await GatewayClient.configured()
+        let policy = try await client.heartbeat(token: currentToken)
+        guard !Task.isCancelled, token == currentToken else { return }
+        strict = policy == "strict"
+        failures = 0
+      } catch GatewayClient.GatewayError.unauthorized {
+        guard !Task.isCancelled, token == currentToken else { return }
+        await withCheckedContinuation { continuation in
+          VPNManager.shared.disconnect { _ in continuation.resume() }
+        }
+        guard token == currentToken else { return }
+        await GatewayClient.clearCachedSubscriptions()
+        signOut()
+        return
+      } catch {
+        if Task.isCancelled { return }
+        failures += 1
+      }
+      let seconds = strict ? (failures == 0 ? Int.random(in: 120...300) : 600)
+        : (failures == 0 ? Int.random(in: 20...30) : min(120, 60 * failures))
+      do { try await Task.sleep(for: .seconds(seconds)) } catch { return }
+    }
+  }
 }

@@ -2746,6 +2746,21 @@ class MessageLookup extends MessageLookupByLibrary {
     "xboardPurchaseTraffic": MessageLookupByLibrary.simpleMessage(
       "Purchase traffic",
     ),
+    "xboardQrAuthorizeConfirm": MessageLookupByLibrary.simpleMessage(
+      "Allow sign-in",
+    ),
+    "xboardQrAuthorizeFailed": MessageLookupByLibrary.simpleMessage(
+      "Authorization failed. Please try again.",
+    ),
+    "xboardQrAuthorizeMessage": MessageLookupByLibrary.simpleMessage(
+      "Allow this computer or TV to sign in to your FastCat account?",
+    ),
+    "xboardQrAuthorizeSuccess": MessageLookupByLibrary.simpleMessage(
+      "Device sign-in approved",
+    ),
+    "xboardQrAuthorizeTitle": MessageLookupByLibrary.simpleMessage(
+      "Sign in on a new device",
+    ),
     "xboardQrExpired": MessageLookupByLibrary.simpleMessage("QR code expired"),
     "xboardQrExpiredSemantics": MessageLookupByLibrary.simpleMessage(
       "QR code expired. Press Select to refresh it.",
@@ -2753,6 +2768,9 @@ class MessageLookup extends MessageLookupByLibrary {
     "xboardQrExpiresIn": m53,
     "xboardQrGenerating": MessageLookupByLibrary.simpleMessage(
       "Generating QR code…",
+    ),
+    "xboardQrInvalidCode": MessageLookupByLibrary.simpleMessage(
+      "Scan a valid FastCat sign-in QR code on your computer or TV",
     ),
     "xboardQrLoadFailed": MessageLookupByLibrary.simpleMessage(
       "Could not load the QR code",
@@ -2768,6 +2786,12 @@ class MessageLookup extends MessageLookupByLibrary {
     "xboardQrRefresh": MessageLookupByLibrary.simpleMessage("Refresh QR code"),
     "xboardQrRefreshFailed": MessageLookupByLibrary.simpleMessage(
       "Could not refresh the QR code. Try again later.",
+    ),
+    "xboardQrScannerHint": MessageLookupByLibrary.simpleMessage(
+      "Scan the sign-in QR code on your computer or TV",
+    ),
+    "xboardQrScannerTitle": MessageLookupByLibrary.simpleMessage(
+      "Scan to sign in on a device",
     ),
     "xboardQrUnavailable": MessageLookupByLibrary.simpleMessage(
       "QR code unavailable",

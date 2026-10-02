@@ -1689,4 +1689,13 @@
   "xboardTunRuleRecommendation": "Daily use: Rules + TUN for smart routing and best performance",
   "xboardTunGlobalRecommendation": "Fallback: Global + TUN when rules mode does not work as expected",
   "xboardMaybeLater": "Maybe later"
+,
+  "xboardQrAuthorizeTitle": "Sign in on a new device",
+  "xboardQrAuthorizeMessage": "Allow this computer or TV to sign in to your FastCat account?",
+  "xboardQrAuthorizeConfirm": "Allow sign-in",
+  "xboardQrAuthorizeSuccess": "Device sign-in approved",
+  "xboardQrAuthorizeFailed": "Authorization failed. Please try again.",
+  "xboardQrScannerTitle": "Scan to sign in on a device",
+  "xboardQrScannerHint": "Scan the sign-in QR code on your computer or TV",
+  "xboardQrInvalidCode": "Scan a valid FastCat sign-in QR code on your computer or TV"
 }

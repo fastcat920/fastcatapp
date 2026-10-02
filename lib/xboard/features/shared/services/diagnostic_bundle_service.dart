@@ -291,7 +291,7 @@ class DiagnosticBundleService {
             ? l10n.xboardImportingSubscription
             : currentProxy == null
                 ? l10n.xboardNoAvailableNodes
-                : '${l10n.xboardCurrentNode}: ${currentProxy.name}',
+                : '${l10n.xboardCurrentNode}: [redacted-node]',
         details: [l10n.xboardNodeCount(nodeCount)],
       ),
       if (Platform.isWindows)
@@ -445,17 +445,19 @@ class DiagnosticBundleService {
     final buffer = StringBuffer()
       ..writeln('[node_latency_snapshot]')
       ..writeln('source: latest_client_result (no_retest)')
-      ..writeln('group: ${group.name}');
+      ..writeln('group: [redacted-group]');
+    var nodeIndex = 0;
     for (final node in group.nodes) {
       final name = node.name;
       if (!seen.add(name)) continue;
+      nodeIndex++;
       final delay = node.delayMs;
       final value = delay == null
           ? 'not_tested'
           : delay < 0
               ? 'timeout'
               : '${delay}ms';
-      buffer.writeln('- $name: $value');
+      buffer.writeln('- node_$nodeIndex: $value');
     }
     if (seen.isEmpty) buffer.writeln('status: no_available_nodes');
     return buffer.toString();

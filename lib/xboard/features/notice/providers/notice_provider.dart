@@ -1,5 +1,7 @@
 import 'dart:convert';
 
+import 'package:fl_clash/xboard/infrastructure/cache/content_cache_scope.dart';
+
 import 'package:flutter/foundation.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -12,6 +14,7 @@ import 'package:fl_clash/xboard/features/connectivity/connectivity.dart';
 const _kDismissedNoticeIdsKey = 'xboard_dismissed_notice_ids';
 const _kNoticeCacheKey = 'xboard_notice_cache_v1';
 const _kPopupShownIdsKey = 'xboard_popup_shown_notice_ids';
+const _unchangedPopup = Object();
 
 /// 公告状态
 class NoticeState {
@@ -61,7 +64,7 @@ class NoticeState {
     String? error,
     Set<int>? dismissedIds,
     Set<int>? popupShownIds,
-    int? popupNoticeId,
+    Object? popupNoticeId = _unchangedPopup,
   }) {
     return NoticeState(
       notices: notices ?? this.notices,
@@ -69,7 +72,9 @@ class NoticeState {
       error: error,
       dismissedIds: dismissedIds ?? this.dismissedIds,
       popupShownIds: popupShownIds ?? this.popupShownIds,
-      popupNoticeId: popupNoticeId ?? this.popupNoticeId,
+      popupNoticeId: identical(popupNoticeId, _unchangedPopup)
+          ? this.popupNoticeId
+          : popupNoticeId as int?,
     );
   }
 }
@@ -79,6 +84,7 @@ class NoticeNotifier extends StateNotifier<NoticeState> {
   NoticeNotifier(this._ref) : super(const NoticeState()) {
     SchedulerBinding.instance.addPostFrameCallback((_) {
       Future<void>(() async {
+        if (!await _ensureScope()) return;
         await _loadDismissedIds();
         await _loadPopupShownIds();
         await _loadCachedNotices();
@@ -87,14 +93,34 @@ class NoticeNotifier extends StateNotifier<NoticeState> {
   }
 
   final Ref _ref;
+  String? _scope;
+  Future<bool> _ensureScope() async {
+    final scope = await ContentCacheScope.current();
+    if (!mounted) return false;
+    if (scope != _scope) {
+      _scope = scope;
+      _lastFetchedAt = null;
+      state = const NoticeState();
+    }
+    return scope != null;
+  }
+
+  Future<bool> _isCurrent(String? scope) async {
+    if (!mounted || scope == null || scope != _scope) return false;
+    final current = await ContentCacheScope.current();
+    return mounted && scope == _scope && scope == current;
+  }
+
   DateTime? _lastFetchedAt;
   Future<void>? _fetchInFlight;
 
   /// 启动时从 SharedPrefs 加载已关闭的公告 ID
   Future<void> _loadDismissedIds() async {
     try {
+      final scope = _scope;
       final prefs = await SharedPreferences.getInstance();
-      final ids = prefs.getStringList(_kDismissedNoticeIdsKey) ?? [];
+      if (!await _isCurrent(scope)) return;
+      final ids = prefs.getStringList('$_kDismissedNoticeIdsKey:$scope') ?? [];
       final idSet = ids.map((e) => int.tryParse(e)).whereType<int>().toSet();
       if (idSet.isNotEmpty) {
         state = state.copyWith(dismissedIds: idSet);
@@ -135,6 +161,11 @@ class NoticeNotifier extends StateNotifier<NoticeState> {
   }
 
   Future<void> _fetchNotices({required bool forceRefresh}) async {
+    if (!await _ensureScope()) return;
+    final scope = _scope;
+    await _loadDismissedIds();
+    await _loadPopupShownIds();
+    if (!await _isCurrent(scope)) return;
     // 缓存命中：已有数据且未超过 5 分钟，且不是强制刷新
     if (!forceRefresh &&
         state.notices.isNotEmpty &&
@@ -152,10 +183,12 @@ class NoticeNotifier extends StateNotifier<NoticeState> {
         _ref.invalidate(getNoticesProvider);
       }
       final noticeModels = await _ref.read(getNoticesProvider.future);
+      if (!await _isCurrent(scope)) return;
       final notices = noticeModels.map(_mapNotice).toList();
       _ref.read(serviceConnectivityProvider.notifier).reportRequestSuccess();
       _lastFetchedAt = DateTime.now();
       await _saveCachedNotices(notices);
+      if (!await _isCurrent(scope)) return;
       final newState = state.copyWith(
         notices: notices,
         isLoading: false,
@@ -167,8 +200,10 @@ class NoticeNotifier extends StateNotifier<NoticeState> {
       debugPrint(
           '[弹窗] fetchNotices 完成，共 ${notices.length} 条公告, popupNoticeId=${popupList.isNotEmpty ? popupList.first.id : "null"}, popupShownIds=${newState.popupShownIds}');
     } catch (e) {
+      if (!await _isCurrent(scope)) return;
       _ref.read(serviceConnectivityProvider.notifier).reportRequestFailure(e);
       await _loadCachedNotices();
+      if (!await _isCurrent(scope)) return;
       state = state.copyWith(
         isLoading: false,
         error: e.toString(),
@@ -179,8 +214,10 @@ class NoticeNotifier extends StateNotifier<NoticeState> {
 
   Future<void> _loadCachedNotices() async {
     try {
+      final scope = _scope;
       final prefs = await SharedPreferences.getInstance();
-      final raw = prefs.getString(_kNoticeCacheKey);
+      if (!await _isCurrent(scope)) return;
+      final raw = prefs.getString('$_kNoticeCacheKey:$scope');
       if (raw == null || raw.isEmpty) return;
       final decoded = jsonDecode(raw);
       if (decoded is! List) return;
@@ -198,17 +235,36 @@ class NoticeNotifier extends StateNotifier<NoticeState> {
 
   Future<void> _saveCachedNotices(List<DomainNotice> notices) async {
     try {
+      final scope = _scope;
       final prefs = await SharedPreferences.getInstance();
+      if (!await _isCurrent(scope)) return;
       final payload = notices.map((e) => e.toJson()).toList();
-      await prefs.setString(_kNoticeCacheKey, jsonEncode(payload));
+      await prefs.setString('$_kNoticeCacheKey:$scope', jsonEncode(payload));
+      // Bound stale account/language caches. Old unscoped content must not leak.
+      final scopedKeys = prefs
+          .getKeys()
+          .where((key) => key.startsWith('$_kNoticeCacheKey:'))
+          .toList();
+      while (scopedKeys.length > 8) {
+        final old =
+            scopedKeys.firstWhere((key) => key != '$_kNoticeCacheKey:$scope');
+        scopedKeys.remove(old);
+        final oldScope = old.substring(_kNoticeCacheKey.length + 1);
+        await prefs.remove(old);
+        await prefs.remove('$_kDismissedNoticeIdsKey:$oldScope');
+        await prefs.remove('$_kPopupShownIdsKey:$oldScope');
+      }
+      await prefs.remove(_kNoticeCacheKey);
     } catch (_) {}
   }
 
   /// 从 SharedPrefs 加载已弹窗的公告 ID
   Future<void> _loadPopupShownIds() async {
     try {
+      final scope = _scope;
       final prefs = await SharedPreferences.getInstance();
-      final ids = prefs.getStringList(_kPopupShownIdsKey) ?? [];
+      if (!await _isCurrent(scope)) return;
+      final ids = prefs.getStringList('$_kPopupShownIdsKey:$scope') ?? [];
       final idSet = ids.map((e) => int.tryParse(e)).whereType<int>().toSet();
       if (idSet.isNotEmpty) {
         state = state.copyWith(popupShownIds: idSet);
@@ -224,9 +280,11 @@ class NoticeNotifier extends StateNotifier<NoticeState> {
     final newIds = Set<int>.from(state.popupShownIds)..add(noticeId);
     state = state.copyWith(popupShownIds: newIds, popupNoticeId: null);
     try {
+      final scope = _scope;
       final prefs = await SharedPreferences.getInstance();
+      if (!await _isCurrent(scope)) return;
       await prefs.setStringList(
-        _kPopupShownIdsKey,
+        '$_kPopupShownIdsKey:$scope',
         newIds.map((e) => e.toString()).toList(),
       );
     } catch (_) {}
@@ -237,9 +295,11 @@ class NoticeNotifier extends StateNotifier<NoticeState> {
     final newIds = Set<int>.from(state.dismissedIds)..add(noticeId);
     state = state.copyWith(dismissedIds: newIds);
     try {
+      final scope = _scope;
       final prefs = await SharedPreferences.getInstance();
+      if (!await _isCurrent(scope)) return;
       await prefs.setStringList(
-        _kDismissedNoticeIdsKey,
+        '$_kDismissedNoticeIdsKey:$scope',
         newIds.map((e) => e.toString()).toList(),
       );
     } catch (_) {}

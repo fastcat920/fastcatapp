@@ -1,11 +1,11 @@
 import 'dart:async';
 import 'dart:convert';
+import 'package:fl_clash/security/ios_profile_config.dart';
 import 'dart:io';
 import 'dart:isolate';
 import 'package:fl_clash/common/common.dart';
 import 'package:fl_clash/state.dart';
 import 'package:flutter/services.dart';
-import 'package:fl_clash/security/profile_vault.dart';
 
 import '../clash/lib.dart';
 
@@ -46,19 +46,18 @@ class Service {
   /// if the VPN tunnel fails to start.
   Future<bool?> startVpn() async {
     if (Platform.isIOS) {
-      // Read current profile YAML and pass to Swift so it can be written
-      // to the App Group shared container before the tunnel starts.
-      final profileId = globalState.config.currentProfileId;
-      String configYaml = '';
-      if (profileId != null) {
-        try {
-          configYaml = await ProfileVault.instance.readText(profileId);
-        } catch (_) {}
+      if (globalState.config.currentProfileId == null) {
+        throw StateError('No subscription configuration is selected');
       }
+      final config = iosProfileConfig(await globalState.patchRawConfig(
+        patchConfig: globalState.config.patchClashConfig,
+      ));
+      // JSON is valid YAML; the startup path expects a raw profile, not SetupParams.
+      config['rules'] = config.remove('rule') ?? config['rules'] ?? [];
       // This will throw PlatformException if VPN start fails.
       // The caller (handleStart) catches this and shows the error.
       return await methodChannel.invokeMethod<bool>("start", {
-        'config': configYaml,
+        'config': json.encode(config),
       });
     }
     final options = await clashLib?.getAndroidVpnOptions();
@@ -74,6 +73,25 @@ class Service {
       return await methodChannel.invokeMethod<bool>("stop");
     }
     return await methodChannel.invokeMethod<bool>("stopVpn");
+  }
+
+  Future<void> reloadConfiguration(String config) async {
+    if (!Platform.isIOS) throw UnsupportedError('iOS tunnel reload');
+    final payload = json.decode(config) as Map<String, dynamic>;
+    final profile = iosProfileConfig(payload['config'] as Map<String, dynamic>);
+    payload['config'] = profile;
+    (profile['tun'] as Map<String, dynamic>)['enable'] = false;
+    profile['allow-lan'] = true;
+    profile['bind-address'] = '*';
+    final dns = profile['dns'] as Map<String, dynamic>;
+    dns['enable'] = true;
+    dns['listen'] = '127.0.0.1:6053';
+    final result = await const MethodChannel('fastcat/clash')
+        .invokeMethod<String>('_updateConfig', json.encode(payload))
+        .timeout(const Duration(seconds: 30));
+    if (result == null || (result.isNotEmpty && result != 'ok')) {
+      throw StateError('Tunnel configuration was not applied');
+    }
   }
 
   Future<bool> isVpnActuallyRunning() async {

@@ -1,6 +1,10 @@
 import 'dart:async';
 import 'dart:io';
 
+import 'package:connectivity_plus/connectivity_plus.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+
+import 'package:fl_clash/common/sensitive_masker.dart';
 import 'package:fl_clash/l10n/l10n.dart';
 import 'package:fl_clash/providers/providers.dart';
 import 'package:fl_clash/state.dart';
@@ -22,21 +26,116 @@ class StreamingCheckPage extends ConsumerStatefulWidget {
 }
 
 class _StreamingCheckPageState extends ConsumerState<StreamingCheckPage> {
+  static const _cacheTtl = Duration(minutes: 10);
+  static final Map<String, _StreamingCacheEntry> _cache = {};
+
+  StreamingCheckRun? _activeRun;
+  StreamSubscription<List<ConnectivityResult>>? _networkSubscription;
+  static int _networkGeneration = 0;
+  bool _selectionChanged = false;
+
+  @override
+  void initState() {
+    super.initState();
+    // Do not reuse a result across an unobserved network change while closed.
+    _cache.clear();
+    _networkSubscription = Connectivity().onConnectivityChanged.listen((_) {
+      _networkGeneration++;
+      _cache.clear();
+      if (mounted && _running) {
+        _invalidate(_isChinese
+            ? '网络已变化，请重新检测'
+            : 'Network changed. Run the check again.');
+      }
+    });
+    _loadSelection();
+  }
+
+  Future<void> _loadSelection() async {
+    final prefs = await SharedPreferences.getInstance();
+    if (!mounted || _selectionChanged) return;
+    final saved = prefs.getStringList('streaming_custom_targets_v1');
+    final valid = StreamingCheckService.targets.map((e) => e.id).toSet();
+    setState(() {
+      if (saved != null) _customTargetIds = saved.toSet().intersection(valid);
+      if (prefs.getString('streaming_check_mode_v1') == 'custom' &&
+          _customTargetIds.isNotEmpty) {
+        _mode = _StreamingCheckMode.custom;
+      }
+    });
+  }
+
+  Future<void> _saveSelection() async {
+    _selectionChanged = true;
+    final mode = _mode.name;
+    final targets = _customTargetIds.toList()..sort();
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString('streaming_check_mode_v1', mode);
+    await prefs.setStringList('streaming_custom_targets_v1', targets);
+  }
+
+  @override
+  void dispose() {
+    _runGeneration++;
+    _activeRun?.cancel();
+    _networkSubscription?.cancel();
+    super.dispose();
+  }
+
   bool _running = false;
   bool _copying = false;
   bool _checkingStoredNode = false;
   int _runGeneration = 0;
+  String? _activeProfileScope;
+  String get _profileScope {
+    final profile = ref.read(currentProfileProvider);
+    return '${profile?.id}|${profile?.lastUpdateDate}|${ref.read(runTimeProvider)}';
+  }
+
   String? _nodeName;
   String? _region;
   DateTime? _generatedAt;
   String? _message;
   bool _invalidated = false;
   final List<StreamingTestResult> _results = [];
+  _StreamingCheckMode _mode = _StreamingCheckMode.full;
+  Set<String> _customTargetIds =
+      StreamingCheckService.targets.map((target) => target.id).toSet();
 
-  Future<void> _start() async {
+  List<StreamingTarget> get _activeTargets => switch (_mode) {
+        _StreamingCheckMode.full => StreamingCheckService.targets,
+        _StreamingCheckMode.custom => StreamingCheckService.targets
+            .where((target) => _customTargetIds.contains(target.id))
+            .toList(growable: false),
+      };
+
+  Future<void> _start({bool forceRefresh = false}) async {
     if (_running || ref.read(runTimeProvider) == null) return;
-    final l10n = AppLocalizations.of(context);
+    _selectionChanged = true;
+    _activeProfileScope = _profileScope;
     final generation = ++_runGeneration;
+    final run = _activeRun = StreamingCheckRun();
+    final checker = StreamingCheckService(run: run);
+    try {
+      await _executeRun(generation, checker, forceRefresh);
+    } catch (_) {
+      if (mounted && generation == _runGeneration) {
+        setState(() {
+          _message =
+              _isChinese ? '检测失败，请重试' : 'The check failed. Please try again.';
+        });
+      }
+    } finally {
+      unawaited(run.cancel());
+      if (mounted && generation == _runGeneration) {
+        setState(() => _running = false);
+      }
+    }
+  }
+
+  Future<void> _executeRun(
+      int generation, StreamingCheckService checker, bool forceRefresh) async {
+    final l10n = AppLocalizations.of(context);
     setState(() {
       _running = true;
       _copying = false;
@@ -59,18 +158,40 @@ class _StreamingCheckPageState extends ConsumerState<StreamingCheckPage> {
     }
     setState(() => _nodeName = nodeName);
 
-    final region = await streamingCheckService.detectRegion(nodeName);
+    final targets = _activeTargets;
+    final profile = ref.read(currentProfileProvider);
+    final cacheKey = '${profile?.id}|${profile?.lastUpdateDate}|'
+        '${ref.read(runTimeProvider)}|$_networkGeneration|$nodeName|'
+        '${targets.map((item) => item.id).join(',')}';
+    _cache.removeWhere((_, entry) =>
+        DateTime.now().difference(entry.generatedAt) >= _cacheTtl);
+    final cached = _cache[cacheKey];
+    if (!forceRefresh &&
+        cached != null &&
+        DateTime.now().difference(cached.generatedAt) < _cacheTtl) {
+      setState(() {
+        _running = false;
+        _region = cached.region;
+        _generatedAt = cached.generatedAt;
+        _results.addAll(cached.results);
+        _message = _isChinese
+            ? '已显示 10 分钟内的缓存结果'
+            : 'Showing results cached within 10 minutes';
+      });
+      return;
+    }
+
+    final region = await checker.detectRegion(nodeName);
     if (!await _validateRun(generation, nodeName)) return;
     if (mounted) setState(() => _region = region);
 
     const batchSize = 3;
-    final targets = StreamingCheckService.targets;
     for (var start = 0; start < targets.length; start += batchSize) {
       final end = (start + batchSize).clamp(0, targets.length);
       final batch = targets.sublist(start, end);
       final results = await Future.wait(
         batch.map(
-          (target) => streamingCheckService.testTarget(
+          (target) => checker.testTarget(
             target,
             nodeName,
             region: region,
@@ -86,12 +207,132 @@ class _StreamingCheckPageState extends ConsumerState<StreamingCheckPage> {
       _running = false;
       _generatedAt = DateTime.now();
     });
+    if (_cache.length >= 32) _cache.remove(_cache.keys.first);
+    _cache[cacheKey] = _StreamingCacheEntry(
+      generatedAt: _generatedAt!,
+      region: region,
+      results: List.unmodifiable(_results),
+    );
+  }
+
+  bool get _isChinese => Localizations.localeOf(context).languageCode == 'zh';
+
+  void _stop() {
+    if (!_running) return;
+    _runGeneration++;
+    _activeRun?.cancel();
+    setState(() {
+      _running = false;
+      _message = AppLocalizations.of(context).xboardStreamingCancelled;
+    });
+  }
+
+  void _selectMode(_StreamingCheckMode mode) {
+    if (mode == _StreamingCheckMode.custom) {
+      _chooseCustomTargets();
+      return;
+    }
+    setState(() {
+      _mode = mode;
+      _results.clear();
+      _nodeName = null;
+      _region = null;
+      _message = null;
+      _generatedAt = null;
+    });
+    unawaited(_saveSelection());
+  }
+
+  Future<void> _chooseCustomTargets() async {
+    final selected = {..._customTargetIds};
+    final allTargetIds =
+        StreamingCheckService.targets.map((target) => target.id).toSet();
+    final result = await showDialog<Set<String>>(
+      context: context,
+      builder: (dialogContext) => StatefulBuilder(
+        builder: (context, setDialogState) => AlertDialog(
+          title: Row(
+            children: [
+              Expanded(
+                child: Text(_isChinese ? '选择检测项目' : 'Choose services'),
+              ),
+              Text(
+                _isChinese ? '全选' : 'Select all',
+                style: Theme.of(context).textTheme.bodyMedium,
+              ),
+              Checkbox(
+                value: selected.length == allTargetIds.length &&
+                    selected.containsAll(allTargetIds),
+                onChanged: (checked) => setDialogState(() {
+                  if (checked == true) {
+                    selected
+                      ..clear()
+                      ..addAll(allTargetIds);
+                  } else {
+                    selected.clear();
+                  }
+                }),
+              ),
+            ],
+          ),
+          content: SizedBox(
+            width: 460,
+            child: ListView(
+              shrinkWrap: true,
+              children: [
+                for (final target in StreamingCheckService.targets)
+                  CheckboxListTile(
+                    value: selected.contains(target.id),
+                    title: Text(target.name),
+                    onChanged: (checked) => setDialogState(() {
+                      if (checked == true) {
+                        selected.add(target.id);
+                      } else {
+                        selected.remove(target.id);
+                      }
+                    }),
+                  ),
+              ],
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(dialogContext),
+              child: Text(_isChinese ? '取消' : 'Cancel'),
+            ),
+            FilledButton(
+              onPressed: selected.isEmpty
+                  ? null
+                  : () => Navigator.pop(dialogContext, selected),
+              child: Text(_isChinese ? '确定' : 'Done'),
+            ),
+          ],
+        ),
+      ),
+    );
+    if (result == null || !mounted) return;
+    setState(() {
+      _mode = _StreamingCheckMode.custom;
+      _customTargetIds = result;
+      _results.clear();
+      _nodeName = null;
+      _region = null;
+      _message = null;
+      _generatedAt = null;
+    });
+    unawaited(_saveSelection());
   }
 
   Future<bool> _validateRun(int generation, String nodeName) async {
     if (!mounted || generation != _runGeneration) return false;
     if (ref.read(runTimeProvider) == null) {
       _invalidate(AppLocalizations.of(context).xboardStreamingDisconnected);
+      return false;
+    }
+    if (_activeProfileScope != _profileScope) {
+      _invalidate(_isChinese
+          ? '订阅或连接已变化，请重新检测'
+          : 'Subscription or connection changed. Run the check again.');
       return false;
     }
     final currentNode = await streamingCheckService.resolveCurrentNodeName();
@@ -105,6 +346,8 @@ class _StreamingCheckPageState extends ConsumerState<StreamingCheckPage> {
 
   void _invalidate(String message) {
     _runGeneration++;
+    _activeRun?.cancel();
+    _cache.clear();
     if (!mounted) return;
     setState(() {
       _running = false;
@@ -150,7 +393,7 @@ class _StreamingCheckPageState extends ConsumerState<StreamingCheckPage> {
         )
         ..writeln(
             '${l10n.xboardStreamingReportSystem}: ${Platform.operatingSystem}')
-        ..writeln('${l10n.xboardStreamingCurrentNode}: ${_nodeName ?? '-'}')
+        ..writeln('${l10n.xboardStreamingCurrentNode}: [redacted-node]')
         ..writeln('${l10n.xboardStreamingExitRegion}: ${_region ?? '-'}')
         ..writeln();
       for (final result in _results) {
@@ -163,8 +406,10 @@ class _StreamingCheckPageState extends ConsumerState<StreamingCheckPage> {
             '${result.region ?? '-'} / ${result.elapsedMs}ms / $httpStatus',
           );
         if (result.detail?.isNotEmpty == true) {
-          report
-              .writeln('${l10n.xboardStreamingReportDetail}: ${result.detail}');
+          report.writeln(
+            '${l10n.xboardStreamingReportDetail}: '
+            '${SensitiveMasker.maskText(result.detail!)}',
+          );
         }
         report.writeln();
       }
@@ -291,12 +536,33 @@ class _StreamingCheckPageState extends ConsumerState<StreamingCheckPage> {
                         nodeName: _nodeName,
                       ),
                       const SizedBox(height: 14),
+                      SegmentedButton<_StreamingCheckMode>(
+                        segments: [
+                          ButtonSegment(
+                            value: _StreamingCheckMode.full,
+                            label: Text(_isChinese ? '完整' : 'Full'),
+                          ),
+                          ButtonSegment(
+                            value: _StreamingCheckMode.custom,
+                            label: Text(_isChinese ? '自定义' : 'Custom'),
+                          ),
+                        ],
+                        selected: {_mode},
+                        onSelectionChanged: _running
+                            ? null
+                            : (value) => _selectMode(value.first),
+                      ),
+                      const SizedBox(height: 14),
                       Wrap(
                         spacing: 12,
                         runSpacing: 8,
                         children: [
                           FilledButton.icon(
-                            onPressed: !connected || _running ? null : _start,
+                            onPressed: !connected || _running
+                                ? null
+                                : () => _start(
+                                      forceRefresh: _results.isNotEmpty,
+                                    ),
                             style: XbUiButton.filledPrimary(
                               context,
                               busy: _running,
@@ -320,6 +586,12 @@ class _StreamingCheckPageState extends ConsumerState<StreamingCheckPage> {
                                       : l10n.xboardStreamingRetest,
                             ),
                           ),
+                          if (_running)
+                            OutlinedButton.icon(
+                              onPressed: _stop,
+                              icon: const Icon(Icons.stop_circle_outlined),
+                              label: Text(_isChinese ? '停止' : 'Stop'),
+                            ),
                           OutlinedButton.icon(
                             onPressed: _running || _copying || _results.isEmpty
                                 ? null
@@ -360,7 +632,7 @@ class _StreamingCheckPageState extends ConsumerState<StreamingCheckPage> {
                   region: _region,
                   completed: _results.length,
                   accessible: _accessibleCount,
-                  total: StreamingCheckService.targets.length,
+                  total: _activeTargets.length,
                 ),
               ],
               if (_results.isNotEmpty) ...[
@@ -420,6 +692,20 @@ class _StreamingCheckPageState extends ConsumerState<StreamingCheckPage> {
       ),
     );
   }
+}
+
+enum _StreamingCheckMode { full, custom }
+
+class _StreamingCacheEntry {
+  const _StreamingCacheEntry({
+    required this.generatedAt,
+    required this.region,
+    required this.results,
+  });
+
+  final DateTime generatedAt;
+  final String? region;
+  final List<StreamingTestResult> results;
 }
 
 class _Panel extends StatelessWidget {

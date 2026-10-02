@@ -135,6 +135,7 @@ class AppController {
   /// 解决非管理员运行时反复弹 UAC 的问题。
   bool _tunAdminDenied = true;
   bool _isCoreSwitching = false;
+  Future<void>? _configUpdateFuture;
   Future<void>? _disconnectCleanupFuture;
   String? _lastConnectivityFingerprint;
   Timer? _networkRecoveryTimer;
@@ -583,9 +584,39 @@ class AppController {
   }
 
   Future<void> updateClashConfig() async {
-    if (_isCoreSwitching) return;
+    // Every caller waits for its update; never report an ignored update as saved.
+    final previous = _configUpdateFuture;
+    final operation = () async {
+      if (previous != null) {
+        try {
+          await previous;
+        } catch (_) {/* A newer update may recover. */}
+      }
+      await _acquireConfigurationSwitch();
+      await _performConfigUpdate();
+    }();
+    _configUpdateFuture = operation;
+    try {
+      await operation;
+    } finally {
+      if (identical(_configUpdateFuture, operation)) _configUpdateFuture = null;
+    }
+  }
+
+  Future<void> _acquireConfigurationSwitch() async {
+    final deadline = DateTime.now().add(const Duration(seconds: 30));
+    while (_isCoreSwitching) {
+      if (DateTime.now().isAfter(deadline)) {
+        throw TimeoutException(
+            'The core is busy; configuration was not applied.');
+      }
+      await Future<void>.delayed(const Duration(milliseconds: 50));
+    }
     _isCoreSwitching = true;
     globalState.isCoreSwitchingNotifier.value = true;
+  }
+
+  Future<void> _performConfigUpdate() async {
     final commonScaffoldState = globalState.homeScaffoldKey.currentState;
     try {
       if (commonScaffoldState?.mounted == true) {
@@ -608,7 +639,7 @@ class AppController {
     final wasStart = _ref.read(runTimeProvider.notifier).isStart;
     final res = await _requestAdmin(updateParams.tun.enable);
     if (res.isError) {
-      return;
+      throw StateError('Could not prepare core configuration');
     }
     final adminResult = res.data!;
     if (adminResult.didRestartCore) {
@@ -978,6 +1009,47 @@ class AppController {
       }
     }
     addCheckIpNumDebounce();
+  }
+
+  /// Apply user overrides through the complete profile path, including rules.
+  Future<void> applyUserConfiguration() async {
+    final previous = _configUpdateFuture;
+    final operation = () async {
+      if (previous != null) {
+        try {
+          await previous;
+        } catch (_) {}
+      }
+      await _acquireConfigurationSwitch();
+      try {
+        await _applyUserConfiguration();
+      } finally {
+        _isCoreSwitching = false;
+        globalState.isCoreSwitchingNotifier.value = false;
+      }
+    }();
+    _configUpdateFuture = operation;
+    try {
+      await operation;
+    } finally {
+      if (identical(_configUpdateFuture, operation)) _configUpdateFuture = null;
+    }
+  }
+
+  Future<void> _applyUserConfiguration() async {
+    if (Platform.isIOS) {
+      if (_ref.read(runTimeProvider) != null) {
+        final params = await globalState.getSetupParams(
+          pathConfig: _ref.read(patchClashConfigProvider),
+        );
+        await service!.reloadConfiguration(json.encode(params));
+        await updateGroups();
+      } else {
+        await _applyProfileFromYaml();
+      }
+      return;
+    }
+    await applyProfile(silence: true);
   }
 
   handleChangeProfile() {

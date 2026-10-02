@@ -1,11 +1,11 @@
 import 'dart:async';
 
 import 'package:fl_clash/common/common.dart';
-import 'package:fl_clash/enum/enum.dart';
 import 'package:fl_clash/models/models.dart';
 import 'package:fl_clash/plugins/app.dart';
 import 'package:fl_clash/providers/providers.dart';
 import 'package:fl_clash/security/profile_vault.dart';
+import 'package:fl_clash/security/profile_retention.dart';
 import 'package:fl_clash/state.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -71,21 +71,32 @@ class AppProfileController {
 
   Future<void> importProfileInBackground(String url) async {
     try {
-      final profiles = globalState.config.profiles;
-      final urlProfiles =
-          profiles.where((profile) => profile.type == ProfileType.url).toList();
-
       final profile = await Profile.normal(
         url: url,
       ).update();
       await addProfile(profile);
       _ref.read(currentProfileIdProvider.notifier).value = profile.id;
 
-      for (final oldProfile in urlProfiles) {
-        if (oldProfile.id == profile.id) continue;
-        commonPrint.log(
-            'Removing existing URL profile: ${oldProfile.label ?? oldProfile.id}');
-        await deleteProfile(oldProfile.id);
+      final plan = buildProfileRetentionPlan(
+        _ref.read(profilesProvider),
+        activeProfileId: profile.id,
+      );
+      _ref.read(profilesProvider.notifier).value = plan.profiles;
+      for (final oldProfile in plan.removedProfiles) {
+        try {
+          await clearEffect(oldProfile.id);
+        } catch (e) {
+          commonPrint.log(
+            'Failed to remove expired profile ${oldProfile.id}: $e',
+          );
+        }
+      }
+      try {
+        await ProfileVault.instance.pruneOrphanedProfiles(
+          plan.profiles.map((item) => item.id).toSet(),
+        );
+      } catch (e) {
+        commonPrint.log('Failed to prune orphaned profile cache: $e');
       }
       app?.tip('${appLocalizations.add} ${appLocalizations.profile}');
     } catch (e) {

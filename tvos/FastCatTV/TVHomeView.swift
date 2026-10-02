@@ -44,6 +44,7 @@ struct TVHomeView: View {
   @State private var isRefreshingSubscription = false
   @State private var homeInfoError: String?
   @State private var showNoticeDetail = false
+  @State private var noticeLinkURL: URL?
   @State private var noticeContentHeight: CGFloat = 0
   @State private var hasAssignedInitialHomeFocus = false
   @FocusState private var connectButtonFocused: Bool
@@ -130,7 +131,7 @@ struct TVHomeView: View {
       hasAssignedInitialHomeFocus = true
       focusModalButton { connectButtonFocused = true }
     }
-    .task {
+    .task(id: language) {
       routeMode = TVRouteMode(rawValue: savedRouteMode) ?? .rule
       selectedNodeName = savedSelectedNode.isEmpty ? nil : savedSelectedNode
       syncVPNStatus()
@@ -140,7 +141,7 @@ struct TVHomeView: View {
         await loadNodes(forceRefresh: false)
       }
 #endif
-      await loadHomeInfo()
+      await loadHomeInfo(forceRefresh: true)
     }
     .onReceive(NotificationCenter.default.publisher(for: VPNManager.statusDidChangeNotification)) { notification in
       syncVPNStatus(notification.object as? String)
@@ -159,6 +160,7 @@ struct TVHomeView: View {
     .onChange(of: showNoticeDetail) { _, presented in
       if presented {
         noticeContentHeight = 0
+        noticeLinkURL = nil
         focusModalButton { noticeActionFocused = true }
       }
       else { noticeActionFocused = false }
@@ -280,7 +282,7 @@ struct TVHomeView: View {
     }
     .frame(maxHeight: .infinity)
     .shadow(color: prefersDarkTheme ? .clear : .black.opacity(0.08), radius: tv(16), y: tv(4))
-    .accessibilityLabel("公告，\(currentNotice?.title ?? "暂无公告")")
+    .accessibilityLabel(tvText("公告", "Notice", language: language) + ", " + (currentNotice?.title ?? tvText("暂无公告", "No notices", language: language)))
   }
 
   private var subscriptionCard: some View {
@@ -332,7 +334,7 @@ struct TVHomeView: View {
     }
     .shadow(color: prefersDarkTheme ? .clear : .black.opacity(0.08), radius: tv(16), y: tv(4))
     .frame(maxHeight: .infinity)
-    .accessibilityLabel("套餐信息，\(subscriptionTitle)，\(remainingText)")
+    .accessibilityLabel(tvText("套餐信息", "Plan information", language: language) + ", " + subscriptionTitle + ", " + remainingText)
   }
 
   private func mainDashboard(isShort: Bool) -> some View {
@@ -360,7 +362,6 @@ struct TVHomeView: View {
           .font(TVFont.medium(14))
           .foregroundStyle(connected ? TVTheme.success : TVTheme.textPrimary)
           .frame(height: tv(40))
-          .offset(y: -tv(22))
       }
       .padding(.horizontal, tv(24))
       .padding(.vertical, tv(18))
@@ -401,7 +402,7 @@ struct TVHomeView: View {
     }
     .buttonBorderShape(.circle)
     .disabled(isConnecting)
-    .accessibilityLabel(connected ? "断开 VPN" : "连接 VPN")
+    .accessibilityLabel(connected ? tvText("断开 VPN", "Disconnect VPN", language: language) : tvText("连接 VPN", "Connect VPN", language: language))
   }
 
   private var connectionDetail: String {
@@ -570,11 +571,32 @@ struct TVHomeView: View {
                 .font(TVFont.regular(12))
                 .foregroundStyle(TVTheme.textPrimary.opacity(0.50))
             }
-            Text(currentNotice.map { plainText($0.content) } ?? tvText("暂无公告内容", "No notice content", language: language))
+            if let noticeLinkURL {
+              TVQRCodeView(payload: noticeLinkURL.absoluteString)
+                .frame(width: tv(180), height: tv(180))
+                .padding(tv(12)).background(.white)
+                .frame(maxWidth: .infinity)
+              Text(tvText("使用手机扫描二维码打开链接", "Scan with your phone to open the link", language: language))
+                .font(TVFont.regular(14)).foregroundStyle(TVTheme.textSecondary)
+              Text(noticeLinkURL.host ?? "")
+                .font(TVFont.regular(12)).foregroundStyle(TVTheme.textSecondary)
+            } else {
+            Text(noticeRichText(currentNotice?.content ?? tvText("暂无公告内容", "No notice content", language: language)))
               .font(TVFont.regular(14))
               .foregroundStyle(TVTheme.textSecondary)
               .lineSpacing(tv(5.6))
               .frame(maxWidth: .infinity, alignment: .leading)
+            ForEach(noticeLinks, id: \.url) { link in
+              TVFocusButton(cornerRadius: tv(12), action: {
+                noticeLinkURL = link.url
+                noticeContentHeight = 0
+                focusModalButton { noticeActionFocused = true }
+              }) { _ in
+                Text(link.title).font(TVFont.regular(14))
+                  .foregroundStyle(TVTheme.primary).padding(tv(10))
+              }
+            }
+            }
           }
           .padding(tv(20))
           .background {
@@ -596,9 +618,10 @@ struct TVHomeView: View {
         HStack {
           Spacer()
           TVFocusButton(cornerRadius: tv(12), autofocus: true, focus: $noticeActionFocused, action: {
-            showNoticeDetail = false
+            if noticeLinkURL != nil { noticeLinkURL = nil; noticeContentHeight = 0 }
+            else { showNoticeDetail = false }
           }) { _ in
-            Text(tvText("知道了", "Got it", language: language))
+            Text(noticeLinkURL == nil ? tvText("知道了", "Got it", language: language) : tvText("返回", "Back", language: language))
               .font(TVFont.regular(14))
               .foregroundStyle(TVTheme.onPrimary)
               .padding(.horizontal, tv(24))
@@ -815,8 +838,39 @@ struct TVHomeView: View {
     return date.timeIntervalSinceNow < 7 * 86_400 ? TVTheme.warning : TVTheme.textSecondary
   }
 
+  private func noticeRichText(_ source: String) -> AttributedString {
+    let formatted = source
+      .replacingOccurrences(of: "(?is)<(?:strong|b)\\b[^>]*>(.*?)</(?:strong|b)>", with: "**$1**", options: .regularExpression)
+      .replacingOccurrences(of: "(?is)<(?:em|i)\\b[^>]*>(.*?)</(?:em|i)>", with: "*$1*", options: .regularExpression)
+    let text = plainText(formatted)
+    return (try? AttributedString(markdown: text,
+      options: .init(interpretedSyntax: .inlineOnlyPreservingWhitespace))) ?? AttributedString(text)
+  }
+
+  private var noticeLinks: [(title: String, url: URL)] {
+    let source = currentNotice?.content ?? ""
+    guard let pattern = try? NSRegularExpression(
+      pattern: "(?is)<a\\b[^>]*href\\s*=\\s*[\"']([^\"']+)[\"'][^>]*>(.*?)</a>"
+    ) else { return [] }
+    var seen: Set<URL> = []
+    return pattern.matches(in: source, range: NSRange(source.startIndex..., in: source)).compactMap { match in
+      guard let hrefRange = Range(match.range(at: 1), in: source),
+            let titleRange = Range(match.range(at: 2), in: source),
+            let url = URL(string: String(source[hrefRange]).replacingOccurrences(of: "&amp;", with: "&")),
+            ["https", "http"].contains(url.scheme?.lowercased() ?? ""),
+            url.host != nil, url.user == nil, url.password == nil,
+            seen.insert(url).inserted else { return nil }
+      let title = plainText(String(source[titleRange]))
+      return (title.isEmpty ? url.host ?? "" : title, url)
+    }
+  }
+
   private func plainText(_ source: String) -> String {
-    let withoutTags = source.replacingOccurrences(
+    let structured = source
+      .replacingOccurrences(of: "(?is)<(script|style)[^>]*>.*?</\\1>", with: "", options: .regularExpression)
+      .replacingOccurrences(of: "(?i)<br\\s*/?>|</(?:p|div|h[1-6]|ul|ol)>", with: "\n", options: .regularExpression)
+      .replacingOccurrences(of: "(?i)<li[^>]*>", with: "\n• ", options: .regularExpression)
+    let withoutTags = structured.replacingOccurrences(
       of: "<[^>]+>", with: " ", options: .regularExpression
     )
     let decoded = withoutTags
@@ -825,7 +879,7 @@ struct TVHomeView: View {
       .replacingOccurrences(of: "&lt;", with: "<")
       .replacingOccurrences(of: "&gt;", with: ">")
     return decoded
-      .replacingOccurrences(of: "\\s+", with: " ", options: .regularExpression)
+      .replacingOccurrences(of: "[ \\t]+", with: " ", options: .regularExpression)
       .trimmingCharacters(in: .whitespacesAndNewlines)
   }
 
@@ -873,9 +927,11 @@ struct TVHomeView: View {
     defer { isLoadingHomeInfo = false }
     do {
       let client = try await GatewayClient.configured()
-      async let fetchedNotices = try? client.fetchNotices(token: token)
-      async let fetchedSummary = try? client.fetchSubscriptionSummary(token: token)
-      let (newNotices, newSummary) = await (fetchedNotices, fetchedSummary)
+      async let fetchedNotices = fetchOptionalHomeValue { try await client.fetchNotices(token: token) }
+      async let fetchedSummary = fetchOptionalHomeValue { try await client.fetchSubscriptionSummary(token: token) }
+      let (newNotices, newSummary) = try await (fetchedNotices, fetchedSummary)
+      try Task.checkCancellation()
+      guard session.token == token else { return }
       if let newNotices {
         notices = newNotices
         noticeIndex = 0
@@ -884,12 +940,20 @@ struct TVHomeView: View {
         subscriptionSummary = newSummary
       }
       if newNotices == nil, newSummary == nil {
-        homeInfoError = "公告与套餐信息暂时无法获取"
+        homeInfoError = tvText("公告与套餐信息暂时无法获取", "Notices and plan information are temporarily unavailable", language: language)
       }
     } catch {
+      if Task.isCancelled || session.token != token { return }
       if handleExpiredSession(error) { return }
       homeInfoError = error.localizedDescription
     }
+  }
+
+  private func fetchOptionalHomeValue<T>(_ fetch: () async throws -> T) async throws -> T? {
+    do { return try await fetch() }
+    catch GatewayClient.GatewayError.unauthorized { throw GatewayClient.GatewayError.unauthorized }
+    catch is CancellationError { throw CancellationError() }
+    catch { return nil }
   }
 
   @MainActor

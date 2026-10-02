@@ -51,7 +51,12 @@ Future<void> main(List<String> args) async {
   BrandedDesktopSharedPreferencesStore.registerIfNeeded();
   unawaited(bootDiagLog('SharedPreferences store registered'));
   await ProfileVault.instance.clearAllRuntimeProviders();
-  unawaited(ProfileVault.instance.migrateAllLegacyProfiles());
+  final profileMigrationTask =
+      ProfileVault.instance.migrateAllLegacyProfiles().catchError(
+    (Object error) {
+      unawaited(bootDiagLog('legacy profile migration failed: $error'));
+    },
+  );
   const previewMode = bool.fromEnvironment('APP_PREVIEW_MODE');
 
   FlutterError.onError = (FlutterErrorDetails details) {
@@ -131,6 +136,7 @@ Future<void> main(List<String> args) async {
 
   int? version;
   Future<void>? appInitialization;
+  var appStateInitialized = false;
   try {
     final fastInitResult = await Future.wait([
       _initializeXBoardServicesWithPrefs(prefs),
@@ -143,6 +149,7 @@ Future<void> main(List<String> args) async {
     final initTask = globalState.initApp(version);
     appInitialization = initTask;
     await initTask.timeout(const Duration(seconds: 15));
+    appStateInitialized = true;
     // 优先加载缓存节点，避免启动时短暂显示"暂无可用节点"
     _loadCachedGroups(prefs);
     if (android != null) {
@@ -165,6 +172,7 @@ Future<void> main(List<String> args) async {
       final fallbackTask = appInitialization ?? globalState.initApp(version);
       appInitialization = fallbackTask;
       await fallbackTask.timeout(const Duration(seconds: 10));
+      appStateInitialized = true;
     } catch (fallbackError, fallbackStack) {
       unawaited(
         bootDiagLog('fallback app initialization failed: $fallbackError'),
@@ -173,6 +181,38 @@ Future<void> main(List<String> args) async {
       debugPrintStack(stackTrace: fallbackStack);
     }
     _loadCachedGroups(prefs);
+  }
+  if (appStateInitialized) {
+    unawaited(
+      profileMigrationTask
+          .then((_) {
+            // Read the IDs at execution time so a profile imported while the
+            // legacy migration is finishing cannot be mistaken for an orphan.
+            final retainedProfileIds = globalState.config.profiles
+                .map((profile) => profile.id)
+                .toSet();
+            final currentProfileId = globalState.config.currentProfileId;
+            if (currentProfileId != null) {
+              retainedProfileIds.add(currentProfileId);
+            }
+            return ProfileVault.instance.pruneOrphanedProfiles(
+              retainedProfileIds,
+              // Startup maintenance runs beside normal initialization. A
+              // grace period protects a newly written profile before its
+              // metadata transaction has completed.
+              minimumOrphanAge: const Duration(hours: 1),
+            );
+          })
+          .then(
+            (removed) => bootDiagLog(
+              'profile cache startup cleanup removed $removed orphaned items',
+            ),
+          )
+          .catchError((Object error) {
+            unawaited(
+                bootDiagLog('profile cache startup cleanup failed: $error'));
+          }),
+    );
   }
   unawaited(MacOSStartupDiagnostics.captureRendererInfo());
 

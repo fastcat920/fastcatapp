@@ -1,0 +1,1444 @@
+part of '../pages/invite_page.dart';
+
+// ─── 余额卡片 ──────────────────────────────────────────────────────────────────
+
+class _BalanceCards extends StatelessWidget {
+  final InviteState state;
+  const _BalanceCards({required this.state});
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return Row(
+      children: [
+        Expanded(
+          child: _BalanceCard(
+            title: appLocalizations.availableCommission,
+            value: state.formattedAvailableCommission,
+            compactValue: state.wholeAvailableCommission,
+            icon: Icons.monetization_on_outlined,
+            color: theme.colorScheme.primary,
+          ),
+        ),
+        const SizedBox(width: 12),
+        Expanded(
+          child: _BalanceCard(
+            title: appLocalizations.walletBalance,
+            value: state.formattedWalletBalance,
+            compactValue: state.wholeWalletBalance,
+            icon: Icons.account_balance_outlined,
+            color: theme.colorScheme.primary,
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _BalanceCard extends StatelessWidget {
+  final String title;
+  final String value;
+  final String compactValue;
+  final IconData icon;
+  final Color color;
+  const _BalanceCard({
+    required this.title,
+    required this.value,
+    required this.compactValue,
+    required this.icon,
+    required this.color,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+    final backgroundColor = isDark
+        ? theme.colorScheme.primary.withValues(alpha: 0.24)
+        : Colors.white;
+    final iconBg = color.withValues(
+      alpha: isDark ? 0.32 : 0.18,
+    );
+    final titleColor = isDark
+        ? theme.colorScheme.onSurface.withValues(alpha: 0.78)
+        : theme.colorScheme.onSurfaceVariant;
+    final valueColor = isDark ? theme.colorScheme.onSurface : color;
+    final iconColor = isDark ? theme.colorScheme.onSurface : color;
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: backgroundColor,
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(
+          color: isDark
+              ? theme.colorScheme.primary.withValues(alpha: 0.38)
+              : XbUiTokens.cardBorderLight,
+        ),
+        boxShadow: isDark
+            ? null
+            : [
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: 0.04),
+                  blurRadius: 10,
+                  offset: const Offset(0, 2),
+                ),
+              ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(4),
+                decoration: BoxDecoration(
+                  color: iconBg,
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Icon(icon, size: 14, color: iconColor),
+              ),
+              const SizedBox(width: 5),
+              Text(title, style: TextStyle(color: titleColor, fontSize: 12)),
+            ],
+          ),
+          const SizedBox(height: 8),
+          AdaptiveAmountText(
+            value: value,
+            compactValue: compactValue,
+            style: TextStyle(
+                color: valueColor, fontSize: 24, fontWeight: XbFontWeight.bold),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+// ─── 操作按钮 ──────────────────────────────────────────────────────────────────
+
+class _ActionButtons extends ConsumerWidget {
+  const _ActionButtons();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final inviteState = ref.watch(inviteProvider);
+    final l10n = AppLocalizations.of(context);
+    if (!inviteState.isWithdrawEnabled) {
+      return SizedBox(
+        width: double.infinity,
+        child: _ResponsiveActionButton(
+          onPressed: () => showDialog(
+            context: context,
+            builder: (_) => const TransferDialog(),
+          ),
+          icon: const Icon(Icons.swap_horiz, size: 18),
+          label: l10n.transferToWallet,
+        ),
+      );
+    }
+
+    return Row(
+      children: [
+        Expanded(
+          child: Row(
+            children: [
+              Expanded(
+                child: _ResponsiveActionButton(
+                  onPressed: () => showDialog(
+                    context: context,
+                    builder: (_) => const WithdrawDialog(),
+                  ),
+                  icon: const Icon(Icons.account_balance, size: 18),
+                  label: l10n.withdraw,
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: _ResponsiveActionButton(
+                  onPressed: () => Navigator.of(context).push(
+                    MaterialPageRoute(builder: (_) => const TicketPage()),
+                  ),
+                  icon:
+                      const Icon(Icons.confirmation_number_outlined, size: 18),
+                  label: l10n.ticketRecords,
+                ),
+              ),
+            ],
+          ),
+        ),
+        const SizedBox(width: 12),
+        Expanded(
+          child: _ResponsiveActionButton(
+            onPressed: () => showDialog(
+              context: context,
+              builder: (_) => const TransferDialog(),
+            ),
+            icon: const Icon(Icons.swap_horiz, size: 18),
+            label: l10n.transferToWallet,
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _ResponsiveActionButton extends StatelessWidget {
+  final VoidCallback onPressed;
+  final Widget icon;
+  final String label;
+
+  const _ResponsiveActionButton({
+    required this.onPressed,
+    required this.icon,
+    required this.label,
+  });
+
+  static const double _iconBreakpoint = 96;
+
+  @override
+  Widget build(BuildContext context) {
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final showIcon = constraints.maxWidth >= _iconBreakpoint;
+        return FilledButton(
+          onPressed: onPressed,
+          style: XbUiButton.filledPrimary(context).copyWith(
+            padding: const WidgetStatePropertyAll(
+              EdgeInsets.symmetric(horizontal: 10, vertical: 10),
+            ),
+          ),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              if (showIcon) ...[
+                icon,
+                const SizedBox(width: 6),
+              ],
+              Flexible(
+                child: Text(
+                  label,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  softWrap: false,
+                ),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+}
+
+// ─── 邀请统计 ──────────────────────────────────────────────────────────────────
+
+class _InviteStatsSection extends StatelessWidget {
+  final InviteState state;
+  final bool isDesktop;
+  final int? effectiveInvites;
+  const _InviteStatsSection({
+    required this.state,
+    required this.isDesktop,
+    required this.effectiveInvites,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final pendingCommissionTooltip = state.isWithdrawEnabled
+        ? appLocalizations.pendingCommissionTooltipCommissionBalance
+        : appLocalizations.pendingCommissionTooltipWalletBalance;
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          children: [
+            Icon(Icons.bar_chart, size: 18, color: theme.colorScheme.primary),
+            const SizedBox(width: 6),
+            Text(
+              appLocalizations.inviteStats,
+              style: theme.textTheme.titleMedium
+                  ?.copyWith(fontWeight: XbFontWeight.bold),
+            ),
+          ],
+        ),
+        const SizedBox(height: 12),
+        // 外层 build() 已确保 hasInviteData==true 才渲染本 section
+        isDesktop
+            ? Row(
+                children: [
+                  Expanded(
+                    child: _StatCard(
+                      label: appLocalizations.totalInvites,
+                      value: '${state.totalInvites}',
+                      icon: Icons.people_outline,
+                    ),
+                  ),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: _StatCard(
+                      label: _copy(context, '有效邀请数', 'Effective invites'),
+                      value: effectiveInvites?.toString() ?? '···',
+                      icon: Icons.how_to_reg_outlined,
+                      tooltipMessage: _copy(
+                        context,
+                        '被邀请人有首次购买订单',
+                        'The invited user has placed their first order',
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: _StatCard(
+                      label: appLocalizations.totalCommission,
+                      value: state.formattedCommission,
+                      compactValue: state.wholeCommission,
+                      icon: Icons.savings_outlined,
+                    ),
+                  ),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: _StatCard(
+                      label: appLocalizations.pendingCommission,
+                      value: state.formattedPendingCommission,
+                      compactValue: state.wholePendingCommission,
+                      icon: Icons.hourglass_top_outlined,
+                      tooltipMessage: pendingCommissionTooltip,
+                      valueColor: Theme.of(context).colorScheme.error,
+                    ),
+                  ),
+                ],
+              )
+            : Column(
+                children: [
+                  Row(
+                    children: [
+                      Expanded(
+                        child: _StatCard(
+                          label: appLocalizations.totalInvites,
+                          value: '${state.totalInvites}',
+                          icon: Icons.people_outline,
+                        ),
+                      ),
+                      const SizedBox(width: 10),
+                      Expanded(
+                        child: _StatCard(
+                          label: _copy(context, '有效邀请数', 'Effective invites'),
+                          value: effectiveInvites?.toString() ?? '···',
+                          icon: Icons.how_to_reg_outlined,
+                          tooltipMessage: _copy(
+                            context,
+                            '被邀请人有首次购买订单',
+                            'The invited user has placed their first order',
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 10),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: _StatCard(
+                          label: appLocalizations.totalCommission,
+                          value: state.formattedCommission,
+                          compactValue: state.wholeCommission,
+                          icon: Icons.savings_outlined,
+                        ),
+                      ),
+                      const SizedBox(width: 10),
+                      Expanded(
+                        child: _StatCard(
+                          label: appLocalizations.pendingCommission,
+                          value: state.formattedPendingCommission,
+                          compactValue: state.wholePendingCommission,
+                          icon: Icons.hourglass_top_outlined,
+                          tooltipMessage: pendingCommissionTooltip,
+                          valueColor: Theme.of(context).colorScheme.error,
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+      ],
+    );
+  }
+}
+
+class _StatCard extends StatelessWidget {
+  final String label;
+  final String value;
+  final String? compactValue;
+  final IconData icon;
+  final String? tooltipMessage;
+  final Color? valueColor;
+  const _StatCard({
+    required this.label,
+    required this.value,
+    this.compactValue,
+    required this.icon,
+    this.tooltipMessage,
+    this.valueColor,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+      decoration: BoxDecoration(
+        color: isDark
+            ? theme.colorScheme.surfaceContainerHighest.withValues(alpha: 0.4)
+            : Colors.white,
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(
+            color: isDark
+                ? theme.colorScheme.outline.withValues(alpha: 0.15)
+                : const Color(0xFFEEF0F4)),
+        boxShadow: isDark
+            ? null
+            : [
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: 0.04),
+                  blurRadius: 8,
+                  offset: const Offset(0, 2),
+                ),
+              ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Icon(icon, size: 13, color: theme.colorScheme.onSurfaceVariant),
+              const SizedBox(width: 4),
+              Flexible(
+                child: Text(
+                  label,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: theme.textTheme.bodySmall
+                      ?.copyWith(color: theme.colorScheme.onSurfaceVariant),
+                ),
+              ),
+              if (tooltipMessage != null) ...[
+                const SizedBox(width: 5),
+                _StatCardTooltipButton(message: tooltipMessage!),
+              ],
+            ],
+          ),
+          const SizedBox(height: 6),
+          AdaptiveAmountText(
+            value: value,
+            compactValue: compactValue ?? value,
+            style: theme.textTheme.titleMedium?.copyWith(
+              fontWeight: XbFontWeight.bold,
+              color: valueColor ?? theme.colorScheme.onSurface,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _StatCardTooltipButton extends StatelessWidget {
+  final String message;
+
+  const _StatCardTooltipButton({required this.message});
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final color = theme.colorScheme.primary;
+    return Tooltip(
+      message: message,
+      triggerMode: TooltipTriggerMode.tap,
+      preferBelow: false,
+      showDuration: const Duration(seconds: 5),
+      waitDuration: const Duration(milliseconds: 300),
+      child: MouseRegion(
+        cursor: SystemMouseCursors.click,
+        child: Container(
+          width: 18,
+          height: 18,
+          alignment: Alignment.center,
+          decoration: BoxDecoration(
+            color: color.withValues(alpha: 0.12),
+            shape: BoxShape.circle,
+            border: Border.all(
+              color: color.withValues(alpha: 0.25),
+            ),
+          ),
+          child: Icon(
+            Icons.question_mark_rounded,
+            size: 11,
+            color: color,
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+// ─── Tab 切换内容 ──────────────────────────────────────────────────────────────
+
+class _InviteCodesTabContent extends ConsumerStatefulWidget {
+  final TabController tabController;
+  final InviteState state;
+  final String? rewardRestrictionPolicy;
+  const _InviteCodesTabContent(
+      {required this.tabController,
+      required this.state,
+      this.rewardRestrictionPolicy});
+
+  @override
+  ConsumerState<_InviteCodesTabContent> createState() =>
+      _InviteCodesTabContentState();
+}
+
+class _InviteCodesTabContentState
+    extends ConsumerState<_InviteCodesTabContent> {
+  int _lastTabIndex = 0;
+  late final VoidCallback _tabListener;
+
+  @override
+  void initState() {
+    super.initState();
+    _lastTabIndex = widget.tabController.index;
+    _tabListener = () {
+      final idx = widget.tabController.index;
+      if (mounted && idx != _lastTabIndex) {
+        _lastTabIndex = idx;
+        setState(() {});
+      }
+    };
+    widget.tabController.addListener(_tabListener);
+  }
+
+  @override
+  void dispose() {
+    widget.tabController.removeListener(_tabListener);
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final idx = widget.tabController.index;
+    final state = widget.state;
+
+    if (idx == 0) {
+      final siteUrlAsync = ref.watch(panelSiteUrlProvider);
+      final siteUrl = siteUrlAsync.valueOrNull ?? '';
+      return _InviteCodesTab(
+        state: state,
+        ref: ref,
+        siteUrl: siteUrl,
+        rewardRestrictionPolicy: widget.rewardRestrictionPolicy,
+      );
+    }
+    if (idx == 1) return const _InviteUsersTab();
+    return const _CommissionLedgerTab();
+  }
+}
+
+// ─── 邀请码列表 ────────────────────────────────────────────────────────────────
+
+class _InviteCodesTab extends StatelessWidget {
+  final InviteState state;
+  final WidgetRef ref;
+  final String siteUrl;
+  final String? rewardRestrictionPolicy;
+  const _InviteCodesTab({
+    required this.state,
+    required this.ref,
+    required this.siteUrl,
+    this.rewardRestrictionPolicy,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final codes = state.inviteData?.codes ?? [];
+    final rewardRestrictionText =
+        _rewardRestrictionText(context, rewardRestrictionPolicy);
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        if (rewardRestrictionText != null) ...[
+          SizedBox(
+            width: double.infinity,
+            child: Text(
+              rewardRestrictionText,
+              textAlign: TextAlign.center,
+              style: theme.textTheme.bodySmall?.copyWith(
+                color: theme.colorScheme.error,
+                fontWeight: XbFontWeight.medium,
+                height: 1.6,
+              ),
+            ),
+          ),
+          const SizedBox(height: 12),
+        ],
+        Row(
+          children: [
+            Icon(Icons.link, size: 16, color: theme.colorScheme.primary),
+            const SizedBox(width: 6),
+            Text(
+              '${appLocalizations.inviteCode} (${codes.length})',
+              style: theme.textTheme.titleSmall
+                  ?.copyWith(fontWeight: XbFontWeight.semibold),
+            ),
+            const Spacer(),
+            Builder(builder: (context) {
+              final btnTheme = Theme.of(context);
+              final btnIsDark = btnTheme.brightness == Brightness.dark;
+              return FilledButton.icon(
+                onPressed: state.isGenerating
+                    ? null
+                    : () async {
+                        final result = await ref
+                            .read(inviteProvider.notifier)
+                            .generateInviteCode();
+                        if (!context.mounted) return;
+                        if (result != null) {
+                          XBoardNotification.showSuccess(
+                              '${appLocalizations.inviteCodeGenerated}：${result.code}');
+                        } else {
+                          final errorMsg =
+                              ref.read(inviteProvider).errorMessage ??
+                                  appLocalizations.inviteCodeGenFailed;
+                          XBoardNotification.showError(errorMsg);
+                        }
+                      },
+                icon: state.isGenerating
+                    ? const SizedBox(
+                        width: 16,
+                        height: 16,
+                        child: CircularProgressIndicator(
+                            strokeWidth: 2, color: Colors.white),
+                      )
+                    : const Icon(Icons.add, size: 16),
+                label: DefaultTextStyle.merge(
+                  style: const TextStyle(fontSize: 13),
+                  child: Text(appLocalizations.generateInviteCode),
+                ),
+                style: XbUiButton.filledPrimary(context).copyWith(
+                  minimumSize: const WidgetStatePropertyAll(Size(0, 36)),
+                  padding: const WidgetStatePropertyAll(
+                    EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+                  ),
+                  backgroundColor: btnIsDark
+                      ? null
+                      : WidgetStatePropertyAll(theme.colorScheme.primary),
+                ),
+              );
+            }),
+          ],
+        ),
+        const SizedBox(height: 12),
+        if (state.isLoading && !state.hasInviteData)
+          const Center(child: CircularProgressIndicator())
+        else if (codes.isEmpty)
+          Center(
+            child: Padding(
+              padding: const EdgeInsets.all(24),
+              child: Column(
+                children: [
+                  Icon(Icons.link_off,
+                      size: 48, color: theme.colorScheme.outline),
+                  const SizedBox(height: 12),
+                  Text(appLocalizations.noInviteCode,
+                      style: theme.textTheme.bodyMedium?.copyWith(
+                          color: theme.colorScheme.onSurfaceVariant)),
+                ],
+              ),
+            ),
+          )
+        else
+          ...codes.map((code) => _InviteCodeItem(
+                code: code.code,
+                createdAt: code.createdAt ?? DateTime.now(),
+                siteUrl: siteUrl,
+              )),
+      ],
+    );
+  }
+}
+
+class _InviteCodeItem extends StatelessWidget {
+  final String code;
+  final DateTime createdAt;
+  final String siteUrl;
+  const _InviteCodeItem(
+      {required this.code, required this.createdAt, required this.siteUrl});
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final dateStr =
+        '${createdAt.year}-${createdAt.month.toString().padLeft(2, '0')}-${createdAt.day.toString().padLeft(2, '0')}';
+    final baseUrl = _getSdkBaseUrl();
+    final inviteUrl =
+        baseUrl.isNotEmpty ? '$baseUrl/#/register?code=$code' : code;
+
+    final isDark = theme.brightness == Brightness.dark;
+    return Container(
+      margin: const EdgeInsets.only(bottom: 10),
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+      decoration: BoxDecoration(
+        color: isDark ? null : Colors.white,
+        border: Border.all(
+            color: isDark
+                ? theme.colorScheme.outline.withValues(alpha: 0.2)
+                : const Color(0xFFEEF0F4)),
+        borderRadius: BorderRadius.circular(14),
+        boxShadow: isDark
+            ? null
+            : [
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: 0.04),
+                  blurRadius: 8,
+                  offset: const Offset(0, 2),
+                ),
+              ],
+      ),
+      child: Row(
+        children: [
+          Icon(Icons.link, size: 18, color: theme.colorScheme.primary),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  code,
+                  style: theme.textTheme.titleSmall?.copyWith(
+                    fontWeight: XbFontWeight.bold,
+                  ),
+                ),
+                const SizedBox(height: 3),
+                Row(
+                  children: [
+                    Icon(Icons.schedule,
+                        size: 11, color: theme.colorScheme.onSurfaceVariant),
+                    const SizedBox(width: 3),
+                    Text(
+                      dateStr,
+                      style: theme.textTheme.bodySmall?.copyWith(
+                          color: theme.colorScheme.onSurfaceVariant,
+                          fontSize: 11),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+          Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              TextButton(
+                onPressed: () {
+                  Clipboard.setData(ClipboardData(text: code));
+                  XBoardNotification.showSuccess(
+                      appLocalizations.copiedToClipboard);
+                },
+                style: XbUiButton.textChipPrimary(context).copyWith(
+                  minimumSize: const WidgetStatePropertyAll(Size(0, 28)),
+                  padding: const WidgetStatePropertyAll(
+                    EdgeInsets.symmetric(horizontal: 8),
+                  ),
+                ),
+                child: Text(
+                  appLocalizations.xboardCopyInviteCode,
+                  style: const TextStyle(fontSize: 11),
+                ),
+              ),
+              const SizedBox(width: 6),
+              TextButton(
+                onPressed: () {
+                  Clipboard.setData(ClipboardData(text: inviteUrl));
+                  XBoardNotification.showSuccess(
+                      appLocalizations.copiedToClipboard);
+                },
+                style: XbUiButton.textChipPrimary(context).copyWith(
+                  minimumSize: const WidgetStatePropertyAll(Size(0, 28)),
+                  padding: const WidgetStatePropertyAll(
+                    EdgeInsets.symmetric(horizontal: 8),
+                  ),
+                ),
+                child: Text(
+                  appLocalizations.xboardCopyInviteLink,
+                  style: const TextStyle(fontSize: 11),
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  String _getSdkBaseUrl() {
+    try {
+      // 优先级：自定义邀请域名 > 面板站点网址(app_url) > API 域名
+      final inviteDomain = XBoardConfig.inviteDomain;
+      if (inviteDomain.isNotEmpty) return inviteDomain;
+      if (siteUrl.isNotEmpty) return siteUrl;
+      return XBoardConfig.panelUrl ?? '';
+    } catch (_) {
+      return '';
+    }
+  }
+}
+
+// ─── 邀请用户与统一佣金账本 ────────────────────────────────────────────────────
+
+class _InviteUsersTab extends ConsumerStatefulWidget {
+  const _InviteUsersTab();
+
+  @override
+  ConsumerState<_InviteUsersTab> createState() => _InviteUsersTabState();
+}
+
+class _InviteUsersTabState extends ConsumerState<_InviteUsersTab> {
+  final List<CatboardInviteUser> _items = [];
+  int _page = 1;
+  int _total = 0;
+  bool _loading = false;
+  String? _error;
+
+  @override
+  void initState() {
+    super.initState();
+    Future<void>(_load);
+  }
+
+  static const _pageSize = 10;
+
+  Future<void> _load({int page = 1}) async {
+    if (_loading) return;
+    setState(() {
+      _loading = true;
+      _error = null;
+    });
+    try {
+      final sdk = await ref.read(xboardSdkProvider.future);
+      final result = await sdk.catboard.getInviteUsers(
+        current: page,
+        pageSize: _pageSize,
+      );
+      if (!mounted) return;
+      setState(() {
+        _items
+          ..clear()
+          ..addAll(result.items);
+        _page = page;
+        _total = result.total;
+      });
+    } catch (error) {
+      if (mounted) setState(() => _error = error.toString());
+    } finally {
+      if (mounted) setState(() => _loading = false);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final Widget content;
+    if (_loading && _items.isEmpty) {
+      content = const Center(child: CircularProgressIndicator());
+    } else if (_error != null && _items.isEmpty) {
+      content = XbErrorState(message: _error!, onRetry: _load);
+    } else if (_items.isEmpty) {
+      content = _EmptyLedger(
+        icon: Icons.group_off_outlined,
+        text: _copy(context, '暂无邀请用户', 'No invited users'),
+      );
+    } else {
+      content = Column(
+        children: [
+          ..._items.map((user) => _LedgerCard(
+                title: user.maskedEmail,
+                subtitle: _date(user.createdAt),
+                trailing: user.status == 'effective'
+                    ? _copy(context, '有效邀请', 'Effective invite')
+                    : _copy(context, '待首购', 'Awaiting first order'),
+                color: user.status == 'effective'
+                    ? XbUiStatusColor.success(context)
+                    : theme.colorScheme.outline,
+              )),
+          _PaginationBar(
+            page: _page,
+            total: _total,
+            pageSize: _pageSize,
+            loading: _loading,
+            onPageChanged: (page) => _load(page: page),
+          ),
+        ],
+      );
+    }
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Padding(
+          padding: const EdgeInsets.fromLTRB(4, 2, 4, 10),
+          child: Center(
+            child: Text(
+              _copy(
+                context,
+                '有效邀请指被邀请人有首次购买订单',
+                'An effective invite means the invited user has placed their first order',
+              ),
+              textAlign: TextAlign.center,
+              style: theme.textTheme.bodySmall?.copyWith(
+                color: theme.colorScheme.onSurfaceVariant,
+              ),
+            ),
+          ),
+        ),
+        content,
+      ],
+    );
+  }
+}
+
+class _CommissionLedgerTab extends ConsumerStatefulWidget {
+  const _CommissionLedgerTab();
+
+  @override
+  ConsumerState<_CommissionLedgerTab> createState() =>
+      _CommissionLedgerTabState();
+}
+
+class _CommissionLedgerTabState extends ConsumerState<_CommissionLedgerTab> {
+  final List<CatboardLedgerEntry> _items = [];
+  int _page = 1;
+  int _total = 0;
+  bool _loading = false;
+  String? _error;
+
+  @override
+  void initState() {
+    super.initState();
+    Future<void>(_load);
+  }
+
+  static const _pageSize = 10;
+
+  Future<void> _load({int page = 1}) async {
+    if (_loading) return;
+    setState(() {
+      _loading = true;
+      _error = null;
+    });
+    try {
+      final sdk = await ref.read(xboardSdkProvider.future);
+      final result = await sdk.catboard.getCommissionRecords(
+        current: page,
+        pageSize: _pageSize,
+      );
+      if (!mounted) return;
+      setState(() {
+        _items
+          ..clear()
+          ..addAll(result.items);
+        _page = page;
+        _total = result.total;
+      });
+    } catch (error) {
+      if (mounted) setState(() => _error = error.toString());
+    } finally {
+      if (mounted) setState(() => _loading = false);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        if (_loading && _items.isEmpty)
+          const Center(child: CircularProgressIndicator())
+        else if (_error != null && _items.isEmpty)
+          XbErrorState(message: _error!, onRetry: _load)
+        else if (_items.isEmpty)
+          _EmptyLedger(
+            icon: Icons.receipt_long_outlined,
+            text: appLocalizations.noCommissionRecord,
+          )
+        else ...[
+          ..._items.map((entry) {
+            final income = entry.amount >= 0;
+            return _LedgerCard(
+              title: _ledgerType(context, entry.type),
+              subtitle: _date(entry.createdAt),
+              trailing: '${income ? '+' : '-'}${_money(entry.amount.abs())}',
+              color: income
+                  ? Theme.of(context).colorScheme.primary
+                  : Theme.of(context).colorScheme.error,
+              status: _ledgerStatus(context, entry.status),
+              statusColor: _ledgerStatusColor(context, entry.status),
+            );
+          }),
+          _PaginationBar(
+            page: _page,
+            total: _total,
+            pageSize: _pageSize,
+            loading: _loading,
+            onPageChanged: (page) => _load(page: page),
+          ),
+        ],
+      ],
+    );
+  }
+}
+
+class _LedgerCard extends StatelessWidget {
+  final String title;
+  final String subtitle;
+  final String trailing;
+  final Color color;
+  final String? status;
+  final Color? statusColor;
+
+  const _LedgerCard({
+    required this.title,
+    required this.subtitle,
+    required this.trailing,
+    required this.color,
+    this.status,
+    this.statusColor,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+    return Card(
+      elevation: 0,
+      margin: XbUiTokens.listCardGapBottom10,
+      color: isDark ? null : Colors.white,
+      shape: XbUiCardStyle.shape(
+        context,
+        radius: XbUiTokens.radiusCardCompact,
+      ),
+      clipBehavior: Clip.antiAlias,
+      child: Padding(
+        padding: const EdgeInsets.all(14),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    title,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: XbUiText.cardTitle(context),
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    subtitle,
+                    style: theme.textTheme.bodySmall?.copyWith(
+                      color:
+                          theme.colorScheme.onSurface.withValues(alpha: 0.45),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(width: 12),
+            Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.end,
+              children: [
+                _StatusBadge(
+                  label: status ?? trailing,
+                  color: statusColor ?? color,
+                ),
+                if (status != null) ...[
+                  const SizedBox(height: 5),
+                  Text(
+                    trailing,
+                    style: theme.textTheme.titleSmall?.copyWith(
+                      color: color,
+                      fontWeight: XbFontWeight.bold,
+                    ),
+                  ),
+                ],
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _StatusBadge extends StatelessWidget {
+  final String label;
+  final Color color;
+
+  const _StatusBadge({required this.label, required this.color});
+
+  @override
+  Widget build(BuildContext context) => Container(
+        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+        decoration: BoxDecoration(
+          color: color.withValues(alpha: 0.12),
+          borderRadius: BorderRadius.circular(8),
+        ),
+        child: Text(
+          label,
+          style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                color: color,
+                fontWeight: XbFontWeight.semibold,
+              ),
+        ),
+      );
+}
+
+class _PaginationBar extends StatelessWidget {
+  final int page;
+  final int total;
+  final int pageSize;
+  final bool loading;
+  final ValueChanged<int> onPageChanged;
+
+  const _PaginationBar({
+    required this.page,
+    required this.total,
+    required this.pageSize,
+    required this.loading,
+    required this.onPageChanged,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final totalPages = total == 0 ? 1 : (total / pageSize).ceil();
+    return Padding(
+      padding: const EdgeInsets.only(top: 8),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          IconButton(
+            tooltip: _copy(context, '上一页', 'Previous page'),
+            onPressed:
+                !loading && page > 1 ? () => onPageChanged(page - 1) : null,
+            icon: const Icon(Icons.chevron_left),
+          ),
+          const SizedBox(width: 8),
+          if (loading)
+            const SizedBox(
+              width: 18,
+              height: 18,
+              child: CircularProgressIndicator(strokeWidth: 2),
+            )
+          else
+            Text(
+              _copy(context, '第 $page / $totalPages 页',
+                  'Page $page / $totalPages'),
+              style: Theme.of(context).textTheme.bodySmall,
+            ),
+          const SizedBox(width: 8),
+          IconButton(
+            tooltip: _copy(context, '下一页', 'Next page'),
+            onPressed: !loading && page < totalPages
+                ? () => onPageChanged(page + 1)
+                : null,
+            icon: const Icon(Icons.chevron_right),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _EmptyLedger extends StatelessWidget {
+  final IconData icon;
+  final String text;
+
+  const _EmptyLedger({required this.icon, required this.text});
+
+  @override
+  Widget build(BuildContext context) => Padding(
+        padding: const EdgeInsets.all(24),
+        child: Center(
+          child: Column(
+            children: [
+              Icon(icon,
+                  size: 48, color: Theme.of(context).colorScheme.outline),
+              const SizedBox(height: 12),
+              Text(text),
+            ],
+          ),
+        ),
+      );
+}
+
+String _copy(BuildContext context, String zh, String en) =>
+    Localizations.localeOf(context).languageCode == 'zh' ? zh : en;
+
+String? _rewardRestrictionText(BuildContext context, String? policy) =>
+    switch (policy) {
+      'block_inviter_commission' => _copy(
+          context,
+          '您当前没有有效套餐，好友购买套餐后您将无法获得订单返佣。',
+          'You do not have an active plan. Orders from newly registered friends will not earn you commission.',
+        ),
+      'block_invitee_rewards' => _copy(
+          context,
+          '您当前没有有效套餐，通过您的邀请码注册的好友将无法获得新人奖励。',
+          'You do not have an active plan. Newly registered friends will not receive newcomer referral rewards.',
+        ),
+      'block_both' => _copy(
+          context,
+          '您当前没有有效套餐，您将无法获得订单返佣，受邀好友也无法获得新人奖励。',
+          'You do not have an active plan. Orders from newly registered friends will not earn you commission, and they will not receive newcomer referral rewards.',
+        ),
+      _ => null,
+    };
+
+String _money(int cents) => '¥${(cents / 100).toStringAsFixed(2)}';
+
+String _date(DateTime? date) => date == null
+    ? '-'
+    : '${date.year}-${date.month.toString().padLeft(2, '0')}-'
+        '${date.day.toString().padLeft(2, '0')} '
+        '${date.hour.toString().padLeft(2, '0')}:'
+        '${date.minute.toString().padLeft(2, '0')}';
+
+String _ledgerType(BuildContext context, String type) {
+  switch (type) {
+    case 'commission_income':
+      return _copy(context, '邀请返佣', 'Referral commission');
+    case 'reward_income':
+      return _copy(context, '邀请奖励', 'Referral reward');
+    case 'transfer_out':
+      return _copy(context, '划转至余额', 'Transfer to balance');
+    case 'withdrawal':
+      return _copy(context, '佣金提现', 'Commission withdrawal');
+    case 'withdrawal_refund':
+      return _copy(context, '提现退回', 'Withdrawal refund');
+    case 'commission_reversal':
+      return _copy(context, '佣金冲正', 'Commission reversal');
+    case 'admin_adjustment':
+      return _copy(context, '后台调整', 'Admin adjustment');
+    default:
+      return type;
+  }
+}
+
+String _ledgerStatus(BuildContext context, String status) {
+  switch (status) {
+    case 'pending':
+    case 'processing':
+      return _copy(context, '处理中', 'Processing');
+    case 'failed':
+    case 'rejected':
+      return _copy(context, '已失败', 'Failed');
+    case 'cancelled':
+    case 'canceled':
+      return _copy(context, '已取消', 'Cancelled');
+    case 'completed':
+    case 'success':
+    case 'granted':
+      return _copy(context, '已完成', 'Completed');
+    default:
+      return status;
+  }
+}
+
+Color _ledgerStatusColor(BuildContext context, String status) {
+  switch (status) {
+    case 'failed':
+    case 'rejected':
+      return Theme.of(context).colorScheme.error;
+    case 'pending':
+    case 'processing':
+      return Colors.orange.shade700;
+    case 'completed':
+    case 'success':
+    case 'granted':
+      return XbUiStatusColor.success(context);
+    default:
+      return Theme.of(context).colorScheme.outline;
+  }
+}
+
+// ─── 旧版返佣记录（兼容旧面板数据模型）────────────────────────────────────────
+
+// ignore: unused_element
+class _CommissionHistoryTab extends ConsumerWidget {
+  final InviteState state;
+  const _CommissionHistoryTab({required this.state});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final theme = Theme.of(context);
+    final history = state.commissionHistory;
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        if (state.isLoadingHistory && history.isEmpty)
+          const Center(child: CircularProgressIndicator())
+        else if (history.isEmpty)
+          Center(
+            child: Padding(
+              padding: const EdgeInsets.all(24),
+              child: Column(
+                children: [
+                  Icon(Icons.history,
+                      size: 48, color: theme.colorScheme.outline),
+                  const SizedBox(height: 12),
+                  Text(appLocalizations.noCommissionRecord,
+                      style: theme.textTheme.bodyMedium?.copyWith(
+                          color: theme.colorScheme.onSurfaceVariant)),
+                ],
+              ),
+            ),
+          )
+        else ...[
+          ...history.map((c) {
+            final dateStr =
+                '${c.createdAt.year}-${c.createdAt.month.toString().padLeft(2, '0')}-${c.createdAt.day.toString().padLeft(2, '0')}';
+            final statusColor =
+                _commissionStatusColor(context, c.status, theme);
+            final amountColor = theme.colorScheme.primary;
+            final statusLabel = _commissionStatusLabel(c.status);
+            final isDark = theme.brightness == Brightness.dark;
+            return Container(
+              margin: const EdgeInsets.only(bottom: 8),
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: isDark ? null : Colors.white,
+                border: Border.all(
+                    color: isDark
+                        ? theme.colorScheme.outline.withValues(alpha: 0.2)
+                        : const Color(0xFFEEF0F4)),
+                borderRadius: BorderRadius.circular(14),
+                boxShadow: isDark
+                    ? null
+                    : [
+                        BoxShadow(
+                          color: Colors.black.withValues(alpha: 0.04),
+                          blurRadius: 8,
+                          offset: const Offset(0, 2),
+                        ),
+                      ],
+              ),
+              child: Row(
+                children: [
+                  Icon(Icons.monetization_on, color: amountColor, size: 20),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          '¥${c.amount.toStringAsFixed(2)}',
+                          style: theme.textTheme.titleSmall?.copyWith(
+                              fontWeight: XbFontWeight.bold,
+                              color: amountColor),
+                        ),
+                        Text(
+                          c.tradeNo,
+                          style: theme.textTheme.bodySmall?.copyWith(
+                              color: theme.colorScheme.onSurfaceVariant,
+                              fontSize: 11),
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ],
+                    ),
+                  ),
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.end,
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 6, vertical: 2),
+                        decoration: BoxDecoration(
+                          color: statusColor.withValues(alpha: 0.12),
+                          borderRadius: BorderRadius.circular(4),
+                        ),
+                        child: Text(
+                          statusLabel,
+                          style: TextStyle(
+                              color: statusColor,
+                              fontSize: 11,
+                              fontWeight: FontWeight.w500),
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        dateStr,
+                        style: theme.textTheme.bodySmall?.copyWith(
+                            color: theme.colorScheme.onSurfaceVariant,
+                            fontSize: 11),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            );
+          }),
+          if (state.hasMoreHistory)
+            Padding(
+              padding: const EdgeInsets.only(top: 4, bottom: 16),
+              child: Center(
+                child: state.isLoadingHistory
+                    ? const CircularProgressIndicator()
+                    : TextButton.icon(
+                        onPressed: () => ref
+                            .read(inviteProvider.notifier)
+                            .loadNextHistoryPage(),
+                        icon: const Icon(Icons.expand_more),
+                        label: Text(appLocalizations.loadMore),
+                      ),
+              ),
+            ),
+        ],
+      ],
+    );
+  }
+
+  Color _commissionStatusColor(
+      BuildContext context, int status, ThemeData theme) {
+    switch (status) {
+      case 0:
+        return XbUiStatusColor.pending(context);
+      case 1:
+        return XbUiStatusColor.processing(context);
+      case 2:
+        return XbUiStatusColor.success(context);
+      case 3:
+        return XbUiStatusColor.error(context);
+      default:
+        return XbUiStatusColor.muted(context);
+    }
+  }
+
+  String _commissionStatusLabel(int status) {
+    switch (status) {
+      case 0:
+        return appLocalizations.pendingCommission;
+      case 1:
+        return appLocalizations.xboardCommissionIssuing;
+      case 2:
+        return appLocalizations.xboardCommissionConfirmed;
+      case 3:
+        return appLocalizations.unknown;
+      default:
+        return appLocalizations.unknown;
+    }
+  }
+}

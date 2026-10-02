@@ -1405,6 +1405,7 @@ class XBoardUserAuthNotifier extends Notifier<UserAuthState> {
     try {
       ref.read(userInfoProvider.notifier).state = null;
       ref.read(subscriptionInfoProvider.notifier).state = null;
+      ref.invalidate(noticeProvider);
       clearGetUserInfoCache();
       clearGetSubscriptionCache();
       clearGetPlansCache();

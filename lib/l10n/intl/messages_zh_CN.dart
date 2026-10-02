@@ -2005,12 +2005,22 @@ class MessageLookup extends MessageLookupByLibrary {
       "请购买套餐后使用",
     ),
     "xboardPurchaseTraffic": MessageLookupByLibrary.simpleMessage("购买流量"),
+    "xboardQrAuthorizeConfirm": MessageLookupByLibrary.simpleMessage("确认登录"),
+    "xboardQrAuthorizeFailed": MessageLookupByLibrary.simpleMessage("授权失败，请重试"),
+    "xboardQrAuthorizeMessage": MessageLookupByLibrary.simpleMessage(
+      "确认允许这台电脑或电视登录你的快猫账号吗？",
+    ),
+    "xboardQrAuthorizeSuccess": MessageLookupByLibrary.simpleMessage("已允许设备登录"),
+    "xboardQrAuthorizeTitle": MessageLookupByLibrary.simpleMessage("登录新设备"),
     "xboardQrExpired": MessageLookupByLibrary.simpleMessage("二维码已过期"),
     "xboardQrExpiredSemantics": MessageLookupByLibrary.simpleMessage(
       "二维码已过期，按确认键刷新二维码",
     ),
     "xboardQrExpiresIn": m53,
     "xboardQrGenerating": MessageLookupByLibrary.simpleMessage("正在生成二维码…"),
+    "xboardQrInvalidCode": MessageLookupByLibrary.simpleMessage(
+      "请扫描有效的快猫电脑或电视登录二维码",
+    ),
     "xboardQrLoadFailed": MessageLookupByLibrary.simpleMessage("二维码加载失败"),
     "xboardQrLogin": MessageLookupByLibrary.simpleMessage("扫码登录"),
     "xboardQrLoginDescription": MessageLookupByLibrary.simpleMessage(
@@ -2022,6 +2032,10 @@ class MessageLookup extends MessageLookupByLibrary {
     "xboardQrRefreshFailed": MessageLookupByLibrary.simpleMessage(
       "二维码刷新失败，请稍后重试",
     ),
+    "xboardQrScannerHint": MessageLookupByLibrary.simpleMessage(
+      "扫描电脑或电视上的登录二维码",
+    ),
+    "xboardQrScannerTitle": MessageLookupByLibrary.simpleMessage("扫一扫登录设备"),
     "xboardQrUnavailable": MessageLookupByLibrary.simpleMessage("二维码不可用"),
     "xboardQuarterlyPayment": MessageLookupByLibrary.simpleMessage("季付"),
     "xboardRecharge": MessageLookupByLibrary.simpleMessage("充值"),

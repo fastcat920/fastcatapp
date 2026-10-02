@@ -254,16 +254,20 @@ func updateConfig(params *UpdateParams) {
 func setupConfig(params *SetupParams) error {
 	runLock.Lock()
 	defer runLock.Unlock()
-	var err error
+	if params == nil || params.Config == nil {
+		return errors.New("missing configuration")
+	}
+	nextConfig, err := config.ParseRawConfig(params.Config)
+	if err != nil {
+		// A rejected edit must never replace a working profile with an empty one.
+		return err
+	}
 	if params.TestURL != "" {
 		testURL = params.TestURL
 	} else {
 		testURL = constant.DefaultTestURL
 	}
-	currentConfig, err = config.ParseRawConfig(params.Config)
-	if err != nil {
-		currentConfig, _ = config.ParseRawConfig(config.DefaultRawConfig())
-	}
+	currentConfig = nextConfig
 	hub.ApplyConfig(currentConfig)
 	patchSelectGroup(params.SelectedMap)
 	updateListeners()

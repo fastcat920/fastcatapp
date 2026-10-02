@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'package:fl_clash/widgets/tv_focusable.dart';
 
 import 'package:fl_clash/common/common.dart';
 import 'package:fl_clash/l10n/l10n.dart';
@@ -169,16 +170,19 @@ class FastCatSettingsPage extends ConsumerWidget {
     String? subtitle,
     required VoidCallback onTap,
   }) =>
-      XbPointerCursor(
-        child: ListTile(
-          leading: _SettingsIcon(icon: icon),
-          title: Text(title),
-          subtitle: subtitle == null ? null : Text(subtitle),
-          trailing: Icon(Icons.chevron_right,
-              color: Theme.of(context).colorScheme.outline),
-          onTap: onTap,
-        ),
-      );
+      TVFocusable(
+          borderRadius: BorderRadius.circular(14),
+          onPressed: onTap,
+          child: XbPointerCursor(
+            child: ListTile(
+              leading: _SettingsIcon(icon: icon),
+              title: Text(title),
+              subtitle: subtitle == null ? null : Text(subtitle),
+              trailing: Icon(Icons.chevron_right,
+                  color: Theme.of(context).colorScheme.outline),
+              onTap: onTap,
+            ),
+          ));
 
   String _languageLabel(String? locale, AppLocalizations l10n) {
     return switch (locale) {

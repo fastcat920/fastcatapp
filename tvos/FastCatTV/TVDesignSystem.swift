@@ -29,7 +29,7 @@ enum TVLanguage: String, CaseIterable, Sendable {
 }
 
 func tvText(_ chinese: String, _ english: String, language: String) -> String {
-  TVLanguage.resolved(from: language) == .simplifiedChinese ? chinese : english
+  TVLanguage.resolved(from: language) == .simplifiedChinese ? chinese : (TVSharedResources.strings[chinese] ?? english)
 }
 
 /// Uses the same 1280×720 logical design density as Android TV while keeping
@@ -67,6 +67,25 @@ func tvLayout(_ designValue: CGFloat) -> CGFloat {
   TVLayout.value(designValue)
 }
 
+/// Generated from config.yaml and the same ARB files used by Flutter.
+private enum TVSharedResources {
+  static let data: [String: Any] = {
+    guard let url = Bundle.main.url(forResource: "tv_design_contract", withExtension: "json"),
+          let content = try? Data(contentsOf: url),
+          let result = try? JSONSerialization.jsonObject(with: content) as? [String: Any]
+    else { return [:] }
+    return result
+  }()
+  static let strings = data["strings"] as? [String: String] ?? [:]
+  static func color(_ key: String, dark: Bool, fallback: UInt32) -> UIColor {
+    let palette = data[dark ? "dark" : "light"] as? [String: NSNumber]
+    let value = palette?[key]?.uint32Value ?? fallback
+    return UIColor(red: CGFloat((value >> 16) & 255) / 255,
+      green: CGFloat((value >> 8) & 255) / 255,
+      blue: CGFloat(value & 255) / 255, alpha: 1)
+  }
+}
+
 enum TVTheme {
   static let preferenceKey = "fastcat.tv.prefers-dark-theme"
   static let background = dynamicColor(
@@ -78,32 +97,37 @@ enum TVTheme {
   static let surfaceStrong = dynamicColor(
     light: hex(0xF0F2F5), dark: hex(0x1E1F25)
   )
-  static let surfaceHighest = dynamicColor(light: hex(0xE2E2E9), dark: hex(0x33353A))
+  static let surfaceHighest = sharedColor("surfaceContainerHighest", light: 0xE2E2E9, dark: 0x33353A)
   static let inputFill = dynamicColor(light: hex(0xF5F7FA), dark: hex(0x1E1F25))
   static let stroke = dynamicColor(
     light: hex(0xEEF0F4), dark: hex(0x8F9099, alpha: 0.18)
   )
-  static let primary = dynamicColor(light: hex(0x475D91), dark: hex(0xB0C6FF))
+  static let primary = sharedColor("primary", light: 0x475D91, dark: 0xB0C6FF)
   static let primaryBright = primary
-  static let primaryContainer = dynamicColor(light: hex(0xD9E2FF), dark: hex(0x2E4578))
-  static let onPrimaryContainer = dynamicColor(light: hex(0x2E4578), dark: hex(0xD9E2FF))
+  static let primaryContainer = sharedColor("primaryContainer", light: 0xD9E2FF, dark: 0x2E4578)
+  static let onPrimaryContainer = sharedColor("onPrimaryContainer", light: 0x2E4578, dark: 0xD9E2FF)
   static let focusRing = primary
   static let success = dynamicColor(light: hex(0x4CAF50), dark: hex(0x66BB6A))
   static let danger = dynamicColor(light: hex(0xF44336), dark: hex(0xEF5350))
   static let warning = dynamicColor(light: hex(0xFF9800), dark: hex(0xFFB74D))
   static let error = dynamicColor(light: hex(0xBA1A1A), dark: hex(0xFFB4AB))
   static let errorContainer = dynamicColor(light: hex(0xFFDAD6), dark: hex(0x93000A))
-  static let textPrimary = dynamicColor(light: hex(0x1A1B20), dark: hex(0xE2E2E9))
-  static let textSecondary = dynamicColor(light: hex(0x44464F), dark: hex(0xC5C6D0))
-  static let outline = dynamicColor(light: hex(0x757780), dark: hex(0x8F9099))
-  static let outlineVariant = dynamicColor(light: hex(0xC5C6D0), dark: hex(0x44464F))
+  static let textPrimary = sharedColor("onSurface", light: 0x1A1B20, dark: 0xE2E2E9)
+  static let textSecondary = sharedColor("onSurfaceVariant", light: 0x44464F, dark: 0xC5C6D0)
+  static let outline = sharedColor("outline", light: 0x757780, dark: 0x8F9099)
+  static let outlineVariant = sharedColor("outlineVariant", light: 0xC5C6D0, dark: 0x44464F)
   static let inputBorder = dynamicColor(light: hex(0xEEF0F4), dark: hex(0x8F9099))
-  static let onPrimary = dynamicColor(light: .white, dark: hex(0x152E60))
+  static let onPrimary = sharedColor("onPrimary", light: 0xFFFFFF, dark: 0x152E60)
   static let cardRadius: CGFloat = tv(20)
   static let compactRadius: CGFloat = tv(14)
   static let controlRadius: CGFloat = tv(12)
   static let smallRadius: CGFloat = tv(10)
   static let focusWidth: CGFloat = tv(2)
+
+  private static func sharedColor(_ key: String, light: UInt32, dark: UInt32) -> Color {
+    dynamicColor(light: TVSharedResources.color(key, dark: false, fallback: light),
+      dark: TVSharedResources.color(key, dark: true, fallback: dark))
+  }
 
   private static func dynamicColor(light: UIColor, dark: UIColor) -> Color {
     Color(uiColor: UIColor { traits in
@@ -128,6 +152,16 @@ enum TVFont {
 
   static func medium(_ size: CGFloat) -> Font {
     .custom("Roboto-Medium", fixedSize: tv(size * TVLayout.textScale))
+  }
+}
+
+/// Android TV authentication intentionally uses 1.0× text, unlike the dashboard.
+enum TVAuthFont {
+  static func regular(_ size: CGFloat) -> Font {
+    .custom("Roboto-Regular", fixedSize: tv(size))
+  }
+  static func medium(_ size: CGFloat) -> Font {
+    .custom("Roboto-Medium", fixedSize: tv(size))
   }
 }
 

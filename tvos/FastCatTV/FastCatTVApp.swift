@@ -17,6 +17,7 @@ struct FastCatTVApp: App {
 }
 
 private struct RootView: View {
+  @Environment(\.scenePhase) private var scenePhase
   @EnvironmentObject private var session: SessionStore
   @Environment(\.openURL) private var openURL
   @AppStorage(TVLanguage.preferenceKey) private var language = TVLanguage.system.rawValue
@@ -40,6 +41,9 @@ private struct RootView: View {
     .task {
       await session.restore()
       await checkForUpdates()
+    }
+    .task(id: "\(session.token ?? "")-\(scenePhase)") {
+      if scenePhase == .active { await session.maintainSession() }
     }
     .onChange(of: language) { _, _ in
       Task { await checkForUpdates() }

@@ -32,6 +32,8 @@ app_group.new_file('FastCatTV.entitlements')
 # copies the file as config.yaml at the root of the tvOS application bundle.
 shared_config = main.new_file('../assets/config/config.yaml')
 app.resources_build_phase.add_file_reference(shared_config)
+shared_design = main.new_file('../assets/config/tv_design_contract.json')
+app.resources_build_phase.add_file_reference(shared_design)
 brand_icon = main.new_file('../assets/images/icon.png')
 app.resources_build_phase.add_file_reference(brand_icon)
 %w[Roboto-Regular.ttf Roboto-Medium.ttf MaterialIcons-Regular.otf].each do |name|

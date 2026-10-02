@@ -1,4 +1,5 @@
 import 'dart:async';
+import '../utils/crisp_scripts.dart';
 import 'dart:convert';
 import 'dart:io';
 
@@ -361,32 +362,7 @@ class _WindowsChatPageState extends State<WindowsChatPage> {
     window.__fastcatCustomerServiceCrispLocale = '${_escapeJsString(crispLocale)}';
     window.CRISP_RUNTIME_CONFIG = window.CRISP_RUNTIME_CONFIG || {};
     window.CRISP_RUNTIME_CONFIG.locale = window.__fastcatCustomerServiceCrispLocale;
-    window.__fastcatApplyCustomerServiceTheme = function(theme){
-      try {
-        window.__fastcatCustomerServiceTheme = theme;
-        document.documentElement.style.background = theme.background;
-        document.documentElement.style.colorScheme = theme.isDark ? 'dark' : 'light';
-        if (document.body) {
-          document.body.style.background = theme.background;
-          document.body.style.color = theme.foreground;
-        }
-        var style = document.getElementById('fastcat-customer-service-theme');
-        if (!style) {
-          style = document.createElement('style');
-          style.id = 'fastcat-customer-service-theme';
-          (document.head || document.documentElement).appendChild(style);
-        }
-        style.textContent = ''
-          + 'html,body{background:' + theme.background + ' !important;color:' + theme.foreground + ' !important;color-scheme:' + (theme.isDark ? 'dark' : 'light') + ' !important;}'
-          + '#loading{background:' + theme.background + ' !important;color:' + theme.foreground + ' !important;}'
-          + 'iframe[src*="crisp"],.crisp-client,[class*="crisp"],[id*="crisp"]{width:100% !important;height:100% !important;max-width:none !important;max-height:none !important;position:fixed !important;top:0 !important;left:0 !important;margin:0 !important;padding:0 !important;border:none !important;border-radius:0 !important;background:' + theme.background + ' !important;color-scheme:' + (theme.isDark ? 'dark' : 'light') + ' !important;}';
-        window.\$crisp = window.\$crisp || [];
-        window.\$crisp.push(["config", "locale", [window.__fastcatCustomerServiceCrispLocale || 'en']]);
-        window.\$crisp.push(["config", "color:mode", [theme.isDark ? "dark" : "light"]]);
-        window.CRISP_RUNTIME_CONFIG = window.CRISP_RUNTIME_CONFIG || {};
-        window.CRISP_RUNTIME_CONFIG.locale = window.__fastcatCustomerServiceCrispLocale || 'en';
-      } catch (_) {}
-    };
+    $crispThemeInstallerScript
     document.documentElement.style.background = '$background';
     document.documentElement.style.colorScheme = '${_isDarkMode ? 'dark' : 'light'}';
     document.documentElement.lang = window.__fastcatCustomerServiceLocale;

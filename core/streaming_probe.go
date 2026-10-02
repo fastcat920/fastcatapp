@@ -8,6 +8,7 @@ import (
 	"net"
 	"net/http"
 	"strings"
+	"sync"
 	"time"
 
 	"github.com/metacubex/mihomo/constant"
@@ -15,6 +16,7 @@ import (
 )
 
 type StreamingProbeParams struct {
+	RunID       string            `json:"run-id"`
 	ProxyName   string            `json:"proxy-name"`
 	URL         string            `json:"url"`
 	Method      string            `json:"method"`
@@ -34,6 +36,78 @@ type StreamingProbeResult struct {
 	ElapsedMs  int64             `json:"elapsed-ms"`
 	Truncated  bool              `json:"truncated"`
 	Error      string            `json:"error,omitempty"`
+}
+
+// A run owns all its concurrent requests. Keep cancellation tombstones briefly
+// so requests already crossing the platform channel cannot restart a stopped run.
+type streamingRun struct {
+	ctx     context.Context
+	cancel  context.CancelFunc
+	active  int
+	touched time.Time
+}
+
+var streamingRuns = struct {
+	sync.Mutex
+	items map[string]*streamingRun
+}{items: make(map[string]*streamingRun)}
+
+func streamingRunLocked(id string) *streamingRun {
+	now := time.Now()
+	for key, run := range streamingRuns.items {
+		if run.active == 0 && now.Sub(run.touched) > 15*time.Minute {
+			run.cancel()
+			delete(streamingRuns.items, key)
+		}
+	}
+	if run := streamingRuns.items[id]; run != nil {
+		return run
+	}
+	// Bound retained idle runs without ever evicting an active request.
+	if len(streamingRuns.items) >= 64 {
+		var oldestKey string
+		var oldest *streamingRun
+		for key, run := range streamingRuns.items {
+			if run.active == 0 && (oldest == nil || run.touched.Before(oldest.touched)) {
+				oldestKey, oldest = key, run
+			}
+		}
+		if oldest != nil {
+			oldest.cancel()
+			delete(streamingRuns.items, oldestKey)
+		}
+	}
+	ctx, cancel := context.WithCancel(context.Background())
+	run := &streamingRun{ctx: ctx, cancel: cancel, touched: now}
+	streamingRuns.items[id] = run
+	return run
+}
+
+func acquireStreamingRun(id string) (context.Context, func()) {
+	if id == "" {
+		return context.Background(), func() {}
+	}
+	streamingRuns.Lock()
+	run := streamingRunLocked(id)
+	run.active++
+	streamingRuns.Unlock()
+	return run.ctx, func() {
+		streamingRuns.Lock()
+		run.active--
+		run.touched = time.Now()
+		streamingRuns.Unlock()
+	}
+}
+
+func cancelStreamingProbes(id string) {
+	if id == "" {
+		return
+	}
+	streamingRuns.Lock()
+	defer streamingRuns.Unlock()
+	run := streamingRunLocked(id)
+	run.cancel()
+	run.touched = time.Now()
 }
 
 func handleStreamingProbe(paramsString string) string {
@@ -86,7 +160,9 @@ func handleStreamingProbe(paramsString string) string {
 			return nil
 		},
 	}
-	ctx, cancel := context.WithTimeout(context.Background(), timeout)
+	parent, release := acquireStreamingRun(params.RunID)
+	defer release()
+	ctx, cancel := context.WithTimeout(parent, timeout)
 	defer cancel()
 	method := strings.ToUpper(strings.TrimSpace(params.Method))
 	if method == "" {

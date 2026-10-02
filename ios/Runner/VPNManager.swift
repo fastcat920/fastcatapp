@@ -349,30 +349,30 @@ class VPNManager: NSObject {
   func sendClashMessage(method: String, data: String?, completion: @escaping (String?) -> Void) {
     guard let session = manager?.connection as? NETunnelProviderSession else {
       NSLog("[VPNManager] sendClashMessage(%@): no session available", method)
-      completion("")
+      completion(nil)
       return
     }
     let status = manager?.connection.status ?? .invalid
     guard status == .connected || status == .connecting else {
       NSLog("[VPNManager] sendClashMessage(%@): tunnel not running (status=%d)", method, status.rawValue)
-      completion("")
+      completion(nil)
       return
     }
     var payload: [String: Any] = ["method": method]
     if let data = data { payload["data"] = data }
     guard let encoded = try? JSONSerialization.data(withJSONObject: payload) else {
       NSLog("[VPNManager] sendClashMessage(%@): JSON encoding failed", method)
-      completion("")
+      completion(nil)
       return
     }
     do {
       try session.sendProviderMessage(encoded) { responseData in
-        guard let d = responseData else { completion(""); return }
+        guard let d = responseData else { completion(nil); return }
         completion(String(data: d, encoding: .utf8))
       }
     } catch {
       NSLog("[VPNManager] sendClashMessage(%@): IPC error: %@", method, error.localizedDescription)
-      completion("")
+      completion(nil)
     }
   }
 

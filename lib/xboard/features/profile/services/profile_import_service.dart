@@ -1,9 +1,7 @@
 import 'dart:async';
 import 'dart:io';
-import 'dart:math';
 import 'package:fl_clash/common/common.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:fl_clash/enum/enum.dart';
 import 'package:fl_clash/models/models.dart';
 import 'package:fl_clash/state.dart';
 import 'package:fl_clash/providers/providers.dart';
@@ -15,6 +13,7 @@ import 'package:fl_clash/xboard/core/core.dart';
 import 'package:fl_clash/xboard/config/utils/config_file_loader.dart';
 import 'package:fl_clash/xboard/features/connectivity/connectivity.dart';
 import 'package:fl_clash/security/profile_vault.dart';
+import 'package:fl_clash/security/profile_retention.dart';
 
 // 初始化文件级日志器
 final _logger = FileLogger('profile_import_service.dart');
@@ -51,9 +50,11 @@ class XBoardProfileImportService {
       // 1. 先下载并验证新配置（不删除旧配置）
       onProgress?.call(ImportStatus.downloading, 0.3, '下载配置文件');
 
-      // 保存当前 profile 的节点选择，导入后继承，防止节点刷新后重置为 DIRECT
-      final oldSelectedMap =
-          _ref.read(currentProfileProvider)?.selectedMap ?? {};
+      // 用户配置属于本地状态，订阅刷新只能替换远端内容，不能把节点选择
+      // 或自定义分流一并覆盖掉。
+      final oldProfile = _ref.read(currentProfileProvider);
+      final oldSelectedMap = oldProfile?.selectedMap ?? {};
+      final oldOverrideData = oldProfile?.overrideData;
 
       final connectivity = _ref.read(serviceConnectivityProvider);
       if (connectivity.isOffline) {
@@ -72,10 +73,12 @@ class XBoardProfileImportService {
       onProgress?.call(ImportStatus.validating, 0.6, '验证配置格式');
       _throwIfCancelled(cancelToken);
 
-      // 继承旧的节点选择，避免刷新后丢失用户选择
-      final profileWithSelection = oldSelectedMap.isNotEmpty
-          ? profile.copyWith(selectedMap: oldSelectedMap)
-          : profile;
+      // 继承旧的节点选择与自定义分流，避免刷新订阅后本地规则丢失。
+      final profileWithSelection = profile.copyWith(
+        selectedMap:
+            oldSelectedMap.isNotEmpty ? oldSelectedMap : profile.selectedMap,
+        overrideData: oldOverrideData ?? profile.overrideData,
+      );
 
       // 2. 先添加新配置（保持 groups 非空，VPN 不断线）
       onProgress?.call(ImportStatus.adding, 0.8, '应用新配置');
@@ -94,7 +97,7 @@ class XBoardProfileImportService {
       // 3. 再清理旧配置（新配置已就绪，安全删除旧的）
       onProgress?.call(ImportStatus.cleaning, 0.95, '清理旧配置');
       _throwIfCancelled(cancelToken);
-      await _cleanOldUrlProfilesExcept(profile.id);
+      await _pruneOldUrlProfiles(profile.id);
       _logProfileDiff(
         rollbackSnapshot.profiles,
         _ref.read(profilesProvider),
@@ -104,7 +107,7 @@ class XBoardProfileImportService {
       onProgress?.call(ImportStatus.success, 1.0, '导入成功');
       _logger.info('订阅配置导入成功，耗时: ${stopwatch.elapsedMilliseconds}ms');
       return ImportResult.success(
-        profile: profile,
+        profile: profileWithSelection,
         duration: stopwatch.elapsed,
       );
     } catch (e) {
@@ -165,26 +168,33 @@ class XBoardProfileImportService {
     );
   }
 
-  /// 清理旧的 URL 配置，保留指定 ID 的新配置。
+  /// 清理旧的 URL 配置，保留当前配置与最近两份成功快照。
   /// 必须在 _addProfile() 之后调用，这样新配置已成为当前配置，
   /// 删除旧配置不会导致 groups 短暂为空或 VPN 断线。
-  Future<void> _cleanOldUrlProfilesExcept(String keepId) async {
+  Future<void> _pruneOldUrlProfiles(String keepId) async {
     try {
-      final profiles = globalState.config.profiles;
-      final oldProfiles = profiles
-          .where((p) => p.type == ProfileType.url && p.id != keepId)
-          .toList();
+      final plan = buildProfileRetentionPlan(
+        _ref.read(profilesProvider),
+        activeProfileId: keepId,
+      );
+      _ref.read(profilesProvider.notifier).value = plan.profiles;
 
-      for (final profile in oldProfiles) {
-        _logger.debug('删除旧的URL配置: ${profile.label ?? profile.id}');
-        _ref.read(profilesProvider.notifier).deleteProfileById(profile.id);
-        // 不调用 _clearProfileEffect：当前配置已是新 profile，旧的 id 不影响 VPN
+      for (final profile in plan.removedProfiles) {
+        _logger.debug('删除过期URL配置: ${profile.label ?? profile.id}');
+        await _clearProfileFiles(profile.id);
       }
 
-      _logger.info('清理了 ${oldProfiles.length} 个旧的URL配置（保留: $keepId）');
+      final retainedIds = plan.profiles.map((profile) => profile.id).toSet();
+      final orphanCount =
+          await ProfileVault.instance.pruneOrphanedProfiles(retainedIds);
+      _logger.info(
+        '订阅缓存清理完成: 删除配置=${plan.removedProfiles.length}, '
+        '删除孤儿项=$orphanCount, 最多保留=$subscriptionProfileRetentionLimit',
+      );
     } catch (e) {
       _logger.warning('清理旧配置时出错', e);
-      throw Exception('清理旧配置失败: $e');
+      // 新配置已经成功应用。缓存清理属于维护操作，失败不能把本次
+      // 订阅刷新标记为失败，也不能触发对可用配置的回滚。
     }
   }
 
@@ -295,8 +305,7 @@ class XBoardProfileImportService {
             throw Exception('无法从URL中提取token且登录数据获取失败: $url');
           }
 
-          _logger.debug(
-              '🔑 从URL提取到token: ${token.substring(0, min(8, token.length))}...');
+          _logger.debug('🔑 已从订阅 URL 提取认证令牌');
           result = await EncryptedSubscriptionService.getSubscriptionSmart(
             token,
             preferEncrypt: preferEncrypt,
@@ -313,8 +322,7 @@ class XBoardProfileImportService {
           throw Exception('所有token获取方式都失败: $url');
         }
 
-        _logger.debug(
-            '🔄 Fallback - 从URL提取到token: ${token.substring(0, min(8, token.length))}...');
+        _logger.debug('🔄 Fallback - 已从订阅 URL 提取认证令牌');
         result = await EncryptedSubscriptionService.getSubscriptionSmart(
           token,
           preferEncrypt: preferEncrypt,
@@ -328,8 +336,7 @@ class XBoardProfileImportService {
 
       _logger.info('🎉 加密订阅获取成功！加密模式: ${result.encryptionUsed}');
       if (result.keyUsed != null) {
-        _logger.debug(
-            '🔑 使用解密密钥: ${result.keyUsed!.substring(0, min(8, result.keyUsed!.length))}...');
+        _logger.debug('🔑 已使用当前有效密钥完成订阅解密');
       }
 
       // 验证解密后的配置内容
@@ -408,7 +415,7 @@ class XBoardProfileImportService {
           '✅ [${sw.elapsedMilliseconds}ms] currentProfileId 已设置: ${profile.id}');
 
       // 4. 同步等待 applyProfile 完成（与 Orange 一致）
-      // 必须 await，否则后续的 _cleanOldUrlProfilesExcept 可能在 applyProfile 完成前执行，
+      // 必须 await，否则后续的 _pruneOldUrlProfiles 可能在 applyProfile 完成前执行，
       // 导致竞态条件：旧配置被删除但新配置尚未加载，用户看到空白节点列表。
       _logger.info(
           '📋 [${sw.elapsedMilliseconds}ms] 开始 await applyProfile(silence: true)...');
@@ -436,7 +443,7 @@ class XBoardProfileImportService {
         }
       } catch (e) {
         _logger.error('❌ applyProfile 失败', e);
-        // 必须抛出异常！否则后续 _cleanOldUrlProfilesExcept 会删除旧配置，
+        // 必须抛出异常！否则后续 _pruneOldUrlProfiles 会删除旧配置，
         // 导致旧配置被清除、新配置未加载成功 → 用户看到空白节点列表。
         // 配置文件已保存在磁盘，下次启动时会自动加载。
         throw Exception('applyProfile 失败: $e');

@@ -74,11 +74,55 @@ class ProfileVault {
       currentPath,
       _previousPath(currentPath),
       _stagingPath(currentPath),
+      '$currentPath.damaged',
       await appPath.getLegacyProfilePath(profileId),
     ]) {
       final file = File(path);
       if (await file.exists()) await file.delete();
     }
+  }
+
+  /// Removes profile artifacts that no longer have a retained metadata entry.
+  /// Unknown files and symbolic links are deliberately left untouched.
+  Future<int> pruneOrphanedProfiles(
+    Set<String> retainedProfileIds, {
+    Duration? minimumOrphanAge,
+  }) async {
+    var removed = 0;
+    final now = DateTime.now();
+    final profiles = Directory(await appPath.profilesPath);
+    if (await profiles.exists()) {
+      await for (final entity in profiles.list(followLinks: false)) {
+        if (entity is! File) continue;
+        final profileId = _profileIdForManagedFile(p.basename(entity.path));
+        if (profileId == null || retainedProfileIds.contains(profileId)) {
+          continue;
+        }
+        if (await _isInsideGracePeriod(entity, minimumOrphanAge, now)) {
+          continue;
+        }
+        await entity.delete();
+        removed++;
+      }
+
+      for (final directoryName in ['providers', 'providers-secure']) {
+        removed += await _pruneProfileDirectories(
+          Directory(p.join(profiles.path, directoryName)),
+          retainedProfileIds,
+          minimumOrphanAge: minimumOrphanAge,
+          now: now,
+        );
+      }
+    }
+
+    final temp = await appPath.tempDir.future;
+    removed += await _pruneProfileDirectories(
+      Directory(p.join(temp.path, 'fastcat-runtime-providers')),
+      retainedProfileIds,
+      minimumOrphanAge: minimumOrphanAge,
+      now: now,
+    );
+    return removed;
   }
 
   /// Migrates pre-vault YAML once and leaves the original intact unless the
@@ -248,6 +292,56 @@ class ProfileVault {
 
   String _providerRecordId(String profileId, String relativePath) =>
       'provider|$profileId|$relativePath';
+
+  String? _profileIdForManagedFile(String fileName) {
+    const suffixes = [
+      '.fcfg.previous',
+      '.fcfg.damaged',
+      '.fcfg.new',
+      '.fcfg',
+      '.yaml',
+    ];
+    for (final suffix in suffixes) {
+      if (fileName.endsWith(suffix) && fileName.length > suffix.length) {
+        return fileName.substring(0, fileName.length - suffix.length);
+      }
+    }
+    return null;
+  }
+
+  Future<int> _pruneProfileDirectories(
+    Directory root,
+    Set<String> retainedProfileIds, {
+    Duration? minimumOrphanAge,
+    required DateTime now,
+  }) async {
+    if (!await root.exists()) return 0;
+    var removed = 0;
+    await for (final entity in root.list(followLinks: false)) {
+      if (entity is! Directory) continue;
+      if (retainedProfileIds.contains(p.basename(entity.path))) continue;
+      if (await _isInsideGracePeriod(entity, minimumOrphanAge, now)) continue;
+      await entity.delete(recursive: true);
+      removed++;
+    }
+    return removed;
+  }
+
+  Future<bool> _isInsideGracePeriod(
+    FileSystemEntity entity,
+    Duration? minimumOrphanAge,
+    DateTime now,
+  ) async {
+    if (minimumOrphanAge == null) return false;
+    try {
+      final modified = (await entity.stat()).modified;
+      return now.difference(modified) < minimumOrphanAge;
+    } catch (_) {
+      // A disappearing/unreadable orphan is harmless; let the normal delete
+      // path report the actual filesystem error to the caller.
+      return false;
+    }
+  }
 
   String _previousPath(String targetPath) => '$targetPath.previous';
 

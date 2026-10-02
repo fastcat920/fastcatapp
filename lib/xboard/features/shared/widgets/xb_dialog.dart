@@ -74,17 +74,26 @@ class XbConfirmDialog extends StatelessWidget {
       content: Text(message),
       actionsPadding: const EdgeInsets.fromLTRB(24, 0, 24, 20),
       actions: [
-        OutlinedButton(
+        TVFocusable(
+          autofocus: true,
+          borderRadius: BorderRadius.circular(14),
           onPressed: () => Navigator.of(context).pop(false),
-          style: XbUiButton.outlinedNeutral(context),
-          child: Text(cancelLabel ?? (chinese ? '取消' : 'Cancel')),
+          child: OutlinedButton(
+            onPressed: () => Navigator.of(context).pop(false),
+            style: XbUiButton.outlinedNeutral(context),
+            child: Text(cancelLabel ?? (chinese ? '取消' : 'Cancel')),
+          ),
         ),
-        FilledButton(
+        TVFocusable(
+          borderRadius: BorderRadius.circular(14),
           onPressed: () => Navigator.of(context).pop(true),
-          style: isDanger
-              ? XbUiButton.filledDanger(context)
-              : XbUiButton.filledPrimary(context),
-          child: Text(confirmLabel),
+          child: FilledButton(
+            onPressed: () => Navigator.of(context).pop(true),
+            style: isDanger
+                ? XbUiButton.filledDanger(context)
+                : XbUiButton.filledPrimary(context),
+            child: Text(confirmLabel),
+          ),
         ),
       ],
     );

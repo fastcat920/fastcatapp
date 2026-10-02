@@ -45,7 +45,31 @@ on:
       - "v*"
 
 jobs:
+  checks:
+    name: Shared client checks
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          lfs: true
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+          channel: stable
+          cache: true
+      - run: flutter pub get
+      - run: flutter analyze --no-pub
+      - run: flutter test --no-pub
+      - uses: actions/setup-go@v5
+        with:
+          go-version: "1.20.x"
+          cache-dependency-path: core/go.sum
+      - name: Core regression tests
+        working-directory: core
+        run: go test -race ./...
+
   android:
+    needs: checks
     name: Android APK
     runs-on: ubuntu-latest
     if: github.event_name == 'push' || inputs.build_android
@@ -171,6 +195,7 @@ jobs:
           retention-days: 3
 
   windows:
+    needs: checks
     name: Windows x64
     runs-on: windows-2022
     if: github.event_name == 'push' || inputs.build_windows
@@ -689,6 +714,7 @@ jobs:
           retention-days: 3
 
   ios:
+    needs: checks
     name: iOS IPA
     runs-on: macos-latest
     if: github.event_name == 'push' || inputs.build_ios
@@ -738,6 +764,7 @@ jobs:
           retention-days: 3
 
   tvos:
+    needs: checks
     name: tvOS App
     runs-on: macos-15
     if: github.event_name == 'push' || inputs.build_tvos
@@ -793,6 +820,7 @@ jobs:
           retention-days: 3
 
   linux:
+    needs: checks
     name: Linux ${{ matrix.arch }}
     runs-on: ${{ matrix.runner }}
     if: github.event_name == 'push' || inputs.build_linux
@@ -883,6 +911,7 @@ jobs:
           retention-days: 3
 
   macos:
+    needs: checks
     name: macOS Universal DMG
     runs-on: macos-15
     if: github.event_name == 'push' || inputs.build_macos
@@ -917,12 +946,6 @@ jobs:
 
       - name: Get packages
         run: flutter pub get
-
-      - name: Analyze macOS client
-        run: flutter analyze --no-pub
-
-      - name: Test macOS client
-        run: flutter test --no-pub
 
       - name: Build macOS universal DMG
         env:

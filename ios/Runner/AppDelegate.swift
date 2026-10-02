@@ -77,7 +77,11 @@ import NetworkExtension
         method: call.method,
         data: call.arguments as? String
       ) { response in
-        result(response ?? "")
+        if call.method == "_updateConfig", response == nil {
+          result(FlutterError(code: "TUNNEL_UNAVAILABLE", message: "The VPN tunnel did not acknowledge the configuration.", details: nil))
+        } else {
+          result(response ?? "")
+        }
       }
     }
 

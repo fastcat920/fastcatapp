@@ -31,6 +31,7 @@ mixin ClashInterface {
   Future<String> streamingProbe(
     String url,
     String proxyName, {
+    String? runId,
     String method = 'GET',
     String? body,
     Map<String, String> headers = const {},
@@ -38,6 +39,8 @@ mixin ClashInterface {
     Duration timeout = const Duration(seconds: 8),
     int maxBodySize = 256 * 1024,
   });
+
+  Future<void> cancelStreamingProbes(String runId);
 
   FutureOr<String> updateConfig(UpdateParams updateParams);
 
@@ -481,6 +484,7 @@ abstract class ClashHandlerInterface with ClashInterface {
   Future<String> streamingProbe(
     String url,
     String proxyName, {
+    String? runId,
     String method = 'GET',
     String? body,
     Map<String, String> headers = const {},
@@ -489,6 +493,7 @@ abstract class ClashHandlerInterface with ClashInterface {
     int maxBodySize = 256 * 1024,
   }) {
     final params = {
+      if (runId != null) 'run-id': runId,
       'proxy-name': proxyName,
       'url': url,
       'method': method,
@@ -512,6 +517,16 @@ abstract class ClashHandlerInterface with ClashInterface {
         'truncated': false,
         'error': 'streaming probe timed out',
       }),
+    );
+  }
+
+  @override
+  Future<void> cancelStreamingProbes(String runId) async {
+    await invoke<String>(
+      method: ActionMethod.cancelStreamingProbes,
+      data: runId,
+      timeout: const Duration(seconds: 3),
+      onTimeout: () => '',
     );
   }
 

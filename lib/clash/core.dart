@@ -156,6 +156,7 @@ class ClashCore {
   Future<Map<String, dynamic>> streamingProbe(
     String url,
     String proxyName, {
+    String? runId,
     String method = 'GET',
     String? body,
     Map<String, String> headers = const {},
@@ -166,6 +167,7 @@ class ClashCore {
     final data = await clashInterface.streamingProbe(
       url,
       proxyName,
+      runId: runId,
       method: method,
       body: body,
       headers: headers,
@@ -175,6 +177,9 @@ class ClashCore {
     );
     return Map<String, dynamic>.from(json.decode(data) as Map);
   }
+
+  Future<void> cancelStreamingProbes(String runId) =>
+      clashInterface.cancelStreamingProbes(runId);
 
   FutureOr<String> changeProxy(ChangeProxyParams changeProxyParams) async {
     return await clashInterface.changeProxy(changeProxyParams);

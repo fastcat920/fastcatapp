@@ -1,9 +1,9 @@
-import 'dart:io';
+import 'package:fl_clash/mihomo/mihomo.dart';
+import '../utils/routing_rule.dart';
 
 import 'package:fl_clash/enum/enum.dart';
 import 'package:fl_clash/models/models.dart';
 import 'package:fl_clash/providers/providers.dart';
-import 'package:fl_clash/state.dart';
 import 'package:fl_clash/xboard/features/shared/styles/styles.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -20,13 +20,16 @@ class _FastCatCustomRoutingPageState
     extends ConsumerState<FastCatCustomRoutingPage> {
   final _hostController = TextEditingController();
   late List<Rule> _rules;
+  String? _profileId;
   bool _useProxy = false;
   bool _isApplying = false;
+  int? _editingIndex;
 
   @override
   void initState() {
     super.initState();
     final profile = ref.read(currentProfileProvider);
+    _profileId = profile?.id;
     _rules = List.of(profile?.overrideData.rule.addedRules ?? const []);
   }
 
@@ -36,93 +39,92 @@ class _FastCatCustomRoutingPageState
     super.dispose();
   }
 
-  String _ruleFor(String input, String target) {
-    final value = input.trim();
-    final parts = value.split('/');
-    if (parts.length > 2) throw const FormatException();
-    final cidr = parts.length == 2;
-    final ip = InternetAddress.tryParse(parts.first);
-    if (ip != null) {
-      if (cidr) {
-        final prefix = int.tryParse(parts.last);
-        final maximum = ip.type == InternetAddressType.IPv6 ? 128 : 32;
-        if (prefix == null || prefix < 0 || prefix > maximum) {
-          throw const FormatException();
-        }
-      }
-      final action =
-          ip.type == InternetAddressType.IPv6 ? 'IP-CIDR6' : 'IP-CIDR';
-      return '$action,$value,$target,no-resolve';
-    }
-    final domain = value.startsWith('+.') ? value.substring(2) : value;
-    if (cidr ||
-        domain.isEmpty ||
-        domain.contains(RegExp(r'\s|[/,]')) ||
-        !_isValidDomain(domain)) {
-      throw const FormatException();
-    }
-    return 'DOMAIN-SUFFIX,$domain,$target';
-  }
-
-  bool _isValidDomain(String value) {
-    if (value.length > 253 || !value.contains('.')) return false;
-    return value.split('.').every((label) =>
-        label.isNotEmpty &&
-        label.length <= 63 &&
-        RegExp(r'^[a-zA-Z0-9](?:[a-zA-Z0-9-]*[a-zA-Z0-9])?$').hasMatch(label));
-  }
-
   Future<void> _add(String? proxyTarget) async {
     if (_isApplying) return;
     try {
       if (_useProxy && proxyTarget == null) {
         throw const FormatException();
       }
-      final value =
-          _ruleFor(_hostController.text, _useProxy ? proxyTarget! : 'DIRECT');
-      if (_rules.any((rule) => rule.value == value)) {
+      final value = buildRoutingRule(
+          _hostController.text, _useProxy ? proxyTarget! : 'DIRECT');
+      if (_rules.asMap().entries.any((entry) =>
+          entry.key != _editingIndex &&
+          sameRoutingDestination(entry.value.value, value))) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('该规则已存在')),
+          SnackBar(
+              content: Text(_chinese
+                  ? '此目标已有规则，请编辑原规则或调整顺序'
+                  : 'A rule for this destination already exists. Edit it or change its order.')),
         );
         return;
       }
-      setState(() {
-        _rules.add(Rule.value(value));
-        _hostController.clear();
-      });
-      await _applyRules();
-      if (!mounted) return;
+      final candidate = [..._rules];
+      if (_editingIndex case final index?) {
+        candidate[index] = Rule.value(value);
+      } else {
+        candidate.add(Rule.value(value));
+      }
+      if (await _applyRules(candidate) && mounted) {
+        setState(() {
+          _rules = candidate;
+          _hostController.clear();
+          _editingIndex = null;
+        });
+      }
     } on FormatException {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('请输入有效的域名、IP 或 CIDR')),
+          SnackBar(
+              content: Text(_chinese
+                  ? '请输入有效的域名、IP 或 CIDR'
+                  : 'Enter a valid domain, IP address or CIDR.')),
         );
       }
     }
   }
 
-  Future<void> _applyRules() async {
-    if (_isApplying) return;
+  Future<bool> _applyRules(List<Rule> candidate) async {
+    if (_isApplying) return false;
     final profile = ref.read(currentProfileProvider);
-    if (profile == null) return;
+    if (profile == null) return false;
     setState(() => _isApplying = true);
     try {
-      ref.read(profilesProvider.notifier).setProfile(profile.copyWith(
-            overrideData: profile.overrideData.copyWith(
-              enable: _rules.isNotEmpty,
-              rule: profile.overrideData.rule.copyWith(
-                type: OverrideRuleType.added,
-                addedRules: _rules,
-              ),
-            ),
-          ));
-      await globalState.appController.updateClashConfig();
+      final updatedProfile = profile.copyWith(
+        overrideData: profile.overrideData.copyWith(
+          enable: profile.overrideData.enable || candidate.isNotEmpty,
+          rule: profile.overrideData.rule.copyWith(
+            type: OverrideRuleType.added,
+            addedRules: candidate,
+          ),
+        ),
+      );
+      ref.read(profilesProvider.notifier).setProfile(updatedProfile);
+      await ref.read(coreGatewayProvider).applyCurrentProfile();
+      return ref.read(currentProfileIdProvider) == profile.id;
     } catch (_) {
+      // 配置热更新失败时恢复上一份已知可用配置，避免 UI 显示已保存、
+      // 实际核心仍运行旧规则的分裂状态。
+      ref.read(profilesProvider.notifier).setProfile(profile);
+      var restored = true;
+      try {
+        await ref.read(coreGatewayProvider).applyCurrentProfile();
+      } catch (_) {
+        restored = false;
+      }
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('规则保存失败，请重试')),
+          SnackBar(
+            content: Text(restored
+                ? (_chinese
+                    ? '规则未生效，已恢复之前的配置'
+                    : 'Rules could not be applied. The previous configuration was restored.')
+                : (_chinese
+                    ? '规则未生效；设置已还原，但内核恢复失败，请重新连接'
+                    : 'Rules were not applied. Settings were restored but core recovery failed. Please reconnect.')),
+          ),
         );
       }
+      return false;
     } finally {
       if (mounted) setState(() => _isApplying = false);
     }
@@ -130,15 +132,68 @@ class _FastCatCustomRoutingPageState
 
   Future<void> _removeAt(int index) async {
     if (_isApplying) return;
-    setState(() => _rules.removeAt(index));
-    await _applyRules();
+    final candidate = [..._rules]..removeAt(index);
+    if (await _applyRules(candidate) && mounted) {
+      setState(() {
+        _rules = candidate;
+        _editingIndex = null;
+        _hostController.clear();
+      });
+    }
   }
+
+  Future<void> _move(int from, int to) async {
+    if (_isApplying || to < 0 || to >= _rules.length) return;
+    final candidate = [..._rules];
+    candidate.insert(to, candidate.removeAt(from));
+    if (await _applyRules(candidate) && mounted) {
+      setState(() {
+        _rules = candidate;
+        _editingIndex = null;
+        _hostController.clear();
+      });
+    }
+  }
+
+  void _edit(int index) {
+    final parts = _rules[index].value.split(',');
+    if (parts.length < 3) return;
+    setState(() {
+      _editingIndex = index;
+      _hostController.text = parts[1];
+      _useProxy = parts[2] != 'DIRECT';
+    });
+  }
+
+  bool get _chinese => Localizations.localeOf(context).languageCode == 'zh';
 
   @override
   Widget build(BuildContext context) {
-    final chinese = Localizations.localeOf(context).languageCode == 'zh';
+    ref.listen(currentProfileIdProvider, (_, next) {
+      if (next == _profileId) return;
+      final profile = ref.read(currentProfileProvider);
+      setState(() {
+        _profileId = next;
+        _rules = List.of(profile?.overrideData.rule.addedRules ?? const []);
+        _editingIndex = null;
+        _hostController.clear();
+      });
+    });
+    final chinese = _chinese;
     final proxyGroups = ref.watch(currentGroupsStateProvider).value;
-    final proxyTarget = proxyGroups.isEmpty ? null : proxyGroups.first.name;
+    final preferredGroup = ref.watch(currentProfileProvider)?.currentGroupName;
+    final proxyTarget = proxyGroups.isEmpty
+        ? null
+        : proxyGroups
+                .where((group) => group.name == preferredGroup)
+                .map((group) => group.name)
+                .firstOrNull ??
+            proxyGroups
+                .where(
+                    (group) => group.hidden != true && group.name != 'GLOBAL')
+                .map((group) => group.name)
+                .firstOrNull ??
+            proxyGroups.first.name;
     return Scaffold(
       backgroundColor: XbUiTokens.pageBackground(context),
       appBar: AppBar(
@@ -201,8 +256,12 @@ class _FastCatCustomRoutingPageState
                       const SizedBox(width: 12),
                       FilledButton.icon(
                         onPressed: _isApplying ? null : () => _add(proxyTarget),
-                        icon: const Icon(Icons.add),
-                        label: Text(chinese ? '添加' : 'Add'),
+                        icon: Icon(_editingIndex != null
+                            ? Icons.save_outlined
+                            : Icons.add),
+                        label: Text(_editingIndex != null
+                            ? (chinese ? '保存' : 'Save')
+                            : (chinese ? '添加' : 'Add')),
                       ),
                     ]),
                   ]),
@@ -212,10 +271,33 @@ class _FastCatCustomRoutingPageState
               ..._rules.asMap().entries.map((entry) => Card(
                     child: ListTile(
                       title: Text(entry.value.value),
-                      trailing: IconButton(
-                        icon: const Icon(Icons.delete_outline),
-                        onPressed:
-                            _isApplying ? null : () => _removeAt(entry.key),
+                      subtitle: Wrap(
+                        children: [
+                          IconButton(
+                              tooltip: chinese ? '编辑' : 'Edit',
+                              icon: const Icon(Icons.edit_outlined),
+                              onPressed:
+                                  _isApplying ? null : () => _edit(entry.key)),
+                          IconButton(
+                              tooltip: chinese ? '上移' : 'Move up',
+                              icon: const Icon(Icons.arrow_upward),
+                              onPressed: _isApplying || entry.key == 0
+                                  ? null
+                                  : () => _move(entry.key, entry.key - 1)),
+                          IconButton(
+                              tooltip: chinese ? '下移' : 'Move down',
+                              icon: const Icon(Icons.arrow_downward),
+                              onPressed:
+                                  _isApplying || entry.key == _rules.length - 1
+                                      ? null
+                                      : () => _move(entry.key, entry.key + 1)),
+                          IconButton(
+                              tooltip: chinese ? '删除' : 'Delete',
+                              icon: const Icon(Icons.delete_outline),
+                              onPressed: _isApplying
+                                  ? null
+                                  : () => _removeAt(entry.key)),
+                        ],
                       ),
                     ),
                   )),

@@ -83,7 +83,7 @@ class LegacyCoreGateway implements CoreGateway {
 
   @override
   Future<void> applyCurrentProfile() =>
-      globalState.appController.applyProfile(silence: true);
+      globalState.appController.applyUserConfiguration();
 
   @override
   int? getNodeDelay(String nodeName, {String? testUrl}) {
