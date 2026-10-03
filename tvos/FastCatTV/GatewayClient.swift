@@ -112,6 +112,25 @@ struct TVSubscriptionSummary: Decodable {
   let downloadedBytes: Int64
   let transferLimit: Int64
   let expiredAt: TimeInterval?
+  let allowNewPeriod: Bool
+  let nextResetAt: TimeInterval?
+  let resetDay: Int?
+  private let hasUsageCounters: Bool
+
+  var canStartNewPeriod: Bool {
+    let expiry = expiredAt.map { $0 > 10_000_000_000 ? $0 / 1000 : $0 }
+    return allowNewPeriod && transferLimit > 0 && remainingBytes == 0
+      && (expiry == nil || expiry == 0 || expiry! > Date().timeIntervalSince1970)
+  }
+
+  func hasAdvancedPeriod(since before: TVSubscriptionSummary) -> Bool {
+    guard planID == before.planID else { return false }
+    if hasUsageCounters && before.hasUsageCounters && usedBytes < before.usedBytes { return true }
+    if let old = before.expiredAt, let new = expiredAt, old != new { return true }
+    if let old = before.nextResetAt, let new = nextResetAt, old != new { return true }
+    if let old = before.resetDay, let new = resetDay, old != new { return true }
+    return false
+  }
 
   var usedBytes: Int64 { max(0, uploadedBytes + downloadedBytes) }
   var remainingBytes: Int64 { max(0, transferLimit - usedBytes) }
@@ -132,15 +151,22 @@ struct TVSubscriptionSummary: Decodable {
     case downloadedBytes = "d"
     case transferLimit = "transfer_enable"
     case expiredAt = "expired_at"
+    case allowNewPeriod = "allow_new_period"
+    case nextResetAt = "next_reset_at"
+    case resetDay = "reset_day"
   }
 
-  init(planID: Int?, planName: String?, uploadedBytes: Int64, downloadedBytes: Int64, transferLimit: Int64, expiredAt: TimeInterval?) {
+  init(planID: Int?, planName: String?, uploadedBytes: Int64, downloadedBytes: Int64, transferLimit: Int64, expiredAt: TimeInterval?, allowNewPeriod: Bool = false, nextResetAt: TimeInterval? = nil, resetDay: Int? = nil) {
     self.planID = planID
     self.planName = planName
     self.uploadedBytes = uploadedBytes
     self.downloadedBytes = downloadedBytes
     self.transferLimit = transferLimit
     self.expiredAt = expiredAt
+    self.allowNewPeriod = allowNewPeriod
+    self.nextResetAt = nextResetAt
+    self.resetDay = resetDay
+    self.hasUsageCounters = true
   }
 
   init(from decoder: Decoder) throws {
@@ -152,6 +178,11 @@ struct TVSubscriptionSummary: Decodable {
     downloadedBytes = Int64(values.flexibleDouble(forKey: .downloadedBytes) ?? 0)
     transferLimit = Int64(values.flexibleDouble(forKey: .transferLimit) ?? 0)
     expiredAt = values.flexibleDouble(forKey: .expiredAt)
+    allowNewPeriod = values.flexibleBool(forKey: .allowNewPeriod) ?? false
+    nextResetAt = values.flexibleDouble(forKey: .nextResetAt)
+    resetDay = values.flexibleInt(forKey: .resetDay)
+    hasUsageCounters = values.flexibleDouble(forKey: .uploadedBytes) != nil
+      && values.flexibleDouble(forKey: .downloadedBytes) != nil
   }
 }
 
@@ -332,6 +363,16 @@ struct GatewayClient {
     )
   }
 
+  /// Changes the existing entitlement; does not create an order or checkout.
+  /// This POST is deliberately never retried automatically.
+  func startNewPeriod(token: String) async throws {
+    try await sendVoidRequest(
+      path: "/user/newPeriod", method: "POST",
+      body: AnyEncodable([String: String]()), authorization: token,
+      requireAcknowledgement: true
+    )
+  }
+
   func heartbeat(token: String) async throws -> String? {
     struct Status: Decodable { let device_policy: String? }
     let status: Status = try await sendRequest(
@@ -379,7 +420,7 @@ struct GatewayClient {
     try await sendVoidRequest(path: path, method: "POST", body: AnyEncodable(body))
   }
 
-  private func sendVoidRequest(path: String, method: String, body: AnyEncodable? = nil) async throws {
+  private func sendVoidRequest(path: String, method: String, body: AnyEncodable? = nil, authorization: String? = nil, requireAcknowledgement: Bool = false) async throws {
     var request = URLRequest(
       url: try endpointURL(path),
       cachePolicy: .reloadIgnoringLocalCacheData,
@@ -387,25 +428,45 @@ struct GatewayClient {
     )
     request.httpMethod = method
     request.setValue("application/json", forHTTPHeaderField: "Accept")
+    request.setValue(contentLanguage, forHTTPHeaderField: "Accept-Language")
+    request.setValue(contentLanguage, forHTTPHeaderField: "X-Locale")
+    if let authorization {
+      request.setValue(authorization, forHTTPHeaderField: "Authorization")
+    }
     if let body {
       request.httpBody = try JSONEncoder().encode(body)
       request.setValue("application/json", forHTTPHeaderField: "Content-Type")
     }
     let (data, response) = try await URLSession.shared.data(for: request)
     guard let http = response as? HTTPURLResponse else { throw GatewayError.invalidResponse }
+    if http.statusCode == 401 { throw GatewayError.unauthorized }
+    // A server error might occur after an irreversible mutation was applied.
+    if requireAcknowledgement && (http.statusCode >= 500 || http.statusCode == 408) {
+      throw GatewayError.invalidResponse
+    }
     guard (200..<300).contains(http.statusCode) else {
       throw GatewayError.server("服务暂时不可用（\(http.statusCode)）")
     }
     guard !data.isEmpty,
-          let object = try? JSONSerialization.jsonObject(with: data) as? [String: Any] else { return }
+          let object = try? JSONSerialization.jsonObject(with: data) as? [String: Any] else {
+      if requireAcknowledgement { throw GatewayError.invalidResponse }
+      return
+    }
     if let success = object["success"] as? Bool, !success {
       throw GatewayError.server((object["message"] ?? object["msg"] ?? "请求失败") as? String ?? "请求失败")
     }
     if let code = object["code"] as? Int, code != 0, code != 200 {
+      if requireAcknowledgement && (code >= 500 || code == 408) { throw GatewayError.invalidResponse }
       throw GatewayError.server((object["message"] ?? object["msg"] ?? "请求失败") as? String ?? "请求失败")
     }
     if let value = object["data"] as? Bool, !value {
       throw GatewayError.server((object["message"] ?? object["msg"] ?? "请求失败") as? String ?? "请求失败")
+    }
+    if requireAcknowledgement {
+      let code = object["code"] as? Int
+      guard object["data"] as? Bool == true || object["success"] as? Bool == true || code == 0 || code == 200 else {
+        throw GatewayError.invalidResponse
+      }
     }
   }
 

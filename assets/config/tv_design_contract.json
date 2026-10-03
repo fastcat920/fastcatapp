@@ -1209,7 +1209,7 @@
     "配置应用访问代理": "Configure application access proxy",
     "配置排序": "Profiles sort",
     "配置文件": "Profile",
-    "配置文件下载失败，请检查订阅链接": "Configuration download failed, please check subscription link",
+    "配置文件下载失败，请检查套餐是否正常": "Configuration file download failed. Please check that your plan is active and valid.",
     "配置文件已经修改,是否关闭自动更新 ": "The profile has been modified. Do you want to disable auto update?",
     "配置文件格式错误，请联系服务提供商": "Configuration format error, please contact service provider",
     "配置文件解析错误": "profile parse error",

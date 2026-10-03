@@ -5190,10 +5190,10 @@ class AppLocalizations {
     );
   }
 
-  /// `Configuration download failed, please check subscription link`
+  /// `Configuration file download failed. Please check that your plan is active and valid.`
   String get xboardConfigDownloadFailed {
     return Intl.message(
-      'Configuration download failed, please check subscription link',
+      'Configuration file download failed. Please check that your plan is active and valid.',
       name: 'xboardConfigDownloadFailed',
       desc: '',
       args: [],

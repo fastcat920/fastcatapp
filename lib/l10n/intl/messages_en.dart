@@ -1580,7 +1580,7 @@ class MessageLookup extends MessageLookupByLibrary {
       "2. Please complete payment in your browser",
     ),
     "xboardConfigDownloadFailed": MessageLookupByLibrary.simpleMessage(
-      "Configuration download failed, please check subscription link",
+      "Configuration file download failed. Please check that your plan is active and valid.",
     ),
     "xboardConfigFormatError": MessageLookupByLibrary.simpleMessage(
       "Configuration format error, please contact service provider",

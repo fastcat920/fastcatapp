@@ -1,3 +1,4 @@
+import 'package:fl_clash/widgets/tv_focusable.dart';
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:fl_clash/xboard/utils/xboard_notification.dart';
@@ -433,7 +434,7 @@ class _PlanPurchasePageState extends ConsumerState<PlanPurchasePage> {
                                 AppLocalizations.of(context).xboardSubmitOrder),
                           ],
                         ),
-                );
+                ).withTvFocus();
               },
             ),
           ),
@@ -644,23 +645,6 @@ class _PlanPurchasePageState extends ConsumerState<PlanPurchasePage> {
                     ),
               ),
               const SizedBox(height: 16),
-              _couponPickerControl(
-                sheetContext,
-                icon: Icons.auto_awesome_outlined,
-                title: _copy(
-                  context,
-                  '自动选择最优优惠券',
-                  'Best available coupon',
-                ),
-                subtitle: _copy(
-                  context,
-                  '套餐或优惠变化时自动重新匹配',
-                  'Re-evaluates when the package or offer changes',
-                ),
-                selected: !_disableAutoCoupon && _selectedUserCouponId == null,
-                onTap: () => Navigator.pop(sheetContext, -2),
-              ),
-              const SizedBox(height: 8),
               _couponPickerControl(
                 sheetContext,
                 icon: Icons.block_outlined,
@@ -1273,20 +1257,29 @@ class _PlanPurchasePageState extends ConsumerState<PlanPurchasePage> {
       int amount, {
       bool discount = false,
       bool credit = false,
+      bool total = false,
     }) =>
         Padding(
           padding: const EdgeInsets.symmetric(vertical: 4),
           child: Row(
             children: [
-              Text(label),
+              Text(
+                label,
+                style: total ? Theme.of(context).textTheme.titleSmall : null,
+              ),
               const Spacer(),
               Text(
                 '${discount ? '-' : credit ? '+' : ''}¥${(amount / 100).toStringAsFixed(2)}',
-                style: discount
-                    ? TextStyle(color: Colors.green.shade700)
-                    : credit
-                        ? TextStyle(color: Colors.blue.shade700)
-                        : null,
+                style: total
+                    ? Theme.of(context).textTheme.titleLarge?.copyWith(
+                          color: Theme.of(context).colorScheme.primary,
+                          fontWeight: XbFontWeight.heavy,
+                        )
+                    : discount
+                        ? TextStyle(color: Colors.green.shade700)
+                        : credit
+                            ? TextStyle(color: Colors.blue.shade700)
+                            : null,
               ),
             ],
           ),
@@ -1317,14 +1310,13 @@ class _PlanPurchasePageState extends ConsumerState<PlanPurchasePage> {
               row(_copy(context, '退回余额', 'Balance refund'),
                   preview.refundAmount,
                   credit: true),
-            const Divider(),
-            row(_copy(context, '订单金额', 'Order amount'), preview.finalAmount),
             if (preview.balanceAmount > 0)
               row(_copy(context, '余额抵扣', 'Balance deduction'),
                   preview.balanceAmount,
                   discount: true),
             const Divider(),
-            row(_copy(context, '还需支付', 'Amount due'), preview.payableAmount),
+            row(_copy(context, '还需支付', 'Amount due'), preview.payableAmount,
+                total: true),
           ],
         ),
       ),

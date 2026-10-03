@@ -1,16 +1,7 @@
-import 'package:fl_clash/xboard/adapter/initialization/sdk_provider.dart';
-import 'package:fl_clash/xboard/features/auth/providers/xboard_user_provider.dart';
+import '../providers/coupon_wallet_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:flutter_xboard_sdk/flutter_xboard_sdk.dart';
 import 'package:go_router/go_router.dart';
-
-final couponWalletProvider = FutureProvider<List<CatboardCoupon>>((ref) async {
-  final auth = ref.watch(xboardUserAuthProvider);
-  if (!auth.isAuthenticated) return const [];
-  final sdk = await ref.watch(xboardSdkProvider.future);
-  return sdk.catboard.getCouponWallet();
-});
 
 class CouponEntryButton extends ConsumerStatefulWidget {
   final bool showOnlyWhenAvailable;
@@ -98,7 +89,9 @@ class _CouponEntryButtonState extends ConsumerState<CouponEntryButton>
         tooltip: tooltip,
         onPressed: () async {
           await context.push('/plans/coupons');
-          ref.invalidate(couponWalletProvider);
+          if (mounted) {
+            await ref.read(couponWalletProvider.notifier).refresh();
+          }
         },
         icon: AnimatedBuilder(
           animation: _shakeAngle,

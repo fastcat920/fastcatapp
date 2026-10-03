@@ -1,4 +1,6 @@
-import 'package:fl_clash/xboard/features/payment/widgets/coupon_entry_button.dart';
+import 'dart:io';
+
+import 'package:fl_clash/xboard/features/payment/providers/coupon_wallet_provider.dart';
 import 'package:fl_clash/xboard/features/payment/pages/order_detail_page.dart';
 import 'package:fl_clash/xboard/features/shared/widgets/xb_error_state.dart';
 import 'package:fl_clash/xboard/features/subscription/providers/xboard_subscription_provider.dart';
@@ -16,6 +18,7 @@ class CouponWalletPage extends ConsumerStatefulWidget {
 
 class _CouponWalletPageState extends ConsumerState<CouponWalletPage> {
   String _filter = 'available';
+  bool _refreshing = false;
 
   bool get _zh => Localizations.localeOf(context).languageCode == 'zh';
   String _t(String zh, String en) => _zh ? zh : en;
@@ -24,7 +27,9 @@ class _CouponWalletPageState extends ConsumerState<CouponWalletPage> {
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (!mounted || ref.read(xboardSubscriptionProvider).isNotEmpty) return;
+      if (!mounted) return;
+      ref.read(couponWalletProvider.notifier).refresh();
+      if (ref.read(xboardSubscriptionProvider).isNotEmpty) return;
       // 套餐名称仅用于补充优惠券适用范围；失败不能影响钱包主体。
       ref.read(xboardSubscriptionProvider.notifier).refreshPlans().catchError(
             (_) => <dynamic>[],
@@ -33,8 +38,9 @@ class _CouponWalletPageState extends ConsumerState<CouponWalletPage> {
   }
 
   Future<void> _load() async {
-    ref.invalidate(couponWalletProvider);
-    final wallet = ref.read(couponWalletProvider.future);
+    if (_refreshing) return;
+    setState(() => _refreshing = true);
+    final wallet = ref.read(couponWalletProvider.notifier).refresh();
     try {
       await ref.read(xboardSubscriptionProvider.notifier).refreshPlans();
     } catch (_) {
@@ -42,8 +48,8 @@ class _CouponWalletPageState extends ConsumerState<CouponWalletPage> {
     }
     try {
       await wallet;
-    } catch (_) {
-      // Provider 的错误状态由页面统一展示。
+    } finally {
+      if (mounted) setState(() => _refreshing = false);
     }
   }
 
@@ -72,7 +78,25 @@ class _CouponWalletPageState extends ConsumerState<CouponWalletPage> {
       backgroundColor: Theme.of(context).brightness == Brightness.dark
           ? null
           : const Color(0xFFFAFBFD),
-      appBar: AppBar(title: Text(_t('优惠券', 'Coupons'))),
+      appBar: AppBar(
+        title: Text(_t('优惠券', 'Coupons')),
+        actions: [
+          if (Platform.isMacOS || Platform.isWindows || Platform.isLinux)
+            Padding(
+              padding: const EdgeInsets.only(right: 8),
+              child: IconButton(
+                tooltip: _t('刷新', 'Refresh'),
+                onPressed: _refreshing || wallet.isLoading ? null : _load,
+                icon: _refreshing || wallet.isLoading
+                    ? const SizedBox.square(
+                        dimension: 20,
+                        child: CircularProgressIndicator(strokeWidth: 2),
+                      )
+                    : const Icon(Icons.refresh),
+              ),
+            ),
+        ],
+      ),
       body: Center(
         child: ConstrainedBox(
           constraints: const BoxConstraints(maxWidth: 900),
@@ -84,6 +108,12 @@ class _CouponWalletPageState extends ConsumerState<CouponWalletPage> {
               children: [
                 _filterBar(coupons),
                 const SizedBox(height: 16),
+                if (wallet.hasError && coupons.isNotEmpty)
+                  Padding(
+                    padding: const EdgeInsets.only(bottom: 12),
+                    child: Text(_t('刷新失败，正在显示上次的优惠券信息，请稍后重试。',
+                        'Refresh failed. Showing previous coupons; please try again.')),
+                  ),
                 if (wallet.isLoading && coupons.isEmpty)
                   const SizedBox(
                     height: 260,

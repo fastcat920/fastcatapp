@@ -1,4 +1,6 @@
+import 'package:fl_clash/widgets/tv_focusable.dart';
 import 'dart:async';
+import 'package:fl_clash/common/common.dart';
 import 'package:flutter/material.dart';
 import '../services/subscription_status_service.dart';
 import 'package:fl_clash/l10n/l10n.dart';
@@ -317,7 +319,7 @@ class _SubscriptionStatusDialogState extends State<SubscriptionStatusDialog> {
                 Text(AppLocalizations.of(context).xboardRefreshStatus),
               ],
             ),
-          ),
+          ).withTvFocus(),
         ),
       );
       actions.add(const SizedBox(height: 8));
@@ -330,9 +332,16 @@ class _SubscriptionStatusDialogState extends State<SubscriptionStatusDialog> {
               _isRefreshing ? null : () => Navigator.of(context).pop('later'),
           style: XbUiButton.outlinedNeutral(context),
           child: Text(_getSecondaryButtonText(context)),
-        ),
+        ).withTvFocus(autofocus: true),
       ),
     );
+    // A new period changes the existing entitlement without opening checkout.
+    // TV must still hide purchases and paid traffic-reset orders.
+    if (system.isTV &&
+        !(statusResult.type == SubscriptionStatusType.exhausted &&
+            useNewPeriod)) {
+      return actions;
+    }
     actions.add(const SizedBox(height: 8));
     if (statusResult.type == SubscriptionStatusType.exhausted) {
       actions.add(
@@ -355,7 +364,7 @@ class _SubscriptionStatusDialogState extends State<SubscriptionStatusDialog> {
                   ? AppLocalizations.of(context).xboardStartNewPeriod
                   : AppLocalizations.of(context).xboardResetTraffic,
             ),
-          ),
+          ).withTvFocus(),
         ),
       );
       actions.add(const SizedBox(height: 8));
@@ -376,7 +385,7 @@ class _SubscriptionStatusDialogState extends State<SubscriptionStatusDialog> {
                   WidgetStatePropertyAll(_getPrimaryButtonColor(context)),
             ),
             child: Text(_getPrimaryButtonText(context)),
-          ),
+          ).withTvFocus(),
         ),
       );
     }

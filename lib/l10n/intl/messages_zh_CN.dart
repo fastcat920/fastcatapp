@@ -1125,7 +1125,7 @@ class MessageLookup extends MessageLookupByLibrary {
       "2. 请在浏览器中完成支付操作",
     ),
     "xboardConfigDownloadFailed": MessageLookupByLibrary.simpleMessage(
-      "配置文件下载失败，请检查订阅链接",
+      "配置文件下载失败，请检查套餐是否正常",
     ),
     "xboardConfigFormatError": MessageLookupByLibrary.simpleMessage(
       "配置文件格式错误，请联系服务提供商",

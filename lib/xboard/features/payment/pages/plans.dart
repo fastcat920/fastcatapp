@@ -13,6 +13,7 @@ import 'package:go_router/go_router.dart';
 import 'package:flutter_xboard_sdk/flutter_xboard_sdk.dart'
     show CatboardFlashSale;
 import '../widgets/coupon_entry_button.dart';
+import '../providers/coupon_wallet_provider.dart';
 
 final pendingPurchasePlanProvider = StateProvider<DomainPlan?>((ref) => null);
 
@@ -108,7 +109,10 @@ class _PlansViewState extends ConsumerState<PlansView> {
     try {
       final subscriptionNotifier =
           ref.read(xboardSubscriptionProvider.notifier);
-      await subscriptionNotifier.refreshPlans();
+      await Future.wait([
+        subscriptionNotifier.refreshPlans(),
+        ref.read(couponWalletProvider.notifier).refresh(),
+      ]);
     } catch (e) {
       if (mounted) setState(() => _planLoadError = e.toString());
     } finally {

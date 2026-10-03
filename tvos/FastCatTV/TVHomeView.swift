@@ -5,6 +5,10 @@ private enum TVRouteMode: String, CaseIterable {
   case global
 }
 
+private enum TVNewPeriodState {
+  case confirmation, submitting, uncertain, failure, success
+}
+
 private struct NoticeContentHeightPreferenceKey: PreferenceKey {
   static var defaultValue: CGFloat = 0
 
@@ -27,6 +31,11 @@ struct TVHomeView: View {
   @State private var showLogoutConfirmation = false
   @State private var isLoggingOut = false
   @State private var subscriptionBlockMessage: String?
+  @State private var subscriptionActionError: String?
+  @State private var newPeriodState: TVNewPeriodState?
+  @State private var newPeriodError: String?
+  @State private var newPeriodBaseline: TVSubscriptionSummary?
+  @State private var newPeriodNeedsCheck = false
   @State private var showNodeSelector = false
   @State private var nodes: [TVProxyNode] = []
   @State private var selectedNodeName: String?
@@ -52,6 +61,7 @@ struct TVHomeView: View {
   @FocusState private var noticeActionFocused: Bool
   @FocusState private var logoutCancelFocused: Bool
   @FocusState private var messageActionFocused: Bool
+  @FocusState private var newPeriodCancelFocused: Bool
 
   private var simulatorPreview: Bool {
 #if targetEnvironment(simulator)
@@ -119,6 +129,8 @@ struct TVHomeView: View {
             noticeDialog
           } else if showLogoutConfirmation {
             logoutDialog
+          } else if newPeriodState != nil {
+            newPeriodDialog
           } else if let subscriptionBlockMessage {
             messageDialog(subscriptionBlockMessage)
           }
@@ -170,8 +182,20 @@ struct TVHomeView: View {
       else { logoutCancelFocused = false }
     }
     .onChange(of: subscriptionBlockMessage) { _, message in
-      if message != nil { focusModalButton { messageActionFocused = true } }
+      if message != nil {
+        subscriptionActionError = nil
+        focusModalButton { messageActionFocused = true }
+      }
       else { messageActionFocused = false }
+    }
+    .onChange(of: newPeriodState) { _, state in
+      if state != nil {
+        messageActionFocused = false
+        focusModalButton { newPeriodCancelFocused = true }
+      } else {
+        newPeriodCancelFocused = false
+        if subscriptionBlockMessage != nil { focusModalButton { messageActionFocused = true } }
+      }
     }
     .task(id: notices.count) {
       guard notices.count > 1 else { return }
@@ -188,7 +212,7 @@ struct TVHomeView: View {
   }
 
   private var isModalPresented: Bool {
-    showNoticeDetail || showLogoutConfirmation || subscriptionBlockMessage != nil
+    showNoticeDetail || showLogoutConfirmation || subscriptionBlockMessage != nil || newPeriodState != nil
   }
 
   private func focusModalButton(_ action: @escaping () -> Void) {
@@ -401,7 +425,7 @@ struct TVHomeView: View {
       .frame(width: size, height: size)
     }
     .buttonBorderShape(.circle)
-    .disabled(isConnecting)
+    // Keep remote focus while busy; toggleConnection rejects repeat activation.
     .accessibilityLabel(connected ? tvText("断开 VPN", "Disconnect VPN", language: language) : tvText("连接 VPN", "Connect VPN", language: language))
   }
 
@@ -688,20 +712,212 @@ struct TVHomeView: View {
       title: subscriptionBlockTitle,
       icon: nil
     ) {
-      Text(message)
-    } actions: {
-      TVFocusButton(cornerRadius: TVTheme.compactRadius, autofocus: true, focus: $messageActionFocused, action: {
-        subscriptionBlockMessage = nil
-      }) { focused in
-        Text(tvText("知道了", "Got it", language: language))
-          .font(TVFont.regular(14))
-          .foregroundStyle(.white)
-          .padding(.horizontal, tv(24))
-          .frame(height: tv(48))
-          .background(TVTheme.primary)
-          .clipShape(RoundedRectangle(cornerRadius: TVTheme.compactRadius, style: .continuous))
+      VStack(alignment: .leading, spacing: tv(10)) {
+        Text(subscriptionBlockReason ?? message)
+        if let subscriptionActionError {
+          Text(subscriptionActionError).foregroundStyle(TVTheme.danger)
+        }
       }
+    } actions: {
+      VStack(spacing: tv(8)) {
+        if hasRecoverableSubscriptionBlock {
+          subscriptionDialogButton(tvText("刷新状态", "Refresh status", language: language)) {
+            guard !isRefreshingSubscription else { return }
+            Task { await refreshBlockedSubscription() }
+          }
+        }
+        subscriptionDialogButton(
+          hasRecoverableSubscriptionBlock
+            ? tvText("稍后处理", "Handle later", language: language)
+            : tvText("取消", "Cancel", language: language),
+          focus: $messageActionFocused, autofocus: true
+        ) {
+          guard !isRefreshingSubscription else { return }
+          subscriptionBlockMessage = nil
+        }
+        if subscriptionSummary?.canStartNewPeriod == true || newPeriodNeedsCheck {
+          subscriptionDialogButton(tvText("开启新周期", "Start next traffic period", language: language), primary: true) {
+            guard !isRefreshingSubscription else { return }
+            newPeriodError = nil
+            newPeriodState = newPeriodNeedsCheck ? .uncertain : .confirmation
+          }
+        }
+      }
+      .opacity(isRefreshingSubscription ? 0.6 : 1)
     }
+    .onExitCommand {
+      if !isRefreshingSubscription { subscriptionBlockMessage = nil }
+    }
+  }
+
+  private var hasRecoverableSubscriptionBlock: Bool {
+    if let expiredAt = expirationDate, expiredAt <= Date() { return true }
+    guard let summary = subscriptionSummary else { return false }
+    return summary.transferLimit > 0 && summary.remainingBytes == 0
+  }
+
+  private func subscriptionDialogButton(
+    _ title: String, primary: Bool = false,
+    focus: FocusState<Bool>.Binding? = nil, autofocus: Bool = false,
+    action: @escaping () -> Void
+  ) -> some View {
+    TVFocusButton(cornerRadius: TVTheme.compactRadius, autofocus: autofocus, focus: focus, action: action) { _ in
+      Text(title)
+        .font(TVFont.regular(14))
+        .foregroundStyle(primary ? .white : TVTheme.textPrimary)
+        .padding(.horizontal, tv(18))
+        .frame(maxWidth: .infinity)
+        .frame(height: tv(48))
+        .background(primary ? TVTheme.primary : TVTheme.surface)
+        .clipShape(RoundedRectangle(cornerRadius: TVTheme.compactRadius, style: .continuous))
+        .overlay {
+          RoundedRectangle(cornerRadius: TVTheme.compactRadius, style: .continuous)
+            .strokeBorder(TVTheme.stroke, lineWidth: tv(1))
+        }
+    }
+  }
+
+  private var newPeriodDialog: some View {
+    TVDialog(title: newPeriodTitle, icon: nil) {
+      VStack(alignment: .leading, spacing: tv(12)) {
+        if newPeriodState == .submitting { ProgressView() }
+        Text(newPeriodContent)
+      }
+    } actions: {
+      HStack(spacing: tv(10)) {
+        subscriptionDialogButton(
+          newPeriodState == .success
+            ? tvText("确定", "Confirm", language: language)
+            : tvText("取消", "Cancel", language: language),
+          focus: $newPeriodCancelFocused, autofocus: true
+        ) { dismissNewPeriodDialog() }
+        if newPeriodState != .success {
+          subscriptionDialogButton(
+            newPeriodNeedsCheck
+              ? tvText("检查状态", "Check status", language: language)
+              : tvText("确定", "Confirm", language: language), primary: true
+          ) {
+            guard newPeriodState != .submitting else { return }
+            Task { await runNewPeriod(checkOnly: newPeriodNeedsCheck) }
+          }
+        }
+      }
+      .opacity(newPeriodState == .submitting ? 0.6 : 1)
+    }
+    .onExitCommand { dismissNewPeriodDialog() }
+  }
+
+  private var newPeriodTitle: String {
+    switch newPeriodState {
+    case .submitting:
+      return newPeriodNeedsCheck
+        ? tvText("正在检查操作结果", "Checking the operation result", language: language)
+        : tvText("正在开启新的流量周期", "Starting the new traffic period", language: language)
+    case .uncertain:
+      return tvText("暂时无法确认操作结果", "Unable to confirm the result", language: language)
+    case .failure:
+      return tvText("开启新的流量周期失败，请稍后重试", "Could not start a new traffic period. Try again later.", language: language)
+    case .success:
+      return tvText("新的流量周期已开启", "The new traffic period has started", language: language)
+    default:
+      return tvText("确认开启下一个流量周期？", "Start the next traffic period?", language: language)
+    }
+  }
+
+  private var newPeriodContent: String {
+    if newPeriodState == .uncertain || (newPeriodState == .submitting && newPeriodNeedsCheck) {
+      return tvText("网络响应异常，暂时无法确认新的流量周期是否已开启。请检查结果，不要重复提交。", "The network response was interrupted, so the new traffic period cannot be confirmed yet. Check the result instead of submitting again.", language: language)
+    }
+    if let newPeriodError { return newPeriodError }
+    if newPeriodState == .success { return newPeriodTitle }
+    return tvText("开启后将重置已使用流量，并扣除当前流量周期剩余的套餐时长。此操作无法撤销，是否继续？", "This resets used traffic and deducts the remaining duration of the current traffic period from your plan. This action cannot be undone. Continue?", language: language)
+  }
+
+  private func dismissNewPeriodDialog() {
+    guard newPeriodState != .submitting else { return }
+    if newPeriodState == .success { subscriptionBlockMessage = nil }
+    newPeriodState = nil
+  }
+
+  @MainActor
+  private func refreshBlockedSubscription() async {
+    subscriptionActionError = nil
+    await refreshSubscriptionSummary()
+    if let homeInfoError { subscriptionActionError = homeInfoError; return }
+    if let reason = subscriptionBlockReason { subscriptionBlockMessage = reason }
+    else { subscriptionBlockMessage = nil }
+  }
+
+  @MainActor
+  private func runNewPeriod(checkOnly: Bool) async {
+    guard newPeriodState != .submitting, let token = session.token else { return }
+    guard !isDebugPreviewSession else { return }
+    newPeriodState = .submitting
+    newPeriodError = nil
+    let client: GatewayClient
+    do { client = try await GatewayClient.configured() }
+    catch {
+      newPeriodError = error.localizedDescription
+      newPeriodState = checkOnly ? .uncertain : .failure
+      return
+    }
+    if checkOnly {
+      do {
+        let latest = try await client.fetchSubscriptionSummary(token: token)
+        subscriptionSummary = latest
+        if let baseline = newPeriodBaseline, latest.hasAdvancedPeriod(since: baseline) {
+          await completeNewPeriod()
+        } else { newPeriodState = .uncertain }
+      } catch {
+        if handleExpiredSession(error) { return }
+        newPeriodState = .uncertain
+      }
+      return
+    }
+
+    // Revalidate permission immediately before the irreversible operation.
+    do {
+      let latest = try await client.fetchSubscriptionSummary(token: token)
+      subscriptionSummary = latest
+      guard latest.canStartNewPeriod else {
+        newPeriodError = tvText("当前套餐不支持开启新周期", "This plan does not allow starting a new traffic period.", language: language)
+        newPeriodState = .failure
+        return
+      }
+      newPeriodBaseline = latest
+    } catch {
+      if handleExpiredSession(error) { return }
+      newPeriodError = error.localizedDescription
+      newPeriodState = .failure
+      return
+    }
+    do {
+      try await client.startNewPeriod(token: token)
+    } catch {
+      if handleExpiredSession(error) { return }
+      if case GatewayClient.GatewayError.server(let message) = error {
+        newPeriodError = message
+        newPeriodState = .failure
+      } else {
+        // Keep this lock even when the dialog is dismissed/reopened.
+        newPeriodNeedsCheck = true
+        newPeriodState = .uncertain
+      }
+      return
+    }
+    await completeNewPeriod()
+  }
+
+  @MainActor
+  private func completeNewPeriod() async {
+    newPeriodNeedsCheck = false
+    newPeriodBaseline = nil
+    // Acknowledged success must never turn into a retry of the POST if refresh fails.
+    await GatewayClient.clearCachedSubscriptions()
+    cachedSubscription = nil
+    await refreshSubscriptionSummary()
+    newPeriodError = homeInfoError
+    newPeriodState = .success
   }
 
   private var currentNotice: TVNotice? {
@@ -745,6 +961,9 @@ struct TVHomeView: View {
       return tvText("请续费后继续使用", "Please renew to continue using", language: language)
     }
     if summary.transferLimit > 0, summary.remainingBytes <= 0 {
+      if summary.canStartNewPeriod {
+        return tvText("套餐流量已用完，可以提前开启下一个流量周期。", "Your plan traffic is used up. You can start the next traffic period early.", language: language)
+      }
       return tvText("套餐流量已用完，请重置流量或更换套餐", "Plan traffic has been used up, please reset traffic or change plan", language: language)
     }
     let hasPlanName = summary.planName?.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty == false
@@ -1147,6 +1366,10 @@ struct TVHomeView: View {
 
   @MainActor
   private func prepareAndConnect() async {
+    guard !isConnecting else { return }
+    isConnecting = true
+    defer { isConnecting = false }
+
     guard let token = session.token else {
       errorMessage = "登录状态已失效，请重新登录"
       return
@@ -1159,8 +1382,6 @@ struct TVHomeView: View {
       return
     }
 
-    isConnecting = true
-    defer { isConnecting = false }
     do {
       let downloaded: String
       if let cachedSubscription {

@@ -631,7 +631,7 @@
   "xboardImportSuccess": "Import successful",
   "xboardImportFailed": "Import failed",
   "xboardNetworkConnectionFailed": "Network connection failed, please check network settings",
-  "xboardConfigDownloadFailed": "Configuration download failed, please check subscription link",
+  "xboardConfigDownloadFailed": "Configuration file download failed. Please check that your plan is active and valid.",
   "xboardConfigFormatError": "Configuration format error, please contact service provider",
   "xboardConfigSaveFailed": "Configuration save failed, please check storage space",
   "xboardUnknownErrorRetry": "Unknown error, please retry",

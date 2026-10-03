@@ -18,6 +18,7 @@ import 'package:fl_clash/xboard/features/subscription/services/subscription_stat
 import 'package:fl_clash/xboard/features/subscription/widgets/subscription_status_dialog.dart';
 import 'package:fl_clash/xboard/features/shared/styles/styles.dart';
 import 'package:fl_clash/l10n/l10n.dart';
+import 'node_recovery_actions.dart';
 
 class NodeSelectorBar extends ConsumerStatefulWidget {
   const NodeSelectorBar({super.key});
@@ -464,27 +465,10 @@ class _NodeSelectorBarState extends ConsumerState<NodeSelectorBar> {
               ],
             ),
           ),
-          TextButton(
-            onPressed: isReloading ? null : _reloadNodes,
-            style: XbUiButton.textChipPrimary(context),
-            child: Text(
-              AppLocalizations.of(context).xboardReloadNodes,
-              style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w500),
-            ),
-          ),
-          const SizedBox(width: 8),
-          ElevatedButton(
-            onPressed:
-                isReloading ? null : () => _handleOpenProxiesView(context),
-            style: XbUiButton.filledPrimary(context).copyWith(
-              minimumSize: const WidgetStatePropertyAll(Size(56, 30)),
-              padding: const WidgetStatePropertyAll(
-                  EdgeInsets.symmetric(horizontal: 10)),
-            ),
-            child: Text(
-              AppLocalizations.of(context).xboardSwitch,
-              style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w500),
-            ),
+          NodeRecoveryActions(
+            isBusy: isReloading,
+            onReload: _reloadNodes,
+            onSwitch: () => _handleOpenProxiesView(context),
           ),
         ],
       ),

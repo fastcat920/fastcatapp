@@ -635,7 +635,7 @@
   "xboardImportSuccess": "导入成功",
   "xboardImportFailed": "导入失败",
   "xboardNetworkConnectionFailed": "网络连接失败，请检查网络设置",
-  "xboardConfigDownloadFailed": "配置文件下载失败，请检查订阅链接",
+  "xboardConfigDownloadFailed": "配置文件下载失败，请检查套餐是否正常",
   "xboardConfigFormatError": "配置文件格式错误，请联系服务提供商",
   "xboardConfigSaveFailed": "保存配置失败，请检查存储空间",
   "xboardUnknownErrorRetry": "未知错误，请重试",

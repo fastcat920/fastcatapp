@@ -422,6 +422,8 @@ class _XBoardConnectButtonState extends ConsumerState<XBoardConnectButton>
                 child: TVFocusable(
                   autofocus: system.isTV,
                   focusNode: _tvFocusNode,
+                  // Busy disables activation, not the remote's current focus.
+                  focusableWhenDisabled: true,
                   borderRadius: BorderRadius.circular(outerSize / 2),
                   onPressed: _isBusy ? null : handleSwitchStart,
                   child: XbPointerCursor(

@@ -318,6 +318,9 @@ class XBoardSDK {
       _configApi = null;
       _paymentApi = null;
       _authApi = null;
+      // Catboard also owns the old HttpService; never reuse it after login
+      // rebuilds the SDK (coupons, invited users and commission ledger).
+      _catboardApi = null;
 
       _isInitialized = false;
       SdkLogger.i('XBoardSDK disposed');

@@ -87,23 +87,16 @@ class _OrderDetailContent extends StatelessWidget {
         // 扩大左右留白，保证内容卡片与其他界面的边界对齐。
         const contentPadding = XbUiTokens.pagePadding;
         const columnGap = 12.0;
-        final sdkPaymentOptions = methodsAsync.valueOrNull
-                ?.where((method) => method.isAvailable)
-                .map(_PaymentOption.fromSdk)
-                .toList() ??
-            const <_PaymentOption>[];
-        final fallbackPaymentOptions =
-            _globalPaymentOptions(globalPaymentMethods);
-        final paymentOptions = sdkPaymentOptions.isNotEmpty
-            ? sdkPaymentOptions
-            : fallbackPaymentOptions;
+        final paymentOptions =
+            _paymentOptions(methodsAsync.valueOrNull, globalPaymentMethods);
         final selectedPaymentOption = _findPaymentOption(
           paymentOptions,
           selectedMethodId,
         );
         final lockedPaymentId = order?.paymentId?.trim();
         final useLockedFee = pricing.lockedHandlingFee != null &&
-            (lockedPaymentId == null || selectedMethodId == lockedPaymentId);
+            (lockedPaymentId == null ||
+                selectedPaymentOption?.id == lockedPaymentId);
         final paymentFee = useLockedFee
             ? pricing.lockedHandlingFee!
             : (isPending && selectedPaymentOption != null
@@ -126,6 +119,7 @@ class _OrderDetailContent extends StatelessWidget {
               pricing: pricing,
               paymentFee: paymentFee,
               priceChanged: priceChanged,
+              paymentCompleted: isPaymentCompleted,
             ),
           ],
         );
@@ -141,7 +135,7 @@ class _OrderDetailContent extends StatelessWidget {
                 _PaymentMethodsSection(
                   methodsAsync: methodsAsync,
                   globalPaymentMethods: globalPaymentMethods,
-                  selectedMethodId: selectedMethodId,
+                  selectedMethodId: selectedPaymentOption?.id,
                   onSelected: onMethodSelected,
                   onRetry: onRefresh,
                 ),
@@ -207,56 +201,26 @@ class _PaymentMethodsSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return methodsAsync.when(
-      loading: () {
-        final fallbackMethods = _globalPaymentOptions(globalPaymentMethods);
-        if (fallbackMethods.isNotEmpty) {
-          return _PaymentMethodsCard(
-            methods: fallbackMethods,
-            selectedMethodId: selectedMethodId,
-            onSelected: onSelected,
-          );
-        }
-        return _InfoCard(
-          title: AppLocalizations.of(context).xboardPaymentMethods,
-          icon: Icons.payments_outlined,
-          child: const Padding(
-            padding: EdgeInsets.symmetric(vertical: 24),
-            child: Center(child: CircularProgressIndicator()),
-          ),
-        );
-      },
-      error: (error, _) {
-        final fallbackMethods = _globalPaymentOptions(globalPaymentMethods);
-        if (fallbackMethods.isNotEmpty) {
-          return _PaymentMethodsCard(
-            methods: fallbackMethods,
-            selectedMethodId: selectedMethodId,
-            onSelected: onSelected,
-          );
-        }
-        return _InfoCard(
-          title: AppLocalizations.of(context).xboardPaymentMethods,
-          icon: Icons.payments_outlined,
-          child: XbErrorState(
-            message: error,
-            onRetry: onRetry,
-            compact: true,
-          ),
-        );
-      },
-      data: (methods) {
-        final paymentOptions = methods
-            .where((m) => m.isAvailable)
-            .map(_PaymentOption.fromSdk)
-            .toList();
-        final fallbackMethods = _globalPaymentOptions(globalPaymentMethods);
-        return _PaymentMethodsCard(
-          methods: paymentOptions.isNotEmpty ? paymentOptions : fallbackMethods,
-          selectedMethodId: selectedMethodId,
-          onSelected: onSelected,
-        );
-      },
+    final options =
+        _paymentOptions(methodsAsync.valueOrNull, globalPaymentMethods);
+    if (options.isNotEmpty ||
+        (!methodsAsync.isLoading && !methodsAsync.hasError)) {
+      return _PaymentMethodsCard(
+        methods: options,
+        selectedMethodId: selectedMethodId,
+        onSelected: onSelected,
+      );
+    }
+    return _InfoCard(
+      title: AppLocalizations.of(context).xboardPaymentMethods,
+      icon: Icons.payments_outlined,
+      child: methodsAsync.isLoading
+          ? const Padding(
+              padding: EdgeInsets.symmetric(vertical: 24),
+              child: Center(child: CircularProgressIndicator()),
+            )
+          : XbErrorState(
+              message: methodsAsync.error, onRetry: onRetry, compact: true),
     );
   }
 }
@@ -267,13 +231,28 @@ List<_PaymentOption> _globalPaymentOptions(
   return paymentMethods.map(_PaymentOption.fromDomain).toList();
 }
 
+List<_PaymentOption> _paymentOptions(
+  List<PaymentMethodModel>? orderMethods,
+  List<DomainPaymentMethod> globalMethods,
+) {
+  final available = orderMethods
+          ?.where((method) => method.isAvailable && method.id.trim().isNotEmpty)
+          .map(_PaymentOption.fromSdk)
+          .toList() ??
+      const <_PaymentOption>[];
+  return available.isNotEmpty
+      ? available
+      : _globalPaymentOptions(globalMethods);
+}
+
 _PaymentOption? _findPaymentOption(
   List<_PaymentOption> options,
   String? selectedMethodId,
 ) {
-  if (selectedMethodId == null) return null;
+  final resolvedId = resolvePaymentMethodId(
+      options.map((option) => option.id), selectedMethodId);
   for (final option in options) {
-    if (option.id == selectedMethodId) return option;
+    if (option.id == resolvedId) return option;
   }
   return null;
 }
@@ -343,6 +322,7 @@ class _OrderInfoCard extends StatelessWidget {
   final OrderBill pricing;
   final double paymentFee;
   final bool priceChanged;
+  final bool paymentCompleted;
 
   const _OrderInfoCard({
     required this.tradeNo,
@@ -351,6 +331,7 @@ class _OrderInfoCard extends StatelessWidget {
     required this.pricing,
     required this.paymentFee,
     required this.priceChanged,
+    required this.paymentCompleted,
   });
 
   @override
@@ -525,16 +506,6 @@ class _OrderInfoCard extends StatelessWidget {
               valueColor: XbUiStatusColor.info(context),
             ),
           ],
-          if (!isDeposit) ...[
-            const SizedBox(height: 12),
-            _InfoRow(
-              label: Localizations.localeOf(context).languageCode == 'zh'
-                  ? '订单金额'
-                  : 'Order amount',
-              value: '¥${pricing.orderAmount.toStringAsFixed(2)}',
-              valueWeight: XbFontWeight.bold,
-            ),
-          ],
           if (shouldShowBalance) ...[
             const SizedBox(height: 12),
             _InfoRow(
@@ -567,9 +538,11 @@ class _OrderInfoCard extends StatelessWidget {
           Row(
             children: [
               Text(
-                Localizations.localeOf(context).languageCode == 'zh'
-                    ? '实际支付'
-                    : 'Actual payment',
+                orderPaymentAmountLabel(
+                  order?.status,
+                  paymentCompleted: paymentCompleted,
+                  chinese: Localizations.localeOf(context).languageCode == 'zh',
+                ),
                 style: Theme.of(context).textTheme.titleSmall?.copyWith(
                       color: Theme.of(context).colorScheme.onSurfaceVariant,
                       fontWeight: FontWeight.w500,
@@ -674,8 +647,7 @@ class _PaymentMethodsCard extends StatelessWidget {
                 for (var i = 0; i < methods.length; i++) ...[
                   _PaymentMethodTile(
                     method: methods[i],
-                    selected: selectedMethodId == methods[i].id ||
-                        (selectedMethodId == null && i == 0),
+                    selected: selectedMethodId == methods[i].id,
                     onTap: () => onSelected(methods[i]),
                   ),
                   if (i != methods.length - 1) const SizedBox(height: 12),
@@ -704,55 +676,59 @@ class _PaymentMethodTile extends StatelessWidget {
         ? theme.colorScheme.primary
         : theme.colorScheme.outline.withValues(alpha: 0.16);
 
-    return Material(
-      color: Colors.transparent,
+    return TVFocusable(
       borderRadius: BorderRadius.circular(14),
-      clipBehavior: Clip.antiAlias,
-      child: InkWell(
+      onPressed: onTap,
+      child: Material(
+        color: Colors.transparent,
         borderRadius: BorderRadius.circular(14),
-        onTap: onTap,
-        child: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
-          decoration: BoxDecoration(
-            color: selected
-                ? theme.colorScheme.primary.withValues(alpha: 0.08)
-                : theme.colorScheme.surface,
-            borderRadius: BorderRadius.circular(14),
-            border: Border.all(color: borderColor, width: selected ? 1.5 : 1),
-          ),
-          child: Row(
-            children: [
-              _PaymentIcon(iconUrl: method.iconUrl),
-              const SizedBox(width: 12),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      method.name,
-                      style: theme.textTheme.titleSmall?.copyWith(
-                        fontWeight: XbFontWeight.bold,
-                      ),
-                    ),
-                    if (method.feePercentage > 0 || method.fixedFee > 0) ...[
-                      const SizedBox(height: 3),
+        clipBehavior: Clip.antiAlias,
+        child: InkWell(
+          borderRadius: BorderRadius.circular(14),
+          onTap: onTap,
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
+            decoration: BoxDecoration(
+              color: selected
+                  ? theme.colorScheme.primary.withValues(alpha: 0.08)
+                  : theme.colorScheme.surface,
+              borderRadius: BorderRadius.circular(14),
+              border: Border.all(color: borderColor, width: selected ? 1.5 : 1),
+            ),
+            child: Row(
+              children: [
+                _PaymentIcon(iconUrl: method.iconUrl),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
                       Text(
-                        _paymentFeeDescription(method),
-                        style: theme.textTheme.bodySmall?.copyWith(
-                          color: theme.colorScheme.onSurfaceVariant,
+                        method.name,
+                        style: theme.textTheme.titleSmall?.copyWith(
+                          fontWeight: XbFontWeight.bold,
                         ),
                       ),
+                      if (method.feePercentage > 0 || method.fixedFee > 0) ...[
+                        const SizedBox(height: 3),
+                        Text(
+                          _paymentFeeDescription(method),
+                          style: theme.textTheme.bodySmall?.copyWith(
+                            color: theme.colorScheme.onSurfaceVariant,
+                          ),
+                        ),
+                      ],
                     ],
-                  ],
+                  ),
                 ),
-              ),
-              Icon(
-                selected ? Icons.check_circle : Icons.radio_button_unchecked,
-                color: selected
-                    ? theme.colorScheme.primary
-                    : theme.colorScheme.outline,
-              ),
-            ],
+                Icon(
+                  selected ? Icons.check_circle : Icons.radio_button_unchecked,
+                  color: selected
+                      ? theme.colorScheme.primary
+                      : theme.colorScheme.outline,
+                ),
+              ],
+            ),
           ),
         ),
       ),
@@ -880,7 +856,7 @@ class _ActionButtons extends StatelessWidget {
               context,
               busy: isSubmitting,
             ),
-          ),
+          ).withTvFocus(),
         ),
         const SizedBox(height: 12),
         Row(
@@ -908,7 +884,7 @@ class _ActionButtons extends StatelessWidget {
                     ),
                   ),
                 ),
-              ),
+              ).withTvFocus(),
             ),
             const SizedBox(width: 12),
             Expanded(
@@ -934,7 +910,7 @@ class _ActionButtons extends StatelessWidget {
                     ),
                   ),
                 ),
-              ),
+              ).withTvFocus(),
             ),
           ],
         ),

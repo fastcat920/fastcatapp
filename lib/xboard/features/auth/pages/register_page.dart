@@ -245,6 +245,13 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
                       icon: const Icon(Icons.arrow_back),
                       style: IconButton.styleFrom(
                         backgroundColor: colorScheme.surfaceContainerLow,
+                        shape: isTv
+                            ? RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(
+                                  isTv ? AuthTvLayout.controlRadius : 14,
+                                ),
+                              )
+                            : null,
                       ).copyWith(
                         overlayColor: const WidgetStatePropertyAll(
                           Colors.transparent,

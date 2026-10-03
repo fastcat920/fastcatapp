@@ -20,6 +20,8 @@ import 'package:fl_clash/xboard/utils/xboard_notification.dart';
 import 'package:fl_clash/l10n/l10n.dart';
 import 'package:fl_clash/xboard/utils/backend_message_mapper.dart';
 import '../services/payment_status_poller.dart';
+import '../utils/payment_method_selection.dart';
+import 'package:fl_clash/widgets/tv_focusable.dart';
 
 part '../widgets/order_detail_content.dart';
 
@@ -31,6 +33,23 @@ bool isOrderPendingForDisplay(
 }) {
   if (paymentCompleted) return false;
   return OrderStatus.fromCode(statusCode ?? 0) == OrderStatus.pending;
+}
+
+String orderPaymentAmountLabel(
+  int? statusCode, {
+  required bool paymentCompleted,
+  required bool chinese,
+}) {
+  final status = OrderStatus.fromCode(statusCode ?? 0);
+  // A canceled order must not imply either a payment request or money received.
+  if (status == OrderStatus.canceled) {
+    return chinese ? '应付金额' : 'Payable amount';
+  }
+  if (isOrderPendingForDisplay(statusCode,
+      paymentCompleted: paymentCompleted)) {
+    return chinese ? '还需支付' : 'Amount due';
+  }
+  return chinese ? '实际支付' : 'Actual payment';
 }
 
 class OrderDetailPage extends ConsumerStatefulWidget {
@@ -314,15 +333,19 @@ class _OrderDetailPageState extends ConsumerState<OrderDetailPage>
   }
 
   Future<void> _submitPayment() async {
+    if (_isSubmitting || _isPaymentCompleted) return;
     final l10n = AppLocalizations.of(context);
     setState(() => _isSubmitting = true);
     try {
-      // 优先使用已缓存的支付方式，只在缓存为空时才拉取
-      var methods = _globalPaymentOptions(
-          ref.read(xboardAvailablePaymentMethodsProvider));
+      // Match the list displayed by the order page: order-specific first.
+      var methods = _paymentOptions(
+        ref.read(getOrderPaymentMethodsProvider(widget.tradeNo)).valueOrNull,
+        ref.read(xboardAvailablePaymentMethodsProvider),
+      );
       if (methods.isEmpty) {
         methods = await _loadFreshPaymentOptions();
       }
+      if (!mounted) return;
 
       final currentOrder =
           ref.read(getOrderProvider(widget.tradeNo)).valueOrNull;
@@ -334,12 +357,16 @@ class _OrderDetailPageState extends ConsumerState<OrderDetailPage>
         return;
       }
 
-      final selectedMethodId = _selectedMethodId;
+      final selectedMethodId = resolvePaymentMethodId(
+        methods.map((method) => method.id),
+        _selectedMethodId ?? currentOrder?.paymentId,
+      );
       String methodId;
       if (!needsExternalPayment) {
         methodId =
             selectedMethodId ?? (methods.isNotEmpty ? methods.first.id : '');
       } else if (selectedMethodId == null) {
+        _clearUnavailableSelection(methods);
         XBoardNotification.showError(l10n.xboardSelectPaymentMethod);
         return;
       } else if (methods.any((method) => method.id == selectedMethodId)) {
@@ -349,6 +376,8 @@ class _OrderDetailPageState extends ConsumerState<OrderDetailPage>
         XBoardNotification.showError(l10n.xboardSelectPaymentMethod);
         return;
       }
+
+      setState(() => _selectedMethodId = methodId);
 
       final paymentResult =
           await ref.read(xboardPaymentProvider.notifier).submitPayment(

@@ -21,8 +21,12 @@ class TVFocusable extends StatefulWidget {
   final Widget child;
   final VoidCallback? onPressed;
   final bool autofocus;
+
+  /// Keep temporary busy controls in D-pad navigation without accepting input.
+  final bool focusableWhenDisabled;
   final FocusNode? focusNode;
   final BorderRadius? borderRadius;
+  final Color? focusBorderColor;
   final FocusOnKeyEventCallback? onKeyEvent;
 
   const TVFocusable({
@@ -30,8 +34,10 @@ class TVFocusable extends StatefulWidget {
     required this.child,
     this.onPressed,
     this.autofocus = false,
+    this.focusableWhenDisabled = false,
     this.focusNode,
     this.borderRadius,
+    this.focusBorderColor,
     this.onKeyEvent,
   });
 
@@ -91,10 +97,32 @@ class _TVFocusableState extends State<TVFocusable> {
       return widget.child;
     }
 
+    final materialButton = _materialButtonIn(widget.child);
+    final states = <WidgetState>{
+      if (widget.onPressed == null) WidgetState.disabled,
+    };
+    final buttonStyle = materialButton == null
+        ? null
+        : _TvStyledButton(materialButton).resolvedStyle(context, states);
+    final shape = buttonStyle?.shape?.resolve(states);
+    final ringColor = widget.focusBorderColor ??
+        _contrastingFocusColor(
+            context, buttonStyle?.backgroundColor?.resolve(states));
+    final side = BorderSide(
+      color: _isFocused ? ringColor : Colors.transparent,
+      width: 2,
+    );
+    final Decoration decoration = shape != null
+        ? ShapeDecoration(shape: shape.copyWith(side: side))
+        : BoxDecoration(
+            borderRadius: widget.borderRadius ?? BorderRadius.circular(12),
+            border: Border.fromBorderSide(side),
+          );
+
     return Focus(
       focusNode: _focusNode,
       autofocus: widget.autofocus,
-      canRequestFocus: widget.onPressed != null,
+      canRequestFocus: widget.onPressed != null || widget.focusableWhenDisabled,
       descendantsAreFocusable: false,
       onKeyEvent: _handleKeyEvent,
       onFocusChange: (focused) {
@@ -106,20 +134,109 @@ class _TVFocusableState extends State<TVFocusable> {
           duration: MediaQuery.disableAnimationsOf(context)
               ? Duration.zero
               : const Duration(milliseconds: 150),
-          foregroundDecoration: BoxDecoration(
-            borderRadius: widget.borderRadius ?? BorderRadius.circular(12),
-            border: _isFocused
-                ? Border.all(
-                    color: Theme.of(context).colorScheme.primary,
-                    width: 2,
-                  )
-                : Border.all(color: Colors.transparent, width: 2),
-          ),
-          child: widget.child,
+          foregroundDecoration: decoration,
+          child: _adaptMaterialButton(widget.child),
         ),
       ),
     );
   }
+}
+
+ButtonStyleButton? _materialButtonIn(Widget child) {
+  if (child is ButtonStyleButton) return child;
+  if (child is SizedBox && child.child != null) {
+    return _materialButtonIn(child.child!);
+  }
+  return null;
+}
+
+Widget _adaptMaterialButton(Widget child) {
+  if (child is ButtonStyleButton) return _TvStyledButton(child);
+  if (child is SizedBox && child.child != null) {
+    return SizedBox(
+      key: child.key,
+      width: child.width,
+      height: child.height,
+      child: _adaptMaterialButton(child.child!),
+    );
+  }
+  return child;
+}
+
+Color _contrastingFocusColor(BuildContext context, Color? background) {
+  final scheme = Theme.of(context).colorScheme;
+  final fill =
+      Color.alphaBlend(background ?? Colors.transparent, scheme.surface);
+  double contrast(Color color) {
+    final a = color.computeLuminance();
+    final b = fill.computeLuminance();
+    return (a > b ? (a + 0.05) / (b + 0.05) : (b + 0.05) / (a + 0.05));
+  }
+
+  if (contrast(scheme.primary) >= 3) return scheme.primary;
+  if (contrast(scheme.onPrimary) >= 3) return scheme.onPrimary;
+  return contrast(Colors.white) > contrast(Colors.black)
+      ? Colors.white
+      : Colors.black;
+}
+
+/// Preserve the native button's label, semantics, callbacks and complete style,
+/// but leave TV focus painting to the single outer TVFocusable border.
+class _TvStyledButton extends ButtonStyleButton {
+  _TvStyledButton(this.source)
+      : super(
+          key: source.key,
+          onPressed: source.onPressed,
+          onLongPress: source.onLongPress,
+          onHover: source.onHover,
+          onFocusChange: source.onFocusChange,
+          style: (source.style ?? const ButtonStyle()).copyWith(
+            tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+            overlayColor: const WidgetStatePropertyAll(Colors.transparent),
+          ),
+          focusNode: null,
+          autofocus: false,
+          clipBehavior: source.clipBehavior,
+          statesController: source.statesController,
+          isSemanticButton: source.isSemanticButton,
+          tooltip: source.tooltip,
+          child: source.child,
+        );
+
+  final ButtonStyleButton source;
+
+  ButtonStyle resolvedStyle(BuildContext context, Set<WidgetState> states) {
+    final defaults = source.defaultStyleOf(context);
+    final theme = source.themeStyleOf(context);
+    return ButtonStyle(
+      shape: WidgetStatePropertyAll(source.style?.shape?.resolve(states) ??
+          theme?.shape?.resolve(states) ??
+          defaults.shape?.resolve(states)),
+      backgroundColor: WidgetStatePropertyAll(
+          source.style?.backgroundColor?.resolve(states) ??
+              theme?.backgroundColor?.resolve(states) ??
+              defaults.backgroundColor?.resolve(states)),
+    );
+  }
+
+  @override
+  ButtonStyle defaultStyleOf(BuildContext context) =>
+      source.defaultStyleOf(context);
+
+  @override
+  ButtonStyle? themeStyleOf(BuildContext context) =>
+      source.themeStyleOf(context);
+}
+
+extension TvButtonFocus on ButtonStyleButton {
+  Widget withTvFocus({bool? autofocus}) => system.isTV
+      ? TVFocusable(
+          autofocus: autofocus ?? this.autofocus,
+          focusNode: focusNode,
+          onPressed: onPressed,
+          child: this,
+        )
+      : this;
 }
 
 /// Scale effect variant: focused item scales up slightly (TV "zoom" feel).
