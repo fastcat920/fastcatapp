@@ -40,6 +40,27 @@ actor TVRemoteConfigManager {
     throw RemoteConfigError.unavailable
   }
 
+  /// Connectivity checks only consume already available configuration. They
+  /// must not start an unbounded OSS fetch on every foreground/network event.
+  func connectivityBaseURLs() -> [URL] {
+    var result = resolvedConfig.map { apiBaseURLs(from: $0) } ?? []
+    if result.isEmpty, let build = try? TVBuildConfiguration.load(),
+       let cached = UserDefaults.standard.data(forKey: Self.cachedConfigKey),
+       let json = try? decodeRemoteConfig(cached, xorKey: build.xorKey) {
+      result = apiBaseURLs(from: json)
+    }
+    if let resolvedBaseURL, !result.contains(resolvedBaseURL) { result.insert(resolvedBaseURL, at: 0) }
+    if result.isEmpty, let fallback = try? TVBuildConfiguration.load().fallbackAPIBaseURL {
+      result = [fallback]
+    }
+    return result
+  }
+
+  func useHealthyGateway(_ url: URL) {
+    guard connectivityBaseURLs().contains(url) else { return }
+    resolvedBaseURL = url
+  }
+
   func availableTVUpdate(language: TVLanguage) async -> TVUpdateInfo? {
     guard let json = try? await remoteConfig(),
           let update = json["update"] as? [String: Any] else { return nil }
@@ -226,19 +247,24 @@ actor TVRemoteConfigManager {
   }
 
   private func apiBaseURL(from json: [String: Any]) -> URL? {
+    apiBaseURLs(from: json).first
+  }
+
+  private func apiBaseURLs(from json: [String: Any]) -> [URL] {
     var gateways = json["gateway_urls"] as? [String] ?? []
     if gateways.isEmpty, let gateway = json["gateway_url"] as? String { gateways = [gateway] }
     if gateways.isEmpty { gateways = json["domains"] as? [String] ?? [] }
     let prefix = (json["api_prefix"] as? String)?.trimmingCharacters(in: .whitespacesAndNewlines) ?? "/api/v1"
 
+    var result: [URL] = []
     for raw in gateways {
       let normalized = raw.trimmingCharacters(in: .whitespacesAndNewlines).trimmingCharacters(in: CharacterSet(charactersIn: "/"))
       guard var components = URLComponents(string: normalized),
             ["https", "http"].contains(components.scheme?.lowercased() ?? "") else { continue }
       let cleanPrefix = prefix.hasPrefix("/") ? prefix : "/\(prefix)"
       if components.path.isEmpty || components.path == "/" { components.path = cleanPrefix }
-      if let url = components.url { return url }
+      if let url = components.url, !result.contains(url) { result.append(url) }
     }
-    return nil
+    return result
   }
 }

@@ -17,6 +17,7 @@ struct FastCatTVApp: App {
 }
 
 private struct RootView: View {
+  @StateObject private var connectivity = TVServiceConnectivityMonitor.live()
   @Environment(\.scenePhase) private var scenePhase
   @EnvironmentObject private var session: SessionStore
   @Environment(\.openURL) private var openURL
@@ -29,6 +30,7 @@ private struct RootView: View {
       Group {
         if session.isSignedIn {
           TVHomeView()
+            .environmentObject(connectivity)
         } else {
           TVLoginView()
         }
@@ -43,7 +45,20 @@ private struct RootView: View {
       await checkForUpdates()
     }
     .task(id: "\(session.token ?? "")-\(scenePhase)") {
-      if scenePhase == .active { await session.maintainSession() }
+      connectivity.stop(reset: !session.isSignedIn)
+      guard scenePhase == .active, session.isSignedIn else { return }
+#if DEBUG
+      if session.token == "preview-token" { return }
+#endif
+      connectivity.start()
+      await session.maintainSession()
+    }
+    .onDisappear { connectivity.stop() }
+    .onReceive(NotificationCenter.default.publisher(for: GatewayClient.serviceRequestFailed)) { _ in
+      connectivity.requestCheck()
+    }
+    .onReceive(NotificationCenter.default.publisher(for: GatewayClient.serviceRequestSucceeded)) { _ in
+      if connectivity.state.status != .online { connectivity.requestCheck() }
     }
     .onChange(of: language) { _, _ in
       Task { await checkForUpdates() }

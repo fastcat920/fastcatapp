@@ -16,10 +16,20 @@ class LogoutDialog extends ConsumerStatefulWidget {
 
 class _LogoutDialogState extends ConsumerState<LogoutDialog> {
   bool _isLoggingOut = false;
+  late final bool _isProtectedAtOpen;
+
+  @override
+  void initState() {
+    super.initState();
+    // Keep this confirmation stable if connectivity changes while it is open
+    // (including when logging out disconnects the proxy). A new dialog takes
+    // a fresh snapshot; the auth provider still enforces its live safety check.
+    _isProtectedAtOpen = !ref.read(serviceConnectivityProvider).isOnline;
+  }
 
   @override
   Widget build(BuildContext context) {
-    final isProtected = !ref.watch(serviceConnectivityProvider).isOnline;
+    final isProtected = _isProtectedAtOpen;
     return AlertDialog(
       shape: XbUiDialog.shape(),
       backgroundColor: XbUiDialog.background(context),

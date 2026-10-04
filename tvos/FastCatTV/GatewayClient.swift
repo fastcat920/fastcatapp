@@ -187,6 +187,8 @@ struct TVSubscriptionSummary: Decodable {
 }
 
 struct GatewayClient {
+  static let serviceRequestFailed = Notification.Name("fastcat.service.requestFailed")
+  static let serviceRequestSucceeded = Notification.Name("fastcat.service.requestSucceeded")
   enum GatewayError: LocalizedError {
     case missingBaseURL, invalidResponse, unauthorized, server(String)
     var errorDescription: String? {
@@ -407,7 +409,7 @@ struct GatewayClient {
       request.httpBody = try JSONEncoder().encode(body)
       request.setValue("application/json", forHTTPHeaderField: "Content-Type")
     }
-    let (data, response) = try await URLSession.shared.data(for: request)
+    let (data, response) = try await performBusinessRequest(request)
     guard let http = response as? HTTPURLResponse else { throw GatewayError.invalidResponse }
     if http.statusCode == 401 { throw GatewayError.unauthorized }
     guard (200..<300).contains(http.statusCode) else { throw GatewayError.server("服务暂时不可用（\(http.statusCode)）") }
@@ -418,6 +420,25 @@ struct GatewayClient {
 
   private func sendVoidOrEnvelope<Body: Encodable>(path: String, body: Body) async throws {
     try await sendVoidRequest(path: path, method: "POST", body: AnyEncodable(body))
+  }
+
+  private func performBusinessRequest(_ request: URLRequest) async throws -> (Data, URLResponse) {
+    do {
+      let result = try await URLSession.shared.data(for: request)
+      if let response = result.1 as? HTTPURLResponse {
+        if (200..<300).contains(response.statusCode) {
+          NotificationCenter.default.post(name: Self.serviceRequestSucceeded, object: nil)
+        } else if response.statusCode >= 500 {
+          NotificationCenter.default.post(name: Self.serviceRequestFailed, object: nil)
+        }
+      }
+      return result
+    } catch {
+      if (error as? URLError)?.code != .cancelled {
+        NotificationCenter.default.post(name: Self.serviceRequestFailed, object: nil)
+      }
+      throw error
+    }
   }
 
   private func sendVoidRequest(path: String, method: String, body: AnyEncodable? = nil, authorization: String? = nil, requireAcknowledgement: Bool = false) async throws {
@@ -437,7 +458,7 @@ struct GatewayClient {
       request.httpBody = try JSONEncoder().encode(body)
       request.setValue("application/json", forHTTPHeaderField: "Content-Type")
     }
-    let (data, response) = try await URLSession.shared.data(for: request)
+    let (data, response) = try await performBusinessRequest(request)
     guard let http = response as? HTTPURLResponse else { throw GatewayError.invalidResponse }
     if http.statusCode == 401 { throw GatewayError.unauthorized }
     // A server error might occur after an irreversible mutation was applied.

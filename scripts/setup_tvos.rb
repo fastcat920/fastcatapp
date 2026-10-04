@@ -22,7 +22,7 @@ tunnel = project.new_target(:app_extension, 'PacketTunnel', :tvos, '17.0')
 tunnel.product_reference.path = 'PacketTunnel.appex'
 tunnel.product_reference.name = 'PacketTunnel.appex'
 
-%w[FastCatTVApp.swift SessionStore.swift KeychainStore.swift TVBuildConfiguration.swift TVRemoteConfigManager.swift FastCatSubscriptionDecoder.swift TVDesignSystem.swift TVNodeSelection.swift GatewayClient.swift TVLoginView.swift TVHomeView.swift VPNManager.swift].each do |name|
+%w[FastCatTVApp.swift SessionStore.swift KeychainStore.swift TVBuildConfiguration.swift TVRemoteConfigManager.swift FastCatSubscriptionDecoder.swift TVDesignSystem.swift TVNodeSelection.swift GatewayClient.swift TVLoginView.swift TVHomeView.swift VPNManager.swift TVServiceConnectivity.swift].each do |name|
   app.source_build_phase.add_file_reference(app_group.new_file(name))
 end
 app_group.new_file('Info.plist')

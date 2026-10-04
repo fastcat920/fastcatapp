@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+        FA57CA710000000000000101 /* TVServiceConnectivity.swift in Sources */ = {isa = PBXBuildFile; fileRef = FA57CA710000000000000102 /* TVServiceConnectivity.swift */; };
 		FA57CA710000000000000001 /* tv_design_contract.json in Resources */ = {isa = PBXBuildFile; fileRef = FA57CA710000000000000002 /* tv_design_contract.json */; };
 		1BF82943385F910990125546 /* MaterialIcons-Regular.otf in Resources */ = {isa = PBXBuildFile; fileRef = 3D5F5DE22F87F724C42B159F /* MaterialIcons-Regular.otf */; };
 		1D392A56603115CF69107170 /* TVLoginView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0FA2C476CA0F2DF189D3F99B /* TVLoginView.swift */; };
@@ -57,6 +58,7 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+        FA57CA710000000000000102 /* TVServiceConnectivity.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TVServiceConnectivity.swift; sourceTree = "<group>"; };
 		FA57CA710000000000000002 /* tv_design_contract.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = "../assets/config/tv_design_contract.json"; sourceTree = "<group>"; };
 		0674424692C256D4D855A944 /* PacketTunnel.entitlements */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.plist.entitlements; path = PacketTunnel.entitlements; sourceTree = "<group>"; };
 		0FA2C476CA0F2DF189D3F99B /* TVLoginView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = TVLoginView.swift; sourceTree = "<group>"; };
@@ -123,6 +125,7 @@
 				673B4D0DDB3BA09AEE610BF3 /* GatewayClient.swift */,
 				0FA2C476CA0F2DF189D3F99B /* TVLoginView.swift */,
 				A63186297390A04B18EA6216 /* TVHomeView.swift */,
+                FA57CA710000000000000102 /* TVServiceConnectivity.swift */,
 				92517154B96297B79B9827EB /* VPNManager.swift */,
 				9A995D7BDF3A1E9C948E31F7 /* Info.plist */,
 				9BC59243490356AC8B97290C /* FastCatTV.entitlements */,
@@ -311,6 +314,7 @@
 				3036E952A6DBDDB76FFA8EF9 /* GatewayClient.swift in Sources */,
 				1D392A56603115CF69107170 /* TVLoginView.swift in Sources */,
 				48B17E71BACEA1E1B1FED51C /* TVHomeView.swift in Sources */,
+                FA57CA710000000000000101 /* TVServiceConnectivity.swift in Sources */,
 				D9A0EF7C863B57A1DDBB6541 /* VPNManager.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

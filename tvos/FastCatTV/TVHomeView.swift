@@ -19,7 +19,9 @@ private struct NoticeContentHeightPreferenceKey: PreferenceKey {
 
 struct TVHomeView: View {
   @EnvironmentObject private var session: SessionStore
+  @EnvironmentObject private var connectivity: TVServiceConnectivityMonitor
   @Environment(\.colorScheme) private var colorScheme
+  @Environment(\.scenePhase) private var scenePhase
   @State private var connected = false
   @State private var isConnecting = false
   @State private var routeMode: TVRouteMode = .rule
@@ -30,6 +32,10 @@ struct TVHomeView: View {
   @State private var errorMessage: String?
   @State private var showLogoutConfirmation = false
   @State private var isLoggingOut = false
+  @State private var logoutProtectedAtOpen = false
+  @State private var logoutForceConfirmation = false
+  @State private var logoutError: String?
+  @State private var showConnectivityDetail = false
   @State private var subscriptionBlockMessage: String?
   @State private var subscriptionActionError: String?
   @State private var newPeriodState: TVNewPeriodState?
@@ -62,6 +68,7 @@ struct TVHomeView: View {
   @FocusState private var logoutCancelFocused: Bool
   @FocusState private var messageActionFocused: Bool
   @FocusState private var newPeriodCancelFocused: Bool
+  @FocusState private var connectivityCloseFocused: Bool
 
   private var simulatorPreview: Bool {
 #if targetEnvironment(simulator)
@@ -79,7 +86,7 @@ struct TVHomeView: View {
 #endif
   }
 
-  var body: some View {
+  private var homeCanvas: some View {
     TVDesignCanvas {
       GeometryReader { geometry in
         let bodyHeight = max(0, geometry.size.height - tv(64))
@@ -129,6 +136,8 @@ struct TVHomeView: View {
             noticeDialog
           } else if showLogoutConfirmation {
             logoutDialog
+          } else if showConnectivityDetail {
+            connectivityDialog
           } else if newPeriodState != nil {
             newPeriodDialog
           } else if let subscriptionBlockMessage {
@@ -138,6 +147,10 @@ struct TVHomeView: View {
         .frame(width: geometry.size.width, height: geometry.size.height)
       }
     }
+  }
+
+  private var homeWithLifecycle: some View {
+    homeCanvas
     .onAppear {
       guard !hasAssignedInitialHomeFocus else { return }
       hasAssignedInitialHomeFocus = true
@@ -158,6 +171,23 @@ struct TVHomeView: View {
     .onReceive(NotificationCenter.default.publisher(for: VPNManager.statusDidChangeNotification)) { notification in
       syncVPNStatus(notification.object as? String)
     }
+    .onChange(of: connected) { _, _ in updateConnectivityProxy() }
+    .onChange(of: scenePhase) { _, phase in
+      if phase == .active { syncVPNStatus() }
+    }
+    .onChange(of: selectedNodeName) { _, _ in updateConnectivityProxy() }
+    .onChange(of: selectedGroupName) { _, _ in updateConnectivityProxy() }
+    .onChange(of: showConnectivityDetail) { _, presented in
+      if presented { focusModalButton { connectivityCloseFocused = true } }
+      else { connectivityCloseFocused = false }
+    }
+    .onChange(of: logoutForceConfirmation) { _, _ in
+      focusModalButton { logoutCancelFocused = true }
+    }
+  }
+
+  var body: some View {
+    homeWithLifecycle
     .onChange(of: showNodeSelector) { _, presented in
       if presented {
         connectButtonFocused = false
@@ -212,7 +242,7 @@ struct TVHomeView: View {
   }
 
   private var isModalPresented: Bool {
-    showNoticeDetail || showLogoutConfirmation || subscriptionBlockMessage != nil || newPeriodState != nil
+    showNoticeDetail || showLogoutConfirmation || showConnectivityDetail || subscriptionBlockMessage != nil || newPeriodState != nil
   }
 
   private func focusModalButton(_ action: @escaping () -> Void) {
@@ -228,6 +258,21 @@ struct TVHomeView: View {
       Text(tvText("快猫", "FastCat", language: language))
         .font(TVFont.medium(16))
         .foregroundStyle(TVTheme.textPrimary)
+
+      if connectivity.state.showBadge {
+        TVFocusButton(cornerRadius: tv(14), action: { showConnectivityDetail = true }) { _ in
+          HStack(spacing: tv(5)) {
+            MaterialIcon(glyph: connectivity.state.cause == .noNetwork ? .wifiOff : .networkCheck,
+                         size: 14, color: TVTheme.warning)
+            Text(connectivity.state.title(language: language))
+              .font(TVFont.medium(11)).foregroundStyle(TVTheme.warning).lineLimit(1)
+          }
+          .padding(.horizontal, tv(10)).frame(height: tv(32))
+          .background(TVTheme.warning.opacity(0.10))
+          .clipShape(RoundedRectangle(cornerRadius: tv(14), style: .continuous))
+        }
+        .accessibilityLabel(connectivity.state.title(language: language))
+      }
 
       Spacer()
       TVToolbarButton(
@@ -524,7 +569,12 @@ struct TVHomeView: View {
 
   private var accountCard: some View {
     TVFocusButton(cornerRadius: TVTheme.cardRadius, action: {
-      if !isLoggingOut { showLogoutConfirmation = true }
+      if !isLoggingOut {
+        logoutProtectedAtOpen = connectivity.state.protectsLogout
+        logoutForceConfirmation = false
+        logoutError = nil
+        showLogoutConfirmation = true
+      }
     }) { _ in
       HStack(spacing: tv(13)) {
         ZStack {
@@ -675,14 +725,26 @@ struct TVHomeView: View {
 
   private var logoutDialog: some View {
     TVDialog(
-      title: tvText("确认退出", "Confirm sign out", language: language),
+      title: logoutForceConfirmation
+        ? tvText("确认强制退出", "Confirm forced sign out", language: language)
+        : logoutProtectedAtOpen
+          ? tvText("登录保护已开启", "Sign-in protection enabled", language: language)
+          : tvText("确认退出", "Confirm sign out", language: language),
       icon: nil
     ) {
-      Text(tvText("确定要退出当前账户吗？退出后需要重新登录。", "Are you sure you want to sign out? You will need to sign in again.", language: language))
+      VStack(alignment: .leading, spacing: tv(10)) {
+        Text(logoutForceConfirmation
+          ? tvText("强制退出会清除本地登录状态和节点缓存，服务恢复前可能无法再次登录。确定继续吗？", "Forced sign out clears local sign-in state and cached nodes. You may not be able to sign in again until the service recovers. Continue?", language: language)
+          : logoutProtectedAtOpen
+            ? tvText("当前服务连接异常，退出后可能暂时无法重新登录。建议保留当前登录状态，等待服务恢复。", "The service connection is currently unavailable. You may not be able to sign in again after signing out. We recommend staying signed in until the service recovers.", language: language)
+            : tvText("确定要退出当前账户吗？退出后需要重新登录。", "Are you sure you want to sign out? You will need to sign in again.", language: language))
+        if let logoutError { Text(logoutError).foregroundStyle(TVTheme.danger) }
+        if isLoggingOut { ProgressView() }
+      }
     } actions: {
       HStack(spacing: tv(10)) {
         TVFocusButton(cornerRadius: TVTheme.compactRadius, autofocus: true, focus: $logoutCancelFocused, action: {
-          showLogoutConfirmation = false
+          dismissLogoutDialog()
         }) { focused in
           Text(tvText("取消", "Cancel", language: language))
             .font(TVFont.regular(14))
@@ -692,10 +754,14 @@ struct TVHomeView: View {
             .clipShape(RoundedRectangle(cornerRadius: TVTheme.compactRadius, style: .continuous))
         }
         TVFocusButton(cornerRadius: TVTheme.compactRadius, action: {
-          showLogoutConfirmation = false
-          performLogout()
+          guard !isLoggingOut else { return }
+          if logoutProtectedAtOpen && !logoutForceConfirmation {
+            logoutForceConfirmation = true
+          } else { performLogout(force: logoutProtectedAtOpen) }
         }) { focused in
-          Text(tvText("退出", "Exit", language: language))
+          Text(logoutProtectedAtOpen
+            ? tvText("仍然退出", "Sign out anyway", language: language)
+            : tvText("退出", "Exit", language: language))
             .font(TVFont.regular(14))
             .foregroundStyle(.white)
             .padding(.horizontal, tv(18))
@@ -704,7 +770,43 @@ struct TVHomeView: View {
             .clipShape(RoundedRectangle(cornerRadius: TVTheme.compactRadius, style: .continuous))
         }
       }
+      .opacity(isLoggingOut ? 0.6 : 1)
     }
+    .onExitCommand { dismissLogoutDialog() }
+  }
+
+  private func dismissLogoutDialog() {
+    guard !isLoggingOut else { return }
+    if logoutForceConfirmation { logoutForceConfirmation = false }
+    else { showLogoutConfirmation = false }
+  }
+
+  private var connectivityDialog: some View {
+    TVDialog(title: connectivity.state.title(language: language), icon: .networkCheck) {
+      VStack(alignment: .leading, spacing: tv(10)) {
+        Text(connectivity.state.detail(language: language))
+        if let checkedAt = connectivity.state.checkedAt {
+          Text(tvText("检测时间：", "Checked at: ", language: language) + checkedAt.formatted(date: .omitted, time: .standard))
+        }
+        if connectivity.isChecking { ProgressView() }
+      }
+    } actions: {
+      HStack(spacing: tv(10)) {
+        subscriptionDialogButton(tvText("关闭", "Close", language: language), focus: $connectivityCloseFocused, autofocus: true) {
+          showConnectivityDetail = false
+        }
+        subscriptionDialogButton(tvText("重新检测", "Check again", language: language), primary: true) {
+          connectivity.requestCheck()
+        }
+      }
+    }
+    .onExitCommand { showConnectivityDetail = false }
+  }
+
+  private func updateConnectivityProxy() {
+    connectivity.updateProxy(connected: connected,
+      name: routeMode == .global ? "GLOBAL" : (selectedGroupName ?? selectedNodeName),
+      selectionID: "\(routeMode.rawValue):\(selectedNodeName ?? "")")
   }
 
   private func messageDialog(_ message: String) -> some View {
@@ -1312,6 +1414,7 @@ struct TVHomeView: View {
     let previous = routeMode
     routeMode = mode
     savedRouteMode = mode.rawValue
+    updateConnectivityProxy()
     selectedGroupName = nil
     guard connected else { return }
 
@@ -1333,6 +1436,7 @@ struct TVHomeView: View {
     if let deliveredStatus {
       connected = deliveredStatus == "connected"
       isConnecting = deliveredStatus == "connecting" || deliveredStatus == "disconnecting"
+      updateConnectivityProxy()
       if connected { Task { await refreshLiveNodes() } }
       return
     }
@@ -1340,13 +1444,18 @@ struct TVHomeView: View {
       Task { @MainActor in
         connected = status == "connected"
         isConnecting = status == "connecting" || status == "disconnecting"
+        updateConnectivityProxy()
         if connected { await refreshLiveNodes() }
       }
     }
   }
 
-  private func performLogout() {
+  private func performLogout(force: Bool = false) {
     guard !isLoggingOut else { return }
+    guard force || !connectivity.state.protectsLogout else {
+      logoutError = tvText("网络状态已改变，请取消后重新确认退出。", "Network status changed. Cancel and confirm sign out again.", language: language)
+      return
+    }
     isLoggingOut = true
     VPNManager.shared.disconnect { _ in
       Task { @MainActor in

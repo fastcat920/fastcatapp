@@ -788,6 +788,13 @@ jobs:
       - name: Configure tvOS build
         run: cp tvos/Config.xcconfig.example tvos/Config.xcconfig
 
+      - name: Native tvOS offline regression tests
+        run: |
+          swiftc tvos/FastCatTV/TVServiceConnectivity.swift test/tvos/connectivity_test.swift -o "$RUNNER_TEMP/fastcat-connectivity-tests"
+          "$RUNNER_TEMP/fastcat-connectivity-tests"
+          swiftc tvos/FastCatTV/GatewayClient.swift test/tvos/new_period_test.swift -o "$RUNNER_TEMP/fastcat-new-period-tests"
+          "$RUNNER_TEMP/fastcat-new-period-tests"
+
       - name: Build tvOS native core
         run: bash scripts/build_tvos_core.sh
 
