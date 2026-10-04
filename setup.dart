@@ -994,6 +994,7 @@ class BuildCommand extends Command {
   /// XOR_KEY / OSS_URL_1..4 / PANEL_TYPE 由 build.yaml 在 Build 步骤中
   /// 通过 env: 注入，setup.dart 读取后转为 dart-define 传给 flutter build。
   String get _dartDefinesArgs {
+    _validateRemoteConfigPublicKey();
     const keys = [
       'XOR_KEY',
       'REMOTE_CONFIG_PUBLIC_KEY',
@@ -1045,6 +1046,7 @@ class BuildCommand extends Command {
   /// Unlike [_dartDefinesArgs] (for flutter_distributor), this returns
   /// `--dart-define=KEY=VAL` format suitable for `flutter build apk` etc.
   List<String> _dartDefineList(String env) {
+    _validateRemoteConfigPublicKey();
     const keys = [
       'XOR_KEY',
       'REMOTE_CONFIG_PUBLIC_KEY',
@@ -1079,6 +1081,16 @@ class BuildCommand extends Command {
       }
     }
     return result;
+  }
+
+  void _validateRemoteConfigPublicKey() {
+    final value =
+        Platform.environment['REMOTE_CONFIG_PUBLIC_KEY']?.trim() ?? '';
+    try {
+      if (base64.decode(value).length == 32) return;
+    } catch (_) {}
+    throw StateError(
+        'REMOTE_CONFIG_PUBLIC_KEY is required: provide the Base64-encoded 32-byte Ed25519 public key for fastcat-config-v2.');
   }
 
   String? _dartDefineValueForKey(String key) {

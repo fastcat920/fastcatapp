@@ -23,6 +23,9 @@ private struct RootView: View {
   @Environment(\.openURL) private var openURL
   @AppStorage(TVLanguage.preferenceKey) private var language = TVLanguage.system.rawValue
   @State private var availableUpdate: TVUpdateInfo?
+  @State private var refreshingConfig = false
+  @State private var configRequestRunning = false
+  @State private var refreshMessage: String?
   @FocusState private var updateActionFocused: Bool
 
   var body: some View {
@@ -35,10 +38,23 @@ private struct RootView: View {
           TVLoginView()
         }
       }
-      .disabled(availableUpdate != nil)
-      .allowsHitTesting(availableUpdate == nil)
+      .disabled(availableUpdate != nil || refreshingConfig || refreshMessage != nil)
+      .allowsHitTesting(availableUpdate == nil && !refreshingConfig && refreshMessage == nil)
 
       if let availableUpdate { updateDialog(availableUpdate) }
+      else if refreshingConfig || refreshMessage != nil {
+        TVDialog(title: tvText("刷新配置", "Refresh configuration", language: language), icon: nil) {
+          Text(refreshMessage ?? tvText("正在刷新配置并检查更新…", "Refreshing configuration and checking for updates…", language: language))
+        } actions: {
+          TVFocusButton(cornerRadius: TVTheme.compactRadius, autofocus: true, action: {
+            // Allow dismissing the progress dialog without cancelling shared requests.
+            refreshingConfig = false; refreshMessage = nil
+          }) { _ in
+            Text(tvText("确定", "OK", language: language))
+              .font(TVFont.regular(14)).padding(.horizontal, tv(18)).frame(height: tv(48))
+          }
+        }
+      }
     }
     .task {
       await session.restore()
@@ -60,6 +76,9 @@ private struct RootView: View {
     .onReceive(NotificationCenter.default.publisher(for: GatewayClient.serviceRequestSucceeded)) { _ in
       if connectivity.state.status != .online { connectivity.requestCheck() }
     }
+    .onReceive(NotificationCenter.default.publisher(for: .tvRefreshRemoteConfiguration)) { _ in
+      Task { await refreshRemoteConfiguration() }
+    }
     .onChange(of: language) { _, _ in
       Task { await checkForUpdates() }
     }
@@ -71,6 +90,26 @@ private struct RootView: View {
       } else {
         updateActionFocused = false
       }
+    }
+  }
+
+  @MainActor
+  private func refreshRemoteConfiguration() async {
+    guard !configRequestRunning else { return }
+    configRequestRunning = true
+    refreshingConfig = true; refreshMessage = nil
+    defer { refreshingConfig = false; configRequestRunning = false }
+    do {
+      let online = try await TVRemoteConfigManager.shared.refresh()
+      await checkForUpdates()
+      connectivity.requestCheck()
+      if availableUpdate == nil {
+        refreshMessage = online
+          ? tvText("配置已刷新，未发现新版本。", "Configuration refreshed. No update found.", language: language)
+          : tvText("未取得可替换的远程配置，继续使用已校验的本地缓存。", "No eligible remote configuration. Using the verified local cache.", language: language)
+      }
+    } catch {
+      refreshMessage = tvText("配置刷新失败，请检查网络后重试。", "Configuration refresh failed. Check your network and try again.", language: language)
     }
   }
 

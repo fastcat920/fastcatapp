@@ -22,6 +22,9 @@ const _logger = FileLogger('sdk_provider');
 Future<XBoardSDK> xboardSdk(Ref ref) async {
   try {
     _logger.info('[XBoardSdkProvider] 开始初始化SDK');
+    if (!XBoardConfig.isInitialized || XBoardConfig.allPanelUrls.isEmpty) {
+      throw StateError('请先加载有效的 fastcat-config-v2 签名配置');
+    }
 
     final runtime = GatewayRuntimeService.instance;
     await runtime.bootstrapFromCurrentConfig();

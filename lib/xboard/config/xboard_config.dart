@@ -728,6 +728,8 @@ class XBoardConfig {
     await _accessor.refreshConfiguration();
   }
 
+  static bool get remoteConfigConfirmed => _instance?.remoteConfirmed ?? false;
+
   /// 从指定源刷新配置
   static Future<void> refreshFromSource(String source) async {
     await _accessor.refreshFromSource(source);

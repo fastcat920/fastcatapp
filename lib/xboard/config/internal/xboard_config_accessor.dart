@@ -37,6 +37,8 @@ class XBoardConfigAccessor {
   ParsedConfiguration? _currentConfig;
   String? _lastError;
   DateTime? _lastUpdateTime;
+  bool remoteConfirmed = false;
+  bool usingStaleCache = false;
 
   // 服务实例
   PanelService? _panelService;
@@ -158,6 +160,7 @@ class XBoardConfigAccessor {
 
   /// 刷新配置（纯远程实时获取）
   Future<void> refreshConfiguration() async {
+    remoteConfirmed = false;
     await _updateState(ConfigAccessorState.loading);
     _lastError = null;
 
@@ -177,6 +180,8 @@ class XBoardConfigAccessor {
       if (result.isSuccess && result.data != null) {
         final configData = _parser.extractConfigFromRemoteResult(result.data!);
         if (configData != null) {
+          remoteConfirmed = result.source != 'local_cache';
+          usingStaleCache = result.isStale;
           await _processConfigData(configData, result.source);
           return;
         }
@@ -185,6 +190,7 @@ class XBoardConfigAccessor {
       // 远程获取失败
       throw Exception('Remote config fetch failed');
     } catch (e) {
+      remoteConfirmed = false;
       _lastError = 'Configuration refresh failed: $e';
       await _updateState(ConfigAccessorState.error);
       _logger.error('Configuration refresh failed', e);
@@ -230,48 +236,19 @@ class XBoardConfigAccessor {
   /// 用外部已解析的配置数据直接注入（fallback 路径）
   Future<void> loadParsedConfig(
       Map<String, dynamic> configData, String source) async {
+    remoteConfirmed = false;
     await _processConfigData(configData, source);
   }
 
   /// 从指定源刷新配置
   Future<void> refreshFromSource(String sourceName) async {
-    await _updateState(ConfigAccessorState.loading);
-    _lastError = null;
-
+    // Legacy aliases are retained, but every refresh now observes the same
+    // validation, anti-regression and cache rules instead of bypassing them.
     try {
-      ConfigResult<Map<String, dynamic>> result;
-
-      switch (sourceName.toLowerCase()) {
-        case 'remote':
-          final multiResult = await _remoteManager.fetchAllConfigs();
-          result = multiResult.firstSuccessful ??
-              ConfigResult.failure('No successful remote source', 'remote');
-          break;
-        case 'redirect':
-          result = await _remoteManager.getRedirectConfig();
-          break;
-        case 'gitee':
-          result = await _remoteManager.getGiteeConfig();
-          break;
-        default:
-          result = ConfigResult.failure(
-              'Unknown source: $sourceName. Only remote sources (redirect, gitee) are supported.',
-              sourceName);
+      if (!['remote', 'redirect', 'gitee'].contains(sourceName.toLowerCase())) {
+        throw ArgumentError('Unknown remote source: $sourceName');
       }
-
-      if (result.isSuccess && result.data != null) {
-        // 提取配置数据（所有源都是远程源）
-        final configData = _parser.extractConfigFromRemoteResult(result.data!);
-
-        if (configData != null) {
-          await _processConfigData(configData, result.source);
-        } else {
-          throw Exception('Invalid config data from $sourceName');
-        }
-      } else {
-        throw Exception(
-            'Failed to get config from $sourceName: ${result.error}');
-      }
+      await refreshConfiguration();
     } catch (e) {
       _lastError = 'Refresh from $sourceName failed: $e';
       await _updateState(ConfigAccessorState.error);
@@ -470,6 +447,8 @@ class XBoardConfigAccessor {
       'currentProvider': _currentProvider,
       'lastUpdateTime': _lastUpdateTime?.toIso8601String(),
       'sourceHash': _currentConfig!.sourceHash,
+      'remoteConfirmed': remoteConfirmed,
+      'usingStaleCache': usingStaleCache,
     };
   }
 

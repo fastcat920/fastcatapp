@@ -1,11 +1,28 @@
 import CryptoKit
 import Foundation
 
+extension Notification.Name {
+  static let tvRefreshRemoteConfiguration = Notification.Name("fastcat.tv.refreshRemoteConfiguration")
+}
+
 struct TVUpdateInfo: Equatable, Sendable {
   let latestVersion: String
   let updateURL: URL
   let releaseNotes: String
   let force: Bool
+}
+
+struct TVConfigSource: Sendable {
+  let url: URL
+  let emergency: Bool
+  init(_ url: URL, emergency: Bool = false) { self.url = url; self.emergency = emergency }
+}
+
+struct TVRemoteSelection: Codable, Sendable {
+  let raw: Data
+  let verifiedAt: Date
+  let source: String
+  var cached: Bool = false
 }
 
 actor TVRemoteConfigManager {
@@ -22,17 +39,56 @@ actor TVRemoteConfigManager {
     }
   }
 
-  private static let cachedConfigKey = "fastcat.tv.remote-config.v1"
+  static let cacheKey = "fastcat.tv.remote-config.raw.v2"
+  static let freshAge: TimeInterval = 7 * 86400
+  static let maxAge: TimeInterval = 30 * 86400
+  private let defaults: UserDefaults
+  private let buildProvider: () throws -> TVBuildConfiguration
+  private let sourceProvider: (() throws -> [TVConfigSource])?
+  private let fetch: @Sendable (URL) async throws -> Data
+  private let now: () -> Date
+  private var inFlight: Task<TVRemoteSelection, Error>?
+  private var refreshID = UUID()
+  private var resolvedSelection: TVRemoteSelection?
+  private var checkedAt: Date?
+  private(set) var remoteConfirmed = false
+  private(set) var usingStaleCache = false
+
+  init(defaults: UserDefaults = .standard,
+       build: @escaping () throws -> TVBuildConfiguration = { try TVBuildConfiguration.load() },
+       sources: (() throws -> [TVConfigSource])? = nil,
+       fetch: @escaping @Sendable (URL) async throws -> Data = { try await TVRemoteConfigManager.download($0) },
+       now: @escaping () -> Date = Date.init) {
+    self.defaults = defaults; self.buildProvider = build
+    self.sourceProvider = sources; self.fetch = fetch; self.now = now
+  }
+
+  static func download(_ url: URL) async throws -> Data {
+    let configuration = URLSessionConfiguration.ephemeral
+    configuration.timeoutIntervalForRequest = 10
+    configuration.timeoutIntervalForResource = 10
+    configuration.urlCache = nil
+    configuration.httpCookieStorage = nil
+    let session = URLSession(configuration: configuration)
+    defer { session.invalidateAndCancel() }
+    var request = URLRequest(url: url, cachePolicy: .reloadIgnoringLocalCacheData, timeoutInterval: 10)
+    request.setValue("no-cache", forHTTPHeaderField: "Cache-Control")
+    let (data, response) = try await session.data(for: request)
+    guard let response = response as? HTTPURLResponse, response.statusCode == 200 else {
+      throw RemoteConfigError.unavailable
+    }
+    return data
+  }
   private var resolvedBaseURL: URL?
   private var resolvedConfig: [String: Any]?
 
   func apiBaseURL() async throws -> URL {
-    if let resolvedBaseURL { return resolvedBaseURL }
     if let json = try? await remoteConfig(), let url = apiBaseURL(from: json) {
+      if let active = resolvedBaseURL, apiBaseURLs(from: json).contains(active) { return active }
       resolvedBaseURL = url
       return url
     }
-    let build = try TVBuildConfiguration.load()
+    let build = try buildProvider()
 
     if let fallback = build.fallbackAPIBaseURL {
       resolvedBaseURL = fallback
@@ -44,14 +100,16 @@ actor TVRemoteConfigManager {
   /// Connectivity checks only consume already available configuration. They
   /// must not start an unbounded OSS fetch on every foreground/network event.
   func connectivityBaseURLs() -> [URL] {
-    var result = resolvedConfig.map { apiBaseURLs(from: $0) } ?? []
-    if result.isEmpty, let build = try? TVBuildConfiguration.load(),
-       let cached = UserDefaults.standard.data(forKey: Self.cachedConfigKey),
-       let json = try? decodeRemoteConfig(cached, build: build) {
+    // Do not revive an expired disk or memory configuration during health checks.
+    let memoryValid = resolvedSelection.map { validAge($0.verifiedAt) } ?? false
+    var result = memoryValid ? resolvedConfig.map { apiBaseURLs(from: $0) } ?? [] : []
+    if result.isEmpty, let cached = loadCache(), let json = try? decode(cached.raw) {
       result = apiBaseURLs(from: json)
     }
-    if let resolvedBaseURL, !result.contains(resolvedBaseURL) { result.insert(resolvedBaseURL, at: 0) }
-    if result.isEmpty, let fallback = try? TVBuildConfiguration.load().fallbackAPIBaseURL {
+    if let active = resolvedBaseURL, result.contains(active) {
+      result.removeAll { $0 == active }; result.insert(active, at: 0)
+    }
+    if result.isEmpty, let fallback = try? buildProvider().fallbackAPIBaseURL {
       result = [fallback]
     }
     return result
@@ -97,7 +155,7 @@ actor TVRemoteConfigManager {
     let legacyMin = cleanString(update["min_version"])
     let minimum = platformMin.isEmpty ? legacyMin : platformMin
     let belowMinimum = !minimum.isEmpty && isNewerVersion(current: current, latest: minimum)
-    let force = (platform["force"] as? Bool == true) || belowMinimum
+    let force = remoteConfirmed && ((platform["force"] as? Bool == true) || belowMinimum)
 
     return TVUpdateInfo(
       latestVersion: latest,
@@ -111,32 +169,193 @@ actor TVRemoteConfigManager {
     )
   }
 
-  private func remoteConfig() async throws -> [String: Any] {
-    if let resolvedConfig { return resolvedConfig }
-    let build = try TVBuildConfiguration.load()
+  /// Explicit refresh never returns solely because an in-memory value exists.
+  /// Returns false when only a previously verified disk snapshot was available.
+  @discardableResult
+  func refresh() async throws -> Bool {
+    _ = try await remoteConfig(forceRefresh: true)
+    return remoteConfirmed
+  }
 
-    for source in try bundledSources() {
-      do {
-        let (data, response) = try await URLSession.shared.data(from: source)
-        guard let http = response as? HTTPURLResponse, (200..<300).contains(http.statusCode) else { continue }
-        let json = try decodeRemoteConfig(data, build: build)
-        if apiBaseURL(from: json) != nil {
-          UserDefaults.standard.set(data, forKey: Self.cachedConfigKey)
-          resolvedConfig = json
-          return json
-        }
-      } catch {
-        NSLog("[TVRemoteConfig] source failed (%@): %@", source.host ?? "unknown", error.localizedDescription)
-      }
+  func remoteConfig(forceRefresh: Bool = false) async throws -> [String: Any] {
+    if !forceRefresh, let checkedAt, now().timeIntervalSince(checkedAt) >= 0,
+       now().timeIntervalSince(checkedAt) < 300,
+       let record = resolvedSelection, validAge(record.verifiedAt), let resolvedConfig {
+      return resolvedConfig
     }
-
-    if let cached = UserDefaults.standard.data(forKey: Self.cachedConfigKey),
-       let json = try? decodeRemoteConfig(cached, build: build),
-       apiBaseURL(from: json) != nil {
-      resolvedConfig = json
+    let task: Task<TVRemoteSelection, Error>
+    if let running = inFlight { task = running }
+    else {
+      remoteConfirmed = false
+      refreshID = UUID()
+      task = Task { try await self.selectConfiguration() }
+      inFlight = task
+    }
+    let id = refreshID
+    do {
+      let record = try await task.value
+      let json = try decode(record.raw)
+      guard id == refreshID else { return resolvedConfig ?? json }
+      resolvedSelection = record; resolvedConfig = json; checkedAt = now()
+      remoteConfirmed = !record.cached
+      usingStaleCache = record.cached && now().timeIntervalSince(record.verifiedAt) > Self.freshAge
+      if let active = resolvedBaseURL, !apiBaseURLs(from: json).contains(active) { resolvedBaseURL = nil }
+      inFlight = nil
       return json
+    } catch {
+      guard id == refreshID else { throw error }
+      inFlight = nil; remoteConfirmed = false
+      // Never keep serving expired in-memory configuration after a failed refresh.
+      if let record = resolvedSelection, !validAge(record.verifiedAt) {
+        resolvedSelection = nil; resolvedConfig = nil; resolvedBaseURL = nil
+      }
+      throw error
     }
-    throw RemoteConfigError.unavailable
+  }
+
+  private func decode(_ data: Data) throws -> [String: Any] {
+    let json = try decodeRemoteConfig(data, build: buildProvider())
+    // Match Flutter: both a business route and a gateway route must be present.
+    let business = (json["domains"] as? [String]) ??
+      ((json["panels"] as? [String: Any])?.values.flatMap { value -> [String] in
+        (value as? [[String: Any]])?.compactMap { $0["url"] as? String } ?? []
+      } ?? [])
+    let gateways = (json["gateway_urls"] as? [String] ?? []) +
+      ((json["gateway_url"] as? String).map { [$0] } ?? [])
+    func valid(_ raw: String) -> Bool {
+      guard let u = URL(string: raw), let host = u.host, !host.isEmpty else { return false }
+      return ["https", "http"].contains(u.scheme?.lowercased() ?? "")
+    }
+    guard business.contains(where: valid), gateways.contains(where: valid) else {
+      throw RemoteConfigError.unavailable
+    }
+    return json
+  }
+
+  private func version(_ record: TVRemoteSelection) -> String {
+    guard let json = try? decode(record.raw) else { return "" }
+    return json["config_version"].map { String(describing: $0).trimmingCharacters(in: .whitespacesAndNewlines) } ?? ""
+  }
+
+  static func compareVersions(_ a: String, _ b: String) -> Int {
+    if a == b { return 0 }
+    if a.isEmpty { return -1 }; if b.isEmpty { return 1 }
+    let lhs = a.components(separatedBy: ".").map(Int.init)
+    let rhs = b.components(separatedBy: ".").map(Int.init)
+    if lhs.allSatisfy({ $0 != nil }), rhs.allSatisfy({ $0 != nil }) {
+      for i in 0..<max(lhs.count, rhs.count) {
+        let x = i < lhs.count ? lhs[i]! : 0, y = i < rhs.count ? rhs[i]! : 0
+        if x != y { return x < y ? -1 : 1 }
+      }
+      return 0
+    }
+    return a < b ? -1 : 1
+  }
+
+  private func newer(_ left: TVRemoteSelection?, _ right: TVRemoteSelection?) -> TVRemoteSelection? {
+    guard let left else { return right }; guard let right else { return left }
+    return Self.compareVersions(version(left), version(right)) > 0 ? left : right
+  }
+
+  private func validAge(_ date: Date) -> Bool {
+    let age = now().timeIntervalSince(date)
+    return age >= 0 && age <= Self.maxAge
+  }
+
+  private func cacheable(_ data: Data) -> Bool {
+    guard let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any] else { return false }
+    return json["_format"] as? String == "fastcat-config-v2"
+  }
+
+  private func cacheRecords() -> [String: TVRemoteSelection] {
+    guard let data = defaults.data(forKey: Self.cacheKey),
+          let records = try? JSONDecoder().decode([String: TVRemoteSelection].self, from: data) else { return [:] }
+    return records
+  }
+
+  private func validatedCache(_ record: TVRemoteSelection?) -> TVRemoteSelection? {
+    guard var record, validAge(record.verifiedAt), cacheable(record.raw),
+          (try? decode(record.raw)) != nil else { return nil }
+    record.cached = true
+    return record
+  }
+
+  private func loadCache() -> TVRemoteSelection? {
+    let records = cacheRecords()
+    // Untimestamped v1 caches are not promoted to "fresh"; fetch once online.
+    return newer(validatedCache(records["previous"]), validatedCache(records["current"]))
+  }
+
+  private func persist(_ record: TVRemoteSelection) {
+    guard cacheable(record.raw) else { return }
+    let records = cacheRecords()
+    var next = ["current": record]
+    if let current = validatedCache(records["current"]), current.raw != record.raw {
+      next["previous"] = current
+    } else if let previous = validatedCache(records["previous"]) { next["previous"] = previous }
+    if let data = try? JSONEncoder().encode(next) {
+      defaults.set(data, forKey: Self.cacheKey)
+      defaults.removeObject(forKey: "fastcat.tv.remote-config.v1")
+    }
+  }
+
+  private func selectConfiguration() async throws -> TVRemoteSelection {
+    var sources = try sourceProvider?() ?? bundledSources()
+    if let preferred = defaults.string(forKey: "fastcat.tv.config.last-source"),
+       let index = sources.firstIndex(where: { $0.url.absoluteString == preferred }) {
+      sources.insert(sources.remove(at: index), at: 0)
+    }
+    let cached = loadCache()
+    let normal = sources.filter { !$0.emergency }
+    var live = await fetchGroup(normal)
+    if live == nil, let first = normal.first { live = await fetchGroup([first]) }
+    if live == nil { live = await fetchGroup(sources.filter { $0.emergency }) }
+    guard let selected = newer(cached, live) else { throw RemoteConfigError.unavailable }
+    if !selected.cached {
+      persist(selected)
+      defaults.set(selected.source, forKey: "fastcat.tv.config.last-source")
+    }
+    return selected
+  }
+
+  private struct FetchEvent: Sendable {
+    let source: TVConfigSource?
+    let data: Data?
+  }
+
+  private func fetchGroup(_ sources: [TVConfigSource]) async -> TVRemoteSelection? {
+    guard !sources.isEmpty else { return nil }
+    let fetch = self.fetch
+    return await withTaskGroup(of: FetchEvent.self) { group in
+      for source in sources {
+        group.addTask {
+          let data = try? await fetch(source.url)
+          return FetchEvent(source: source, data: data)
+        }
+      }
+      var best: TVRemoteSelection?
+      var pending = sources.count
+      var windowStarted = false
+      while let event = await group.next() {
+        guard let source = event.source else { break } // settlement deadline
+        pending -= 1
+        if let data = event.data, (try? decode(data)) != nil {
+          let candidate = TVRemoteSelection(raw: data, verifiedAt: now(), source: source.url.absoluteString)
+          best = newer(candidate, best)
+          if pending == 0 { break }
+          if !windowStarted {
+            windowStarted = true
+            group.addTask {
+              try? await Task.sleep(nanoseconds: 350_000_000)
+              return FetchEvent(source: nil, data: nil)
+            }
+          }
+        }
+        if best != nil && pending == 0 { break }
+      }
+      group.cancelAll()
+      return best
+    }
   }
 
   private func cleanString(_ value: Any?) -> String {
@@ -185,19 +404,26 @@ actor TVRemoteConfigManager {
   }
 
   /// The same assets/config/config.yaml is embedded in both Flutter and tvOS.
-  /// This focused parser reads only remote_config.sources[].url so adding a
-  /// second native configuration file is unnecessary.
-  private func bundledSources() throws -> [URL] {
-    guard let file = Bundle.main.url(forResource: "config", withExtension: "yaml"),
-          let yaml = try? String(contentsOf: file, encoding: .utf8) else {
-      throw RemoteConfigError.noSources
-    }
+  /// Reads source URLs and emergency flags; no second native config is needed.
+  private func bundledSources() throws -> [TVConfigSource] {
+    let yaml = Bundle.main.url(forResource: "config", withExtension: "yaml")
+      .flatMap { try? String(contentsOf: $0, encoding: .utf8) } ?? ""
+    return try Self.sources(from: yaml)
+  }
+
+  static func sources(from yaml: String) throws -> [TVConfigSource] {
 
     var inRemoteConfig = false
     var inSources = false
     var remoteIndent = 0
     var sourcesIndent = 0
-    var result: [URL] = []
+    var result: [TVConfigSource] = []
+    var pendingURL: URL?
+    var pendingEmergency = false
+    func flush() {
+      if let url = pendingURL { result.append(TVConfigSource(url, emergency: pendingEmergency)) }
+      pendingURL = nil; pendingEmergency = false
+    }
 
     for rawLine in yaml.components(separatedBy: .newlines) {
       let content = rawLine.split(separator: "#", maxSplits: 1).first.map(String.init) ?? ""
@@ -209,51 +435,61 @@ actor TVRemoteConfigManager {
         inRemoteConfig = true; inSources = false; remoteIndent = indent
         continue
       }
-      if inRemoteConfig, indent <= remoteIndent { inRemoteConfig = false; inSources = false }
+      if inRemoteConfig, indent <= remoteIndent { flush(); inRemoteConfig = false; inSources = false }
       guard inRemoteConfig else { continue }
 
       if trimmed == "sources:" {
         inSources = true; sourcesIndent = indent
         continue
       }
-      if inSources, indent <= sourcesIndent { inSources = false }
-      guard inSources, let range = trimmed.range(of: "url:") else { continue }
+      if inSources, indent <= sourcesIndent { flush(); inSources = false }
+      guard inSources else { continue }
+      if trimmed.hasPrefix("- ") { flush() }
+      let field = trimmed.hasPrefix("- ") ? String(trimmed.dropFirst(2)) : trimmed
+      if field.hasPrefix("is_emergency:") {
+        pendingEmergency = field.dropFirst("is_emergency:".count).trimmingCharacters(in: .whitespaces) == "true"
+        continue
+      }
+      guard field.hasPrefix("url:"), let range = trimmed.range(of: "url:") else { continue }
 
       var value = String(trimmed[range.upperBound...]).trimmingCharacters(in: .whitespaces)
       if (value.hasPrefix("\"") && value.hasSuffix("\"")) ||
          (value.hasPrefix("'") && value.hasSuffix("'")) {
         value.removeFirst(); value.removeLast()
       }
-      if let url = URL(string: value), ["https", "http"].contains(url.scheme?.lowercased() ?? "") {
-        result.append(url)
+      if let url = URL(string: value), let host = url.host, !host.isEmpty,
+         !host.hasSuffix(".example.com"),
+         ["https", "http"].contains(url.scheme?.lowercased() ?? "") {
+        pendingURL = url
       }
+    }
+    flush()
+    // Same emergency endpoint as Flutter's builtinOssUrl; never race it with normal sources.
+    let encoded = "DhUHBBBbWxZVVQ4WEhNOUEYMAwZfV0dNWk8XVkEfBxFeExYAGl5IWQkUXRkaEBdVXUQCTxAbDk4XWEYfDBIcGg=="
+    let key = Array("fastcat921fastcat921".utf8)
+    if let bytes = Data(base64Encoded: encoded),
+       let raw = String(data: Data(bytes.enumerated().map { $0.element ^ key[$0.offset % key.count] }), encoding: .utf8),
+       let url = URL(string: raw), !result.contains(where: { $0.url == url }) {
+      result.append(TVConfigSource(url, emergency: true))
     }
     guard !result.isEmpty else { throw RemoteConfigError.noSources }
     return result
   }
 
   private func decodeRemoteConfig(_ data: Data, build: TVBuildConfiguration) throws -> [String: Any] {
-    if let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any] {
-      if json["_format"] as? String == "fastcat-config-v2" {
-        guard json["algorithm"] as? String == "Ed25519",
-              json["encoding"] as? String == "xor+base64",
-              let payload = json["payload"] as? String,
-              let signatureText = json["signature"] as? String,
-              let publicKeyData = Data(base64Encoded: build.remoteConfigPublicKey),
-              let signature = Data(base64Encoded: signatureText),
-              let publicKey = try? Curve25519.Signing.PublicKey(rawRepresentation: publicKeyData),
-              publicKey.isValidSignature(signature, for: Data(payload.utf8)) else {
-          throw RemoteConfigError.unavailable
-        }
-        return try decodeXORPayload(payload, xorKey: build.xorKey)
-      }
-      return json
-    }
-    guard let encoded = String(data: data, encoding: .utf8),
-          !encoded.isEmpty else {
+    guard let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
+          json["_format"] as? String == "fastcat-config-v2",
+          json["algorithm"] as? String == "Ed25519",
+          json["encoding"] as? String == "xor+base64",
+          let payload = json["payload"] as? String,
+          let signatureText = json["signature"] as? String,
+          let publicKeyData = Data(base64Encoded: build.remoteConfigPublicKey),
+          let signature = Data(base64Encoded: signatureText),
+          let publicKey = try? Curve25519.Signing.PublicKey(rawRepresentation: publicKeyData),
+          publicKey.isValidSignature(signature, for: Data(payload.utf8)) else {
       throw RemoteConfigError.unavailable
     }
-    return try decodeXORPayload(encoded, xorKey: build.xorKey)
+    return try decodeXORPayload(payload, xorKey: build.xorKey)
   }
 
   private func decodeXORPayload(_ encoded: String, xorKey: String) throws -> [String: Any] {

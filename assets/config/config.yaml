@@ -22,9 +22,9 @@ features:
   traffic_details_enabled: true
   knowledge_base_enabled: true
   gift_card_enabled: true
-  join_group_enabled: true
+  join_group_enabled: false
   orders_enabled: true
-  devices_enabled: false
+  devices_enabled: true
   tickets_enabled: false
   balance_enabled: true
 
@@ -38,7 +38,7 @@ latency:
 # 普通源全部不可用时，再使用程序内置紧急 OSS 和上次完整配置缓存
 # 所有源均使用相同的 XOR+Base64 密钥（构建时通过 XOR_KEY 注入）
 contact_fallback:
-  website: "https://fastcat2.com"
+  website: "https://fastcat3.com"
   crisp_website_id: "d5182e08-1faa-4fa9-b3c2-2a34f1975d5f"
 
 startup_cache:
@@ -52,8 +52,8 @@ remote_config:
   sources:
 
     - name: "source_0"
-      url: https://cat920-1457006933.cos.ap-chengdu.myqcloud.com/cat.json
+      url: https://cat920-1457006933.cos.ap-chengdu.myqcloud.com/cat360.json
     - name: "source_1"
-      url: https://cat921.oss-cn-hongkong.aliyuncs.com/cat.json
+      url: https://cat921.oss-cn-hongkong.aliyuncs.com/cat360.json
     - name: "source_2"
-      url: https://sdfsf.cn-bj.ufileos.com/cat.json
+      url: https://sdfsf.cn-bj.ufileos.com/cat360.json

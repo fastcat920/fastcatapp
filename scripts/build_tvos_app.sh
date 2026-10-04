@@ -3,6 +3,7 @@ set -euo pipefail
 cd "$(dirname "$0")/.."
 
 : "${XOR_KEY:?XOR_KEY is required}"
+: "${REMOTE_CONFIG_PUBLIC_KEY:?REMOTE_CONFIG_PUBLIC_KEY is required for fastcat-config-v2}"
 : "${FASTCAT_KEY_CURRENT_ID:?FASTCAT_KEY_CURRENT_ID is required}"
 : "${FASTCAT_KEY_CURRENT:?FASTCAT_KEY_CURRENT is required}"
 : "${FASTCAT_KEY_NEXT_ID:?FASTCAT_KEY_NEXT_ID is required}"

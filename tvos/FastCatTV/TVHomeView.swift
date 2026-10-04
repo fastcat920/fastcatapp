@@ -493,10 +493,15 @@ struct TVHomeView: View {
       Spacer(minLength: tv(10))
       accountCard.frame(height: accountHeight)
       Spacer(minLength: tv(10))
-      Text(tvText("当前版本：V\(appVersion)", "Current version: V\(appVersion)", language: language))
-        .font(TVFont.regular(12))
-        .foregroundStyle(TVTheme.textSecondary.opacity(0.72))
-        .frame(maxWidth: .infinity, minHeight: tv(20), maxHeight: tv(20))
+      TVFocusButton(cornerRadius: TVTheme.compactRadius, action: {
+        NotificationCenter.default.post(name: .tvRefreshRemoteConfiguration, object: nil)
+      }) { _ in
+        Text(tvText("当前版本：V\(appVersion)", "Current version: V\(appVersion)", language: language))
+          .font(TVFont.regular(12))
+          .foregroundStyle(TVTheme.textSecondary.opacity(0.72))
+          .frame(maxWidth: .infinity, minHeight: tv(20), maxHeight: tv(20))
+      }
+      .accessibilityHint(tvText("刷新配置并检查更新", "Refresh configuration and check for updates", language: language))
     }
     .frame(maxHeight: .infinity)
   }

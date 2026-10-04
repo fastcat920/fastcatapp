@@ -128,12 +128,13 @@ class UpdateService {
         platformInfo.minSupportedVersion ?? updateConfig.minVersion ?? '';
     // force 只控制“已发现的新版本”是否允许跳过，不能让旧版本配置
     // 对一个更新的客户端反向弹出强制更新。
-    final forceUpdate = shouldForceUpdate(
-      currentVersion: currentVersion,
-      latestVersion: platformInfo.version,
-      platformForce: platformInfo.force,
-      minimumVersion: minVersion,
-    );
+    final forceUpdate = XBoardConfig.remoteConfigConfirmed &&
+        shouldForceUpdate(
+          currentVersion: currentVersion,
+          latestVersion: platformInfo.version,
+          platformForce: platformInfo.force,
+          minimumVersion: minVersion,
+        );
 
     _logger.info(
       '更新检查: 当前=$currentVersion, 最新=${platformInfo.version}, '

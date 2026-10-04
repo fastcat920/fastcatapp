@@ -109,7 +109,8 @@ class XBoardInitializationNotifier extends StateNotifier<InitializationState> {
       );
       await _ensureConfigInitialized();
 
-      // ========== 步骤 0: 加载远程配置（限时 20 秒） ==========
+      // Three bounded phases (normal, retry, emergency) may take 30 seconds.
+      // Leave room for verification/cache fallback before the startup deadline.
       // 重试时也重新拉取，确保能获取到最新配置
       _logger.info(
           '[Initialization] 当前面板URL数: ${XBoardConfig.allPanelUrls.length}');
@@ -120,9 +121,9 @@ class XBoardInitializationNotifier extends StateNotifier<InitializationState> {
 
       try {
         await XBoardConfig.refresh().timeout(
-          const Duration(seconds: 20),
+          const Duration(seconds: 35),
           onTimeout: () {
-            _logger.warning('[Initialization] 配置加载超时（20s）');
+            _logger.warning('[Initialization] 配置加载超时（35s）');
           },
         );
         _logger.info(
@@ -142,16 +143,10 @@ class XBoardInitializationNotifier extends StateNotifier<InitializationState> {
       }
       _lastKnownDomains = currentDomains;
 
-      // 统一配置解析器已经按“普通 OSS → 紧急 OSS → 完整配置缓存”处理。
-      // 这里保留旧版 API 端点缓存，仅用于兼容尚未生成完整缓存的升级用户。
+      // Never rebuild configuration from unsigned endpoint-only legacy caches.
+      // The manager already tried normal/emergency sources and signed snapshots.
       if (XBoardConfig.allPanelUrls.isEmpty) {
-        _logger.info('[Initialization] 🧰 尝试使用启动缓存...');
-        final cachedOk = await _tryBootstrapFromCachedEndpoint();
-        if (cachedOk) {
-          _logger.info('[Initialization] ✅ 启动缓存注入成功');
-        } else {
-          _logger.warning('[Initialization] 启动缓存不可用');
-        }
+        throw StateError('没有可用的 fastcat-config-v2 签名配置，请检查网络、OSS文件和签名公钥');
       }
 
       // ========== 步骤 1: 加载缓存的成功网关 URL（冷启动优先） ==========
@@ -368,98 +363,6 @@ class XBoardInitializationNotifier extends StateNotifier<InitializationState> {
           '[Initialization] 已写入 API 启动缓存: $usableDomain ($panelType$apiPrefix)');
     } else {
       _logger.warning('[Initialization] 写入 API 启动缓存失败');
-    }
-  }
-
-  Future<bool> _tryBootstrapFromCachedEndpoint() async {
-    final enabled = await ConfigFileLoaderHelper.getStartupCacheEnabled();
-    if (!enabled) {
-      _logger.info('[Initialization] startup_cache.enabled=false，跳过缓存启动');
-      return false;
-    }
-
-    final storage = ref.read(storageServiceProvider);
-    final cachedResult = await storage.getCachedApiEndpoint();
-    final cached = cachedResult.dataOrNull;
-    if (cached == null) {
-      _logger.info('[Initialization] 未找到 API 启动缓存');
-      return false;
-    }
-
-    final baseUrl = (cached['base_url'] as String? ?? '').trim();
-    final apiPrefix = (cached['api_prefix'] as String? ?? '/api/v1').trim();
-    final panelType = (cached['panel_type'] as String? ?? 'xboard').trim();
-    final updatedAtRaw = (cached['updated_at'] as String? ?? '').trim();
-    final updatedAt = DateTime.tryParse(updatedAtRaw);
-    final ttlHours = await ConfigFileLoaderHelper.getStartupCacheTtlHours();
-    if (updatedAt == null ||
-        DateTime.now().difference(updatedAt) > Duration(hours: ttlHours)) {
-      _logger.warning('[Initialization] API 启动缓存已过期，清理缓存');
-      await storage.clearCachedApiEndpoint();
-      return false;
-    }
-
-    if (baseUrl.isEmpty) {
-      _logger.warning('[Initialization] API 启动缓存缺少 base_url');
-      return false;
-    }
-
-    final probeTimeoutMs =
-        await ConfigFileLoaderHelper.getStartupCacheProbeTimeoutMs();
-    final prefix =
-        apiPrefix.startsWith('/') ? apiPrefix.substring(1) : apiPrefix;
-    final reachable = await _probeSingleDomainWithTimeout(
-      baseUrl,
-      prefix,
-      Duration(milliseconds: probeTimeoutMs),
-    );
-    if (!reachable) {
-      _logger.warning('[Initialization] API 启动缓存探测失败，跳过缓存启动');
-      return false;
-    }
-
-    final normalized = <String, dynamic>{
-      'panelType': panelType,
-      'api_prefix': apiPrefix,
-      'panels': {
-        panelType: [
-          {'url': baseUrl, 'description': baseUrl}
-        ],
-      },
-    };
-    await XBoardConfig.loadParsedConfig(normalized, source: 'cached_startup');
-    return XBoardConfig.allPanelUrls.isNotEmpty;
-  }
-
-  Future<bool> _probeSingleDomainWithTimeout(
-    String domain,
-    String prefix,
-    Duration timeout,
-  ) async {
-    HttpClient? client;
-    try {
-      client = HttpClient();
-      client.findProxy = (_) => 'DIRECT';
-      client.connectionTimeout = timeout;
-      final testUrl = domain.endsWith('/')
-          ? '$domain$prefix/guest/comm/config'
-          : '$domain/$prefix/guest/comm/config';
-      final request = await client.getUrl(Uri.parse(testUrl));
-      request.headers.set(HttpHeaders.userAgentHeader, globalState.ua);
-      final response = await request.close().timeout(timeout);
-      await response.drain<void>();
-      final statusCode = response.statusCode;
-      if (isHealthyGatewayStatusCode(statusCode)) {
-        _logger.info('[Initialization] 缓存域名探测成功: $domain (HTTP $statusCode)');
-        return true;
-      }
-      _logger.warning('[Initialization] 缓存域名探测失败: $domain (HTTP $statusCode)');
-      return false;
-    } catch (e) {
-      _logger.warning('[Initialization] 缓存域名探测失败: $domain ($e)');
-      return false;
-    } finally {
-      client?.close();
     }
   }
 

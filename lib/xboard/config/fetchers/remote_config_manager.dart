@@ -27,24 +27,18 @@ const String _remoteConfigPublicKey = String.fromEnvironment(
   defaultValue: '',
 );
 
-/// 自动识别明文/XOR+Base64 内容并解密
+/// Only signed v2 envelopes are accepted, including when restoring disk caches.
 Future<String> _smartDecrypt(
   String content, {
   String verificationPublicKey = _remoteConfigPublicKey,
 }) async {
-  final trimmed = content.trim();
-  // 先识别带 Ed25519 签名的 v2 信封；签名失败时不得回退到明文解析。
-  Object? decoded;
+  Map<String, dynamic> decoded;
   try {
-    decoded = json.decode(trimmed);
-  } catch (e) {
-    // 常见错误：明文 JSON 缺少 { 开头（如直接以 "key": value 开始）
-    if (trimmed.contains('"domains"') || trimmed.contains('"panel_type"')) {
-      _logger.warning('[smartDecrypt] ⚠️ 内容疑似明文JSON但格式错误（是否缺少开头的 { ？）: $e');
-    }
+    decoded = json.decode(content.trim()) as Map<String, dynamic>;
+  } catch (_) {
+    throw const FormatException('远程配置仅支持 fastcat-config-v2 签名格式');
   }
-  if (decoded is Map<String, dynamic> &&
-      decoded['_format'] == 'fastcat-config-v2') {
+  if (decoded['_format'] == 'fastcat-config-v2') {
     try {
       final payload = decoded['payload'];
       final signature = decoded['signature'];
@@ -73,32 +67,11 @@ Future<String> _smartDecrypt(
       if (!isValid) throw const FormatException('远程配置签名校验失败');
       _logger.info('[smartDecrypt] Ed25519 签名校验成功');
       return _xorDecrypt(payload);
-    } catch (error) {
-      throw FormatException('签名配置校验失败: $error');
+    } catch (_) {
+      throw const FormatException('签名配置校验或解密失败，请检查公钥和配置文件');
     }
   }
-  if (decoded != null) {
-    _logger.info('[smartDecrypt] 内容为明文JSON，直接返回');
-    return trimmed; // 是合法 JSON，直接返回
-  }
-  final isDefaultKey = _xorKey == 'CHANGE_ME_TO_YOUR_SECRET_KEY_32C';
-  if (isDefaultKey) {
-    _logger.warning(
-        '[smartDecrypt] ⚠️ XOR_KEY 为默认占位符！CI 可能未传入 --dart-define=XOR_KEY');
-  }
-  try {
-    final result = _xorDecrypt(trimmed);
-    _logger.info('[smartDecrypt] XOR+Base64 解密成功 (key=${_xorKey.length}字符)');
-    return result;
-  } catch (e) {
-    final keyInfo = isDefaultKey
-        ? '默认占位符（CI未注入XOR_KEY，请检查打包配置）'
-        : '已注入${_xorKey.length}字符（与OSS配置加密密钥不匹配）';
-    _logger.error('[smartDecrypt] ❌ XOR解密失败 [$keyInfo]: $e');
-    _logger.error(
-        '[smartDecrypt] 诊断: 数据长度=${trimmed.length}, 前20字符=${trimmed.length > 20 ? trimmed.substring(0, 20) : trimmed}...');
-    return content;
-  }
+  throw const FormatException('远程配置仅支持 fastcat-config-v2 签名格式');
 }
 
 String _xorDecrypt(String encoded) {
@@ -127,6 +100,8 @@ class ConfigResult<T> {
   final String source;
   final RemoteConfigStatus status;
   final DateTime fetchTime;
+  final String? rawContent;
+  final bool isStale;
 
   const ConfigResult({
     required this.isSuccess,
@@ -135,14 +110,20 @@ class ConfigResult<T> {
     required this.source,
     required this.status,
     required this.fetchTime,
+    this.rawContent,
+    this.isStale = false,
   });
 
-  factory ConfigResult.success(T data, String source) => ConfigResult(
+  factory ConfigResult.success(T data, String source,
+          {String? rawContent, DateTime? verifiedAt, bool isStale = false}) =>
+      ConfigResult(
         isSuccess: true,
         data: data,
         source: source,
         status: RemoteConfigStatus.success,
-        fetchTime: DateTime.now(),
+        fetchTime: verifiedAt ?? DateTime.now(),
+        rawContent: rawContent,
+        isStale: isStale,
       );
 
   factory ConfigResult.failure(String error, String source) => ConfigResult(
@@ -192,27 +173,39 @@ class SimpleHttpClient implements IHttpClient {
   Future<String?> getString(String url, {Duration? timeout}) async {
     HttpClient? client;
     try {
-      _logger.info('[SimpleHttpClient] 请求: $url');
+      _logger.info('[SimpleHttpClient] 请求配置源: ${Uri.tryParse(url)?.host}');
       client = HttpClient();
       // findProxy=DIRECT 绕过 FastcatHttpOverrides，避免 Clash 未启动时
       // OSS 请求被路由到 localhost:PORT 导致连接被拒绝（"无法获取可用域名"）
       client.findProxy = (uri) => 'DIRECT';
-      client.connectionTimeout = timeout ?? const Duration(seconds: 10);
-      final request = await client.getUrl(Uri.parse(url));
-      final response = await request.close();
+      final configured = timeout ?? const Duration(seconds: 10);
+      final limit = configured > const Duration(seconds: 10)
+          ? const Duration(seconds: 10)
+          : configured;
+      final watch = Stopwatch()..start();
+      Duration remaining() {
+        final left = limit - watch.elapsed;
+        return left.isNegative ? Duration.zero : left;
+      }
+
+      client.connectionTimeout = limit;
+      final request = await client.getUrl(Uri.parse(url)).timeout(remaining());
+      request.headers.set(HttpHeaders.cacheControlHeader, 'no-cache');
+      final response = await request.close().timeout(remaining());
       _logger.info('[SimpleHttpClient] 响应: ${response.statusCode}');
       if (response.statusCode == 200) {
-        final body = await response.transform(utf8.decoder).join();
+        final body =
+            await response.transform(utf8.decoder).join().timeout(remaining());
         _logger.info('[SimpleHttpClient] 成功，数据长度: ${body.length}');
         return body;
       }
       _logger.warning('[SimpleHttpClient] 非200状态码: ${response.statusCode}');
       return null;
-    } catch (e, stackTrace) {
-      _logger.error('[SimpleHttpClient] 请求失败: $url', e, stackTrace);
+    } catch (_) {
+      _logger.error('[SimpleHttpClient] 配置请求失败');
       return null;
     } finally {
-      client?.close();
+      client?.close(force: true);
     }
   }
 }
@@ -228,7 +221,7 @@ abstract class ConfigSource {
   Future<ConfigResult<Map<String, dynamic>>> fetchConfig();
 }
 
-/// OSS 配置源 — 支持明文 JSON 或 XOR+Base64 加密（由 smartDecrypt 自动识别）
+/// OSS 配置源 — 仅接受 Ed25519 验签通过的 fastcat-config-v2。
 class OssConfigSource implements ConfigSource {
   final IHttpClient _httpClient;
   final String url;
@@ -273,19 +266,19 @@ class OssConfigSource implements ConfigSource {
       );
       final jsonData = json.decode(decrypted) as Map<String, dynamic>;
       _logger.info('OSS 配置获取成功 ($name), keys: ${jsonData.keys}');
-      return ConfigResult.success(jsonData, sourceName);
+      return ConfigResult.success(jsonData, sourceName, rawContent: rawData);
     } catch (e) {
       final errStr = e.toString();
       String detail;
       if (errStr.contains('FormatException')) {
-        detail = 'OSS 配置解密/解析失败（XOR密钥不匹配或文件内容异常）';
+        detail = 'OSS 配置解密/解析失败（仅支持 fastcat-config-v2，请检查签名公钥及XOR密钥）';
       } else if (errStr.contains('SocketException') ||
           errStr.contains('Connection')) {
         detail = 'OSS 地址不可达（请检查网络或URL是否正确）';
       } else {
-        detail = 'OSS 配置源异常: $e';
+        detail = 'OSS 配置源异常';
       }
-      _logger.error('$detail ($name)', e);
+      _logger.error('$detail ($name)');
       return ConfigResult.failure(detail, sourceName);
     }
   }
@@ -298,24 +291,29 @@ class OssConfigSource implements ConfigSource {
 class RemoteConfigManager {
   static const _lastSuccessfulSourceKey =
       'xboard_remote_config_last_successful_source';
-  static const _currentConfigCacheKey =
-      'xboard_remote_config_complete_current_v1';
-  static const _previousConfigCacheKey =
-      'xboard_remote_config_complete_previous_v1';
+  static const rawCacheKey = 'xboard_remote_config_raw_v2';
+  static const cacheFreshAge = Duration(days: 7);
+  static const cacheMaxAge = Duration(days: 30);
   static const Duration _versionSettlementWindow = Duration(milliseconds: 350);
   final List<ConfigSource> _configSources;
   final int _maxRetries;
   final Duration _retryDelay;
+  final String verificationPublicKey;
+  final DateTime Function() _now;
+  Future<ConfigResult<Map<String, dynamic>>>? _inFlight;
 
   RemoteConfigManager({
     List<ConfigSource>? sources,
     int maxRetries = 3,
     Duration retryDelay = const Duration(seconds: 2),
+    this.verificationPublicKey = _remoteConfigPublicKey,
+    DateTime Function()? now,
   })  : _configSources = sources ?? [],
         _maxRetries = maxRetries,
-        _retryDelay = retryDelay;
+        _retryDelay = retryDelay,
+        _now = now ?? DateTime.now;
 
-  /// 从 config.yaml 设置创建管理器（所有源均使用 XOR+Base64 加密）
+  /// 从 config.yaml 设置创建管理器（所有源必须使用 fastcat-config-v2）。
   factory RemoteConfigManager.fromSettings(RemoteConfigSettings settings) {
     final sources = <ConfigSource>[];
     for (final s in settings.sources) {
@@ -342,10 +340,20 @@ class RemoteConfigManager {
   Future<ConfigResult<Map<String, dynamic>>> fetchFirstUsableConfig(
     bool Function(Map<String, dynamic> data) isUsable,
   ) async {
-    if (_configSources.isEmpty) {
-      throw Exception('没有可用的配置源，请在 config.yaml 中配置 remote_config.sources');
+    final existing = _inFlight;
+    if (existing != null) return existing;
+    final task = _fetchUsable(isUsable);
+    _inFlight = task;
+    try {
+      return await task;
+    } finally {
+      if (identical(_inFlight, task)) _inFlight = null;
     }
+  }
 
+  Future<ConfigResult<Map<String, dynamic>>> _fetchUsable(
+    bool Function(Map<String, dynamic>) isUsable,
+  ) async {
     final cached = await _loadBestCachedConfig(isUsable);
     final orderedSources = await _sourcesWithLastSuccessFirst();
     final normalSources =
@@ -364,7 +372,7 @@ class RemoteConfigManager {
     // 普通源全部失败后，只快速重试上次成功的普通源一次，避免网络刚恢复时
     // 直接进入紧急源。无普通源时跳过。
     if (liveResult == null && normalSources.isNotEmpty) {
-      final retryResult = await normalSources.first.fetchConfig();
+      final retryResult = await _fetchBounded(normalSources.first);
       if (retryResult.isSuccess &&
           retryResult.data != null &&
           isUsable(retryResult.data!)) {
@@ -381,14 +389,17 @@ class RemoteConfigManager {
       emergencySources,
       isUsable,
       errors,
-      settleForHigherVersion: false,
+      settleForHigherVersion: true,
     );
 
-    final selected = _newerResult(liveResult, cached);
+    // Prefer a live response on equal versions: this revalidates cache age and
+    // permits correcting a same-version deployment. Lower versions never
+    // replace an unexpired newer cache; rollback is a new higher revision.
+    final selected = _newerResult(cached, liveResult);
     if (selected != null) {
       if (selected.source != 'local_cache') {
         await _persistLastSuccessfulSource(selected.source);
-        await _persistCompleteConfig(selected);
+        await _persistCompleteConfig(selected, isUsable);
       }
       _logger.info(
         '[RemoteConfigManager] ✅ 使用可解析配置源: ${selected.source} '
@@ -410,7 +421,7 @@ class RemoteConfigManager {
     final pending = <int, Future<(int, ConfigResult<Map<String, dynamic>>)>>{};
     for (var i = 0; i < sources.length; i++) {
       final source = sources[i];
-      pending[i] = source.fetchConfig().then((result) => (i, result));
+      pending[i] = _fetchBounded(source).then((result) => (i, result));
     }
 
     ConfigResult<Map<String, dynamic>>? best;
@@ -458,8 +469,8 @@ class RemoteConfigManager {
       _configVersion(left.data),
       _configVersion(right.data),
     );
-    // 相同版本保留先选中的结果，避免多个内容一致的 OSS 因响应顺序
-    // 反复改变来源；缓存与实时版本相同时也继续使用已验证缓存。
+    // Equal versions keep the right-hand result; callers pass live data on
+    // the right when comparing disk cache against a verified network response.
     return comparison > 0 ? left : right;
   }
 
@@ -499,26 +510,100 @@ class RemoteConfigManager {
     return left.compareTo(right);
   }
 
-  Future<void> _persistCompleteConfig(
-    ConfigResult<Map<String, dynamic>> result,
+  Future<ConfigResult<Map<String, dynamic>>> _fetchBounded(
+      ConfigSource source) async {
+    try {
+      final configured = source is OssConfigSource
+          ? source.timeout
+          : const Duration(seconds: 10);
+      final timeout = configured > const Duration(seconds: 10)
+          ? const Duration(seconds: 10)
+          : configured;
+      return await source.fetchConfig().timeout(timeout);
+    } catch (_) {
+      return ConfigResult.failure('配置请求超时或失败', source.sourceName);
+    }
+  }
+
+  // Only original signed envelopes can be cached; decoding verifies them again.
+  bool _cacheable(String raw) {
+    try {
+      final value = jsonDecode(raw);
+      return value is Map && value['_format'] == 'fastcat-config-v2';
+    } catch (_) {
+      return false;
+    }
+  }
+
+  Future<void> _persistCompleteConfig(ConfigResult<Map<String, dynamic>> result,
+      bool Function(Map<String, dynamic>) isUsable) async {
+    final raw = result.rawContent;
+    if (raw == null || !_cacheable(raw)) return;
+    try {
+      // Revalidate with the configured trust key before writing as well.
+      final verified = jsonDecode(await _smartDecrypt(raw,
+              verificationPublicKey: verificationPublicKey))
+          as Map<String, dynamic>;
+      if (!isUsable(verified)) return;
+      final prefs = await SharedPreferences.getInstance();
+      Map<String, dynamic> saved = {};
+      try {
+        saved = jsonDecode(prefs.getString(rawCacheKey) ?? '{}')
+            as Map<String, dynamic>;
+      } catch (_) {}
+      final current = saved['current'];
+      // Never rotate a corrupt current over a valid previous snapshot.
+      final validCurrent = await _decodeCache(current, isUsable);
+      final validPrevious = await _decodeCache(saved['previous'], isUsable);
+      final previous = validCurrent != null &&
+              current is Map &&
+              current['raw_content'] != raw
+          ? current
+          : validPrevious != null
+              ? saved['previous']
+              : null;
+      await prefs.setString(
+          rawCacheKey,
+          jsonEncode({
+            'current': {
+              'raw_content': raw,
+              'verified_at': _now().toUtc().toIso8601String(),
+              'source': result.source,
+            },
+            if (previous != null) 'previous': previous,
+          }));
+      // Old parsed caches cannot be re-authenticated. Retire them only after a
+      // replacement has been saved; never manufacture a signature for old data.
+      await prefs.remove('xboard_remote_config_complete_current_v1');
+      await prefs.remove('xboard_remote_config_complete_previous_v1');
+    } catch (_) {
+      _logger.warning('[RemoteConfigManager] 保存原始配置缓存失败');
+    }
+  }
+
+  Future<ConfigResult<Map<String, dynamic>>?> _decodeCache(
+    dynamic record,
+    bool Function(Map<String, dynamic>) isUsable,
   ) async {
     try {
-      final prefs = await SharedPreferences.getInstance();
-      final current = prefs.getString(_currentConfigCacheKey);
-      if (current != null && current.isNotEmpty) {
-        await prefs.setString(_previousConfigCacheKey, current);
-      }
-      await prefs.setString(
-        _currentConfigCacheKey,
-        jsonEncode({
-          'source': result.source,
-          'fetched_at': result.fetchTime.toIso8601String(),
-          'config_version': _configVersion(result.data),
-          'data': result.data,
-        }),
-      );
-    } catch (error) {
-      _logger.warning('[RemoteConfigManager] 保存完整配置缓存失败: $error');
+      if (record is! Map || record['raw_content'] is! String) return null;
+      final verifiedAt =
+          DateTime.tryParse(record['verified_at']?.toString() ?? '');
+      if (verifiedAt == null) return null;
+      final age = _now().difference(verifiedAt);
+      if (age.isNegative || age > cacheMaxAge) return null;
+      final raw = record['raw_content'] as String;
+      if (!_cacheable(raw)) return null;
+      final data = jsonDecode(await _smartDecrypt(raw,
+              verificationPublicKey: verificationPublicKey))
+          as Map<String, dynamic>;
+      if (!isUsable(data)) return null;
+      return ConfigResult.success(data, 'local_cache',
+          rawContent: raw,
+          verifiedAt: verifiedAt,
+          isStale: age > cacheFreshAge);
+    } catch (_) {
+      return null;
     }
   }
 
@@ -527,29 +612,11 @@ class RemoteConfigManager {
   ) async {
     try {
       final prefs = await SharedPreferences.getInstance();
-      ConfigResult<Map<String, dynamic>>? best;
-      for (final key in [_currentConfigCacheKey, _previousConfigCacheKey]) {
-        final raw = prefs.getString(key);
-        if (raw == null || raw.isEmpty) continue;
-        try {
-          final decoded = jsonDecode(raw);
-          if (decoded is! Map) continue;
-          final rawData = decoded['data'];
-          if (rawData is! Map) continue;
-          final data = rawData.map(
-            (key, value) => MapEntry(key.toString(), value),
-          );
-          if (!isUsable(data)) continue;
-          final candidate = ConfigResult<Map<String, dynamic>>.success(
-            data,
-            'local_cache',
-          );
-          best = _newerResult(candidate, best);
-        } catch (_) {
-          continue;
-        }
-      }
-      return best;
+      final saved = jsonDecode(prefs.getString(rawCacheKey) ?? '{}');
+      if (saved is! Map) return null;
+      final current = await _decodeCache(saved['current'], isUsable);
+      final previous = await _decodeCache(saved['previous'], isUsable);
+      return _newerResult(previous, current);
     } catch (_) {
       return null;
     }
@@ -668,7 +735,7 @@ class RemoteConfigManager {
       ConfigSource source) async {
     ConfigResult<Map<String, dynamic>>? last;
     for (int i = 0; i <= _maxRetries; i++) {
-      last = await source.fetchConfig();
+      last = await _fetchBounded(source);
       if (last.isSuccess) return last;
       if (i < _maxRetries) await Future.delayed(_retryDelay);
     }

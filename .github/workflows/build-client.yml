@@ -59,6 +59,17 @@ jobs:
           channel: stable
           cache: true
       - run: flutter pub get
+      - name: Require v2 configuration verification key
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          import os, base64
+          try:
+              key = base64.b64decode(os.environ.get('REMOTE_CONFIG_PUBLIC_KEY', '').strip(), validate=True)
+              assert len(key) == 32
+          except Exception:
+              raise SystemExit('Set repository variable REMOTE_CONFIG_PUBLIC_KEY to the Base64-encoded 32-byte Ed25519 public key before publishing v2-only clients.')
+          PY
       - run: flutter analyze --no-pub
       - run: flutter test --no-pub
       - uses: actions/setup-go@v5
@@ -792,6 +803,8 @@ jobs:
       - name: Native tvOS offline regression tests
         run: |
           swiftc tvos/FastCatTV/TVServiceConnectivity.swift test/tvos/connectivity_test.swift -o "$RUNNER_TEMP/fastcat-connectivity-tests"
+          swiftc tvos/FastCatTV/TVBuildConfiguration.swift tvos/FastCatTV/TVRemoteConfigManager.swift test/tvos/remote_config_test.swift -o "$RUNNER_TEMP/fastcat-remote-config-tests"
+          "$RUNNER_TEMP/fastcat-remote-config-tests"
           "$RUNNER_TEMP/fastcat-connectivity-tests"
           swiftc tvos/FastCatTV/GatewayClient.swift test/tvos/new_period_test.swift -o "$RUNNER_TEMP/fastcat-new-period-tests"
           "$RUNNER_TEMP/fastcat-new-period-tests"
