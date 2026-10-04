@@ -14,6 +14,7 @@ struct TVBuildConfiguration {
   }
 
   let xorKey: String
+  let remoteConfigPublicKey: String
   let subscriptionFlag: String
   let subscriptionKeys: [String: Data]
   let requireSubscriptionEncryption: Bool
@@ -33,6 +34,7 @@ struct TVBuildConfiguration {
     let fallback = string("FastCatAPIBaseURL", bundle: bundle)
     return TVBuildConfiguration(
       xorKey: xorKey,
+      remoteConfigPublicKey: string("FastCatRemoteConfigPublicKey", bundle: bundle),
       subscriptionFlag: string("FastCatSubscriptionFlag", bundle: bundle).nonEmpty ?? "fastcat-v1",
       subscriptionKeys: keys,
       requireSubscriptionEncryption: bool("FastCatRequireEncryption", bundle: bundle, default: true),

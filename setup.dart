@@ -996,6 +996,7 @@ class BuildCommand extends Command {
   String get _dartDefinesArgs {
     const keys = [
       'XOR_KEY',
+      'REMOTE_CONFIG_PUBLIC_KEY',
       'FASTCAT_KEY_CURRENT_ID',
       'FASTCAT_KEY_CURRENT',
       'FASTCAT_KEY_NEXT_ID',
@@ -1046,6 +1047,7 @@ class BuildCommand extends Command {
   List<String> _dartDefineList(String env) {
     const keys = [
       'XOR_KEY',
+      'REMOTE_CONFIG_PUBLIC_KEY',
       'FASTCAT_KEY_CURRENT_ID',
       'FASTCAT_KEY_CURRENT',
       'FASTCAT_KEY_NEXT_ID',

@@ -83,6 +83,11 @@ normal mirror is unusable, followed by the last complete local OSS cache.
 `DG_BUSINESS_BASE_URLS` and the legacy `DG_BUSINESS_BASE_URL` are startup seeds
 for a new installation when no remote or cached configuration exists. Remote
 configurations must increase `config_version` whenever their content changes.
+Legacy XOR+Base64 configurations use `DG_OSS_XOR_KEY`. When the Catboard
+client configuration center publishes the signed v2 envelope, also set
+`DG_OSS_SIGNING_PUBLIC_KEY` to the Base64 Ed25519 public key shown in the
+admin page. The gateway rejects signed envelopes when the signature or public
+key is invalid.
 
 The gateway promotes a successful business backend, opens its
 circuit after `DG_BUSINESS_FAILURE_THRESHOLD` consecutive failures (default 2),

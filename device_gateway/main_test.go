@@ -3,6 +3,9 @@ package main
 import (
 	"bytes"
 	"context"
+	"crypto/ed25519"
+	"crypto/rand"
+	"encoding/base64"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -17,6 +20,54 @@ import (
 	"testing"
 	"time"
 )
+
+func TestXorDecryptAcceptsValidSignedV2Envelope(t *testing.T) {
+	publicKey, privateKey, err := ed25519.GenerateKey(rand.Reader)
+	if err != nil {
+		t.Fatal(err)
+	}
+	key := "test-xor-key"
+	plain := []byte(`{"config_version":"2","domains":["https://api.example.com"]}`)
+	encrypted := make([]byte, len(plain))
+	for i := range plain {
+		encrypted[i] = plain[i] ^ key[i%len(key)]
+	}
+	payload := base64.StdEncoding.EncodeToString(encrypted)
+	envelope, err := json.Marshal(map[string]string{
+		"_format": "fastcat-config-v2", "algorithm": "Ed25519", "encoding": "xor+base64",
+		"payload": payload, "signature": base64.StdEncoding.EncodeToString(ed25519.Sign(privateKey, []byte(payload))),
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+	t.Setenv("DG_OSS_SIGNING_PUBLIC_KEY", base64.StdEncoding.EncodeToString(publicKey))
+	got, err := xorDecrypt(envelope, key)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if !bytes.Equal(got, plain) {
+		t.Fatalf("xorDecrypt() = %s, want %s", got, plain)
+	}
+}
+
+func TestXorDecryptRejectsTamperedSignedV2Envelope(t *testing.T) {
+	publicKey, privateKey, err := ed25519.GenerateKey(rand.Reader)
+	if err != nil {
+		t.Fatal(err)
+	}
+	payload := base64.StdEncoding.EncodeToString([]byte("ciphertext"))
+	envelope, err := json.Marshal(map[string]string{
+		"_format": "fastcat-config-v2", "algorithm": "Ed25519", "encoding": "xor+base64",
+		"payload": payload + "A", "signature": base64.StdEncoding.EncodeToString(ed25519.Sign(privateKey, []byte(payload))),
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+	t.Setenv("DG_OSS_SIGNING_PUBLIC_KEY", base64.StdEncoding.EncodeToString(publicKey))
+	if _, err := xorDecrypt(envelope, "test-xor-key"); err == nil {
+		t.Fatal("xorDecrypt() accepted a tampered signed envelope")
+	}
+}
 
 func TestClientIPPrefersTrustedPublicForwardedHeaders(t *testing.T) {
 	server := &Server{cfg: Config{TrustForwardedFor: true}}

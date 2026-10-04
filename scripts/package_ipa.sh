@@ -34,6 +34,7 @@ mkdir -p dist
 
 flutter build ipa --release --no-codesign \
   --dart-define=XOR_KEY="${XOR_KEY}" \
+  --dart-define=REMOTE_CONFIG_PUBLIC_KEY="${REMOTE_CONFIG_PUBLIC_KEY:-}" \
   --dart-define=FASTCAT_KEY_CURRENT_ID="${FASTCAT_KEY_CURRENT_ID}" \
   --dart-define=FASTCAT_KEY_CURRENT="${FASTCAT_KEY_CURRENT}" \
   --dart-define=FASTCAT_KEY_NEXT_ID="${FASTCAT_KEY_NEXT_ID}" \

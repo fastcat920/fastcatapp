@@ -3,6 +3,7 @@ import 'dart:io';
 import 'dart:convert';
 import 'dart:typed_data';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:cryptography/cryptography.dart';
 import '../core/config_settings.dart';
 import '../../core/core.dart';
 
@@ -19,19 +20,66 @@ const String _xorKey = String.fromEnvironment(
   defaultValue: 'CHANGE_ME_TO_YOUR_SECRET_KEY_32C',
 );
 
+// 后台“客户端配置”生成的 Ed25519 公钥。启用签名加密 v2 时，CI 必须通过
+// --dart-define=REMOTE_CONFIG_PUBLIC_KEY=... 注入；私钥只保留在服务端。
+const String _remoteConfigPublicKey = String.fromEnvironment(
+  'REMOTE_CONFIG_PUBLIC_KEY',
+  defaultValue: '',
+);
+
 /// 自动识别明文/XOR+Base64 内容并解密
-String _smartDecrypt(String content) {
+Future<String> _smartDecrypt(
+  String content, {
+  String verificationPublicKey = _remoteConfigPublicKey,
+}) async {
   final trimmed = content.trim();
-  // 先尝试直接 JSON 解析
+  // 先识别带 Ed25519 签名的 v2 信封；签名失败时不得回退到明文解析。
+  Object? decoded;
   try {
-    json.decode(trimmed);
-    _logger.info('[smartDecrypt] 内容为明文JSON，直接返回');
-    return trimmed; // 是合法 JSON，直接返回
+    decoded = json.decode(trimmed);
   } catch (e) {
     // 常见错误：明文 JSON 缺少 { 开头（如直接以 "key": value 开始）
     if (trimmed.contains('"domains"') || trimmed.contains('"panel_type"')) {
       _logger.warning('[smartDecrypt] ⚠️ 内容疑似明文JSON但格式错误（是否缺少开头的 { ？）: $e');
     }
+  }
+  if (decoded is Map<String, dynamic> &&
+      decoded['_format'] == 'fastcat-config-v2') {
+    try {
+      final payload = decoded['payload'];
+      final signature = decoded['signature'];
+      if (decoded['algorithm'] != 'Ed25519' ||
+          decoded['encoding'] != 'xor+base64' ||
+          payload is! String ||
+          signature is! String) {
+        throw const FormatException('签名配置格式不完整');
+      }
+      if (verificationPublicKey.trim().isEmpty) {
+        throw const FormatException(
+          '签名配置缺少 REMOTE_CONFIG_PUBLIC_KEY',
+        );
+      }
+      final algorithm = Ed25519();
+      final isValid = await algorithm.verify(
+        utf8.encode(payload),
+        signature: Signature(
+          base64.decode(signature),
+          publicKey: SimplePublicKey(
+            base64.decode(verificationPublicKey),
+            type: KeyPairType.ed25519,
+          ),
+        ),
+      );
+      if (!isValid) throw const FormatException('远程配置签名校验失败');
+      _logger.info('[smartDecrypt] Ed25519 签名校验成功');
+      return _xorDecrypt(payload);
+    } catch (error) {
+      throw FormatException('签名配置校验失败: $error');
+    }
+  }
+  if (decoded != null) {
+    _logger.info('[smartDecrypt] 内容为明文JSON，直接返回');
+    return trimmed; // 是合法 JSON，直接返回
   }
   final isDefaultKey = _xorKey == 'CHANGE_ME_TO_YOUR_SECRET_KEY_32C';
   if (isDefaultKey) {
@@ -39,15 +87,7 @@ String _smartDecrypt(String content) {
         '[smartDecrypt] ⚠️ XOR_KEY 为默认占位符！CI 可能未传入 --dart-define=XOR_KEY');
   }
   try {
-    final keyBytes = utf8.encode(_xorKey);
-    final encryptedBytes = base64.decode(trimmed);
-    final decryptedBytes = Uint8List(encryptedBytes.length);
-    for (var i = 0; i < encryptedBytes.length; i++) {
-      decryptedBytes[i] = encryptedBytes[i] ^ keyBytes[i % keyBytes.length];
-    }
-    final result = utf8.decode(decryptedBytes);
-    // 验证解密结果是有效 JSON
-    json.decode(result);
+    final result = _xorDecrypt(trimmed);
     _logger.info('[smartDecrypt] XOR+Base64 解密成功 (key=${_xorKey.length}字符)');
     return result;
   } catch (e) {
@@ -59,6 +99,19 @@ String _smartDecrypt(String content) {
         '[smartDecrypt] 诊断: 数据长度=${trimmed.length}, 前20字符=${trimmed.length > 20 ? trimmed.substring(0, 20) : trimmed}...');
     return content;
   }
+}
+
+String _xorDecrypt(String encoded) {
+  final keyBytes = utf8.encode(_xorKey);
+  if (keyBytes.isEmpty) throw const FormatException('XOR 密钥不能为空');
+  final encryptedBytes = base64.decode(encoded.trim());
+  final decryptedBytes = Uint8List(encryptedBytes.length);
+  for (var i = 0; i < encryptedBytes.length; i++) {
+    decryptedBytes[i] = encryptedBytes[i] ^ keyBytes[i % keyBytes.length];
+  }
+  final result = utf8.decode(decryptedBytes);
+  json.decode(result);
+  return result;
 }
 
 // ─────────────────────────────────────────────────────────────
@@ -182,6 +235,7 @@ class OssConfigSource implements ConfigSource {
   final String name;
   final bool emergency;
   final Duration timeout;
+  final String verificationPublicKey;
 
   OssConfigSource({
     IHttpClient? httpClient,
@@ -189,6 +243,7 @@ class OssConfigSource implements ConfigSource {
     required this.name,
     this.emergency = false,
     Duration? timeout,
+    this.verificationPublicKey = _remoteConfigPublicKey,
   })  : _httpClient = httpClient ?? SimpleHttpClient(),
         timeout = timeout ?? const Duration(seconds: 10);
 
@@ -212,7 +267,10 @@ class OssConfigSource implements ConfigSource {
       if (rawData == null || rawData.trim().isEmpty) {
         return ConfigResult.failure('OSS 配置数据为空', sourceName);
       }
-      final decrypted = _smartDecrypt(rawData);
+      final decrypted = await _smartDecrypt(
+        rawData,
+        verificationPublicKey: verificationPublicKey,
+      );
       final jsonData = json.decode(decrypted) as Map<String, dynamic>;
       _logger.info('OSS 配置获取成功 ($name), keys: ${jsonData.keys}');
       return ConfigResult.success(jsonData, sourceName);

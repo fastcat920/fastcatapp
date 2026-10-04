@@ -15,6 +15,7 @@
     <dict><key>CFBundlePrimaryIcon</key><dict><key>CFBundleIconName</key><string>AppIcon</string></dict></dict>
     <key>FastCatAPIBaseURL</key><string>$(FASTCAT_API_BASE_URL)</string>
     <key>FastCatXORKey</key><string>$(XOR_KEY)</string>
+    <key>FastCatRemoteConfigPublicKey</key><string>$(REMOTE_CONFIG_PUBLIC_KEY)</string>
     <key>FastCatKeyCurrentID</key><string>$(FASTCAT_KEY_CURRENT_ID)</string>
     <key>FastCatKeyCurrent</key><string>$(FASTCAT_KEY_CURRENT)</string>
     <key>FastCatKeyNextID</key><string>$(FASTCAT_KEY_NEXT_ID)</string>

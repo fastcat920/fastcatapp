@@ -3,6 +3,7 @@
 // CI/build commands inject encryption values with xcodebuild KEY=value.
 FASTCAT_API_BASE_URL =
 XOR_KEY =
+REMOTE_CONFIG_PUBLIC_KEY =
 FASTCAT_KEY_CURRENT_ID =
 FASTCAT_KEY_CURRENT =
 FASTCAT_KEY_NEXT_ID =

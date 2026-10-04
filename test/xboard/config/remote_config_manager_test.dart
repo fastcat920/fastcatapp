@@ -1,7 +1,27 @@
 import 'package:fl_clash/xboard/config/fetchers/remote_config_manager.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:cryptography/cryptography.dart';
 import 'dart:convert';
+import 'dart:typed_data';
+
+class _FakeHttpClient implements IHttpClient {
+  _FakeHttpClient(this.body);
+  final String body;
+
+  @override
+  Future<String?> getString(String url, {Duration? timeout}) async => body;
+}
+
+String _xorEncode(String plain, String key) {
+  final source = utf8.encode(plain);
+  final keyBytes = utf8.encode(key);
+  final encrypted = Uint8List(source.length);
+  for (var i = 0; i < source.length; i++) {
+    encrypted[i] = source[i] ^ keyBytes[i % keyBytes.length];
+  }
+  return base64Encode(encrypted);
+}
 
 class _FakeConfigSource implements ConfigSource {
   _FakeConfigSource({
@@ -37,6 +57,70 @@ void main() {
 
   setUp(() {
     SharedPreferences.setMockInitialValues({});
+  });
+
+  test('signed v2 envelope is verified before XOR decryption', () async {
+    const plain =
+        '{"config_version":"2","domains":["https://api.example.com"]}';
+    const testKey = 'CHANGE_ME_TO_YOUR_SECRET_KEY_32C';
+    final payload = _xorEncode(plain, testKey);
+    final algorithm = Ed25519();
+    final keyPair = await algorithm.newKeyPair();
+    final publicKey = await keyPair.extractPublicKey();
+    final signature = await algorithm.sign(
+      utf8.encode(payload),
+      keyPair: keyPair,
+    );
+    final envelope = jsonEncode({
+      '_format': 'fastcat-config-v2',
+      'algorithm': 'Ed25519',
+      'encoding': 'xor+base64',
+      'payload': payload,
+      'signature': base64Encode(signature.bytes),
+    });
+    final source = OssConfigSource(
+      httpClient: _FakeHttpClient(envelope),
+      url: 'https://config.example.com/config.json',
+      name: 'signed',
+      verificationPublicKey: base64Encode(publicKey.bytes),
+    );
+
+    final result = await source.fetchConfig();
+
+    expect(result.isSuccess, isTrue);
+    expect(result.data?['config_version'], '2');
+  });
+
+  test('signed v2 envelope rejects a modified payload', () async {
+    const plain =
+        '{"config_version":"2","domains":["https://api.example.com"]}';
+    const testKey = 'CHANGE_ME_TO_YOUR_SECRET_KEY_32C';
+    final payload = _xorEncode(plain, testKey);
+    final algorithm = Ed25519();
+    final keyPair = await algorithm.newKeyPair();
+    final publicKey = await keyPair.extractPublicKey();
+    final signature = await algorithm.sign(
+      utf8.encode(payload),
+      keyPair: keyPair,
+    );
+    final envelope = jsonEncode({
+      '_format': 'fastcat-config-v2',
+      'algorithm': 'Ed25519',
+      'encoding': 'xor+base64',
+      'payload': '${payload}A',
+      'signature': base64Encode(signature.bytes),
+    });
+    final source = OssConfigSource(
+      httpClient: _FakeHttpClient(envelope),
+      url: 'https://config.example.com/config.json',
+      name: 'tampered',
+      verificationPublicKey: base64Encode(publicKey.bytes),
+    );
+
+    final result = await source.fetchConfig();
+
+    expect(result.isSuccess, isFalse);
+    expect(result.error, contains('解密/解析失败'));
   });
 
   test('usable backup takes over when faster primary content is invalid',

@@ -5,6 +5,7 @@ import (
 	"context"
 	"crypto/aes"
 	"crypto/cipher"
+	"crypto/ed25519"
 	"crypto/hmac"
 	"crypto/rand"
 	"crypto/sha256"
@@ -547,14 +548,46 @@ func xorDecrypt(body []byte, key string) ([]byte, error) {
 	if len(trimmed) == 0 {
 		return nil, errors.New("empty body")
 	}
-	// Already plain JSON?
+	// Signed v2 envelope: verify before decrypting the XOR payload. Never fall
+	// back to treating an invalid signed envelope as ordinary plaintext.
 	if trimmed[0] == '{' || trimmed[0] == '[' {
 		if json.Valid(trimmed) {
+			var envelope struct {
+				Format    string `json:"_format"`
+				Algorithm string `json:"algorithm"`
+				Encoding  string `json:"encoding"`
+				Payload   string `json:"payload"`
+				Signature string `json:"signature"`
+			}
+			if err := json.Unmarshal(trimmed, &envelope); err == nil && envelope.Format == "fastcat-config-v2" {
+				if envelope.Algorithm != "Ed25519" || envelope.Encoding != "xor+base64" || envelope.Payload == "" || envelope.Signature == "" {
+					return nil, errors.New("invalid signed remote config envelope")
+				}
+				publicKeyText := strings.TrimSpace(env("DG_OSS_SIGNING_PUBLIC_KEY", ""))
+				if publicKeyText == "" {
+					return nil, errors.New("DG_OSS_SIGNING_PUBLIC_KEY not configured")
+				}
+				publicKey, err := base64.StdEncoding.DecodeString(publicKeyText)
+				if err != nil || len(publicKey) != ed25519.PublicKeySize {
+					return nil, errors.New("invalid DG_OSS_SIGNING_PUBLIC_KEY")
+				}
+				signature, err := base64.StdEncoding.DecodeString(envelope.Signature)
+				if err != nil || !ed25519.Verify(ed25519.PublicKey(publicKey), []byte(envelope.Payload), signature) {
+					return nil, errors.New("remote config signature verification failed")
+				}
+				return xorDecryptPayload([]byte(envelope.Payload), key)
+			}
 			return trimmed, nil
 		}
 	}
-	// XOR + Base64 decrypt
-	encBytes, err := base64.StdEncoding.DecodeString(string(trimmed))
+	return xorDecryptPayload(trimmed, key)
+}
+
+func xorDecryptPayload(encoded []byte, key string) ([]byte, error) {
+	if key == "" {
+		return nil, errors.New("empty XOR key")
+	}
+	encBytes, err := base64.StdEncoding.DecodeString(string(encoded))
 	if err != nil {
 		return nil, fmt.Errorf("base64 decode: %w", err)
 	}

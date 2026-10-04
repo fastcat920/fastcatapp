@@ -1,3 +1,4 @@
+import CryptoKit
 import Foundation
 
 struct TVUpdateInfo: Equatable, Sendable {
@@ -46,7 +47,7 @@ actor TVRemoteConfigManager {
     var result = resolvedConfig.map { apiBaseURLs(from: $0) } ?? []
     if result.isEmpty, let build = try? TVBuildConfiguration.load(),
        let cached = UserDefaults.standard.data(forKey: Self.cachedConfigKey),
-       let json = try? decodeRemoteConfig(cached, xorKey: build.xorKey) {
+       let json = try? decodeRemoteConfig(cached, build: build) {
       result = apiBaseURLs(from: json)
     }
     if let resolvedBaseURL, !result.contains(resolvedBaseURL) { result.insert(resolvedBaseURL, at: 0) }
@@ -118,7 +119,7 @@ actor TVRemoteConfigManager {
       do {
         let (data, response) = try await URLSession.shared.data(from: source)
         guard let http = response as? HTTPURLResponse, (200..<300).contains(http.statusCode) else { continue }
-        let json = try decodeRemoteConfig(data, xorKey: build.xorKey)
+        let json = try decodeRemoteConfig(data, build: build)
         if apiBaseURL(from: json) != nil {
           UserDefaults.standard.set(data, forKey: Self.cachedConfigKey)
           resolvedConfig = json
@@ -130,7 +131,7 @@ actor TVRemoteConfigManager {
     }
 
     if let cached = UserDefaults.standard.data(forKey: Self.cachedConfigKey),
-       let json = try? decodeRemoteConfig(cached, xorKey: build.xorKey),
+       let json = try? decodeRemoteConfig(cached, build: build),
        apiBaseURL(from: json) != nil {
       resolvedConfig = json
       return json
@@ -231,10 +232,32 @@ actor TVRemoteConfigManager {
     return result
   }
 
-  private func decodeRemoteConfig(_ data: Data, xorKey: String) throws -> [String: Any] {
-    if let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any] { return json }
+  private func decodeRemoteConfig(_ data: Data, build: TVBuildConfiguration) throws -> [String: Any] {
+    if let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any] {
+      if json["_format"] as? String == "fastcat-config-v2" {
+        guard json["algorithm"] as? String == "Ed25519",
+              json["encoding"] as? String == "xor+base64",
+              let payload = json["payload"] as? String,
+              let signatureText = json["signature"] as? String,
+              let publicKeyData = Data(base64Encoded: build.remoteConfigPublicKey),
+              let signature = Data(base64Encoded: signatureText),
+              let publicKey = try? Curve25519.Signing.PublicKey(rawRepresentation: publicKeyData),
+              publicKey.isValidSignature(signature, for: Data(payload.utf8)) else {
+          throw RemoteConfigError.unavailable
+        }
+        return try decodeXORPayload(payload, xorKey: build.xorKey)
+      }
+      return json
+    }
     guard let encoded = String(data: data, encoding: .utf8),
-          let encrypted = Data(base64Encoded: encoded.trimmingCharacters(in: .whitespacesAndNewlines)) else {
+          !encoded.isEmpty else {
+      throw RemoteConfigError.unavailable
+    }
+    return try decodeXORPayload(encoded, xorKey: build.xorKey)
+  }
+
+  private func decodeXORPayload(_ encoded: String, xorKey: String) throws -> [String: Any] {
+    guard let encrypted = Data(base64Encoded: encoded.trimmingCharacters(in: .whitespacesAndNewlines)) else {
       throw RemoteConfigError.unavailable
     }
     let key = Array(xorKey.utf8)
