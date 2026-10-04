@@ -943,7 +943,8 @@ class _XBoardHomePageState extends ConsumerState<XBoardHomePage>
   void _showVpnSheet(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final rootNavigator = Navigator.of(context, rootNavigator: true);
-    showDialog(
+    Timer? closeTimer;
+    showDialog<void>(
       context: context,
       barrierColor: Colors.transparent,
       builder: (context) => Align(
@@ -964,9 +965,14 @@ class _XBoardHomePageState extends ConsumerState<XBoardHomePage>
                 children: [
                   FastCatTunToggle(
                     onChanged: () {
-                      if (rootNavigator.mounted) {
-                        rootNavigator.maybePop();
-                      }
+                      closeTimer?.cancel();
+                      closeTimer = Timer(const Duration(milliseconds: 500), () {
+                        if (context.mounted &&
+                            rootNavigator.mounted &&
+                            ModalRoute.of(context)?.isCurrent == true) {
+                          rootNavigator.pop();
+                        }
+                      });
                     },
                   ),
                 ],
@@ -975,7 +981,7 @@ class _XBoardHomePageState extends ConsumerState<XBoardHomePage>
           ),
         ),
       ),
-    );
+    ).whenComplete(() => closeTimer?.cancel());
   }
 
   Future<void> _openOfficialWebsite(BuildContext context) async {

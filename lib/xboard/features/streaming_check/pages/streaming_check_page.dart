@@ -29,7 +29,7 @@ class _StreamingCheckPageState extends ConsumerState<StreamingCheckPage> {
   static const _cacheTtl = Duration(minutes: 10);
   static final Map<String, _StreamingCacheEntry> _cache = {};
 
-  StreamingCheckRun? _activeRun;
+  StreamingCheckService? _activeRun;
   StreamSubscription<List<ConnectivityResult>>? _networkSubscription;
   static int _networkGeneration = 0;
   bool _selectionChanged = false;
@@ -89,7 +89,9 @@ class _StreamingCheckPageState extends ConsumerState<StreamingCheckPage> {
   String? _activeProfileScope;
   String get _profileScope {
     final profile = ref.read(currentProfileProvider);
-    return '${profile?.id}|${profile?.lastUpdateDate}|${ref.read(runTimeProvider)}';
+    // runTimeProvider is elapsed time, not a connection identity: it changes
+    // every second. The start time stays fixed until the VPN session changes.
+    return '${profile?.id}|${profile?.lastUpdateDate}|${globalState.startTime}';
   }
 
   String? _nodeName;
@@ -114,8 +116,8 @@ class _StreamingCheckPageState extends ConsumerState<StreamingCheckPage> {
     _selectionChanged = true;
     _activeProfileScope = _profileScope;
     final generation = ++_runGeneration;
-    final run = _activeRun = StreamingCheckRun();
-    final checker = StreamingCheckService(run: run);
+    final checker =
+        _activeRun = ref.read(streamingCheckServiceProvider).newRun();
     try {
       await _executeRun(generation, checker, forceRefresh);
     } catch (_) {
@@ -126,7 +128,7 @@ class _StreamingCheckPageState extends ConsumerState<StreamingCheckPage> {
         });
       }
     } finally {
-      unawaited(run.cancel());
+      unawaited(checker.cancel());
       if (mounted && generation == _runGeneration) {
         setState(() => _running = false);
       }
@@ -147,8 +149,9 @@ class _StreamingCheckPageState extends ConsumerState<StreamingCheckPage> {
       _results.clear();
     });
 
-    final nodeName = await streamingCheckService.resolveCurrentNodeName();
-    if (!mounted || generation != _runGeneration) return;
+    final nodeName =
+        await ref.read(streamingCheckServiceProvider).resolveCurrentNodeName();
+    if (!_validateScope(generation)) return;
     if (nodeName == null) {
       setState(() {
         _running = false;
@@ -159,9 +162,7 @@ class _StreamingCheckPageState extends ConsumerState<StreamingCheckPage> {
     setState(() => _nodeName = nodeName);
 
     final targets = _activeTargets;
-    final profile = ref.read(currentProfileProvider);
-    final cacheKey = '${profile?.id}|${profile?.lastUpdateDate}|'
-        '${ref.read(runTimeProvider)}|$_networkGeneration|$nodeName|'
+    final cacheKey = '$_activeProfileScope|$_networkGeneration|$nodeName|'
         '${targets.map((item) => item.id).join(',')}';
     _cache.removeWhere((_, entry) =>
         DateTime.now().difference(entry.generatedAt) >= _cacheTtl);
@@ -323,7 +324,7 @@ class _StreamingCheckPageState extends ConsumerState<StreamingCheckPage> {
     unawaited(_saveSelection());
   }
 
-  Future<bool> _validateRun(int generation, String nodeName) async {
+  bool _validateScope(int generation) {
     if (!mounted || generation != _runGeneration) return false;
     if (ref.read(runTimeProvider) == null) {
       _invalidate(AppLocalizations.of(context).xboardStreamingDisconnected);
@@ -335,8 +336,14 @@ class _StreamingCheckPageState extends ConsumerState<StreamingCheckPage> {
           : 'Subscription or connection changed. Run the check again.');
       return false;
     }
-    final currentNode = await streamingCheckService.resolveCurrentNodeName();
-    if (!mounted || generation != _runGeneration) return false;
+    return true;
+  }
+
+  Future<bool> _validateRun(int generation, String nodeName) async {
+    if (!_validateScope(generation)) return false;
+    final currentNode =
+        await ref.read(streamingCheckServiceProvider).resolveCurrentNodeName();
+    if (!mounted || !_validateScope(generation)) return false;
     if (currentNode != nodeName) {
       _invalidate(AppLocalizations.of(context).xboardStreamingNodeChanged);
       return false;
@@ -366,7 +373,9 @@ class _StreamingCheckPageState extends ConsumerState<StreamingCheckPage> {
     }
     _checkingStoredNode = true;
     try {
-      final currentNode = await streamingCheckService.resolveCurrentNodeName();
+      final currentNode = await ref
+          .read(streamingCheckServiceProvider)
+          .resolveCurrentNodeName();
       if (mounted && currentNode != _nodeName) {
         _invalidate(AppLocalizations.of(context).xboardStreamingNodeChanged);
       }
@@ -500,11 +509,13 @@ class _StreamingCheckPageState extends ConsumerState<StreamingCheckPage> {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
     final theme = Theme.of(context);
-    final connected = ref.watch(runTimeProvider) != null;
-    ref.listen(runTimeProvider, (previous, next) {
-      if (previous != null &&
-          next == null &&
-          (_running || _results.isNotEmpty)) {
+    final connected =
+        ref.watch(runTimeProvider.select((value) => value != null));
+    ref.listen(runTimeProvider.select((value) => value != null),
+        (previous, next) {
+      // Also discard cached results when disconnected between checks.
+      if (previous != next) _cache.clear();
+      if (previous == true && !next && (_running || _results.isNotEmpty)) {
         _invalidate(l10n.xboardStreamingDisconnected);
       }
     });

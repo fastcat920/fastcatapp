@@ -260,16 +260,6 @@ class _MinePageState extends ConsumerState<MinePage>
         title: Text(appLocalizations.userCenter),
         automaticallyImplyLeading: false,
         actions: [
-          Padding(
-            padding: const EdgeInsets.only(right: 8),
-            child: IconButton(
-              tooltip: appLocalizations.xboardToolsSettings,
-              icon: const Icon(Icons.settings_outlined),
-              onPressed: () => Navigator.of(context).push(
-                MaterialPageRoute(builder: (_) => const FastCatSettingsPage()),
-              ),
-            ),
-          ),
           if (!isDesktop)
             Padding(
               padding: const EdgeInsets.only(right: 16),
@@ -312,6 +302,8 @@ class _MinePageState extends ConsumerState<MinePage>
             const SizedBox(height: 16),
             _buildSectionHeader(appLocalizations.xboardMyServices, theme),
             _buildServicesCard(context, ref, userInfo, theme, isDark),
+            const SizedBox(height: 16),
+            _buildToolsSettingsCard(context),
             const SizedBox(height: 20),
             _buildVersionFooter(
               context,
@@ -320,6 +312,29 @@ class _MinePageState extends ConsumerState<MinePage>
             ),
             const SizedBox(height: 8),
           ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildToolsSettingsCard(BuildContext context) {
+    final theme = Theme.of(context);
+    return Card(
+      clipBehavior: Clip.antiAlias,
+      margin: EdgeInsets.zero,
+      elevation: XbUiCardStyle.elevation(context),
+      shadowColor: XbUiCardStyle.shadowColor(context),
+      color: XbUiCardStyle.background(context),
+      shape: XbUiCardStyle.shape(context).copyWith(
+        side: BorderSide(color: XbUiTokens.cardBorder(context)),
+      ),
+      child: _tile(
+        icon: Icons.settings_outlined,
+        label: AppLocalizations.of(context).xboardToolsSettings,
+        iconColor: theme.colorScheme.primary,
+        iconBgColor: theme.colorScheme.primary.withValues(alpha: 0.1),
+        onTap: () => Navigator.of(context).push(
+          MaterialPageRoute(builder: (_) => const FastCatSettingsPage()),
         ),
       ),
     );

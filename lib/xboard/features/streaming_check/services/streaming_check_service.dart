@@ -5,6 +5,10 @@ import 'package:fl_clash/clash/clash.dart';
 import 'package:fl_clash/models/models.dart';
 import 'package:fl_clash/state.dart';
 import 'package:fl_clash/xboard/features/streaming_check/models/streaming_test_result.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+
+final streamingCheckServiceProvider =
+    Provider<StreamingCheckService>((ref) => streamingCheckService);
 
 /// Per-run cancellation also prevents retries from issuing new native requests.
 class StreamingCheckRun {
@@ -26,6 +30,11 @@ class StreamingCheckRun {
 class StreamingCheckService {
   const StreamingCheckService({this.run});
   final StreamingCheckRun? run;
+
+  StreamingCheckService newRun() =>
+      StreamingCheckService(run: StreamingCheckRun());
+
+  Future<void> cancel() async => run?.cancel();
 
   static const targets = <StreamingTarget>[
     StreamingTarget(
