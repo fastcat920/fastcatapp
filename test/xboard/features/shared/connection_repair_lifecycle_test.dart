@@ -10,7 +10,7 @@ import 'package:flutter_test/flutter_test.dart';
 final _marker = Provider<String>((ref) => 'container still alive');
 
 void main() {
-  testWidgets('repair survives source page disposal and reads app container',
+  testWidgets('repair starts directly, deduplicates and survives page disposal',
       (tester) async {
     final container = ProviderContainer();
     addTearDown(container.dispose);
@@ -51,7 +51,13 @@ void main() {
     await tester.pumpAndSettle();
     await tester.tap(find.text('Repair'));
     await tester.pumpAndSettle();
-    await tester.tap(find.text('开始修复'));
+    expect(calls, 1);
+    expect(find.byType(AlertDialog), findsNothing);
+    expect(find.text('开始修复'), findsNothing);
+    // Even if another entry point invokes repair while it is active, the
+    // shared operation must run only once without another confirmation.
+    final firstRepair = repair;
+    await tester.tap(find.text('Repair'));
     await tester.pumpAndSettle();
     expect(calls, 1);
     await tester.pumpWidget(app(showPage: false));
@@ -59,6 +65,7 @@ void main() {
     gate.complete();
     await tester.pumpAndSettle();
     await repair;
+    await firstRepair;
     expect(readAfterDispose, 'container still alive');
     expect(tester.takeException(), isNull);
   });
