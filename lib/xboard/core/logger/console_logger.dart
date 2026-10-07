@@ -80,7 +80,8 @@ class ConsoleLogger implements LoggerInterface {
     }
     if (stackTrace != null) {
       // ignore: avoid_print
-      print('$prefix$timestamp$levelStr StackTrace:\n$stackTrace$resetColor');
+      print(
+          '$prefix$timestamp$levelStr StackTrace:\n${SensitiveMasker.maskText(stackTrace)}$resetColor');
     }
   }
 

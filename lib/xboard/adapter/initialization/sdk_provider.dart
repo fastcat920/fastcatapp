@@ -5,6 +5,7 @@ import 'package:fl_clash/xboard/config/xboard_config.dart';
 import 'package:fl_clash/xboard/config/gateway_config.dart';
 import 'package:fl_clash/xboard/core/core.dart';
 import 'package:fl_clash/state.dart';
+import 'configuration_bootstrap.dart';
 
 part 'generated/sdk_provider.g.dart';
 
@@ -22,6 +23,9 @@ const _logger = FileLogger('sdk_provider');
 Future<XBoardSDK> xboardSdk(Ref ref) async {
   try {
     _logger.info('[XBoardSdkProvider] 开始初始化SDK');
+    // Early wallet/notice reads join the same signed-config load as startup.
+    // An empty URL list during cold start is not a permanent SDK failure.
+    await sdkConfigurationBootstrap.ensureReady();
     if (!XBoardConfig.isInitialized || XBoardConfig.allPanelUrls.isEmpty) {
       throw StateError('请先加载有效的 fastcat-config-v2 签名配置');
     }

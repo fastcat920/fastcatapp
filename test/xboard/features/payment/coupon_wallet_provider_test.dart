@@ -8,6 +8,7 @@ import 'package:fl_clash/xboard/features/payment/widgets/coupon_entry_button.dar
 import 'package:fl_clash/xboard/features/mine/pages/coupon_wallet_page.dart';
 import 'package:fl_clash/xboard/features/subscription/providers/xboard_subscription_provider.dart';
 import 'package:fl_clash/xboard/domain/domain.dart';
+import 'package:fl_clash/xboard/features/initialization/providers/initialization_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -39,6 +40,7 @@ ProviderContainer _container(Future<List<CatboardCoupon>> Function() load) =>
     ProviderContainer(overrides: [
       xboardUserAuthProvider.overrideWith(_Auth.new),
       couponWalletLoaderProvider.overrideWithValue(load),
+      isInitializedProvider.overrideWithValue(true),
     ]);
 
 Future<void> _flush(WidgetTester tester) async {
@@ -47,6 +49,27 @@ Future<void> _flush(WidgetTester tester) async {
 }
 
 void main() {
+  testWidgets('cached login waits for startup readiness before wallet loading',
+      (tester) async {
+    final ready = StateProvider((ref) => false);
+    var calls = 0;
+    final container = ProviderContainer(overrides: [
+      xboardUserAuthProvider.overrideWith(_Auth.new),
+      isInitializedProvider.overrideWith((ref) => ref.watch(ready)),
+      couponWalletLoaderProvider.overrideWithValue(() async {
+        calls++;
+        return [_coupon];
+      }),
+    ]);
+    container.listen(couponWalletProvider, (_, __) {});
+    await _flush(tester);
+    expect(calls, 0);
+    container.read(ready.notifier).state = true;
+    await _flush(tester);
+    expect(calls, 1);
+    expect(container.read(couponWalletProvider).valueOrNull, [_coupon]);
+    container.dispose();
+  });
   testWidgets('desktop refresh action reloads coupons and prevents double taps',
       (tester) async {
     var calls = 0;
@@ -54,6 +77,7 @@ void main() {
     final container = ProviderContainer(overrides: [
       xboardUserAuthProvider.overrideWith(_Auth.new),
       xboardSubscriptionProvider.overrideWith(_Plans.new),
+      isInitializedProvider.overrideWithValue(true),
       couponWalletLoaderProvider.overrideWithValue(() {
         calls++;
         return pending?.future ?? Future.value([]);

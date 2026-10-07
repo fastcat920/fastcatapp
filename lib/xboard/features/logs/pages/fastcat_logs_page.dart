@@ -1,14 +1,14 @@
 import 'package:fl_clash/common/sensitive_masker.dart';
-import 'package:fl_clash/enum/enum.dart';
+import 'package:fl_clash/common/diagnostic_log_buffer.dart';
+import 'package:fl_clash/state.dart';
+import 'dart:io';
 import 'package:fl_clash/l10n/l10n.dart';
 import 'package:fl_clash/models/models.dart';
 import 'package:fl_clash/providers/providers.dart';
-import 'package:fl_clash/state.dart';
 import 'package:fl_clash/xboard/features/shared/styles/styles.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 
 class FastCatLogsPage extends ConsumerStatefulWidget {
   const FastCatLogsPage({super.key});
@@ -18,64 +18,15 @@ class FastCatLogsPage extends ConsumerStatefulWidget {
 }
 
 class _FastCatLogsPageState extends ConsumerState<FastCatLogsPage> {
-  static const _levelFilterKey = 'fastcat_log_level_filter';
-
   String _query = '';
-  LogLevel _selectedLevel = LogLevel.app;
-
-  @override
-  void initState() {
-    super.initState();
-    // 首次打开只展示客户端自身日志。用户主动选择的等级会持久化，
-    // 后续仍恢复其上次选择，不因平台不同产生不一致的默认行为。
-    _restoreLevelFilter();
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (!mounted) return;
-      _syncCoreLogLevel();
-    });
-  }
-
-  Future<void> _restoreLevelFilter() async {
-    final preferences = await SharedPreferences.getInstance();
-    final stored = preferences.get(_levelFilterKey);
-    if (!mounted) return;
-    // Migrate the previous multi-select list. Ambiguous/all-level selections
-    // intentionally fall back to the new single-select App default.
-    final storedName = switch (stored) {
-      String value => value,
-      List<String> values when values.length == 1 => values.single,
-      _ => null,
-    };
-    final restored = LogLevel.values
-            .where((level) => level.name == storedName)
-            .firstOrNull ??
-        LogLevel.app;
-    setState(() => _selectedLevel = restored);
-    _syncCoreLogLevel();
-  }
-
-  void _syncCoreLogLevel() {
-    if (!mounted) return;
-    final desiredLevel = switch (_selectedLevel) {
-      LogLevel.debug => LogLevel.debug,
-      LogLevel.info => LogLevel.info,
-      LogLevel.warning => LogLevel.warning,
-      LogLevel.error || LogLevel.silent || LogLevel.app => LogLevel.error,
-    };
-    final config = ref.read(patchClashConfigProvider);
-    if (config.logLevel == desiredLevel) return;
-    ref
-        .read(patchClashConfigProvider.notifier)
-        .updateState((state) => state.copyWith(logLevel: desiredLevel));
-    globalState.appController.updateClashConfigDebounce();
-  }
 
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
-    final logs = ref
-        .watch(logsProvider)
-        .list
+    final buffer = DiagnosticLogBuffer.fromList(ref.watch(logsProvider));
+    final chinese = Localizations.localeOf(context).languageCode == 'zh';
+    final logs = buffer
+        .displayLogs(chinese: chinese)
         .reversed
         .where((log) => _matches(context, log))
         .toList();
@@ -90,15 +41,6 @@ class _FastCatLogsPageState extends ConsumerState<FastCatLogsPage> {
             tooltip: _hideLogsLabel(context),
             onPressed: _hideLogs,
             icon: const Icon(Icons.visibility_off_outlined),
-          ),
-          IconButton(
-            tooltip: l10n.logLevel,
-            onPressed: () => _showLevelFilter(context),
-            icon: Badge(
-              isLabelVisible: _selectedLevel != LogLevel.app,
-              smallSize: 7,
-              child: const Icon(Icons.filter_alt_outlined),
-            ),
           ),
           IconButton(
             tooltip: l10n.copyLogs,
@@ -133,6 +75,15 @@ class _FastCatLogsPageState extends ConsumerState<FastCatLogsPage> {
                   onChanged: (value) => setState(() => _query = value),
                 ),
               ),
+              Padding(
+                padding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
+                child: Text(
+                  chinese
+                      ? '已保留 ${buffer.length} 条 · 已淘汰 ${buffer.evictedRecords} 条 · 重复合并 ${buffer.mergedOccurrences} 次'
+                      : '${buffer.length} retained · ${buffer.evictedRecords} evicted · ${buffer.mergedOccurrences} repeats merged',
+                  style: Theme.of(context).textTheme.bodySmall,
+                ),
+              ),
               Expanded(
                 child: logs.isEmpty
                     ? Center(child: Text(l10n.logsDesc))
@@ -155,10 +106,6 @@ class _FastCatLogsPageState extends ConsumerState<FastCatLogsPage> {
                             payload: _localizedPayload(
                               context,
                               logs[index].payload,
-                            ),
-                            levelLabel: _levelLabel(
-                              context,
-                              logs[index].logLevel,
                             ),
                           ),
                         ),
@@ -188,85 +135,9 @@ class _FastCatLogsPageState extends ConsumerState<FastCatLogsPage> {
   bool _matches(BuildContext context, Log log) {
     final query = _query.trim().toLowerCase();
     final localizedPayload = _localizedPayload(context, log.payload);
-    return _selectedLevel == log.logLevel &&
-        (query.isEmpty ||
-            log.payload.toLowerCase().contains(query) ||
-            localizedPayload.toLowerCase().contains(query) ||
-            _levelLabel(context, log.logLevel).toLowerCase().contains(query) ||
-            log.logLevel.name.toLowerCase().contains(query));
-  }
-
-  Future<void> _showLevelFilter(BuildContext context) async {
-    final l10n = AppLocalizations.of(context);
-    var draft = _selectedLevel;
-    final result = await showDialog<LogLevel>(
-      context: context,
-      builder: (dialogContext) => StatefulBuilder(
-        builder: (context, setDialogState) {
-          return AlertDialog(
-            shape: XbUiDialog.shape(),
-            backgroundColor: XbUiDialog.background(context),
-            title: Text(l10n.logLevel, style: XbUiText.sectionTitle(context)),
-            contentPadding: const EdgeInsets.fromLTRB(12, 12, 12, 4),
-            content: SizedBox(
-              width: 340,
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  for (final level in LogLevel.values)
-                    RadioListTile<LogLevel>(
-                      value: level,
-                      // Keep compatibility with the project's Flutter SDK.
-                      // ignore: deprecated_member_use
-                      groupValue: draft,
-                      // ignore: deprecated_member_use
-                      onChanged: (value) {
-                        if (value != null) {
-                          setDialogState(() => draft = value);
-                        }
-                      },
-                      title: Text(_levelLabel(context, level)),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                    ),
-                ],
-              ),
-            ),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.pop(dialogContext),
-                child: Text(l10n.cancel),
-              ),
-              FilledButton(
-                onPressed: () => Navigator.pop(dialogContext, draft),
-                child: Text(_confirmLabel(context)),
-              ),
-            ],
-          );
-        },
-      ),
-    );
-    if (result == null || !mounted) return;
-    setState(() => _selectedLevel = result);
-    _syncCoreLogLevel();
-    final preferences = await SharedPreferences.getInstance();
-    await preferences.setString(_levelFilterKey, result.name);
-  }
-
-  String _confirmLabel(BuildContext context) =>
-      Localizations.localeOf(context).languageCode == 'zh' ? '确定' : 'Apply';
-
-  String _levelLabel(BuildContext context, LogLevel level) {
-    final zh = Localizations.localeOf(context).languageCode == 'zh';
-    return switch (level) {
-      LogLevel.debug => zh ? '调试' : 'Debug',
-      LogLevel.info => zh ? '信息' : 'Info',
-      LogLevel.warning => zh ? '警告' : 'Warning',
-      LogLevel.error => zh ? '错误' : 'Error',
-      LogLevel.silent => zh ? '静默' : 'Silent',
-      LogLevel.app => zh ? '应用' : 'App',
-    };
+    return query.isEmpty ||
+        log.payload.toLowerCase().contains(query) ||
+        localizedPayload.toLowerCase().contains(query);
   }
 
   String _localizedPayload(BuildContext context, String payload) {
@@ -275,10 +146,16 @@ class _FastCatLogsPageState extends ConsumerState<FastCatLogsPage> {
   }
 
   Future<void> _copy(BuildContext context) async {
-    final text = ref.read(logsProvider).list.map((log) {
-      return '${log.dateTime} [${_levelLabel(context, log.logLevel)}] '
-          '${SensitiveMasker.maskText(_localizedPayload(context, log.payload))}';
-    }).join('\n');
+    final buffer = DiagnosticLogBuffer.fromList(ref.read(logsProvider));
+    final text = buffer.export(
+      chinese: Localizations.localeOf(context).languageCode == 'zh',
+      clientVersion: globalState.isInit
+          ? '${globalState.packageInfo.version}+${globalState.packageInfo.buildNumber}'
+          : null,
+      systemVersion:
+          '${Platform.operatingSystem} ${Platform.operatingSystemVersion}',
+      localize: (payload) => _localizedPayload(context, payload),
+    );
     await Clipboard.setData(ClipboardData(text: text));
     if (!context.mounted) return;
     ScaffoldMessenger.of(context).showSnackBar(
@@ -291,12 +168,10 @@ class _LogTile extends StatelessWidget {
   const _LogTile({
     required this.log,
     required this.payload,
-    required this.levelLabel,
   });
 
   final Log log;
   final String payload;
-  final String levelLabel;
 
   @override
   Widget build(BuildContext context) {
@@ -307,7 +182,7 @@ class _LogTile extends StatelessWidget {
         SensitiveMasker.maskText(payload),
         style: const TextStyle(fontFamily: 'monospace', fontSize: 12),
       ),
-      subtitle: Text('${log.dateTime} · $levelLabel'),
+      subtitle: Text(log.dateTime),
     );
   }
 }

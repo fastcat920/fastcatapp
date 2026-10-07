@@ -6,6 +6,7 @@ import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'package:fl_clash/common/common.dart';
+import 'package:fl_clash/common/diagnostic_log_buffer.dart';
 import 'package:fl_clash/enum/enum.dart';
 import 'package:fl_clash/models/models.dart';
 import 'package:fl_clash/state.dart';
@@ -28,20 +29,18 @@ class RealTunEnable extends _$RealTunEnable with AutoDisposeNotifierMixin {
 @riverpod
 class Logs extends _$Logs with AutoDisposeNotifierMixin {
   @override
-  FixedList<Log> build() => globalState.appState.logs;
+  FixedList<Log> build() =>
+      DiagnosticLogBuffer.fromList(globalState.appState.logs);
   @override
   onUpdate(value) =>
       globalState.appState = globalState.appState.copyWith(logs: value);
 
   void addLog(Log value) {
-    final masked = value.copyWith(
-      payload: SensitiveMasker.maskText(value.payload),
-    );
-    state = state.copyWith()..add(masked);
+    state = DiagnosticLogBuffer.fromList(state).copyWith()..add(value);
   }
 
   void clear() {
-    state = state.copyWith()..clear();
+    state = DiagnosticLogBuffer.fromList(state).copyWith()..clear();
   }
 }
 

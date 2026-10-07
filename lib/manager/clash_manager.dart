@@ -42,8 +42,19 @@ class _ClashContainerState extends ConsumerState<ClashManager>
         await clashCore.setState(next);
       }
     });
-    ref.listenManual(updateParamsProvider, (prev, next) {
+    ref.listenManual(updateParamsProvider, (prev, next) async {
       if (prev != next) {
+        if (prev != null && prev.copyWith(logLevel: next.logLevel) == next) {
+          try {
+            final error = await clashCore.updateLogLevel(next.logLevel);
+            if (error.isNotEmpty) {
+              commonPrint.log('[Logs] update failed: $error');
+            }
+          } catch (error) {
+            commonPrint.log('[Logs] update failed: $error');
+          }
+          return;
+        }
         final isTunChange = prev?.tun != next.tun;
         globalState.appController.updateClashConfigDebounce(
           duration:

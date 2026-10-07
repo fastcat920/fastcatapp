@@ -26,11 +26,25 @@ class AppExitService {
 
     // 退出时必须给 VPN/TUN、系统代理和核心足够时间完成清理。超时后
     // 仍继续退出，避免异常的底层调用永久阻塞系统关机或应用退出。
-    final fallbackExitTimer = Timer(const Duration(seconds: 5), exitOnce);
+    var proxyCleanupFailed = false;
+    final fallbackExitTimer = Timer.periodic(const Duration(seconds: 5), (_) {
+      // Do not terminate the app while macOS is asking permission to remove
+      // a proxy that was enabled by the user-confirmed repair.
+      if (proxy?.isAuthorizing != true) exitOnce();
+    });
     try {
       await savePreferences();
       await system.setMacOSDns(true);
-      await proxy?.stopProxy();
+      final stopped = await proxy?.stopProxy();
+      if (Platform.isMacOS &&
+          proxy?.hasAuthorizedSystemProxy == true &&
+          stopped != true) {
+        proxyCleanupFailed = true;
+        globalState.showNotifier(
+          '${appLocalizations.systemProxy} ${appLocalizations.xboardOperationFailed}',
+        );
+        return;
+      }
       await clashCore.shutdown();
       final profileId = globalState.config.currentProfileId;
       if (profileId != null) {
@@ -40,7 +54,7 @@ class AppExitService {
       await clashService?.destroy();
     } finally {
       fallbackExitTimer.cancel();
-      exitOnce();
+      if (!proxyCleanupFailed) exitOnce();
     }
   }
 

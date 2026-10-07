@@ -50,6 +50,51 @@ class SensitiveMasker {
     var masked = text.replaceAllMapped(_urlPattern, (match) {
       return _maskUrl(match.group(0)!);
     });
+    // Protect only recognized code references, never an entire diagnostic line.
+    // URLs are already redacted; arguments/messages still pass through all
+    // privacy filters below. A collision-free marker makes repeated masking safe.
+    var marker = '\uE000code';
+    while (text.contains(marker)) {
+      marker += '_';
+    }
+    final references = <String>[];
+    String protect(String reference) {
+      references.add(reference);
+      return '$marker${references.length - 1}\uE001';
+    }
+
+    masked = masked.replaceAllMapped(
+      RegExp(
+        r'(^[ \t]*(?:\[[^\]\r\n]+\][ \t]*)*(?:created by )?)((?:main|core|runtime)\.[A-Za-z_]\w*(?:\.[A-Za-z_]\w*)*)(?=\(| in goroutine \d+)',
+        multiLine: true,
+      ),
+      (match) => '${match.group(1)}${protect(match.group(2)!)}',
+    );
+    masked = masked.replaceAllMapped(
+      RegExp(
+        r'^([ \t]+)(?:[^\r\n]*[/\\])?([A-Za-z_][A-Za-z0-9_-]*\.(?:go|dart|swift|c|cc|cpp|h|m|mm)):(\d+(?::\d+)?)([ \t]+\+0x[0-9a-fA-F]+)[ \t]*$',
+        multiLine: true,
+      ),
+      // Drop the machine/user directory, but retain source basename and line.
+      (match) => '${match.group(1)}'
+          '${protect('${match.group(2)}:${match.group(3)}')}${match.group(4)}',
+    );
+    masked = masked.replaceAllMapped(
+      RegExp(
+        r'^(#\d+[ \t]+)([A-Za-z_]\w*(?:\.[A-Za-z_]\w*)*)(?=[ \t]+\()',
+        multiLine: true,
+      ),
+      (match) => '${match.group(1)}${protect(match.group(2)!)}',
+    );
+    masked = masked.replaceAllMapped(
+      RegExp(r'\(package:fl_clash/([A-Za-z0-9_/-]+\.dart:\d+(?::\d+)?)\)'),
+      (match) => '(package:fl_clash/${protect(match.group(1)!)})',
+    );
+    masked = masked.replaceAllMapped(
+      RegExp(
+          r'\b(?:AppLifecycleState|SubscriptionStatusType|GatewayRuntimeEventType)\.[A-Za-z_]\w*(?![\w.-])'),
+      (match) => protect(match.group(0)!),
+    );
     masked = masked.replaceAllMapped(_namedPortPattern, (match) {
       return '${match.group(1)}${maskPort(match.group(2)!)}';
     });
@@ -83,13 +128,17 @@ class SensitiveMasker {
       final prefix = match.group(1) ?? 'Token';
       return '$prefix [redacted]';
     });
-    return masked.replaceAllMapped(_longTokenPattern, (match) {
+    masked = masked.replaceAllMapped(_longTokenPattern, (match) {
       final token = match.group(0)!;
       if (_looksLikeHash(token)) {
         return token;
       }
       return '${token.substring(0, 6)}...[redacted]';
     });
+    for (var i = 0; i < references.length; i++) {
+      masked = masked.replaceAll('$marker$i\uE001', references[i]);
+    }
+    return masked;
   }
 
   static String maskUrl(String? value) {

@@ -10,6 +10,7 @@ import 'package:fl_clash/manager/hotkey_manager.dart';
 import 'package:fl_clash/manager/manager.dart';
 import 'package:fl_clash/plugins/app.dart';
 import 'package:fl_clash/providers/providers.dart';
+import 'package:fl_clash/enum/enum.dart' as client_enum;
 import 'package:fl_clash/state.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
@@ -211,6 +212,19 @@ class ApplicationState extends ConsumerState<Application>
     ref.listenManual(
       appSettingProvider.select((s) => s.logCapture),
       (_, next) {
+        // Log capture is now one unified stream. Do not restore the old
+        // page-level severity preference (which could suppress all but errors).
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          if (!mounted) return;
+          final capture = ref.read(appSettingProvider).logCapture;
+          final level =
+              capture ? client_enum.LogLevel.info : client_enum.LogLevel.error;
+          if (ref.read(patchClashConfigProvider).logLevel == level) return;
+          ref.read(patchClashConfigProvider.notifier).updateState(
+                (state) => state.copyWith(logLevel: level),
+              );
+          // ClashManager applies this as a log-only update, without reconnecting.
+        });
         if (next) {
           final currentLogLevel = ref.read(patchClashConfigProvider).logLevel;
           XBoardLogger.setLogger(
@@ -319,6 +333,9 @@ class ApplicationState extends ConsumerState<Application>
       await ref.read(xboardUserProvider.notifier).refreshSubscriptionInfo(
             importProfile: false,
           );
+      if (mounted) {
+        ref.read(xboardUserProvider.notifier).retryAutomaticSubscriptionImport();
+      }
     } catch (error) {
       debugPrint('[Application] 网络恢复后刷新订阅信息失败: $error');
     }

@@ -3,6 +3,45 @@ import 'package:flutter_test/flutter_test.dart';
 
 void main() {
   group('SensitiveMasker.maskText', () {
+    test(
+        'preserves Go frames and source lines without exposing endpoints or home paths',
+        () {
+      const input = 'panic: runtime error: invalid memory address\n'
+          'main.updateConfig(0x1234)\n'
+          '\t/Users/private-user/Projects/FastCatAPP/core/common.go:199 +0xbc\n'
+          'created by main.startServer in goroutine 1\n'
+          '\t/Users/private-user/Projects/FastCatAPP/core/server.go:86 +0x384\n'
+          'dial secret.example.com:443 Bearer abcdefghijklmnopqrstuvwxyz';
+      final masked = SensitiveMasker.maskText(input);
+      expect(masked, contains('main.updateConfig(0x1234)'));
+      expect(masked, contains('common.go:199 +0xbc'));
+      expect(masked, contains('main.startServer in goroutine 1'));
+      expect(masked, contains('server.go:86 +0x384'));
+      expect(masked, isNot(contains('private-user')));
+      expect(masked, isNot(contains('secret.example.com')));
+      expect(masked, isNot(contains('abcdefghijklmnopqrstuvwxyz')));
+      final again = SensitiveMasker.maskText(masked);
+      expect(again, contains('common.go:199 +0xbc'));
+      expect(again, contains('main.updateConfig(0x1234)'));
+    });
+
+    test(
+        'recognizes Dart frames and known enum names, not similar network hosts',
+        () {
+      const input =
+          '#0 ProxyManager.update (package:fl_clash/manager/proxy_manager.dart:49:3)\n'
+          'AppLifecycleState.resumed SubscriptionStatusType.valid GatewayRuntimeEventType.sync\n'
+          'dial common.go:199 and main.updateConfig:443 https://common.go:199/path';
+      final masked = SensitiveMasker.maskText(input);
+      expect(masked, contains('ProxyManager.update'));
+      expect(masked, contains('proxy_manager.dart:49:3'));
+      expect(masked, contains('AppLifecycleState.resumed'));
+      expect(masked, contains('SubscriptionStatusType.valid'));
+      expect(masked, contains('GatewayRuntimeEventType.sync'));
+      expect(masked, isNot(contains('common.go:199')));
+      expect(masked, isNot(contains('main.updateConfig:443')));
+    });
+
     test('masks a plain domain and port in core logs', () {
       const input =
           '[UDP] dial fastcat.wang:40101 connect error: context canceled';

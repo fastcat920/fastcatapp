@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:fl_clash/xboard/adapter/initialization/sdk_provider.dart';
 import 'package:fl_clash/xboard/features/auth/providers/xboard_user_provider.dart';
+import 'package:fl_clash/xboard/features/initialization/providers/initialization_provider.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_xboard_sdk/flutter_xboard_sdk.dart';
@@ -14,9 +15,11 @@ final couponWalletSessionProvider = Provider<String?>((ref) {
 });
 
 final couponWalletReadyProvider = Provider<bool>((ref) {
-  return ref.watch(xboardUserAuthProvider.select(
-    (auth) => auth.isAuthenticated && !auth.isLoading,
-  ));
+  final initialized = ref.watch(isInitializedProvider);
+  return initialized &&
+      ref.watch(xboardUserAuthProvider.select(
+        (auth) => auth.isAuthenticated && !auth.isLoading,
+      ));
 });
 
 final couponWalletLoaderProvider =

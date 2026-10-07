@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:io';
 
 import 'package:flutter/foundation.dart';
@@ -54,14 +55,56 @@ class SystemProxyStatus {
 }
 
 class Proxy extends ProxyPlatform {
+  Proxy({
+    this.onDiagnostic,
+    @visibleForTesting String? operatingSystem,
+    @visibleForTesting
+    Future<ProcessResult> Function(String, List<String>)? runProcess,
+  })  : _operatingSystem = operatingSystem ?? Platform.operatingSystem,
+        _runProcess = runProcess ??
+            ((executable, arguments) => Process.run(executable, arguments));
+
+  final String _operatingSystem;
+  final Future<ProcessResult> Function(String, List<String>) _runProcess;
+  final void Function(String)? onDiagnostic;
+  Future<void> _pendingOperation = Future<void>.value();
+  bool _macosAuthorizationNeeded = false;
+  final Set<String> _authorizedMacosServices = {};
+  bool _isAuthorizing = false;
+  bool get isAuthorizing => _isAuthorizing;
+  bool get hasAuthorizedSystemProxy => _authorizedMacosServices.isNotEmpty;
+
+  // All callers (connect, disconnect, repair and exit) share this queue.
+  Future<T> _serialize<T>(Future<T> Function() operation) {
+    final result = _pendingOperation.then((_) => operation());
+    _pendingOperation =
+        result.then<void>((_) {}, onError: (Object _, StackTrace __) {});
+    return result;
+  }
+
+  void _diagnostic(String message) {
+    try {
+      if (onDiagnostic != null) {
+        onDiagnostic!(message);
+      } else {
+        debugPrint(message);
+      }
+    } catch (_) {
+      // Diagnostics must not break system proxy operations.
+    }
+  }
+
   static String url = "127.0.0.1";
 
   @override
   Future<bool?> startProxy(
     int port, [
     List<String> bypassDomain = const [],
-  ]) async {
-    return switch (Platform.operatingSystem) {
+  ]) =>
+      _serialize(() => _startProxy(port, bypassDomain));
+
+  Future<bool?> _startProxy(int port, List<String> bypassDomain) async {
+    return switch (_operatingSystem) {
       "macos" => await _startProxyWithMacos(port, bypassDomain),
       "linux" => await _startProxyWithLinux(port, bypassDomain),
       "windows" => await ProxyPlatform.instance.startProxy(port, bypassDomain),
@@ -70,8 +113,10 @@ class Proxy extends ProxyPlatform {
   }
 
   @override
-  Future<bool?> stopProxy() async {
-    return switch (Platform.operatingSystem) {
+  Future<bool?> stopProxy() => _serialize(_stopProxy);
+
+  Future<bool?> _stopProxy() async {
+    return switch (_operatingSystem) {
       "macos" => await _stopProxyWithMacos(),
       "linux" => await _stopProxyWithLinux(),
       "windows" => await ProxyPlatform.instance.stopProxy(),
@@ -79,9 +124,22 @@ class Proxy extends ProxyPlatform {
     };
   }
 
+  /// Called only after the user confirms repair. The first authorization grant
+  /// is never requested by auto-connect; subsequent cleanup may reuse it.
+  /// Reapply in place instead of disabling a working proxy before attempting a write.
+  Future<bool> repairProxy(int port, List<String> bypassDomain) =>
+      _serialize(() async {
+        final started = _operatingSystem == 'macos'
+            ? await _startProxyWithMacos(port, bypassDomain,
+                allowAuthorization: true)
+            : await _startProxy(port, bypassDomain);
+        return started == true &&
+            (await getSystemProxyStatus()).matches(url, port);
+      });
+
   Future<SystemProxyStatus> getSystemProxyStatus() async {
     try {
-      final data = switch (Platform.operatingSystem) {
+      final data = switch (_operatingSystem) {
         "macos" => await _getMacosProxyStatus(),
         "linux" => await _getLinuxProxyStatus(),
         "windows" => await ProxyPlatform.instance.getProxyStatus(),
@@ -89,7 +147,7 @@ class Proxy extends ProxyPlatform {
       };
       return SystemProxyStatus.fromMap(data);
     } catch (error) {
-      debugPrint("[Proxy] read status failed: $error");
+      _diagnostic("[Proxy] read status failed: $error");
       return const SystemProxyStatus.unavailable();
     }
   }
@@ -577,9 +635,15 @@ class Proxy extends ProxyPlatform {
     debugPrint("[Proxy][Linux] $action warning: $details");
   }
 
-  Future<bool> _startProxyWithMacos(int port, List<String> bypassDomain) async {
+  Future<bool> _startProxyWithMacos(int port, List<String> bypassDomain,
+      {bool allowAuthorization = false}) async {
     try {
       final services = await _getNetworkDeviceListWithMacos();
+      if (services.isEmpty) {
+        _logMacosProxyFailure(
+            'start proxy', 'No enabled network services found');
+        return false;
+      }
       final primaryService = await _getMacosPrimaryNetworkService(services);
       final orderedServices = _prioritizeMacosNetworkServices(
         services: services,
@@ -592,6 +656,9 @@ class Proxy extends ProxyPlatform {
           service: service,
           port: port,
           bypassDomain: bypassDomain,
+          allowAuthorization: _authorizedMacosServices.contains(service) ||
+              (allowAuthorization &&
+                  service == (primaryService ?? services.first)),
         );
         anySuccess = anySuccess || success;
         if (service == primaryService) {
@@ -635,14 +702,16 @@ class Proxy extends ProxyPlatform {
       _logMacosProxyFailure("list network services", res.stderr);
       return [];
     }
-    final lines = res.stdout.toString().split("\n");
+    final lines =
+        res.stdout.toString().split("\n").map((line) => line.trim()).toList();
     lines.removeWhere(
         (element) => element.contains("*") || element.trim().isEmpty);
     return lines;
   }
 
   Future<String?> _getMacosPrimaryNetworkService(List<String> services) async {
-    final routeResult = await Process.run("route", ["-n", "get", "default"]);
+    final routeResult =
+        await _runProcess("/sbin/route", ["-n", "get", "default"]);
     if (routeResult.exitCode != 0) {
       _logMacosProxyFailure("get default route", routeResult.stderr);
       return null;
@@ -665,25 +734,21 @@ class Proxy extends ProxyPlatform {
       );
       return null;
     }
-    final serviceBlock =
-        serviceOrderResult.stdout.toString().split("\n\n").firstWhere(
-              (block) => block.contains("Device: $interfaceName"),
-              orElse: () => "",
-            );
-    if (serviceBlock.isEmpty) {
-      return null;
+    String? serviceName;
+    // networksetup does not consistently separate service pairs by blank lines.
+    for (final rawLine in serviceOrderResult.stdout.toString().split('\n')) {
+      final line = rawLine.trim();
+      final heading = RegExp(r'^\(\d+\)\s+(.+)$').firstMatch(line);
+      if (heading != null) {
+        serviceName = heading.group(1);
+        continue;
+      }
+      final device = RegExp(r'Device:\s*([^,)\s]+)').firstMatch(line)?.group(1);
+      if (device == interfaceName && services.contains(serviceName)) {
+        return serviceName;
+      }
     }
-    final serviceNameLine = serviceBlock.split("\n").firstWhere(
-        (line) => RegExp(r"^\(\d+\)\s+").hasMatch(line.trim()),
-        orElse: () => "");
-    final match = RegExp(r"^\(\d+\)\s+(.+)$").firstMatch(
-      serviceNameLine.trim(),
-    );
-    final serviceName = match?.group(1);
-    if (serviceName == null || !services.contains(serviceName)) {
-      return null;
-    }
-    return serviceName;
+    return null;
   }
 
   List<String> _prioritizeMacosNetworkServices({
@@ -703,6 +768,7 @@ class Proxy extends ProxyPlatform {
     required String service,
     required int port,
     required List<String> bypassDomain,
+    bool allowAuthorization = false,
   }) async {
     final commands = <List<String>>[
       ["-setwebproxy", service, url, "$port"],
@@ -717,15 +783,84 @@ class Proxy extends ProxyPlatform {
         ...(bypassDomain.isEmpty ? [""] : bypassDomain),
       ],
     ];
+    _macosAuthorizationNeeded = false;
     for (final command in commands) {
       if (!await _runNetworkSetupChecked(command)) {
+        if (allowAuthorization && _macosAuthorizationNeeded) {
+          return _authorizeMacosProxy(commands, service, port);
+        }
         return false;
       }
     }
     return await _verifyMacosProxyService(service, port);
   }
 
+  Future<bool> _authorizeMacosProxy(
+    List<List<String>> commands,
+    String service,
+    int port,
+  ) async {
+    final completed = await _runAuthorizedMacosCommands(commands);
+    // A batch can partially apply before a later command fails. Remember any
+    // owned endpoint so disconnect can still clean it up with authorization.
+    final states = await Future.wait([
+      _getMacosProxyState('-getwebproxy', service),
+      _getMacosProxyState('-getsecurewebproxy', service),
+      _getMacosProxyState('-getsocksfirewallproxy', service),
+    ]);
+    if (states.any((state) =>
+        state.available &&
+        state.enabled &&
+        state.server == url &&
+        state.port == port)) {
+      _authorizedMacosServices.add(service);
+    }
+    if (!completed) return false;
+    final verified = await _verifyMacosProxyService(service, port);
+    _diagnostic('[Proxy][macOS] authorized repair verified=$verified');
+    return verified;
+  }
+
+  Future<bool> _runAuthorizedMacosCommands(List<List<String>> commands) async {
+    // Quote each shell argument, then quote the complete shell script for
+    // AppleScript. Never interpolate an unescaped service name or bypass entry.
+    String shellQuote(String value) => "'${value.replaceAll("'", "'\\''")}'";
+    final script = commands
+        .map((args) =>
+            ['/usr/sbin/networksetup', ...args].map(shellQuote).join(' '))
+        .join(' && ');
+    final appleScript = script.replaceAll('\\', '\\\\').replaceAll('"', '\\"');
+    _diagnostic(
+        '[Proxy][macOS] authorization requested for system proxy repair');
+    late final ProcessResult result;
+    _isAuthorizing = true;
+    try {
+      result = await _runProcess('/usr/bin/osascript', [
+        '-e',
+        'do shell script "$appleScript" with administrator privileges',
+      ]);
+    } finally {
+      _isAuthorizing = false;
+    }
+    if (result.exitCode != 0) {
+      _logMacosProxyFailure('authorized repair exit=${result.exitCode}',
+          '${result.stderr} ${result.stdout}');
+      return false;
+    }
+    return true;
+  }
+
   Future<bool> _stopMacosProxyForService(String service) async {
+    if (_authorizedMacosServices.contains(service)) {
+      final states = await Future.wait([
+        _getMacosProxyState('-getwebproxy', service),
+        _getMacosProxyState('-getsecurewebproxy', service),
+        _getMacosProxyState('-getsocksfirewallproxy', service),
+      ]);
+      if (states.every((state) => state.available && !state.enabled)) {
+        return true;
+      }
+    }
     final commands = <List<String>>[
       ["-setautoproxystate", service, "off"],
       ["-setwebproxystate", service, "off"],
@@ -733,8 +868,16 @@ class Proxy extends ProxyPlatform {
       ["-setsocksfirewallproxystate", service, "off"],
       ["-setproxybypassdomains", service, ""],
     ];
+    _macosAuthorizationNeeded = false;
     for (final command in commands) {
       if (!await _runNetworkSetupChecked(command)) {
+        // A proxy enabled with authorization must also be removable when the
+        // user disconnects. Never silently leave a dead local proxy behind.
+        if (_macosAuthorizationNeeded &&
+            _authorizedMacosServices.contains(service)) {
+          if (!await _runAuthorizedMacosCommands(commands)) return false;
+          return _verifyMacosProxyServiceStopped(service);
+        }
         return false;
       }
     }
@@ -765,7 +908,7 @@ class Proxy extends ProxyPlatform {
       _getMacosProxyState("-getsecurewebproxy", service),
       _getMacosProxyState("-getsocksfirewallproxy", service),
     ]);
-    final success = states.every((state) => !state.enabled);
+    final success = states.every((state) => state.available && !state.enabled);
     if (!success) {
       _logMacosProxyFailure(
         "verify proxy stopped for $service",
@@ -788,23 +931,35 @@ class Proxy extends ProxyPlatform {
   }
 
   Future<ProcessResult> _runNetworkSetup(List<String> arguments) {
-    return Process.run("/usr/sbin/networksetup", arguments);
+    return _runProcess("/usr/sbin/networksetup", arguments);
   }
 
   Future<bool> _runNetworkSetupChecked(List<String> arguments) async {
     final result = await _runNetworkSetup(arguments);
-    if (result.exitCode == 0) {
+    final output = '${result.stderr}\n${result.stdout}'.trim();
+    // Some networksetup versions report authorization errors on stdout.
+    final permissionError = RegExp(
+      r'access denied|permission denied|not authorized|authorization denied|requires?.*(admin|root)|must be.*(admin|root)|administrator.*(access|privilege)|需要.*(管理员|权限)|权限不足',
+      caseSensitive: false,
+    ).hasMatch(output);
+    if (result.exitCode == 0 &&
+        !permissionError &&
+        !RegExp(r'(^|\n)\s*\*?\*?\s*error:', caseSensitive: false)
+            .hasMatch(output)) {
       return true;
     }
+    _macosAuthorizationNeeded = permissionError;
     _logMacosProxyFailure(
-      "networksetup ${arguments.join(" ")}",
-      result.stderr.toString().isEmpty ? result.stdout : result.stderr,
+      "networksetup ${arguments.first} exit=${result.exitCode}",
+      output,
     );
     return false;
   }
 
   void _logMacosProxyFailure(String action, Object details) {
-    debugPrint("[Proxy][macOS] $action failed: $details");
+    final text = details.toString();
+    _diagnostic(
+        "[Proxy][macOS] $action failed: ${text.length > 2000 ? text.substring(0, 2000) : text}");
   }
 }
 
@@ -833,7 +988,9 @@ class _MacosProxyState {
     }
     final enabledValue = values["enabled"]?.toLowerCase();
     return _MacosProxyState(
-      available: values.isNotEmpty,
+      available: values.containsKey('enabled') &&
+          values.containsKey('server') &&
+          values.containsKey('port'),
       enabled:
           enabledValue == "yes" || enabledValue == "on" || enabledValue == "1",
       server: values["server"],

@@ -25,6 +25,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'common/common.dart';
 import 'common/boot_diag.dart';
+import 'common/diagnostic_log_buffer.dart';
 import 'security/profile_vault.dart';
 import 'models/models.dart';
 
@@ -1058,7 +1059,7 @@ class AppController {
     _ref.read(delayDataSourceProvider.notifier).value = {};
     // On iOS, YAML parsing is fast and doesn't need a loading overlay.
     applyProfile(silence: Platform.isIOS);
-    _ref.read(logsProvider.notifier).value = FixedList(500);
+    // Keep the causal history across profile changes and connection repairs.
     _ref.read(requestsProvider.notifier).value = FixedList(500);
     globalState.cacheHeightMap = {};
     globalState.cacheScrollPosition = {};
@@ -1723,12 +1724,16 @@ class AppController {
   }
 
   Future<bool> exportLogs() async {
-    final logsRaw = _ref.read(logsProvider).list.map(
-          (item) => SensitiveMasker.maskText(item),
-        );
+    final report = DiagnosticLogBuffer.fromList(_ref.read(logsProvider)).export(
+      chinese: (globalState.config.appSetting.locale ?? Platform.localeName)
+          .startsWith('zh'),
+      clientVersion:
+          '${globalState.packageInfo.version}+${globalState.packageInfo.buildNumber}',
+      systemVersion:
+          '${Platform.operatingSystem} ${Platform.operatingSystemVersion}',
+    );
     final data = await Isolate.run<List<int>>(() async {
-      final logsRawString = logsRaw.join('\n');
-      return utf8.encode(logsRawString);
+      return utf8.encode(report);
     });
     return await picker.saveFile(
           utils.logFile,

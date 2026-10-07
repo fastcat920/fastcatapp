@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'package:fl_clash/common/diagnostic_log_buffer.dart';
 import 'dart:convert';
 import 'dart:ffi' show Pointer;
 import 'dart:io';
@@ -105,7 +106,7 @@ class GlobalState {
       version: version,
       viewSize: Size.zero,
       requests: FixedList(maxLength),
-      logs: FixedList(maxLength),
+      logs: DiagnosticLogBuffer(),
       traffics: FixedList(30),
       totalTraffic: Traffic(),
     );

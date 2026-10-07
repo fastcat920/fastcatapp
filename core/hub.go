@@ -657,12 +657,14 @@ func handleCrash() {
 }
 
 func handleUpdateConfig(bytes []byte) string {
-	var params = &UpdateParams{}
-	err := json.Unmarshal(bytes, params)
+	var params *UpdateParams
+	err := json.Unmarshal(bytes, &params)
 	if err != nil {
 		return err.Error()
 	}
-	updateConfig(params)
+	if err := updateConfig(params); err != nil {
+		return err.Error()
+	}
 	return ""
 }
 

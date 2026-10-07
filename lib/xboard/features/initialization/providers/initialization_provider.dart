@@ -8,6 +8,7 @@ import 'package:fl_clash/common/sensitive_masker.dart';
 import 'package:fl_clash/xboard/core/core.dart';
 import 'package:fl_clash/xboard/features/domain_status/providers/domain_status_provider.dart';
 import 'package:fl_clash/xboard/adapter/initialization/sdk_provider.dart';
+import 'package:fl_clash/xboard/adapter/initialization/configuration_bootstrap.dart';
 import 'package:fl_clash/xboard/config/xboard_config.dart';
 import 'package:fl_clash/xboard/config/gateway_config.dart';
 import 'package:fl_clash/xboard/services/storage/xboard_storage_provider.dart';
@@ -120,12 +121,7 @@ class XBoardInitializationNotifier extends StateNotifier<InitializationState> {
       final previousDomains = XBoardConfig.allPanelUrls.toSet();
 
       try {
-        await XBoardConfig.refresh().timeout(
-          const Duration(seconds: 35),
-          onTimeout: () {
-            _logger.warning('[Initialization] 配置加载超时（35s）');
-          },
-        );
+        await sdkConfigurationBootstrap.ensureReady(forceRefresh: true);
         _logger.info(
             '[Initialization] 远程配置加载完成，面板数: ${XBoardConfig.allPanelUrls.length}');
       } catch (e) {
@@ -222,6 +218,10 @@ class XBoardInitializationNotifier extends StateNotifier<InitializationState> {
       );
 
       // 等待 SDK 初始化完成
+      // A previous failed attempt must not poison a newly verified config.
+      if (ref.read(xboardSdkProvider).hasError) {
+        ref.invalidate(xboardSdkProvider);
+      }
       await ref.read(xboardSdkProvider.future);
 
       _logger.info('[Initialization] ✅ SDK 初始化完成');
@@ -255,7 +255,7 @@ class XBoardInitializationNotifier extends StateNotifier<InitializationState> {
   Future<void> _ensureConfigInitialized() async {
     if (XBoardConfig.isInitialized) return;
     _logger.warning('[Initialization] 配置模块未初始化，执行兜底初始化');
-    await XBoardConfig.initialize();
+    await sdkConfigurationBootstrap.initialize();
     unawaited(_listenForConfigChanges());
   }
 

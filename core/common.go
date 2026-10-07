@@ -193,9 +193,28 @@ func readFile(path string) ([]byte, error) {
 	return data, err
 }
 
-func updateConfig(params *UpdateParams) {
+func updateConfig(params *UpdateParams) error {
 	runLock.Lock()
 	defer runLock.Unlock()
+	if params == nil {
+		return errors.New("missing configuration update")
+	}
+	// The first Flutter frame may change logging before setupConfig has run.
+	// Process logging does not depend on a profile and must never create one,
+	// dereference an absent one, or reconfigure the VPN/TUN data plane.
+	if params.LogLevel != nil && params.Tun == nil && params.AllowLan == nil &&
+		params.MixedPort == nil && params.FindProcessMode == nil && params.Mode == nil &&
+		params.IPv6 == nil && params.Sniffing == nil && params.TCPConcurrent == nil &&
+		params.ExternalController == nil && params.Interface == nil && params.UnifiedDelay == nil {
+		log.SetLevel(*params.LogLevel)
+		if currentConfig != nil && currentConfig.General != nil {
+			currentConfig.General.LogLevel = *params.LogLevel
+		}
+		return nil
+	}
+	if currentConfig == nil || currentConfig.General == nil {
+		return errors.New("core configuration is not ready; apply a profile before updating it")
+	}
 	general := currentConfig.General
 	if params.MixedPort != nil {
 		general.MixedPort = *params.MixedPort
@@ -249,6 +268,7 @@ func updateConfig(params *UpdateParams) {
 	}
 
 	updateListeners()
+	return nil
 }
 
 func setupConfig(params *SetupParams) error {

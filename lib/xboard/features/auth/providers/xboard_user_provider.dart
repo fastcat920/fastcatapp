@@ -844,9 +844,17 @@ class XBoardUserAuthNotifier extends Notifier<UserAuthState> {
     _automaticSubscriptionImportKey = importKey;
     _logger.info('[自动刷新] 后台刷新订阅配置: ${SensitiveMasker.maskUrl(url)}');
     unawaited(Future<void>(() async {
+      var succeeded = false;
       try {
         if (!_isAuthGenerationActive(generation)) {
           _logger.info('[自动刷新] 跳过：认证会话已变化');
+          return;
+        }
+        // Restore cached nodes immediately, but do not treat an SDK/config
+        // startup transition as an offline subscription download failure.
+        await ref.read(initializationProvider.notifier).initialize();
+        if (!_isAuthGenerationActive(generation) ||
+            !ref.read(initializationProvider).isReady) {
           return;
         }
         if (!await _waitForCoreReady(generation)) {
@@ -861,17 +869,32 @@ class XBoardUserAuthNotifier extends Notifier<UserAuthState> {
         if (await _restoreReusableLocalProfile(url)) {
           _logger.info('[自动刷新] 已先恢复旧订阅缓存，继续后台检查新配置');
         }
-        final success = await ref
+        succeeded = await ref
             .read(profileImportProvider.notifier)
             .importSubscription(url);
         _logger.info(
-          '[自动刷新] 订阅配置更新${success ? '成功' : '失败，继续使用旧缓存'}',
+          '[自动刷新] 订阅配置更新${succeeded ? '成功' : '失败，继续使用旧缓存'}',
         );
       } catch (e, stackTrace) {
         _logger.warning('[自动刷新] 订阅更新异常，继续使用旧缓存: $e');
         _logger.debug('$stackTrace');
+      } finally {
+        // Deduplicate an in-flight/successful import, not a failed attempt.
+        if (!succeeded && _automaticSubscriptionImportKey == importKey) {
+          _automaticSubscriptionImportKey = null;
+        }
       }
     }));
+  }
+
+  void retryAutomaticSubscriptionImport() {
+    if (!state.isAuthenticated || !ref.read(initializationProvider).isReady) {
+      return;
+    }
+    _startPostLoginSubscriptionImport(
+      state.subscriptionInfo?.subscribeUrl,
+      _authGeneration,
+    );
   }
 
   Future<bool> _waitForCoreReady(int generation) async {

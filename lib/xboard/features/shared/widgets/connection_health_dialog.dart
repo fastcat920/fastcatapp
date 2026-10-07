@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:fl_clash/common/common.dart';
+import 'package:fl_clash/common/single_flight.dart';
 import 'package:fl_clash/enum/enum.dart';
 import 'package:fl_clash/l10n/l10n.dart';
 import 'package:fl_clash/models/models.dart';
@@ -246,7 +247,7 @@ class _ConnectionHealthViewState extends ConsumerState<ConnectionHealthView> {
               : () async {
                   setState(() => _isRepairing = true);
                   try {
-                    await _repairConnection(context, ref);
+                    await showConnectionRepair(context);
                   } finally {
                     if (mounted) setState(() => _isRepairing = false);
                   }
@@ -305,10 +306,16 @@ class _ConnectionHealthViewState extends ConsumerState<ConnectionHealthView> {
   }
 }
 
-Future<void> _repairConnection(
-  BuildContext context,
-  WidgetRef ref,
-) async {
+final _connectionRepair = SingleFlight<String?>();
+
+Future<void> showConnectionRepair(
+  BuildContext context, {
+  @visibleForTesting
+  Future<String?> Function(ProviderContainer)? repairOperation,
+}) async {
+  // Capture the app's provider container before awaiting. WidgetRef belongs to
+  // this page and becomes invalid when the user navigates away during repair.
+  final container = ProviderScope.containerOf(context, listen: false);
   final l10n = AppLocalizations.of(context);
   final isChinese = Localizations.localeOf(context).languageCode == 'zh';
   final steps = <String>[
@@ -320,6 +327,10 @@ Future<void> _repairConnection(
       isChinese ? '刷新系统 DNS 缓存' : 'Flush the system DNS cache',
     if (Platform.isMacOS)
       isChinese ? '重新应用 macOS DNS 设置' : 'Reapply macOS DNS settings',
+    if (system.isDesktop)
+      isChinese
+          ? '需要时请求系统管理员授权；取消授权则停止对应修复'
+          : 'Request administrator authorization if needed; cancellation stops that repair',
     isChinese ? '重新加载当前代理配置' : 'Reload the current proxy configuration',
     if (system.isDesktop)
       isChinese
@@ -373,22 +384,53 @@ Future<void> _repairConnection(
   );
   if (confirmed != true || !context.mounted) return;
 
+  late int repairId;
+  void step(String message) =>
+      commonPrint.log('[ConnectionHealth] id=$repairId $message');
+  Future<void> recordState(String phase) async {
+    try {
+      final state = container.read(proxyStateProvider);
+      final actual =
+          system.isDesktop ? await proxy?.getSystemProxyStatus() : null;
+      step('state=$phase coreRunning=${state.isStart} '
+          'tunRequested=${container.read(patchClashConfigProvider).tun.enable} '
+          'tunApplied=${container.read(realTunEnableProvider)} '
+          'proxyRequested=${state.systemProxy} '
+          'proxyAvailable=${actual?.available} proxyEnabled=${actual?.enabled} '
+          'proxyMatches=${actual?.matches("127.0.0.1", state.port)} '
+          'source=${actual?.source}');
+    } catch (error) {
+      step('state=$phase read failed: $error');
+    }
+  }
+
   Future<String?> runRepair() async {
+    await recordState('before');
     if (Platform.isWindows) {
+      step('step=windows_helper');
       await windows?.registerService(forceRepair: true);
-      ref.invalidate(_windowsHelperStatusProvider);
+      container.invalidate(_windowsHelperStatusProvider);
     }
     if (Platform.isWindows) {
+      step('step=flush_dns');
       await Process.run('ipconfig', ['/flushdns']);
     } else if (Platform.isMacOS) {
+      step('step=restore_dns');
       await system.setMacOSDns(true);
     }
-    if (ref.read(currentProfileProvider) != null) {
+    if (container.read(currentProfileProvider) != null) {
+      step('step=apply_profile');
+      // A user-confirmed repair may retry previously denied TUN authorization.
+      if (container.read(patchClashConfigProvider).tun.enable &&
+          !container.read(realTunEnableProvider)) {
+        globalState.appController.resetTunAdminDenied();
+        step('step=retry_tun_authorization');
+      }
       await globalState.appController.applyProfile(silence: true);
     }
 
-    final proxyState = ref.read(proxyStateProvider);
-    final tunActive = ref.read(realTunEnableProvider);
+    final proxyState = container.read(proxyStateProvider);
+    final tunActive = container.read(realTunEnableProvider);
     if (system.isDesktop && proxy != null) {
       // Only clear a proxy endpoint that belongs to this client. This removes
       // stale 127.0.0.1 settings after a core crash without touching a user's
@@ -405,46 +447,74 @@ Future<void> _repairConnection(
         return l10n.xboardProxyRepairCoreNotRunning;
       }
       if (!tunActive) {
+        step('step=check_local_listener');
         final listening = await _waitForLocalProxy(proxyState.port);
         if (!listening) {
           await clearStaleLocalSystemProxy();
           return l10n.xboardProxyRepairPortUnavailable;
         }
-        await proxy?.stopProxy();
-        final started = await proxy?.startProxy(
+        step('step=write_system_proxy');
+        final started = await proxy?.repairProxy(
           proxyState.port,
           proxyState.bassDomain,
         );
+        if (!container.read(proxyStateProvider).isStart) {
+          await clearStaleLocalSystemProxy();
+          return l10n.xboardProxyRepairCoreNotRunning;
+        }
         if (started != true) {
           return l10n.xboardProxyRepairWriteFailed;
         }
+        step('step=verify_system_proxy');
         final actual = await proxy!.getSystemProxyStatus();
         if (!actual.matches('127.0.0.1', proxyState.port)) {
           return l10n.xboardProxyRepairVerifyFailed;
         }
-        ref.read(networkSettingProvider.notifier).updateState(
+        container.read(networkSettingProvider.notifier).updateState(
               (state) => state.copyWith(systemProxy: true),
             );
       }
     }
-    await ref.read(initializationProvider.notifier).refresh();
-    await ref.read(xboardUserProvider.notifier).refreshSubscriptionInfo(
+    step('step=refresh_services');
+    await container.read(initializationProvider.notifier).refresh();
+    step('step=refresh_subscription');
+    await container.read(xboardUserProvider.notifier).refreshSubscriptionInfo(
           importProfile: false,
         );
-    ref.invalidate(serviceEndpointHealthProvider);
-    ref.invalidate(_systemProxyHealthProvider);
+    container.invalidate(serviceEndpointHealthProvider);
+    container.invalidate(_systemProxyHealthProvider);
     return null;
   }
 
   final commonScaffoldState = context.commonScaffoldState;
   String? repairError;
   Future<void> executeRepair() async {
-    try {
-      repairError = await runRepair();
-    } catch (error) {
-      commonPrint.log('[ConnectionHealth] repair failed: $error');
-      repairError = l10n.xboardOperationFailed;
-    }
+    repairError = await _connectionRepair.run(() async {
+      final id = repairId = DateTime.now().microsecondsSinceEpoch;
+      final elapsed = Stopwatch()..start();
+      final version = globalState.isInit
+          ? '${globalState.packageInfo.version}+${globalState.packageInfo.buildNumber}'
+          : 'unknown';
+      commonPrint.log('[ConnectionHealth] repair started id=$id '
+          'client=$version platform=${Platform.operatingSystem} '
+          'system=${Platform.operatingSystemVersion} '
+          'environment=${const String.fromEnvironment("APP_ENV", defaultValue: "stable")}');
+      try {
+        final error = await (repairOperation == null
+            ? runRepair()
+            : repairOperation(container));
+        commonPrint.log('[ConnectionHealth] repair completed id=$id '
+            'success=${error == null} elapsedMs=${elapsed.elapsedMilliseconds}'
+            '${error == null ? '' : ' reason=$error'}');
+        return error;
+      } catch (error) {
+        commonPrint.log('[ConnectionHealth] repair failed id=$id '
+            'elapsedMs=${elapsed.elapsedMilliseconds}: $error');
+        return l10n.xboardOperationFailed;
+      } finally {
+        if (repairOperation == null) await recordState('after');
+      }
+    });
   }
 
   if (commonScaffoldState?.mounted == true) {
@@ -455,8 +525,8 @@ Future<void> _repairConnection(
   } else {
     await executeRepair();
   }
-  ref.invalidate(_systemProxyHealthProvider);
   if (context.mounted) {
+    container.invalidate(_systemProxyHealthProvider);
     if (repairError == null) {
       XBoardNotification.showSuccess(l10n.xboardRepairCompleted);
     } else {

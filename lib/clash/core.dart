@@ -106,6 +106,12 @@ class ClashCore {
     return await clashInterface.updateConfig(updateParams);
   }
 
+  Future<String> updateLogLevel(LogLevel level) =>
+      clashInterface.invoke<String>(
+        method: ActionMethod.updateConfig,
+        data: json.encode({'log-level': level.name}),
+      );
+
   Future<String> setupConfig(SetupParams setupParams) async {
     return await clashInterface.setupConfig(setupParams);
   }
