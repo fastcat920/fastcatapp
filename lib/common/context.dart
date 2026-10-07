@@ -1,5 +1,6 @@
 import 'package:fl_clash/manager/message_manager.dart';
 import 'package:fl_clash/widgets/scaffold.dart';
+import 'package:fl_clash/widgets/notification_message.dart';
 import 'package:flutter/material.dart';
 
 extension BuildContextExtension on BuildContext {
@@ -45,7 +46,7 @@ extension BuildContextExtension on BuildContext {
     ScaffoldMessenger.of(this).showSnackBar(
       SnackBar(
         action: action,
-        content: Text(message),
+        content: NotificationMessage(message),
         behavior: SnackBarBehavior.floating,
         duration: const Duration(milliseconds: 1500),
         margin: margin,

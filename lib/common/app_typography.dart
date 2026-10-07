@@ -1,5 +1,34 @@
 import 'package:flutter/material.dart';
 
+/// Shared by themed text and explicit dialog styles, which replace rather
+/// than merge the theme's body style in AlertDialog.
+const appFontFamilyFallback = [
+  'Noto Sans CJK SC',
+  'Noto Sans CJK',
+  'Noto Sans SC',
+  'Source Han Sans SC',
+  'WenQuanYi Micro Hei',
+  'Microsoft YaHei',
+  'PingFang SC',
+  'Arial Unicode MS',
+  'Twemoji',
+  'sans-serif',
+];
+
+const appDialogTitleStyle = TextStyle(
+  fontFamilyFallback: appFontFamilyFallback,
+  color: Color(0xFF1A2138),
+  fontSize: 16,
+  fontWeight: FontWeight.w600,
+);
+
+const appDialogContentStyle = TextStyle(
+  fontFamilyFallback: appFontFamilyFallback,
+  color: Color(0xFF475467),
+  fontSize: 14,
+  height: 1.45,
+);
+
 /// Keeps the system font while softening Material's medium-weight labels.
 ///
 /// Newer Flutter engines map font weights more precisely on Android variable

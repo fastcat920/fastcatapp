@@ -7,6 +7,7 @@ import 'package:args/command_runner.dart';
 import 'package:path/path.dart';
 import 'package:crypto/crypto.dart';
 import 'package:yaml/yaml.dart';
+import 'tool/build_defines.dart';
 
 enum Target {
   windows,
@@ -1258,17 +1259,47 @@ end tell
   _buildDistributor({
     required Target target,
     required String targets,
-    String args = '',
+    List<String> args = const [],
     required String env,
   }) async {
     _applyDistributorOptions();
     await Build.getDistributor();
-    await Build.exec(
-      name: name,
-      Build.getExecutable(
-        "flutter_distributor --no-version-check package --skip-clean --platform ${target.name} --targets $targets --flutter-build-args=verbose$args --build-dart-define=APP_ENV=$env",
-      ),
-    );
+    // Distributor 0.6.6 splits --build-dart-define values on every '=' and
+    // silently drops Base64 padding. Pass a JSON file straight to Flutter.
+    final defines = dartDefinesToMap(_dartDefineList(env));
+    final temp = await Directory.systemTemp.createTemp('fastcat-build-defines-');
+    final definesFile = File(join(temp.path, 'defines.json'));
+    try {
+      await definesFile.writeAsString(jsonEncode(defines));
+      if (!Platform.isWindows) {
+        await Build.exec(
+          ['chmod', '600', definesFile.path],
+          name: 'protect build defines',
+        );
+      }
+      await Build.exec(
+        [
+          'flutter_distributor',
+          '--no-version-check',
+          'package',
+          '--skip-clean',
+          '--platform', target.name,
+          '--targets', targets,
+          '--flutter-build-args=verbose,dart-define-from-file=${definesFile.path}',
+          ...args,
+        ],
+        name: name,
+      );
+      if (target == Target.linux) {
+        final generated = File(join(
+          current, 'linux', 'flutter', 'ephemeral', 'generated_config.cmake',
+        ));
+        verifyCompiledDartDefines(await generated.readAsString(), defines);
+        print('[setup.dart] Linux build parameters verified (${defines.length} keys)');
+      }
+    } finally {
+      await temp.delete(recursive: true);
+    }
   }
 
   Future<void> _injectLinuxDebPreinstall({
@@ -1862,7 +1893,7 @@ end tell
       return;
     }
 
-    final ddArgs = _dartDefinesArgs;
+    _validateRemoteConfigPublicKey();
 
     switch (target) {
       case Target.windows:
@@ -1905,7 +1936,7 @@ end tell
         await _buildDistributor(
           target: target,
           targets: targets,
-          args: " --build-target-platform $defaultTarget$ddArgs",
+          args: ['--build-target-platform', defaultTarget!],
           env: env,
         );
         await _injectLinuxDebPreinstall(

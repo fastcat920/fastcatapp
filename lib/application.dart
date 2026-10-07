@@ -40,18 +40,6 @@ class Application extends ConsumerStatefulWidget {
 
 class ApplicationState extends ConsumerState<Application>
     with WidgetsBindingObserver {
-  static const _fontFamilyFallback = [
-    'Noto Sans CJK SC',
-    'Noto Sans CJK',
-    'Noto Sans SC',
-    'Source Han Sans SC',
-    'WenQuanYi Micro Hei',
-    'Microsoft YaHei',
-    'PingFang SC',
-    'Arial Unicode MS',
-    'sans-serif',
-  ];
-
   Timer? _autoUpdateProfilesTaskTimer;
   Timer? _customerServicePrewarmTimer;
   Timer? _mobileLogRecoveryTimer;
@@ -839,7 +827,7 @@ class ApplicationState extends ConsumerState<Application>
               themeMode: themeProps.themeMode,
               theme: ThemeData(
                 useMaterial3: true,
-                fontFamilyFallback: _fontFamilyFallback,
+                fontFamilyFallback: appFontFamilyFallback,
                 pageTransitionsTheme: _pageTransitionsTheme,
                 colorScheme: lightColorScheme,
                 typography: buildAppTypography(
@@ -869,16 +857,8 @@ class ApplicationState extends ConsumerState<Application>
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(24),
                   ),
-                  titleTextStyle: const TextStyle(
-                    color: Color(0xFF1A2138),
-                    fontSize: 16,
-                    fontWeight: FontWeight.w600,
-                  ),
-                  contentTextStyle: const TextStyle(
-                    color: Color(0xFF475467),
-                    fontSize: 14,
-                    height: 1.45,
-                  ),
+                  titleTextStyle: appDialogTitleStyle,
+                  contentTextStyle: appDialogContentStyle,
                   actionsPadding: const EdgeInsets.fromLTRB(24, 0, 24, 20),
                 ),
                 navigationBarTheme: NavigationBarThemeData(
@@ -954,7 +934,7 @@ class ApplicationState extends ConsumerState<Application>
               ),
               darkTheme: ThemeData(
                 useMaterial3: true,
-                fontFamilyFallback: _fontFamilyFallback,
+                fontFamilyFallback: appFontFamilyFallback,
                 pageTransitionsTheme: _pageTransitionsTheme,
                 colorScheme: darkColorScheme,
                 typography: buildAppTypography(
