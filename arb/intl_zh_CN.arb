@@ -1207,6 +1207,13 @@
   "withdrawAccount": "提现账号",
   "pleaseEnterWithdrawAccount": "请输入提现账号",
   "withdrawSubmissionNote": "提现申请将通过工单系统提交，请等待管理员审核。",
+  "xboardWithdrawAmount": "提现金额",
+  "xboardEnterWithdrawAmount": "请输入提现金额（元）",
+  "xboardInvalidWithdrawAmount": "请输入大于 0 且最多两位小数的提现金额",
+  "xboardWithdrawAmountExceeded": "提现金额不能超过 ¥{amount}",
+  "@xboardWithdrawAmountExceeded": {
+    "placeholders": {"amount": {"type": "String"}}
+  },
   "withdrawRequestSubmitted": "提现申请已提交",
   "withdrawRequestSubmittedWaitReview": "提现申请已提交，请等待审核",
   "withdrawSubmissionFailed": "提交失败",

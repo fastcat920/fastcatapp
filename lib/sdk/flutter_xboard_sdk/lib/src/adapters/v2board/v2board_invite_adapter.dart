@@ -45,8 +45,17 @@ class V2BoardInviteAdapter implements InviteApi {
       {required double amount,
       required String method,
       required Map<String, dynamic> params}) async {
+    if (!amount.isFinite || amount <= 0 || amount > 90071992547409) {
+      throw ArgumentError('Invalid withdrawal amount');
+    }
+    final amountInCents = (amount * 100).round();
+    if (amountInCents <= 0 ||
+        (amount * 100 - amountInCents).abs() > 0.000001) {
+      throw ArgumentError('Invalid withdrawal amount');
+    }
     final account = params['account']?.toString() ?? '';
     final response = await _api.withdrawCommission(
+      amount: amountInCents,
       method: method,
       account: account,
     );

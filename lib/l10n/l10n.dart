@@ -8600,6 +8600,46 @@ class AppLocalizations {
     );
   }
 
+  /// `Withdrawal amount`
+  String get xboardWithdrawAmount {
+    return Intl.message(
+      'Withdrawal amount',
+      name: 'xboardWithdrawAmount',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Enter withdrawal amount (CNY)`
+  String get xboardEnterWithdrawAmount {
+    return Intl.message(
+      'Enter withdrawal amount (CNY)',
+      name: 'xboardEnterWithdrawAmount',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Enter an amount greater than 0 with up to two decimal places`
+  String get xboardInvalidWithdrawAmount {
+    return Intl.message(
+      'Enter an amount greater than 0 with up to two decimal places',
+      name: 'xboardInvalidWithdrawAmount',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Withdrawal amount cannot exceed ¥{amount}`
+  String xboardWithdrawAmountExceeded(String amount) {
+    return Intl.message(
+      'Withdrawal amount cannot exceed ¥$amount',
+      name: 'xboardWithdrawAmountExceeded',
+      desc: '',
+      args: [amount],
+    );
+  }
+
   /// `Withdrawal request submitted`
   String get withdrawRequestSubmitted {
     return Intl.message(

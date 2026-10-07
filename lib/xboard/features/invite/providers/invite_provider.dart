@@ -11,6 +11,7 @@ import 'package:fl_clash/xboard/adapter/initialization/sdk_provider.dart';
 import 'package:fl_clash/xboard/services/services.dart';
 import 'package:fl_clash/xboard/utils/backend_message_mapper.dart';
 import 'package:fl_clash/common/sensitive_masker.dart';
+import 'package:fl_clash/common/app_localizations.dart';
 
 // 初始化文件级日志器
 const _logger = FileLogger('invite_provider.dart');
@@ -336,23 +337,33 @@ class InviteNotifier extends Notifier<InviteState> {
   }
 
   Future<bool> withdrawCommission({
+    required int amountInCents,
     required String withdrawMethod,
     required String withdrawAccount,
   }) async {
     if (state.isLoading) return false;
+
+    if (amountInCents <= 0 || amountInCents > 9007199254740991) {
+      state = state.copyWith(
+          errorMessage: appLocalizations.xboardInvalidWithdrawAmount);
+      return false;
+    }
+    if (amountInCents > (state.availableCommission * 100).round()) {
+      state = state.copyWith(
+          errorMessage: appLocalizations.xboardWithdrawAmountExceeded(
+        state.availableCommission.toStringAsFixed(2),
+      ));
+      return false;
+    }
 
     state = state.copyWith(isLoading: true, errorMessage: null);
 
     try {
       _logger.info(
           '提现佣金: 方式=$withdrawMethod, 账号=${SensitiveMasker.maskText(withdrawAccount)}');
-      final availableAmount = state.availableCommission;
-      if (availableAmount <= 0) {
-        throw Exception('可提现金额不足');
-      }
-
-      final success = await XBoardSDK.instance.invite.withdrawCommission(
-        amount: availableAmount,
+      final sdk = await ref.read(xboardSdkProvider.future);
+      final success = await sdk.invite.withdrawCommission(
+        amount: amountInCents / 100,
         method: withdrawMethod,
         params: {'account': withdrawAccount},
       );
@@ -364,7 +375,14 @@ class InviteNotifier extends Notifier<InviteState> {
         ));
       }
 
-      await _refreshAfterCommissionMutation();
+      // A successful withdrawal must not become "failed" merely because the
+      // follow-up balance/history refresh failed, encouraging a second request.
+      try {
+        await _refreshAfterCommissionMutation();
+      } catch (e) {
+        _logger.warning('提现已提交，刷新佣金信息失败: $e');
+        state = state.copyWith(isLoading: false, errorMessage: null);
+      }
       _logger.info('提现申请提交成功');
       return true;
     } catch (e) {

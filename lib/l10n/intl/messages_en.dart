@@ -155,6 +155,8 @@ class MessageLookup extends MessageLookupByLibrary {
 
   static String m62(current, required) => "Recovery ${current}/${required}";
 
+  static String m63(amount) => "Withdrawal amount cannot exceed ¥${amount}";
+
   final messages = _notInlinedMessages(_notInlinedMessages);
   static Map<String, Function> _notInlinedMessages(_) => <String, Function>{
     "about": MessageLookupByLibrary.simpleMessage("About"),
@@ -1943,6 +1945,9 @@ class MessageLookup extends MessageLookupByLibrary {
     "xboardEnterGiftCardCodeHint": MessageLookupByLibrary.simpleMessage(
       "Enter gift card redemption code",
     ),
+    "xboardEnterWithdrawAmount": MessageLookupByLibrary.simpleMessage(
+      "Enter withdrawal amount (CNY)",
+    ),
     "xboardExcellent": MessageLookupByLibrary.simpleMessage("Excellent"),
     "xboardExpiredOnDate": m41,
     "xboardExpiresOnDate": m42,
@@ -2096,6 +2101,9 @@ class MessageLookup extends MessageLookupByLibrary {
     ),
     "xboardInvalidResponseFormat": MessageLookupByLibrary.simpleMessage(
       "Invalid response format from server",
+    ),
+    "xboardInvalidWithdrawAmount": MessageLookupByLibrary.simpleMessage(
+      "Enter an amount greater than 0 with up to two decimal places",
     ),
     "xboardInviteCode": MessageLookupByLibrary.simpleMessage("Invite Code"),
     "xboardJoinGroup": MessageLookupByLibrary.simpleMessage("Join Group"),
@@ -3318,6 +3326,10 @@ class MessageLookup extends MessageLookupByLibrary {
     "xboardWalletBalance": MessageLookupByLibrary.simpleMessage(
       "Wallet balance",
     ),
+    "xboardWithdrawAmount": MessageLookupByLibrary.simpleMessage(
+      "Withdrawal amount",
+    ),
+    "xboardWithdrawAmountExceeded": m63,
     "xboardYearlyPayment": MessageLookupByLibrary.simpleMessage("Yearly"),
     "years": MessageLookupByLibrary.simpleMessage("Years"),
     "zh_CN": MessageLookupByLibrary.simpleMessage("Simplified Chinese"),

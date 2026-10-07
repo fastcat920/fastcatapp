@@ -1207,6 +1207,13 @@
   "withdrawAccount": "Withdrawal account",
   "pleaseEnterWithdrawAccount": "Please enter withdrawal account",
   "withdrawSubmissionNote": "The withdrawal request will be submitted through the ticket system. Please wait for admin review.",
+  "xboardWithdrawAmount": "Withdrawal amount",
+  "xboardEnterWithdrawAmount": "Enter withdrawal amount (CNY)",
+  "xboardInvalidWithdrawAmount": "Enter an amount greater than 0 with up to two decimal places",
+  "xboardWithdrawAmountExceeded": "Withdrawal amount cannot exceed ¥{amount}",
+  "@xboardWithdrawAmountExceeded": {
+    "placeholders": {"amount": {"type": "String"}}
+  },
   "withdrawRequestSubmitted": "Withdrawal request submitted",
   "withdrawRequestSubmittedWaitReview": "Withdrawal request submitted, please wait for review",
   "withdrawSubmissionFailed": "Submission failed",

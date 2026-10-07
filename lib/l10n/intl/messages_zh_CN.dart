@@ -146,6 +146,8 @@ class MessageLookup extends MessageLookupByLibrary {
 
   static String m62(current, required) => "恢复进度 ${current}/${required}";
 
+  static String m63(amount) => "提现金额不能超过 ¥${amount}";
+
   final messages = _notInlinedMessages(_notInlinedMessages);
   static Map<String, Function> _notInlinedMessages(_) => <String, Function>{
     "about": MessageLookupByLibrary.simpleMessage("关于"),
@@ -1390,6 +1392,9 @@ class MessageLookup extends MessageLookupByLibrary {
     "xboardEnterGiftCardCodeHint": MessageLookupByLibrary.simpleMessage(
       "请输入礼品卡兑换码",
     ),
+    "xboardEnterWithdrawAmount": MessageLookupByLibrary.simpleMessage(
+      "请输入提现金额（元）",
+    ),
     "xboardExcellent": MessageLookupByLibrary.simpleMessage("优秀"),
     "xboardExpiredOnDate": m41,
     "xboardExpiresOnDate": m42,
@@ -1510,6 +1515,9 @@ class MessageLookup extends MessageLookupByLibrary {
     ),
     "xboardInvalidResponseFormat": MessageLookupByLibrary.simpleMessage(
       "服务器返回数据格式错误",
+    ),
+    "xboardInvalidWithdrawAmount": MessageLookupByLibrary.simpleMessage(
+      "请输入大于 0 且最多两位小数的提现金额",
     ),
     "xboardInviteCode": MessageLookupByLibrary.simpleMessage("邀请码"),
     "xboardJoinGroup": MessageLookupByLibrary.simpleMessage("加入群组"),
@@ -2402,6 +2410,8 @@ class MessageLookup extends MessageLookupByLibrary {
       "等待支付完成",
     ),
     "xboardWalletBalance": MessageLookupByLibrary.simpleMessage("钱包余额"),
+    "xboardWithdrawAmount": MessageLookupByLibrary.simpleMessage("提现金额"),
+    "xboardWithdrawAmountExceeded": m63,
     "xboardYearlyPayment": MessageLookupByLibrary.simpleMessage("年付"),
     "years": MessageLookupByLibrary.simpleMessage("年"),
     "zh_CN": MessageLookupByLibrary.simpleMessage("中文简体"),

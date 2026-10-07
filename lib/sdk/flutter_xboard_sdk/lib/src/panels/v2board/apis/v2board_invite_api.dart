@@ -116,11 +116,14 @@ class V2BoardInviteApi {
   }
 
   Future<ApiResponse<bool>> withdrawCommission({
+    // V2Board/Catboard expects integer cents, not yuan.
+    required int amount,
     required String method,
     required String account,
   }) async {
     try {
       final response = await _httpService.postRequest('/user/ticket/withdraw', {
+        'withdraw_amount': amount,
         'withdraw_method': method,
         'withdraw_account': account,
       });
