@@ -2,6 +2,11 @@ import 'package:flutter/material.dart';
 
 /// Shared by themed text and explicit dialog styles, which replace rather
 /// than merge the theme's body style in AlertDialog.
+///
+/// Keep emoji fonts out of ordinary text fallback. The bundled Twemoji font
+/// maps bare digits, # and * to empty keycap component glyphs; on OEM devices
+/// that select it as a fallback, numbers disappear. EmojiText selects Twemoji
+/// explicitly for emoji spans instead.
 const appFontFamilyFallback = [
   'Noto Sans CJK SC',
   'Noto Sans CJK',
@@ -11,7 +16,6 @@ const appFontFamilyFallback = [
   'Microsoft YaHei',
   'PingFang SC',
   'Arial Unicode MS',
-  'Twemoji',
   'sans-serif',
 ];
 
