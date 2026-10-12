@@ -138,6 +138,7 @@ class AppController {
   /// 解决非管理员运行时反复弹 UAC 的问题。
   bool _tunAdminDenied = true;
   bool _isCoreSwitching = false;
+  bool _isConnectionRepair = false;
   Future<void>? _configUpdateFuture;
   Future<void>? _disconnectCleanupFuture;
   String? _lastConnectivityFingerprint;
@@ -154,10 +155,12 @@ class AppController {
       throw StateError('Core operation already in progress');
     }
     _isCoreSwitching = true;
+    _isConnectionRepair = true;
     globalState.isCoreSwitchingNotifier.value = true;
     try {
       return await repair();
     } finally {
+      _isConnectionRepair = false;
       _isCoreSwitching = false;
       globalState.isCoreSwitchingNotifier.value = false;
       globalState.resetCoreSwitchStatus();
@@ -348,15 +351,33 @@ class AppController {
   restartCore({
     bool setupProfile = true,
     bool restoreStart = true,
+    bool requireHelper = false,
   }) async {
     commonPrint.log('restart core');
     final wasStart = _ref.read(runTimeProvider.notifier).isStart;
-    await clashService?.reStart();
-    await _initCore(setupProfile: setupProfile);
+    try {
+      await clashService?.reStart(requireHelper: requireHelper);
+      await _initCore(setupProfile: setupProfile);
+    } catch (_) {
+      if (system.isDesktop) {
+        await clashService?.shutdown();
+        _markDesktopCoreStopped();
+      }
+      rethrow;
+    }
     if (restoreStart && wasStart) {
       globalState.startTime = null; // 重启后计时归零
       await globalState.handleStart();
     }
+  }
+
+  void _markDesktopCoreStopped() {
+    globalState.startTime = null;
+    globalState.stopUpdateTasks();
+    _ref.read(runTimeProvider.notifier).value = null;
+    _ref.read(realTunEnableProvider.notifier).value = false;
+    // A failed TUN repair must not cause repeated authorization attempts.
+    _tunAdminDenied = true;
   }
 
   Future<bool> updateStatus(bool isStart) async {
@@ -379,6 +400,9 @@ class AppController {
         globalState.updateCoreSwitchStatus(
           CoreSwitchStage.coreConnecting,
         );
+        if (system.isDesktop && clashService?.isConnected != true) {
+          await restartCore(restoreStart: false);
+        }
         final started = await globalState.handleStart([
           updateRunTime,
           updateTraffic,
@@ -735,13 +759,21 @@ class AppController {
             globalState.updateCoreSwitchStatus(
               CoreSwitchStage.coreConnecting,
             );
-            await restartCore(setupProfile: false, restoreStart: false);
+            await restartCore(
+              setupProfile: false,
+              restoreStart: false,
+              requireHelper: Platform.isWindows,
+            );
             didRestartCore = true;
             break;
           case AuthorizeCode.none:
             // Helper may be ready while the old core is still unprivileged.
             if (Platform.isWindows) {
-              await restartCore(setupProfile: false, restoreStart: false);
+              await restartCore(
+                setupProfile: false,
+                restoreStart: false,
+                requireHelper: true,
+              );
               didRestartCore = true;
             }
             break;
@@ -796,7 +828,23 @@ class AppController {
     final params = await globalState.getSetupParams(
       pathConfig: realPatchConfig,
     );
-    final message = await clashCore.setupConfig(params);
+    late String message;
+    try {
+      message = await clashCore.setupConfig(
+        params,
+        timeout: _isConnectionRepair && system.isDesktop
+            ? const Duration(seconds: 30)
+            : const Duration(minutes: 2),
+      );
+    } on TimeoutException {
+      if (system.isDesktop) {
+        // Stop the stalled native operation; do not leave it applying a late
+        // configuration after the UI has released the operation lock.
+        await clashService?.shutdown();
+        _markDesktopCoreStopped();
+      }
+      rethrow;
+    }
     lastProfileModified = await _ref.read(
       currentProfileProvider.select(
         (state) => state?.profileLastModified,
@@ -814,6 +862,9 @@ class AppController {
       // and updateGroups via IPC will fail. Always parse YAML in Dart instead.
       await _applyProfileFromYaml();
       return;
+    }
+    if (system.isDesktop && clashService?.isConnected != true) {
+      await restartCore(setupProfile: false, restoreStart: false);
     }
     await clashCore.requestGc();
     await _setupClashConfig();
@@ -1274,10 +1325,12 @@ class AppController {
     if (!Platform.isIOS) {
       final isInit = await clashCore.isInit;
       if (!isInit) {
-        await clashCore.init();
-        await clashCore.setState(
+        final initialized = await clashCore.init();
+        if (!initialized) throw StateError('Core initialization failed');
+        final stateApplied = await clashCore.setState(
           globalState.getCoreState(),
         );
+        if (!stateApplied) throw StateError('Core state setup failed');
       }
     }
     if (setupProfile) {

@@ -1989,6 +1989,9 @@ class MessageLookup extends MessageLookupByLibrary {
     "xboardProxyRepairPortUnavailable": MessageLookupByLibrary.simpleMessage(
       "本地代理端口未监听，已停止残留系统代理，请重新连接。",
     ),
+    "xboardProxyRepairTimeout": MessageLookupByLibrary.simpleMessage(
+      "连接修复超时，请重新连接；如仍失败，请复制运行日志排查。",
+    ),
     "xboardProxyRepairVerifyFailed": MessageLookupByLibrary.simpleMessage(
       "修复后回读验证失败，系统代理 IP 或端口仍不匹配。",
     ),

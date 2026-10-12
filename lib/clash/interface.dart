@@ -44,7 +44,10 @@ mixin ClashInterface {
 
   FutureOr<String> updateConfig(UpdateParams updateParams);
 
-  FutureOr<String> setupConfig(SetupParams setupParams);
+  FutureOr<String> setupConfig(
+    SetupParams setupParams, {
+    Duration timeout = const Duration(minutes: 2),
+  });
 
   FutureOr<Map> getProxies();
 
@@ -262,12 +265,18 @@ abstract class ClashHandlerInterface with ClashInterface {
   }
 
   @override
-  Future<String> setupConfig(SetupParams setupParams) async {
+  Future<String> setupConfig(
+    SetupParams setupParams, {
+    Duration timeout = const Duration(minutes: 2),
+  }) async {
     final data = await Isolate.run(() => json.encode(setupParams));
     return await invoke<String>(
       method: ActionMethod.setupConfig,
       data: data,
-      timeout: Duration(minutes: 2),
+      timeout: timeout,
+      onTimeout: () => throw TimeoutException(
+        'Core configuration was not acknowledged', timeout,
+      ),
     );
   }
 

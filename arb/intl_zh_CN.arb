@@ -1617,6 +1617,7 @@
   "xboardProxyRepairCoreNotRunning": "代理核心未运行，已停止残留系统代理。请先连接后再执行一键修复。",
   "xboardProxyRepairPortUnavailable": "本地代理端口未监听，已停止残留系统代理，请重新连接。",
   "xboardProxyRepairWriteFailed": "写入设备系统代理设置失败。",
+  "xboardProxyRepairTimeout": "连接修复超时，请重新连接；如仍失败，请复制运行日志排查。",
   "xboardProxyRepairVerifyFailed": "修复后回读验证失败，系统代理 IP 或端口仍不匹配。",
   "xboardServiceOfflineCacheMode": "离线缓存模式",
   "xboardServiceNoNetwork": "本地网络不可用",

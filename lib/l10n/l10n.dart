@@ -12225,6 +12225,16 @@ class AppLocalizations {
     );
   }
 
+  /// `Connection repair timed out. Reconnect; if it still fails, copy the runtime logs for diagnosis.`
+  String get xboardProxyRepairTimeout {
+    return Intl.message(
+      'Connection repair timed out. Reconnect; if it still fails, copy the runtime logs for diagnosis.',
+      name: 'xboardProxyRepairTimeout',
+      desc: '',
+      args: [],
+    );
+  }
+
   /// `System proxy verification failed after repair; the IP or port still does not match.`
   String get xboardProxyRepairVerifyFailed {
     return Intl.message(

@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:io';
 
 import 'package:fl_clash/common/common.dart';
@@ -455,7 +456,9 @@ Future<void> showConnectionRepair(
       } catch (error) {
         commonPrint.log('[ConnectionHealth] repair failed id=$id '
             'elapsedMs=${elapsed.elapsedMilliseconds}: $error');
-        return l10n.xboardOperationFailed;
+        return error is TimeoutException
+            ? l10n.xboardProxyRepairTimeout
+            : l10n.xboardOperationFailed;
       } finally {
         if (repairOperation == null) await recordState('after');
       }

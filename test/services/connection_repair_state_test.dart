@@ -8,7 +8,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
-  for (final failure in [false, true]) {
+  for (final failure in ['none', 'error', 'timeout']) {
     testWidgets(
         'repair restores idle status after completion (failure=$failure)',
         (tester) async {
@@ -21,11 +21,18 @@ void main() {
       ))));
       final gate = Completer<void>();
       final repair = controller.runConnectionRepair(() async {
-        globalState.updateCoreSwitchStatus(CoreSwitchStage.checkingHelper);
+        globalState.updateCoreSwitchStatus(CoreSwitchStage.coreConnecting);
         await gate.future;
-        if (failure) throw StateError('Helper unavailable');
+        if (failure == 'error') throw StateError('Helper unavailable');
+        if (failure == 'timeout') {
+          throw TimeoutException('Core did not respond');
+        }
       });
-      final checked = failure ? expectLater(repair, throwsStateError) : repair;
+      final checked = switch (failure) {
+        'error' => expectLater(repair, throwsStateError),
+        'timeout' => expectLater(repair, throwsA(isA<TimeoutException>())),
+        _ => repair,
+      };
       expect(controller.isCoreSwitching, isTrue);
       expect(globalState.coreSwitchStatusNotifier.value.isBusy, isTrue);
       // Do not start a second repair or race a connect/disconnect operation.

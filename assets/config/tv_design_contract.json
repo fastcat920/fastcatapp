@@ -1163,6 +1163,7 @@
     "这是一条消息。": "This is a message.",
     "远程": "Remote",
     "连接中...": "Connecting...",
+    "连接修复超时，请重新连接；如仍失败，请复制运行日志排查。": "Connection repair timed out. Reconnect; if it still fails, copy the runtime logs for diagnosis.",
     "连接健康": "Connection Health",
     "连接全球优质节点": "Connect to global quality nodes",
     "连接失败": "Connection failed",

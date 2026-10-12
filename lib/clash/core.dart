@@ -112,8 +112,11 @@ class ClashCore {
         data: json.encode({'log-level': level.name}),
       );
 
-  Future<String> setupConfig(SetupParams setupParams) async {
-    return await clashInterface.setupConfig(setupParams);
+  Future<String> setupConfig(
+    SetupParams setupParams, {
+    Duration timeout = const Duration(minutes: 2),
+  }) async {
+    return await clashInterface.setupConfig(setupParams, timeout: timeout);
   }
 
   Future<List<Group>> getProxiesGroups() async {

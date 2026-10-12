@@ -2724,6 +2724,9 @@ class MessageLookup extends MessageLookupByLibrary {
     "xboardProxyRepairPortUnavailable": MessageLookupByLibrary.simpleMessage(
       "The local proxy port is not listening. Its stale system proxy has been stopped; reconnect to continue.",
     ),
+    "xboardProxyRepairTimeout": MessageLookupByLibrary.simpleMessage(
+      "Connection repair timed out. Reconnect; if it still fails, copy the runtime logs for diagnosis.",
+    ),
     "xboardProxyRepairVerifyFailed": MessageLookupByLibrary.simpleMessage(
       "System proxy verification failed after repair; the IP or port still does not match.",
     ),
