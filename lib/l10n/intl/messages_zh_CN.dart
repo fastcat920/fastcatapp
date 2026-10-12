@@ -1692,6 +1692,13 @@ class MessageLookup extends MessageLookupByLibrary {
     ),
     "xboardNetworkDiagnosticsIpConnectivity":
         MessageLookupByLibrary.simpleMessage("IPv4 / IPv6 连通性"),
+    "xboardNetworkDiagnosticsLocalProxy": MessageLookupByLibrary.simpleMessage(
+      "实际代理链路（经本地代理端口）",
+    ),
+    "xboardNetworkDiagnosticsLocalProxyFailed":
+        MessageLookupByLibrary.simpleMessage(
+          "所选节点测试通过，但实际代理链路失败，请检查代理组实际选择后重试。",
+        ),
     "xboardNetworkDiagnosticsNetworkEthernet":
         MessageLookupByLibrary.simpleMessage("有线网络"),
     "xboardNetworkDiagnosticsNetworkMobile":
@@ -1976,6 +1983,9 @@ class MessageLookup extends MessageLookupByLibrary {
     "xboardProxyRepairCoreNotRunning": MessageLookupByLibrary.simpleMessage(
       "代理核心未运行，已停止残留系统代理。请先连接后再执行一键修复。",
     ),
+    "xboardProxyRepairHelperFailed": MessageLookupByLibrary.simpleMessage(
+      "TUN 修复失败：Helper 不可用或未获得授权，请检查权限和 Helper 服务状态。",
+    ),
     "xboardProxyRepairPortUnavailable": MessageLookupByLibrary.simpleMessage(
       "本地代理端口未监听，已停止残留系统代理，请重新连接。",
     ),
@@ -1984,6 +1994,9 @@ class MessageLookup extends MessageLookupByLibrary {
     ),
     "xboardProxyRepairWriteFailed": MessageLookupByLibrary.simpleMessage(
       "写入设备系统代理设置失败。",
+    ),
+    "xboardProxySelectionFailed": MessageLookupByLibrary.simpleMessage(
+      "节点选择未生效，请重新选择节点。",
     ),
     "xboardProxyStatusClientDisabled": MessageLookupByLibrary.simpleMessage(
       "客户端系统代理设置未开启",

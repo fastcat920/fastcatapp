@@ -2320,6 +2320,13 @@ class MessageLookup extends MessageLookupByLibrary {
     ),
     "xboardNetworkDiagnosticsIpConnectivity":
         MessageLookupByLibrary.simpleMessage("IPv4 / IPv6 connectivity"),
+    "xboardNetworkDiagnosticsLocalProxy": MessageLookupByLibrary.simpleMessage(
+      "Actual proxy route (via local proxy port)",
+    ),
+    "xboardNetworkDiagnosticsLocalProxyFailed":
+        MessageLookupByLibrary.simpleMessage(
+          "The selected node passed, but the actual local proxy route failed. Check the active proxy group selection and try again.",
+        ),
     "xboardNetworkDiagnosticsNetworkEthernet":
         MessageLookupByLibrary.simpleMessage("Ethernet"),
     "xboardNetworkDiagnosticsNetworkMobile":
@@ -2711,6 +2718,9 @@ class MessageLookup extends MessageLookupByLibrary {
     "xboardProxyRepairCoreNotRunning": MessageLookupByLibrary.simpleMessage(
       "The proxy core is not running and its stale system proxy has been stopped. Connect first, then run one-click repair.",
     ),
+    "xboardProxyRepairHelperFailed": MessageLookupByLibrary.simpleMessage(
+      "TUN repair failed: Helper is unavailable or authorization was denied. Please check permissions and Helper service status.",
+    ),
     "xboardProxyRepairPortUnavailable": MessageLookupByLibrary.simpleMessage(
       "The local proxy port is not listening. Its stale system proxy has been stopped; reconnect to continue.",
     ),
@@ -2719,6 +2729,9 @@ class MessageLookup extends MessageLookupByLibrary {
     ),
     "xboardProxyRepairWriteFailed": MessageLookupByLibrary.simpleMessage(
       "Failed to write the device system proxy settings.",
+    ),
+    "xboardProxySelectionFailed": MessageLookupByLibrary.simpleMessage(
+      "Node selection was not applied. Please select the node again.",
     ),
     "xboardProxyStatusClientDisabled": MessageLookupByLibrary.simpleMessage(
       "The client system proxy setting is not enabled",

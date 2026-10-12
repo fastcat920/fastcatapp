@@ -1,4 +1,8 @@
 {
+  "xboardProxySelectionFailed": "Node selection was not applied. Please select the node again.",
+  "xboardProxyRepairHelperFailed": "TUN repair failed: Helper is unavailable or authorization was denied. Please check permissions and Helper service status.",
+  "xboardNetworkDiagnosticsLocalProxy": "Actual proxy route (via local proxy port)",
+  "xboardNetworkDiagnosticsLocalProxyFailed": "The selected node passed, but the actual local proxy route failed. Check the active proxy group selection and try again.",
   "rule": "Smart Routing",
   "global": "Global Proxy",
   "direct": "Direct",

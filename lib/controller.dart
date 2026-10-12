@@ -12,6 +12,8 @@ import 'package:fl_clash/providers/providers.dart';
 import 'package:fl_clash/services/app_exit_service.dart';
 import 'package:fl_clash/services/app_profile_controller.dart';
 import 'package:fl_clash/services/core_switch_status.dart';
+import 'package:fl_clash/services/proxy_selection_sync.dart';
+import 'package:fl_clash/xboard/utils/xboard_notification.dart';
 import 'package:fl_clash/state.dart';
 import 'package:fl_clash/widgets/dialog.dart';
 import 'package:fl_clash/xboard/features/auth/services/device_heartbeat_service.dart';
@@ -146,6 +148,41 @@ class AppController {
   bool _isExiting = false;
 
   bool get isCoreSwitching => _isCoreSwitching;
+
+  Future<T> runConnectionRepair<T>(Future<T> Function() repair) async {
+    if (_isCoreSwitching) {
+      throw StateError('Core operation already in progress');
+    }
+    _isCoreSwitching = true;
+    globalState.isCoreSwitchingNotifier.value = true;
+    try {
+      return await repair();
+    } finally {
+      _isCoreSwitching = false;
+      globalState.isCoreSwitchingNotifier.value = false;
+      globalState.resetCoreSwitchStatus();
+    }
+  }
+
+  late final _proxySelection = ProxySelectionSync(
+    readGroups: () async => await clashCore.getProxiesGroups(),
+    writeSelection: (group, node) async => await clashCore.changeProxy(
+      ChangeProxyParams(groupName: group, proxyName: node),
+    ),
+    publishGroups: (groups) =>
+        _ref.read(groupsProvider.notifier).value = groups,
+  );
+
+  Future<void> synchronizeProxySelection() async {
+    final mode = _ref.read(patchClashConfigProvider).mode;
+    if (mode == Mode.direct) return;
+    final groups = getCurrentGroups();
+    await _proxySelection.synchronize(
+      saved: Map<String, String>.from(
+          _ref.read(currentProfileProvider)?.selectedMap ?? {}),
+      activeGroup: mode == Mode.global ? 'GLOBAL' : groups.firstOrNull?.name,
+    );
+  }
 
   /// 订阅导入流程正在执行 applyProfile 时为 true，
   /// 防止 ClashManager 的 needSetupProvider 监听器重复触发 handleChangeProfile，
@@ -282,25 +319,29 @@ class AppController {
   changeProxyDebounce(String groupName, String proxyName) {
     debouncer.call(FunctionTag.changeProxy,
         (String groupName, String proxyName) async {
-      if (Platform.isIOS) {
-        // iOS: selection already saved locally by updateCurrentSelectedMap().
-        // If VPN is connected, tell mihomo to switch proxy but do NOT call
-        // updateGroups() — IPC getProxies can return empty and wipe the list.
-        if (globalState.isStart) {
-          try {
+      try {
+        if (Platform.isIOS) {
+          // iOS: selection already saved locally by updateCurrentSelectedMap().
+          // If VPN is connected, tell mihomo to switch proxy but do NOT call
+          // updateGroups() — IPC getProxies can return empty and wipe the list.
+          if (globalState.isStart) {
             await changeProxy(
               groupName: groupName,
               proxyName: proxyName,
             );
-          } catch (_) {}
+          }
+          return;
         }
-        return;
+        await changeProxy(
+          groupName: groupName,
+          proxyName: proxyName,
+        );
+        await updateGroups();
+      } catch (error) {
+        commonPrint.log('[ProxySelection] failed: $error');
+        XBoardNotification.showError(
+            appLocalizations.xboardProxySelectionFailed);
       }
-      await changeProxy(
-        groupName: groupName,
-        proxyName: proxyName,
-      );
-      await updateGroups();
     }, args: [groupName, proxyName]);
   }
 
@@ -365,9 +406,8 @@ class AppController {
         }
         // 桌面/Android 的核心已经成功启动时，UI 节点状态仍可能因冷启动、
         // 订阅下载失败而为空。此时无论配置修改时间是否变化，都从核心恢复。
-        if (_ref.read(groupsProvider).isEmpty) {
-          await updateGroups();
-        }
+        await updateGroups();
+        await synchronizeProxySelection();
         final currentLastModified =
             await _ref.read(currentProfileProvider)?.profileLastModified;
         if (currentLastModified == null || lastProfileModified == null) {
@@ -632,6 +672,7 @@ class AppController {
     } finally {
       _isCoreSwitching = false;
       globalState.isCoreSwitchingNotifier.value = false;
+      globalState.resetCoreSwitchStatus();
     }
   }
 
@@ -698,6 +739,11 @@ class AppController {
             didRestartCore = true;
             break;
           case AuthorizeCode.none:
+            // Helper may be ready while the old core is still unprivileged.
+            if (Platform.isWindows) {
+              await restartCore(setupProfile: false, restoreStart: false);
+              didRestartCore = true;
+            }
             break;
           case AuthorizeCode.error:
             _tunAdminDenied = true;
@@ -772,6 +818,7 @@ class AppController {
     await clashCore.requestGc();
     await _setupClashConfig();
     await Future.wait<void>([updateGroups(), updateProviders()]);
+    await synchronizeProxySelection();
   }
 
   /// iOS/fallback: parse profile YAML directly in Dart to build Groups.
@@ -934,8 +981,7 @@ class AppController {
 
       final existing = _ref.read(groupsProvider);
       if (groups.isNotEmpty || existing.isEmpty) {
-        final corrected = _correctGroupNowValues(groups);
-        _ref.read(groupsProvider.notifier).value = corrected;
+        _ref.read(groupsProvider.notifier).value = groups;
       }
     } catch (e) {
       commonPrint.log('_applyProfileFromYaml error: $e');
@@ -965,33 +1011,13 @@ class AppController {
         );
       }
       if (newGroups.isNotEmpty) {
-        final correctedGroups = _correctGroupNowValues(newGroups);
-        _ref.read(groupsProvider.notifier).value = correctedGroups;
-        _correctDirectNodes();
+        _ref.read(groupsProvider.notifier).value = newGroups;
       }
-      // Re-apply saved proxy selections
-      final profile = _ref.read(currentProfileProvider);
-      if (profile != null) {
-        for (final entry in profile.selectedMap.entries) {
-          try {
-            await clashCore.changeProxy(
-              ChangeProxyParams(
-                groupName: entry.key,
-                proxyName: entry.value,
-              ),
-            );
-          } catch (_) {}
-        }
-        // Refresh groups again to get updated "now" values
-        final refreshed = await clashCore.getProxiesGroups();
-        if (refreshed.isNotEmpty) {
-          final correctedRefreshed = _correctGroupNowValues(refreshed);
-          _ref.read(groupsProvider.notifier).value = correctedRefreshed;
-          _correctDirectNodes();
-        }
-      }
+      // Restore only valid saved selections and verify the live readback.
+      await synchronizeProxySelection();
     } catch (e) {
       commonPrint.log('iOS _refreshGroupsAfterConnect error: $e');
+      XBoardNotification.showError(appLocalizations.xboardProxySelectionFailed);
     }
   }
 
@@ -1107,10 +1133,8 @@ class AppController {
         await _applyProfileFromYaml();
         return;
       }
-      // 写入前修正 now: 避免 UI 短暂显示 DIRECT
-      final correctedGroups = _correctGroupNowValues(newGroups);
-      _ref.read(groupsProvider.notifier).value = correctedGroups;
-      _correctDirectNodes();
+      // Preserve the core's actual selection, including DIRECT/REJECT.
+      _ref.read(groupsProvider.notifier).value = newGroups;
     } catch (e) {
       commonPrint.log('updateGroups error: $e');
       final existing = _ref.read(groupsProvider);
@@ -1134,13 +1158,13 @@ class AppController {
     required String groupName,
     required String proxyName,
   }) async {
+    if (Platform.isIOS && !globalState.isStart) {
+      updateCurrentSelectedMap(groupName, proxyName);
+      return;
+    }
     unawaited(XBoardDeviceHeartbeatService.markActive(reason: 'change_proxy'));
-    await clashCore.changeProxy(
-      ChangeProxyParams(
-        groupName: groupName,
-        proxyName: proxyName,
-      ),
-    );
+    await _proxySelection.select(groupName, proxyName);
+    updateCurrentSelectedMap(groupName, proxyName);
     if (_ref.read(appSettingProvider).closeConnections) {
       await clashCore.closeConnections();
     }
@@ -1608,87 +1632,15 @@ class AppController {
         );
     if (mode == Mode.global) {
       updateCurrentGroupName(GroupName.GLOBAL.name);
-      // 同步修正 GLOBAL 默认节点，避免 UI 先显示错误节点再跳回自动选择。
-      _correctGlobalDefaultNode();
+    }
+    if (mode != Mode.direct && (!Platform.isIOS || globalState.isStart)) {
+      unawaited(synchronizeProxySelection().catchError((Object error) {
+        commonPrint.log('[ProxySelection] mode sync failed: $error');
+        XBoardNotification.showError(
+            appLocalizations.xboardProxySelectionFailed);
+      }));
     }
     addCheckIpNumDebounce();
-  }
-
-  /// 切换到全局模式时，如果 GLOBAL 组的当前选中是 DIRECT（已被隐藏），
-  /// 自动切换到第一个有效代理（通常是 URLTest 自动选择组）。
-  void _correctGlobalDefaultNode() {
-    // 读取已排序/修正的显示用分组（URLTest/自动选择排在前面），
-    // 而非原始 Clash 分组（其中线路节点可能排在 URLTest 之前）。
-    final displayGroups = _ref.read(currentGroupsStateProvider).value;
-    final globalGroup = displayGroups.getGroup(GroupName.GLOBAL.name);
-    if (globalGroup == null || globalGroup.all.isEmpty) return;
-    final correctedNow = globalGroup.now ?? '';
-    if (correctedNow.isEmpty) return;
-    // 检查原始 Clash 数据中 GLOBAL 的 now 是否已是修正后的值
-    final rawGroups = _ref.read(groupsProvider);
-    final rawGlobal = rawGroups.getGroup(GroupName.GLOBAL.name);
-    if (rawGlobal == null) return;
-    if (rawGlobal.now == correctedNow) return;
-    // 将修正后的选择（优先 URLTest 自动选择）同步到 Clash
-    changeProxyDebounce(GroupName.GLOBAL.name, correctedNow);
-    updateCurrentSelectedMap(GroupName.GLOBAL.name, correctedNow);
-  }
-
-  /// 在写入 groupsProvider 之前修正所有分组的 now 值，
-  /// 将 DIRECT/REJECT 替换为第一个有效代理，优先 URLTest/Fallback 计算组。
-  List<Group> _correctGroupNowValues(List<Group> groups) {
-    return groups.map((group) {
-      final nowValue = group.now ?? '';
-      if (nowValue.isEmpty) return group;
-      if (nowValue == UsedProxy.DIRECT.name ||
-          nowValue == UsedProxy.REJECT.name) {
-        final validProxies = group.all
-            .where((p) =>
-                p.name != UsedProxy.DIRECT.name &&
-                p.name != UsedProxy.REJECT.name)
-            .toList();
-        if (validProxies.isEmpty) return group;
-        // 优先选择 URLTest/Fallback 计算组（如自动选择、故障转移）
-        final computedProxy = validProxies.cast<Proxy?>().firstWhere(
-              (p) => groups
-                  .any((g) => g.name == p!.name && g.type.isComputedSelected),
-              orElse: () => null,
-            );
-        return group.copyWith(now: (computedProxy ?? validProxies.first).name);
-      }
-      return group;
-    }).toList();
-  }
-
-  /// 修正所有可见分组中 now=DIRECT/REJECT 的情况。
-  /// 注意：GLOBAL 组由 _correctGlobalDefaultNode 单独处理，
-  /// 以使用排序后的代理列表（URLTest 优先）。
-  void _correctDirectNodes() {
-    final groups = _ref.read(groupsProvider);
-    for (final group in groups) {
-      if (group.hidden == true) continue;
-      if (group.name == GroupName.GLOBAL.name) continue;
-      final nowValue = group.now ?? '';
-      if (nowValue.isEmpty) continue;
-      if (nowValue == UsedProxy.DIRECT.name ||
-          nowValue == UsedProxy.REJECT.name) {
-        final validProxies = group.all
-            .where((p) =>
-                p.name != UsedProxy.DIRECT.name &&
-                p.name != UsedProxy.REJECT.name)
-            .toList();
-        if (validProxies.isEmpty) continue;
-        // 优先选择 URLTest/Fallback 计算组（如自动选择、故障转移）
-        final computedProxy = validProxies.cast<Proxy?>().firstWhere(
-              (p) => groups
-                  .any((g) => g.name == p!.name && g.type.isComputedSelected),
-              orElse: () => null,
-            );
-        final proxyName = (computedProxy ?? validProxies.first).name;
-        changeProxyDebounce(group.name, proxyName);
-        updateCurrentSelectedMap(group.name, proxyName);
-      }
-    }
   }
 
   updateAutoLaunch() {

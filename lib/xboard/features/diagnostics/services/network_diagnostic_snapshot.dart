@@ -41,6 +41,7 @@ class NetworkDiagnosticSnapshot {
     required this.directResults,
     required this.proxyResults,
     required this.nodeResult,
+    this.localProxyResults = const [],
   });
 
   final DateTime generatedAt;
@@ -57,6 +58,7 @@ class NetworkDiagnosticSnapshot {
   final List<NetworkDiagnosticItem> directResults;
   final List<NetworkDiagnosticItem> proxyResults;
   final Map<String, dynamic> nodeResult;
+  final List<NetworkDiagnosticItem> localProxyResults;
 }
 
 enum NetworkDiagnosticSeverity { healthy, warning, error }
@@ -78,6 +80,7 @@ enum NetworkDiagnosticReason {
   proxy,
   proxyWorking,
   healthy,
+  localProxy,
 }
 
 class NetworkDiagnosticDecision {
@@ -99,6 +102,7 @@ NetworkDiagnosticDecision evaluateNetworkDiagnostic({
   required bool diagnosticUnavailable,
   required String? failureStage,
   required String? tcpStatus,
+  bool? localProxyOk,
 }) {
   const error = NetworkDiagnosticSeverity.error;
 
@@ -115,6 +119,10 @@ NetworkDiagnosticDecision evaluateNetworkDiagnostic({
   // network filters a probe target, and must not be reported as total loss of
   // connectivity.
   if (connected && proxyOk) {
+    if (localProxyOk == false) {
+      return const NetworkDiagnosticDecision(
+          NetworkDiagnosticReason.localProxy, error);
+    }
     if (!dnsOk || !directAllOk || !ipOk) {
       return const NetworkDiagnosticDecision(
         NetworkDiagnosticReason.proxyWorking,

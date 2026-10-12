@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:fl_clash/common/common.dart';
 import 'package:fl_clash/common/single_flight.dart';
+import 'package:fl_clash/services/connection_repair_helper.dart';
 import 'package:fl_clash/enum/enum.dart';
 import 'package:fl_clash/l10n/l10n.dart';
 import 'package:fl_clash/models/models.dart';
@@ -339,11 +340,17 @@ Future<void> showConnectionRepair(
 
   Future<String?> runRepair() async {
     await recordState('before');
-    if (Platform.isWindows) {
-      step('step=windows_helper');
-      await windows?.registerService(forceRepair: true);
-      container.invalidate(_windowsHelperStatusProvider);
-    }
+    final helperReady = await prepareConnectionRepairHelper(
+      isWindows: Platform.isWindows,
+      tunRequested: container.read(patchClashConfigProvider).tun.enable,
+      ensureHelper: () async {
+        step('step=windows_helper');
+        final ready = await windows?.registerService(reportProgress: false);
+        container.invalidate(_windowsHelperStatusProvider);
+        return ready == true;
+      },
+    );
+    if (!helperReady) return l10n.xboardProxyRepairHelperFailed;
     if (Platform.isWindows) {
       step('step=flush_dns');
       await Process.run('ipconfig', ['/flushdns']);
@@ -360,6 +367,11 @@ Future<void> showConnectionRepair(
         step('step=retry_tun_authorization');
       }
       await globalState.appController.applyProfile(silence: true);
+      if (Platform.isWindows &&
+          container.read(patchClashConfigProvider).tun.enable &&
+          !container.read(realTunEnableProvider)) {
+        return l10n.xboardProxyRepairHelperFailed;
+      }
     }
 
     final proxyState = container.read(proxyStateProvider);
@@ -434,7 +446,7 @@ Future<void> showConnectionRepair(
           'environment=${const String.fromEnvironment("APP_ENV", defaultValue: "stable")}');
       try {
         final error = await (repairOperation == null
-            ? runRepair()
+            ? globalState.appController.runConnectionRepair(runRepair)
             : repairOperation(container));
         commonPrint.log('[ConnectionHealth] repair completed id=$id '
             'success=${error == null} elapsedMs=${elapsed.elapsedMilliseconds}'

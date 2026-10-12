@@ -14,6 +14,7 @@ void main() {
     bool diagnosticUnavailable = false,
     String? failureStage,
     String? tcpStatus,
+    bool? localProxyOk,
   }) {
     return evaluateNetworkDiagnostic(
       networkDisconnected: networkDisconnected,
@@ -27,6 +28,7 @@ void main() {
       diagnosticUnavailable: diagnosticUnavailable,
       failureStage: failureStage,
       tcpStatus: tcpStatus,
+      localProxyOk: localProxyOk,
     );
   }
 
@@ -83,6 +85,15 @@ void main() {
 
     expect(result.reason, NetworkDiagnosticReason.healthy);
     expect(result.severity, NetworkDiagnosticSeverity.healthy);
+  });
+
+  test('successful node test does not hide failure of actual local proxy route',
+      () {
+    final result = evaluate(localProxyOk: false);
+    expect(result.reason, NetworkDiagnosticReason.localProxy);
+    expect(result.severity, NetworkDiagnosticSeverity.error);
+    expect(
+        evaluate(localProxyOk: true).reason, NetworkDiagnosticReason.healthy);
   });
 
   test('healthy base network without VPN is a warning', () {

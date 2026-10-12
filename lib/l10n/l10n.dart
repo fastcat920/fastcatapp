@@ -55,6 +55,46 @@ class AppLocalizations {
     return Localizations.of<AppLocalizations>(context, AppLocalizations);
   }
 
+  /// `Node selection was not applied. Please select the node again.`
+  String get xboardProxySelectionFailed {
+    return Intl.message(
+      'Node selection was not applied. Please select the node again.',
+      name: 'xboardProxySelectionFailed',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `TUN repair failed: Helper is unavailable or authorization was denied. Please check permissions and Helper service status.`
+  String get xboardProxyRepairHelperFailed {
+    return Intl.message(
+      'TUN repair failed: Helper is unavailable or authorization was denied. Please check permissions and Helper service status.',
+      name: 'xboardProxyRepairHelperFailed',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Actual proxy route (via local proxy port)`
+  String get xboardNetworkDiagnosticsLocalProxy {
+    return Intl.message(
+      'Actual proxy route (via local proxy port)',
+      name: 'xboardNetworkDiagnosticsLocalProxy',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `The selected node passed, but the actual local proxy route failed. Check the active proxy group selection and try again.`
+  String get xboardNetworkDiagnosticsLocalProxyFailed {
+    return Intl.message(
+      'The selected node passed, but the actual local proxy route failed. Check the active proxy group selection and try again.',
+      name: 'xboardNetworkDiagnosticsLocalProxyFailed',
+      desc: '',
+      args: [],
+    );
+  }
+
   /// `Smart Routing`
   String get rule {
     return Intl.message('Smart Routing', name: 'rule', desc: '', args: []);

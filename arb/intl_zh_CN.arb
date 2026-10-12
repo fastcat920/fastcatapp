@@ -1,4 +1,8 @@
 {
+  "xboardProxySelectionFailed": "节点选择未生效，请重新选择节点。",
+  "xboardProxyRepairHelperFailed": "TUN 修复失败：Helper 不可用或未获得授权，请检查权限和 Helper 服务状态。",
+  "xboardNetworkDiagnosticsLocalProxy": "实际代理链路（经本地代理端口）",
+  "xboardNetworkDiagnosticsLocalProxyFailed": "所选节点测试通过，但实际代理链路失败，请检查代理组实际选择后重试。",
   "rule": "智能分流",
   "global": "全局代理",
   "direct": "直连",

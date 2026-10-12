@@ -531,6 +531,11 @@ class DiagnosticBundleService {
       l10n.xboardNetworkDiagnosticsProxyHttps,
       snapshot.proxyResults,
     );
+    _writeNetworkItems(
+      buffer,
+      l10n.xboardNetworkDiagnosticsLocalProxy,
+      snapshot.localProxyResults,
+    );
   }
 
   static void _writeSection(
@@ -593,7 +598,8 @@ class DiagnosticBundleService {
       NetworkDiagnosticReason.protocol ||
       NetworkDiagnosticReason.udp ||
       NetworkDiagnosticReason.nodeUnknown ||
-      NetworkDiagnosticReason.proxy =>
+      NetworkDiagnosticReason.proxy ||
+      NetworkDiagnosticReason.localProxy =>
         l10n.xboardDiagnosticSuggestionNode,
       NetworkDiagnosticReason.disconnectedHealthy ||
       NetworkDiagnosticReason.proxyWorking =>

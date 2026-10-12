@@ -11,6 +11,7 @@ import 'package:fl_clash/xboard/features/nodes/utils/node_country_resolver.dart'
 import 'package:fl_clash/xboard/features/profile/providers/profile_import_provider.dart';
 import 'package:fl_clash/xboard/features/auth/providers/xboard_user_provider.dart';
 import 'package:fl_clash/xboard/features/shared/styles/styles.dart';
+import 'package:fl_clash/xboard/utils/xboard_notification.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -470,6 +471,12 @@ class _FastCatNodesPageState extends ConsumerState<FastCatNodesPage> {
           );
       ref.invalidate(mihomoGroupsProvider);
       if (mounted) Navigator.of(context).pop();
+    } catch (_) {
+      ref.invalidate(mihomoGroupsProvider);
+      if (mounted) {
+        XBoardNotification.showError(
+            AppLocalizations.of(context).xboardProxySelectionFailed);
+      }
     } finally {
       if (mounted) setState(() => _selecting = false);
     }
