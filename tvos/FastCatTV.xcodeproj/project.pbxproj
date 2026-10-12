@@ -341,7 +341,7 @@
 				CURRENT_PROJECT_VERSION = 1;
 				INFOPLIST_FILE = FastCatTV/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
-				MARKETING_VERSION = 3.6.0;
+				MARKETING_VERSION = 3.6.1;
 				PRODUCT_BUNDLE_IDENTIFIER = "$(FASTCAT_TV_BUNDLE_IDENTIFIER)";
 				PRODUCT_NAME = FastCat;
 				SDKROOT = appletvos;
@@ -481,7 +481,7 @@
 				"EXCLUDED_SOURCE_FILE_NAMES[sdk=appletvsimulator*]" = PacketTunnel.appex;
 				INFOPLIST_FILE = FastCatTV/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
-				MARKETING_VERSION = 3.6.0;
+				MARKETING_VERSION = 3.6.1;
 				PRODUCT_BUNDLE_IDENTIFIER = "$(FASTCAT_TV_BUNDLE_IDENTIFIER)";
 				PRODUCT_NAME = FastCat;
 				SDKROOT = appletvos;
@@ -504,7 +504,7 @@
 				);
 				INFOPLIST_FILE = PacketTunnel/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @executable_path/../../Frameworks";
-				MARKETING_VERSION = 3.6.0;
+				MARKETING_VERSION = 3.6.1;
 				OTHER_LDFLAGS = (
 					"$(inherited)",
 					"-lclash",
@@ -534,7 +534,7 @@
 				);
 				INFOPLIST_FILE = PacketTunnel/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @executable_path/../../Frameworks";
-				MARKETING_VERSION = 3.6.0;
+				MARKETING_VERSION = 3.6.1;
 				OTHER_LDFLAGS = (
 					"$(inherited)",
 					"-lclash",

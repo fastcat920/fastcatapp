@@ -60,7 +60,7 @@ project.build_configurations.each { |config| config.base_configuration_reference
 
 common = {
   'SWIFT_VERSION' => '5.0',
-  'MARKETING_VERSION' => '3.6.0',
+  'MARKETING_VERSION' => '3.6.1',
   'CURRENT_PROJECT_VERSION' => '1',
   'CODE_SIGN_STYLE' => 'Automatic',
   'ASSETCATALOG_COMPILER_APPICON_NAME' => 'AppIcon',
