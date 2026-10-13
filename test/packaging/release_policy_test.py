@@ -73,6 +73,17 @@ class ReleasePolicyTest(unittest.TestCase):
         self.assertEqual(setup.count("'FASTCAT_BUILD_COMMIT',"), 2)
         self.assertEqual(setup.count("'FASTCAT_BUILD_CHANNEL',"), 2)
 
+    def test_android_mobile_flavor_and_exact_outputs_match(self):
+        source = (ROOT / "scripts/package_apk.sh").read_text()
+        self.assertIn("--flavor mobile", source)
+        self.assertIn('create("mobile")', (ROOT / "android/app/build.gradle.kts").read_text())
+        self.assertIn('APK_DIR="build/app/outputs/flutter-apk"', source)
+        for abi in ("arm64-v8a", "armeabi-v7a"):
+            self.assertIn(f"app-{abi}-mobile-release.apk", source)
+        self.assertNotIn("head -1", source)
+        self.assertLess(source.index('if [ "$BUILD_EXIT" -ne 0 ]'), source.index('mkdir -p dist'))
+        self.assertLess(source.index('if [ ! -s "$apk" ]'), source.index('mkdir -p dist'))
+
     def test_version_check_rejects_stale_or_missing_file(self):
         with tempfile.TemporaryDirectory(prefix="fastcat-version-test-") as directory:
             fixture = Path(directory)
