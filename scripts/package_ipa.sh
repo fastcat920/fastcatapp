@@ -1,6 +1,7 @@
 #!/bin/bash
 set -euo pipefail
 cd "$(dirname "$0")/.."
+python3 scripts/check_release_readiness.py ios
 
 if [ -z "${XOR_KEY:-}" ]; then
   echo "Usage: XOR_KEY=<your_key> ./scripts/package_ipa.sh"
@@ -34,6 +35,8 @@ mkdir -p dist
 /usr/libexec/PlistBuddy -c "Set :CFBundleName ${APP_NAME_EN}" ios/Runner/Info.plist
 
 flutter build ipa --release --no-codesign \
+  --dart-define=FASTCAT_BUILD_COMMIT="${FASTCAT_BUILD_COMMIT:-}" \
+  --dart-define=FASTCAT_BUILD_CHANNEL="${FASTCAT_BUILD_CHANNEL:-local}" \
   --dart-define=XOR_KEY="${XOR_KEY}" \
   --dart-define=REMOTE_CONFIG_PUBLIC_KEY="${REMOTE_CONFIG_PUBLIC_KEY:-}" \
   --dart-define=FASTCAT_KEY_CURRENT_ID="${FASTCAT_KEY_CURRENT_ID}" \

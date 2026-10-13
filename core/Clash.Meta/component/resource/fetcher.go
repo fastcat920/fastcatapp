@@ -56,9 +56,13 @@ func (f *Fetcher[V]) UpdatedAt() time.Time {
 func (f *Fetcher[V]) Initial() (V, error) {
 	if stat, fErr := os.Stat(f.vehicle.Path()); fErr == nil {
 		// local file exists, use it first
-		buf, err := os.ReadFile(f.vehicle.Path())
+		buf, readErr := readProviderCache(f.vehicle.Path(), f.vehicle.Type() != P.File)
 		modTime := stat.ModTime()
-		contents, _, err := f.loadBuf(buf, utils.MakeHash(buf), false)
+		var contents V
+		err := readErr
+		if err == nil {
+			contents, _, err = f.loadBuf(buf, utils.MakeHash(buf), false)
+		}
 		f.updatedAt = modTime // reset updatedAt to file's modTime
 
 		if err == nil {

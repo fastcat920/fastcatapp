@@ -37,6 +37,8 @@ for attempt in 1 2 3; do
   flutter build apk --release \
     --split-per-abi \
     --target-platform android-arm64,android-arm \
+    --dart-define=FASTCAT_BUILD_COMMIT="${FASTCAT_BUILD_COMMIT:-}" \
+    --dart-define=FASTCAT_BUILD_CHANNEL="${FASTCAT_BUILD_CHANNEL:-local}" \
     --dart-define=XOR_KEY="${XOR_KEY}" \
     --dart-define=REMOTE_CONFIG_PUBLIC_KEY="${REMOTE_CONFIG_PUBLIC_KEY:-}" \
     --dart-define=FASTCAT_KEY_CURRENT_ID="${FASTCAT_KEY_CURRENT_ID}" \
@@ -57,6 +59,11 @@ for attempt in 1 2 3; do
     sleep "$wait_seconds"
   fi
 done
+
+if [ "$BUILD_EXIT" -ne 0 ]; then
+  echo "APK build failed; refusing to publish partial output from a failed attempt."
+  exit "$BUILD_EXIT"
+fi
 
 # List all APK files in the build tree for diagnostics
 echo "→ APK files produced:"
@@ -82,16 +89,12 @@ if [ -n "${V7A_SRC:-}" ] && [ -f "$V7A_SRC" ]; then
   copied=$((copied + 1))
 fi
 
-if [ "$copied" -gt 0 ]; then
-  if [ "$BUILD_EXIT" -ne 0 ]; then
-    echo "i Flutter CLI reported an error, but APKs were produced successfully."
-  fi
-else
+if [ "$copied" -ne 2 ]; then
   echo "→ Re-running Gradle with stacktrace for diagnostics..."
   (
     cd android
     ./gradlew assembleMobileRelease --stacktrace --no-daemon
   ) || true
-  echo "✗ APKs not found after build"
-  exit "${BUILD_EXIT:-1}"
+  echo "✗ Both Android ARM64 and ARMv7 APKs are required"
+  exit 1
 fi

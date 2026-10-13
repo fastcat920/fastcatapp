@@ -5,10 +5,15 @@ import Foundation
 struct TVBuildConfiguration {
   enum ConfigurationError: LocalizedError {
     case missing(String)
+    case invalidRuntimeConfiguration
 
     var errorDescription: String? {
+      let preferred = UserDefaults.standard.string(forKey: "fastcat.tv.language") ?? "system"
+      let chinese = preferred == "zh-CN" || (preferred == "system" && Locale.preferredLanguages.first?.lowercased().hasPrefix("zh") == true)
       switch self {
-      case .missing(let name): return "构建配置缺少 \(name)"
+      case .missing(let name): return chinese ? "构建配置缺少 \(name)" : "Missing build configuration: \(name)"
+      case .invalidRuntimeConfiguration:
+        return chinese ? "订阅包含无效的运行配置，请刷新订阅" : "The subscription contains invalid runtime settings. Please refresh it."
       }
     }
   }
@@ -19,6 +24,27 @@ struct TVBuildConfiguration {
   let subscriptionKeys: [String: Data]
   let requireSubscriptionEncryption: Bool
   let fallbackAPIBaseURL: URL?
+  var currentSubscriptionKeyID: String = ""
+
+  /// Only the transient app → extension payload contains these cache keys.
+  /// Never pass this result to the subscription cache or VPN preferences.
+  func runtimeConfiguration(_ yaml: String) throws -> String {
+    guard !currentSubscriptionKeyID.isEmpty,
+          subscriptionKeys[currentSubscriptionKeyID]?.count == 32 else {
+      throw ConfigurationError.missing("FastCatKeyCurrent")
+    }
+    let value: [String: Any] = [
+      "currentKeyId": currentSubscriptionKeyID,
+      "keys": subscriptionKeys.mapValues { $0.base64EncodedString() },
+    ]
+    let json = try JSONSerialization.data(withJSONObject: value, options: [.sortedKeys])
+    // Reject a remote attempt to supply the client-only control field. Do not
+    // retain a second ambiguous YAML key or silently trust downloaded key data.
+    guard !yaml.components(separatedBy: .newlines).contains(where: {
+      $0.hasPrefix("fastcat-provider-cache:") || $0.hasPrefix("\"fastcat-provider-cache\":") || $0.hasPrefix("'fastcat-provider-cache':")
+    }) else { throw ConfigurationError.invalidRuntimeConfiguration }
+    return yaml + "\nfastcat-provider-cache: " + String(decoding: json, as: UTF8.self) + "\n"
+  }
 
   static func load(bundle: Bundle = .main) throws -> TVBuildConfiguration {
     let xorKey = try requiredString("FastCatXORKey", bundle: bundle)
@@ -38,7 +64,8 @@ struct TVBuildConfiguration {
       subscriptionFlag: string("FastCatSubscriptionFlag", bundle: bundle).nonEmpty ?? "fastcat-v1",
       subscriptionKeys: keys,
       requireSubscriptionEncryption: bool("FastCatRequireEncryption", bundle: bundle, default: true),
-      fallbackAPIBaseURL: fallback.contains("$") ? nil : URL(string: fallback)
+      fallbackAPIBaseURL: fallback.contains("$") ? nil : URL(string: fallback),
+      currentSubscriptionKeyID: currentID
     )
   }
 

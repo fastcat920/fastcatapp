@@ -1214,6 +1214,12 @@ class MessageLookup extends MessageLookupByLibrary {
     "xboardCustomRechargeAmount": MessageLookupByLibrary.simpleMessage(
       "自定义充值金额",
     ),
+    "xboardCustomerServiceLoadTimeout": MessageLookupByLibrary.simpleMessage(
+      "加载超时，请检查网络后重试",
+    ),
+    "xboardCustomerServiceNotConfigured": MessageLookupByLibrary.simpleMessage(
+      "未配置在线客服",
+    ),
     "xboardDays": MessageLookupByLibrary.simpleMessage("天"),
     "xboardDeductedBalance": MessageLookupByLibrary.simpleMessage("已抵扣余额"),
     "xboardDeductibleBalance": MessageLookupByLibrary.simpleMessage("可使用余额"),
@@ -1227,6 +1233,9 @@ class MessageLookup extends MessageLookupByLibrary {
       "当前设备",
     ),
     "xboardDeviceExpired": MessageLookupByLibrary.simpleMessage("已过期"),
+    "xboardDeviceGatewayRelogin": MessageLookupByLibrary.simpleMessage(
+      "设备登录会话已变化，请重新登录",
+    ),
     "xboardDeviceHealth": MessageLookupByLibrary.simpleMessage("设备状态"),
     "xboardDeviceHistory": MessageLookupByLibrary.simpleMessage("历史设备"),
     "xboardDeviceHistoryHint": MessageLookupByLibrary.simpleMessage(
@@ -1602,6 +1611,14 @@ class MessageLookup extends MessageLookupByLibrary {
     "xboardNetworkDiagnosticsConclusion": MessageLookupByLibrary.simpleMessage(
       "诊断结论",
     ),
+    "xboardNetworkDiagnosticsConclusionConfiguration":
+        MessageLookupByLibrary.simpleMessage(
+          "代理配置尚未成功应用，或当前节点不在内核中。请先重新加载订阅或配置；这不代表本地网络或节点 DNS 故障。",
+        ),
+    "xboardNetworkDiagnosticsConclusionCoreUnavailable":
+        MessageLookupByLibrary.simpleMessage(
+          "未获得可用的内核诊断结果。请先检查核心及配置状态，再重新检测；不能据此判断本地网络故障。",
+        ),
     "xboardNetworkDiagnosticsConclusionDisconnectedDns":
         MessageLookupByLibrary.simpleMessage(
           "VPN 尚未连接，且基础网络 DNS 结果异常；请先修复本地网络或 DNS，再诊断节点链路。",
@@ -1632,9 +1649,13 @@ class MessageLookup extends MessageLookupByLibrary {
         MessageLookupByLibrary.simpleMessage("当前代理节点或代理链路不可用。"),
     "xboardNetworkDiagnosticsConclusionProxyWorking":
         MessageLookupByLibrary.simpleMessage("代理链路正常，当前网络部分直连目标受限，不影响代理使用。"),
+    "xboardNetworkDiagnosticsConclusionRouteUncertain":
+        MessageLookupByLibrary.simpleMessage(
+          "本机基准与节点检测均未通过，但 VPN/TUN 可能影响系统路由；目前无法区分本地网络与代理链路故障。请先检查核心、配置和 TUN 状态。",
+        ),
     "xboardNetworkDiagnosticsConclusionTcp":
         MessageLookupByLibrary.simpleMessage(
-          "公网直连正常，但所选节点的 TCP 入口连接超时；该入口可能不可达或受到当前网络限制。",
+          "本机 HTTPS 基准可达，但所选节点的 TCP 入口连接超时；该入口可能不可达或受到当前网络限制。",
         ),
     "xboardNetworkDiagnosticsConclusionTcpRefused":
         MessageLookupByLibrary.simpleMessage("所选节点拒绝 TCP 连接，请检查服务器进程和监听端口。"),
@@ -1644,7 +1665,7 @@ class MessageLookup extends MessageLookupByLibrary {
         ),
     "xboardNetworkDiagnosticsConclusionUdp":
         MessageLookupByLibrary.simpleMessage(
-          "公网直连正常，但 UDP 节点测试超时；当前网络可能不支持或限制 UDP。",
+          "本机 HTTPS 基准可达，但 UDP 节点测试超时；当前网络可能不支持或限制 UDP。",
         ),
     "xboardNetworkDiagnosticsConnectFirst":
         MessageLookupByLibrary.simpleMessage("请先连接 VPN，再进行网络连通性诊断。"),
@@ -1659,13 +1680,13 @@ class MessageLookup extends MessageLookupByLibrary {
     ),
     "xboardNetworkDiagnosticsCoreUnavailable":
         MessageLookupByLibrary.simpleMessage(
-          "当前核心不支持分层诊断，请更新或完全重启客户端；下方 HTTPS 检测结果仍然有效。",
+          "未获得可用的内核分层诊断结果；未执行的项目已跳过，本机 HTTPS 结果单独展示。",
         ),
     "xboardNetworkDiagnosticsDescription": MessageLookupByLibrary.simpleMessage(
       "DNS 检测使用系统解析器；节点诊断会继续检测实际入口 DNS、TCP 或 UDP 传输、代理握手及 HTTP 连通性。",
     ),
     "xboardNetworkDiagnosticsDirectHttps": MessageLookupByLibrary.simpleMessage(
-      "本地直连 HTTPS（国内基准）",
+      "本机 HTTPS（不经内核测试接口）",
     ),
     "xboardNetworkDiagnosticsDisconnected":
         MessageLookupByLibrary.simpleMessage("未连接"),
@@ -1691,13 +1712,19 @@ class MessageLookup extends MessageLookupByLibrary {
       "HTTPS 连通性",
     ),
     "xboardNetworkDiagnosticsIpConnectivity":
-        MessageLookupByLibrary.simpleMessage("IPv4 / IPv6 连通性"),
+        MessageLookupByLibrary.simpleMessage("本机 IPv4 / IPv6（系统路由）"),
     "xboardNetworkDiagnosticsLocalProxy": MessageLookupByLibrary.simpleMessage(
       "实际代理链路（经本地代理端口）",
     ),
     "xboardNetworkDiagnosticsLocalProxyFailed":
         MessageLookupByLibrary.simpleMessage(
           "所选节点测试通过，但实际代理链路失败，请检查代理组实际选择后重试。",
+        ),
+    "xboardNetworkDiagnosticsNativeDirectDetail":
+        MessageLookupByLibrary.simpleMessage("本机请求，不使用内核测试接口；仍使用系统 DNS 和路由"),
+    "xboardNetworkDiagnosticsNativeTunDetail":
+        MessageLookupByLibrary.simpleMessage(
+          "本机请求，不使用内核测试接口；VPN/TUN 可能影响系统 DNS 和路由，不能单独代表物理网络",
         ),
     "xboardNetworkDiagnosticsNetworkEthernet":
         MessageLookupByLibrary.simpleMessage("有线网络"),
@@ -1753,6 +1780,8 @@ class MessageLookup extends MessageLookupByLibrary {
     "xboardNetworkDiagnosticsRunningTime": MessageLookupByLibrary.simpleMessage(
       "运行时间",
     ),
+    "xboardNetworkDiagnosticsSkippedPrerequisite":
+        MessageLookupByLibrary.simpleMessage("前置条件未满足，此项未执行"),
     "xboardNetworkDiagnosticsStart": MessageLookupByLibrary.simpleMessage(
       "开始诊断",
     ),
@@ -1893,6 +1922,9 @@ class MessageLookup extends MessageLookupByLibrary {
     "xboardPackageAmount": MessageLookupByLibrary.simpleMessage("套餐金额"),
     "xboardPassword": MessageLookupByLibrary.simpleMessage("密码"),
     "xboardPasswordChanged": MessageLookupByLibrary.simpleMessage("密码修改成功"),
+    "xboardPasswordChangedRememberFailed": MessageLookupByLibrary.simpleMessage(
+      "密码已修改，下次登录请手动输入新密码",
+    ),
     "xboardPayNow": MessageLookupByLibrary.simpleMessage("立即支付"),
     "xboardPayableAmount": MessageLookupByLibrary.simpleMessage("应付金额"),
     "xboardPaymentCancelled": MessageLookupByLibrary.simpleMessage("支付已取消"),
@@ -2117,6 +2149,9 @@ class MessageLookup extends MessageLookupByLibrary {
     ),
     "xboardResetTrafficConfirmContent": MessageLookupByLibrary.simpleMessage(
       "此操作将重置已使用的流量，但不会增加套餐时长，是否继续？",
+    ),
+    "xboardResetTrafficDescription": MessageLookupByLibrary.simpleMessage(
+      "重置当前套餐流量",
     ),
     "xboardResetTrafficInDays": m56,
     "xboardResetTrafficToday": MessageLookupByLibrary.simpleMessage(

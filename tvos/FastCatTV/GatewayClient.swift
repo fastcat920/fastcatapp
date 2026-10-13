@@ -6,12 +6,14 @@ struct QRLoginChallenge: Decodable {
   let pollToken: String
   let qrData: String
   let expiresAt: Date
+  let deliveryACK: Bool
 
   enum CodingKeys: String, CodingKey {
     case id
     case pollToken = "poll_token"
     case qrData = "qr_data"
     case expiresAt = "expires_at"
+    case deliveryACK = "delivery_ack"
   }
 
   init(from decoder: Decoder) throws {
@@ -19,15 +21,24 @@ struct QRLoginChallenge: Decodable {
     id = try values.decode(String.self, forKey: .id)
     pollToken = try values.decode(String.self, forKey: .pollToken)
     qrData = try values.decode(String.self, forKey: .qrData)
+    deliveryACK = (try? values.decode(Bool.self, forKey: .deliveryACK)) ?? false
     if let raw = try? values.decode(String.self, forKey: .expiresAt) {
       let formatter = ISO8601DateFormatter()
       let standard = formatter.date(from: raw)
       formatter.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
-      expiresAt = standard ?? formatter.date(from: raw) ?? Date().addingTimeInterval(120)
+      guard let expiry = standard ?? formatter.date(from: raw) else { throw GatewayClient.GatewayError.invalidResponse }
+      expiresAt = expiry
     } else if let seconds = values.flexibleDouble(forKey: .expiresAt) {
       expiresAt = Date(timeIntervalSince1970: seconds > 10_000_000_000 ? seconds / 1_000 : seconds)
     } else {
-      expiresAt = Date().addingTimeInterval(120)
+      throw GatewayClient.GatewayError.invalidResponse
+    }
+    let allowed = CharacterSet.alphanumerics.union(CharacterSet(charactersIn: "_-"))
+    guard !id.isEmpty, id.unicodeScalars.allSatisfy({ allowed.contains($0) }),
+          !pollToken.isEmpty, let qr = URLComponents(string: qrData),
+          qr.scheme == "fastcat", qr.host == "login", qr.path == "/qr",
+          qr.queryItems?.first(where: { $0.name == "challenge" })?.value == id else {
+      throw GatewayClient.GatewayError.invalidResponse
     }
   }
 }
@@ -35,6 +46,8 @@ struct QRLoginChallenge: Decodable {
 struct QRLoginResponse: Decodable {
   let status: String
   let login: LoginPayload?
+  let deliveryID: String?
+  enum CodingKeys: String, CodingKey { case status, login; case deliveryID = "delivery_id" }
   struct LoginPayload: Decodable {
     let authData: String?
     let token: String?
@@ -190,7 +203,7 @@ struct GatewayClient {
   static let serviceRequestFailed = Notification.Name("fastcat.service.requestFailed")
   static let serviceRequestSucceeded = Notification.Name("fastcat.service.requestSucceeded")
   enum GatewayError: LocalizedError {
-    case missingBaseURL, invalidResponse, unauthorized, server(String)
+    case missingBaseURL, invalidResponse, unauthorized, server(String), temporarilyUnavailable(Int)
     var errorDescription: String? {
       let language = UserDefaults.standard.string(forKey: TVLanguage.preferenceKey) ?? "system"
       switch self {
@@ -198,6 +211,7 @@ struct GatewayClient {
       case .invalidResponse: return tvText("服务响应无效", "Invalid server response", language: language)
       case .unauthorized: return tvText("登录状态已失效，请重新登录", "Your session has expired. Please sign in again.", language: language)
       case .server(let message): return message
+      case .temporarilyUnavailable: return tvText("服务暂时不可用，请稍后重试", "Service temporarily unavailable. Please try again.", language: language)
       }
     }
   }
@@ -216,25 +230,32 @@ struct GatewayClient {
   }
 
   func createQRSession() async throws -> QRLoginChallenge {
-    struct Request: Encodable { let device_id: String; let device_name: String; let platform: String; let app_version: String; let build_number: String }
+    struct Request: Encodable { let device_id: String; let device_name: String; let platform: String; let app_version: String; let build_number: String; let delivery_ack = true }
     let id = KeychainStore.read(key: "device-id") ?? "fastcat-" + UUID().uuidString.lowercased()
     KeychainStore.write(id, key: "device-id")
     let bundle = Bundle.main
     let request = Request(device_id: id, device_name: "Apple TV", platform: "tvos", app_version: bundle.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? "1.0", build_number: bundle.object(forInfoDictionaryKey: "CFBundleVersion") as? String ?? "1")
-    return try await send(path: "/auth/qr/sessions", method: "POST", body: request)
+    return try await sendRequest(path: "/auth/qr/sessions", method: "POST", body: AnyEncodable(request), timeout: 15)
   }
 
   func pollQRSession(_ challenge: QRLoginChallenge) async throws -> QRLoginResponse {
     let token = challenge.pollToken.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? ""
-    return try await send(path: "/auth/qr/sessions/\(challenge.id)?poll_token=\(token)")
+    return try await sendRequest(path: "/auth/qr/sessions/\(challenge.id)?poll_token=\(token)", method: "GET", body: nil, timeout: 10)
   }
 
   func cancelQRSession(_ challenge: QRLoginChallenge) async throws {
     let token = challenge.pollToken.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? ""
     try await sendVoidRequest(
       path: "/auth/qr/sessions/\(challenge.id)?poll_token=\(token)",
-      method: "DELETE"
+      method: "DELETE", timeout: 3
     )
+  }
+
+  func acknowledgeQRSession(_ challenge: QRLoginChallenge, deliveryID: String) async throws {
+    guard challenge.deliveryACK, !deliveryID.isEmpty else { return }
+    try await sendVoidRequest(path: "/auth/qr/sessions/\(challenge.id)/ack", method: "POST",
+      body: AnyEncodable(["poll_token": challenge.pollToken, "delivery_id": deliveryID]),
+      requireAcknowledgement: true, timeout: 3)
   }
 
   func fetchGuestConfig() async throws -> TVGuestConfig {
@@ -392,11 +413,11 @@ struct GatewayClient {
     try await sendRequest(path: path, method: method, body: AnyEncodable(body))
   }
 
-  private func sendRequest<T: Decodable>(path: String, method: String, body: AnyEncodable?, authorization: String? = nil) async throws -> T {
+  private func sendRequest<T: Decodable>(path: String, method: String, body: AnyEncodable?, authorization: String? = nil, timeout: TimeInterval = 20) async throws -> T {
     var request = URLRequest(
       url: try endpointURL(path),
       cachePolicy: .reloadIgnoringLocalCacheData,
-      timeoutInterval: 20
+      timeoutInterval: timeout
     )
     request.httpMethod = method
     request.setValue("application/json", forHTTPHeaderField: "Accept")
@@ -412,6 +433,9 @@ struct GatewayClient {
     let (data, response) = try await performBusinessRequest(request)
     guard let http = response as? HTTPURLResponse else { throw GatewayError.invalidResponse }
     if http.statusCode == 401 { throw GatewayError.unauthorized }
+    if http.statusCode >= 500 || http.statusCode == 408 || http.statusCode == 429 {
+      throw GatewayError.temporarilyUnavailable(http.statusCode)
+    }
     guard (200..<300).contains(http.statusCode) else { throw GatewayError.server("服务暂时不可用（\(http.statusCode)）") }
     let envelope = try JSONDecoder().decode(APIEnvelope<T>.self, from: data)
     guard let value = envelope.data else { throw GatewayError.server(envelope.message ?? "请求失败") }
@@ -441,11 +465,11 @@ struct GatewayClient {
     }
   }
 
-  private func sendVoidRequest(path: String, method: String, body: AnyEncodable? = nil, authorization: String? = nil, requireAcknowledgement: Bool = false) async throws {
+  private func sendVoidRequest(path: String, method: String, body: AnyEncodable? = nil, authorization: String? = nil, requireAcknowledgement: Bool = false, timeout: TimeInterval = 20) async throws {
     var request = URLRequest(
       url: try endpointURL(path),
       cachePolicy: .reloadIgnoringLocalCacheData,
-      timeoutInterval: 20
+      timeoutInterval: timeout
     )
     request.httpMethod = method
     request.setValue("application/json", forHTTPHeaderField: "Accept")

@@ -20,6 +20,7 @@ set(PLUGIN_NAME "proxy_plugin")
 list(APPEND PLUGIN_SOURCES
   "proxy_plugin.cpp"
   "proxy_plugin.h"
+  "proxy_configuration.h"
 )
 
 # Define the plugin library target. Its name must not be changed (see comment
@@ -65,6 +66,11 @@ set(proxy_bundled_libraries
 if (${include_${PROJECT_NAME}_tests})
 set(TEST_RUNNER "${PROJECT_NAME}_test")
 enable_testing()
+
+# Pure boundary validation never reads or changes machine proxy settings.
+add_executable(proxy_configuration_test test/proxy_configuration_test.cpp)
+target_compile_features(proxy_configuration_test PRIVATE cxx_std_17)
+add_test(NAME proxy_configuration_validation COMMAND proxy_configuration_test)
 
 # Add the Google Test dependency.
 include(FetchContent)

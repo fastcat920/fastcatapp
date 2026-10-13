@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:convert';
 import 'package:fl_clash/security/ios_profile_config.dart';
+import 'package:fl_clash/services/ios_configuration_reload.dart';
 import 'dart:io';
 import 'dart:isolate';
 import 'package:fl_clash/common/common.dart';
@@ -77,21 +78,7 @@ class Service {
 
   Future<void> reloadConfiguration(String config) async {
     if (!Platform.isIOS) throw UnsupportedError('iOS tunnel reload');
-    final payload = json.decode(config) as Map<String, dynamic>;
-    final profile = iosProfileConfig(payload['config'] as Map<String, dynamic>);
-    payload['config'] = profile;
-    (profile['tun'] as Map<String, dynamic>)['enable'] = false;
-    profile['allow-lan'] = true;
-    profile['bind-address'] = '*';
-    final dns = profile['dns'] as Map<String, dynamic>;
-    dns['enable'] = true;
-    dns['listen'] = '127.0.0.1:6053';
-    final result = await const MethodChannel('fastcat/clash')
-        .invokeMethod<String>('_updateConfig', json.encode(payload))
-        .timeout(const Duration(seconds: 30));
-    if (result == null || (result.isNotEmpty && result != 'ok')) {
-      throw StateError('Tunnel configuration was not applied');
-    }
+    await reloadIosTunnelConfiguration(config);
   }
 
   Future<bool> isVpnActuallyRunning() async {

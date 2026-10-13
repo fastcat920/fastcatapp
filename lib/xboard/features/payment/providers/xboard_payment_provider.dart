@@ -11,39 +11,68 @@ import 'package:flutter_xboard_sdk/flutter_xboard_sdk.dart';
 import 'package:fl_clash/xboard/adapter/state/payment_state.dart';
 import 'package:fl_clash/xboard/adapter/initialization/sdk_provider.dart';
 import 'package:fl_clash/xboard/utils/backend_message_mapper.dart';
+import 'package:fl_clash/xboard/features/auth/providers/session_epoch_provider.dart';
 
 // 初始化文件级日志器
 const _logger = FileLogger('xboard_payment_provider.dart');
 const _pendingOrdersFastPageSize = 50;
 const _pendingOrdersCacheTtl = Duration(seconds: 20);
 
-final pendingOrdersProvider = StateProvider<List<DomainOrder>>((ref) => []);
-final paymentMethodsProvider =
-    StateProvider<List<DomainPaymentMethod>>((ref) => []);
-final paymentProcessStateProvider =
-    StateProvider<PaymentProcessState>((ref) => const PaymentProcessState());
-final paymentUIStateProvider = StateProvider<UIState>((ref) => const UIState());
+final pendingOrdersProvider = StateProvider<List<DomainOrder>>((ref) {
+  ref.watch(sessionEpochProvider);
+  return [];
+});
+final paymentMethodsProvider = StateProvider<List<DomainPaymentMethod>>((ref) {
+  ref.watch(sessionEpochProvider);
+  return [];
+});
+final paymentProcessStateProvider = StateProvider<PaymentProcessState>((ref) {
+  ref.watch(sessionEpochProvider);
+  return const PaymentProcessState();
+});
+final paymentUIStateProvider = StateProvider<UIState>((ref) {
+  ref.watch(sessionEpochProvider);
+  return const UIState();
+});
 
 class XBoardPaymentNotifier extends Notifier<void> {
   DateTime? _pendingOrdersLoadedAt;
+  bool _disposed = false;
+
+  bool _isCurrent(int epoch) =>
+      !_disposed && ref.read(sessionEpochProvider) == epoch;
+
+  void _requireCurrent(int epoch) {
+    if (!_isCurrent(epoch)) throw StateError('Payment session changed');
+  }
 
   void _scheduleLoadInitialData() {
-    Future<void>(() => _loadInitialData());
+    final epoch = ref.read(sessionEpochProvider);
+    Future<void>(() {
+      if (_isCurrent(epoch)) return _loadInitialData();
+    });
   }
 
   void _scheduleClearPaymentData() {
-    Future<void>(() => _clearPaymentData());
+    final epoch = ref.read(sessionEpochProvider);
+    Future<void>(() {
+      if (_isCurrent(epoch)) _clearPaymentData();
+    });
   }
 
   @override
   void build() {
+    ref.watch(sessionEpochProvider);
+    _disposed = false;
+    ref.onDispose(() => _disposed = true);
+    _pendingOrdersLoadedAt = null;
     // 1. 监听认证状态变化
     ref.listen(xboardUserAuthProvider, (previous, next) {
       _logger.info(
           '📋 [Payment] 👤 认证状态变化: ${previous?.isAuthenticated} -> ${next.isAuthenticated}');
 
-      if (next.isAuthenticated) {
-        if (previous?.isAuthenticated != true) {
+      if (next.isAuthenticated && !next.isLoading) {
+        if (previous?.isAuthenticated != true || previous?.isLoading == true) {
           _logger.info('📋 [Payment] 🎯 用户刚登录，触发初始数据加载');
           _scheduleLoadInitialData();
         }
@@ -55,7 +84,7 @@ class XBoardPaymentNotifier extends Notifier<void> {
 
     // 2. 检查当前状态（处理 Provider 初始化时用户已登录的情况）
     final authState = ref.read(xboardUserAuthProvider);
-    if (authState.isAuthenticated) {
+    if (authState.isAuthenticated && !authState.isLoading) {
       _logger.info('📋 [Payment] 🚀 Provider 初始化时用户已认证，触发初始数据加载');
       _scheduleLoadInitialData();
     }
@@ -67,7 +96,7 @@ class XBoardPaymentNotifier extends Notifier<void> {
     final userAuthState = ref.read(xboardUserAuthProvider);
     _logger.info('📋 [Payment] 用户认证状态: ${userAuthState.isAuthenticated}');
 
-    if (!userAuthState.isAuthenticated) {
+    if (!userAuthState.isAuthenticated || userAuthState.isLoading) {
       _logger.warning('📋 [Payment] ⚠️ 用户未认证，跳过数据加载');
       return;
     }
@@ -89,8 +118,9 @@ class XBoardPaymentNotifier extends Notifier<void> {
     bool updateUiState = true,
     bool forceRefresh = false,
   }) async {
+    final epoch = ref.read(sessionEpochProvider);
     final userAuthState = ref.read(xboardUserAuthProvider);
-    if (!userAuthState.isAuthenticated) {
+    if (!userAuthState.isAuthenticated || userAuthState.isLoading) {
       ref.read(pendingOrdersProvider.notifier).state = [];
       return;
     }
@@ -104,6 +134,7 @@ class XBoardPaymentNotifier extends Notifier<void> {
     try {
       _logger.info('加载待支付订单...');
       final pendingOrders = await _fetchPendingOrdersFast();
+      if (!_isCurrent(epoch)) return;
       _setPendingOrders(pendingOrders);
       if (updateUiState) {
         ref.read(paymentUIStateProvider.notifier).state =
@@ -111,6 +142,7 @@ class XBoardPaymentNotifier extends Notifier<void> {
       }
       _logger.info('待支付订单加载成功，共 ${pendingOrders.length} 个');
     } catch (e) {
+      if (!_isCurrent(epoch)) return;
       _logger.info('加载待支付订单失败: $e');
       if (updateUiState) {
         ref.read(paymentUIStateProvider.notifier).state = UIState(
@@ -123,12 +155,13 @@ class XBoardPaymentNotifier extends Notifier<void> {
   }
 
   Future<void> loadPaymentMethods({bool forceRefresh = false}) async {
+    final epoch = ref.read(sessionEpochProvider);
     _logger.info('📋 [Payment] 开始加载支付方式...');
 
     final userAuthState = ref.read(xboardUserAuthProvider);
     _logger.info('📋 [Payment] 用户认证状态: ${userAuthState.isAuthenticated}');
 
-    if (!userAuthState.isAuthenticated) {
+    if (!userAuthState.isAuthenticated || userAuthState.isLoading) {
       _logger.warning('📋 [Payment] ⚠️ 用户未认证，清空支付方式列表');
       ref.read(paymentMethodsProvider.notifier).state = [];
       return;
@@ -142,6 +175,7 @@ class XBoardPaymentNotifier extends Notifier<void> {
       }
       final paymentMethodModels =
           await ref.read(getPaymentMethodsProvider.future);
+      if (!_isCurrent(epoch)) return;
 
       _logger.info('📋 [Payment] SDK 返回支付方式数量: ${paymentMethodModels.length}');
       if (paymentMethodModels.isNotEmpty) {
@@ -162,6 +196,7 @@ class XBoardPaymentNotifier extends Notifier<void> {
         _logger.info('   - ${method.name} (id: ${method.id})');
       }
     } catch (e, stackTrace) {
+      if (!_isCurrent(epoch)) return;
       _logger.error('📋 [Payment] ❌ 加载支付方式失败: $e');
       _logger.error('📋 [Payment] 错误堆栈: $stackTrace');
       ref.read(paymentUIStateProvider.notifier).state = UIState(
@@ -187,8 +222,9 @@ class XBoardPaymentNotifier extends Notifier<void> {
     String? couponCode,
     int? depositAmount,
   }) async {
+    final epoch = ref.read(sessionEpochProvider);
     final userAuthState = ref.read(xboardUserAuthProvider);
-    if (!userAuthState.isAuthenticated) {
+    if (!userAuthState.isAuthenticated || userAuthState.isLoading) {
       ref.read(paymentUIStateProvider.notifier).state = const UIState(
         errorMessage: '请先登录',
       );
@@ -205,6 +241,7 @@ class XBoardPaymentNotifier extends Notifier<void> {
         refreshAfterCancel: false,
         updateUiState: false,
       );
+      if (!_isCurrent(epoch)) return null;
 
       // 调用 Repository 创建订单。若后端仍提示存在待支付订单，再全量兜底清理并重试一次。
       final tradeNo = await _createOrderWithPendingCleanupRetry(
@@ -214,6 +251,7 @@ class XBoardPaymentNotifier extends Notifier<void> {
         depositAmount: depositAmount,
         allowPendingCleanupRetry: true,
       );
+      if (!_isCurrent(epoch)) return null;
       if (tradeNo.isNotEmpty) {
         ref.read(paymentProcessStateProvider.notifier).state =
             PaymentProcessState(
@@ -238,6 +276,7 @@ class XBoardPaymentNotifier extends Notifier<void> {
         return null;
       }
     } catch (e) {
+      if (!_isCurrent(epoch)) return null;
       _logger.info('创建订单失败: $e');
       ref.read(paymentUIStateProvider.notifier).state = UIState(
         isLoading: false,
@@ -257,8 +296,9 @@ class XBoardPaymentNotifier extends Notifier<void> {
     bool disableAutoCoupon = false,
     required String promotionMode,
   }) async {
+    final epoch = ref.read(sessionEpochProvider);
     final userAuthState = ref.read(xboardUserAuthProvider);
-    if (!userAuthState.isAuthenticated) {
+    if (!userAuthState.isAuthenticated || userAuthState.isLoading) {
       ref.read(paymentUIStateProvider.notifier).state =
           const UIState(errorMessage: '请先登录');
       return null;
@@ -271,7 +311,9 @@ class XBoardPaymentNotifier extends Notifier<void> {
         refreshAfterCancel: false,
         updateUiState: false,
       );
+      if (!_isCurrent(epoch)) return null;
       final sdk = await ref.read(xboardSdkProvider.future);
+      if (!_isCurrent(epoch)) return null;
       final tradeNo = await sdk.catboard.createOrder(
         planId: planId,
         period: period,
@@ -279,6 +321,7 @@ class XBoardPaymentNotifier extends Notifier<void> {
         disableAutoCoupon: disableAutoCoupon,
         promotionMode: promotionMode,
       );
+      if (!_isCurrent(epoch)) return null;
       if (tradeNo.isEmpty) throw StateError('创建订单失败');
       ref.read(paymentProcessStateProvider.notifier).state =
           PaymentProcessState(currentOrderTradeNo: tradeNo);
@@ -292,6 +335,7 @@ class XBoardPaymentNotifier extends Notifier<void> {
       unawaited(_refreshPendingOrdersInBackground());
       return tradeNo;
     } catch (error) {
+      if (!_isCurrent(epoch)) return null;
       ref.read(paymentUIStateProvider.notifier).state = UIState(
         isLoading: false,
         errorMessage: BackendMessageMapper.mapError(
@@ -311,8 +355,9 @@ class XBoardPaymentNotifier extends Notifier<void> {
     required String tradeNo,
     required String method,
   }) async {
+    final epoch = ref.read(sessionEpochProvider);
     final userAuthState = ref.read(xboardUserAuthProvider);
-    if (!userAuthState.isAuthenticated) {
+    if (!userAuthState.isAuthenticated || userAuthState.isLoading) {
       ref.read(paymentUIStateProvider.notifier).state = const UIState(
         errorMessage: '请先登录',
       );
@@ -326,10 +371,13 @@ class XBoardPaymentNotifier extends Notifier<void> {
       _logger.info('提交支付: method=$method');
 
       // 调用 Repository 提交支付，返回支付结果
-      final paymentResultModel = await XBoardSDK.instance.order.checkoutOrder(
+      final sdk = await ref.read(xboardSdkProvider.future);
+      if (!_isCurrent(epoch)) return null;
+      final paymentResultModel = await sdk.order.checkoutOrder(
         tradeNo,
         method,
       );
+      if (!_isCurrent(epoch)) return null;
 
       ref.read(paymentProcessStateProvider.notifier).state =
           const PaymentProcessState(
@@ -339,11 +387,13 @@ class XBoardPaymentNotifier extends Notifier<void> {
       final paymentResult = _mapPaymentResult(paymentResultModel);
       if (paymentResult != null) {
         await loadPendingOrders(forceRefresh: true);
+        if (!_isCurrent(epoch)) return null;
         _logger.info('支付提交成功');
         return paymentResult;
       }
       return null;
     } catch (e) {
+      if (!_isCurrent(epoch)) return null;
       _logger.info('支付提交失败: ${SensitiveMasker.maskText(e)}');
       ref.read(paymentProcessStateProvider.notifier).state =
           const PaymentProcessState(
@@ -361,8 +411,9 @@ class XBoardPaymentNotifier extends Notifier<void> {
     bool refreshAfterCancel = true,
     bool updateUiState = true,
   }) async {
+    final epoch = ref.read(sessionEpochProvider);
     final userAuthState = ref.read(xboardUserAuthProvider);
-    if (!userAuthState.isAuthenticated) {
+    if (!userAuthState.isAuthenticated || userAuthState.isLoading) {
       ref.read(paymentUIStateProvider.notifier).state = const UIState(
         errorMessage: '请先登录',
       );
@@ -376,7 +427,9 @@ class XBoardPaymentNotifier extends Notifier<void> {
       final ordersToCancel = fastMode
           ? await _getPendingOrdersForFastCleanup()
           : await _fetchPendingOrdersFull();
+      if (!_isCurrent(epoch)) return 0;
       final canceledCount = await _cancelPendingOrderList(ordersToCancel);
+      if (!_isCurrent(epoch)) return 0;
 
       if (updateUiState) {
         ref.read(paymentUIStateProvider.notifier).state =
@@ -391,6 +444,7 @@ class XBoardPaymentNotifier extends Notifier<void> {
       _logger.info('取消订单成功，共取消 $canceledCount 个订单');
       return canceledCount;
     } catch (e) {
+      if (!_isCurrent(epoch)) return 0;
       _logger.info('取消订单失败: $e');
       if (updateUiState) {
         ref.read(paymentUIStateProvider.notifier).state = UIState(
@@ -431,14 +485,18 @@ class XBoardPaymentNotifier extends Notifier<void> {
     int? depositAmount,
     required bool allowPendingCleanupRetry,
   }) async {
+    final epoch = ref.read(sessionEpochProvider);
+    final sdk = await ref.read(xboardSdkProvider.future);
+    _requireCurrent(epoch);
     try {
-      return await XBoardSDK.instance.order.createOrder(
+      return await sdk.order.createOrder(
         planId,
         period,
         couponCode: couponCode,
         depositAmount: depositAmount,
       );
     } catch (e) {
+      _requireCurrent(epoch);
       if (!allowPendingCleanupRetry ||
           !BackendMessageMapper.matchesPendingOrderConflict(e)) {
         rethrow;
@@ -450,7 +508,8 @@ class XBoardPaymentNotifier extends Notifier<void> {
         refreshAfterCancel: false,
         updateUiState: false,
       );
-      return XBoardSDK.instance.order.createOrder(
+      _requireCurrent(epoch);
+      return sdk.order.createOrder(
         planId,
         period,
         couponCode: couponCode,
@@ -466,6 +525,7 @@ class XBoardPaymentNotifier extends Notifier<void> {
   }
 
   Future<List<DomainOrder>> _getPendingOrdersForFastCleanup() async {
+    final epoch = ref.read(sessionEpochProvider);
     if (_hasFreshPendingOrders) {
       return ref
           .read(pendingOrdersProvider)
@@ -473,12 +533,16 @@ class XBoardPaymentNotifier extends Notifier<void> {
           .toList();
     }
     final pendingOrders = await _fetchPendingOrdersFast();
+    _requireCurrent(epoch);
     _setPendingOrders(pendingOrders);
     return pendingOrders;
   }
 
   Future<List<DomainOrder>> _fetchPendingOrdersFast() async {
-    final result = await XBoardSDK.instance.order.getOrdersPage(
+    final epoch = ref.read(sessionEpochProvider);
+    final sdk = await ref.read(xboardSdkProvider.future);
+    _requireCurrent(epoch);
+    final result = await sdk.order.getOrdersPage(
       page: 1,
       pageSize: _pendingOrdersFastPageSize,
     );
@@ -486,7 +550,10 @@ class XBoardPaymentNotifier extends Notifier<void> {
   }
 
   Future<List<DomainOrder>> _fetchPendingOrdersFull() async {
-    final orderModels = await XBoardSDK.instance.order.getOrders(
+    final epoch = ref.read(sessionEpochProvider);
+    final sdk = await ref.read(xboardSdkProvider.future);
+    _requireCurrent(epoch);
+    final orderModels = await sdk.order.getOrders(
       pageSize: _pendingOrdersFastPageSize,
     );
     return _mapPendingOrders(orderModels);
@@ -500,6 +567,7 @@ class XBoardPaymentNotifier extends Notifier<void> {
   }
 
   Future<int> _cancelPendingOrderList(List<DomainOrder> ordersToCancel) async {
+    final epoch = ref.read(sessionEpochProvider);
     final tradeNos = ordersToCancel
         .map((order) => order.tradeNo)
         .where((tradeNo) => tradeNo.isNotEmpty)
@@ -510,9 +578,11 @@ class XBoardPaymentNotifier extends Notifier<void> {
     }
 
     final canceledTradeNos = <String>[];
+    final sdk = await ref.read(xboardSdkProvider.future);
+    _requireCurrent(epoch);
     await Future.wait(tradeNos.map((tradeNo) async {
       try {
-        final success = await XBoardSDK.instance.order.cancelOrder(tradeNo);
+        final success = await sdk.order.cancelOrder(tradeNo);
         if (success) {
           canceledTradeNos.add(tradeNo);
         }
@@ -520,6 +590,7 @@ class XBoardPaymentNotifier extends Notifier<void> {
         _logger.info('取消订单失败: ${SensitiveMasker.maskText(e)}');
       }
     }));
+    if (!_isCurrent(epoch)) return 0;
 
     if (canceledTradeNos.isNotEmpty) {
       final canceledSet = canceledTradeNos.toSet();

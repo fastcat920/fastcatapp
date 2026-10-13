@@ -29,6 +29,9 @@ import 'package:fl_clash/security/profile_vault.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:fl_clash/models/models.dart';
 import 'package:fl_clash/enum/enum.dart';
+import 'package:fl_clash/common/serial_operation_queue.dart';
+import 'package:fl_clash/xboard/infrastructure/cache/content_cache_scope.dart';
+import 'session_epoch_provider.dart';
 
 // 初始化文件级日志器
 const _logger = FileLogger('xboard_user_provider.dart');
@@ -48,11 +51,13 @@ class InitialUserSnapshot {
   final String? email;
   final DomainUser? userInfo;
   final DomainSubscription? subscriptionInfo;
+  final String? cacheScope;
 
   const InitialUserSnapshot({
     this.email,
     this.userInfo,
     this.subscriptionInfo,
+    this.cacheScope,
   });
 
   String? get displayEmail {
@@ -83,9 +88,44 @@ class XBoardUserAuthNotifier extends Notifier<UserAuthState> {
   bool _isTokenExpiryActive = false;
   bool _isDisconnectingExpiredSession = false;
   String? _automaticSubscriptionImportKey;
+  String? _cacheScope;
+  bool _disposed = false;
+  final _tokenWrites = SerialOperationQueue();
+  Future<void>? _logoutFuture;
+  bool _loginPending = false;
+  bool _sessionClosing = false;
 
-  int _nextAuthGeneration() => ++_authGeneration;
-  bool _isAuthGenerationActive(int generation) => generation == _authGeneration;
+  int _nextAuthGeneration() {
+    _accountRefreshFuture = null;
+    _isEnsuringUserSnapshot = false;
+    final generation = ++_authGeneration;
+    ref.read(sessionEpochProvider.notifier).state++;
+    return generation;
+  }
+
+  bool _isAuthGenerationActive(int generation) =>
+      !_disposed && !_sessionClosing && generation == _authGeneration;
+
+  Future<bool> _persistUser(DomainUser user, int generation) async {
+    if (!_isAuthGenerationActive(generation)) return false;
+    final scope = _cacheScope ?? await ContentCacheScope.account();
+    if (!_isAuthGenerationActive(generation)) return false;
+    if (scope != null) {
+      await _storageService.saveDomainUser(user, scope: scope);
+    }
+    return _isAuthGenerationActive(generation);
+  }
+
+  Future<bool> _persistSubscription(
+      DomainSubscription subscription, int generation) async {
+    if (!_isAuthGenerationActive(generation)) return false;
+    final scope = _cacheScope ?? await ContentCacheScope.account();
+    if (!_isAuthGenerationActive(generation)) return false;
+    if (scope != null) {
+      await _storageService.saveDomainSubscription(subscription, scope: scope);
+    }
+    return _isAuthGenerationActive(generation);
+  }
 
   @override
   UserAuthState build() {
@@ -94,6 +134,8 @@ class XBoardUserAuthNotifier extends Notifier<UserAuthState> {
     // isInitialized = true 从第一帧起就成立，spinner 永远不会出现
     final hasToken = ref.read(initialTokenProvider);
     final initialSnapshot = ref.read(initialUserSnapshotProvider);
+    _cacheScope = initialSnapshot.cacheScope;
+    ref.onDispose(() => _disposed = true);
 
     // Token 过期提示存在期间，如果外部入口（托盘、快捷开关等）重新建立连接，
     // 立即再次断开，避免失效会话继续使用代理。
@@ -105,6 +147,14 @@ class XBoardUserAuthNotifier extends Notifier<UserAuthState> {
 
     // 监听 SDK 401 事件：任意接口返回 401 时，若当前已登录则提示用户重新登录
     final sub = XBoardAuthEvents.onUnauthorized.listen((event) {
+      if (_disposed ||
+          _sessionClosing ||
+          !XBoardSDK.instance.isInitialized ||
+          XBoardSDK.instance.httpService.tokenManager
+                  ?.isCurrentSession(event.sessionIdentity) !=
+              true) {
+        return;
+      }
       if (state.isAuthenticated) {
         final code = switch (event.reason) {
           AuthFailureReason.deviceKickedByNewLogin =>
@@ -154,6 +204,8 @@ class XBoardUserAuthNotifier extends Notifier<UserAuthState> {
   /// 因此在 isInitialized=true 之后异步加载，不阻塞 loading 页面消失。
   void _loadCachedDataInBackground(int generation) {
     Future(() async {
+      final scope = _cacheScope ?? await ContentCacheScope.account();
+      if (scope == null || !_isAuthGenerationActive(generation)) return;
       String? email;
       DomainUser? userInfo;
       DomainSubscription? subscriptionInfo;
@@ -163,7 +215,7 @@ class XBoardUserAuthNotifier extends Notifier<UserAuthState> {
         () async {
           try {
             final result = await _storageService
-                .getUserEmail()
+                .getUserEmail(scope: scope)
                 .timeout(const Duration(seconds: 3));
             email = result.dataOrNull;
           } catch (_) {}
@@ -171,7 +223,7 @@ class XBoardUserAuthNotifier extends Notifier<UserAuthState> {
         () async {
           try {
             final result = await _storageService
-                .getDomainUser()
+                .getDomainUser(scope: scope)
                 .timeout(const Duration(seconds: 3));
             userInfo = result.dataOrNull;
           } catch (_) {}
@@ -179,7 +231,7 @@ class XBoardUserAuthNotifier extends Notifier<UserAuthState> {
         () async {
           try {
             final result = await _storageService
-                .getDomainSubscription()
+                .getDomainSubscription(scope: scope)
                 .timeout(const Duration(seconds: 3));
             subscriptionInfo = result.dataOrNull;
           } catch (_) {}
@@ -215,8 +267,10 @@ class XBoardUserAuthNotifier extends Notifier<UserAuthState> {
             state.subscriptionInfo?.planName?.trim().isNotEmpty == true);
 
     _isEnsuringUserSnapshot = true;
+    final generation = _authGeneration;
     try {
-      final generation = _authGeneration;
+      final scope = _cacheScope ?? await ContentCacheScope.account();
+      if (scope == null || !_isAuthGenerationActive(generation)) return;
       String? cachedEmail;
       DomainUser? cachedUser;
       DomainSubscription? cachedSubscription;
@@ -225,7 +279,7 @@ class XBoardUserAuthNotifier extends Notifier<UserAuthState> {
         () async {
           try {
             final result = await _storageService
-                .getUserEmail()
+                .getUserEmail(scope: scope)
                 .timeout(const Duration(seconds: 3));
             cachedEmail = result.dataOrNull;
           } catch (_) {}
@@ -233,7 +287,7 @@ class XBoardUserAuthNotifier extends Notifier<UserAuthState> {
         () async {
           try {
             final result = await _storageService
-                .getDomainUser()
+                .getDomainUser(scope: scope)
                 .timeout(const Duration(seconds: 3));
             cachedUser = result.dataOrNull;
           } catch (_) {}
@@ -241,7 +295,7 @@ class XBoardUserAuthNotifier extends Notifier<UserAuthState> {
         () async {
           try {
             final result = await _storageService
-                .getDomainSubscription()
+                .getDomainSubscription(scope: scope)
                 .timeout(const Duration(seconds: 3));
             cachedSubscription = result.dataOrNull;
           } catch (_) {}
@@ -263,7 +317,7 @@ class XBoardUserAuthNotifier extends Notifier<UserAuthState> {
         unawaited(_refreshUserSnapshotInBackground(generation));
       }
     } finally {
-      _isEnsuringUserSnapshot = false;
+      if (_isAuthGenerationActive(generation)) _isEnsuringUserSnapshot = false;
     }
   }
 
@@ -319,13 +373,14 @@ class XBoardUserAuthNotifier extends Notifier<UserAuthState> {
           return;
         }
         userInfo = _mapUser(userModel);
-        await _storageService.saveDomainUser(userInfo);
+        if (!await _persistUser(userInfo, generation)) return;
         ref.read(userInfoProvider.notifier).state = userInfo;
       } catch (e) {
         _logger.info('后台刷新用户缓存失败: $e');
       }
 
       try {
+        if (!_isAuthGenerationActive(generation)) return;
         clearGetSubscriptionCache();
         ref.invalidate(getSubscriptionProvider);
         final subscriptionModel =
@@ -335,12 +390,13 @@ class XBoardUserAuthNotifier extends Notifier<UserAuthState> {
         }
         subscriptionInfo =
             _mergeSubscriptionWithCache(_mapSubscription(subscriptionModel));
-        await _storageService.saveDomainSubscription(subscriptionInfo);
+        if (!await _persistSubscription(subscriptionInfo, generation)) return;
         ref.read(subscriptionInfoProvider.notifier).state = subscriptionInfo;
       } catch (e) {
         _logger.info('后台刷新订阅缓存失败: $e');
       }
 
+      if (!_isAuthGenerationActive(generation)) return;
       state = state.copyWith(
         email: userInfo?.email.isNotEmpty == true
             ? userInfo?.email
@@ -382,6 +438,7 @@ class XBoardUserAuthNotifier extends Notifier<UserAuthState> {
           _logger.info('Token验证成功，静默更新用户数据');
           await _silentUpdateUserData(generation);
         } catch (e) {
+          if (!_isAuthGenerationActive(generation)) return;
           final code = sessionTerminationCodeFromError(e);
           if (code != null) {
             _logger.info('Token验证失败（auth错误），显示会话终止提示: $e');
@@ -428,13 +485,13 @@ class XBoardUserAuthNotifier extends Notifier<UserAuthState> {
         }
         userInfoData = _mapUser(userModel);
 
-        await _storageService.saveDomainUser(userInfoData);
+        if (!await _persistUser(userInfoData, generation)) return;
         ref.read(userInfoProvider.notifier).state = userInfoData;
       } catch (e) {
         _logger.info('静默更新用户信息失败: $e');
       }
 
-      await _storageService.saveDomainSubscription(subscriptionData);
+      if (!await _persistSubscription(subscriptionData, generation)) return;
       ref.read(subscriptionInfoProvider.notifier).state = subscriptionData;
       state = state.copyWith(
         email: userInfoData?.email.isNotEmpty == true
@@ -538,6 +595,16 @@ class XBoardUserAuthNotifier extends Notifier<UserAuthState> {
   }
 
   Future<bool> login(String email, String password) async {
+    if (_loginPending || _logoutFuture != null) return false;
+    _loginPending = true;
+    try {
+      return await _login(email, password);
+    } finally {
+      _loginPending = false;
+    }
+  }
+
+  Future<bool> _login(String email, String password) async {
     final generation = _nextAuthGeneration();
     state = state.copyWith(isLoading: true, errorMessage: null);
     try {
@@ -556,8 +623,12 @@ class XBoardUserAuthNotifier extends Notifier<UserAuthState> {
         await ref.read(xboardSdkProvider.future);
       }
 
+      if (!_isAuthGenerationActive(generation)) return false;
       final deviceInfo = await XBoardDeviceIdentityService.buildLoginPayload();
-      final success = await XBoardSDK.instance.loginWithCredentials(
+      if (!_isAuthGenerationActive(generation)) return false;
+      // The convenience SDK login persists immediately; claim the result first
+      // so a cancelled/older login can never replace the current device token.
+      final token = await XBoardSDK.instance.auth.login(
         email,
         password,
         deviceInfo: deviceInfo,
@@ -567,8 +638,9 @@ class XBoardUserAuthNotifier extends Notifier<UserAuthState> {
         return false;
       }
 
-      if (!success) {
+      if (token == null) {
         final connectivity = await Connectivity().checkConnectivity();
+        if (!_isAuthGenerationActive(generation)) return false;
         final noNetwork = connectivity.contains(ConnectivityResult.none);
         final configFailed = ref.read(initializationProvider).isFailed;
         state = state.copyWith(
@@ -582,12 +654,22 @@ class XBoardUserAuthNotifier extends Notifier<UserAuthState> {
         return false;
       }
 
+      final committed = await _tokenWrites.run(() async {
+        if (!_isAuthGenerationActive(generation)) return false;
+        await XBoardSDK.instance.saveToken(token);
+        return _isAuthGenerationActive(generation);
+      });
+      if (!committed) return false;
+      _cacheScope = ContentCacheScope.accountForToken(token);
+      ref.read(sessionEpochProvider.notifier).state++;
+
       _logger.info('登录成功，开始统一登录后初始化');
       return await _initializeAuthenticatedSession(
         generation: generation,
         email: email,
       );
     } catch (e) {
+      if (!_isAuthGenerationActive(generation)) return false;
       _logger.info('登录出错: $e (${e.runtimeType})');
 
       // 网络层面的错误（本机断网、DNS 解析失败、连接超时等）
@@ -638,10 +720,11 @@ class XBoardUserAuthNotifier extends Notifier<UserAuthState> {
         state = state.copyWith(errorMessage: '正在切换线路重试...');
         try {
           await ref.read(initializationProvider.notifier).refresh();
+          if (!_isAuthGenerationActive(generation)) return false;
           final initState = ref.read(initializationProvider);
           if (initState.isReady) {
             _logger.info('域名重新探测成功，重试登录');
-            final result = await login(email, password);
+            final result = await _login(email, password);
             _hasRetriedWithNewDomain = false;
             return result;
           }
@@ -650,6 +733,8 @@ class XBoardUserAuthNotifier extends Notifier<UserAuthState> {
         }
         _hasRetriedWithNewDomain = false;
       }
+
+      if (!_isAuthGenerationActive(generation)) return false;
 
       String errorMessage = '[CONFIG_LOAD_FAILED]';
       if (e is XBoardException) {
@@ -666,11 +751,20 @@ class XBoardUserAuthNotifier extends Notifier<UserAuthState> {
   /// Completes a PC/TV QR authorization.  The gateway issued this token for
   /// this device only after the already signed-in phone confirmed it.
   Future<bool> loginWithQrToken(String token, {String? email}) async {
+    if (_loginPending || _logoutFuture != null) return false;
+    _loginPending = true;
     final generation = _nextAuthGeneration();
     state = state.copyWith(isLoading: true, errorMessage: null);
     try {
       _clearSessionScopedProvidersForLogin();
-      await XBoardSDK.instance.saveToken(token);
+      final committed = await _tokenWrites.run(() async {
+        if (!_isAuthGenerationActive(generation)) return false;
+        await XBoardSDK.instance.saveToken(token);
+        return _isAuthGenerationActive(generation);
+      });
+      if (!committed) return false;
+      _cacheScope = ContentCacheScope.accountForToken(token);
+      ref.read(sessionEpochProvider.notifier).state++;
       state = state.copyWith(
         isAuthenticated: true,
         isInitialized: true,
@@ -682,13 +776,21 @@ class XBoardUserAuthNotifier extends Notifier<UserAuthState> {
         email: email,
       );
     } catch (e) {
+      if (!_isAuthGenerationActive(generation)) return false;
       _logger.warning('扫码登录完成失败: $e');
-      await XBoardSDK.instance.clearToken();
+      await _tokenWrites.run(() async {
+        if (_isAuthGenerationActive(generation)) {
+          await XBoardSDK.instance.clearToken();
+        }
+      });
+      if (!_isAuthGenerationActive(generation)) return false;
       state = state.copyWith(
           isLoading: false,
           isAuthenticated: false,
           errorMessage: '[NETWORK_ERROR]');
       return false;
+    } finally {
+      _loginPending = false;
     }
   }
 
@@ -707,6 +809,7 @@ class XBoardUserAuthNotifier extends Notifier<UserAuthState> {
   }
 
   void _clearSessionScopedProvidersForLogin() {
+    _cacheScope = null;
     ref.read(userInfoProvider.notifier).state = null;
     ref.read(subscriptionInfoProvider.notifier).state = null;
     clearGetUserInfoCache();
@@ -723,6 +826,7 @@ class XBoardUserAuthNotifier extends Notifier<UserAuthState> {
     ref.read(profileImportProvider.notifier).clearState();
     _automaticSubscriptionImportKey = null;
     state = state.copyWith(
+      isAuthenticated: false,
       userInfo: null,
       subscriptionInfo: null,
       email: null,
@@ -737,26 +841,32 @@ class XBoardUserAuthNotifier extends Notifier<UserAuthState> {
     DomainSubscription? subscriptionInfo;
 
     try {
+      if (!_isAuthGenerationActive(generation)) return false;
       clearGetUserInfoCache();
       ref.invalidate(getUserInfoProvider);
       final model = await ref.read(getUserInfoProvider.future);
       if (!_isAuthGenerationActive(generation)) return false;
       userInfo = _mapUser(model);
       ref.read(userInfoProvider.notifier).state = userInfo;
-      await _storageService.saveDomainUser(userInfo);
-      await _storageService.saveUserEmail(userInfo.email);
+      if (!await _persistUser(userInfo, generation)) return false;
+      if (_cacheScope != null) {
+        await _storageService.saveUserEmail(userInfo.email, scope: _cacheScope);
+      }
     } catch (error) {
       _logger.warning('[登录后初始化] 获取用户信息失败，继续加载订阅: $error');
     }
 
     try {
+      if (!_isAuthGenerationActive(generation)) return false;
       clearGetSubscriptionCache();
       ref.invalidate(getSubscriptionProvider);
       final model = await ref.read(getSubscriptionProvider.future);
       if (!_isAuthGenerationActive(generation)) return false;
       subscriptionInfo = _mergeSubscriptionWithCache(_mapSubscription(model));
       ref.read(subscriptionInfoProvider.notifier).state = subscriptionInfo;
-      await _storageService.saveDomainSubscription(subscriptionInfo);
+      if (!await _persistSubscription(subscriptionInfo, generation)) {
+        return false;
+      }
     } catch (error) {
       _logger.warning('[登录后初始化] 获取订阅信息失败: $error');
     }
@@ -801,10 +911,12 @@ class XBoardUserAuthNotifier extends Notifier<UserAuthState> {
       if (delays[attempt] != Duration.zero) {
         await Future<void>.delayed(delays[attempt]);
       }
+      if (!_isAuthGenerationActive(generation)) return false;
       _logger.info('[登录后初始化] 导入订阅 ${attempt + 1}/${delays.length}');
       imported = await ref
           .read(profileImportProvider.notifier)
           .importSubscription(url);
+      if (!_isAuthGenerationActive(generation)) return false;
       if (imported && _hasUsableNodes(ref.read(groupsProvider))) break;
       if (imported) {
         try {
@@ -823,7 +935,7 @@ class XBoardUserAuthNotifier extends Notifier<UserAuthState> {
     if (_isAuthGenerationActive(generation)) {
       state = state.copyWith(isLoading: false);
     }
-    return true;
+    return _isAuthGenerationActive(generation);
   }
 
   bool _hasUsableNodes(List<Group> groups) {
@@ -866,9 +978,10 @@ class XBoardUserAuthNotifier extends Notifier<UserAuthState> {
         await Future<void>.delayed(const Duration(milliseconds: 1200));
         if (!_isAuthGenerationActive(generation)) return;
         // 先恢复旧 Profile 供首屏使用，但不再因存在本地缓存而跳过刷新。
-        if (await _restoreReusableLocalProfile(url)) {
+        if (await _restoreReusableLocalProfile(url, generation)) {
           _logger.info('[自动刷新] 已先恢复旧订阅缓存，继续后台检查新配置');
         }
+        if (!_isAuthGenerationActive(generation)) return;
         succeeded = await ref
             .read(profileImportProvider.notifier)
             .importSubscription(url);
@@ -909,18 +1022,25 @@ class XBoardUserAuthNotifier extends Notifier<UserAuthState> {
     return false;
   }
 
-  Future<bool> _restoreReusableLocalProfile(String subscriptionUrl) async {
+  Future<bool> _restoreReusableLocalProfile(
+      String subscriptionUrl, int generation) async {
+    if (!_isAuthGenerationActive(generation)) return false;
     final profile = ref.read(currentProfileProvider);
     if (profile == null || profile.url != subscriptionUrl) return false;
     try {
-      if (!await profile.check() ||
-          (await ProfileVault.instance.readText(profile.id)).isEmpty) {
+      if (!await profile.check() || !_isAuthGenerationActive(generation)) {
+        return false;
+      }
+      final content = await ProfileVault.instance.readText(profile.id);
+      if (!_isAuthGenerationActive(generation) || content.isEmpty) {
         return false;
       }
       if (ref.read(groupsProvider).isEmpty) {
-        await globalState.appController.loadGroupsFromLocalProfile();
+        await globalState.appController.loadGroupsFromLocalProfile(
+          canApply: () => _isAuthGenerationActive(generation),
+        );
       }
-      return true;
+      return _isAuthGenerationActive(generation);
     } catch (error) {
       _logger.info('[本地节点恢复] 读取现有 Profile 失败: $error');
       return false;
@@ -992,6 +1112,7 @@ class XBoardUserAuthNotifier extends Notifier<UserAuthState> {
 
   Future<bool> register(String email, String password, String? inviteCode,
       String? emailCode) async {
+    final generation = _authGeneration;
     state = state.copyWith(isLoading: true, errorMessage: null);
     try {
       _logger.info('开始注册: ${SensitiveMasker.maskText(email)}');
@@ -1002,11 +1123,10 @@ class XBoardUserAuthNotifier extends Notifier<UserAuthState> {
         inviteCode: inviteCode,
         emailCode: emailCode,
       );
+      if (!_isAuthGenerationActive(generation)) return false;
 
       if (success) {
         _logger.info('注册成功');
-        await _storageService.saveUserEmail(email);
-
         state = state.copyWith(isLoading: false);
         return true;
       } else {
@@ -1017,6 +1137,7 @@ class XBoardUserAuthNotifier extends Notifier<UserAuthState> {
         return false;
       }
     } catch (e) {
+      if (!_isAuthGenerationActive(generation)) return false;
       _logger.info('注册出错: $e');
       final errorMessage = BackendMessageMapper.mapError(
         e,
@@ -1031,13 +1152,16 @@ class XBoardUserAuthNotifier extends Notifier<UserAuthState> {
   }
 
   Future<bool> sendVerificationCode(String email) async {
+    final generation = _authGeneration;
     state = state.copyWith(isLoading: true, errorMessage: null);
     try {
       _logger.info('发送验证码到: ${SensitiveMasker.maskText(email)}');
       final success = await XBoardSDK.instance.auth.sendEmailVerifyCode(email);
+      if (!_isAuthGenerationActive(generation)) return false;
       state = state.copyWith(isLoading: false);
       return success;
     } catch (e) {
+      if (!_isAuthGenerationActive(generation)) return false;
       _logger.info('发送验证码出错: $e');
       state = state.copyWith(
         isLoading: false,
@@ -1052,6 +1176,7 @@ class XBoardUserAuthNotifier extends Notifier<UserAuthState> {
 
   Future<bool> resetPassword(
       String email, String password, String emailCode) async {
+    final generation = _authGeneration;
     state = state.copyWith(isLoading: true, errorMessage: null);
     try {
       _logger.info('重置密码: ${SensitiveMasker.maskText(email)}');
@@ -1061,6 +1186,7 @@ class XBoardUserAuthNotifier extends Notifier<UserAuthState> {
         emailCode,
         password,
       );
+      if (!_isAuthGenerationActive(generation)) return false;
 
       if (success) {
         _logger.info('密码重置成功');
@@ -1074,6 +1200,7 @@ class XBoardUserAuthNotifier extends Notifier<UserAuthState> {
         return false;
       }
     } catch (e) {
+      if (!_isAuthGenerationActive(generation)) return false;
       _logger.info('重置密码出错: $e');
       state = state.copyWith(
         isLoading: false,
@@ -1093,6 +1220,7 @@ class XBoardUserAuthNotifier extends Notifier<UserAuthState> {
     bool importProfile = true,
     String source = '手动刷新',
   }) async {
+    final generation = _authGeneration;
     final existing = _accountRefreshFuture;
     final refresh = existing ?? _refreshAccountData();
     if (existing == null) {
@@ -1108,6 +1236,7 @@ class XBoardUserAuthNotifier extends Notifier<UserAuthState> {
       }
     }
 
+    if (!_isAuthGenerationActive(generation) || !state.isAuthenticated) return;
     if (importProfile && subscriptionData?.subscribeUrl.isNotEmpty == true) {
       _logger.info(
           '[$source] 开始导入订阅配置: ${SensitiveMasker.maskUrl(subscriptionData!.subscribeUrl)}');
@@ -1169,12 +1298,14 @@ class XBoardUserAuthNotifier extends Notifier<UserAuthState> {
 
       if (fetchedUser != null) {
         userInfo = fetchedUser;
-        await _storageService.saveDomainUser(userInfo!);
+        if (!await _persistUser(userInfo!, generation)) return null;
         ref.read(userInfoProvider.notifier).state = userInfo;
       }
       if (fetchedSub != null) {
         subscriptionData = _mergeSubscriptionWithCache(fetchedSub!);
-        await _storageService.saveDomainSubscription(subscriptionData);
+        if (!await _persistSubscription(subscriptionData, generation)) {
+          return null;
+        }
         ref.read(subscriptionInfoProvider.notifier).state = subscriptionData;
       }
 
@@ -1208,20 +1339,27 @@ class XBoardUserAuthNotifier extends Notifier<UserAuthState> {
   /// 当前内存/本地缓存，交给连接前的本地校验继续处理。
   Future<bool> refreshSubscriptionForConnect(Duration timeout) async {
     if (!state.isAuthenticated) return false;
+    final generation = _authGeneration;
 
     try {
       clearGetSubscriptionCache();
       ref.invalidate(getSubscriptionProvider);
       final subscriptionModel =
           await ref.read(getSubscriptionProvider.future).timeout(timeout);
+      if (!_isAuthGenerationActive(generation) || !state.isAuthenticated) {
+        return false;
+      }
       final subscriptionData =
           _mergeSubscriptionWithCache(_mapSubscription(subscriptionModel));
-      await _storageService.saveDomainSubscription(subscriptionData);
+      if (!await _persistSubscription(subscriptionData, generation)) {
+        return false;
+      }
       ref.read(subscriptionInfoProvider.notifier).state = subscriptionData;
       state = state.copyWith(subscriptionInfo: subscriptionData);
       ref.read(serviceConnectivityProvider.notifier).reportRequestSuccess();
       return true;
     } catch (error) {
+      if (!_isAuthGenerationActive(generation)) return false;
       _logger.info('连接前刷新订阅失败，使用缓存继续校验: $error');
       ref
           .read(serviceConnectivityProvider.notifier)
@@ -1240,6 +1378,7 @@ class XBoardUserAuthNotifier extends Notifier<UserAuthState> {
     if (!state.isAuthenticated) {
       return false;
     }
+    final generation = _authGeneration;
     final payload = <String, dynamic>{};
     if (remindExpire != null) {
       payload['remind_expire'] = remindExpire ? 1 : 0;
@@ -1253,6 +1392,7 @@ class XBoardUserAuthNotifier extends Notifier<UserAuthState> {
 
     try {
       final success = await XBoardSDK.instance.user.updateUserInfo(payload);
+      if (!_isAuthGenerationActive(generation)) return false;
       if (success) {
         await refreshUserInfo();
       }
@@ -1265,11 +1405,13 @@ class XBoardUserAuthNotifier extends Notifier<UserAuthState> {
 
   Future<bool> updateAutoRenewal(bool enabled) async {
     if (!state.isAuthenticated) return false;
+    final generation = _authGeneration;
 
     try {
       final success = await XBoardSDK.instance.user.updateUserInfo({
         'auto_renewal': enabled ? 1 : 0,
       });
+      if (!_isAuthGenerationActive(generation)) return false;
       if (success) {
         final current = ref.read(userInfoProvider) ?? state.userInfo;
         if (current != null) {
@@ -1281,7 +1423,7 @@ class XBoardUserAuthNotifier extends Notifier<UserAuthState> {
           );
           ref.read(userInfoProvider.notifier).state = updated;
           state = state.copyWith(userInfo: updated);
-          await _storageService.saveDomainUser(updated);
+          if (!await _persistUser(updated, generation)) return false;
         }
         await refreshUserInfo();
       }
@@ -1355,34 +1497,71 @@ class XBoardUserAuthNotifier extends Notifier<UserAuthState> {
   Future<void> logout({
     bool allowWhenServiceUnavailable = false,
     bool preserveSavedCredentials = true,
+  }) {
+    final pending = _logoutFuture;
+    if (pending != null) return pending;
+    final operation = _logout(
+      allowWhenServiceUnavailable: allowWhenServiceUnavailable,
+      preserveSavedCredentials: preserveSavedCredentials,
+    );
+    _logoutFuture = operation;
+    void finish() {
+      _logoutFuture = null;
+      _sessionClosing = false;
+    }
+
+    operation.then<void>((_) => finish(),
+        onError: (Object _, StackTrace __) => finish());
+    return operation;
+  }
+
+  Future<void> _logout({
+    bool allowWhenServiceUnavailable = false,
+    bool preserveSavedCredentials = true,
   }) async {
     final connectivity = ref.read(serviceConnectivityProvider);
     if (!allowWhenServiceUnavailable && !connectivity.isOnline) {
       throw const LogoutProtectedException();
     }
+    _sessionClosing = true;
     _nextAuthGeneration();
+    state = state.copyWith(isLoading: true, errorMessage: null);
     _logger.info('用户登出');
     final savedEmail = await _storageService.getSavedEmail();
     final savedPassword = await _storageService.getSavedPassword();
     final rememberPassword = await _storageService.getRememberPassword();
-    state = state.copyWith(isLoading: true, errorMessage: null);
-
     // 1. 停止订阅守卫（停止自动刷新和过期检测）
     subscriptionGuardService.stopGuard();
 
-    // 2. 如果正在连接，先断开
+    // 2. Wait for any subscription transaction (including rollback) before
+    // disconnecting. Otherwise a late rollback can reconnect after logout.
     try {
-      if (globalState.appState.runTime != null) {
-        _logger.info('登出前断开连接');
-        await globalState.appController.updateStatus(false);
+      await ref.read(profileImportProvider.notifier).cancelImportAndWait();
+      final controller = globalState.appController;
+      if (ref.read(runTimeProvider) != null ||
+          globalState.isStart ||
+          controller.isCoreSwitching) {
+        await controller.disconnectAfterPendingOperations();
       }
     } catch (e) {
-      _logger.error('登出断开连接失败: $e');
+      _logger.error('登出前未能完成断开，保留登录状态: $e');
+      state = state.copyWith(isLoading: false);
+      if (state.isAuthenticated && globalState.appState.runTime != null) {
+        subscriptionGuardService.startGuard();
+      }
+      rethrow;
     }
 
     // 3. 清除 SDK Token 和存储层认证数据
     try {
-      await XBoardSDK.instance.logout();
+      await _tokenWrites.run(() async {
+        try {
+          await XBoardSDK.instance.logout();
+        } finally {
+          // A failed remote logout must not keep an active local device token.
+          await XBoardSDK.instance.clearToken();
+        }
+      });
     } catch (e) {
       _logger.warning('SDK 登出失败，继续清理本地状态: $e');
     }
@@ -1468,6 +1647,8 @@ class XBoardUserAuthNotifier extends Notifier<UserAuthState> {
     state = const UserAuthState(
       isInitialized: true, // 登出后保持初始化状态，只重置认证信息
     );
+    _cacheScope = null;
+    _nextAuthGeneration();
     _logger.info('登出完成，所有账户数据已清除');
   }
 

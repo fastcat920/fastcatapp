@@ -6,6 +6,7 @@ import 'package:fl_clash/models/common.dart';
 
 import 'fixed.dart';
 import 'sensitive_masker.dart';
+import 'build_identity.dart';
 
 /// Session-only storage. Normal traffic cannot evict operational/error records.
 /// Extends the existing list contract so no persisted model/schema changes are needed.
@@ -193,6 +194,7 @@ class DiagnosticLogBuffer extends FixedList<Log> {
       '=== FastCat ${chinese ? '运行日志' : 'Runtime logs'} ===',
       if (clientVersion != null)
         '${chinese ? '客户端版本' : 'Client version'}: $clientVersion',
+      '${chinese ? '构建来源' : 'Build identity'}: ${BuildIdentity.label}',
       if (systemVersion != null)
         '${chinese ? '系统版本' : 'System version'}: $systemVersion',
       summary(chinese: chinese),

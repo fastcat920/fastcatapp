@@ -80,7 +80,9 @@ import NetworkExtension
         if call.method == "_updateConfig", response == nil {
           result(FlutterError(code: "TUNNEL_UNAVAILABLE", message: "The VPN tunnel did not acknowledge the configuration.", details: nil))
         } else {
-          result(response ?? "")
+          // nil means the tunnel did not reply. An explicit empty string is a
+          // valid core mutation acknowledgement and must remain distinct.
+          result(response)
         }
       }
     }

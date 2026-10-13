@@ -7,11 +7,10 @@ use std::io::{BufRead, Error, Read};
 use std::path::Path;
 use std::process::{Command, Stdio};
 use std::sync::{Arc, Mutex};
-use std::time::SystemTime;
 use std::{io, thread};
 use warp::{Filter, Reply};
 
-const LISTEN_PORT: u16 = 47890;
+pub(super) const LISTEN_PORT: u16 = 47890;
 const SERVICE_NAME: &str = "fastcatHelperService";
 
 #[derive(Debug, Deserialize, Serialize, Clone)]
@@ -24,6 +23,7 @@ pub struct StartParams {
 struct HelperStatus {
     version: &'static str,
     token: &'static str,
+    caller_auth: &'static str,
     helper_path: Option<String>,
     service_path_matches: Option<bool>,
     core_running: bool,
@@ -31,15 +31,13 @@ struct HelperStatus {
     recent_logs: Vec<String>,
 }
 
-struct HashCache {
-    path: String,
-    len: u64,
-    modified: SystemTime,
-    sha256: String,
+#[cfg(windows)]
+pub(super) fn sha256_file(path: impl AsRef<Path>) -> Result<String, Error> {
+    let mut file = File::open(path)?;
+    sha256_reader(&mut file)
 }
 
-fn sha256_file(path: &str) -> Result<String, Error> {
-    let mut file = File::open(path)?;
+fn sha256_reader(file: &mut impl Read) -> Result<String, Error> {
     let mut hasher = Sha256::new();
     let mut buffer = [0; 4096];
 
@@ -54,42 +52,56 @@ fn sha256_file(path: &str) -> Result<String, Error> {
     Ok(format!("{:x}", hasher.finalize()))
 }
 
-fn cached_sha256_file(path: &str) -> Result<String, Error> {
-    let metadata = std::fs::metadata(path)?;
-    let len = metadata.len();
-    let modified = metadata.modified().unwrap_or(SystemTime::UNIX_EPOCH);
+fn open_core_for_verification(path: &str) -> Result<File, Error> {
+    let mut options = std::fs::OpenOptions::new();
+    options.read(true);
+    #[cfg(windows)]
     {
-        let cache = HASH_CACHE.lock().unwrap();
-        if let Some(cache) = cache.as_ref() {
-            if cache.path == path && cache.len == len && cache.modified == modified {
-                return Ok(cache.sha256.clone());
-            }
-        }
+        use std::os::windows::fs::OpenOptionsExt;
+        // Hold this guard through CreateProcess: deny modifications/renames
+        // between hashing and launching the privileged executable.
+        options.share_mode(1); // FILE_SHARE_READ
     }
-    let sha256 = sha256_file(path)?;
-    let mut cache = HASH_CACHE.lock().unwrap();
-    *cache = Some(HashCache {
-        path: path.to_string(),
-        len,
-        modified,
-        sha256: sha256.clone(),
-    });
-    Ok(sha256)
+    options.open(path)
 }
 
 static LOGS: Lazy<Arc<Mutex<VecDeque<String>>>> =
     Lazy::new(|| Arc::new(Mutex::new(VecDeque::with_capacity(100))));
 static PROCESS: Lazy<Arc<Mutex<Option<std::process::Child>>>> =
     Lazy::new(|| Arc::new(Mutex::new(None)));
-static HASH_CACHE: Lazy<Arc<Mutex<Option<HashCache>>>> = Lazy::new(|| Arc::new(Mutex::new(None)));
 
 fn start(start_params: StartParams) -> impl Reply {
-    let sha256 = cached_sha256_file(start_params.path.as_str()).unwrap_or("".to_string());
+    if start_params
+        .arg
+        .parse::<u16>()
+        .ok()
+        .filter(|port| *port > 0)
+        .is_none()
+    {
+        return "Invalid core callback port".to_string();
+    }
+    let installed_core = std::env::current_exe()
+        .ok()
+        .and_then(|path| path.parent().map(|p| p.join("fastcatCore.exe")))
+        .and_then(|path| path.canonicalize().ok());
+    if installed_core.is_none()
+        || Path::new(&start_params.path).canonicalize().ok() != installed_core
+    {
+        return "Core must belong to the installed application".to_string();
+    }
+    let mut executable_guard = match open_core_for_verification(&start_params.path) {
+        Ok(file) => file,
+        Err(_) => return "Core verification could not read installed executable".to_string(),
+    };
+    let sha256 = sha256_reader(&mut executable_guard).unwrap_or_default();
     if sha256 != env!("TOKEN") {
         return format!("The SHA256 hash of the program requesting execution is: {}. The helper program only allows execution of applications with the SHA256 hash: {}.", sha256,  env!("TOKEN"),);
     }
-    stop();
     let mut process = PROCESS.lock().unwrap();
+    if let Some(mut child) = process.take() {
+        let _ = child.kill();
+        let _ = child.wait();
+    }
     match Command::new(&start_params.path)
         .stderr(Stdio::piped())
         .arg(&start_params.arg)
@@ -137,7 +149,10 @@ fn log_message(message: String) {
     if log_buffer.len() == 100 {
         log_buffer.pop_front();
     }
-    log_buffer.push_back(format!("{}\n", message));
+    log_buffer.push_back(format!(
+        "{}\n",
+        message.chars().take(2048).collect::<String>()
+    ));
 }
 
 fn get_logs() -> impl Reply {
@@ -178,6 +193,7 @@ fn get_status() -> impl Reply {
     warp::reply::json(&HelperStatus {
         version: env!("CARGO_PKG_VERSION"),
         token: env!("TOKEN"),
+        caller_auth: "process-sha256-v1",
         helper_path: helper_path.clone(),
         service_path_matches: service_path_matches(helper_path.as_deref()),
         core_running,
@@ -228,24 +244,58 @@ fn normalize_windows_path(value: &str) -> String {
 }
 
 pub async fn run_service() -> anyhow::Result<()> {
-    let api_ping = warp::get().and(warp::path("ping")).map(|| env!("TOKEN"));
+    let caller = warp::addr::remote()
+        .and(warp::header::optional::<String>("origin"))
+        .and_then(super::caller::authorize)
+        .untuple_one();
+    let api_ping = warp::get()
+        .and(warp::path("ping"))
+        .and(warp::path::end())
+        .map(|| env!("TOKEN"));
 
     let api_start = warp::post()
         .and(warp::path("start"))
+        .and(warp::path::end())
+        .and(warp::body::content_length_limit(4096))
         .and(warp::body::json())
         .map(|start_params: StartParams| start(start_params));
 
-    let api_stop = warp::post().and(warp::path("stop")).map(|| stop());
+    let api_stop = warp::post()
+        .and(warp::path("stop"))
+        .and(warp::path::end())
+        .map(|| stop());
 
-    let api_logs = warp::get().and(warp::path("logs")).map(|| get_logs());
-    let api_status = warp::get().and(warp::path("status")).map(|| get_status());
+    let api_logs = warp::get()
+        .and(warp::path("logs"))
+        .and(warp::path::end())
+        .map(|| get_logs());
+    let api_status = warp::get()
+        .and(warp::path("status"))
+        .and(warp::path::end())
+        .map(|| get_status());
 
     warp::serve(
-        api_ping
-            .or(api_status)
-            .or(api_start)
-            .or(api_stop)
-            .or(api_logs),
+        caller
+            .and(
+                api_ping
+                    .or(api_status)
+                    .or(api_start)
+                    .or(api_stop)
+                    .or(api_logs),
+            )
+            .recover(|rejection: warp::Rejection| async move {
+                let code = if rejection.find::<super::caller::Unauthorized>().is_some() {
+                    warp::http::StatusCode::FORBIDDEN
+                } else if rejection.is_not_found() {
+                    warp::http::StatusCode::NOT_FOUND
+                } else {
+                    warp::http::StatusCode::BAD_REQUEST
+                };
+                Ok::<_, std::convert::Infallible>(warp::reply::with_status(
+                    "Helper request rejected",
+                    code,
+                ))
+            }),
     )
     .run(([127, 0, 0, 1], LISTEN_PORT))
     .await;

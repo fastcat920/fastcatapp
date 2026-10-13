@@ -6,8 +6,11 @@ import 'package:fl_clash/clash/message.dart';
 import 'package:fl_clash/common/common.dart';
 import 'package:fl_clash/enum/enum.dart';
 import 'package:fl_clash/models/models.dart';
+import 'package:fl_clash/security/provider_cache_config.dart';
 
 mixin ClashInterface {
+  Future<String> checkGeoData();
+
   Future<bool> init(InitParams params);
 
   Future<bool> preload();
@@ -114,6 +117,19 @@ mixin AndroidClashInterface {
 abstract class ClashHandlerInterface with ClashInterface {
   Map<String, Completer> callbackCompleterMap = {};
 
+  /// Empty strings are valid success replies for these commands. Never use
+  /// that value to stand in for a missing acknowledgement.
+  static bool requiresAcknowledgement(ActionMethod method) => const {
+        ActionMethod.setupConfig,
+        ActionMethod.updateConfig,
+        ActionMethod.validateConfig,
+        ActionMethod.changeProxy,
+        ActionMethod.updateGeoData,
+        ActionMethod.sideLoadExternalProvider,
+        ActionMethod.updateExternalProvider,
+        ActionMethod.checkGeoData,
+      }.contains(method);
+
   handleResult(ActionResult result) async {
     final completer = callbackCompleterMap[result.id];
     try {
@@ -150,7 +166,8 @@ abstract class ClashHandlerInterface with ClashInterface {
   }) async {
     final id = "${method.name}#${utils.id}";
 
-    callbackCompleterMap[id] = Completer<T>();
+    final completer = Completer<T>();
+    callbackCompleterMap[id] = completer;
 
     dynamic mDefaultValue = defaultValue;
     if (mDefaultValue == null) {
@@ -163,34 +180,57 @@ abstract class ClashHandlerInterface with ClashInterface {
       }
     }
 
-    sendMessage(
-      json.encode(
-        Action(
-          id: id,
-          method: method,
-          data: data,
-        ),
-      ),
-    );
-
-    return (callbackCompleterMap[id] as Completer<T>).safeFuture(
+    final response = completer.safeFuture(
       timeout: timeout,
-      onLast: () {
-        callbackCompleterMap.remove(id);
-      },
       onTimeout: onTimeout ??
           () {
-            return mDefaultValue;
+            if (requiresAcknowledgement(method)) {
+              throw TimeoutException('Core ${method.name} was not acknowledged',
+                  timeout ?? const Duration(seconds: 30));
+            }
+            return mDefaultValue as T;
           },
       functionName: id,
     );
+    // Observe asynchronous transport failures as well as synchronous ones.
+    unawaited(Future.sync(() => sendMessage(
+          json.encode(
+            Action(
+              id: id,
+              method: method,
+              data: data,
+            ),
+          ),
+        )).then<void>((_) {}, onError: (Object error, StackTrace stack) {
+      if (identical(callbackCompleterMap[id], completer) &&
+          !completer.isCompleted) {
+        completer.completeError(error, stack);
+      }
+    }));
+    try {
+      return await response;
+    } finally {
+      // Late replies are discarded, and successful requests don't occupy the
+      // callback map until their original timeout expires.
+      callbackCompleterMap.remove(id);
+    }
   }
+
+  @override
+  Future<String> checkGeoData() => invoke<String>(
+        method: ActionMethod.checkGeoData,
+        timeout: const Duration(seconds: 10),
+      );
 
   @override
   Future<bool> init(InitParams params) {
     return invoke<bool>(
       method: ActionMethod.initClash,
-      data: json.encode(params),
+      data: json.encode({
+        ...params.toJson(),
+        if (providerCacheConfiguration() case final cache?)
+          'provider-cache': cache,
+      }),
     );
   }
 
@@ -234,10 +274,14 @@ abstract class ClashHandlerInterface with ClashInterface {
 
   @override
   Future<String> updateConfig(UpdateParams updateParams) async {
+    const timeout = Duration(seconds: 30);
     return await invoke<String>(
       method: ActionMethod.updateConfig,
-      data: json.encode(updateParams),
-      timeout: Duration(minutes: 2),
+      data: json.encode({
+        ...updateParams.toJson(),
+        'deadlineUnixMs': DateTime.now().add(timeout).millisecondsSinceEpoch,
+      }),
+      timeout: timeout,
     );
   }
 
@@ -269,13 +313,18 @@ abstract class ClashHandlerInterface with ClashInterface {
     SetupParams setupParams, {
     Duration timeout = const Duration(minutes: 2),
   }) async {
-    final data = await Isolate.run(() => json.encode(setupParams));
+    final deadline = DateTime.now().add(timeout).millisecondsSinceEpoch;
+    final data = await Isolate.run(() => json.encode({
+          ...setupParams.toJson(),
+          'deadlineUnixMs': deadline,
+        }));
     return await invoke<String>(
       method: ActionMethod.setupConfig,
       data: data,
       timeout: timeout,
       onTimeout: () => throw TimeoutException(
-        'Core configuration was not acknowledged', timeout,
+        'Core configuration was not acknowledged',
+        timeout,
       ),
     );
   }
@@ -291,7 +340,7 @@ abstract class ClashHandlerInterface with ClashInterface {
   Future<Map> getProxies() {
     return invoke<Map>(
       method: ActionMethod.getProxies,
-      timeout: Duration(seconds: 120),
+      timeout: const Duration(seconds: 5),
     );
   }
 
@@ -300,6 +349,7 @@ abstract class ClashHandlerInterface with ClashInterface {
     return invoke<String>(
       method: ActionMethod.changeProxy,
       data: json.encode(changeProxyParams),
+      timeout: const Duration(seconds: 5),
     );
   }
 

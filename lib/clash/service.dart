@@ -268,6 +268,7 @@ class ClashService extends ClashHandlerInterface {
       socket.writeln(message);
     } catch (e) {
       commonPrint.log("sendMessage failed (core not connected): $e");
+      rethrow;
     }
   }
 

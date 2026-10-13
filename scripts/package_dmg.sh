@@ -7,6 +7,7 @@ set -e
 # ============================================================
 
 PROJECT_DIR="$(cd "$(dirname "$0")/.." && pwd)"
+python3 "$PROJECT_DIR/scripts/check_release_readiness.py" macos
 
 # 从 config.yaml 读取产品名
 APP_NAME="快猫"

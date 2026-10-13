@@ -56,6 +56,9 @@ func handleAction(action *Action, result ActionResult) {
 		data := []byte(action.Data.(string))
 		result.success(handleValidateConfig(data))
 		return
+	case checkGeoDataMethod:
+		result.success(handleCheckGeoData())
+		return
 	case updateConfigMethod:
 		data := []byte(action.Data.(string))
 		result.success(handleUpdateConfig(data))

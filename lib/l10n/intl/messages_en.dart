@@ -1719,6 +1719,12 @@ class MessageLookup extends MessageLookupByLibrary {
     "xboardCustomRechargeAmount": MessageLookupByLibrary.simpleMessage(
       "Custom recharge amount",
     ),
+    "xboardCustomerServiceLoadTimeout": MessageLookupByLibrary.simpleMessage(
+      "Loading timed out. Check your network and try again.",
+    ),
+    "xboardCustomerServiceNotConfigured": MessageLookupByLibrary.simpleMessage(
+      "Online support is not configured",
+    ),
     "xboardDays": MessageLookupByLibrary.simpleMessage("days"),
     "xboardDeductedBalance": MessageLookupByLibrary.simpleMessage(
       "Deducted balance",
@@ -1736,6 +1742,9 @@ class MessageLookup extends MessageLookupByLibrary {
       "Current device",
     ),
     "xboardDeviceExpired": MessageLookupByLibrary.simpleMessage("Expired"),
+    "xboardDeviceGatewayRelogin": MessageLookupByLibrary.simpleMessage(
+      "Your device session has changed. Please sign in again.",
+    ),
     "xboardDeviceHealth": MessageLookupByLibrary.simpleMessage("Device status"),
     "xboardDeviceHistory": MessageLookupByLibrary.simpleMessage("History"),
     "xboardDeviceHistoryHint": MessageLookupByLibrary.simpleMessage(
@@ -2208,6 +2217,14 @@ class MessageLookup extends MessageLookupByLibrary {
     "xboardNetworkDiagnosticsConclusion": MessageLookupByLibrary.simpleMessage(
       "Diagnostic conclusion",
     ),
+    "xboardNetworkDiagnosticsConclusionConfiguration":
+        MessageLookupByLibrary.simpleMessage(
+          "The proxy configuration has not been applied, or the selected node is missing from the core. Reload the subscription or configuration first; this does not indicate a local network or node DNS failure.",
+        ),
+    "xboardNetworkDiagnosticsConclusionCoreUnavailable":
+        MessageLookupByLibrary.simpleMessage(
+          "No usable core diagnostic result was obtained. Check the core and configuration, then retry; this alone does not indicate a local network failure.",
+        ),
     "xboardNetworkDiagnosticsConclusionDisconnectedDns":
         MessageLookupByLibrary.simpleMessage(
           "VPN is not connected, and the basic network DNS result is abnormal. Fix the local network or DNS before diagnosing the node route.",
@@ -2256,8 +2273,12 @@ class MessageLookup extends MessageLookupByLibrary {
         MessageLookupByLibrary.simpleMessage(
           "The proxy route is working normally. Some direct targets are restricted on the current network, which does not affect proxy use.",
         ),
+    "xboardNetworkDiagnosticsConclusionRouteUncertain":
+        MessageLookupByLibrary.simpleMessage(
+          "Both the device baseline and node checks failed, but VPN/TUN may affect system routing. The results cannot distinguish a local network issue from a proxy issue. Check the core, configuration, and TUN state first.",
+        ),
     "xboardNetworkDiagnosticsConclusionTcp": MessageLookupByLibrary.simpleMessage(
-      "Direct internet access works, but the selected node TCP endpoint timed out. The endpoint may be unreachable or restricted by the current network.",
+      "The device HTTPS baseline is reachable, but the selected node TCP endpoint timed out. The endpoint may be unreachable or restricted by the current network.",
     ),
     "xboardNetworkDiagnosticsConclusionTcpRefused":
         MessageLookupByLibrary.simpleMessage(
@@ -2267,7 +2288,7 @@ class MessageLookup extends MessageLookupByLibrary {
       "TCP connectivity succeeded, but the node TLS handshake failed. Check SNI, certificates, or network TLS filtering.",
     ),
     "xboardNetworkDiagnosticsConclusionUdp": MessageLookupByLibrary.simpleMessage(
-      "The UDP-based node timed out while direct internet access works. UDP may be unavailable or restricted on the current network.",
+      "The UDP-based node timed out while the device HTTPS baseline is reachable. UDP may be unavailable or restricted on the current network.",
     ),
     "xboardNetworkDiagnosticsConnectFirst":
         MessageLookupByLibrary.simpleMessage(
@@ -2283,13 +2304,13 @@ class MessageLookup extends MessageLookupByLibrary {
       "Copy report",
     ),
     "xboardNetworkDiagnosticsCoreUnavailable": MessageLookupByLibrary.simpleMessage(
-      "Layered diagnostics are unavailable in the current core. Update or fully restart the client; the HTTPS results below remain valid.",
+      "No usable layered core diagnostic result was obtained. Unperformed checks are skipped; device HTTPS results are shown separately.",
     ),
     "xboardNetworkDiagnosticsDescription": MessageLookupByLibrary.simpleMessage(
       "DNS checks use the system resolver. Node diagnostics then check the actual endpoint DNS, TCP or UDP transport, proxy handshake, and HTTP reachability.",
     ),
     "xboardNetworkDiagnosticsDirectHttps": MessageLookupByLibrary.simpleMessage(
-      "Local direct HTTPS (domestic baseline)",
+      "Device HTTPS (independent of core test API)",
     ),
     "xboardNetworkDiagnosticsDisconnected":
         MessageLookupByLibrary.simpleMessage("Disconnected"),
@@ -2319,7 +2340,9 @@ class MessageLookup extends MessageLookupByLibrary {
       "HTTPS reachability",
     ),
     "xboardNetworkDiagnosticsIpConnectivity":
-        MessageLookupByLibrary.simpleMessage("IPv4 / IPv6 connectivity"),
+        MessageLookupByLibrary.simpleMessage(
+          "Device IPv4 / IPv6 (system routing)",
+        ),
     "xboardNetworkDiagnosticsLocalProxy": MessageLookupByLibrary.simpleMessage(
       "Actual proxy route (via local proxy port)",
     ),
@@ -2327,6 +2350,13 @@ class MessageLookup extends MessageLookupByLibrary {
         MessageLookupByLibrary.simpleMessage(
           "The selected node passed, but the actual local proxy route failed. Check the active proxy group selection and try again.",
         ),
+    "xboardNetworkDiagnosticsNativeDirectDetail":
+        MessageLookupByLibrary.simpleMessage(
+          "Device request without the core test API; still uses system DNS and routing",
+        ),
+    "xboardNetworkDiagnosticsNativeTunDetail": MessageLookupByLibrary.simpleMessage(
+      "Device request without the core test API; VPN/TUN may affect system DNS and routing, so this does not independently verify the physical network",
+    ),
     "xboardNetworkDiagnosticsNetworkEthernet":
         MessageLookupByLibrary.simpleMessage("Ethernet"),
     "xboardNetworkDiagnosticsNetworkMobile":
@@ -2386,6 +2416,10 @@ class MessageLookup extends MessageLookupByLibrary {
     "xboardNetworkDiagnosticsRunningTime": MessageLookupByLibrary.simpleMessage(
       "Running time",
     ),
+    "xboardNetworkDiagnosticsSkippedPrerequisite":
+        MessageLookupByLibrary.simpleMessage(
+          "Prerequisite unavailable; this check was not performed",
+        ),
     "xboardNetworkDiagnosticsStart": MessageLookupByLibrary.simpleMessage(
       "Start diagnostics",
     ),
@@ -2589,6 +2623,9 @@ class MessageLookup extends MessageLookupByLibrary {
     "xboardPassword": MessageLookupByLibrary.simpleMessage("Password"),
     "xboardPasswordChanged": MessageLookupByLibrary.simpleMessage(
       "Password changed successfully",
+    ),
+    "xboardPasswordChangedRememberFailed": MessageLookupByLibrary.simpleMessage(
+      "Password changed. Please enter your new password the next time you sign in.",
     ),
     "xboardPayNow": MessageLookupByLibrary.simpleMessage("Pay now"),
     "xboardPayableAmount": MessageLookupByLibrary.simpleMessage(
@@ -2898,6 +2935,9 @@ class MessageLookup extends MessageLookupByLibrary {
     ),
     "xboardResetTrafficConfirmContent": MessageLookupByLibrary.simpleMessage(
       "This will reset the used traffic, but will not extend the plan duration. Continue?",
+    ),
+    "xboardResetTrafficDescription": MessageLookupByLibrary.simpleMessage(
+      "Reset the current plan\'s data usage",
     ),
     "xboardResetTrafficInDays": m56,
     "xboardResetTrafficToday": MessageLookupByLibrary.simpleMessage(

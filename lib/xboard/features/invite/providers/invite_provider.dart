@@ -12,6 +12,8 @@ import 'package:fl_clash/xboard/services/services.dart';
 import 'package:fl_clash/xboard/utils/backend_message_mapper.dart';
 import 'package:fl_clash/common/sensitive_masker.dart';
 import 'package:fl_clash/common/app_localizations.dart';
+import 'package:fl_clash/xboard/features/auth/providers/session_epoch_provider.dart';
+import 'package:fl_clash/xboard/infrastructure/cache/content_cache_scope.dart';
 
 // 初始化文件级日志器
 const _logger = FileLogger('invite_provider.dart');
@@ -129,21 +131,38 @@ class InviteState {
 }
 
 class InviteNotifier extends Notifier<InviteState> {
+  bool _disposed = false;
+  bool _hasBuilt = false;
+
+  bool _isCurrent(int epoch) =>
+      !_disposed && ref.read(sessionEpochProvider) == epoch;
+
   @override
   InviteState build() {
+    final epoch = ref.watch(sessionEpochProvider);
+    _disposed = false;
+    ref.onDispose(() => _disposed = true);
     // 用全局缓存的用户信息预填充余额，使余额卡片无需等邀请 API 即可立即展示
-    final cachedUser = ref.read(userInfoProvider);
+    final cachedUser = _hasBuilt ? null : ref.read(userInfoProvider);
+    _hasBuilt = true;
 
     // 若 userInfoProvider 在之后才加载完成（首次启动极快进入），同步更新
     ref.listen<DomainUser?>(userInfoProvider, (_, next) {
       if (next != null && next != state.userInfo) {
         Future<void>(() {
+          if (!_isCurrent(epoch)) return;
           state = state.copyWith(userInfo: next);
         });
       }
     });
 
-    Future<void>(() => _loadCachedInviteState());
+    Future<void>(() async {
+      try {
+        if (_isCurrent(epoch)) await _loadCachedInviteState();
+      } catch (error) {
+        _logger.info('邀请缓存不可用，将使用在线数据: $error');
+      }
+    });
     return InviteState(
       userInfo: cachedUser, // 有缓存则余额卡片立即显示正确值
       isLoading:
@@ -153,24 +172,25 @@ class InviteNotifier extends Notifier<InviteState> {
   }
 
   Future<void> _loadCachedInviteState() async {
+    final epoch = ref.read(sessionEpochProvider);
     if (state.hasInviteData) return;
+    final scope = await ContentCacheScope.current();
+    if (!_isCurrent(epoch) || scope == null) return;
     final storage = ref.read(storageServiceProvider);
     final results = await Future.wait([
-      storage.getDomainInvite(),
-      storage.getDomainCommissionHistory(),
-      storage.getDomainUser(),
+      storage.getDomainInvite(scope: scope),
+      storage.getDomainCommissionHistory(scope: scope),
     ]);
+    if (!_isCurrent(epoch) || state.hasInviteData) return;
     final cachedInvite = results[0].dataOrNull as DomainInvite?;
     final cachedHistory =
         results[1].dataOrNull as List<DomainCommission>? ?? const [];
-    final cachedUser = results[2].dataOrNull as DomainUser?;
-    if (cachedInvite == null && cachedHistory.isEmpty && cachedUser == null) {
+    if (cachedInvite == null && cachedHistory.isEmpty) {
       return;
     }
     state = state.copyWith(
       inviteData: cachedInvite,
       commissionHistory: cachedHistory,
-      userInfo: state.userInfo ?? cachedUser,
       isLoading: false,
       isLoadingHistory: false,
       errorMessage: null,
@@ -179,25 +199,27 @@ class InviteNotifier extends Notifier<InviteState> {
   }
 
   Future<void> loadInviteData() async {
+    final epoch = ref.read(sessionEpochProvider);
     if (state.isLoading) return;
 
     state = state.copyWith(isLoading: true, errorMessage: null);
 
     try {
       _logger.info('加载邀请信息...');
-      _logger.info('加载邀请信息...');
       ref.invalidate(getInviteInfoProvider);
       final inviteInfoModel = await ref.read(getInviteInfoProvider.future);
+      if (!_isCurrent(epoch)) return;
       final inviteData = _mapInviteInfo(inviteInfoModel);
 
       state = state.copyWith(
         inviteData: inviteData,
         isLoading: false,
       );
-      unawaited(ref.read(storageServiceProvider).saveDomainInvite(inviteData));
+      unawaited(_saveInviteCache(epoch, inviteData: inviteData));
 
       _logger.info('邀请信息加载成功');
     } catch (e) {
+      if (!_isCurrent(epoch)) return;
       _logger.info('加载邀请信息失败: $e');
       state = state.copyWith(
         isLoading: false,
@@ -207,7 +229,9 @@ class InviteNotifier extends Notifier<InviteState> {
   }
 
   Future<void> loadWithdrawConfig() async {
+    final epoch = ref.read(sessionEpochProvider);
     final config = await _fetchWithdrawConfig();
+    if (!_isCurrent(epoch)) return;
     state = state.copyWith(
       isWithdrawConfigLoaded: true,
       withdrawEnabled: config.enabled,
@@ -217,15 +241,16 @@ class InviteNotifier extends Notifier<InviteState> {
 
   Future<void> loadCommissionHistory(
       {int page = 1, bool append = false}) async {
+    final epoch = ref.read(sessionEpochProvider);
     if (state.isLoadingHistory) return;
 
     state = state.copyWith(isLoadingHistory: true);
 
     try {
       _logger.info('加载佣金历史... 页码: $page');
-      _logger.info('加载佣金历史... 页码: $page');
       final commissionList =
           await ref.read(getCommissionDetailsProvider(page: page).future);
+      if (!_isCurrent(epoch)) return;
       final newHistory = commissionList.map(_mapCommission).toList();
 
       List<DomainCommission> updatedHistory;
@@ -244,15 +269,12 @@ class InviteNotifier extends Notifier<InviteState> {
         isLoadingHistory: false,
       );
       if (page == 1) {
-        unawaited(
-          ref
-              .read(storageServiceProvider)
-              .saveDomainCommissionHistory(updatedHistory),
-        );
+        unawaited(_saveInviteCache(epoch, history: updatedHistory));
       }
 
       _logger.info('佣金历史加载成功: 第$page页，${newHistory.length} 条记录');
     } catch (e) {
+      if (!_isCurrent(epoch)) return;
       _logger.info('加载佣金历史失败: $e');
       state = state.copyWith(isLoadingHistory: false);
     }
@@ -269,18 +291,19 @@ class InviteNotifier extends Notifier<InviteState> {
   }
 
   Future<void> loadUserInfo({bool forceRefresh = false}) async {
+    final epoch = ref.read(sessionEpochProvider);
     try {
-      _logger.info('加载用户信息...');
       _logger.info('加载用户信息...');
       if (forceRefresh) {
         clearGetUserInfoCache();
         ref.invalidate(getUserInfoProvider);
       }
       final userModel = await ref.read(getUserInfoProvider.future);
+      if (!_isCurrent(epoch)) return;
       final userInfo = _mapUser(userModel);
       state = state.copyWith(userInfo: userInfo);
       ref.read(userInfoProvider.notifier).state = userInfo;
-      unawaited(ref.read(storageServiceProvider).saveDomainUser(userInfo));
+      unawaited(_saveUserCache(epoch, userInfo));
       _logger.info('用户信息加载成功: 钱包余额 ¥${userInfo.balanceInCents / 100.0}');
     } catch (e) {
       _logger.info('加载用户信息失败: $e');
@@ -288,14 +311,17 @@ class InviteNotifier extends Notifier<InviteState> {
   }
 
   Future<DomainInviteCode?> generateInviteCode() async {
+    final epoch = ref.read(sessionEpochProvider);
     if (state.isGenerating) return null;
 
     state = state.copyWith(isGenerating: true, errorMessage: null);
 
     try {
       _logger.info('生成邀请码...');
-      _logger.info('生成邀请码...');
-      final codeString = await XBoardSDK.instance.invite.generateInviteCode();
+      final sdk = await ref.read(xboardSdkProvider.future);
+      if (!_isCurrent(epoch)) return null;
+      final codeString = await sdk.invite.generateInviteCode();
+      if (!_isCurrent(epoch)) return null;
 
       // SDK returns String, we need to wrap it or reload data
       // Assuming generateInviteCode returns the code string
@@ -308,11 +334,13 @@ class InviteNotifier extends Notifier<InviteState> {
         createdAt: DateTime.now(),
       );
       await loadInviteData();
+      if (!_isCurrent(epoch)) return null;
 
       state = state.copyWith(isGenerating: false);
-      _logger.info('邀请码生成成功: $newInviteCode');
+      _logger.info('邀请码生成成功');
       return newInviteCode;
     } catch (e) {
+      if (!_isCurrent(epoch)) return null;
       _logger.info('生成邀请码失败: $e');
       final mapped = BackendMessageMapper.mapError(e);
       // 仅「创建数量上限」显示具体错误，其余原因统一用泛型提示
@@ -341,6 +369,7 @@ class InviteNotifier extends Notifier<InviteState> {
     required String withdrawMethod,
     required String withdrawAccount,
   }) async {
+    final epoch = ref.read(sessionEpochProvider);
     if (state.isLoading) return false;
 
     if (amountInCents <= 0 || amountInCents > 9007199254740991) {
@@ -362,11 +391,13 @@ class InviteNotifier extends Notifier<InviteState> {
       _logger.info(
           '提现佣金: 方式=$withdrawMethod, 账号=${SensitiveMasker.maskText(withdrawAccount)}');
       final sdk = await ref.read(xboardSdkProvider.future);
+      if (!_isCurrent(epoch)) return false;
       final success = await sdk.invite.withdrawCommission(
         amount: amountInCents / 100,
         method: withdrawMethod,
         params: {'account': withdrawAccount},
       );
+      if (!_isCurrent(epoch)) return false;
 
       if (!success) {
         throw Exception(BackendMessageMapper.map(
@@ -379,13 +410,16 @@ class InviteNotifier extends Notifier<InviteState> {
       // follow-up balance/history refresh failed, encouraging a second request.
       try {
         await _refreshAfterCommissionMutation();
+        if (!_isCurrent(epoch)) return false;
       } catch (e) {
+        if (!_isCurrent(epoch)) return false;
         _logger.warning('提现已提交，刷新佣金信息失败: $e');
         state = state.copyWith(isLoading: false, errorMessage: null);
       }
       _logger.info('提现申请提交成功');
       return true;
     } catch (e) {
+      if (!_isCurrent(epoch)) return false;
       _logger.info('提现申请失败: $e');
       state = state.copyWith(
         isLoading: false,
@@ -399,14 +433,17 @@ class InviteNotifier extends Notifier<InviteState> {
   }
 
   Future<bool> transferCommission(double amount) async {
+    final epoch = ref.read(sessionEpochProvider);
     if (state.isLoading) return false;
 
     state = state.copyWith(isLoading: true, errorMessage: null);
 
     try {
       _logger.info('划转佣金到钱包: ¥$amount');
-      final success =
-          await XBoardSDK.instance.invite.transferCommissionToBalance(amount);
+      final sdk = await ref.read(xboardSdkProvider.future);
+      if (!_isCurrent(epoch)) return false;
+      final success = await sdk.invite.transferCommissionToBalance(amount);
+      if (!_isCurrent(epoch)) return false;
 
       if (!success) {
         throw Exception(BackendMessageMapper.map(
@@ -416,9 +453,11 @@ class InviteNotifier extends Notifier<InviteState> {
       }
 
       await _refreshAfterCommissionMutation();
+      if (!_isCurrent(epoch)) return false;
       _logger.info('划转成功');
       return true;
     } catch (e) {
+      if (!_isCurrent(epoch)) return false;
       _logger.info('划转失败: $e');
       state = state.copyWith(
         isLoading: false,
@@ -438,6 +477,7 @@ class InviteNotifier extends Notifier<InviteState> {
   }
 
   Future<void> refresh() async {
+    final epoch = ref.read(sessionEpochProvider);
     // 只做一次 isLoading 更新，避免多次 state 变更引起 UI 闪烁
     state = state.copyWith(
         isLoading: true, isLoadingHistory: true, errorMessage: null);
@@ -452,6 +492,7 @@ class InviteNotifier extends Notifier<InviteState> {
         ref.read(getUserInfoProvider.future),
         _fetchWithdrawConfig(),
       ]);
+      if (!_isCurrent(epoch)) return;
       final inviteData = _mapInviteInfo(results[0] as InviteInfoModel);
       final newHistory = (results[1] as List<CommissionDetailModel>)
           .map(_mapCommission)
@@ -474,11 +515,10 @@ class InviteNotifier extends Notifier<InviteState> {
         withdrawMethods:
             withdrawConfig.enabled ? withdrawConfig.methods : const [],
       );
-      final storage = ref.read(storageServiceProvider);
-      unawaited(storage.saveDomainInvite(inviteData));
-      unawaited(storage.saveDomainCommissionHistory(newHistory));
-      unawaited(storage.saveDomainUser(userInfo));
+      unawaited(
+          _saveInviteCache(epoch, inviteData: inviteData, history: newHistory));
     } catch (e) {
+      if (!_isCurrent(epoch)) return;
       _logger.info('刷新邀请数据失败: $e');
       state = state.copyWith(
         isLoading: false,
@@ -489,6 +529,7 @@ class InviteNotifier extends Notifier<InviteState> {
   }
 
   Future<void> _refreshAfterCommissionMutation() async {
+    final epoch = ref.read(sessionEpochProvider);
     ref.invalidate(getInviteInfoProvider);
     ref.invalidate(getCommissionDetailsProvider(page: 1));
     clearGetUserInfoCache();
@@ -499,6 +540,7 @@ class InviteNotifier extends Notifier<InviteState> {
       ref.read(getCommissionDetailsProvider(page: 1).future),
       ref.read(getUserInfoProvider.future),
     ]);
+    if (!_isCurrent(epoch)) return;
     final inviteData = _mapInviteInfo(results[0] as InviteInfoModel);
     final newHistory = (results[1] as List<CommissionDetailModel>)
         .map(_mapCommission)
@@ -517,15 +559,46 @@ class InviteNotifier extends Notifier<InviteState> {
       errorMessage: null,
     );
 
-    final storage = ref.read(storageServiceProvider);
-    unawaited(storage.saveDomainInvite(inviteData));
-    unawaited(storage.saveDomainCommissionHistory(newHistory));
-    unawaited(storage.saveDomainUser(userInfo));
+    unawaited(
+        _saveInviteCache(epoch, inviteData: inviteData, history: newHistory));
+  }
+
+  Future<void> _saveInviteCache(int epoch,
+      {DomainInvite? inviteData, List<DomainCommission>? history}) async {
+    try {
+      final scope = await ContentCacheScope.current();
+      if (!_isCurrent(epoch) || scope == null) return;
+      final storage = ref.read(storageServiceProvider);
+      await Future.wait([
+        if (inviteData != null)
+          storage.saveDomainInvite(inviteData, scope: scope),
+        if (history != null)
+          storage.saveDomainCommissionHistory(history, scope: scope),
+      ]);
+    } catch (error) {
+      _logger.info('保存邀请缓存失败: $error');
+    }
+  }
+
+  Future<void> _saveUserCache(int epoch, DomainUser userInfo) async {
+    try {
+      final scope = await ContentCacheScope.account();
+      if (!_isCurrent(epoch) || scope == null) return;
+      await ref
+          .read(storageServiceProvider)
+          .saveDomainUser(userInfo, scope: scope);
+    } catch (error) {
+      _logger.info('保存用户缓存失败: $error');
+    }
   }
 
   Future<_WithdrawConfig> _fetchWithdrawConfig() async {
+    final epoch = ref.read(sessionEpochProvider);
     try {
       final sdk = await ref.read(xboardSdkProvider.future);
+      if (!_isCurrent(epoch)) {
+        return const _WithdrawConfig(enabled: false, methods: []);
+      }
       final resp = await sdk.httpService.getRequest('/user/comm/config');
       final data = resp['data'] as Map<String, dynamic>?;
       final enabled = _parseWithdrawEnabled(data?['withdraw_close']);

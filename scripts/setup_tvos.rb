@@ -3,9 +3,11 @@
 # Flutter iOS project because Flutter does not ship a tvOS application target.
 require 'fileutils'
 require 'xcodeproj'
+require_relative 'sync_tvos_version'
 
 root = File.expand_path('..', __dir__)
 Dir.chdir(root)
+sync_tvos_version(root)
 project_path = 'tvos/FastCatTV.xcodeproj'
 FileUtils.rm_rf(project_path)
 FileUtils.mkdir_p('tvos/Frameworks')
@@ -22,7 +24,7 @@ tunnel = project.new_target(:app_extension, 'PacketTunnel', :tvos, '17.0')
 tunnel.product_reference.path = 'PacketTunnel.appex'
 tunnel.product_reference.name = 'PacketTunnel.appex'
 
-%w[FastCatTVApp.swift SessionStore.swift KeychainStore.swift TVBuildConfiguration.swift TVRemoteConfigManager.swift FastCatSubscriptionDecoder.swift TVDesignSystem.swift TVNodeSelection.swift GatewayClient.swift TVLoginView.swift TVHomeView.swift VPNManager.swift TVServiceConnectivity.swift].each do |name|
+%w[FastCatTVApp.swift SessionStore.swift KeychainStore.swift TVBuildConfiguration.swift TVRemoteConfigManager.swift FastCatSubscriptionDecoder.swift TVDesignSystem.swift TVNodeSelection.swift TVProxyRouting.swift TVQRLoginCoordinator.swift GatewayClient.swift TVLoginView.swift TVHomeView.swift VPNManager.swift TVServiceConnectivity.swift].each do |name|
   app.source_build_phase.add_file_reference(app_group.new_file(name))
 end
 app_group.new_file('Info.plist')
@@ -45,6 +47,9 @@ end
 tunnel_group.new_file('PacketTunnel-Bridging-Header.h')
 tunnel_group.new_file('Info.plist')
 tunnel_group.new_file('PacketTunnel.entitlements')
+shared_protocol = main.new_file('Shared/TVCoreProtocol.swift')
+app.source_build_phase.add_file_reference(shared_protocol)
+tunnel.source_build_phase.add_file_reference(shared_protocol)
 
 framework = framework_group.new_file('libclash.xcframework')
 tunnel.frameworks_build_phase.add_file_reference(framework)
@@ -55,13 +60,15 @@ build_file = embed.add_file_reference(tunnel.product_reference)
 build_file.settings = { 'ATTRIBUTES' => %w[RemoveHeadersOnCopy CodeSignOnCopy] }
 app.add_dependency(tunnel)
 
-config_ref = main.new_file('Config.xcconfig')
+main.new_file('Config.xcconfig')
+main.new_file('Version.xcconfig')
+config_ref = main.new_file('Build.xcconfig')
 project.build_configurations.each { |config| config.base_configuration_reference = config_ref }
 
 common = {
   'SWIFT_VERSION' => '5.0',
-  'MARKETING_VERSION' => '3.6.1',
-  'CURRENT_PROJECT_VERSION' => '1',
+  'MARKETING_VERSION' => '$(FASTCAT_APP_VERSION)',
+  'CURRENT_PROJECT_VERSION' => '$(FASTCAT_BUILD_NUMBER)',
   'CODE_SIGN_STYLE' => 'Automatic',
   'ASSETCATALOG_COMPILER_APPICON_NAME' => 'AppIcon',
   'TARGETED_DEVICE_FAMILY' => '3',

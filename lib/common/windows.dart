@@ -6,6 +6,7 @@ import 'package:ffi/ffi.dart';
 import 'package:fl_clash/common/common.dart';
 import 'package:fl_clash/enum/enum.dart';
 import 'package:fl_clash/services/core_switch_status.dart';
+import 'package:fl_clash/services/windows_service_start.dart';
 import 'package:fl_clash/state.dart';
 import 'package:path/path.dart';
 
@@ -140,21 +141,6 @@ class Windows {
     return ProcessResult(process.pid, exitCode, stdout, stderr);
   }
 
-  _killProcess(int port) async {
-    final result = await _runHidden('netstat', ['-ano']);
-    final lines = result.stdout.toString().trim().split('\n');
-    for (final line in lines) {
-      if (!line.contains(":$port") || !line.contains("LISTENING")) {
-        continue;
-      }
-      final parts = line.trim().split(RegExp(r'\s+'));
-      final pid = int.tryParse(parts.last);
-      if (pid != null) {
-        await _runHidden('taskkill', ['/PID', pid.toString(), '/F']);
-      }
-    }
-  }
-
   Future<WindowsHelperServiceStatus> checkService() async {
     final helperStatus = await request.getHelperRuntimeStatus();
     if (helperStatus != null && _canReuseHelper(helperStatus)) {
@@ -163,11 +149,8 @@ class Windows {
     if (helperStatus != null) {
       return WindowsHelperServiceStatus.presence;
     }
-    // 优先 ping 探测：服务运行时立即成功，避免启动 sc.exe 导致黑框闪烁
-    if (await request.pingHelper()) {
-      return WindowsHelperServiceStatus.running;
-    }
-    // Ping 失败时才查询 SCM，区分"未安装"和"已安装但未运行"
+    // 旧 Helper 的公开 ping 不能证明调用方鉴权已生效。
+    // 认证状态不可用时查询 SCM，区分未安装和已安装但需要更新/启动。
     final result = await _runHidden('sc', ['query', appHelperService]);
     final output = '${result.stdout}\n${result.stderr}';
     if ((_parseScQuery(output)['state'] ?? 0) == 0) {
@@ -177,7 +160,7 @@ class Windows {
   }
 
   bool _canReuseHelper(WindowsHelperRuntimeStatus status) {
-    if (!status.tokenMatches) return false;
+    if (!status.tokenMatches || !status.verifiesCaller) return false;
     return _helperExecutableMatches(status.helperPath);
   }
 
@@ -269,7 +252,6 @@ class Windows {
         if (_canReuseHelper(helperStatus)) return true;
         continue;
       }
-      if (await request.pingHelper()) return true;
     }
     return false;
   }
@@ -294,13 +276,6 @@ class Windows {
       if (!forceRepair &&
           helperStatus != null &&
           _canReuseHelper(helperStatus)) {
-        progress(
-          CoreSwitchStage.helperReady,
-          message: 'helper 已复用',
-        );
-        return true;
-      }
-      if (!forceRepair && helperStatus == null && await request.pingHelper()) {
         progress(
           CoreSwitchStage.helperReady,
           message: 'helper 已复用',
@@ -362,10 +337,11 @@ class Windows {
         commonPrint.log('registerService: service path changed, recreating');
       }
 
-      // ── Phase 1: Windows Service（单次 UAC）────────────────────────────
+      // Windows Service（单次 UAC）
       // cmd.exe /c 串联：(可选 delete &&) create && start
       // 用 _waitForServiceRunning 轮询 sc query STATE，快速感知成功/失败
-      await _killProcess(helperPort);
+      // Stop only our registered service, never an unrelated process that
+      // happens to listen on the helper port.
       final svcCmd = [
         '/c',
         if (hasService) ...[
@@ -397,39 +373,23 @@ class Windows {
         appHelperService,
       ].join(' ');
 
-      if (runas('cmd.exe', svcCmd)) {
-        if (await _waitForServiceRunning(maxMs: 8000)) {
-          // 服务进程已进入 RUNNING，等 HTTP 服务器就绪（通常 <1s）
-          if (await _waitForHelper(maxMs: 3000)) {
-            progress(
-              CoreSwitchStage.helperReady,
-              message: 'helper 已复用',
-            );
-            return true;
-          }
-          commonPrint
-              .log('registerService: service running but HTTP not ready');
-        }
-        commonPrint
-            .log('registerService: service phase failed, trying fallback');
-      } else {
-        return false;
+      final ready = await startRegisteredWindowsHelper(
+        launchService: () => runas('cmd.exe', svcCmd),
+        waitForService: () => _waitForServiceRunning(maxMs: 8000),
+        waitForHelper: () => _waitForHelper(maxMs: 3000),
+      );
+      if (ready) {
+        progress(
+          CoreSwitchStage.helperReady,
+          message: 'helper 已复用',
+        );
+        return true;
       }
-
-      // ── Phase 2: 直接以管理员身份运行 helper 进程（绕过 SCM）──────────
-      // 服务启动失败时的进程方式兜底；仍需系统授权，不绕过安全策略。
-      commonPrint.log('registerService: launching helper as elevated process');
-      if (runas(helperExe, '')) {
-        if (await _waitForHelper(maxMs: 4000)) {
-          progress(
-            CoreSwitchStage.helperReady,
-            message: 'helper 已复用',
-          );
-          return true;
-        }
-        commonPrint.log('registerService: direct elevated process timed out');
-      }
-
+      // This artifact is compiled with windows-service. Its entry point calls
+      // the SCM dispatcher, so direct runas would only fail again and prompt
+      // for elevation a second time. Let the caller report/degrade explicitly.
+      commonPrint
+          .log('registerService: service repair failed; Helper unavailable');
       return false;
     } catch (error) {
       commonPrint.log('[ConnectionHealth] helper repair failed: $error');

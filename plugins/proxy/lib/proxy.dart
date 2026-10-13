@@ -1,10 +1,12 @@
 import 'dart:async';
+import 'dart:convert';
 import 'dart:io';
 
 import 'package:flutter/foundation.dart';
 import "package:path/path.dart";
 
 import 'proxy_platform_interface.dart';
+import 'proxy_configuration_lease.dart';
 
 enum ProxyTypes { http, https, socks }
 
@@ -58,18 +60,47 @@ class Proxy extends ProxyPlatform {
   Proxy({
     this.onDiagnostic,
     @visibleForTesting String? operatingSystem,
+    @visibleForTesting Map<String, String>? environment,
     @visibleForTesting
     Future<ProcessResult> Function(String, List<String>)? runProcess,
   })  : _operatingSystem = operatingSystem ?? Platform.operatingSystem,
+        _environment = environment ?? Platform.environment,
         _runProcess = runProcess ??
             ((executable, arguments) => Process.run(executable, arguments));
 
   final String _operatingSystem;
+  final Map<String, String> _environment;
   final Future<ProcessResult> Function(String, List<String>) _runProcess;
   final void Function(String)? onDiagnostic;
   Future<void> _pendingOperation = Future<void>.value();
   bool _macosAuthorizationNeeded = false;
   final Set<String> _authorizedMacosServices = {};
+  final Map<String, ProxyConfigurationLease> _macosLeases = {};
+  String? _macosRepairService;
+  late final _linuxLease = ProxyConfigurationLease(
+    read: _readLinuxConfiguration,
+    write: _writeLinuxConfiguration,
+    groups: [
+      if (_isKde)
+        {'ProxyType', for (final type in ProxyTypes.values) '${type.name}Proxy'}
+      else
+        {
+          'org.gnome.system.proxy/mode',
+          for (final type in ProxyTypes.values) ...[
+            'org.gnome.system.proxy.${type.name}/host',
+            'org.gnome.system.proxy.${type.name}/port',
+          ],
+        },
+    ],
+  );
+  late final _windowsLease = ProxyConfigurationLease(
+    read: () => ProxyPlatform.instance.readProxyConfiguration(),
+    write: (values) async =>
+        await ProxyPlatform.instance.writeProxyConfiguration(values) == true,
+    groups: const [
+      {'flags', 'server', 'pacUrl'}
+    ],
+  );
   bool _isAuthorizing = false;
   bool get isAuthorizing => _isAuthorizing;
   bool get hasAuthorizedSystemProxy => _authorizedMacosServices.isNotEmpty;
@@ -107,7 +138,12 @@ class Proxy extends ProxyPlatform {
     return switch (_operatingSystem) {
       "macos" => await _startProxyWithMacos(port, bypassDomain),
       "linux" => await _startProxyWithLinux(port, bypassDomain),
-      "windows" => await ProxyPlatform.instance.startProxy(port, bypassDomain),
+      "windows" => await _windowsLease.apply({
+          'flags': '3',
+          'server': '$url:$port',
+          'bypass': bypassDomain.join(';'),
+          'pacUrl': '',
+        }),
       String() => false,
     };
   }
@@ -119,7 +155,7 @@ class Proxy extends ProxyPlatform {
     return switch (_operatingSystem) {
       "macos" => await _stopProxyWithMacos(),
       "linux" => await _stopProxyWithLinux(),
-      "windows" => await ProxyPlatform.instance.stopProxy(),
+      "windows" => await _windowsLease.restore(),
       String() => false,
     };
   }
@@ -153,10 +189,10 @@ class Proxy extends ProxyPlatform {
   }
 
   Future<Map<String, dynamic>> _getLinuxProxyStatus() async {
-    final desktop = Platform.environment['XDG_CURRENT_DESKTOP'];
+    final desktop = _environment['XDG_CURRENT_DESKTOP'];
     final isKDE = desktop?.toLowerCase().contains("kde") == true;
     if (isKDE) {
-      final homeDir = Platform.environment['HOME'];
+      final homeDir = _environment['HOME'];
       if (homeDir == null) return _unavailableStatus("kde");
       final configDir = join(homeDir, ".config");
       final readCommand = await _resolveLinuxCommand(
@@ -261,267 +297,119 @@ class Proxy extends ProxyPlatform {
     return (uri.host, uri.port);
   }
 
+  bool get _isKde =>
+      _environment['XDG_CURRENT_DESKTOP']?.toLowerCase().contains('kde') ==
+      true;
+
+  String? get _kdeConfigDirectory {
+    final home = _environment['HOME'];
+    return home == null ? null : join(home, '.config');
+  }
+
+  static const _absentKdeSetting = '__FASTCAT_MISSING_SETTING__';
+
   Future<bool> _startProxyWithLinux(int port, List<String> bypassDomain) async {
     try {
-      final homeDir = Platform.environment['HOME']!;
-      final configDir = join(homeDir, ".config");
-      final requiredCommands = List<List<String>>.empty(growable: true);
-      final optionalCommands = List<List<String>>.empty(growable: true);
-      final desktop = Platform.environment['XDG_CURRENT_DESKTOP'];
-      final isKDE = desktop?.toLowerCase().contains("kde") == true;
-      final kdeWriteCommand = isKDE
-          ? await _resolveLinuxCommand(["kwriteconfig6", "kwriteconfig5"])
-          : null;
-      final kdeReadCommand = isKDE
-          ? await _resolveLinuxCommand(["kreadconfig6", "kreadconfig5"])
-          : null;
-      if (isKDE) {
-        requiredCommands.add(
-          [
-            kdeWriteCommand!,
-            "--file",
-            "$configDir/kioslaverc",
-            "--group",
-            "Proxy Settings",
-            "--key",
-            "ProxyType",
-            "1"
-          ],
-        );
-        optionalCommands.add(
-          [
-            kdeWriteCommand,
-            "--file",
-            "$configDir/kioslaverc",
-            "--group",
-            "Proxy Settings",
-            "--key",
-            "NoProxyFor",
-            bypassDomain.join(",")
-          ],
-        );
+      final desired = <String, String>{};
+      if (_isKde) {
+        for (final type in ProxyTypes.values) {
+          desired['${type.name}Proxy'] = '${type.name}://$url:$port';
+        }
+        desired['NoProxyFor'] = bypassDomain.join(',');
+        desired['ProxyType'] = '1';
       } else {
-        requiredCommands.add(
-          ["gsettings", "set", "org.gnome.system.proxy", "mode", "manual"],
-        );
-        final ignoreHosts = _toGSettingsStringList(bypassDomain);
-        optionalCommands.add(
-          [
-            "gsettings",
-            "set",
-            "org.gnome.system.proxy",
-            "ignore-hosts",
-            ignoreHosts
-          ],
-        );
-      }
-      for (final type in ProxyTypes.values) {
-        if (!isKDE) {
-          requiredCommands.add(
-            [
-              "gsettings",
-              "set",
-              "org.gnome.system.proxy.${type.name}",
-              "host",
-              url
-            ],
-          );
-          requiredCommands.add(
-            [
-              "gsettings",
-              "set",
-              "org.gnome.system.proxy.${type.name}",
-              "port",
-              "$port"
-            ],
-          );
+        for (final type in ProxyTypes.values) {
+          desired['org.gnome.system.proxy.${type.name}/host'] =
+              _quoteGSettingsString(url);
+          desired['org.gnome.system.proxy.${type.name}/port'] = '$port';
         }
-        if (isKDE) {
-          requiredCommands.add(
-            [
-              kdeWriteCommand!,
-              "--file",
-              "$configDir/kioslaverc",
-              "--group",
-              "Proxy Settings",
-              "--key",
-              "${type.name}Proxy",
-              "${type.name}://$url:$port"
-            ],
-          );
-        }
+        desired['org.gnome.system.proxy/ignore-hosts'] =
+            _toGSettingsStringList(bypassDomain);
+        desired['org.gnome.system.proxy/mode'] = "'manual'";
       }
-      var commandSuccess = true;
-      for (final cmd in requiredCommands) {
-        commandSuccess = await _runLinuxCommandChecked(cmd) && commandSuccess;
-      }
-      for (final cmd in optionalCommands) {
-        final success = await _runLinuxCommandChecked(cmd);
-        if (!success) {
-          _logLinuxProxyWarning(
-            "optional command",
-            "ignored failure: ${cmd.join(" ")}",
-          );
-        }
-      }
-      final verified = isKDE
-          ? await _verifyLinuxKdeProxy(configDir, port, kdeReadCommand!)
-          : await _verifyLinuxGnomeProxy(port);
-      if (verified) {
-        if (!commandSuccess) {
-          _logLinuxProxyWarning(
-            "start proxy",
-            "settings verified after command failure",
-          );
-        }
-        return true;
-      }
-      return false;
-    } catch (e) {
-      _logLinuxProxyFailure("start proxy", e);
+      return await _linuxLease.apply(desired);
+    } catch (error) {
+      _logLinuxProxyFailure('start proxy', error);
       return false;
     }
   }
 
-  Future<bool> _stopProxyWithLinux() async {
-    try {
-      final homeDir = Platform.environment['HOME']!;
-      final configDir = join(homeDir, ".config");
-      final cmdList = List<List<String>>.empty(growable: true);
-      final desktop = Platform.environment['XDG_CURRENT_DESKTOP'];
-      final isKDE = desktop?.toLowerCase().contains("kde") == true;
-      final kdeWriteCommand = isKDE
-          ? await _resolveLinuxCommand(["kwriteconfig6", "kwriteconfig5"])
-          : null;
-      final kdeReadCommand = isKDE
-          ? await _resolveLinuxCommand(["kreadconfig6", "kreadconfig5"])
-          : null;
-      if (isKDE) {
-        cmdList.add(
-          [
-            kdeWriteCommand!,
-            "--file",
-            "$configDir/kioslaverc",
-            "--group",
-            "Proxy Settings",
-            "--key",
-            "ProxyType",
-            "0"
-          ],
-        );
-      } else {
-        cmdList.add(
-          ["gsettings", "set", "org.gnome.system.proxy", "mode", "none"],
-        );
-      }
-      for (final cmd in cmdList) {
-        if (!await _runLinuxCommandChecked(cmd)) {
-          return false;
-        }
-      }
-      return isKDE
-          ? await _verifyLinuxKdeProxyStopped(configDir, kdeReadCommand!)
-          : await _verifyLinuxGnomeProxyStopped();
-    } catch (e) {
-      _logLinuxProxyFailure("stop proxy", e);
-      return false;
-    }
-  }
+  Future<bool> _stopProxyWithLinux() => _linuxLease.restore();
 
-  Future<bool> _verifyLinuxGnomeProxy(int port) async {
-    final mode = await _readGSettingsValue([
-      "gsettings",
-      "get",
-      "org.gnome.system.proxy",
-      "mode",
-    ]);
-    if (mode != "manual") {
-      _logLinuxProxyFailure("verify GNOME mode", "mode=$mode");
-      return false;
-    }
-    var hasMatchedProxy = false;
-    for (final type in ProxyTypes.values) {
-      final schema = "org.gnome.system.proxy.${type.name}";
-      final host = await _readGSettingsValue([
-        "gsettings",
-        "get",
-        schema,
-        "host",
-      ]);
-      final portValue = await _readGSettingsValue([
-        "gsettings",
-        "get",
-        schema,
-        "port",
-      ]);
-      final matched = _matchesLinuxProxy(host, portValue, port);
-      hasMatchedProxy = hasMatchedProxy || matched;
-      if (!matched) {
-        _logLinuxProxyWarning(
-          "verify GNOME ${type.name}",
-          "host=$host port=$portValue",
-        );
+  Future<Map<String, String>?> _readLinuxConfiguration() async {
+    final values = <String, String>{};
+    if (_isKde) {
+      final directory = _kdeConfigDirectory;
+      if (directory == null) return null;
+      final command =
+          await _resolveLinuxCommand(['kreadconfig6', 'kreadconfig5']);
+      for (final key in [
+        for (final type in ProxyTypes.values) '${type.name}Proxy',
+        'NoProxyFor',
+        'ProxyType',
+      ]) {
+        final value = await _readLinuxCommandText([
+          command,
+          '--file',
+          '$directory/kioslaverc',
+          '--group',
+          'Proxy Settings',
+          '--key',
+          key,
+          '--default',
+          _absentKdeSetting,
+        ]);
+        if (value == null) return null;
+        values[key] = value;
+      }
+    } else {
+      for (final key in [
+        for (final type in ProxyTypes.values) ...[
+          'org.gnome.system.proxy.${type.name}/host',
+          'org.gnome.system.proxy.${type.name}/port',
+        ],
+        'org.gnome.system.proxy/ignore-hosts',
+        'org.gnome.system.proxy/mode',
+      ]) {
+        final parts = key.split('/');
+        final value =
+            await _readLinuxCommandText(['gsettings', 'get', ...parts]);
+        if (value == null) return null;
+        // Keep GVariant literals intact (quotes, escapes, lists) for restoration.
+        values[key] = value.startsWith('uint32 ') ? value.substring(7) : value;
       }
     }
-    if (!hasMatchedProxy) {
-      _logLinuxProxyFailure("verify GNOME proxy", "no matching proxy entry");
-    }
-    return hasMatchedProxy;
+    return values;
   }
 
-  Future<bool> _verifyLinuxGnomeProxyStopped() async {
-    final mode = await _readGSettingsValue([
-      "gsettings",
-      "get",
-      "org.gnome.system.proxy",
-      "mode",
-    ]);
-    final success = mode == "none";
-    if (!success) {
-      _logLinuxProxyFailure("verify GNOME stop", "mode=$mode");
+  Future<bool> _writeLinuxConfiguration(Map<String, String> values) async {
+    final modeKey = _isKde ? 'ProxyType' : 'org.gnome.system.proxy/mode';
+    // Switch modes last so partially installed endpoints are not activated.
+    final entries = [
+      ...values.entries.where((entry) => entry.key != modeKey),
+      ...values.entries.where((entry) => entry.key == modeKey),
+    ];
+    final directory = _kdeConfigDirectory;
+    final command = _isKde
+        ? await _resolveLinuxCommand(['kwriteconfig6', 'kwriteconfig5'])
+        : 'gsettings';
+    for (final entry in entries) {
+      if (_isKde && directory == null) return false;
+      final arguments = _isKde
+          ? [
+              command,
+              '--file',
+              '$directory/kioslaverc',
+              '--group',
+              'Proxy Settings',
+              '--key',
+              entry.key,
+              if (entry.value == _absentKdeSetting) '--delete' else entry.value,
+            ]
+          : [command, 'set', ...entry.key.split('/'), entry.value];
+      if (!await _runLinuxCommandChecked(arguments)) return false;
     }
-    return success;
-  }
-
-  Future<bool> _verifyLinuxKdeProxy(
-    String configDir,
-    int port,
-    String readCommand,
-  ) async {
-    final proxyType =
-        await _readKdeProxyValue(configDir, readCommand, "ProxyType");
-    if (proxyType != "1") {
-      _logLinuxProxyFailure("verify KDE proxy type", "ProxyType=$proxyType");
-      return false;
-    }
-    var hasMatchedProxy = false;
-    for (final type in ProxyTypes.values) {
-      final key = "${type.name}Proxy";
-      final value = await _readKdeProxyValue(configDir, readCommand, key);
-      final expectedValue = "${type.name}://$url:$port";
-      final matched = value == expectedValue;
-      hasMatchedProxy = hasMatchedProxy || matched;
-      if (!matched) {
-        _logLinuxProxyWarning("verify KDE $key", "value=$value");
-      }
-    }
-    if (!hasMatchedProxy) {
-      _logLinuxProxyFailure("verify KDE proxy", "no matching proxy entry");
-    }
-    return hasMatchedProxy;
-  }
-
-  Future<bool> _verifyLinuxKdeProxyStopped(
-    String configDir,
-    String readCommand,
-  ) async {
-    final proxyType =
-        await _readKdeProxyValue(configDir, readCommand, "ProxyType");
-    final success = proxyType == "0";
-    if (!success) {
-      _logLinuxProxyFailure("verify KDE stop", "ProxyType=$proxyType");
-    }
-    return success;
+    return true;
   }
 
   Future<String?> _readGSettingsValue(List<String> command) async {
@@ -578,7 +466,7 @@ class Proxy extends ProxyPlatform {
   }
 
   Future<ProcessResult> _runLinuxCommand(List<String> command) {
-    return Process.run(command[0], command.sublist(1));
+    return _runProcess(command[0], command.sublist(1));
   }
 
   String _normalizeLinuxSettingValue(String value) {
@@ -594,10 +482,6 @@ class Proxy extends ProxyPlatform {
       }
     }
     return normalized;
-  }
-
-  bool _matchesLinuxProxy(String? host, String? portValue, int port) {
-    return host == url && int.tryParse(portValue ?? "") == port;
   }
 
   String _toGSettingsStringList(List<String> values) {
@@ -620,7 +504,7 @@ class Proxy extends ProxyPlatform {
 
   Future<bool> _linuxCommandExists(String command) async {
     try {
-      final result = await Process.run("which", [command]);
+      final result = await _runProcess("which", [command]);
       return result.exitCode == 0;
     } catch (_) {
       return false;
@@ -629,10 +513,6 @@ class Proxy extends ProxyPlatform {
 
   void _logLinuxProxyFailure(String action, Object details) {
     debugPrint("[Proxy][Linux] $action failed: $details");
-  }
-
-  void _logLinuxProxyWarning(String action, Object details) {
-    debugPrint("[Proxy][Linux] $action warning: $details");
   }
 
   Future<bool> _startProxyWithMacos(int port, List<String> bypassDomain,
@@ -663,6 +543,7 @@ class Proxy extends ProxyPlatform {
         anySuccess = anySuccess || success;
         if (service == primaryService) {
           primarySuccess = success;
+          if (!success) return false;
         }
       }
       return primaryService == null ? anySuccess : primarySuccess;
@@ -673,27 +554,12 @@ class Proxy extends ProxyPlatform {
   }
 
   Future<bool> _stopProxyWithMacos() async {
-    try {
-      final services = await _getNetworkDeviceListWithMacos();
-      final primaryService = await _getMacosPrimaryNetworkService(services);
-      final orderedServices = _prioritizeMacosNetworkServices(
-        services: services,
-        primaryService: primaryService,
-      );
-      var anySuccess = false;
-      var primarySuccess = false;
-      for (final service in orderedServices) {
-        final success = await _stopMacosProxyForService(service);
-        anySuccess = anySuccess || success;
-        if (service == primaryService) {
-          primarySuccess = success;
-        }
-      }
-      return primaryService == null ? anySuccess : primarySuccess;
-    } catch (e) {
-      _logMacosProxyFailure("stop proxy", e);
-      return false;
+    var success = true;
+    for (final entry in _macosLeases.entries.toList()) {
+      success = await entry.value.restore() && success;
+      if (entry.value.isEmpty) _macosLeases.remove(entry.key);
     }
+    return success;
   }
 
   Future<List<String>> _getNetworkDeviceListWithMacos() async {
@@ -764,61 +630,175 @@ class Proxy extends ProxyPlatform {
     ];
   }
 
+  static const _macosProxyKinds = [
+    'webproxy',
+    'securewebproxy',
+    'socksfirewallproxy',
+  ];
+
   Future<bool> _setMacosProxyForService({
     required String service,
     required int port,
     required List<String> bypassDomain,
     bool allowAuthorization = false,
   }) async {
-    final commands = <List<String>>[
-      ["-setwebproxy", service, url, "$port"],
-      ["-setwebproxystate", service, "on"],
-      ["-setsecurewebproxy", service, url, "$port"],
-      ["-setsecurewebproxystate", service, "on"],
-      ["-setsocksfirewallproxy", service, url, "$port"],
-      ["-setsocksfirewallproxystate", service, "on"],
-      [
-        "-setproxybypassdomains",
-        service,
-        ...(bypassDomain.isEmpty ? [""] : bypassDomain),
-      ],
-    ];
-    _macosAuthorizationNeeded = false;
-    for (final command in commands) {
-      if (!await _runNetworkSetupChecked(command)) {
-        if (allowAuthorization && _macosAuthorizationNeeded) {
-          return _authorizeMacosProxy(commands, service, port);
-        }
-        return false;
-      }
+    final before = await _readMacosConfiguration(service);
+    if (before == null) return false;
+    final automatic = List<dynamic>.from(jsonDecode(before['automatic']!));
+    final desired = <String, String>{
+      for (final type in _macosProxyKinds) ...{
+        '$type.endpoint': jsonEncode([url, port]),
+        '$type.enabled': 'on',
+      },
+      'bypass': jsonEncode(bypassDomain),
+      'automatic': jsonEncode([automatic.first, false]),
+      'discovery': 'off',
+    };
+    final lease = _macosLeases.putIfAbsent(
+      service,
+      () => ProxyConfigurationLease(
+        read: () => _readMacosConfiguration(service),
+        write: (values) => _writeMacosConfiguration(service, values),
+        groups: [
+          for (final type in _macosProxyKinds)
+            {'$type.endpoint', '$type.enabled'},
+        ],
+      ),
+    );
+    _macosRepairService = allowAuthorization ? service : null;
+    try {
+      return await lease.apply(desired);
+    } finally {
+      _macosRepairService = null;
+      if (lease.isEmpty) _macosLeases.remove(service);
     }
-    return await _verifyMacosProxyService(service, port);
   }
 
-  Future<bool> _authorizeMacosProxy(
-    List<List<String>> commands,
-    String service,
-    int port,
-  ) async {
-    final completed = await _runAuthorizedMacosCommands(commands);
-    // A batch can partially apply before a later command fails. Remember any
-    // owned endpoint so disconnect can still clean it up with authorization.
-    final states = await Future.wait([
-      _getMacosProxyState('-getwebproxy', service),
-      _getMacosProxyState('-getsecurewebproxy', service),
-      _getMacosProxyState('-getsocksfirewallproxy', service),
-    ]);
-    if (states.any((state) =>
-        state.available &&
-        state.enabled &&
-        state.server == url &&
-        state.port == port)) {
-      _authorizedMacosServices.add(service);
+  Future<Map<String, String>?> _readMacosConfiguration(String service) async {
+    final result = <String, String>{};
+    for (final type in _macosProxyKinds) {
+      final state = await _getMacosProxyState('-get$type', service);
+      if (!state.available) return null;
+      // networksetup does not expose a saved proxy password. Do not replace
+      // authenticated endpoints that we could not faithfully restore.
+      if (state.authenticated) {
+        _diagnostic(
+            '[Proxy][macOS] preserving authenticated proxy for $service');
+        return null;
+      }
+      result['$type.endpoint'] =
+          jsonEncode([state.server ?? '', state.port ?? 0]);
+      result['$type.enabled'] = state.enabled ? 'on' : 'off';
     }
-    if (!completed) return false;
-    final verified = await _verifyMacosProxyService(service, port);
-    _diagnostic('[Proxy][macOS] authorized repair verified=$verified');
-    return verified;
+    final bypass = await _runNetworkSetup(['-getproxybypassdomains', service]);
+    final automatic = await _runNetworkSetup(['-getautoproxyurl', service]);
+    final discovery =
+        await _runNetworkSetup(['-getproxyautodiscovery', service]);
+    if (bypass.exitCode != 0 ||
+        automatic.exitCode != 0 ||
+        discovery.exitCode != 0) {
+      return null;
+    }
+    final autoText = automatic.stdout.toString();
+    final autoUrl = RegExp(r'^URL:[ \t]*(.*)$', multiLine: true)
+        .firstMatch(autoText)
+        ?.group(1);
+    final autoEnabled = RegExp(r'^Enabled:\s*(Yes|No|On|Off|1|0)\s*$',
+            multiLine: true, caseSensitive: false)
+        .firstMatch(autoText)
+        ?.group(1)
+        ?.toLowerCase();
+    final discover = RegExp(r'Auto Proxy Discovery:\s*(On|Off|Yes|No)\s*$',
+            caseSensitive: false)
+        .firstMatch(discovery.stdout.toString().trim())
+        ?.group(1)
+        ?.toLowerCase();
+    if (autoUrl == null || autoEnabled == null || discover == null) return null;
+    final bypassText = bypass.stdout.toString().trim();
+    if (bypassText.toLowerCase().startsWith('error:')) return null;
+    result['bypass'] = jsonEncode(
+      bypassText.isEmpty || bypassText.startsWith("There aren't any")
+          ? <String>[]
+          : bypassText
+              .split('\n')
+              .map((entry) => entry.trim())
+              .where((entry) => entry.isNotEmpty)
+              .toList(),
+    );
+    result['automatic'] = jsonEncode([
+      autoUrl.trim(),
+      ['yes', 'on', '1'].contains(autoEnabled)
+    ]);
+    result['discovery'] = ['yes', 'on'].contains(discover) ? 'on' : 'off';
+    return result;
+  }
+
+  Future<bool> _writeMacosConfiguration(
+      String service, Map<String, String> values) async {
+    final commands = <List<String>>[];
+    for (final type in _macosProxyKinds) {
+      final endpoint = values['$type.endpoint'];
+      var enabled = values['$type.enabled'];
+      if (endpoint != null) {
+        // Setting an endpoint may also enable it. If its enabled flag was
+        // changed by somebody else, retain that flag rather than claiming it.
+        if (enabled == null) {
+          final state = await _getMacosProxyState('-get$type', service);
+          if (!state.available) return false;
+          enabled = state.enabled ? 'on' : 'off';
+        }
+        final parts = List<dynamic>.from(jsonDecode(endpoint));
+        commands.add(
+            ['-set$type', service, parts[0].toString(), parts[1].toString()]);
+      }
+      if (enabled != null) commands.add(['-set${type}state', service, enabled]);
+    }
+    if (values.containsKey('bypass')) {
+      final bypass = List<String>.from(jsonDecode(values['bypass']!));
+      commands.add([
+        '-setproxybypassdomains',
+        service,
+        ...(bypass.isEmpty ? ['Empty'] : bypass)
+      ]);
+    }
+    if (values.containsKey('automatic')) {
+      final target = List<dynamic>.from(jsonDecode(values['automatic']!));
+      final current = await _runNetworkSetup(['-getautoproxyurl', service]);
+      final currentUrl = RegExp(r'^URL:[ \t]*(.*)$', multiLine: true)
+          .firstMatch(current.stdout.toString())
+          ?.group(1)
+          ?.trim();
+      // Only toggle PAC, never rewrite a PAC URL changed by another app.
+      if (current.exitCode != 0 || currentUrl != target.first) return false;
+      commands.add(
+          ['-setautoproxystate', service, target.last == true ? 'on' : 'off']);
+    }
+    if (values.containsKey('discovery')) {
+      commands.add(['-setproxyautodiscovery', service, values['discovery']!]);
+    }
+    _macosAuthorizationNeeded = false;
+    for (var index = 0; index < commands.length; index++) {
+      if (await _runNetworkSetupChecked(commands[index])) continue;
+      if (_macosAuthorizationNeeded &&
+          (_authorizedMacosServices.contains(service) ||
+              _macosRepairService == service)) {
+        final success =
+            await _runAuthorizedMacosCommands(commands.sublist(index));
+        // A partially completed authorized batch also needs privileged cleanup.
+        final states = await Future.wait([
+          for (final type in _macosProxyKinds)
+            _getMacosProxyState('-get$type', service),
+        ]);
+        if (success ||
+            states.any((state) =>
+                state.available && state.server == url && state.enabled)) {
+          _authorizedMacosServices.add(service);
+        }
+        return success;
+      }
+      return false;
+    }
+    return true;
   }
 
   Future<bool> _runAuthorizedMacosCommands(List<List<String>> commands) async {
@@ -848,74 +828,6 @@ class Proxy extends ProxyPlatform {
       return false;
     }
     return true;
-  }
-
-  Future<bool> _stopMacosProxyForService(String service) async {
-    if (_authorizedMacosServices.contains(service)) {
-      final states = await Future.wait([
-        _getMacosProxyState('-getwebproxy', service),
-        _getMacosProxyState('-getsecurewebproxy', service),
-        _getMacosProxyState('-getsocksfirewallproxy', service),
-      ]);
-      if (states.every((state) => state.available && !state.enabled)) {
-        return true;
-      }
-    }
-    final commands = <List<String>>[
-      ["-setautoproxystate", service, "off"],
-      ["-setwebproxystate", service, "off"],
-      ["-setsecurewebproxystate", service, "off"],
-      ["-setsocksfirewallproxystate", service, "off"],
-      ["-setproxybypassdomains", service, ""],
-    ];
-    _macosAuthorizationNeeded = false;
-    for (final command in commands) {
-      if (!await _runNetworkSetupChecked(command)) {
-        // A proxy enabled with authorization must also be removable when the
-        // user disconnects. Never silently leave a dead local proxy behind.
-        if (_macosAuthorizationNeeded &&
-            _authorizedMacosServices.contains(service)) {
-          if (!await _runAuthorizedMacosCommands(commands)) return false;
-          return _verifyMacosProxyServiceStopped(service);
-        }
-        return false;
-      }
-    }
-    return await _verifyMacosProxyServiceStopped(service);
-  }
-
-  Future<bool> _verifyMacosProxyService(String service, int port) async {
-    final states = await Future.wait([
-      _getMacosProxyState("-getwebproxy", service),
-      _getMacosProxyState("-getsecurewebproxy", service),
-      _getMacosProxyState("-getsocksfirewallproxy", service),
-    ]);
-    final success = states.every(
-      (state) => state.enabled && state.server == url && state.port == port,
-    );
-    if (!success) {
-      _logMacosProxyFailure(
-        "verify proxy for $service",
-        states.map((state) => state.toString()).join("; "),
-      );
-    }
-    return success;
-  }
-
-  Future<bool> _verifyMacosProxyServiceStopped(String service) async {
-    final states = await Future.wait([
-      _getMacosProxyState("-getwebproxy", service),
-      _getMacosProxyState("-getsecurewebproxy", service),
-      _getMacosProxyState("-getsocksfirewallproxy", service),
-    ]);
-    final success = states.every((state) => state.available && !state.enabled);
-    if (!success) {
-      _logMacosProxyFailure(
-        "verify proxy stopped for $service",
-        states.map((state) => state.toString()).join("; "),
-      );
-    }
-    return success;
   }
 
   Future<_MacosProxyState> _getMacosProxyState(
@@ -966,12 +878,14 @@ class Proxy extends ProxyPlatform {
 class _MacosProxyState {
   final bool available;
   final bool enabled;
+  final bool authenticated;
   final String? server;
   final int? port;
 
   const _MacosProxyState({
     this.available = false,
     this.enabled = false,
+    this.authenticated = false,
     this.server,
     this.port,
   });
@@ -993,6 +907,9 @@ class _MacosProxyState {
           values.containsKey('port'),
       enabled:
           enabledValue == "yes" || enabledValue == "on" || enabledValue == "1",
+      authenticated: const ['1', 'yes', 'on'].contains(
+        values['authenticated proxy enabled']?.toLowerCase(),
+      ),
       server: values["server"],
       port: int.tryParse(values["port"] ?? ""),
     );

@@ -1,11 +1,14 @@
 import 'dart:convert';
 
 import 'package:crypto/crypto.dart';
+import 'provider_cache_config.dart';
 
 /// The app and NetworkExtension have different sandboxes. HTTP provider caches
 /// must use paths relative to the core home, never paths in the Flutter app.
 Map<String, dynamic> iosProfileConfig(Map<String, dynamic> input) {
   final config = jsonDecode(jsonEncode(input)) as Map<String, dynamic>;
+  final cache = providerCacheConfiguration();
+  if (cache != null) config['fastcat-provider-cache'] = cache;
   for (final kind in ['proxy-providers', 'rule-providers']) {
     final providers = config[kind];
     if (providers is! Map) continue;

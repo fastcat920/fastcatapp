@@ -133,8 +133,11 @@ class VPNManager: NSObject {
     // Already running — just make sure config is up to date
     if isTunnelRunning {
       NSLog("[VPNManager] ensureTunnelRunning: tunnel already running")
-      if !config.isEmpty { sendConfigUpdate(config) }
-      completion(nil)
+      if !config.isEmpty {
+        sendConfigUpdate(config, completion: completion)
+      } else {
+        completion(nil)
+      }
       return
     }
 
@@ -204,15 +207,26 @@ class VPNManager: NSObject {
   /// Supply the decoded profile only to the active tunnel; never persist YAML.
   func connect(config: String, completion: @escaping (String?) -> Void) {
     if isTunnelRunning {
-      // Tunnel already running — just enable traffic mode
-      NSLog("[VPNManager] connect: tunnel running, enabling traffic mode")
-      setTrafficMode(active: true) { [weak self] error in
-        if let error = error {
-          completion(error)
-        } else {
-          self?.isTrafficActive = true
-          self?.notifyStatusChange()
-          completion(nil)
+      // A running extension may still hold a different profile. Never enable
+      // traffic until it has acknowledged the configuration supplied by Dart.
+      NSLog("[VPNManager] connect: updating running tunnel before enabling traffic")
+      sendConfigUpdate(config) { [weak self] updateError in
+        guard updateError == nil else {
+          completion(updateError)
+          return
+        }
+        guard let self = self else {
+          completion("VPN manager unavailable")
+          return
+        }
+        self.setTrafficMode(active: true) { error in
+          if let error = error {
+            completion(error)
+          } else {
+            self.isTrafficActive = true
+            self.notifyStatusChange()
+            completion(nil)
+          }
         }
       }
       return
@@ -319,25 +333,19 @@ class VPNManager: NSObject {
   // MARK: - Traffic mode IPC
 
   /// Reconfigure an already-running tunnel without writing YAML to disk.
-  private func sendConfigUpdate(_ config: String) {
-    sendClashMessage(method: "_updateConfig", data: config) { response in
-      if (response ?? "").hasPrefix("error") {
-        NSLog("[VPNManager] config update failed: %@", response ?? "unknown")
-      }
-    }
+  private func sendConfigUpdate(_ config: String, completion: @escaping (String?) -> Void) {
+    IOSVPNIPC.applyProfile(config, send: sendClashMessage, completion: completion)
   }
 
   /// Toggle traffic routing in the PacketTunnel extension via IPC.
   private func setTrafficMode(active: Bool, completion: @escaping (String?) -> Void) {
     let mode = active ? "active" : "idle"
     sendClashMessage(method: "_setTrafficMode", data: mode) { response in
-      let resp = response ?? ""
-      if resp.hasPrefix("error") {
-        NSLog("[VPNManager] setTrafficMode(%@) error: %@", mode, resp)
-        completion(resp)
-      } else {
+      if IOSVPNIPC.isAcknowledged(response) {
         NSLog("[VPNManager] setTrafficMode(%@) success", mode)
         completion(nil)
+      } else {
+        completion("VPN network settings were not acknowledged")
       }
     }
   }
@@ -345,7 +353,7 @@ class VPNManager: NSObject {
   // MARK: - Clash IPC
 
   /// Forward a Clash operation to the running PacketTunnel extension.
-  /// Returns an empty response while the user is disconnected.
+  /// A missing/late reply stays nil, distinct from an explicit empty ACK.
   func sendClashMessage(method: String, data: String?, completion: @escaping (String?) -> Void) {
     guard let session = manager?.connection as? NETunnelProviderSession else {
       NSLog("[VPNManager] sendClashMessage(%@): no session available", method)
@@ -365,14 +373,17 @@ class VPNManager: NSObject {
       completion(nil)
       return
     }
+    let reply = IOSVPNReply(completion)
+    let timeout: Double = method == "_updateConfig" ? 30 : 10
+    DispatchQueue.global().asyncAfter(deadline: .now() + timeout) { reply.finish(nil) }
     do {
       try session.sendProviderMessage(encoded) { responseData in
-        guard let d = responseData else { completion(nil); return }
-        completion(String(data: d, encoding: .utf8))
+        guard let d = responseData else { reply.finish(nil); return }
+        reply.finish(String(data: d, encoding: .utf8))
       }
     } catch {
       NSLog("[VPNManager] sendClashMessage(%@): IPC error: %@", method, error.localizedDescription)
-      completion(nil)
+      reply.finish(nil)
     }
   }
 
@@ -390,6 +401,67 @@ class VPNManager: NSObject {
       name: Notification.Name("fastcat.vpn.statusChanged"),
       object: statusString
     )
+  }
+}
+
+// MARK: - Foundation-only IPC acknowledgement policy
+// Kept in this target's existing source file so no Xcode source membership or
+// extension wire protocol changes are required. Exercised by native tests.
+enum IOSVPNIPC {
+  typealias Send = (String, String?, @escaping (String?) -> Void) -> Void
+
+  static func isAcknowledged(_ response: String?) -> Bool {
+    response == "" || response == "ok"
+  }
+
+  static func applyProfile(_ profile: String, send: @escaping Send,
+                           completion: @escaping (String?) -> Void) {
+    guard !profile.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else {
+      completion("Missing VPN configuration")
+      return
+    }
+    // Startup accepts raw YAML/JSON; _updateConfig expects JSON SetupParams.
+    // Reuse the core parser rather than introducing a second YAML parser.
+    send("getConfigContent", profile) { parsed in
+      guard let parsed = parsed, let data = parsed.data(using: .utf8),
+            let config = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
+            !config.isEmpty else {
+        completion("VPN configuration could not be parsed")
+        return
+      }
+      let payload: [String: Any] = [
+        "config": config,
+        "deadlineUnixMs": Int64(Date().addingTimeInterval(30).timeIntervalSince1970 * 1000),
+      ]
+      guard let encoded = try? JSONSerialization.data(withJSONObject: payload),
+            let value = String(data: encoded, encoding: .utf8) else {
+        completion("VPN configuration could not be encoded")
+        return
+      }
+      send("_updateConfig", value) { response in
+        completion(isAcknowledged(response) ? nil : "VPN configuration was not acknowledged")
+      }
+    }
+  }
+}
+
+final class IOSVPNReply {
+  private let lock = NSLock()
+  private var completion: ((String?) -> Void)?
+
+  init(_ completion: @escaping (String?) -> Void) { self.completion = completion }
+
+  func finish(_ value: String?) {
+    lock.lock()
+    let callback = completion
+    completion = nil
+    lock.unlock()
+    guard let callback = callback else { return }
+    if Thread.isMainThread {
+      callback(value)
+    } else {
+      DispatchQueue.main.async { callback(value) }
+    }
   }
 }
 

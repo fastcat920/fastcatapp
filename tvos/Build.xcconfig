@@ -1,0 +1,5 @@
+// Signing and encryption remain local/CI supplied; version has one source.
+#include "Config.xcconfig"
+#include "Version.xcconfig"
+FASTCAT_BUILD_COMMIT =
+FASTCAT_BUILD_CHANNEL = local

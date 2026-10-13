@@ -6,7 +6,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:desktop_webview_window/desktop_webview_window.dart';
-import 'package:fl_clash/common/common.dart' show system;
+import 'package:fl_clash/common/common.dart' show system, appLocalizations;
+import 'package:fl_clash/l10n/l10n.dart';
 import 'package:fl_clash/common/color.dart';
 import 'package:fl_clash/common/path.dart';
 import 'package:fl_clash/providers/providers.dart';
@@ -1028,7 +1029,11 @@ class CustomerServiceHelper {
   static Future<void> open(BuildContext context) async {
     final crispId = await _resolveCrispWebsiteId();
     if (crispId.isEmpty) {
-      XBoardNotification.showError('未配置在线客服');
+      if (context.mounted) {
+        XBoardNotification.showError(
+          AppLocalizations.of(context).xboardCustomerServiceNotConfigured,
+        );
+      }
       return;
     }
     if (!context.mounted) return;
@@ -1131,7 +1136,7 @@ class CustomerServiceHelper {
       final dataFolder = Platform.isWindows ? await _webview2DataFolder() : '';
       final webview = await WebviewWindow.create(
         configuration: CreateConfiguration(
-          title: '在线客服',
+          title: appLocalizations.xboardOnlineSupport,
           windowWidth: _desktopCustomerServiceWindowWidth,
           windowHeight: _desktopCustomerServiceWindowHeight,
           titleBarHeight: _desktopCustomerServiceTitleBarHeight,
@@ -1146,16 +1151,17 @@ class CustomerServiceHelper {
         isDarkMode: isDarkMode,
       );
 
-      final scriptUrlEscaped = scriptUrl.replaceAll("'", "\\'");
       final bg = _customerServiceBackground(isDarkMode);
       final fg = _customerServiceForeground(isDarkMode);
+      final loadingHtml =
+          '''<html><head><meta charset=utf-8><meta name=viewport content="width=device-width,initial-scale=1"><title>${htmlEscape.convert(appLocalizations.xboardOnlineSupport)}</title><style>*{margin:0;padding:0}html,body{width:100%;height:100%;background:$bg;overflow:hidden}#loading{display:flex;align-items:center;justify-content:center;height:100%;color:$fg;font-family:-apple-system,sans-serif;font-size:14px}</style></head><body><div id=loading>${htmlEscape.convert(appLocalizations.onlineSupportConnecting)}</div><script src='${htmlEscape.convert(scriptUrl)}' id=ss_chat></script><script>(function w(){if(window.ssq&&typeof window.ssq==="function"){ssq.push("chatOpen");ssq.push("onReady",function(){ssq.push("chatOpen");var e=document.getElementById("loading");if(e)e.style.display="none";});}else{setTimeout(w,300);}})();setTimeout(function(){var e=document.getElementById("loading");if(e&&e.style.display!=="none")e.textContent=${jsonEncode(appLocalizations.xboardCustomerServiceLoadTimeout)};},20000);new MutationObserver(function(){var fs=document.querySelectorAll("iframe");for(var i=0;i<fs.length;i++){var s=fs[i].src||"";if(s.indexOf("salesmartly")!==-1||s.indexOf("ssm")!==-1){fs[i].style.cssText="position:fixed!important;top:0!important;left:0!important;width:100vw!important;height:100vh!important;max-width:none!important;max-height:none!important;border:none!important;border-radius:0!important;z-index:99999!important;";var p=fs[i].parentElement;if(p){p.style.cssText="position:fixed!important;top:0!important;left:0!important;width:100vw!important;height:100vh!important;z-index:99999!important;";}var e=document.getElementById("loading");if(e)e.style.display="none";}}}).observe(document.documentElement,{childList:true,subtree:true,attributes:true});</script></body></html>''';
       // 注入脚本：在 DOMContentLoaded 后用 document.write 重写页面，注入 SDK
       // 使用 ssq.push API（官方文档推荐）
       final injectJs = '''
 if(window===window.top){
   document.addEventListener('DOMContentLoaded',function(){
     document.open();
-    document.write('<html><head><meta charset=utf-8><meta name=viewport content="width=device-width,initial-scale=1"><title>在线客服</title><style>*{margin:0;padding:0}html,body{width:100%;height:100%;background:$bg;overflow:hidden}#loading{display:flex;align-items:center;justify-content:center;height:100%;color:$fg;font-family:-apple-system,sans-serif;font-size:14px}</style></head><body><div id=loading>正在连接客服...</div><scr'+'ipt src=\\'$scriptUrlEscaped\\' id=ss_chat></scr'+'ipt><scr'+'ipt>(function w(){if(window.ssq&&typeof window.ssq==="function"){ssq.push("chatOpen");ssq.push("onReady",function(){ssq.push("chatOpen");var e=document.getElementById("loading");if(e)e.style.display="none";});}else{setTimeout(w,300);}})();setTimeout(function(){var e=document.getElementById("loading");if(e&&e.style.display!=="none")e.textContent="加载超时，请检查网络";},20000);new MutationObserver(function(){var fs=document.querySelectorAll("iframe");for(var i=0;i<fs.length;i++){var s=fs[i].src||"";if(s.indexOf("salesmartly")!==-1||s.indexOf("ssm")!==-1){fs[i].style.cssText="position:fixed!important;top:0!important;left:0!important;width:100vw!important;height:100vh!important;max-width:none!important;max-height:none!important;border:none!important;border-radius:0!important;z-index:99999!important;";var p=fs[i].parentElement;if(p){p.style.cssText="position:fixed!important;top:0!important;left:0!important;width:100vw!important;height:100vh!important;z-index:99999!important;";}var e=document.getElementById("loading");if(e)e.style.display="none";}}}).observe(document.documentElement,{childList:true,subtree:true,attributes:true});</scr'+'ipt></body></html>');
+    document.write(${jsonEncode(loadingHtml)});
     document.close();
   });
 }''';
@@ -1184,7 +1190,7 @@ if(window===window.top){
 <html>
 <head>
   <meta charset="utf-8">
-  <title>在线客服</title>
+  <title>${htmlEscape.convert(appLocalizations.xboardOnlineSupport)}</title>
   <style>
     * { margin: 0; padding: 0; }
     html, body { width: 100%; height: 100%; background: $bg; }
@@ -1195,8 +1201,8 @@ if(window===window.top){
   </style>
 </head>
 <body>
-  <div id="loading">正在连接客服...</div>
-  <script src="$scriptUrl" id="ss_chat"></script>
+  <div id="loading">${htmlEscape.convert(appLocalizations.onlineSupportConnecting)}</div>
+  <script src="${htmlEscape.convert(scriptUrl)}" id="ss_chat"></script>
   <script>
     (function check(){
       if(window.ssq && typeof window.ssq==='function'){

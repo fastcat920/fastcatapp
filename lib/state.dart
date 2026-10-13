@@ -157,7 +157,18 @@ class GlobalState {
     timer = null;
   }
 
-  Future<bool> handleStart([UpdateTasks? tasks]) async {
+  Future<bool> handleStart([UpdateTasks? tasks]) =>
+      _startRouting(tasks, publish: true);
+
+  Future<bool> prepareStart() => _startRouting(null, publish: false);
+
+  void commitStarted([UpdateTasks? tasks]) {
+    startTime ??= DateTime.now();
+    startUpdateTasks(tasks);
+  }
+
+  Future<bool> _startRouting(UpdateTasks? tasks,
+      {required bool publish}) async {
     var listenerStarted = false;
     var vpnStartAttempted = false;
     final vpnService = service;
@@ -176,8 +187,7 @@ class GlobalState {
           throw StateError('系统 VPN 返回启动失败');
         }
       }
-      startTime ??= DateTime.now();
-      startUpdateTasks(tasks);
+      if (publish) commitStarted(tasks);
       return true;
     } catch (e) {
       startTime = null;
@@ -209,11 +219,19 @@ class GlobalState {
 
   Future handleStop() async {
     startTime = null;
-    if (!Platform.isIOS) {
-      await clashCore.stopListener();
-    }
-    await service?.stopVpn();
     stopUpdateTasks();
+    // Release system routing before waiting for a potentially stalled core.
+    // Keep the caller waiting for both steps: a detached stop could otherwise
+    // run after the next connection has already started.
+    try {
+      await service?.stopVpn();
+    } finally {
+      if (!Platform.isIOS) {
+        if (await clashCore.stopListener() != true) {
+          throw StateError('Core listener stop was not acknowledged');
+        }
+      }
+    }
   }
 
   Future<bool?> showMessage({
@@ -595,8 +613,12 @@ final globalState = GlobalState();
 
 class DetectionState {
   static DetectionState? _instance;
-  bool? _preIsStart;
-  Timer? _setTimeoutTimer;
+  final Future<Result<IpInfo?>> Function(CancelToken) _lookup;
+  final ({bool initialized, Object? identity}) Function() _readContext;
+  final Duration debounceDuration;
+  Timer? _startTimer;
+  int _generation = 0;
+  bool _disposed = false;
   CancelToken? cancelToken;
 
   final state = ValueNotifier<NetworkDetectionState>(
@@ -607,80 +629,111 @@ class DetectionState {
     ),
   );
 
-  DetectionState._internal();
+  DetectionState._internal()
+      : _lookup = ((token) => request.checkIp(cancelToken: token)),
+        _readContext = _currentContext,
+        debounceDuration = const Duration(milliseconds: 1200);
+
+  @visibleForTesting
+  DetectionState.forTesting({
+    required Future<Result<IpInfo?>> Function(CancelToken) lookup,
+    required ({bool initialized, Object? identity}) Function() readContext,
+    this.debounceDuration = Duration.zero,
+  })  : _lookup = lookup,
+        _readContext = readContext;
 
   factory DetectionState() {
     _instance ??= DetectionState._internal();
     return _instance!;
   }
 
-  startCheck() {
-    debouncer.call(
-      FunctionTag.checkIp,
-      _checkIp,
-      duration: Duration(
-        milliseconds: 1200,
+  static ({bool initialized, Object? identity}) _currentContext() {
+    final app = globalState.appState;
+    if (!app.isInit) return (initialized: false, identity: null);
+    return (
+      initialized: true,
+      identity: (
+        app.runTime != null,
+        globalState.startTime,
+        app.checkIpNum,
+        globalState.config.currentProfileId,
+        globalState.config.patchClashConfig.mode,
+        jsonEncode(globalState.config.currentProfile?.selectedMap ?? {}),
+        jsonEncode(app.groups.map((group) => [group.name, group.now]).toList()),
+        globalState.isCoreSwitchingNotifier.value,
       ),
     );
   }
 
-  _checkIp() async {
-    final appState = globalState.appState;
-    final isInit = appState.isInit;
-    if (!isInit) return;
-    final isStart = appState.runTime != null;
-    if (_preIsStart == false &&
-        _preIsStart == isStart &&
-        state.value.ipInfo != null) {
-      return;
-    }
-    _clearSetTimeoutTimer();
+  void startCheck() {
+    if (_disposed) return;
+    // Invalidate immediately, not after the debounce: a result for the old
+    // connection must not flash on screen while the new check is queued.
+    final generation = _invalidate();
     state.value = state.value.copyWith(
+      isTesting: false,
       isLoading: true,
       ipInfo: null,
     );
-    _preIsStart = isStart;
-    if (cancelToken != null) {
-      cancelToken!.cancel();
-      cancelToken = null;
-    }
-    cancelToken = CancelToken();
-    state.value = state.value.copyWith(
-      isTesting: true,
+    _startTimer = Timer(
+      debounceDuration,
+      () => unawaited(_checkIp(generation)),
     );
-    final res = await request.checkIp(cancelToken: cancelToken);
-    if (res.isError) {
-      state.value = state.value.copyWith(
-        isLoading: true,
-        ipInfo: null,
-      );
-      return;
-    }
-    final ipInfo = res.data;
-    state.value = state.value.copyWith(
-      isTesting: false,
-    );
-    if (ipInfo != null) {
-      state.value = state.value.copyWith(
-        isLoading: false,
-        ipInfo: ipInfo,
-      );
-      return;
-    }
-    _clearSetTimeoutTimer();
-    _setTimeoutTimer = Timer(const Duration(milliseconds: 300), () {
-      state.value = state.value.copyWith(
-        isLoading: false,
-        ipInfo: null,
-      );
-    });
   }
 
-  _clearSetTimeoutTimer() {
-    if (_setTimeoutTimer != null) {
-      _setTimeoutTimer?.cancel();
-      _setTimeoutTimer = null;
+  @visibleForTesting
+  Future<void> checkNow() => _checkIp(_invalidate());
+
+  int _invalidate() {
+    _generation++;
+    _startTimer?.cancel();
+    _startTimer = null;
+    cancelToken?.cancel('IP lookup superseded');
+    cancelToken = null;
+    return _generation;
+  }
+
+  Future<void> _checkIp(int generation) async {
+    if (_disposed || generation != _generation) return;
+    final context = _readContext();
+    if (!context.initialized) {
+      state.value = state.value.copyWith(
+        isTesting: false,
+        isLoading: false,
+        ipInfo: null,
+      );
+      return;
     }
+    final token = CancelToken();
+    cancelToken = token;
+    state.value = state.value.copyWith(
+      isTesting: true,
+      isLoading: true,
+      ipInfo: null,
+    );
+    IpInfo? ipInfo;
+    try {
+      final result = await _lookup(token);
+      if (!token.isCancelled && result.isSuccess) ipInfo = result.data;
+    } catch (_) {
+      // Failure must leave the card retryable, including unexpected adapters.
+    } finally {
+      if (!_disposed && generation == _generation) {
+        final stillCurrent = context == _readContext();
+        cancelToken = null;
+        state.value = state.value.copyWith(
+          isTesting: false,
+          isLoading: false,
+          ipInfo: stillCurrent && !token.isCancelled ? ipInfo : null,
+        );
+      }
+    }
+  }
+
+  void dispose() {
+    _disposed = true;
+    _invalidate();
+    state.dispose();
   }
 }
 

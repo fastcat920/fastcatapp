@@ -5,7 +5,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:fl_clash/l10n/l10n.dart';
 import 'package:fl_clash/xboard/adapter/initialization/sdk_provider.dart';
-import 'package:fl_clash/xboard/config/xboard_config.dart';
+import 'package:fl_clash/xboard/features/auth/providers/session_epoch_provider.dart';
+import 'package:fl_clash/xboard/features/mine/services/device_gateway_request.dart';
 import 'package:fl_clash/xboard/features/auth/pages/qr_login_scanner_page.dart';
 import 'package:fl_clash/xboard/features/auth/providers/xboard_user_provider.dart';
 import 'package:fl_clash/xboard/features/shared/styles/styles.dart';
@@ -13,12 +14,7 @@ import 'package:fl_clash/xboard/features/shared/widgets/xb_error_state.dart';
 import 'package:fl_clash/xboard/features/shared/widgets/xb_dialog.dart';
 import 'package:fl_clash/xboard/utils/xboard_notification.dart';
 import 'package:flutter_xboard_sdk/flutter_xboard_sdk.dart';
-import 'package:fl_clash/xboard/config/gateway_config.dart';
 import 'package:fl_clash/xboard/utils/backend_message_mapper.dart';
-
-/// 网关 API 前缀（与 gateway_config.dart 的 gatewayApiPrefix 一致）
-/// 设备管理接口是网关私有端点，前缀必须与网关 DG_API_PREFIX 匹配
-const _deviceGatewayApiPrefix = gatewayApiPrefix;
 
 class DeviceManagementPage extends ConsumerStatefulWidget {
   const DeviceManagementPage({super.key});
@@ -44,6 +40,18 @@ class _DeviceManagementPageState extends ConsumerState<DeviceManagementPage>
       duration: const Duration(milliseconds: 700),
     );
     _future = _loadPageData();
+    ref.listenManual(sessionEpochProvider, (_, __) {
+      if (!mounted) return;
+      setState(() => _future = _loadPageData());
+    });
+    ref.listenManual(xboardUserAuthProvider, (previous, next) {
+      if (mounted &&
+          next.isAuthenticated &&
+          !next.isLoading &&
+          (previous?.isLoading == true || previous?.isAuthenticated != true)) {
+        setState(() => _future = _loadPageData());
+      }
+    });
   }
 
   @override
@@ -62,14 +70,16 @@ class _DeviceManagementPageState extends ConsumerState<DeviceManagementPage>
     try {
       await _future;
     } finally {
-      if (_refreshAnim.isAnimating) {
+      if (mounted && _refreshAnim.isAnimating) {
         final remaining = 1.0 - (_refreshAnim.value % 1.0);
         await _refreshAnim.animateTo(
           _refreshAnim.value + remaining,
           duration: Duration(milliseconds: (remaining * 700).round()),
         );
-        _refreshAnim.stop();
-        _refreshAnim.reset();
+        if (mounted) {
+          _refreshAnim.stop();
+          _refreshAnim.reset();
+        }
       }
       _isRefreshing = false;
       if (mounted) setState(() {});
@@ -77,12 +87,14 @@ class _DeviceManagementPageState extends ConsumerState<DeviceManagementPage>
   }
 
   Future<_DevicePageData> _loadPageData() async {
+    final epoch = ref.read(sessionEpochProvider);
     final sdk = await ref.read(xboardSdkProvider.future);
 
     // Send heartbeat first so last_seen_at is current before querying
     try {
       await _requestFromDeviceGateway<void>(
         sdk,
+        epoch,
         (http, headers) => http.postRequest(
           '/user/devices/heartbeat',
           <String, dynamic>{},
@@ -95,6 +107,7 @@ class _DeviceManagementPageState extends ConsumerState<DeviceManagementPage>
 
     final response = await _requestFromDeviceGateway(
       sdk,
+      epoch,
       (http, headers) => http.getRequest(
         '/user/devices',
         headers: headers,
@@ -124,105 +137,24 @@ class _DeviceManagementPageState extends ConsumerState<DeviceManagementPage>
 
   Future<T> _requestFromDeviceGateway<T>(
     XBoardSDK sdk,
+    int epoch,
     Future<T> Function(HttpService http, Map<String, String> headers) request,
-  ) async {
-    final token = await sdk.getToken();
-    if (token == null || token.isEmpty || !token.contains('dg_')) {
-      throw Exception('当前登录会话不是设备网关会话，请退出后重新登录');
-    }
-    final headers = <String, String>{
-      'Authorization': token,
-    };
-    Object? lastError;
+  ) =>
+      requestDeviceGateway(
+        sdk: sdk,
+        isCurrent: () => _isCurrent(epoch),
+        request: request,
+      );
 
-    // 优先复用 SDK 自身的 httpService：共享连接池、auth 拦截器、故障转移
-    try {
-      return await request(sdk.httpService, headers);
-    } catch (e) {
-      lastError = e;
-    }
-
-    // 回退：通过解析订阅 URL 等方式推测网关地址
-    final endpoints = _resolveDeviceGatewayEndpoints();
-    for (final endpoint in endpoints) {
-      try {
-        final http = await HttpService.create(
-          endpoint.baseUrl,
-          httpConfig: HttpConfig.development(),
-          apiPrefix: endpoint.apiPrefix,
-        );
-        return await request(http, headers);
-      } catch (e) {
-        lastError = e;
-      }
-    }
-
-    throw lastError ?? Exception('设备网关请求失败');
-  }
-
-  List<_DeviceGatewayEndpoint> _resolveDeviceGatewayEndpoints() {
-    final endpoints = <_DeviceGatewayEndpoint>[];
-    final seen = <String>{};
-
-    void addEndpoint(String baseUrl, String apiPrefix) {
-      final base = baseUrl.trim().replaceAll(RegExp(r'/$'), '');
-      final prefix = _normalizeApiPrefix(apiPrefix);
-      if (base.isEmpty || prefix.isEmpty) return;
-      final key = '$base|$prefix';
-      if (seen.add(key)) {
-        endpoints.add(_DeviceGatewayEndpoint(base, prefix));
-      }
-    }
-
-    void addFromBaseUrl(String url, {String? apiPrefix}) {
-      final uri = Uri.tryParse(url.trim());
-      if (uri == null || !uri.hasScheme || uri.host.isEmpty) return;
-      final origin = _originFromUri(uri);
-      final pathPrefix =
-          uri.path.isNotEmpty && uri.path != '/' ? uri.path : null;
-      addEndpoint(origin, apiPrefix ?? pathPrefix ?? _configuredApiPrefix());
-    }
-
-    final runtime = GatewayRuntimeService.instance;
-    runtime.syncFromCurrentConfig();
-
-    final active = runtime.activeConfig;
-    if (active != null) {
-      addEndpoint(active.baseUrl, active.apiPrefix);
-    }
-    for (final candidate in runtime.candidates) {
-      addEndpoint(candidate.baseUrl, candidate.apiPrefix);
-    }
-
-    addFromBaseUrl(
-      XBoardSDK.instance.httpService.baseUrl,
-      apiPrefix: XBoardSDK.instance.httpService.apiPrefix,
-    );
-    return endpoints;
-  }
-
-  String _configuredApiPrefix() {
-    try {
-      if (XBoardConfig.isInitialized) {
-        return XBoardConfig.provider.getApiPrefix();
-      }
-    } catch (_) {}
-    return _deviceGatewayApiPrefix;
-  }
-
-  static String _normalizeApiPrefix(String value) {
-    var prefix = value.trim();
-    if (prefix.isEmpty || prefix == '/') return _deviceGatewayApiPrefix;
-    if (!prefix.startsWith('/')) prefix = '/$prefix';
-    return prefix.replaceAll(RegExp(r'/$'), '');
-  }
-
-  static String _originFromUri(Uri uri) {
-    return uri.replace(path: '', query: '', fragment: '').toString();
-  }
+  bool _isCurrent(int epoch) =>
+      mounted &&
+      ref.read(sessionEpochProvider) == epoch &&
+      ref.read(xboardUserAuthProvider).isAuthenticated &&
+      !ref.read(xboardUserAuthProvider).isLoading;
 
   Future<void> _deleteDevice(_DeviceRecordView device) async {
     if (_removingDeviceId != null || _isReleasingOfflineDevices) return;
+    final epoch = ref.read(sessionEpochProvider);
     final l10n = AppLocalizations.of(context);
     final confirmed = await XbConfirmDialog.show(
       context,
@@ -235,20 +167,21 @@ class _DeviceManagementPageState extends ConsumerState<DeviceManagementPage>
       tone: XbDialogTone.danger,
       icon: Icons.devices_other_outlined,
     );
-    if (!confirmed) return;
+    if (!confirmed || !_isCurrent(epoch)) return;
 
     setState(() => _removingDeviceId = device.id);
     try {
       final sdk = await ref.read(xboardSdkProvider.future);
       await _requestFromDeviceGateway<void>(
         sdk,
+        epoch,
         (http, headers) => http.deleteRequest(
           '/user/devices/${device.id}',
           headers: headers,
         ),
       );
 
-      if (!mounted) return;
+      if (!mounted || !_isCurrent(epoch)) return;
       XBoardNotification.showSuccess(
           AppLocalizations.of(context).xboardDeviceRemoved);
 
@@ -265,7 +198,7 @@ class _DeviceManagementPageState extends ConsumerState<DeviceManagementPage>
 
       await _refreshPage();
     } catch (e) {
-      if (mounted) {
+      if (_isCurrent(epoch)) {
         XBoardNotification.showError(
           BackendMessageMapper.mapError(
             e,
@@ -280,6 +213,7 @@ class _DeviceManagementPageState extends ConsumerState<DeviceManagementPage>
 
   Future<void> _releaseOfflineDevices(_DevicePageData data) async {
     if (_isReleasingOfflineDevices || _removingDeviceId != null) return;
+    final epoch = ref.read(sessionEpochProvider);
     final targets = data.offlineActiveDevices;
     if (targets.isEmpty) return;
 
@@ -293,7 +227,7 @@ class _DeviceManagementPageState extends ConsumerState<DeviceManagementPage>
       tone: XbDialogTone.danger,
       icon: Icons.cleaning_services_outlined,
     );
-    if (!confirmed) return;
+    if (!confirmed || !_isCurrent(epoch)) return;
 
     setState(() => _isReleasingOfflineDevices = true);
     try {
@@ -301,6 +235,7 @@ class _DeviceManagementPageState extends ConsumerState<DeviceManagementPage>
       for (final device in targets) {
         await _requestFromDeviceGateway<void>(
           sdk,
+          epoch,
           (http, headers) => http.deleteRequest(
             '/user/devices/${device.id}',
             headers: headers,
@@ -308,13 +243,13 @@ class _DeviceManagementPageState extends ConsumerState<DeviceManagementPage>
         );
       }
 
-      if (!mounted) return;
+      if (!mounted || !_isCurrent(epoch)) return;
       XBoardNotification.showSuccess(
         AppLocalizations.of(context).xboardDeviceRemoved,
       );
       await _refreshPage();
     } catch (e) {
-      if (mounted) {
+      if (_isCurrent(epoch)) {
         XBoardNotification.showError(
           BackendMessageMapper.mapError(
             e,
@@ -372,6 +307,7 @@ class _DeviceManagementPageState extends ConsumerState<DeviceManagementPage>
         ],
       ),
       body: FutureBuilder<_DevicePageData>(
+        key: ValueKey(ref.watch(sessionEpochProvider)),
         future: _future,
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting &&
@@ -381,8 +317,10 @@ class _DeviceManagementPageState extends ConsumerState<DeviceManagementPage>
 
           if (snapshot.hasError) {
             return XbErrorState(
-              message: BackendMessageMapper.mapError(snapshot.error,
-                  context: BackendMessageContext.generic),
+              message: snapshot.error is DeviceGatewaySessionChanged
+                  ? AppLocalizations.of(context).xboardDeviceGatewayRelogin
+                  : BackendMessageMapper.mapError(snapshot.error,
+                      context: BackendMessageContext.generic),
               onRetry: _refreshPage,
             );
           }
@@ -849,13 +787,6 @@ class _DeviceManagementPageState extends ConsumerState<DeviceManagementPage>
     final parsed = _intFromAny(value);
     return parsed <= 0 ? null : parsed;
   }
-}
-
-class _DeviceGatewayEndpoint {
-  final String baseUrl;
-  final String apiPrefix;
-
-  const _DeviceGatewayEndpoint(this.baseUrl, this.apiPrefix);
 }
 
 class _DevicePageData {

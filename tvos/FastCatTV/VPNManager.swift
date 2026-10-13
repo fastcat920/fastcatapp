@@ -134,9 +134,10 @@ class VPNManager: NSObject {
     if isTunnelRunning {
       NSLog("[VPNManager] ensureTunnelRunning: tunnel already running")
       if !config.isEmpty {
-        sendConfigUpdate(config) { _ in }
+        sendConfigUpdate(config, completion: completion)
+      } else {
+        completion(nil)
       }
-      completion(nil)
       return
     }
 
@@ -329,49 +330,49 @@ class VPNManager: NSObject {
   // MARK: - Traffic mode IPC
 
   /// Reconfigure an already-running tunnel without writing YAML to disk.
-  private func sendConfigUpdate(_ config: String, completion: @escaping (String?) -> Void) {
+  func sendConfigUpdate(_ config: String, completion: @escaping (String?) -> Void) {
     sendClashMessage(method: "_updateConfig", data: config) { response in
-      if (response ?? "").hasPrefix("error") {
-        NSLog("[VPNManager] config update failed: %@", response ?? "unknown")
-        completion(response)
-      } else {
-        completion(nil)
-      }
+      completion(TVCoreProtocol.isAcknowledged(response) ? nil : self.message(
+        "配置应用未确认，请断开后重试", "Configuration was not confirmed. Disconnect and try again."))
     }
+  }
+
+  private func message(_ chinese: String, _ english: String) -> String {
+    tvText(chinese, english, language: UserDefaults.standard.string(forKey: TVLanguage.preferenceKey) ?? "system")
   }
 
   /// Apply a Clash routing mode without reconnecting the packet tunnel.
   func updateMode(_ mode: String, completion: @escaping (String?) -> Void) {
     guard isTunnelRunning else {
-      completion(nil)
+      completion(message("VPN 核心尚未启动", "The VPN core is not running"))
       return
     }
     guard let data = try? JSONSerialization.data(withJSONObject: ["mode": mode]),
           let payload = String(data: data, encoding: .utf8) else {
-      completion("代理模式参数无效")
+      completion(message("代理模式参数无效", "Invalid proxy mode"))
       return
     }
     sendClashMessage(method: "updateConfig", data: payload) { response in
-      let value = response ?? ""
-      completion(value.isEmpty ? nil : value)
+      completion(TVCoreProtocol.isAcknowledged(response) ? nil : self.message(
+        "代理模式应用未确认", "Proxy mode change was not confirmed"))
     }
   }
 
   /// Select a proxy in a live Mihomo group.
   func changeProxy(groupName: String, proxyName: String, completion: @escaping (String?) -> Void) {
     guard isTunnelRunning else {
-      completion("VPN 核心尚未启动")
+      completion(message("VPN 核心尚未启动", "The VPN core is not running"))
       return
     }
     let value = ["group-name": groupName, "proxy-name": proxyName]
     guard let data = try? JSONSerialization.data(withJSONObject: value),
           let payload = String(data: data, encoding: .utf8) else {
-      completion("线路参数无效")
+      completion(message("线路参数无效", "Invalid node selection"))
       return
     }
     sendClashMessage(method: "changeProxy", data: payload) { response in
-      let result = response ?? ""
-      completion(result.isEmpty ? nil : result)
+      completion(TVCoreProtocol.isAcknowledged(response) ? nil : self.message(
+        "线路切换未确认", "Node change was not confirmed"))
     }
   }
 
@@ -442,48 +443,45 @@ class VPNManager: NSObject {
   private func setTrafficMode(active: Bool, completion: @escaping (String?) -> Void) {
     let mode = active ? "active" : "idle"
     sendClashMessage(method: "_setTrafficMode", data: mode) { response in
-      let resp = response ?? ""
-      if resp.hasPrefix("error") {
-        NSLog("[VPNManager] setTrafficMode(%@) error: %@", mode, resp)
-        completion(resp)
-      } else {
-        NSLog("[VPNManager] setTrafficMode(%@) success", mode)
-        completion(nil)
-      }
+      completion(TVCoreProtocol.isAcknowledged(response) ? nil : self.message(
+        "网络设置应用未确认", "Network settings were not confirmed"))
     }
   }
 
   // MARK: - Clash IPC
 
   /// Forward a Clash operation to the running PacketTunnel extension.
-  /// Returns an empty response while the user is disconnected.
+  /// Missing/late responses stay nil; only explicit extension ACKs confirm writes.
   func sendClashMessage(method: String, data: String?, completion: @escaping (String?) -> Void) {
     guard let session = manager?.connection as? NETunnelProviderSession else {
       NSLog("[VPNManager] sendClashMessage(%@): no session available", method)
-      completion("")
+      completion(nil)
       return
     }
     let status = manager?.connection.status ?? .invalid
     guard status == .connected || status == .connecting else {
       NSLog("[VPNManager] sendClashMessage(%@): tunnel not running (status=%d)", method, status.rawValue)
-      completion("")
+      completion(nil)
       return
     }
     var payload: [String: Any] = ["method": method]
     if let data = data { payload["data"] = data }
     guard let encoded = try? JSONSerialization.data(withJSONObject: payload) else {
       NSLog("[VPNManager] sendClashMessage(%@): JSON encoding failed", method)
-      completion("")
+      completion(nil)
       return
     }
+    let reply = TVOnceReply(completion)
+    let timeout: Double = method == "_updateConfig" ? 30 : 10
+    DispatchQueue.global().asyncAfter(deadline: .now() + timeout) { reply.finish(nil) }
     do {
       try session.sendProviderMessage(encoded) { responseData in
-        guard let d = responseData else { completion(""); return }
-        completion(String(data: d, encoding: .utf8))
+        guard let d = responseData else { reply.finish(nil); return }
+        reply.finish(String(data: d, encoding: .utf8))
       }
     } catch {
       NSLog("[VPNManager] sendClashMessage(%@): IPC error: %@", method, error.localizedDescription)
-      completion("")
+      reply.finish(nil)
     }
   }
 

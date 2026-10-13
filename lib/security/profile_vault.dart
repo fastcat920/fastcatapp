@@ -154,7 +154,7 @@ class ProfileVault {
     }
   }
 
-  /// Restores provider snapshots only into the temporary runtime directory.
+  /// Runtime files stay encrypted too; only the core's provider reader decrypts.
   Future<void> prepareRuntimeProviders(String profileId) async {
     await _migrateLegacyProviders(profileId);
     final runtime =
@@ -170,12 +170,13 @@ class ProfileVault {
       final runtimeRelative =
           relativePath.substring(0, relativePath.length - 5);
       final destination = File(p.join(runtime.path, runtimeRelative));
-      final plaintext = FastCatLocalCacheCodec.decode(
-        await entity.readAsString(),
+      final envelope = await entity.readAsString();
+      FastCatLocalCacheCodec.decode(
+        envelope,
         recordId: _providerRecordId(profileId, runtimeRelative),
       );
       await destination.parent.create(recursive: true);
-      await destination.writeAsBytes(base64Decode(plaintext), flush: true);
+      await _atomicWrite(destination.path, envelope);
     }
   }
 
@@ -190,14 +191,42 @@ class ProfileVault {
         in runtime.list(recursive: true, followLinks: false)) {
       if (entity is! File) continue;
       final relativePath = p.relative(entity.path, from: runtime.path);
-      final envelope = FastCatLocalCacheCodec.encode(
-        base64Encode(await entity.readAsBytes()),
-        recordId: _providerRecordId(profileId, relativePath),
-      );
+      // Only canonical provider cache files belong to the core. Ignore atomic
+      // staging/rollback artifacts left by an interrupted write.
+      if (p.basename(entity.path).startsWith('.') ||
+          p.basename(entity.path).contains('.')) {
+        continue;
+      }
+      final bytes = await entity.readAsBytes();
+      final content = utf8.decode(bytes, allowMalformed: true);
+      final String envelope;
+      if (FastCatLocalCacheCodec.isLocalEnvelope(content)) {
+        FastCatLocalCacheCodec.decode(content,
+            recordId: _providerRecordId(profileId, relativePath));
+        envelope = content;
+      } else {
+        envelope = FastCatLocalCacheCodec.encode(base64Encode(bytes),
+            recordId: _providerRecordId(profileId, relativePath));
+        await _atomicWrite(entity.path, envelope);
+      }
       final destination = File(p.join(secure.path, '$relativePath.fcfg'));
       await destination.parent.create(recursive: true);
       await _atomicWrite(destination.path, envelope);
     }
+  }
+
+  /// Node-list fallback reads an encrypted provider in memory, never via a
+  /// plaintext intermediate file. Legacy manual file providers remain readable.
+  Future<String> readRuntimeProvider(String profileId, String path) async {
+    final content = await File(path).readAsString();
+    if (!FastCatLocalCacheCodec.isLocalEnvelope(content)) return content;
+    final root = await appPath.getRuntimeProvidersDirPath(profileId);
+    if (!p.isWithin(root, path)) {
+      throw const FormatException('Provider cache is outside this profile');
+    }
+    final plaintext = FastCatLocalCacheCodec.decode(content,
+        recordId: _providerRecordId(profileId, p.relative(path, from: root)));
+    return utf8.decode(base64Decode(plaintext));
   }
 
   Future<void> clearRuntimeProviders(String profileId) async {

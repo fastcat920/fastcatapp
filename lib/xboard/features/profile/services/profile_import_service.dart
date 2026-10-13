@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:io';
+import 'package:flutter/foundation.dart';
 import 'package:fl_clash/common/common.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:fl_clash/models/models.dart';
@@ -26,25 +27,42 @@ final xboardProfileImportServiceProvider =
 class XBoardProfileImportService {
   final Ref _ref;
   bool _isImporting = false;
+  Completer<void>? _importDone;
+  Future<void>? _cancelAndWaitFuture;
+  final Future<ImportResult> Function(SubscriptionDownloadCancelToken)?
+      _importForTesting;
   SubscriptionDownloadCancelToken? _downloadCancelToken;
   static const int maxRetries = 3;
   static const Duration retryDelay = Duration(seconds: 2);
-  XBoardProfileImportService(this._ref);
+  XBoardProfileImportService(this._ref) : _importForTesting = null;
+
+  @visibleForTesting
+  XBoardProfileImportService.forTesting(
+    this._ref, {
+    required Future<ImportResult> Function(SubscriptionDownloadCancelToken)
+        importOperation,
+  }) : _importForTesting = importOperation;
+
+  bool get hasPendingImport => _importDone != null;
   Future<ImportResult> importSubscription(
     String url, {
     Function(ImportStatus, double, String?)? onProgress,
   }) async {
-    if (_isImporting) {
+    if (_isImporting || _cancelAndWaitFuture != null) {
       return ImportResult.failure(
         errorMessage: '正在导入中，请稍候',
         errorType: ImportErrorType.concurrentImport,
       );
     }
     _isImporting = true;
+    final importDone = Completer<void>();
+    _importDone = importDone;
     final cancelToken = SubscriptionDownloadCancelToken();
     _downloadCancelToken = cancelToken;
     final stopwatch = Stopwatch()..start();
     try {
+      final testOperation = _importForTesting;
+      if (testOperation != null) return await testOperation(cancelToken);
       _logger.info('开始导入订阅配置: ${SensitiveMasker.maskUrl(url)}');
 
       // 1. 先下载并验证新配置（不删除旧配置）
@@ -83,25 +101,29 @@ class XBoardProfileImportService {
       // 2. 先添加新配置（保持 groups 非空，VPN 不断线）
       onProgress?.call(ImportStatus.adding, 0.8, '应用新配置');
       _throwIfCancelled(cancelToken);
-      final rollbackSnapshot = _ProfileImportSnapshot.capture(_ref);
-      try {
-        await _addProfile(profileWithSelection);
-      } catch (e) {
-        await _rollbackProfileImport(
-          rollbackSnapshot,
-          candidateProfileId: profileWithSelection.id,
-        );
-        rethrow;
-      }
+      await globalState.appController.runProfileImport(() async {
+        final rollbackSnapshot = _ProfileImportSnapshot.capture(_ref);
+        try {
+          _throwIfCancelled(cancelToken);
+          await _addProfile(profileWithSelection);
+          _throwIfCancelled(cancelToken);
+        } catch (_) {
+          await _rollbackProfileImport(
+            rollbackSnapshot,
+            candidateProfileId: profileWithSelection.id,
+          );
+          rethrow;
+        }
 
-      // 3. 再清理旧配置（新配置已就绪，安全删除旧的）
-      onProgress?.call(ImportStatus.cleaning, 0.95, '清理旧配置');
-      _throwIfCancelled(cancelToken);
-      await _pruneOldUrlProfiles(profile.id);
-      _logProfileDiff(
-        rollbackSnapshot.profiles,
-        _ref.read(profilesProvider),
-      );
+        // Only prune after acknowledgement, while the import still owns the
+        // operation lock. Never wrap application in a shorter UI timeout.
+        onProgress?.call(ImportStatus.cleaning, 0.95, '清理旧配置');
+        await _pruneOldUrlProfiles(profile.id);
+        _logProfileDiff(
+          rollbackSnapshot.profiles,
+          _ref.read(profilesProvider),
+        );
+      });
 
       stopwatch.stop();
       onProgress?.call(ImportStatus.success, 1.0, '导入成功');
@@ -126,11 +148,26 @@ class XBoardProfileImportService {
         _downloadCancelToken = null;
       }
       _isImporting = false;
+      if (identical(_importDone, importDone)) _importDone = null;
+      importDone.complete();
     }
   }
 
   void cancelCurrentImport() {
     _downloadCancelToken?.cancel();
+  }
+
+  /// Wait for native application AND its rollback. Cancelling the download or
+  /// hiding progress is not proof that a configuration operation has finished.
+  Future<void> cancelCurrentImportAndWait() {
+    final pending = _cancelAndWaitFuture;
+    if (pending != null) return pending;
+    final completion = _importDone?.future;
+    cancelCurrentImport();
+    if (completion == null) return Future.value();
+    return _cancelAndWaitFuture = completion.whenComplete(() {
+      _cancelAndWaitFuture = null;
+    });
   }
 
   void _throwIfCancelled(SubscriptionDownloadCancelToken cancelToken) {
@@ -207,6 +244,19 @@ class XBoardProfileImportService {
     _ref.read(currentProfileIdProvider.notifier).value =
         snapshot.currentProfileId;
     _ref.read(groupsProvider.notifier).value = snapshot.groups;
+    final controller = globalState.appController;
+    try {
+      if (snapshot.currentProfileId == null) {
+        await controller.stopAfterConfigurationFailure();
+      } else {
+        // Restore the native configuration too, not just the cached UI list.
+        await controller.applyProfile(silence: true);
+        if (snapshot.wasConnected) await controller.restoreProfileConnection();
+      }
+    } catch (error) {
+      _logger.warning('上一份配置恢复失败，停止连接', error);
+      await controller.stopAfterConfigurationFailure();
+    }
     await _clearProfileFiles(candidateProfileId);
   }
 
@@ -402,12 +452,8 @@ class XBoardProfileImportService {
       _logger.info(
           '✅ [${sw.elapsedMilliseconds}ms] Profile 已加入列表: ${profile.label ?? profile.id}');
 
-      // 2. 设置标志位，防止 ClashManager 的 needSetupProvider 监听器
-      //    在 currentProfileId 变更时触发 handleChangeProfile → applyProfile，
-      //    与下方的显式 applyProfile 产生并发竞争导致 groups 被清空。
-      globalState.appController.isImportApplying = true;
-
-      // 3. 强制设置为当前配置（订阅导入是用户主动操作，应该立即生效）
+      // runProfileImport owns the listener guard through apply AND rollback.
+      // 2. 强制设置为当前配置（订阅导入是用户主动操作，应该立即生效）
       final currentProfileIdNotifier =
           _ref.read(currentProfileIdProvider.notifier);
       currentProfileIdNotifier.value = profile.id;
@@ -420,9 +466,7 @@ class XBoardProfileImportService {
       _logger.info(
           '📋 [${sw.elapsedMilliseconds}ms] 开始 await applyProfile(silence: true)...');
       try {
-        await globalState.appController
-            .applyProfile(silence: true)
-            .timeout(const Duration(seconds: 30));
+        await globalState.appController.applyProfile(silence: true);
         _logger.info('✅ [${sw.elapsedMilliseconds}ms] applyProfile 完成');
 
         // 检查节点是否已加载
@@ -432,9 +476,7 @@ class XBoardProfileImportService {
           _logger.warning('⚠️ applyProfile 完成但 groups 为空，尝试延迟重试...');
           // 等待一段时间后重试一次（适配 Windows 便携版 ClashCore 慢启动）
           await Future.delayed(const Duration(seconds: 5));
-          await globalState.appController
-              .applyProfile(silence: true)
-              .timeout(const Duration(seconds: 30));
+          await globalState.appController.applyProfile(silence: true);
           final retryGroups = _ref.read(groupsProvider);
           _logger.info('📊 重试后 groups 数量: ${retryGroups.length}');
           if (retryGroups.isEmpty) {
@@ -447,14 +489,11 @@ class XBoardProfileImportService {
         // 导致旧配置被清除、新配置未加载成功 → 用户看到空白节点列表。
         // 配置文件已保存在磁盘，下次启动时会自动加载。
         throw Exception('applyProfile 失败: $e');
-      } finally {
-        globalState.appController.isImportApplying = false;
       }
 
       _logger.info(
           '✅ [${sw.elapsedMilliseconds}ms] _addProfile 完成: ${profile.label ?? profile.id}');
     } catch (e) {
-      globalState.appController.isImportApplying = false;
       throw Exception('添加配置失败: $e');
     }
   }
@@ -527,17 +566,20 @@ class _ProfileImportSnapshot {
     required this.profiles,
     required this.currentProfileId,
     required this.groups,
+    required this.wasConnected,
   });
 
   final List<Profile> profiles;
   final String? currentProfileId;
   final List<Group> groups;
+  final bool wasConnected;
 
   factory _ProfileImportSnapshot.capture(Ref ref) {
     return _ProfileImportSnapshot(
       profiles: List<Profile>.from(ref.read(profilesProvider)),
       currentProfileId: ref.read(currentProfileIdProvider),
       groups: List<Group>.from(ref.read(groupsProvider)),
+      wasConnected: ref.read(runTimeProvider) != null,
     );
   }
 }

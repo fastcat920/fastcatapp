@@ -13,10 +13,15 @@ class AuthFailureEvent {
   final String? code;
   final String? message;
 
+  /// Process-local ownership only; never contains a credential. Consumers must
+  /// compare with the current TokenManager again when handling the async event.
+  final Object? sessionIdentity;
+
   const AuthFailureEvent({
     required this.reason,
     this.code,
     this.message,
+    this.sessionIdentity,
   });
 }
 

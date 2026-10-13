@@ -699,7 +699,7 @@ func TestAdminServiceHealthShowsEveryOSSAndAPI(t *testing.T) {
 		"gateway_urls":[%q,%q]
 	}`, healthyBusiness.URL, failingBusiness.URL, healthyGateway.URL, failingGateway.URL)
 	healthyOSS := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
-		_, _ = w.Write([]byte(configBody))
+		_, _ = w.Write(encodeTestOSS([]byte(configBody), "test-key"))
 	}))
 	defer healthyOSS.Close()
 	failingOSS := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
@@ -1056,11 +1056,12 @@ func TestOSSGroupReturnsWithoutWaitingForDeadMirrors(t *testing.T) {
 	defer slow.Close()
 	healthy := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
-		_, _ = w.Write([]byte(`{
+		plain := []byte(`{
 			"config_version":"2",
 			"domains":["https://api.example.com"],
 			"gateway_urls":["https://gateway.example.com"]
-		}`))
+		}`)
+		_, _ = w.Write(encodeTestOSS(plain, "test-xor-key"))
 	}))
 	defer healthy.Close()
 
@@ -1069,7 +1070,7 @@ func TestOSSGroupReturnsWithoutWaitingForDeadMirrors(t *testing.T) {
 		log.New(io.Discard, "", 0),
 		&http.Client{Timeout: 3 * time.Second},
 		[]string{slow.URL, healthy.URL},
-		"unused-for-plain-json",
+		"test-xor-key",
 	)
 	if result == nil || result.configVersion != "2" {
 		t.Fatalf("unexpected OSS result: %#v", result)

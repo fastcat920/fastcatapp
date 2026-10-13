@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:convert';
 import 'dart:io';
 import 'package:fl_clash/xboard/features/auth/utils/customer_service_helper.dart';
 import 'package:flutter/foundation.dart';
@@ -43,8 +44,7 @@ class _SalesmarylyChatPageState extends State<SalesmarylyChatPage> {
   int _lastAppliedRestoreToken = -1;
 
   String _buildHtml() {
-    final escaped =
-        widget.scriptUrl.replaceAll('&', '&amp;').replaceAll('"', '&quot;');
+    final l10n = AppLocalizations.of(context);
     final background = _customerServiceBackgroundColor(_isDarkMode);
     final foreground = _customerServiceForegroundColor(_isDarkMode);
     return '''<!DOCTYPE html>
@@ -63,10 +63,10 @@ class _SalesmarylyChatPageState extends State<SalesmarylyChatPage> {
   </style>
 </head>
 <body>
-  <div id="ss_loading">正在连接客服...</div>
+  <div id="ss_loading">${htmlEscape.convert(l10n.onlineSupportConnecting)}</div>
   <script>
     var s = document.createElement('script');
-    s.src = "$escaped";
+    s.src = ${jsonEncode(widget.scriptUrl).replaceAll('<', r'\u003c')};
     s.id = 'ss_chat';
     s.onload = function() {
       (function w() {
@@ -84,7 +84,7 @@ class _SalesmarylyChatPageState extends State<SalesmarylyChatPage> {
     };
     s.onerror = function() {
       var e = document.getElementById('ss_loading');
-      if (e) e.textContent = '加载失败，请检查网络后重试';
+      if (e) e.textContent = ${jsonEncode(l10n.customerServiceLoadFailed)};
     };
     document.head.appendChild(s);
 
@@ -104,7 +104,7 @@ class _SalesmarylyChatPageState extends State<SalesmarylyChatPage> {
 
     setTimeout(function() {
       var e = document.getElementById('ss_loading');
-      if (e && e.style.display !== 'none') e.textContent = '加载超时，请检查网络后重试';
+      if (e && e.style.display !== 'none') e.textContent = ${jsonEncode(l10n.xboardCustomerServiceLoadTimeout)};
     }, 20000);
   </script>
 </body>

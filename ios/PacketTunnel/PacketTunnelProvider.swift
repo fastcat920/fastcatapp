@@ -150,7 +150,7 @@ class PacketTunnelProvider: NEPacketTunnelProvider {
   /// Special internal methods:
   /// - `_setTrafficMode`: data = "active" | "idle" — toggles proxy network settings
   /// - `_getTrafficMode`: returns "active" or "idle"
-  /// - `_updateConfig`: data = YAML config string — hot-reload mihomo config
+  /// - `_updateConfig`: data = JSON SetupParams — hot-reload mihomo config
   override func handleAppMessage(_ messageData: Data, completionHandler: ((Data?) -> Void)?) {
     guard
       let payload = try? JSONSerialization.jsonObject(with: messageData) as? [String: Any],
@@ -239,16 +239,24 @@ class PacketTunnelProvider: NEPacketTunnelProvider {
       return
     }
     // Use mihomo's built-in config reload via ClashCore_invoke
-    let resultCStr = ClashCore_invoke("setupConfig", config)
+    guard let resultCStr = ClashCore_invoke("setupConfig", config) else {
+      completionHandler?("error: core did not acknowledge configuration".data(using: .utf8))
+      return
+    }
     defer { ClashCore_free(resultCStr) }
-    let resultString = resultCStr.map { String(cString: $0) } ?? "ok"
+    let resultString = String(cString: resultCStr)
     guard resultString.isEmpty || resultString == "ok" else {
       completionHandler?(resultString.data(using: .utf8))
       return
     }
+    let mixedPort = Int(ClashCore_get_mixed_port())
+    guard mixedPort > 0 else {
+      completionHandler?("error: mixed-port unavailable after configuration update".data(using: .utf8))
+      return
+    }
     cachedDnsServers = extractDnsServers(from: config)
-    cachedMixedPort = Int(ClashCore_get_mixed_port())
-    if isTrafficEnabled && cachedMixedPort > 0 {
+    cachedMixedPort = mixedPort
+    if isTrafficEnabled {
       setTunnelNetworkSettings(buildNetworkSettings(mixedPort: cachedMixedPort)) { error in
         let result = error.map { "error: \($0.localizedDescription)" } ?? resultString
         completionHandler?(result.data(using: .utf8))

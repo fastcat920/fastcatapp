@@ -25,10 +25,10 @@ private let kAppGroupId: String = {
 ///   1. mihomo starts with `mixed-port` (HTTP+SOCKS5 proxy on 127.0.0.1).
 ///      TUN is force-disabled in the Go layer — sing-tun is NOT used.
 ///   2. NEPacketTunnelNetworkSettings configures:
-///      - DNS → mihomo fake-ip resolver (198.18.0.2)
+///      - DNS → the profile's reachable literal DNS server addresses
 ///      - HTTP/HTTPS proxy → 127.0.0.1:<mixed-port>
-///   3. The OS routes HTTP/HTTPS traffic through the local proxy automatically.
-///      DNS queries are hijacked to mihomo for fake-ip / rule-based resolution.
+///   3. Proxy-aware traffic can use the local proxy. There is no packetFlow
+///      read/write bridge here: arbitrary TCP/UDP is NOT a full-device TUN.
 ///
 /// Communication with the main app:
 ///   Main app  →  NETunnelProviderSession.sendProviderMessage()
@@ -176,45 +176,54 @@ class PacketTunnelProvider: NEPacketTunnelProvider {
     let resultCStr = ClashCore_invoke(method, data)
     defer { ClashCore_free(resultCStr) }
 
-    let resultString = resultCStr.map { String(cString: $0) } ?? ""
-    completionHandler?(resultString.data(using: .utf8))
+    let resultString = resultCStr.map { String(cString: $0) }
+    if method == "updateConfig" || method == "changeProxy" {
+      completionHandler?(TVCoreProtocol.acknowledgement(error:
+        resultString == "" ? nil : (resultString ?? "Missing core response")))
+    } else {
+      completionHandler?(resultString?.data(using: .utf8))
+    }
   }
 
   // MARK: - Traffic mode toggle
 
   /// Switch between active (proxy routing) and idle (mihomo running, no routing).
   private func handleSetTrafficMode(_ mode: String, completionHandler: ((Data?) -> Void)?) {
+    guard mode == "active" || mode == "idle" else {
+      completionHandler?(TVCoreProtocol.acknowledgement(error: "Invalid traffic mode"))
+      return
+    }
     let wantActive = (mode == "active")
     NSLog("[PacketTunnel] setTrafficMode: %@ (currently %@)", mode, isTrafficEnabled ? "active" : "idle")
 
     if wantActive {
       guard cachedMixedPort > 0 else {
         NSLog("[PacketTunnel] ERROR: cannot enable traffic, mixedPort not available")
-        completionHandler?("error: mixedPort not available".data(using: .utf8))
+        completionHandler?(TVCoreProtocol.acknowledgement(error: "Mixed port unavailable"))
         return
       }
       let settings = buildNetworkSettings(mixedPort: cachedMixedPort)
       setTunnelNetworkSettings(settings) { [weak self] error in
         if let error = error {
           NSLog("[PacketTunnel] ERROR: setTrafficMode active: %@", error.localizedDescription)
-          completionHandler?("error: \(error.localizedDescription)".data(using: .utf8))
+          completionHandler?(TVCoreProtocol.acknowledgement(error: "Network settings failed"))
           return
         }
         self?.isTrafficEnabled = true
         NSLog("[PacketTunnel] Traffic mode: active (port %d)", self?.cachedMixedPort ?? 0)
-        completionHandler?("ok".data(using: .utf8))
+        completionHandler?(TVCoreProtocol.acknowledgement())
       }
     } else {
       let settings = buildIdleNetworkSettings()
       setTunnelNetworkSettings(settings) { [weak self] error in
         if let error = error {
           NSLog("[PacketTunnel] ERROR: setTrafficMode idle: %@", error.localizedDescription)
-          completionHandler?("error: \(error.localizedDescription)".data(using: .utf8))
+          completionHandler?(TVCoreProtocol.acknowledgement(error: "Network settings failed"))
           return
         }
         self?.isTrafficEnabled = false
         NSLog("[PacketTunnel] Traffic mode: idle")
-        completionHandler?("ok".data(using: .utf8))
+        completionHandler?(TVCoreProtocol.acknowledgement())
       }
     }
   }
@@ -222,26 +231,30 @@ class PacketTunnelProvider: NEPacketTunnelProvider {
   /// Hot-reload mihomo config without restarting the tunnel.
   private func handleUpdateConfig(_ config: String, completionHandler: ((Data?) -> Void)?) {
     guard !config.isEmpty else {
-      completionHandler?("error: empty config".data(using: .utf8))
+      completionHandler?(TVCoreProtocol.acknowledgement(error: "Empty configuration"))
       return
     }
     // Use mihomo's built-in config reload via ClashCore_invoke
-    let resultCStr = ClashCore_invoke("setupConfig", config)
+    let resultCStr = ClashCore_invoke("setupConfigYaml", config)
     defer { ClashCore_free(resultCStr) }
-    let resultString = resultCStr.map { String(cString: $0) } ?? "ok"
-    guard resultString.isEmpty || resultString == "ok" else {
-      completionHandler?(resultString.data(using: .utf8))
+    let resultString = resultCStr.map { String(cString: $0) }
+    guard resultString == "" else {
+      completionHandler?(TVCoreProtocol.acknowledgement(error: resultString ?? "Missing core response"))
+      return
+    }
+    cachedMixedPort = Int(ClashCore_get_mixed_port())
+    guard cachedMixedPort > 0 else {
+      completionHandler?(TVCoreProtocol.acknowledgement(error: "Mixed port unavailable"))
       return
     }
     cachedDnsServers = extractDnsServers(from: config)
     if isTrafficEnabled && cachedMixedPort > 0 {
       setTunnelNetworkSettings(buildNetworkSettings(mixedPort: cachedMixedPort)) { error in
-        let result = error.map { "error: \($0.localizedDescription)" } ?? resultString
-        completionHandler?(result.data(using: .utf8))
+        completionHandler?(TVCoreProtocol.acknowledgement(error: error.map { _ in "Network settings failed" }))
       }
       return
     }
-    completionHandler?(resultString.data(using: .utf8))
+    completionHandler?(TVCoreProtocol.acknowledgement())
   }
 
   // MARK: - Network settings (proxy mode)
@@ -282,9 +295,8 @@ class PacketTunnelProvider: NEPacketTunnelProvider {
     proxy.httpServer = NEProxyServer(address: "127.0.0.1", port: mixedPort)
     proxy.httpsEnabled = true
     proxy.httpsServer = NEProxyServer(address: "127.0.0.1", port: mixedPort)
-    // Auto-proxy via PAC: ensures all traffic (not just browser HTTP) uses
-    // the proxy. The PAC script routes everything through SOCKS5 first
-    // (better for non-HTTP traffic), with HTTP CONNECT as fallback.
+    // PAC applies only to clients that honor system proxy settings. It does
+    // not capture arbitrary sockets/UDP; packetFlow forwarding is not present.
     proxy.proxyAutoConfigurationJavaScript = """
       function FindProxyForURL(url, host) {
         return "SOCKS 127.0.0.1:\(mixedPort); PROXY 127.0.0.1:\(mixedPort); DIRECT";
@@ -300,10 +312,14 @@ class PacketTunnelProvider: NEPacketTunnelProvider {
   }
 
   private func extractDnsServers(from setupPayload: String) -> [String] {
+    // tvOS transports raw YAML. Let the same core parser decode it, instead of
+    // treating it as Flutter's JSON SetupParams and silently losing custom DNS.
+    let parsed = ClashCore_invoke("getConfigContent", setupPayload)
+    defer { ClashCore_free(parsed) }
     guard
-      let data = setupPayload.data(using: .utf8),
-      let root = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
-      let config = root["config"] as? [String: Any],
+      let json = parsed.map({ String(cString: $0) }),
+      let data = json.data(using: .utf8),
+      let config = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
       let dns = config["dns"] as? [String: Any]
     else { return ["223.5.5.5", "119.29.29.29"] }
 

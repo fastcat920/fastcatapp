@@ -11285,21 +11285,81 @@ class AppLocalizations {
     );
   }
 
-  /// `IPv4 / IPv6 connectivity`
+  /// `Device IPv4 / IPv6 (system routing)`
   String get xboardNetworkDiagnosticsIpConnectivity {
     return Intl.message(
-      'IPv4 / IPv6 connectivity',
+      'Device IPv4 / IPv6 (system routing)',
       name: 'xboardNetworkDiagnosticsIpConnectivity',
       desc: '',
       args: [],
     );
   }
 
-  /// `Local direct HTTPS (domestic baseline)`
+  /// `Device HTTPS (independent of core test API)`
   String get xboardNetworkDiagnosticsDirectHttps {
     return Intl.message(
-      'Local direct HTTPS (domestic baseline)',
+      'Device HTTPS (independent of core test API)',
       name: 'xboardNetworkDiagnosticsDirectHttps',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Device request without the core test API; still uses system DNS and routing`
+  String get xboardNetworkDiagnosticsNativeDirectDetail {
+    return Intl.message(
+      'Device request without the core test API; still uses system DNS and routing',
+      name: 'xboardNetworkDiagnosticsNativeDirectDetail',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Device request without the core test API; VPN/TUN may affect system DNS and routing, so this does not independently verify the physical network`
+  String get xboardNetworkDiagnosticsNativeTunDetail {
+    return Intl.message(
+      'Device request without the core test API; VPN/TUN may affect system DNS and routing, so this does not independently verify the physical network',
+      name: 'xboardNetworkDiagnosticsNativeTunDetail',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Prerequisite unavailable; this check was not performed`
+  String get xboardNetworkDiagnosticsSkippedPrerequisite {
+    return Intl.message(
+      'Prerequisite unavailable; this check was not performed',
+      name: 'xboardNetworkDiagnosticsSkippedPrerequisite',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `The proxy configuration has not been applied, or the selected node is missing from the core. Reload the subscription or configuration first; this does not indicate a local network or node DNS failure.`
+  String get xboardNetworkDiagnosticsConclusionConfiguration {
+    return Intl.message(
+      'The proxy configuration has not been applied, or the selected node is missing from the core. Reload the subscription or configuration first; this does not indicate a local network or node DNS failure.',
+      name: 'xboardNetworkDiagnosticsConclusionConfiguration',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `No usable core diagnostic result was obtained. Check the core and configuration, then retry; this alone does not indicate a local network failure.`
+  String get xboardNetworkDiagnosticsConclusionCoreUnavailable {
+    return Intl.message(
+      'No usable core diagnostic result was obtained. Check the core and configuration, then retry; this alone does not indicate a local network failure.',
+      name: 'xboardNetworkDiagnosticsConclusionCoreUnavailable',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Both the device baseline and node checks failed, but VPN/TUN may affect system routing. The results cannot distinguish a local network issue from a proxy issue. Check the core, configuration, and TUN state first.`
+  String get xboardNetworkDiagnosticsConclusionRouteUncertain {
+    return Intl.message(
+      'Both the device baseline and node checks failed, but VPN/TUN may affect system routing. The results cannot distinguish a local network issue from a proxy issue. Check the core, configuration, and TUN state first.',
+      name: 'xboardNetworkDiagnosticsConclusionRouteUncertain',
       desc: '',
       args: [],
     );
@@ -11625,10 +11685,10 @@ class AppLocalizations {
     );
   }
 
-  /// `Layered diagnostics are unavailable in the current core. Update or fully restart the client; the HTTPS results below remain valid.`
+  /// `No usable layered core diagnostic result was obtained. Unperformed checks are skipped; device HTTPS results are shown separately.`
   String get xboardNetworkDiagnosticsCoreUnavailable {
     return Intl.message(
-      'Layered diagnostics are unavailable in the current core. Update or fully restart the client; the HTTPS results below remain valid.',
+      'No usable layered core diagnostic result was obtained. Unperformed checks are skipped; device HTTPS results are shown separately.',
       name: 'xboardNetworkDiagnosticsCoreUnavailable',
       desc: '',
       args: [],
@@ -11685,10 +11745,10 @@ class AppLocalizations {
     );
   }
 
-  /// `Direct internet access works, but the selected node TCP endpoint timed out. The endpoint may be unreachable or restricted by the current network.`
+  /// `The device HTTPS baseline is reachable, but the selected node TCP endpoint timed out. The endpoint may be unreachable or restricted by the current network.`
   String get xboardNetworkDiagnosticsConclusionTcp {
     return Intl.message(
-      'Direct internet access works, but the selected node TCP endpoint timed out. The endpoint may be unreachable or restricted by the current network.',
+      'The device HTTPS baseline is reachable, but the selected node TCP endpoint timed out. The endpoint may be unreachable or restricted by the current network.',
       name: 'xboardNetworkDiagnosticsConclusionTcp',
       desc: '',
       args: [],
@@ -11725,10 +11785,10 @@ class AppLocalizations {
     );
   }
 
-  /// `The UDP-based node timed out while direct internet access works. UDP may be unavailable or restricted on the current network.`
+  /// `The UDP-based node timed out while the device HTTPS baseline is reachable. UDP may be unavailable or restricted on the current network.`
   String get xboardNetworkDiagnosticsConclusionUdp {
     return Intl.message(
-      'The UDP-based node timed out while direct internet access works. UDP may be unavailable or restricted on the current network.',
+      'The UDP-based node timed out while the device HTTPS baseline is reachable. UDP may be unavailable or restricted on the current network.',
       name: 'xboardNetworkDiagnosticsConclusionUdp',
       desc: '',
       args: [],
@@ -13130,6 +13190,56 @@ class AppLocalizations {
     return Intl.message(
       'Scan a valid FastCat sign-in QR code on your computer or TV',
       name: 'xboardQrInvalidCode',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Reset the current plan's data usage`
+  String get xboardResetTrafficDescription {
+    return Intl.message(
+      'Reset the current plan\'s data usage',
+      name: 'xboardResetTrafficDescription',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Online support is not configured`
+  String get xboardCustomerServiceNotConfigured {
+    return Intl.message(
+      'Online support is not configured',
+      name: 'xboardCustomerServiceNotConfigured',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Loading timed out. Check your network and try again.`
+  String get xboardCustomerServiceLoadTimeout {
+    return Intl.message(
+      'Loading timed out. Check your network and try again.',
+      name: 'xboardCustomerServiceLoadTimeout',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Your device session has changed. Please sign in again.`
+  String get xboardDeviceGatewayRelogin {
+    return Intl.message(
+      'Your device session has changed. Please sign in again.',
+      name: 'xboardDeviceGatewayRelogin',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Password changed. Please enter your new password the next time you sign in.`
+  String get xboardPasswordChangedRememberFailed {
+    return Intl.message(
+      'Password changed. Please enter your new password the next time you sign in.',
+      name: 'xboardPasswordChangedRememberFailed',
       desc: '',
       args: [],
     );

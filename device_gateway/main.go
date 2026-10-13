@@ -81,22 +81,26 @@ type Server struct {
 	ipGeo               *IPRegionResolver
 	qrMu                sync.Mutex
 	qrSessions          map[string]*QRLoginSession
+	limitsOnce          sync.Once
+	requestLimits       *gatewayRequestLimits
 }
 
-// QRLoginSession is deliberately short lived and stays only in memory.  It
-// contains no phone credential: the phone authorizes it with its own gateway
-// session, while the target polls with an independent secret.
+// QRLoginSession is short lived. PostgreSQL mode encrypts its entire payload so
+// any gateway can approve/poll it without storing plain device tokens on disk.
 type QRLoginSession struct {
-	ID         string
-	PollToken  string
-	Device     LoginRequest
-	TargetIP   string
-	TargetUA   string
-	Status     string
-	CreatedAt  time.Time
-	ExpiresAt  time.Time
-	ApprovedBy string
-	Response   map[string]any
+	ID            string
+	PollToken     string
+	Device        LoginRequest
+	TargetIP      string
+	TargetUA      string
+	Status        string
+	CreatedAt     time.Time
+	ExpiresAt     time.Time
+	ApprovedBy    string
+	Response      map[string]any
+	DeliveryACK   bool
+	DeliveryID    string
+	ApprovalClaim string
 }
 
 type BusinessBackendState struct {
@@ -132,7 +136,9 @@ type Store struct {
 	sessionByTokenHash     map[string]string         `json:"-"`
 	sessionBySubscribeHash map[string]string         `json:"-"`
 	dirtyUsers             map[string]struct{}       `json:"-"`
+	userLimitOverrides     map[string]time.Time      `json:"-"`
 	dirtyDevices           map[string]struct{}       `json:"-"`
+	loginDevices           map[string]struct{}       `json:"-"`
 	dirtySessions          map[string]struct{}       `json:"-"`
 	dirtyAudits            map[string]AuditLog       `json:"-"`
 	deletedDevices         map[string]struct{}       `json:"-"`
@@ -228,6 +234,7 @@ type LoginRequest struct {
 }
 
 type SubscriptionSnapshot struct {
+	Unavailable    bool
 	Email          string
 	UUID           string
 	PlanID         int
@@ -318,7 +325,7 @@ func main() {
 	server.startBusinessRecoveryChecker()
 
 	server.startOSSRefresher(envInt("DG_OSS_REFRESH_MINUTES", 30))
-	if err := http.ListenAndServe(cfg.ListenAddr, server.routes()); err != nil {
+	if err := server.httpServer().ListenAndServe(); err != nil {
 		logger.Fatal(err)
 	}
 }
@@ -330,6 +337,9 @@ type ossFetchResult struct {
 	gatewayURLs   []string
 	configVersion string
 	decrypted     []byte
+	raw           []byte
+	verifiedAt    time.Time
+	signed        bool
 	source        string
 	index         int
 	err           error
@@ -350,7 +360,7 @@ func fetchBusinessBaseURLs(logger *log.Logger) (domains, gatewayURLs []string) {
 	}
 	cached := loadCachedOSSResult(logger)
 	var cachedHealthChannel chan bool
-	if cached != nil {
+	if cached != nil && ossCacheUsable(cached, time.Now()) {
 		cachedHealthChannel = make(chan bool, 1)
 		go func() {
 			cachedHealthChannel <- anyOSSBusinessRouteHealthy(client, cached.domains)
@@ -359,7 +369,7 @@ func fetchBusinessBaseURLs(logger *log.Logger) (domains, gatewayURLs []string) {
 	cachedHealthKnown := false
 	cachedHealthy := false
 	waitForCachedHealth := func(wait time.Duration) bool {
-		if cached == nil {
+		if cached == nil || !ossCacheUsable(cached, time.Now()) {
 			return false
 		}
 		if cachedHealthKnown {
@@ -382,12 +392,19 @@ func fetchBusinessBaseURLs(logger *log.Logger) (domains, gatewayURLs []string) {
 	}
 
 	normalURLs := splitAndNormalizeURLs(ossURLs)
-	result := fetchOSSGroup(logger, client, normalURLs, xorKey)
+	result := fetchOSSGroupAllowed(logger, client, normalURLs, xorKey, cached)
+	if !ossCandidateAllowed(cached, result) {
+		logger.Printf("OSS candidate rejected: version/content or signature downgrade; publish a higher config_version to roll back")
+		result = nil
+	}
 	if result == nil {
 		emergencyURL := strings.TrimSpace(env("DG_EMERGENCY_OSS_CONFIG_URL", defaultEmergencyOSSConfigURL))
 		if emergencyURL != "" && !containsString(normalURLs, emergencyURL) {
 			logger.Printf("normal OSS sources unavailable, trying emergency OSS")
-			result = fetchOSSGroup(logger, client, []string{emergencyURL}, xorKey)
+			result = fetchOSSGroupAllowed(logger, client, []string{emergencyURL}, xorKey, cached)
+			if !ossCandidateAllowed(cached, result) {
+				result = nil
+			}
 		}
 	}
 	if result == nil {
@@ -404,25 +421,7 @@ func fetchBusinessBaseURLs(logger *log.Logger) (domains, gatewayURLs []string) {
 		}
 		return cached.domains, cached.gatewayURLs
 	}
-	if cached != nil &&
-		compareConfigVersions(cached.configVersion, result.configVersion) >= 0 &&
-		waitForCachedHealth(time.Second) {
-		logger.Printf(
-			"OSS config_version=%s is not newer than complete cache=%s, keeping cache",
-			result.configVersion,
-			cached.configVersion,
-		)
-		return cached.domains, cached.gatewayURLs
-	}
-	if cached != nil &&
-		compareConfigVersions(cached.configVersion, result.configVersion) >= 0 {
-		// Availability wins temporarily when the newer cache route is down, but
-		// do not overwrite it with an older/equal version. A later recovery can
-		// still restore the intended higher-version route.
-		logger.Printf("complete OSS cache is unreachable, temporarily using healthy source=%s without replacing cache", result.source)
-		return result.domains, result.gatewayURLs
-	}
-	persistOSSConfigCache(logger, result.decrypted)
+	persistOSSConfigCache(logger, result)
 	logger.Printf("OSS resolved source=%s config_version=%s business URLs=%v gateway URLs=%v", result.source, result.configVersion, result.domains, result.gatewayURLs)
 	return result.domains, result.gatewayURLs
 }
@@ -470,6 +469,10 @@ func anyOSSBusinessRouteHealthy(client *http.Client, domains []string) bool {
 }
 
 func fetchOSSGroup(logger *log.Logger, client *http.Client, urls []string, xorKey string) *ossFetchResult {
+	return fetchOSSGroupAllowed(logger, client, urls, xorKey, nil)
+}
+
+func fetchOSSGroupAllowed(logger *log.Logger, client *http.Client, urls []string, xorKey string, cached *ossFetchResult) *ossFetchResult {
 	if len(urls) == 0 {
 		return nil
 	}
@@ -482,7 +485,7 @@ func fetchOSSGroup(logger *log.Logger, client *http.Client, urls []string, xorKe
 				results <- ossFetchResult{source: source, index: index, err: err}
 				return
 			}
-			decrypted, err := xorDecrypt(body, xorKey)
+			decrypted, signed, err := decodeOSSRaw(body, xorKey)
 			if err != nil {
 				results <- ossFetchResult{source: source, index: index, err: err}
 				return
@@ -490,7 +493,7 @@ func fetchOSSGroup(logger *log.Logger, client *http.Client, urls []string, xorKe
 			domains, gatewayURLs, version, err := extractOSSConfig(decrypted)
 			results <- ossFetchResult{
 				domains: domains, gatewayURLs: gatewayURLs, configVersion: version,
-				decrypted: decrypted, source: source, index: index, err: err,
+				decrypted: decrypted, raw: body, signed: signed, verifiedAt: time.Now().UTC(), source: source, index: index, err: err,
 			}
 		}(i, rawURL)
 	}
@@ -503,6 +506,10 @@ func fetchOSSGroup(logger *log.Logger, client *http.Client, urls []string, xorKe
 			received++
 			if result.err != nil {
 				logger.Printf("OSS source %s rejected: %v", result.source, result.err)
+				continue
+			}
+			if !ossCandidateAllowed(cached, &result) {
+				logger.Printf("OSS source rejected: version/content or signature downgrade")
 				continue
 			}
 			comparison := 1
@@ -538,7 +545,11 @@ func downloadOSS(client *http.Client, rawURL string) ([]byte, error) {
 	if resp.StatusCode != http.StatusOK {
 		return nil, fmt.Errorf("HTTP %d", resp.StatusCode)
 	}
-	return io.ReadAll(io.LimitReader(resp.Body, 1<<20))
+	body, err := io.ReadAll(io.LimitReader(resp.Body, (1<<20)+1))
+	if len(body) > 1<<20 {
+		return nil, errors.New("OSS response exceeds 1 MiB")
+	}
+	return body, err
 }
 
 // xorDecrypt decrypts a base64-encoded XOR ciphertext using the given key.
@@ -689,47 +700,6 @@ func ossConfigCachePath() string {
 	return env("DG_OSS_CACHE_FILE", "./data/device-gateway-remote-config.json")
 }
 
-func persistOSSConfigCache(logger *log.Logger, data []byte) {
-	if len(data) == 0 {
-		return
-	}
-	path := ossConfigCachePath()
-	if err := os.MkdirAll(filepath.Dir(path), 0o700); err != nil {
-		logger.Printf("OSS cache mkdir failed: %v", err)
-		return
-	}
-	temp := path + ".tmp"
-	if err := os.WriteFile(temp, data, 0o600); err != nil {
-		logger.Printf("OSS cache write failed: %v", err)
-		return
-	}
-	if err := os.Rename(temp, path); err != nil {
-		logger.Printf("OSS cache replace failed: %v", err)
-	}
-}
-
-func loadCachedOSSResult(logger *log.Logger) *ossFetchResult {
-	data, err := os.ReadFile(ossConfigCachePath())
-	if err != nil {
-		if !errors.Is(err, os.ErrNotExist) {
-			logger.Printf("OSS cache read failed: %v", err)
-		}
-		return nil
-	}
-	domains, gatewayURLs, version, err := extractOSSConfig(data)
-	if err != nil {
-		logger.Printf("OSS cache invalid: %v", err)
-		return nil
-	}
-	return &ossFetchResult{
-		domains:       domains,
-		gatewayURLs:   gatewayURLs,
-		configVersion: version,
-		decrypted:     data,
-		source:        "local_cache",
-	}
-}
-
 func loadConfig(logger *log.Logger) (Config, error) {
 	sessionHours := envInt("DG_SESSION_TTL_HOURS", 720)
 	timeoutSeconds := envInt("DG_HTTP_TIMEOUT_SECONDS", 20)
@@ -844,7 +814,7 @@ func (s *Server) routes() http.Handler {
 	mux.HandleFunc(prefix+"/admin/", s.handleAdmin)
 	mux.HandleFunc("/", s.handleProxy)
 
-	return withCORS(mux)
+	return withCORS(s.withBoundaryLimits(mux))
 }
 
 // startOSSRefresher periodically re-fetches OSS remote config so domain
@@ -990,11 +960,14 @@ func (s *Server) handleLogin(w http.ResponseWriter, r *http.Request) {
 
 	snapshot, err := s.fetchSubscriptionSnapshot(r.Context(), businessToken)
 	if err != nil {
-		s.log.Printf("subscription sync failed after login, using fallback limit: %v", err)
+		s.log.Printf("subscription sync failed after login, retaining cached limit: %v", err)
+		if err := s.store.refreshLoginUser(r.Context(), req.Email); err != nil {
+			writeError(w, http.StatusServiceUnavailable, "DEVICE_SESSION_CHECK_UNAVAILABLE", "Device session service is temporarily unavailable", nil)
+			return
+		}
 		snapshot = SubscriptionSnapshot{
-			Email:          req.Email,
-			DeviceLimit:    intPtr(s.cfg.DefaultDeviceLimit),
-			DeviceLimitSet: true,
+			Email:       req.Email,
+			Unavailable: true,
 		}
 	}
 	if snapshot.Email == "" {
@@ -1036,180 +1009,6 @@ func (s *Server) handleLogin(w http.ResponseWriter, r *http.Request) {
 	})
 }
 
-// handleQRSession creates the one-time challenge displayed by a PC or TV.
-// The QR itself contains only the public challenge ID; the polling secret is
-// returned exclusively to the requesting target.
-func (s *Server) handleQRSession(w http.ResponseWriter, r *http.Request) {
-	if r.Method != http.MethodPost {
-		writeError(w, http.StatusMethodNotAllowed, "METHOD_NOT_ALLOWED", "Method not allowed", nil)
-		return
-	}
-	var req LoginRequest
-	if err := json.NewDecoder(io.LimitReader(r.Body, 1<<20)).Decode(&req); err != nil {
-		writeError(w, http.StatusBadRequest, "BAD_JSON", "Invalid JSON body", nil)
-		return
-	}
-	req.DeviceID = strings.TrimSpace(req.DeviceID)
-	req.DeviceName = strings.TrimSpace(req.DeviceName)
-	req.Platform = strings.TrimSpace(req.Platform)
-	if req.DeviceID == "" || req.DeviceName == "" {
-		writeError(w, http.StatusBadRequest, "DEVICE_INFO_REQUIRED", "device_id and device_name are required", nil)
-		return
-	}
-	if req.Platform == "" {
-		req.Platform = "unknown"
-	}
-	now := time.Now().UTC()
-	session := &QRLoginSession{
-		ID: "qrl_" + randomHex(16), PollToken: "qpt_" + randomHex(24),
-		Device: req, TargetIP: s.clientIP(r), TargetUA: r.UserAgent(),
-		Status: "pending", CreatedAt: now, ExpiresAt: now.Add(2 * time.Minute),
-	}
-	s.qrMu.Lock()
-	for id, item := range s.qrSessions {
-		if now.After(item.ExpiresAt) {
-			delete(s.qrSessions, id)
-		}
-	}
-	s.qrSessions[session.ID] = session
-	s.qrMu.Unlock()
-	writeJSON(w, http.StatusOK, map[string]any{"success": true, "data": map[string]any{
-		"id": session.ID, "poll_token": session.PollToken,
-		"qr_data":    "fastcat://login/qr?challenge=" + session.ID,
-		"expires_at": session.ExpiresAt.Format(time.RFC3339),
-	}})
-}
-
-func (s *Server) handleQRSessionByID(w http.ResponseWriter, r *http.Request) {
-	id := strings.TrimPrefix(r.URL.Path, s.cfg.APIPrefix+"/auth/qr/sessions/")
-	if id == "" || strings.Contains(id, "/") {
-		writeError(w, http.StatusNotFound, "QR_SESSION_NOT_FOUND", "QR login session not found", nil)
-		return
-	}
-	switch r.Method {
-	case http.MethodGet:
-		s.handleQRPoll(w, r, id)
-	case http.MethodPost:
-		s.handleQRApprove(w, r, id)
-	case http.MethodDelete:
-		s.handleQRCancel(w, r, id)
-	default:
-		writeError(w, http.StatusMethodNotAllowed, "METHOD_NOT_ALLOWED", "Method not allowed", nil)
-	}
-}
-
-// handleQRCancel invalidates a pending challenge before the target creates a
-// replacement. The polling secret prevents another device from cancelling a
-// QR code that it did not create.
-func (s *Server) handleQRCancel(w http.ResponseWriter, r *http.Request, id string) {
-	pollToken := strings.TrimSpace(r.URL.Query().Get("poll_token"))
-	s.qrMu.Lock()
-	defer s.qrMu.Unlock()
-	item := s.qrSessions[id]
-	if item == nil {
-		writeJSON(w, http.StatusOK, map[string]any{"success": true, "data": map[string]any{"status": "cancelled"}})
-		return
-	}
-	if pollToken == "" || !hmac.Equal([]byte(item.PollToken), []byte(pollToken)) {
-		writeError(w, http.StatusNotFound, "QR_SESSION_NOT_FOUND", "QR login session not found", nil)
-		return
-	}
-	if item.Status != "pending" {
-		writeError(w, http.StatusConflict, "QR_SESSION_USED", "二维码已被使用", nil)
-		return
-	}
-	delete(s.qrSessions, id)
-	writeJSON(w, http.StatusOK, map[string]any{"success": true, "data": map[string]any{"status": "cancelled"}})
-}
-
-func (s *Server) handleQRPoll(w http.ResponseWriter, r *http.Request, id string) {
-	pollToken := strings.TrimSpace(r.URL.Query().Get("poll_token"))
-	s.qrMu.Lock()
-	defer s.qrMu.Unlock()
-	item := s.qrSessions[id]
-	if item == nil || pollToken == "" || !hmac.Equal([]byte(item.PollToken), []byte(pollToken)) {
-		writeError(w, http.StatusNotFound, "QR_SESSION_NOT_FOUND", "QR login session not found", nil)
-		return
-	}
-	if time.Now().UTC().After(item.ExpiresAt) {
-		delete(s.qrSessions, id)
-		writeJSON(w, http.StatusOK, map[string]any{"success": true, "data": map[string]any{"status": "expired"}})
-		return
-	}
-	data := map[string]any{"status": item.Status, "expires_at": item.ExpiresAt.Format(time.RFC3339)}
-	if item.Status == "approved" && item.Response != nil {
-		data["login"] = item.Response
-		item.Status = "consumed"
-	}
-	writeJSON(w, http.StatusOK, map[string]any{"success": true, "data": data})
-}
-
-func (s *Server) handleQRApprove(w http.ResponseWriter, r *http.Request, id string) {
-	ctx, ok := s.requireSession(w, r)
-	if !ok {
-		return
-	}
-	s.qrMu.Lock()
-	item := s.qrSessions[id]
-	if item == nil || time.Now().UTC().After(item.ExpiresAt) {
-		s.qrMu.Unlock()
-		writeError(w, http.StatusGone, "QR_SESSION_EXPIRED", "二维码已过期，请刷新后重试", nil)
-		return
-	}
-	if item.Status != "pending" {
-		s.qrMu.Unlock()
-		writeError(w, http.StatusConflict, "QR_SESSION_USED", "二维码已被使用", nil)
-		return
-	}
-	// Mark it first so duplicate scanner callbacks cannot create two devices.
-	item.Status = "authorizing"
-	target := item.Device
-	targetIP, targetUA := item.TargetIP, item.TargetUA
-	s.qrMu.Unlock()
-
-	snapshot, err := s.fetchSubscriptionSnapshot(r.Context(), ctx.BusinessToken)
-	if err != nil {
-		s.finishQRSession(id, "failed", nil)
-		writeError(w, http.StatusBadGateway, "QR_SUBSCRIPTION_UNAVAILABLE", "无法验证账户订阅，请稍后重试", nil)
-		return
-	}
-	if snapshot.Email == "" {
-		snapshot.Email = ctx.User.Email
-	}
-	// Preserve the target identity; its first heartbeat will refresh the IP.
-	request := r.Clone(r.Context())
-	request.RemoteAddr = targetIP
-	request.Header.Set("User-Agent", targetUA)
-	token, device, limit, active, err := s.admitDevice(request, target, snapshot, ctx.BusinessToken)
-	if err != nil {
-		s.finishQRSession(id, "failed", nil)
-		if errors.Is(err, errDeviceLimitExceeded) {
-			writeError(w, http.StatusConflict, "DEVICE_LIMIT_EXCEEDED", "设备数量已达上限", map[string]any{"device_limit": limit, "active_count": active})
-			return
-		}
-		writeError(w, http.StatusInternalServerError, "DEVICE_ADMISSION_FAILED", "设备登录失败", nil)
-		return
-	}
-	response := map[string]any{"token": "Bearer " + token, "auth_data": "Bearer " + token,
-		"email": snapshot.Email, "device": publicDevice(device, device.ID),
-		"device_limit": nullableLimit(limit), "device_policy": s.cfg.DevicePolicy}
-	if urls := s.ossGatewayURLs(); len(urls) > 0 {
-		response["gateway_urls"] = urls
-	}
-	s.finishQRSession(id, "approved", response)
-	writeJSON(w, http.StatusOK, map[string]any{"success": true, "data": map[string]any{
-		"device_name": target.DeviceName, "platform": target.Platform,
-	}})
-}
-
-func (s *Server) finishQRSession(id, status string, response map[string]any) {
-	s.qrMu.Lock()
-	defer s.qrMu.Unlock()
-	if item := s.qrSessions[id]; item != nil {
-		item.Status, item.Response = status, response
-	}
-}
-
 func (s *Server) handleSubscribe(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodGet {
 		writeError(w, http.StatusMethodNotAllowed, "METHOD_NOT_ALLOWED", "Method not allowed", nil)
@@ -1233,6 +1032,9 @@ func (s *Server) handleSubscribe(w http.ResponseWriter, r *http.Request) {
 
 	sessionCtx, err := s.authorizeSubscribeToken(r, token)
 	if err != nil {
+		if writeSessionStoreUnavailable(w, err) {
+			return
+		}
 		writeError(w, http.StatusUnauthorized, "SUBSCRIBE_SESSION_INVALID", "Subscription session is invalid or expired", nil)
 		return
 	}
@@ -1280,6 +1082,12 @@ type sessionAuthorizationError struct {
 func (e *sessionAuthorizationError) Error() string { return e.message }
 
 func (s *Server) admitDevice(r *http.Request, req LoginRequest, snapshot SubscriptionSnapshot, businessToken string) (string, *DeviceRecord, int, int, error) {
+	return s.admitDeviceWithCompletion(r, req, snapshot, businessToken, nil)
+}
+
+// prepareDeviceAdmission changes only the isolated admission store. Its caller
+// publishes that state after persistence (and, for PostgreSQL, commit) succeeds.
+func (s *Server) prepareDeviceAdmission(r *http.Request, req LoginRequest, snapshot SubscriptionSnapshot, businessToken string) (string, *DeviceRecord, int, int, error) {
 	now := time.Now().UTC()
 	clientIP := s.clientIP(r)
 	userAgent := r.UserAgent()
@@ -1305,9 +1113,6 @@ func (s *Server) admitDevice(r *http.Request, req LoginRequest, snapshot Subscri
 			return "", nil, 0, 0, err
 		}
 	}
-
-	s.store.mu.Lock()
-	defer s.store.mu.Unlock()
 
 	user := s.upsertUserLocked(snapshot, req.Email, now)
 	effectiveLimit := s.effectiveLimitLocked(user)
@@ -1355,7 +1160,7 @@ func (s *Server) admitDevice(r *http.Request, req LoginRequest, snapshot Subscri
 	device.UserAgent = userAgent
 	device.RevokedAt = nil
 	device.RevokedBy = ""
-	s.store.markDeviceLocked(device.ID)
+	s.store.markDeviceLoginLocked(device.ID)
 
 	s.revokeDeviceSessionsLocked(device.ID, now)
 
@@ -1382,9 +1187,6 @@ func (s *Server) admitDevice(r *http.Request, req LoginRequest, snapshot Subscri
 		"platform": req.Platform,
 	}, now)
 
-	if err := s.store.saveLocked(); err != nil {
-		return "", nil, effectiveLimit, activeCount, err
-	}
 	return sessionToken, cloneDevice(device), effectiveLimit, activeCount + boolToInt(isNewActiveDevice), nil
 }
 
@@ -1787,7 +1589,7 @@ func (s *Server) handleAdminPatchDeviceLimit(w http.ResponseWriter, r *http.Requ
 		user.DeviceLimitOverride = &limit
 	}
 	user.UpdatedAt = now
-	s.store.markUserLocked(user.ID)
+	s.store.markUserLimitOverrideLocked(user.ID)
 	s.addAuditLocked("user.device_limit_override.updated", user.ID, "", "admin", s.clientIP(r), r.UserAgent(), map[string]any{
 		"device_limit_override": user.DeviceLimitOverride,
 	}, now)
@@ -1908,6 +1710,9 @@ func (s *Server) proxyToBusiness(w http.ResponseWriter, r *http.Request, session
 func (s *Server) requireSession(w http.ResponseWriter, r *http.Request) (*SessionContext, bool) {
 	ctx, err := s.authorize(r)
 	if err != nil {
+		if writeSessionStoreUnavailable(w, err) {
+			return nil, false
+		}
 		var authErr *sessionAuthorizationError
 		if errors.As(err, &authErr) {
 			writeError(w, http.StatusUnauthorized, authErr.code, authErr.message, nil)
@@ -1929,6 +1734,9 @@ func (s *Server) authorizeWithReload(r *http.Request, allowPostgresReload bool) 
 		return nil, errors.New("missing authorization")
 	}
 	tokenHash := s.hashValue("session", token)
+	if err := s.verifySharedSession(r.Context(), tokenHash, false); err != nil {
+		return nil, err
+	}
 	now := time.Now().UTC()
 	clientIP := s.clientIP(r)
 	userAgent := r.UserAgent()
@@ -1990,10 +1798,15 @@ func (s *Server) authorizeWithReload(r *http.Request, allowPostgresReload bool) 
 				return s.authorizeWithReload(r, false)
 			}
 		}
-		return nil, errors.New("session not found")
+		return nil, s.store.sessionCacheMissError()
 	}
 	if shouldSave {
 		if err := s.store.saveLocked(); err != nil {
+			if s.store.pg != nil {
+				// A valid shared session must not become a 401 merely because
+				// its heartbeat write failed after the authorization read.
+				err = fmt.Errorf("%w: %v", errSessionStoreUnavailable, err)
+			}
 			s.store.mu.Unlock()
 			return nil, err
 		}
@@ -2019,8 +1832,12 @@ func (s *Server) authorizeWithReload(r *http.Request, allowPostgresReload bool) 
 }
 
 func (s *Server) sessionAuthorizationErrorLocked(session *SessionRecord, now time.Time) error {
+	return sessionAuthorizationFailure(session, s.store.Devices[session.DeviceID], now)
+}
+
+func sessionAuthorizationFailure(session *SessionRecord, device *DeviceRecord, now time.Time) error {
 	if session.Status == statusRevoked {
-		if device := s.store.Devices[session.DeviceID]; device != nil {
+		if device != nil {
 			switch device.RevokedBy {
 			case "system:kick_oldest":
 				return &sessionAuthorizationError{
@@ -2053,6 +1870,9 @@ func (s *Server) authorizeSubscribeToken(r *http.Request, token string) (*Sessio
 
 func (s *Server) authorizeSubscribeTokenWithReload(r *http.Request, token string, allowPostgresReload bool) (*SessionContext, error) {
 	tokenHash := s.hashValue("subscribe", token)
+	if err := s.verifySharedSession(r.Context(), tokenHash, true); err != nil {
+		return nil, err
+	}
 	now := time.Now().UTC()
 	clientIP := s.clientIP(r)
 	userAgent := r.UserAgent()
@@ -2112,10 +1932,13 @@ func (s *Server) authorizeSubscribeTokenWithReload(r *http.Request, token string
 				return s.authorizeSubscribeTokenWithReload(r, token, false)
 			}
 		}
-		return nil, errors.New("session not found")
+		return nil, s.store.sessionCacheMissError()
 	}
 	if shouldSave {
 		if err := s.store.saveLocked(); err != nil {
+			if s.store.pg != nil {
+				err = fmt.Errorf("%w: %v", errSessionStoreUnavailable, err)
+			}
 			s.store.mu.Unlock()
 			return nil, err
 		}
@@ -2395,6 +2218,10 @@ func (s *Server) upsertUserLocked(snapshot SubscriptionSnapshot, fallbackEmail s
 	user := s.findUserLocked(businessID)
 	if user == nil && email != "" {
 		user = s.findUserLocked(email)
+	}
+	if user != nil && snapshot.Unavailable {
+		// A failed fetch is not a new plan, limit, or successful sync timestamp.
+		return user
 	}
 	if user == nil {
 		user = &UserCache{
@@ -3410,11 +3237,29 @@ func (s *Store) markUserLocked(id string) {
 	s.revision++
 }
 
+func (s *Store) markUserLimitOverrideLocked(id string) {
+	s.markUserLocked(id)
+	if s.userLimitOverrides == nil {
+		s.userLimitOverrides = map[string]time.Time{}
+	}
+	// Preserve the original explicit-operation timestamp across failed writes;
+	// later ordinary user refreshes may advance UserCache.UpdatedAt.
+	s.userLimitOverrides[id] = s.Users[id].UpdatedAt
+}
+
 func (s *Store) markDeviceLocked(id string) {
 	s.initRuntimeStateLocked()
 	delete(s.deletedDevices, id)
 	s.dirtyDevices[id] = struct{}{}
 	s.revision++
+}
+
+func (s *Store) markDeviceLoginLocked(id string) {
+	s.markDeviceLocked(id)
+	if s.loginDevices == nil {
+		s.loginDevices = map[string]struct{}{}
+	}
+	s.loginDevices[id] = struct{}{}
 }
 
 func (s *Store) markSessionLocked(id string) {
@@ -3433,6 +3278,7 @@ func (s *Store) markAuditLocked(audit AuditLog) {
 
 func (s *Store) deleteDeviceLocked(id string) {
 	s.initRuntimeStateLocked()
+	delete(s.loginDevices, id)
 	delete(s.dirtyDevices, id)
 	s.deletedDevices[id] = struct{}{}
 	delete(s.Devices, id)
@@ -3462,13 +3308,15 @@ func keysOf(values map[string]struct{}) []string {
 func (s *Store) postgresChangesLocked() PostgresChanges {
 	s.initRuntimeStateLocked()
 	changes := PostgresChanges{
-		Users:           make(map[string]*UserCache, len(s.dirtyUsers)),
-		Devices:         make(map[string]*DeviceRecord, len(s.dirtyDevices)),
-		Sessions:        make(map[string]*SessionRecord, len(s.dirtySessions)),
-		Audits:          make(map[string]AuditLog, len(s.dirtyAudits)),
-		DeletedDevices:  keysOf(s.deletedDevices),
-		DeletedSessions: keysOf(s.deletedSessions),
-		DeletedAudits:   keysOf(s.deletedAudits),
+		Users:              make(map[string]*UserCache, len(s.dirtyUsers)),
+		UserLimitOverrides: s.userLimitOverrides,
+		Devices:            make(map[string]*DeviceRecord, len(s.dirtyDevices)),
+		LoginDevices:       s.loginDevices,
+		Sessions:           make(map[string]*SessionRecord, len(s.dirtySessions)),
+		Audits:             make(map[string]AuditLog, len(s.dirtyAudits)),
+		DeletedDevices:     keysOf(s.deletedDevices),
+		DeletedSessions:    keysOf(s.deletedSessions),
+		DeletedAudits:      keysOf(s.deletedAudits),
 	}
 	for id := range s.dirtyUsers {
 		if record := s.Users[id]; record != nil {
@@ -3493,7 +3341,9 @@ func (s *Store) postgresChangesLocked() PostgresChanges {
 
 func (s *Store) clearDirtyLocked() {
 	s.dirtyUsers = map[string]struct{}{}
+	s.userLimitOverrides = map[string]time.Time{}
 	s.dirtyDevices = map[string]struct{}{}
+	s.loginDevices = map[string]struct{}{}
 	s.dirtySessions = map[string]struct{}{}
 	s.dirtyAudits = map[string]AuditLog{}
 	s.deletedDevices = map[string]struct{}{}
@@ -4264,14 +4114,30 @@ func envBool(key string, fallback bool) bool {
 }
 
 func (s *Server) periodicCleanup() {
-	ticker := time.NewTicker(1 * time.Hour)
+	ticker := time.NewTicker(time.Minute)
 	defer ticker.Stop()
-	for range ticker.C {
-		s.cleanupRevokedDevices()
+	lastDeviceCleanup := time.Time{}
+	for now := range ticker.C {
+		if err := s.cleanupExpiredQR(context.Background(), now); err != nil {
+			s.log.Printf("QR cleanup failed: %v", err)
+		}
+		if now.Sub(lastDeviceCleanup) >= time.Hour {
+			s.cleanupRevokedDevices()
+			if _, err := s.cleanupOldSessions(context.Background(), now); err != nil {
+				s.log.Printf("session cleanup failed: %v", err)
+			}
+			lastDeviceCleanup = now
+		}
 	}
 }
 
 func (s *Server) cleanupRevokedDevices() {
+	if s.store.pg != nil {
+		if err := s.cleanupPostgresDevices(context.Background(), time.Now().UTC()); err != nil {
+			s.log.Printf("device cleanup failed: %v", err)
+		}
+		return
+	}
 	cutoff90 := time.Now().UTC().Add(-90 * 24 * time.Hour)
 	cutoff30 := time.Now().UTC().Add(-30 * 24 * time.Hour)
 	s.store.mu.Lock()

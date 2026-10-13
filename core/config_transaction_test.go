@@ -2,10 +2,14 @@ package main
 
 import (
 	"github.com/metacubex/mihomo/config"
+	"github.com/metacubex/mihomo/constant"
 	"testing"
 )
 
 func TestRejectedConfigurationPreservesCurrentProfile(t *testing.T) {
+	previousHome := constant.Path.HomeDir()
+	constant.SetHomeDir(t.TempDir())
+	defer constant.SetHomeDir(previousHome)
 	previous, previousURL := currentConfig, testURL
 	defer func() { currentConfig, testURL = previous, previousURL }()
 	sentinel := &config.Config{}

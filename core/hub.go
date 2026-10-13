@@ -12,6 +12,7 @@ import (
 	"github.com/metacubex/mihomo/component/dialer"
 	"github.com/metacubex/mihomo/component/mmdb"
 	"github.com/metacubex/mihomo/component/resolver"
+	"github.com/metacubex/mihomo/component/resource"
 	"github.com/metacubex/mihomo/component/updater"
 	"github.com/metacubex/mihomo/config"
 	"github.com/metacubex/mihomo/constant"
@@ -40,9 +41,19 @@ var (
 )
 
 func handleInitClash(paramsString string) bool {
+	runLock.Lock()
+	defer runLock.Unlock()
 	var params = InitParams{}
 	err := json.Unmarshal([]byte(paramsString), &params)
 	if err != nil {
+		return false
+	}
+	if err := resource.ConfigureCacheEncryption(params.ProviderCache); err != nil {
+		log.Errorln("Provider cache initialization failed: %v", err)
+		return false
+	}
+	if err := checkGeoHome(params.HomeDir, true); err != nil {
+		log.Errorln("[GeoData] %v", err)
 		return false
 	}
 	version = params.Version
@@ -56,6 +67,11 @@ func handleInitClash(paramsString string) bool {
 func handleStartListener() bool {
 	runLock.Lock()
 	defer runLock.Unlock()
+	if !isInit || currentConfig == nil || currentConfig.General == nil {
+		isRunning = false
+		log.Errorln("Cannot start listeners: core configuration is not ready")
+		return false
+	}
 	isRunning = true
 	updateListeners()
 	resolver.ResetConnection()
@@ -82,10 +98,14 @@ func handleForceGc() {
 }
 
 func handleShutdown() bool {
+	runLock.Lock()
+	defer runLock.Unlock()
+	isRunning = false
 	stopListeners()
 	executor.Shutdown()
 	runtime.GC()
 	isInit = false
+	currentConfig = nil
 	return true
 }
 

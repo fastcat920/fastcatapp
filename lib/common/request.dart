@@ -7,12 +7,14 @@ import 'package:dio/dio.dart';
 import 'package:dio/io.dart';
 import 'package:fl_clash/common/common.dart';
 import 'package:fl_clash/models/models.dart';
+import 'package:fl_clash/services/ip_info_lookup.dart';
 import 'package:fl_clash/state.dart';
 import 'package:flutter/cupertino.dart';
 
 class Request {
   late final Dio _dio;
   late final Dio _clashDio;
+  final _ipInfoLookup = IpInfoLookup();
   String? userAgent;
 
   Request() {
@@ -73,45 +75,8 @@ class Request {
     return MemoryImage(data);
   }
 
-  final Map<String, IpInfo Function(Map<String, dynamic>)> _ipInfoSources = {
-    "https://ipwho.is/": IpInfo.fromIpwhoIsJson,
-    "https://api.ip.sb/geoip/": IpInfo.fromIpSbJson,
-    "https://ipapi.co/json/": IpInfo.fromIpApiCoJson,
-    "https://ipinfo.io/json/": IpInfo.fromIpInfoIoJson,
-  };
-
-  Future<Result<IpInfo?>> checkIp({CancelToken? cancelToken}) async {
-    var failureCount = 0;
-    final futures = _ipInfoSources.entries.map((source) async {
-      final Completer<Result<IpInfo?>> completer = Completer();
-      final future = Dio().get<Map<String, dynamic>>(
-        source.key,
-        cancelToken: cancelToken,
-        options: Options(
-          responseType: ResponseType.json,
-        ),
-      );
-      future.then((res) {
-        if (res.statusCode == HttpStatus.ok && res.data != null) {
-          completer.complete(Result.success(source.value(res.data!)));
-        } else {
-          failureCount++;
-          if (failureCount == _ipInfoSources.length) {
-            completer.complete(Result.success(null));
-          }
-        }
-      }).catchError((e) {
-        failureCount++;
-        if (e == DioExceptionType.cancel) {
-          completer.complete(Result.error("cancelled"));
-        }
-      });
-      return completer.future;
-    });
-    final res = await Future.any(futures);
-    cancelToken?.cancel();
-    return res;
-  }
+  Future<Result<IpInfo?>> checkIp({CancelToken? cancelToken}) =>
+      _ipInfoLookup.check(cancelToken: cancelToken);
 
   Future<bool> pingHelper() async {
     try {
@@ -219,6 +184,7 @@ class WindowsHelperRuntimeStatus {
     required this.coreRunning,
     required this.corePid,
     required this.recentLogs,
+    this.callerAuth,
   });
 
   final String version;
@@ -228,12 +194,16 @@ class WindowsHelperRuntimeStatus {
   final bool coreRunning;
   final int? corePid;
   final List<String> recentLogs;
+  final String? callerAuth;
+
+  bool get verifiesCaller => callerAuth == 'process-sha256-v1';
 
   bool get tokenMatches => token == globalState.coreSHA256;
 
   factory WindowsHelperRuntimeStatus.fromJson(Map<String, dynamic> json) {
     return WindowsHelperRuntimeStatus(
       version: json['version']?.toString() ?? '',
+      callerAuth: json['caller_auth']?.toString(),
       token: json['token']?.toString() ?? '',
       helperPath: json['helper_path']?.toString(),
       servicePathMatches: json['service_path_matches'] is bool

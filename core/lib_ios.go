@@ -10,8 +10,10 @@ import (
 	"encoding/json"
 	"unsafe"
 
+	"github.com/metacubex/mihomo/component/resource"
 	"github.com/metacubex/mihomo/config"
 	MC "github.com/metacubex/mihomo/constant"
+	"go.yaml.in/yaml/v3"
 )
 
 // ClashCore_init initialises the mihomo core.
@@ -28,10 +30,17 @@ import (
 func ClashCore_init(homeDir *C.char, configYaml *C.char) C.int {
 	homeDirStr := C.GoString(homeDir)
 	configStr := C.GoString(configYaml)
+	var cacheOptions struct {
+		ProviderCache *resource.CacheEncryption `yaml:"fastcat-provider-cache"`
+	}
+	if err := yaml.Unmarshal([]byte(configStr), &cacheOptions); err != nil {
+		return 2
+	}
 
 	// Initialise clash home directory
 	initParams := InitParams{
-		HomeDir: homeDirStr,
+		HomeDir:       homeDirStr,
+		ProviderCache: cacheOptions.ProviderCache,
 	}
 	initData, _ := json.Marshal(initParams)
 	if !handleInitClash(string(initData)) {
@@ -64,7 +73,9 @@ func ClashCore_init(homeDir *C.char, configYaml *C.char) C.int {
 	}
 
 	// Start listener
-	handleStartListener()
+	if !handleStartListener() {
+		return 4
+	}
 	return 0
 }
 
@@ -186,6 +197,8 @@ func ClashCore_invoke(method *C.char, data *C.char) *C.char {
 			ch <- string(data)
 		case validateConfigMethod:
 			ch <- handleValidateConfig([]byte(dataStr))
+		case checkGeoDataMethod:
+			ch <- handleCheckGeoData()
 		case updateConfigMethod:
 			ch <- handleUpdateConfig([]byte(dataStr))
 		case setupConfigMethod:
@@ -201,6 +214,20 @@ func ClashCore_invoke(method *C.char, data *C.char) *C.char {
 				} else {
 					ch <- ""
 				}
+			}
+		case Method("setupConfigYaml"):
+			raw, err := config.UnmarshalRawConfig([]byte(dataStr))
+			if err != nil {
+				ch <- err.Error()
+				break
+			}
+			patchConfigForIOS(raw)
+			params := defaultSetupParams()
+			params.Config = raw
+			if err := setupConfig(params); err != nil {
+				ch <- err.Error()
+			} else {
+				ch <- ""
 			}
 		case getProxiesMethod:
 			data, _ := json.Marshal(handleGetProxies())

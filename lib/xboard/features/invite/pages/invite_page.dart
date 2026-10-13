@@ -16,6 +16,7 @@ import 'package:fl_clash/xboard/features/shared/widgets/widgets.dart';
 import 'package:fl_clash/xboard/utils/xboard_notification.dart';
 import 'package:fl_clash/xboard/config/xboard_config.dart';
 import 'package:fl_clash/xboard/adapter/initialization/sdk_provider.dart';
+import 'package:fl_clash/xboard/features/auth/providers/session_epoch_provider.dart';
 import 'package:flutter_xboard_sdk/flutter_xboard_sdk.dart';
 
 part '../widgets/invite_sections.dart';

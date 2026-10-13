@@ -24,6 +24,7 @@ struct TVHomeView: View {
   @Environment(\.scenePhase) private var scenePhase
   @State private var connected = false
   @State private var isConnecting = false
+  @State private var isApplyingRouting = false
   @State private var routeMode: TVRouteMode = .rule
   @AppStorage(TVTheme.preferenceKey) private var prefersDarkTheme = true
   @AppStorage(TVLanguage.preferenceKey) private var language = TVLanguage.system.rawValue
@@ -1307,7 +1308,7 @@ struct TVHomeView: View {
   }
 
   private func toggleConnection() {
-    guard !isConnecting else { return }
+    guard !isConnecting, !isApplyingRouting, !isRefreshingNodes else { return }
     errorMessage = nil
     if simulatorPreview {
       errorMessage = "模拟器不支持 VPN，请使用 Apple TV 真机测试"
@@ -1336,22 +1337,34 @@ struct TVHomeView: View {
   }
 
   private func selectNode(_ node: TVProxyNode) {
-    selectedNodeName = node.name
-    savedSelectedNode = node.name
+    guard !isApplyingRouting, !isRefreshingNodes, !isConnecting else { return }
     showNodeSelector = false
-    guard connected else { return }
-    Task {
-      if let failure = await applySelectedNodeIfNeeded() {
-        await MainActor.run { errorMessage = "线路切换失败：\(failure)" }
-      } else {
-        await refreshLiveNodes()
+    guard connected else {
+      selectedNodeName = node.name
+      savedSelectedNode = node.name
+      return
+    }
+    isApplyingRouting = true
+    let owner = session.token
+    Task { @MainActor in
+      defer { isApplyingRouting = false }
+      do {
+        let snapshot = try await TVProxyRouting.select(
+          mode: routeMode.rawValue, node: node.name,
+          read: { await liveProxies() },
+          change: { await changeProxy(groupName: $0, proxyName: $1) })
+        guard session.token == owner else { return }
+        useSnapshot(snapshot)
+      } catch {
+        guard session.token == owner else { return }
+        errorMessage = tvText("线路切换未确认，请重试", "Node change was not confirmed. Please try again.", language: language)
       }
     }
   }
 
   @MainActor
   private func refreshNodesFromToolbar() async {
-    guard !isRefreshingNodes, !isTestingNodes else { return }
+    guard !isRefreshingNodes, !isTestingNodes, !isApplyingRouting, !isConnecting else { return }
     isRefreshingNodes = true
     defer { isRefreshingNodes = false }
     await loadNodes(forceRefresh: true)
@@ -1379,7 +1392,13 @@ struct TVHomeView: View {
         nodeLoadError = tvText("订阅中没有可用线路", "No available nodes in this subscription", language: language)
         return
       }
-      let failure = await ensureTunnelRunning(config: applyingRouteMode(to: cachedSubscription))
+      let runtimeConfig: String
+      do { runtimeConfig = try applyingRouteMode(to: cachedSubscription) }
+      catch {
+        nodeLoadError = tvText("构建配置无效，请重新安装客户端", "Invalid build configuration. Please reinstall the client.", language: language)
+        return
+      }
+      let failure = await ensureTunnelRunning(config: runtimeConfig)
       guard failure == nil else {
         nodeLoadError = failure
         return
@@ -1415,24 +1434,37 @@ struct TVHomeView: View {
   }
 
   private func changeRouteMode(to mode: TVRouteMode) {
-    guard routeMode != mode else { return }
+    guard routeMode != mode, !isApplyingRouting, !isConnecting, !isRefreshingNodes else { return }
     let previous = routeMode
-    routeMode = mode
-    savedRouteMode = mode.rawValue
-    updateConnectivityProxy()
-    selectedGroupName = nil
-    guard connected else { return }
-
-    VPNManager.shared.updateMode(mode.rawValue) { failure in
-      Task { @MainActor in
-        if let failure {
-          routeMode = previous
-          savedRouteMode = previous.rawValue
-          errorMessage = "代理模式切换失败：\(failure)"
-        } else {
-          errorMessage = nil
-          await refreshLiveNodes()
-        }
+    guard connected else {
+      routeMode = mode
+      savedRouteMode = mode.rawValue
+      selectedGroupName = nil
+      updateConnectivityProxy()
+      return
+    }
+    guard let selected = selectedNodeName ?? nodes.first?.name else { return }
+    isApplyingRouting = true
+    let owner = session.token
+    Task { @MainActor in
+      defer { isApplyingRouting = false }
+      do {
+        let snapshot = try await TVProxyRouting.changeMode(
+          from: previous.rawValue, to: mode.rawValue, node: selected,
+          read: { await liveProxies() },
+          change: { await changeProxy(groupName: $0, proxyName: $1) },
+          setMode: { value in await withCheckedContinuation { continuation in
+            VPNManager.shared.updateMode(value) { continuation.resume(returning: $0) }
+          } })
+        guard session.token == owner else { return }
+        routeMode = mode
+        savedRouteMode = mode.rawValue
+        useSnapshot(snapshot)
+        errorMessage = nil
+        updateConnectivityProxy()
+      } catch {
+        guard session.token == owner else { return }
+        errorMessage = tvText("代理模式切换未确认，请重试", "Proxy mode change was not confirmed. Please try again.", language: language)
       }
     }
   }
@@ -1480,7 +1512,7 @@ struct TVHomeView: View {
 
   @MainActor
   private func prepareAndConnect() async {
-    guard !isConnecting else { return }
+    guard !isConnecting, !isApplyingRouting else { return }
     isConnecting = true
     defer { isConnecting = false }
 
@@ -1508,7 +1540,7 @@ struct TVHomeView: View {
         downloaded = try await client.downloadSubscription(token: token)
         cachedSubscription = downloaded
       }
-      let config = applyingRouteMode(to: downloaded)
+      let config = try applyingRouteMode(to: downloaded)
       if let failure = await connectVPN(config: config) {
         errorMessage = failure
         connected = false
@@ -1516,7 +1548,9 @@ struct TVHomeView: View {
       }
       connected = true
       if let failure = await applySelectedNodeIfNeeded(retries: 6) {
-        errorMessage = "VPN 已连接，但线路切换失败：\(failure)"
+        VPNManager.shared.disconnect { _ in }
+        connected = false
+        errorMessage = failure
       } else {
         errorMessage = nil
       }
@@ -1530,6 +1564,7 @@ struct TVHomeView: View {
 
   @MainActor
   private func loadNodes(forceRefresh: Bool) async {
+    guard !isLoadingNodes else { return }
     if isDebugPreviewSession {
       nodes = ["香港 · 高速 01", "香港 · 高速 02", "日本 · 东京", "新加坡 · 优选", "美国 · 洛杉矶", "自动选择"]
         .map { TVProxyNode($0) }
@@ -1546,7 +1581,7 @@ struct TVHomeView: View {
     nodeLoadError = nil
     defer { isLoadingNodes = false }
     do {
-      if connected, await refreshLiveNodes(), !nodes.isEmpty { return }
+      if !forceRefresh, connected, await refreshLiveNodes(), !nodes.isEmpty { return }
       let configuration: String
       var cached = cachedSubscription
       if !forceRefresh, cached == nil {
@@ -1560,8 +1595,42 @@ struct TVHomeView: View {
       }
       let parsed = TVSubscriptionNodes.parse(from: configuration)
       guard !parsed.isEmpty else {
-        nodeLoadError = "订阅中没有可用线路"
+        nodeLoadError = tvText("订阅中没有可用线路", "No available nodes in this subscription", language: language)
         return
+      }
+      guard !Task.isCancelled, session.token == token else { return }
+      if forceRefresh, VPNManager.shared.isTunnelRunning {
+        let runtimeConfig = try applyingRouteMode(to: configuration)
+        let failure: String? = await withCheckedContinuation { continuation in
+          VPNManager.shared.sendConfigUpdate(runtimeConfig) {
+            continuation.resume(returning: $0)
+          }
+        }
+        guard session.token == token else { return }
+        guard failure == nil,
+              let response = await liveProxies(),
+              let snapshot = TVSubscriptionNodes.liveSnapshot(from: response, mode: routeMode.rawValue),
+              let target = snapshot.nodes.first(where: { $0.name == selectedNodeName })?.name ?? snapshot.nodes.first?.name else {
+          VPNManager.shared.disconnect { _ in }
+          connected = false
+          nodeLoadError = tvText("订阅应用未确认，已断开连接，请重试", "Subscription update was not confirmed. Disconnected; please try again.", language: language)
+          return
+        }
+        do {
+          let verified = try await TVProxyRouting.select(
+            mode: routeMode.rawValue, node: target,
+            read: { await liveProxies() },
+            change: { await changeProxy(groupName: $0, proxyName: $1) })
+          guard session.token == token else { return }
+          cachedSubscription = configuration
+          useSnapshot(verified)
+          return
+        } catch {
+          VPNManager.shared.disconnect { _ in }
+          connected = false
+          nodeLoadError = tvText("订阅线路应用失败，已断开连接，请重试", "Updated nodes could not be applied. Disconnected; please try again.", language: language)
+          return
+        }
       }
       cachedSubscription = configuration
       nodes = parsed
@@ -1574,6 +1643,7 @@ struct TVHomeView: View {
         savedSelectedNode = ""
       }
     } catch {
+      guard !Task.isCancelled, session.token == token else { return }
       if handleExpiredSession(error) { return }
       nodeLoadError = error.localizedDescription
     }
@@ -1582,6 +1652,7 @@ struct TVHomeView: View {
   @discardableResult
   @MainActor
   private func refreshLiveNodes(retries: Int = 1) async -> Bool {
+    guard !isApplyingRouting, !isRefreshingNodes else { return false }
     for attempt in 0..<max(1, retries) {
       if let response = await liveProxies(),
          let snapshot = TVSubscriptionNodes.liveSnapshot(from: response, mode: routeMode.rawValue),
@@ -1603,23 +1674,33 @@ struct TVHomeView: View {
     return false
   }
 
+  @MainActor
+  private func useSnapshot(_ snapshot: TVProxySnapshot) {
+    selectedGroupName = snapshot.groupName
+    nodes = snapshot.nodes
+    selectedNodeName = snapshot.selectedName
+    savedSelectedNode = snapshot.selectedName ?? ""
+    nodeLoadError = nil
+  }
+
   private func applySelectedNodeIfNeeded(retries: Int = 1) async -> String? {
-    guard let selectedNodeName, !selectedNodeName.isEmpty else { return nil }
     for attempt in 0..<max(1, retries) {
-      if selectedGroupName == nil, let response = await liveProxies(),
-         let snapshot = TVSubscriptionNodes.liveSnapshot(from: response, mode: routeMode.rawValue) {
-        await MainActor.run { selectedGroupName = snapshot.groupName }
-      }
-      if let selectedGroupName {
-        let failure = await changeProxy(groupName: selectedGroupName, proxyName: selectedNodeName)
-        if failure == nil { return nil }
-        if attempt + 1 == retries { return failure }
+      if let response = await liveProxies(),
+         let snapshot = TVSubscriptionNodes.liveSnapshot(from: response, mode: routeMode.rawValue),
+         let target = snapshot.nodes.first(where: { $0.name == selectedNodeName })?.name ?? snapshot.nodes.first?.name {
+        do {
+          let verified = try await TVProxyRouting.select(
+            mode: routeMode.rawValue, node: target, read: { await liveProxies() },
+            change: { await changeProxy(groupName: $0, proxyName: $1) })
+          await MainActor.run { useSnapshot(verified) }
+          return nil
+        } catch { }
       }
       if attempt + 1 < retries {
         try? await Task.sleep(for: .milliseconds(350))
       }
     }
-    return "未找到可切换的代理组"
+    return tvText("未确认可用线路，请重试", "No usable node was confirmed. Please try again.", language: language)
   }
 
   private func connectVPN(config: String) async -> String? {
@@ -1666,7 +1747,8 @@ struct TVHomeView: View {
     return true
   }
 
-  private func applyingRouteMode(to config: String) -> String {
+  private func applyingRouteMode(to source: String) throws -> String {
+    let config = try TVBuildConfiguration.load().runtimeConfiguration(source)
     let replacement = "mode: \(routeMode.rawValue)"
     guard let expression = try? NSRegularExpression(pattern: "(?m)^mode\\s*:\\s*.*$") else { return config }
     let range = NSRange(config.startIndex..<config.endIndex, in: config)

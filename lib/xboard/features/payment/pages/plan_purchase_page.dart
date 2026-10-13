@@ -157,9 +157,9 @@ class _PlanPurchasePageState extends ConsumerState<PlanPurchasePage> {
     if (widget.initialPeriod == 'reset_price' && plan.resetPrice != null) {
       periods.add({
         'period': 'reset_price',
-        'label': '重置流量',
+        'label': l10n.xboardResetTraffic,
         'price': plan.resetPrice!,
-        'description': '重置当前套餐流量',
+        'description': l10n.xboardResetTrafficDescription,
       });
     }
     return periods;

@@ -18,9 +18,13 @@ val mStorePassword: String? = localProperties.getProperty("storePassword")
 val mKeyAlias: String? = localProperties.getProperty("keyAlias")
 val mKeyPassword: String? = localProperties.getProperty("keyPassword")
 val isRelease = mStoreFile.exists()
-        && mStorePassword != null
-        && mKeyAlias != null
-        && mKeyPassword != null
+        && !mStorePassword.isNullOrBlank()
+        && !mKeyAlias.isNullOrBlank()
+        && !mKeyPassword.isNullOrBlank()
+
+check(System.getenv("FASTCAT_BUILD_CHANNEL") != "release" || isRelease) {
+    "Formal release requires a complete release keystore; debug signing is not allowed."
+}
 
 android {
     namespace = "com.fastcat.app"
