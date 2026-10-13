@@ -7,7 +7,8 @@ void main() {
     expect(BuildIdentity.normalizedCommit('bad\nAuthorization: private'),
         'unknown');
     expect(BuildIdentity.normalizedCommit('main'), 'unknown');
-    expect(BuildIdentity.normalizedChannel('release'), 'release');
+    expect(BuildIdentity.normalizedChannel('normal'), 'normal');
+    expect(BuildIdentity.normalizedChannel('signed'), 'signed');
     expect(BuildIdentity.normalizedChannel('secret-token'), 'local');
   });
 }

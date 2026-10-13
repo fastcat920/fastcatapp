@@ -22,7 +22,7 @@ val isRelease = mStoreFile.exists()
         && !mKeyAlias.isNullOrBlank()
         && !mKeyPassword.isNullOrBlank()
 
-check(System.getenv("FASTCAT_BUILD_CHANNEL") != "release" || isRelease) {
+check(System.getenv("FASTCAT_BUILD_CHANNEL") != "signed" || isRelease) {
     "Formal release requires a complete release keystore; debug signing is not allowed."
 }
 

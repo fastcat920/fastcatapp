@@ -22,7 +22,11 @@ func TestBundledGeoDataPassesNativeParsing(t *testing.T) {
 		t.Fatal(err)
 	}
 	constant.SetHomeDir(home)
-	ctx, cancel := context.WithTimeout(context.Background(), 8*time.Second)
+	// This checks data correctness, not production latency. Race instrumentation
+	// and shared CI runners can take substantially longer to decode the full set.
+	// Production retains its separate 8-second deadline; cancellation is covered
+	// by TestGeoCheckTimeoutDoesNotClassifyFilesAsCorrupt.
+	ctx, cancel := context.WithTimeout(context.Background(), 2*time.Minute)
 	defer cancel()
 	result := checkGeoData(ctx, home)
 	if result.Error != "" || len(result.Invalid) != 0 {

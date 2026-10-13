@@ -1830,13 +1830,13 @@ end tell
     final mode = target == Target.android ? Mode.lib : Mode.core;
     final String out = argResults?["out"] ?? (target.same ? "app" : "core");
     final buildChannel = Platform.environment['FASTCAT_BUILD_CHANNEL'] ?? 'local';
-    if (!const {'local', 'test', 'release'}.contains(buildChannel)) {
-      throw StateError('FASTCAT_BUILD_CHANNEL must be local, test or release');
+    if (!const {'local', 'normal', 'signed'}.contains(buildChannel)) {
+      throw StateError('FASTCAT_BUILD_CHANNEL must be local, normal or signed');
     }
-    if (out == 'app' && buildChannel == 'release' &&
+    if (out == 'app' && buildChannel == 'signed' &&
         (target == Target.windows || target == Target.macos)) {
-      throw StateError('Formal ${target.name} packaging requires a verified production signing pipeline. '
-          'The current pipeline only produces test artifacts. For Windows, sign the runner before binding the Helper client hash.');
+      throw StateError('Signed ${target.name} packaging requires a verified production signing pipeline. '
+          'Normal builds remain available. For Windows, sign the runner before binding the Helper client hash.');
     }
     final rawArchName = argResults?["arch"];
     final archName = target == Target.macos &&

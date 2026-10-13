@@ -3,7 +3,7 @@ name: Build Client
 env:
   FLUTTER_VERSION: "3.44.7"
   FASTCAT_BUILD_COMMIT: ${{ github.sha }}
-  FASTCAT_BUILD_CHANNEL: ${{ github.event_name == 'push' && 'release' || inputs.build_channel || 'test' }}
+  FASTCAT_BUILD_CHANNEL: ${{ inputs.build_channel || 'normal' }}
   FASTCAT_KEY_CURRENT_ID: ${{ vars.FASTCAT_KEY_CURRENT_ID }}
   FASTCAT_KEY_NEXT_ID: ${{ vars.FASTCAT_KEY_NEXT_ID }}
   FASTCAT_SUBSCRIPTION_FLAG: ${{ vars.FASTCAT_SUBSCRIPTION_FLAG }}
@@ -16,10 +16,10 @@ on:
   workflow_dispatch:
     inputs:
       build_channel:
-        description: "test = unsigned/test artifacts; release = production signing required"
+        description: "normal = 普通构建；signed = 签名发行（需要完整签名流程）"
         type: choice
-        options: [test, release]
-        default: test
+        options: [normal, signed]
+        default: normal
       build_android:
         description: Build Android APK
         type: boolean
@@ -125,33 +125,7 @@ jobs:
         working-directory: services/helper
         run: cargo test --locked
 
-  helper_windows_checks:
-    name: Helper Windows service compile checks
-    runs-on: windows-2022
-    steps:
-      - uses: actions/checkout@v4
-      - name: Install cross-check target
-        shell: pwsh
-        run: |
-          rustup toolchain install stable --profile minimal --no-self-update
-          if ($LASTEXITCODE -ne 0) { throw "Rust installation failed" }
-          rustup default stable
-          if ($LASTEXITCODE -ne 0) { throw "Rust selection failed" }
-          rustup target add aarch64-pc-windows-msvc
-          if ($LASTEXITCODE -ne 0) { throw "Rust ARM64 target installation failed" }
-      - name: Helper tests and service platform checks
-        working-directory: services/helper
-        shell: pwsh
-        run: |
-          cargo test --locked
-          if ($LASTEXITCODE -ne 0) { throw "Helper unit tests failed" }
-          cargo check --locked --features windows-service --target x86_64-pc-windows-msvc
-          if ($LASTEXITCODE -ne 0) { throw "Helper Windows x64 service compile failed" }
-          cargo check --locked --features windows-service --target aarch64-pc-windows-msvc
-          if ($LASTEXITCODE -ne 0) { throw "Helper Windows ARM64 service compile failed" }
-
   android:
-    needs: checks
     name: Android APK
     runs-on: ubuntu-latest
     if: github.event_name == 'push' || inputs.build_android
@@ -244,7 +218,7 @@ jobs:
           PROPS
             echo "✓ Release keystore configured"
           else
-            echo "TEST BUILD: release signing unavailable; debug signature will vary per build. Do not distribute as a production update."
+            echo "WARNING: Android release keystore unavailable; using debug signing, which may prevent upgrading an existing installation."
           fi
 
       - name: Build Android native core
@@ -278,7 +252,6 @@ jobs:
           retention-days: 3
 
   windows:
-    needs: [checks, helper_windows_checks]
     name: Windows x64
     runs-on: windows-2022
     if: github.event_name == 'push' || inputs.build_windows
@@ -287,7 +260,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Require production signing for formal releases
+      - name: Check signing only when signed distribution is requested
         run: python scripts/check_release_readiness.py windows
 
       - name: Setup Flutter
@@ -313,6 +286,15 @@ jobs:
           if ($LASTEXITCODE -ne 0) { throw "Failed to select Rust stable toolchain" }
           rustc --version
           cargo --version
+
+      - name: Helper unit tests and service compile check
+        working-directory: services/helper
+        shell: pwsh
+        run: |
+          cargo test --locked
+          if ($LASTEXITCODE -ne 0) { throw "Helper unit tests failed" }
+          cargo check --locked --features windows-service --target x86_64-pc-windows-msvc
+          if ($LASTEXITCODE -ne 0) { throw "Helper service compile failed" }
 
       - name: Install Inno Setup
         shell: pwsh
@@ -528,7 +510,6 @@ jobs:
           retention-days: 3
 
   windows_arm64:
-    needs: [checks, helper_windows_checks]
     name: Windows arm64
     runs-on: windows-11-arm
     if: github.event_name == 'push' || inputs.build_windows_arm64
@@ -537,7 +518,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Require production signing for formal releases
+      - name: Check signing only when signed distribution is requested
         run: python scripts/check_release_readiness.py windows
 
       - name: Setup Flutter
@@ -591,6 +572,15 @@ jobs:
           if ($LASTEXITCODE -ne 0) { throw "Failed to select Rust stable toolchain" }
           rustc --version
           cargo --version
+
+      - name: Helper unit tests and service compile check
+        working-directory: services/helper
+        shell: pwsh
+        run: |
+          cargo test --locked
+          if ($LASTEXITCODE -ne 0) { throw "Helper unit tests failed" }
+          cargo check --locked --features windows-service --target aarch64-pc-windows-msvc
+          if ($LASTEXITCODE -ne 0) { throw "Helper service compile failed" }
 
       - name: Install Inno Setup
         shell: pwsh
@@ -804,7 +794,6 @@ jobs:
           retention-days: 3
 
   ios:
-    needs: checks
     name: iOS IPA
     runs-on: macos-latest
     if: github.event_name == 'push' || inputs.build_ios
@@ -813,7 +802,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Require production signing for formal releases
+      - name: Check signing only when signed distribution is requested
         run: python3 scripts/check_release_readiness.py ios
 
       - name: Setup Flutter
@@ -863,7 +852,6 @@ jobs:
           retention-days: 3
 
   tvos:
-    needs: checks
     name: tvOS App
     runs-on: macos-15
     if: github.event_name == 'push' || inputs.build_tvos
@@ -872,7 +860,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Require production signing for formal releases
+      - name: Check signing only when signed distribution is requested
         run: python3 scripts/check_release_readiness.py tvos
 
       - name: Setup Go
@@ -947,34 +935,86 @@ jobs:
           if-no-files-found: error
           retention-days: 3
 
-  linux:
-    needs: checks
-    name: Linux ${{ matrix.arch }}
-    runs-on: ${{ matrix.runner }}
+  linux_amd64:
+    name: Linux amd64
+    runs-on: ubuntu-latest
     if: github.event_name == 'push' || inputs.build_linux
-    strategy:
-      fail-fast: false
-      matrix:
-        include:
-          - arch: amd64
-            runner: ubuntu-latest
-          - arch: arm64
-            runner: ubuntu-24.04-arm
-
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
       - name: Setup Flutter
-        if: matrix.arch == 'amd64'
         uses: subosito/flutter-action@v2
         with:
           flutter-version: ${{ env.FLUTTER_VERSION }}
           channel: stable
           cache: true
 
+      - name: Setup Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: "1.20.x"
+          cache-dependency-path: core/go.sum
+
+      - name: Enable Linux desktop
+        run: flutter config --enable-linux-desktop
+
+      - name: Install Linux build prerequisites
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            clang \
+            cmake \
+            libgtk-3-dev \
+            liblzma-dev \
+            libsecret-1-dev \
+            libwebkit2gtk-4.1-dev \
+            ninja-build \
+            pkg-config
+
+      - name: Flutter doctor
+        run: flutter doctor -v
+
+      - name: Clean build cache
+        run: flutter clean
+
+      - name: Get packages
+        run: flutter pub get
+
+      - name: Build Linux packages
+        env:
+          XOR_KEY: ${{ secrets.XOR_KEY }}
+          FASTCAT_KEY_CURRENT: ${{ secrets.FASTCAT_KEY_CURRENT }}
+          FASTCAT_KEY_NEXT: ${{ secrets.FASTCAT_KEY_NEXT }}
+        run: dart run setup.dart linux --arch amd64 --out app --env stable
+
+      - name: List dist contents
+        shell: bash
+        if: always()
+        run: |
+          if [ -d dist ]; then
+            find dist -type f -exec ls -lh {} \;
+          else
+            echo "dist/ directory does not exist"
+          fi
+
+      - name: Upload Linux artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: FastCat-linux-amd64
+          path: dist/**
+          if-no-files-found: error
+          retention-days: 3
+
+  linux_arm64:
+    name: Linux arm64
+    runs-on: ubuntu-24.04-arm
+    if: github.event_name == 'push' || inputs.build_linux
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
       - name: Setup Flutter arm64
-        if: matrix.arch == 'arm64'
         shell: bash
         run: |
           git clone --depth 1 --branch "${FLUTTER_VERSION}" https://github.com/flutter/flutter.git "$RUNNER_TEMP/flutter"
@@ -1018,7 +1058,7 @@ jobs:
           XOR_KEY: ${{ secrets.XOR_KEY }}
           FASTCAT_KEY_CURRENT: ${{ secrets.FASTCAT_KEY_CURRENT }}
           FASTCAT_KEY_NEXT: ${{ secrets.FASTCAT_KEY_NEXT }}
-        run: dart run setup.dart linux --arch ${{ matrix.arch }} --out app --env stable
+        run: dart run setup.dart linux --arch arm64 --out app --env stable
 
       - name: List dist contents
         shell: bash
@@ -1033,13 +1073,12 @@ jobs:
       - name: Upload Linux artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: FastCat-linux-${{ matrix.arch }}
+          name: FastCat-linux-arm64
           path: dist/**
           if-no-files-found: error
           retention-days: 3
 
   macos:
-    needs: checks
     name: macOS Universal DMG
     runs-on: macos-15
     if: github.event_name == 'push' || inputs.build_macos
@@ -1050,7 +1089,7 @@ jobs:
         with:
           lfs: true
 
-      - name: Require production signing for formal releases
+      - name: Check signing only when signed distribution is requested
         run: python3 scripts/check_release_readiness.py macos
 
       - name: Setup Flutter

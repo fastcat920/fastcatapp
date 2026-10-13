@@ -14,7 +14,7 @@ class BuildIdentity {
       : 'unknown';
 
   static String normalizedChannel(String value) =>
-      const {'local', 'test', 'release'}.contains(value) ? value : 'local';
+      const {'local', 'normal', 'signed'}.contains(value) ? value : 'local';
 
   static String get label => '$channel / $commit';
 }

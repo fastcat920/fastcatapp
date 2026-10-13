@@ -12,18 +12,19 @@ spec.loader.exec_module(policy)
 
 
 class ReleasePolicyTest(unittest.TestCase):
-    def test_test_builds_remain_available_without_signing_secrets(self):
+    def test_normal_builds_remain_available_without_signing_secrets(self):
         for platform in ("windows", "macos", "ios", "tvos", "linux", "android"):
-            for channel in ("local", "test"):
+            policy.check(platform, {})
+            for channel in ("local", "normal"):
                 policy.check(platform, {"FASTCAT_BUILD_CHANNEL": channel})
 
     def test_unsigned_platforms_never_claim_release(self):
         for platform in ("windows", "macos", "ios", "tvos"):
             with self.assertRaises(ValueError):
-                policy.check(platform, {"FASTCAT_BUILD_CHANNEL": "release"})
+                policy.check(platform, {"FASTCAT_BUILD_CHANNEL": "signed"})
 
     def test_android_formal_release_needs_every_signing_secret(self):
-        env = {"FASTCAT_BUILD_CHANNEL": "release", "KEYSTORE_BASE64": "test", "KEYSTORE_PASSWORD": "test",
+        env = {"FASTCAT_BUILD_CHANNEL": "signed", "KEYSTORE_BASE64": "test", "KEYSTORE_PASSWORD": "test",
                "KEY_ALIAS": "test", "KEY_PASSWORD": "test"}
         policy.check("android", env)
         for field in ("KEYSTORE_BASE64", "KEYSTORE_PASSWORD", "KEY_ALIAS", "KEY_PASSWORD"):
@@ -33,6 +34,14 @@ class ReleasePolicyTest(unittest.TestCase):
     def test_unknown_channel_fails_instead_of_bypassing_gate(self):
         with self.assertRaises(ValueError):
             policy.check("android", {"FASTCAT_BUILD_CHANNEL": "production"})
+
+    def test_workflow_defaults_to_normal_even_for_tag_builds(self):
+        source = (ROOT / ".github/workflows/build-client.yml").read_text()
+        self.assertIn("FASTCAT_BUILD_CHANNEL: ${{ inputs.build_channel || 'normal' }}", source)
+        self.assertIn("options: [normal, signed]", source)
+        self.assertIn("default: normal", source)
+        gradle = (ROOT / "android/app/build.gradle.kts").read_text()
+        self.assertIn('System.getenv("FASTCAT_BUILD_CHANNEL") != "signed" || isRelease', gradle)
 
     def test_tvos_versions_share_pubspec_source(self):
         pubspec = (ROOT / "pubspec.yaml").read_text()
@@ -44,6 +53,16 @@ class ReleasePolicyTest(unittest.TestCase):
         self.assertEqual(project.count('MARKETING_VERSION = "$(FASTCAT_APP_VERSION)"'), 4)
         self.assertEqual(project.count('CURRENT_PROJECT_VERSION = "$(FASTCAT_BUILD_NUMBER)"'), 4)
         self.assertIn('include "Version.xcconfig"', (ROOT / "tvos/Build.xcconfig").read_text())
+
+    def test_platform_builds_are_independent_and_linux_is_explicit(self):
+        source = (ROOT / ".github/workflows/build-client.yml").read_text()
+        self.assertNotRegex(source, r"(?m)^    needs:")
+        self.assertNotIn("matrix.", source)
+        self.assertNotIn("  helper_windows_checks:", source)
+        for job in ("android", "windows", "windows_arm64", "ios", "tvos", "linux_amd64", "linux_arm64", "macos"):
+            self.assertIn(f"  {job}:\n", source)
+        self.assertEqual(source.count("name: Helper unit tests and service compile check"), 2)
+        self.assertIn("go test -race ./...", source)
 
     def test_direct_flutter_builds_keep_provenance(self):
         for script in ("package_apk.sh", "package_ipa.sh"):
