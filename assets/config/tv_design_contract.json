@@ -592,7 +592,7 @@
     "打开网页失败，请手动访问网页版": "Failed to open web, please visit manually",
     "扫一扫登录设备": "Scan to sign in on a device",
     "扫描二维码获取配置文件": "Scan QR code to obtain profile",
-    "扫描电脑或电视上的登录二维码": "Scan the sign-in QR code on your computer or TV",
+    "扫描电脑或电视上的登录二维码\n可双指缩放": "Scan the sign-in QR code on your computer or TV\nPinch to zoom",
     "扫码登录": "QR Login",
     "指定对应域名服务器策略": "Specify the corresponding nameserver policy",
     "按名称排序": "Sort by name",

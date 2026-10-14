@@ -1714,7 +1714,7 @@
   "xboardQrAuthorizeSuccess": "已允许设备登录",
   "xboardQrAuthorizeFailed": "授权失败，请重试",
   "xboardQrScannerTitle": "扫一扫登录设备",
-  "xboardQrScannerHint": "扫描电脑或电视上的登录二维码",
+  "xboardQrScannerHint": "扫描电脑或电视上的登录二维码\n可双指缩放",
   "xboardQrInvalidCode": "请扫描有效的快猫电脑或电视登录二维码",
   "xboardResetTrafficDescription": "重置当前套餐流量",
   "xboardCustomerServiceNotConfigured": "未配置在线客服",

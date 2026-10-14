@@ -2849,7 +2849,7 @@ class MessageLookup extends MessageLookupByLibrary {
       "Could not refresh the QR code. Try again later.",
     ),
     "xboardQrScannerHint": MessageLookupByLibrary.simpleMessage(
-      "Scan the sign-in QR code on your computer or TV",
+      "Scan the sign-in QR code on your computer or TV\nPinch to zoom",
     ),
     "xboardQrScannerTitle": MessageLookupByLibrary.simpleMessage(
       "Scan to sign in on a device",

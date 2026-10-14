@@ -2089,7 +2089,7 @@ class MessageLookup extends MessageLookupByLibrary {
       "二维码刷新失败，请稍后重试",
     ),
     "xboardQrScannerHint": MessageLookupByLibrary.simpleMessage(
-      "扫描电脑或电视上的登录二维码",
+      "扫描电脑或电视上的登录二维码\n可双指缩放",
     ),
     "xboardQrScannerTitle": MessageLookupByLibrary.simpleMessage("扫一扫登录设备"),
     "xboardQrUnavailable": MessageLookupByLibrary.simpleMessage("二维码不可用"),

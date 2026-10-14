@@ -13175,10 +13175,10 @@ class AppLocalizations {
     );
   }
 
-  /// `Scan the sign-in QR code on your computer or TV`
+  /// `Scan the sign-in QR code on your computer or TV\nPinch to zoom`
   String get xboardQrScannerHint {
     return Intl.message(
-      'Scan the sign-in QR code on your computer or TV',
+      'Scan the sign-in QR code on your computer or TV\nPinch to zoom',
       name: 'xboardQrScannerHint',
       desc: '',
       args: [],
