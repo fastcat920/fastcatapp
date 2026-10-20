@@ -13,6 +13,8 @@
     <key>CFBundleVersion</key><string>$(CURRENT_PROJECT_VERSION)</string>
     <key>FastCatBuildCommit</key><string>$(FASTCAT_BUILD_COMMIT)</string>
     <key>FastCatBuildChannel</key><string>$(FASTCAT_BUILD_CHANNEL)</string>
+    <key>FastCatPrivacyPolicyURL</key><string>$(FASTCAT_PRIVACY_POLICY_URL)</string>
+    <key>FastCatTermsOfServiceURL</key><string>$(FASTCAT_TERMS_OF_SERVICE_URL)</string>
     <key>CFBundleIcons</key>
     <dict><key>CFBundlePrimaryIcon</key><dict><key>CFBundleIconName</key><string>AppIcon</string></dict></dict>
     <key>FastCatAPIBaseURL</key><string>$(FASTCAT_API_BASE_URL)</string>

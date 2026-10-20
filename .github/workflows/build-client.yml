@@ -112,6 +112,9 @@ jobs:
       - name: Core regression tests
         working-directory: core
         run: go test -race ./...
+      - name: Apple packetFlow TCP and UDP regressions
+        working-directory: core
+        run: go test -race -tags with_gvisor ./applepacket
       - name: Provider cache and path regressions (nested Mihomo module)
         working-directory: core/Clash.Meta
         run: go test -race ./component/resource ./constant
@@ -915,6 +918,8 @@ jobs:
             FASTCAT_REQUIRE_ENCRYPTION="$FASTCAT_REQUIRE_ENCRYPTION" \
             FASTCAT_BUILD_COMMIT="$FASTCAT_BUILD_COMMIT" \
             FASTCAT_BUILD_CHANNEL="$FASTCAT_BUILD_CHANNEL" \
+            FASTCAT_PRIVACY_POLICY_URL="$FASTCAT_PRIVACY_POLICY_URL" \
+            FASTCAT_TERMS_OF_SERVICE_URL="$FASTCAT_TERMS_OF_SERVICE_URL" \
             CODE_SIGNING_ALLOWED=NO \
             CODE_SIGNING_REQUIRED=NO \
             DEVELOPMENT_TEAM= \

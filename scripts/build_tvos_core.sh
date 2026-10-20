@@ -3,7 +3,7 @@ set -euo pipefail
 
 # Build the static mihomo bridge used by the tvOS Packet Tunnel extension.
 # tvOS has no Go GOOS value; build for Darwin and explicitly select the
-# shared Apple proxy-mode bridge with the `ios` build tag.
+# shared Apple packetFlow bridge with the `ios` build tag.
 cd "$(dirname "$0")/.."
 
 if [ "$(uname -s)" != "Darwin" ]; then
@@ -11,9 +11,17 @@ if [ "$(uname -s)" != "Darwin" ]; then
   exit 1
 fi
 
-SDK_PATH="$(xcrun --sdk appletvos --show-sdk-path)"
-CLANG_PATH="$(xcrun --sdk appletvos -f clang)"
-OUTPUT_DIR="tvos/Frameworks/libclash.xcframework/tvos-arm64"
+SDK_NAME=appletvos
+APPLE_TARGET=arm64-apple-tvos17.0
+LIBRARY_ID=tvos-arm64
+if [ "${APPLE_SIMULATOR:-0}" = 1 ]; then
+  SDK_NAME=appletvsimulator
+  APPLE_TARGET=arm64-apple-tvos17.0-simulator
+  LIBRARY_ID=tvos-arm64-simulator
+fi
+SDK_PATH="$(xcrun --sdk "$SDK_NAME" --show-sdk-path)"
+CLANG_PATH="$(xcrun --sdk "$SDK_NAME" -f clang)"
+OUTPUT_DIR="tvos/Frameworks/libclash.xcframework/$LIBRARY_ID"
 BUILD_DIR="$(mktemp -d)"
 trap 'rm -rf "$BUILD_DIR"' EXIT
 
@@ -25,9 +33,9 @@ echo "→ Building tvOS mihomo core..."
     GOOS=darwin \
     GOARCH=arm64 \
     CC="$CLANG_PATH" \
-    CGO_CFLAGS="-isysroot $SDK_PATH -target arm64-apple-tvos17.0" \
-    CGO_LDFLAGS="-isysroot $SDK_PATH -target arm64-apple-tvos17.0" \
-    go build -tags ios -trimpath -buildmode=c-archive -o "$BUILD_DIR/libclash.a" .
+    CGO_CFLAGS="-isysroot $SDK_PATH -target $APPLE_TARGET" \
+    CGO_LDFLAGS="-isysroot $SDK_PATH -target $APPLE_TARGET" \
+    go build -tags ios,with_gvisor -trimpath -buildmode=c-archive -o "$BUILD_DIR/libclash.a" .
 )
 
 mkdir -p "$OUTPUT_DIR/Headers"
@@ -42,6 +50,12 @@ cat > tvos/Frameworks/libclash.xcframework/Info.plist <<'PLIST'
 <key>LibraryPath</key><string>libclash.a</string>
 <key>SupportedArchitectures</key><array><string>arm64</string></array>
 <key>SupportedPlatform</key><string>tvos</string>
+</dict><dict>
+<key>LibraryIdentifier</key><string>tvos-arm64-simulator</string>
+<key>LibraryPath</key><string>libclash.a</string>
+<key>SupportedArchitectures</key><array><string>arm64</string></array>
+<key>SupportedPlatform</key><string>tvos</string>
+<key>SupportedPlatformVariant</key><string>simulator</string>
 </dict></array><key>CFBundlePackageType</key><string>XFWK</string><key>XCFrameworkFormatVersion</key><string>1.0</string></dict></plist>
 PLIST
 

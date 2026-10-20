@@ -277,6 +277,14 @@ struct TVHomeView: View {
 
       Spacer()
       TVToolbarButton(
+        title: tvText("隐私", "Privacy", language: language),
+        icon: .personOutline,
+        horizontalPadding: 18,
+        cornerRadius: tv(14),
+        height: 44,
+        action: { NotificationCenter.default.post(name: .tvShowPrivacyNotice, object: nil) }
+      )
+      TVToolbarButton(
         title: tvText("切换主题", "Switch Theme", language: language),
         icon: prefersDarkTheme ? .lightModeOutlined : .darkModeOutlined,
         horizontalPadding: 18,

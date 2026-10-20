@@ -26,8 +26,12 @@ extern char *ClashCore_invoke(const char *method, const char *data);
 /// Free a string returned by ClashCore_invoke.
 extern void ClashCore_free(char *ptr);
 
-/// No-op on iOS (proxy mode — no TUN packet forwarding).
-extern void ClashCore_write_packet(const uint8_t *data, int32_t length);
+/// Public packetFlow bridge. Generation rejects callbacks from old tunnels.
+extern unsigned long long ClashCore_start_packets(void);
+extern void ClashCore_stop_packets(void);
+extern int ClashCore_write_packet(unsigned long long generation, const uint8_t *data, int32_t length);
+/// Blocks until a packet is ready; stop_packets unblocks it with -1.
+extern int ClashCore_read_packet(unsigned long long generation, uint8_t *data, int32_t capacity);
 
 /// Return the mixed-port that mihomo is listening on.
 /// Returns 0 if the core is not yet initialised.

@@ -18,6 +18,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:desktop_webview_window/desktop_webview_window.dart';
 
 import 'application.dart';
+import 'xboard/features/shared/widgets/apple_privacy_gate.dart';
 import 'clash/core.dart';
 import 'clash/lib.dart';
 import 'common/common.dart';
@@ -230,7 +231,9 @@ Future<void> main(List<String> args) async {
         (ref) => initialSnapshot.subscriptionInfo,
       ),
     ],
-    child: const Application(),
+    child: Platform.isIOS
+        ? ApplePrivacyGate(preferences: prefs, child: const Application())
+        : const Application(),
   ));
   unawaited(bootDiagLog('runApp called'));
 }

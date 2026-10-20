@@ -5,14 +5,91 @@ struct FastCatTVApp: App {
   @StateObject private var session = SessionStore()
   @AppStorage(TVTheme.preferenceKey) private var prefersDarkTheme = true
   @AppStorage(TVLanguage.preferenceKey) private var language = TVLanguage.system.rawValue
+  @AppStorage("fastcat.apple.privacy-disclosure") private var privacyVersion = ""
+  @State private var showPrivacy = false
 
   var body: some Scene {
     WindowGroup {
-      RootView()
+      Group {
+        if privacyVersion == TVPrivacyNotice.version {
+          RootView()
+            .fullScreenCover(isPresented: $showPrivacy) {
+              TVPrivacyNotice(reviewing: true) { showPrivacy = false }
+            }
+        } else {
+          TVPrivacyNotice { privacyVersion = TVPrivacyNotice.version }
+        }
+      }
+        .onReceive(NotificationCenter.default.publisher(for: .tvShowPrivacyNotice)) { _ in showPrivacy = true }
         .environmentObject(session)
         .preferredColorScheme(prefersDarkTheme ? .dark : .light)
         .environment(\.locale, TVLanguage.resolved(from: language).locale)
     }
+  }
+}
+
+extension Notification.Name {
+  static let tvShowPrivacyNotice = Notification.Name("fastcat.tv.showPrivacyNotice")
+}
+
+private struct TVPrivacyNotice: View {
+  static let version = "2026-10-v1"
+  var reviewing = false
+  let onContinue: () -> Void
+  @AppStorage(TVLanguage.preferenceKey) private var language = TVLanguage.system.rawValue
+  @State private var showTerms = false
+  @State private var declined = false
+
+  private var policyURL: String {
+    let key = showTerms ? "FastCatTermsOfServiceURL" : "FastCatPrivacyPolicyURL"
+    let raw = Bundle.main.object(forInfoDictionaryKey: key) as? String ?? ""
+    if let url = URL(string: raw), url.scheme == "https", url.host != nil { return raw }
+    return showTerms ? "https://www.fastcat6.com/terms" : "https://www.fastcat6.com/privacy"
+  }
+
+  var body: some View {
+    TVDesignCanvas {
+      ZStack {
+        TVTheme.background.ignoresSafeArea()
+        VStack(alignment: .leading, spacing: tv(20)) {
+          Text(tvText("VPN 数据使用说明", "VPN Data Use", language: language)).font(TVFont.medium(26))
+          HStack(alignment: .top, spacing: tv(32)) {
+            ScrollView {
+              Text(tvText(
+                "账号与设备：邮箱、账号标识、设备标识及设备信息用于登录、设备限制和会话管理。\n\n套餐信息：套餐及流量用量用于提供服务。\n\nVPN 流量：客户端与所选节点处理目标地址、DNS 查询和网络流量，以完成转发和分流。\n\n服务检测会联系配置中的业务与网关服务。详细的数据收集、保存、第三方处理和删除规则，请阅读隐私政策。",
+                "Account and devices: Your email, account identifier, device identifier and device information support sign-in, device limits and session management.\n\nPlan information: Plan details and traffic usage support service delivery.\n\nVPN traffic: The client and selected server process destination addresses, DNS queries and network traffic to route your connections.\n\nService checks contact the configured business and gateway services. Read the Privacy Policy for collection, retention, third-party processing and deletion rules.", language: language))
+                .font(TVFont.regular(17)).lineSpacing(tv(5)).frame(maxWidth: .infinity, alignment: .leading)
+            }.focusable()
+            VStack(spacing: tv(12)) {
+              Text(tvText(showTerms ? "服务条款" : "隐私政策", showTerms ? "Terms of Service" : "Privacy Policy", language: language)).font(TVFont.medium(18))
+              TVQRCodeView(payload: policyURL).padding(tv(12)).background(.white).frame(width: tv(200), height: tv(200))
+              Text(tvText("用手机扫描二维码阅读完整内容", "Scan with your phone to read the full document", language: language)).font(TVFont.regular(13))
+                .multilineTextAlignment(.center).frame(width: tv(220))
+              TVFocusButton(cornerRadius: TVTheme.compactRadius, action: { showTerms.toggle() }) { _ in
+                Text(tvText(showTerms ? "查看隐私政策" : "查看服务条款", showTerms ? "Privacy Policy" : "Terms of Service", language: language))
+                  .font(TVFont.regular(15)).padding(tv(12))
+              }
+            }
+          }
+          if declined { Text(tvText("可以退出应用；继续前不会进入登录或连接界面。", "You may leave the app. Sign-in and connection screens remain unavailable until you continue.", language: language)).font(TVFont.regular(14)) }
+          HStack(spacing: tv(20)) {
+            TVFocusButton(cornerRadius: TVTheme.compactRadius, autofocus: true, action: onContinue) { _ in
+              Text(tvText(reviewing ? "返回" : "我已了解，继续", reviewing ? "Back" : "I understand — Continue", language: language))
+                .font(TVFont.medium(16)).padding(tv(16)).background(TVTheme.primary).foregroundStyle(.white)
+            }
+            if !reviewing {
+              TVFocusButton(cornerRadius: TVTheme.compactRadius, action: { declined = true }) { _ in
+                Text(tvText("暂不使用", "Not now", language: language)).font(TVFont.regular(16)).padding(tv(16))
+              }
+            }
+            TVFocusButton(cornerRadius: TVTheme.compactRadius, action: {
+              language = TVLanguage.resolved(from: language) == .simplifiedChinese ? "en" : "zh-CN"
+            }) { _ in Text("中文 / English").font(TVFont.regular(16)).padding(tv(16)) }
+          }
+        }.padding(tv(44)).foregroundStyle(TVTheme.textPrimary)
+      }
+    }
+    .onExitCommand { if reviewing { onContinue() } else { declined = true } }
   }
 }
 
