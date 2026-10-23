@@ -451,11 +451,9 @@ packages:
   fastcat_support:
     dependency: "direct main"
     description:
-      path: "fastcat-support/flutter"
-      ref: a6772c8
-      resolved-ref: a6772c8c5b81fa7e28742ee68e418d74f507dcf3
-      url: "https://github.com/fastcat920/ai-chat.git"
-    source: git
+      path: "packages/fastcat_support"
+      relative: true
+    source: path
     version: "0.2.0"
   ffi:
     dependency: "direct main"

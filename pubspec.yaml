@@ -78,10 +78,7 @@ dependencies:
   flutter_xboard_sdk:
     path: lib/sdk/flutter_xboard_sdk
   fastcat_support:
-    git:
-      url: https://github.com/fastcat920/ai-chat.git
-      path: fastcat-support/flutter
-      ref: a6772c8
+    path: packages/fastcat_support
   desktop_webview_window:
     path: plugins/desktop_webview_window
   flutter_inappwebview: ^6.1.5

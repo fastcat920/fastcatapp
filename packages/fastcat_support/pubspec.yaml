@@ -1,0 +1,18 @@
+name: fastcat_support
+description: FastCat Support Flutter visitor SDK and ready-to-use chat UI.
+version: 0.2.0
+publish_to: none
+environment:
+  sdk: '>=3.3.0 <4.0.0'
+  flutter: '>=3.19.0'
+dependencies:
+  flutter:
+    sdk: flutter
+  http: ^1.2.0
+  web_socket_channel: ^3.0.0
+  file_picker: ^8.0.0
+  shared_preferences: ^2.2.0
+dev_dependencies:
+  flutter_lints: ^4.0.0
+flutter:
+  uses-material-design: true
