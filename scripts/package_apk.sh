@@ -30,6 +30,19 @@ fi
 
 echo "→ Building split APKs for ${APP_NAME_EN} ${VERSION}..."
 
+FCM_DEFINES=()
+if [ -n "${FASTCAT_FIREBASE_API_KEY:-}" ] && [ -n "${FASTCAT_FIREBASE_APP_ID:-}" ] && \
+   [ -n "${FASTCAT_FIREBASE_PROJECT_ID:-}" ] && [ -n "${FASTCAT_FIREBASE_MESSAGING_SENDER_ID:-}" ]; then
+  FCM_DEFINES+=(
+    --dart-define=FASTCAT_FIREBASE_API_KEY="${FASTCAT_FIREBASE_API_KEY}"
+    --dart-define=FASTCAT_FIREBASE_APP_ID="${FASTCAT_FIREBASE_APP_ID}"
+    --dart-define=FASTCAT_FIREBASE_PROJECT_ID="${FASTCAT_FIREBASE_PROJECT_ID}"
+    --dart-define=FASTCAT_FIREBASE_MESSAGING_SENDER_ID="${FASTCAT_FIREBASE_MESSAGING_SENDER_ID}"
+  )
+else
+  echo "i Firebase client options are incomplete; APK will be built without push registration."
+fi
+
 flutter clean
 BUILD_EXIT=1
 for attempt in 1 2 3; do
@@ -47,7 +60,8 @@ for attempt in 1 2 3; do
     --dart-define=FASTCAT_KEY_NEXT_ID="${FASTCAT_KEY_NEXT_ID}" \
     --dart-define=FASTCAT_KEY_NEXT="${FASTCAT_KEY_NEXT}" \
     --dart-define=FASTCAT_SUBSCRIPTION_FLAG="${FASTCAT_SUBSCRIPTION_FLAG}" \
-    --dart-define=FASTCAT_REQUIRE_ENCRYPTION="${FASTCAT_REQUIRE_ENCRYPTION}"
+    --dart-define=FASTCAT_REQUIRE_ENCRYPTION="${FASTCAT_REQUIRE_ENCRYPTION}" \
+    "${FCM_DEFINES[@]}"
   BUILD_EXIT=$?
   set -e
 

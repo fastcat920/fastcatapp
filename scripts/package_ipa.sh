@@ -32,6 +32,19 @@ fi
 echo "→ Building IPA for ${APP_NAME_EN} ${VERSION}..."
 mkdir -p dist
 
+FCM_DEFINES=()
+if [ -n "${FASTCAT_FIREBASE_API_KEY:-}" ] && [ -n "${FASTCAT_FIREBASE_APP_ID:-}" ] && \
+   [ -n "${FASTCAT_FIREBASE_PROJECT_ID:-}" ] && [ -n "${FASTCAT_FIREBASE_MESSAGING_SENDER_ID:-}" ]; then
+  FCM_DEFINES+=(
+    --dart-define=FASTCAT_FIREBASE_API_KEY="${FASTCAT_FIREBASE_API_KEY}"
+    --dart-define=FASTCAT_FIREBASE_APP_ID="${FASTCAT_FIREBASE_APP_ID}"
+    --dart-define=FASTCAT_FIREBASE_PROJECT_ID="${FASTCAT_FIREBASE_PROJECT_ID}"
+    --dart-define=FASTCAT_FIREBASE_MESSAGING_SENDER_ID="${FASTCAT_FIREBASE_MESSAGING_SENDER_ID}"
+  )
+else
+  echo "i Firebase client options are incomplete; IPA will be built without push registration."
+fi
+
 /usr/libexec/PlistBuddy -c "Set :CFBundleName ${APP_NAME_EN}" ios/Runner/Info.plist
 
 flutter build ipa --release --no-codesign \
@@ -46,7 +59,8 @@ flutter build ipa --release --no-codesign \
   --dart-define=FASTCAT_SUBSCRIPTION_FLAG="${FASTCAT_SUBSCRIPTION_FLAG}" \
   --dart-define=FASTCAT_REQUIRE_ENCRYPTION="${FASTCAT_REQUIRE_ENCRYPTION}" \
   --dart-define=FASTCAT_PRIVACY_POLICY_URL="${FASTCAT_PRIVACY_POLICY_URL:-https://www.fastcat6.com/privacy}" \
-  --dart-define=FASTCAT_TERMS_OF_SERVICE_URL="${FASTCAT_TERMS_OF_SERVICE_URL:-https://www.fastcat6.com/terms}"
+  --dart-define=FASTCAT_TERMS_OF_SERVICE_URL="${FASTCAT_TERMS_OF_SERVICE_URL:-https://www.fastcat6.com/terms}" \
+  "${FCM_DEFINES[@]}"
 
 APP_BUNDLE="build/ios/archive/Runner.xcarchive/Products/Applications/Runner.app"
 for LOCALE in en zh-Hans zh-Hant; do

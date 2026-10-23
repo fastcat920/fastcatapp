@@ -30,6 +30,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_xboard_sdk/flutter_xboard_sdk.dart';
 import 'package:go_router/go_router.dart';
 import 'package:fastcat_support/fastcat_support.dart';
+import 'package:fl_clash/xboard/features/auth/utils/fastcat_push_service.dart';
 import 'package:uuid/uuid.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -1118,6 +1119,7 @@ class CustomerServiceHelper {
       supportClient.dispose();
       return;
     }
+    final pushSubscription = FastCatPushService.register(supportClient);
     await navigator.push<void>(
       MaterialPageRoute<void>(
         builder: (_) => FastCatChatScreen(
@@ -1127,6 +1129,7 @@ class CustomerServiceHelper {
         ),
       ),
     );
+    await (await pushSubscription)?.cancel();
   }
 
   static Future<String> _resolveFastCatVisitorId(String? accountUuid) async {

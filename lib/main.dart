@@ -13,6 +13,7 @@ import 'package:fl_clash/xboard/config/xboard_config.dart';
 import 'package:fl_clash/xboard/config/utils/theme_config_loader.dart';
 import 'package:fl_clash/xboard/domain/domain.dart';
 import 'package:flutter/material.dart';
+import 'package:fl_clash/xboard/features/auth/utils/fastcat_push_service.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:desktop_webview_window/desktop_webview_window.dart';
@@ -44,6 +45,12 @@ Future<void> main(List<String> args) async {
 
   globalState.isService = false;
   WidgetsFlutterBinding.ensureInitialized();
+  try {
+    await FastCatPushService.initialize().timeout(const Duration(seconds: 5));
+  } catch (error) {
+    // Firebase is optional until this build has its project's public options.
+    unawaited(bootDiagLog('FastCat push initialization unavailable: $error'));
+  }
   MacOSStartupDiagnostics.armFirstFrameWatchdog();
   unawaited(bootDiagLog('main entered'));
   if (Platform.isWindows || Platform.isLinux) {
