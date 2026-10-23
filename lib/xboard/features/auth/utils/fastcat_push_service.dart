@@ -48,6 +48,7 @@ class FastCatPushService {
     FastCatSupport client,
   ) async {
     if (!_configured || !_isMobile || Firebase.apps.isEmpty) return null;
+    StreamSubscription<String>? registration;
     try {
       final messaging = FirebaseMessaging.instance;
       final permission = await messaging.requestPermission(
@@ -70,12 +71,13 @@ class FastCatPushService {
         if (apnsToken?.isNotEmpty != true) return null;
       }
 
-      final registration = messaging.onRegistered.listen((installationId) {
+      registration = messaging.onRegistered.listen((installationId) {
         unawaited(_registerInstallation(client, installationId));
       });
       await messaging.register();
       return registration;
     } catch (error) {
+      await registration?.cancel();
       debugPrint('[FastCat Support] Push registration unavailable: $error');
       return null;
     }

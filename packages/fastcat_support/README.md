@@ -41,20 +41,19 @@ Navigator.push(context, MaterialPageRoute(
 
 ## Optional mobile push notifications
 
-For replies received while the app is in the background, integrate Firebase Messaging in the host Flutter app (Firebase project setup, native `google-services.json` / `GoogleService-Info.plist`, notification permission, and `firebase_messaging` are app-specific and intentionally not bundled as mandatory SDK dependencies). After Firebase returns an FCM registration token, register it with the client:
+For replies received while the app is in the background, integrate Firebase Messaging in the host Flutter app. Firebase project configuration, native push capability, notification permission, and `firebase_messaging` are app-specific and intentionally not bundled as mandatory SDK dependencies. The SDK accepts the Firebase Installation ID (FID) emitted by the current Firebase Messaging registration API:
 
 ```dart
 final messaging = FirebaseMessaging.instance;
 await messaging.requestPermission();
-final fcmToken = await messaging.getToken();
-if (fcmToken != null) await client.registerPushToken(fcmToken);
-
-FirebaseMessaging.instance.onTokenRefresh.listen((token) {
-  client.registerPushToken(token);
+final registration = messaging.onRegistered.listen((installationId) {
+  client.registerPushToken(installationId);
 });
+await messaging.register();
+// Cancel `registration` when the visitor session is disposed.
 ```
 
-The SDK's `registerPushToken` method accepts the Firebase Installation ID (FID) delivered by the host app's Firebase Messaging integration. When signing out or disabling push, call `registerPushToken(installationId, enabled: false)`. In the FastCat admin console, open **推送通知**, paste the Firebase service-account JSON, validate it, then save. The server encrypts this credential at rest. Notifications are sent for AI replies and human-agent replies; the realtime chat stream remains the primary in-app delivery path.
+When signing out or disabling push, call `registerPushToken(installationId, enabled: false)`. In the FastCat admin console, open **推送通知**, paste the Firebase service-account JSON, validate it, then save. The server encrypts this credential at rest. Notifications are sent for AI replies and human-agent replies; the realtime chat stream remains the primary in-app delivery path.
 
 ## Custom UI
 
