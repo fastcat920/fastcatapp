@@ -42,12 +42,13 @@ class _FastCatChatScreenState extends State<FastCatChatScreen> {
   void changed() {
     if (mounted) setState(() {});
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (scroll.hasClients)
+      if (scroll.hasClients) {
         scroll.animateTo(
           scroll.position.maxScrollExtent,
           duration: const Duration(milliseconds: 180),
           curve: Curves.easeOut,
         );
+      }
     });
   }
 

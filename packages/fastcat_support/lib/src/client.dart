@@ -80,8 +80,9 @@ class FastCatSupport extends ChangeNotifier {
     late http.Response response;
     if (bytes != null) {
       final request = http.MultipartRequest('POST', uri);
-      if (projectKey?.isNotEmpty == true)
+      if (projectKey?.isNotEmpty == true) {
         request.headers['X-FastCat-Project-Key'] = projectKey!;
+      }
       request.files.add(
         http.MultipartFile.fromBytes(
           'file',
@@ -128,8 +129,9 @@ class FastCatSupport extends ChangeNotifier {
         },
       },
     );
-    if (value is Map && value['mode'] is String)
+    if (value is Map && value['mode'] is String) {
       _mode = value['mode'] as String;
+    }
     _registered = true;
     _lastError = null;
     notifyListeners();
@@ -153,8 +155,8 @@ class FastCatSupport extends ChangeNotifier {
     return messages;
   }
 
-  /// Registers an FCM token so the visitor can receive replies while away.
-  /// Obtain [token] from the host app's Firebase Messaging integration.
+  /// Registers an FCM installation ID so the visitor can receive replies
+  /// while away. Obtain it from the host app's Firebase Messaging integration.
   Future<void> registerPushToken(
     String token, {
     String? platform,
@@ -280,15 +282,17 @@ class FastCatSupport extends ChangeNotifier {
         );
       } else if (type == 'stream.delta') {
         final i = _messages.indexWhere((m) => m.id == '${event['id']}');
-        if (i >= 0)
+        if (i >= 0) {
           _messages[i] = _messages[i].copyWith(
-            content: _messages[i].content + '${event['delta'] ?? ''}',
+            content: '${_messages[i].content}${event['delta'] ?? ''}',
             streaming: true,
           );
+        }
       } else if (type == 'stream.reset') {
         final i = _messages.indexWhere((m) => m.id == '${event['id']}');
-        if (i >= 0)
+        if (i >= 0) {
           _messages[i] = _messages[i].copyWith(content: '', streaming: true);
+        }
       } else if (type == 'stream.close') {
         final message = event['message'];
         if (message is Map) {
@@ -372,20 +376,23 @@ class FastCatSupport extends ChangeNotifier {
     );
     _pendingMessageId = null;
     _pendingMessageContent = null;
-    if (value is Map && value['visitor_message'] is Map)
+    if (value is Map && value['visitor_message'] is Map) {
       _upsert(
         FastCatMessage.fromJson(
           Map<String, dynamic>.from(value['visitor_message'] as Map),
         ),
       );
-    if (value is Map && value['reply'] is Map)
+    }
+    if (value is Map && value['reply'] is Map) {
       _upsert(
         FastCatMessage.fromJson(
           Map<String, dynamic>.from(value['reply'] as Map),
         ),
       );
-    if (value is Map && value['mode'] is String)
+    }
+    if (value is Map && value['mode'] is String) {
       _mode = value['mode'] as String;
+    }
     notifyListeners();
   }
 

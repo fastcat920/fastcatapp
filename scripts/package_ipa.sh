@@ -60,7 +60,7 @@ flutter build ipa --release --no-codesign \
   --dart-define=FASTCAT_REQUIRE_ENCRYPTION="${FASTCAT_REQUIRE_ENCRYPTION}" \
   --dart-define=FASTCAT_PRIVACY_POLICY_URL="${FASTCAT_PRIVACY_POLICY_URL:-https://www.fastcat6.com/privacy}" \
   --dart-define=FASTCAT_TERMS_OF_SERVICE_URL="${FASTCAT_TERMS_OF_SERVICE_URL:-https://www.fastcat6.com/terms}" \
-  "${FCM_DEFINES[@]}"
+  ${FCM_DEFINES[@]+"${FCM_DEFINES[@]}"}
 
 APP_BUNDLE="build/ios/archive/Runner.xcarchive/Products/Applications/Runner.app"
 for LOCALE in en zh-Hans zh-Hant; do

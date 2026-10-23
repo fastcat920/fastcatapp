@@ -61,7 +61,7 @@ for attempt in 1 2 3; do
     --dart-define=FASTCAT_KEY_NEXT="${FASTCAT_KEY_NEXT}" \
     --dart-define=FASTCAT_SUBSCRIPTION_FLAG="${FASTCAT_SUBSCRIPTION_FLAG}" \
     --dart-define=FASTCAT_REQUIRE_ENCRYPTION="${FASTCAT_REQUIRE_ENCRYPTION}" \
-    "${FCM_DEFINES[@]}"
+    ${FCM_DEFINES[@]+"${FCM_DEFINES[@]}"}
   BUILD_EXIT=$?
   set -e
 

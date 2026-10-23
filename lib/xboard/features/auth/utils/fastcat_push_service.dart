@@ -43,7 +43,7 @@ class FastCatPushService {
   }
 
   /// Requests permission only when the customer opens support, then registers
-  /// the current token and returns a subscription for token rotations.
+  /// the current Firebase Installation ID and listens for ID rotations.
   static Future<StreamSubscription<String>?> register(
     FastCatSupport client,
   ) async {
@@ -60,8 +60,18 @@ class FastCatPushService {
         return null;
       }
 
-      final registration = messaging.onRegistered.listen((token) {
-        unawaited(_registerToken(client, token));
+      if (Platform.isIOS) {
+        String? apnsToken;
+        for (var attempt = 0; attempt < 10; attempt++) {
+          apnsToken = await messaging.getAPNSToken();
+          if (apnsToken?.isNotEmpty == true) break;
+          await Future<void>.delayed(const Duration(milliseconds: 500));
+        }
+        if (apnsToken?.isNotEmpty != true) return null;
+      }
+
+      final registration = messaging.onRegistered.listen((installationId) {
+        unawaited(_registerInstallation(client, installationId));
       });
       await messaging.register();
       return registration;
@@ -71,13 +81,13 @@ class FastCatPushService {
     }
   }
 
-  static Future<void> _registerToken(
+  static Future<void> _registerInstallation(
     FastCatSupport client,
-    String token,
+    String installationId,
   ) async {
     try {
       await client.registerPushToken(
-        token,
+        installationId,
         platform: Platform.isIOS ? 'ios' : 'android',
       );
     } catch (error) {

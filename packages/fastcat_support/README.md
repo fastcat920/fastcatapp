@@ -54,7 +54,7 @@ FirebaseMessaging.instance.onTokenRefresh.listen((token) {
 });
 ```
 
-When signing out or disabling push, call `registerPushToken(token, enabled: false)`. In the FastCat admin console, open **推送通知**, paste the Firebase service-account JSON, validate it, then save. The server encrypts this credential at rest. Notifications are sent for AI replies and human-agent replies; the realtime chat stream remains the primary in-app delivery path.
+The SDK's `registerPushToken` method accepts the Firebase Installation ID (FID) delivered by the host app's Firebase Messaging integration. When signing out or disabling push, call `registerPushToken(installationId, enabled: false)`. In the FastCat admin console, open **推送通知**, paste the Firebase service-account JSON, validate it, then save. The server encrypts this credential at rest. Notifications are sent for AI replies and human-agent replies; the realtime chat stream remains the primary in-app delivery path.
 
 ## Custom UI
 

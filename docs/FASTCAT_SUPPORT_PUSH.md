@@ -1,6 +1,6 @@
 # FastCat Support mobile push setup
 
-FastCatAPP uses Firebase Cloud Messaging only on Android and iOS. The integration is optional: builds without Firebase options continue to use in-app chat and do not request notification permission.
+FastCatAPP uses Firebase Cloud Messaging only on Android and iOS. The integration is optional: builds without Firebase options continue to use in-app chat and do not request notification permission. It registers the current Firebase Installation ID (FID) with FastCat Support, following Firebase's current per-installation targeting API.
 
 ## Firebase project setup
 
@@ -22,11 +22,12 @@ Use the corresponding Firebase values from the Android app configuration. For an
 
 The release packaging scripts accept the same four values from the environment (`FASTCAT_FIREBASE_API_KEY`, `FASTCAT_FIREBASE_APP_ID`, `FASTCAT_FIREBASE_PROJECT_ID`, `FASTCAT_FIREBASE_MESSAGING_SENDER_ID`) and forward them as Dart defines. Keep them in the release environment or CI secret store; builds with any value missing deliberately omit push registration.
 
-The app initializes Firebase only on Android/iOS and only when all four values are present. When a user opens FastCat Support, the app requests notification permission and registers the current FCM token against that visitor. Token rotations are synchronized while the support screen is open; opening the screen again always registers the current token.
+The app initializes Firebase only on Android/iOS and only when all four values are present. When a user opens FastCat Support, the app requests notification permission, registers with FCM, and sends the current installation ID to the server. Installation ID changes are synchronized while the support screen is open; opening the screen again registers the current ID. The backend uses this ID as the device target for FCM HTTP v1.
 
 ## Platform notes
 
-- Android already declares `POST_NOTIFICATIONS`; Android 13+ prompts when the user opens support.
+- Android declares `POST_NOTIFICATIONS` and enables FID targeting; Android 13+ prompts when the user opens support.
+- iOS enables FID targeting in `Info.plist` and the Push Notifications Xcode capability. Configure the matching APNs key in Firebase and use a provisioning profile with push enabled.
 - iOS requires a valid APNs key in Firebase and Push Notifications enabled for the signed app. Without APNs credentials, FCM token registration may fail even when Firebase initializes.
 - Debug, desktop, and non-Firebase builds remain usable without push.
 - Push delivery is best-effort. The live chat stream remains the primary delivery path.
