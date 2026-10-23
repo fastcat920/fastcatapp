@@ -3,6 +3,12 @@
 #
 # 快速开始：只需修改 remote_config.sources[0].url，填入你托管的 config.json 地址
 
+# 可选：FastCat Support 客服后端；项目密钥仅用于非默认项目的公开 Widget Key
+# contact_fallback:
+#   fastcat_support_url: "https://support.example.com"
+#   fastcat_support_project_id: "default"
+#   fastcat_support_project_key: ""
+
 # 面板类型：xboard 或 v2board
 # 必须与远程 config.json 中的 panel_type 字段一致
 panel_type: xboard

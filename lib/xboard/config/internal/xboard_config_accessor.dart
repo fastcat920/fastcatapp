@@ -49,6 +49,9 @@ class XBoardConfigAccessor {
   String _crispWebsiteId = '';
   String _crispProxyUrl = '';
   String _salesmartlyToken = '';
+  String _fastCatSupportUrl = '';
+  String _fastCatSupportProjectId = 'default';
+  String _fastCatSupportProjectKey = '';
   List<String> _websiteUrls = [];
   String _telegramGroupUrl = '';
   String _inviteDomain = '';
@@ -380,6 +383,12 @@ class XBoardConfigAccessor {
   /// - 旧版：Widget Token 字符串
   String get salesmartlyToken => _salesmartlyToken;
 
+  String get fastCatSupportUrl => _fastCatSupportUrl;
+
+  String get fastCatSupportProjectId => _fastCatSupportProjectId;
+
+  String get fastCatSupportProjectKey => _fastCatSupportProjectKey;
+
   /// 获取官方网站 URL 列表（来自远程配置 contact.website，支持 string 或 array）
   List<String> get websiteUrls => _websiteUrls;
 
@@ -481,6 +490,11 @@ class XBoardConfigAccessor {
       _crispWebsiteId = contact['crisp_website_id'] as String? ?? '';
       _crispProxyUrl = contact['crisp_proxy_url'] as String? ?? '';
       _salesmartlyToken = contact['salesmartly_token'] as String? ?? '';
+      _fastCatSupportUrl = contact['fastcat_support_url'] as String? ?? '';
+      _fastCatSupportProjectId =
+          contact['fastcat_support_project_id'] as String? ?? 'default';
+      _fastCatSupportProjectKey =
+          contact['fastcat_support_project_key'] as String? ?? '';
       final rawWebsite = contact['website'];
       if (rawWebsite is String) {
         _websiteUrls = rawWebsite.isNotEmpty ? [rawWebsite] : [];

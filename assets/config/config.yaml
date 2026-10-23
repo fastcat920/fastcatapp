@@ -40,6 +40,8 @@ latency:
 contact_fallback:
   website: "https://fastcat3.com"
   crisp_website_id: "d5182e08-1faa-4fa9-b3c2-2a34f1975d5f"
+  fastcat_support_url: "https://139.162.44.178"
+  fastcat_support_project_id: "default"
 
 startup_cache:
   enabled: true

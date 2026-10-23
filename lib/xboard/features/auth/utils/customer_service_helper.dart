@@ -29,6 +29,9 @@ import 'package:flutter_inappwebview/flutter_inappwebview.dart' as iaw;
 import 'package:flutter/services.dart';
 import 'package:flutter_xboard_sdk/flutter_xboard_sdk.dart';
 import 'package:go_router/go_router.dart';
+import 'package:fastcat_support/fastcat_support.dart';
+import 'package:uuid/uuid.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 const _logger = FileLogger('customer_service_helper.dart');
 const _deviceGatewayApiPrefix = gatewayApiPrefix;
@@ -43,6 +46,7 @@ const _crispUserDataResolveTimeout = Duration(milliseconds: 1800);
 const _customerServiceHiddenTtl = Duration(minutes: 20);
 const _desktopRootMenuWidth = 96.0;
 const _mobileRootMenuHeight = 68.0;
+const _fastCatAnonymousVisitorKey = 'fastcat_support_anonymous_visitor_id';
 
 @immutable
 class CustomerServiceSessionState {
@@ -126,8 +130,10 @@ class CustomerServiceHelper {
   static String? _embeddedCustomerServiceSignature;
   static DateTime? _embeddedCustomerServiceHiddenAt;
 
-  /// 是否有任何客服渠道可用（仅远程 Crisp）
-  static bool get isAvailable => XBoardConfig.crispWebsiteId.isNotEmpty;
+  /// 是否有任何客服渠道可用（FastCat Support 或远程 Crisp）
+  static bool get isAvailable =>
+      XBoardConfig.fastCatSupportUrl.isNotEmpty ||
+      XBoardConfig.crispWebsiteId.isNotEmpty;
 
   static bool get isEmbeddedCustomerServiceVisible {
     return _embeddedCustomerServiceState?.value.isVisible ?? false;
@@ -1027,6 +1033,17 @@ class CustomerServiceHelper {
 
   /// 打开客服页面
   static Future<void> open(BuildContext context) async {
+    var fastCatUrl = XBoardConfig.fastCatSupportUrl.trim();
+    if (fastCatUrl.isEmpty) {
+      fastCatUrl =
+          (await ConfigFileLoaderHelper.getFallbackFastCatSupportUrl()).trim();
+    }
+    if (fastCatUrl.isNotEmpty) {
+      if (!context.mounted) return;
+      await _openFastCatSupport(context, fastCatUrl);
+      return;
+    }
+
     final crispId = await _resolveCrispWebsiteId();
     if (crispId.isEmpty) {
       if (context.mounted) {
@@ -1056,6 +1073,73 @@ class CustomerServiceHelper {
         return _buildCrispUserScript(context, ipData: ipData);
       },
     );
+  }
+
+  static Future<void> _openFastCatSupport(
+    BuildContext context,
+    String baseUrl,
+  ) async {
+    if (!context.mounted) return;
+    final navigator = Navigator.of(context);
+    final container = ProviderScope.containerOf(context, listen: false);
+    final userState = container.read(xboardUserProvider);
+    final user = container.read(userInfoProvider) ?? userState.userInfo;
+    final email = (user?.email ?? userState.email ?? '').trim();
+    final visitorId = await _resolveFastCatVisitorId(user?.uuid);
+    if (!context.mounted) return;
+
+    final projectId = XBoardConfig.fastCatSupportProjectId.trim().isNotEmpty
+        ? XBoardConfig.fastCatSupportProjectId.trim()
+        : await ConfigFileLoaderHelper.getFallbackFastCatSupportProjectId();
+    final configuredKey = XBoardConfig.fastCatSupportProjectKey.trim();
+    final projectKey = configuredKey.isNotEmpty
+        ? configuredKey
+        : await ConfigFileLoaderHelper.getFallbackFastCatSupportProjectKey();
+    final supportClient = FastCatSupport(
+      baseUrl: baseUrl,
+      projectId: projectId,
+      projectKey: projectKey.isEmpty ? null : projectKey,
+      visitorId: visitorId,
+    );
+    final profile = FastCatProfile(
+      name: email.isEmpty ? null : email.split('@').first,
+      nickname: email.isEmpty ? null : email.split('@').first,
+      email: email.isEmpty ? null : email,
+      systemInfo: {
+        'client': 'FastCatAPP',
+        'app_version': _getAppVersionText(),
+        'os': Platform.operatingSystem,
+        'os_version': Platform.operatingSystemVersion,
+        'locale': Platform.localeName,
+        'account_uuid': user?.uuid,
+      }..removeWhere((_, value) => value == null || value == ''),
+    );
+    if (!navigator.mounted) {
+      supportClient.dispose();
+      return;
+    }
+    await navigator.push<void>(
+      MaterialPageRoute<void>(
+        builder: (_) => FastCatChatScreen(
+          client: supportClient,
+          initialProfile: profile,
+          disposeClient: true,
+        ),
+      ),
+    );
+  }
+
+  static Future<String> _resolveFastCatVisitorId(String? accountUuid) async {
+    if (accountUuid?.trim().isNotEmpty == true) {
+      return 'app-${accountUuid!.trim()}';
+    }
+    final preferences = await SharedPreferences.getInstance();
+    final existing = preferences.getString(_fastCatAnonymousVisitorKey);
+    if (existing?.isNotEmpty == true) return existing!;
+    const uuid = Uuid();
+    final visitorId = 'app-${uuid.v4()}';
+    await preferences.setString(_fastCatAnonymousVisitorKey, visitorId);
+    return visitorId;
   }
 
   // ignore: unused_element

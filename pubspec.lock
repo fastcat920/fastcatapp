@@ -440,6 +440,15 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "1.3.3"
+  fastcat_support:
+    dependency: "direct main"
+    description:
+      path: "fastcat-support/flutter"
+      ref: a6772c8
+      resolved-ref: a6772c8c5b81fa7e28742ee68e418d74f507dcf3
+      url: "https://github.com/fastcat920/ai-chat.git"
+    source: git
+    version: "0.2.0"
   ffi:
     dependency: "direct main"
     description:

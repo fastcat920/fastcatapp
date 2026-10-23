@@ -673,9 +673,22 @@ class XBoardConfig {
   /// 为空字符串表示未配置
   static String get salesmartlyToken => _instance?.salesmartlyToken ?? '';
 
+  /// FastCat Support 服务地址（来自远程配置 contact.fastcat_support_url）
+  static String get fastCatSupportUrl => _instance?.fastCatSupportUrl ?? '';
+
+  /// FastCat Support 项目 ID（来自远程配置 contact.fastcat_support_project_id）
+  static String get fastCatSupportProjectId =>
+      _instance?.fastCatSupportProjectId ?? 'default';
+
+  /// FastCat Support 公共项目密钥（来自远程配置 contact.fastcat_support_project_key）
+  static String get fastCatSupportProjectKey =>
+      _instance?.fastCatSupportProjectKey ?? '';
+
   /// 是否有任何客服渠道已配置（Salesmartly 或 Crisp）
   static bool get hasCustomerService =>
-      salesmartlyToken.isNotEmpty || crispWebsiteId.isNotEmpty;
+      fastCatSupportUrl.isNotEmpty ||
+      salesmartlyToken.isNotEmpty ||
+      crispWebsiteId.isNotEmpty;
 
   /// 获取邀请链接自定义域名（来自远程配置 contact.invite_domain）
   /// 为空字符串表示使用面板域名拼接邀请链接
