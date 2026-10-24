@@ -673,16 +673,13 @@ class XBoardConfig {
   /// 为空字符串表示未配置
   static String get salesmartlyToken => _instance?.salesmartlyToken ?? '';
 
-  /// FastCat Support 服务地址（来自远程配置 contact.fastcat_support_url）
-  static String get fastCatSupportUrl => _instance?.fastCatSupportUrl ?? '';
+  /// 临时固定客服配置：OSS 更新前不使用远程地址或旧项目凭据。
+  static String get fastCatSupportUrl => 'https://139.162.44.178';
 
-  /// FastCat Support 项目 ID（来自远程配置 contact.fastcat_support_project_id）
-  static String get fastCatSupportProjectId =>
-      _instance?.fastCatSupportProjectId ?? 'default';
+  /// 默认工作区无需项目密钥。
+  static String get fastCatSupportProjectId => 'default';
 
-  /// FastCat Support 公共项目密钥（来自远程配置 contact.fastcat_support_project_key）
-  static String get fastCatSupportProjectKey =>
-      _instance?.fastCatSupportProjectKey ?? '';
+  static String get fastCatSupportProjectKey => '';
 
   /// 是否有任何客服渠道已配置（Salesmartly 或 Crisp）
   static bool get hasCustomerService =>

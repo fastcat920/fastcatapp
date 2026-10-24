@@ -1089,13 +1089,9 @@ class CustomerServiceHelper {
     final visitorId = await _resolveFastCatVisitorId(user?.uuid);
     if (!context.mounted) return;
 
-    final projectId = XBoardConfig.fastCatSupportProjectId.trim().isNotEmpty
-        ? XBoardConfig.fastCatSupportProjectId.trim()
-        : await ConfigFileLoaderHelper.getFallbackFastCatSupportProjectId();
-    final configuredKey = XBoardConfig.fastCatSupportProjectKey.trim();
-    final projectKey = configuredKey.isNotEmpty
-        ? configuredKey
-        : await ConfigFileLoaderHelper.getFallbackFastCatSupportProjectKey();
+    final projectId = XBoardConfig.fastCatSupportProjectId;
+    // 空密钥表示默认工作区匿名接入，不回退到本地旧项目密钥。
+    final projectKey = XBoardConfig.fastCatSupportProjectKey;
     final supportClient = FastCatSupport(
       baseUrl: baseUrl,
       projectId: projectId,
