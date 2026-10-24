@@ -1,3 +1,3 @@
 // Generated from pubspec.yaml by scripts/sync_tvos_version.rb.
-FASTCAT_APP_VERSION = 3.6.1
+FASTCAT_APP_VERSION = 3.6.2
 FASTCAT_BUILD_NUMBER = 8
