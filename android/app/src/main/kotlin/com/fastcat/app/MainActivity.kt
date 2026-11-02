@@ -15,6 +15,7 @@ import io.flutter.embedding.engine.FlutterEngine
 import io.flutter.plugin.common.MethodChannel
 
 class MainActivity : FlutterActivity() {
+    private var supportNotificationPermissionRequested = false
     private var customerServiceBackCallback: OnBackInvokedCallback? = null
     private var customerServiceBackPending = false
 
@@ -25,11 +26,46 @@ class MainActivity : FlutterActivity() {
 
     override fun configureFlutterEngine(flutterEngine: FlutterEngine) {
         super.configureFlutterEngine(flutterEngine)
+        SupportPushService.createChannel(this)
+        MethodChannel(flutterEngine.dartExecutor.binaryMessenger, "fastcat/support_push").setMethodCallHandler { call, result ->
+            when (call.method) {
+                "notification" -> {
+                    val extras = intent?.extras
+                    if (extras?.getString("type") == "support.reply") {
+                        result.success(mapOf("type" to "support.reply", "conversationId" to extras.getString("conversationId"), "messageId" to extras.getString("messageId")))
+                        intent.removeExtra("type")
+                    } else result.success(null)
+                }
+                "token" -> {
+                    if (Build.VERSION.SDK_INT >= 33 && checkSelfPermission(android.Manifest.permission.POST_NOTIFICATIONS) != android.content.pm.PackageManager.PERMISSION_GRANTED) {
+                        if (!supportNotificationPermissionRequested) {
+                            supportNotificationPermissionRequested = true
+                            requestPermissions(arrayOf(android.Manifest.permission.POST_NOTIFICATIONS), 9721)
+                        }
+                        result.success(null)
+                    } else {
+                        try {
+                            com.google.firebase.FirebaseApp.initializeApp(this)
+                            com.google.firebase.messaging.FirebaseMessaging.getInstance().token
+                                .addOnSuccessListener { result.success(it) }
+                                .addOnFailureListener { result.error("FCM", "Token unavailable", null) }
+                        } catch (e: Exception) { result.error("FCM_CONFIG", "Firebase configuration unavailable", null) }
+                    }
+                }
+                else -> result.notImplemented()
+            }
+        }
+
         flutterEngine.plugins.add(AppPlugin())
         flutterEngine.plugins.add(ServicePlugin)
         flutterEngine.plugins.add(TilePlugin())
         GlobalState.flutterEngine = flutterEngine
         GlobalState.syncStatus()
+    }
+
+    override fun onNewIntent(intent: android.content.Intent) {
+        super.onNewIntent(intent)
+        setIntent(intent)
     }
 
     override fun onBackPressed() {

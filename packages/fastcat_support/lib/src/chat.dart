@@ -85,6 +85,15 @@ class _FastCatChatState extends State<FastCatChat> with WidgetsBindingObserver {
   }
 
   StreamSubscription<Map<String, dynamic>>? _subscription;
+  bool _hostVisible = true;
+  Timer? _pushHeartbeat;
+  void _pushPresence() {
+    unawaited(widget.client
+        .setPushChatVisible(_hostVisible && (WidgetsBinding.instance.lifecycleState == null ||
+            WidgetsBinding.instance.lifecycleState == AppLifecycleState.resumed))
+        .catchError((Object _) {}));
+  }
+
   String? _error, _pendingId, _pendingBody;
   String _aiDraft = "", _aiAvatar = "";
   bool _openingScrollPending = true, _userNavigated = false;
@@ -189,6 +198,9 @@ class _FastCatChatState extends State<FastCatChat> with WidgetsBindingObserver {
     _loadAppearance();
     _scroll.addListener(_ack);
     _subscribe();
+    _pushPresence();
+    _pushHeartbeat =
+        Timer.periodic(const Duration(seconds: 30), (_) => _pushPresence());
   }
 
   void _onTextChanged() {
@@ -211,7 +223,7 @@ class _FastCatChatState extends State<FastCatChat> with WidgetsBindingObserver {
     _soundSubscription?.cancel();
     _soundSubscription = widget.client.incomingMessageStream.listen((message) {
       if (mounted &&
-          TickerMode.of(context) &&
+          _hostVisible &&
           _sound &&
           WidgetsBinding.instance.lifecycleState != AppLifecycleState.paused)
         _tone.play();
@@ -292,15 +304,13 @@ class _FastCatChatState extends State<FastCatChat> with WidgetsBindingObserver {
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    if (TickerMode.of(context)) {
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        if (mounted) _ack();
-      });
-    }
+    _hostVisible = TickerMode.of(context);
+    _pushPresence();
+    if (_hostVisible) WidgetsBinding.instance.addPostFrameCallback((_) { if (mounted) _ack(); });
   }
 
   void _ack() {
-    if (!mounted || !TickerMode.of(context)) return;
+    if (!_hostVisible) return;
     if (!_appearanceReady) return;
     if (_scroll.hasClients &&
         _scroll.position.hasContentDimensions &&
@@ -321,12 +331,15 @@ class _FastCatChatState extends State<FastCatChat> with WidgetsBindingObserver {
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
     if (state == AppLifecycleState.resumed) _ack();
+    _pushPresence();
   }
 
   @override
   void didUpdateWidget(covariant FastCatChat old) {
     super.didUpdateWidget(old);
     if (old.client != widget.client) {
+      unawaited(old.client.setPushChatVisible(false).catchError((Object _) {}));
+      _pushPresence();
       _statusReady = false;
       _openingScrollPending = true;
       _userNavigated = false;
@@ -682,6 +695,9 @@ class _FastCatChatState extends State<FastCatChat> with WidgetsBindingObserver {
 
   @override
   void dispose() {
+    _pushHeartbeat?.cancel();
+    unawaited(
+        widget.client.setPushChatVisible(false).catchError((Object _) {}));
     WidgetsBinding.instance.removeObserver(this);
     _subscription?.cancel();
     _connectionSubscription?.cancel();

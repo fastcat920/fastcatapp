@@ -1,3 +1,4 @@
+import 'package:fl_clash/xboard/features/auth/services/support_push_service.dart';
 import 'package:http/io_client.dart';
 import 'package:fl_clash/xboard/features/auth/services/support_proxy_repairs.dart';
 import 'package:fl_clash/xboard/features/auth/services/support_connection_repairs.dart';
@@ -109,6 +110,7 @@ class CustomerServiceHelper {
   static int supportUnreadCount = 0;
   static Stream<int> get supportUnreadCountStream => _unreadEvents.stream;
   static fc.FastCatSupport? _support;
+  static SupportPushService? _pushService;
   static StreamSubscription<int>? _supportUnread;
   static StreamSubscription<Map<String, dynamic>>? _supportIncoming;
   static fc.SupportNotificationSound? _supportTone;
@@ -132,11 +134,25 @@ class CustomerServiceHelper {
     _refreshSupportBadge();
   }
 
-  static void disposeSupport() {
-    _closeEmbeddedCustomerService();
+  static Future<void> disposeSupport() async {
+    try {
+      for (var attempt = 0; attempt < 3; attempt++) {
+        try {
+          await _support?.client.unregisterPushDevice();
+          break;
+        } catch (_) {
+          if (attempt == 2) rethrow;
+          await Future<void>.delayed(Duration(seconds: attempt + 1));
+        }
+      }
+    } finally {
+      _closeEmbeddedCustomerService();
+    }
   }
 
   static void _releaseSupport() {
+    _pushService?.close();
+    _pushService = null;
     SupportAssistanceService.instance.clear();
     unawaited(_supportIncoming?.cancel());
     _supportIncoming = null;
@@ -1068,6 +1084,8 @@ class CustomerServiceHelper {
   }
 
   static void _hideEmbeddedCustomerService() {
+    unawaited(
+        _support?.client.setPushChatVisible(false).catchError((Object _) {}));
     final state = _embeddedCustomerServiceState;
     if (state == null) return;
     if (!state.value.isVisible) return;
@@ -1326,6 +1344,19 @@ class CustomerServiceHelper {
                 ),
               ));
       _support = support;
+      _pushService = SupportPushService();
+      unawaited(_pushService!.attach(
+          support.client,
+          deviceIdentity['device_id'] as String,
+          Localizations.localeOf(context).toLanguageTag(),
+          () =>
+              isEmbeddedCustomerServiceVisible &&
+              WidgetsBinding.instance.lifecycleState ==
+                  AppLifecycleState.resumed, onNotification: () async {
+        if (context.mounted && _support == support) {
+          _showExistingEmbeddedCustomerService(context, signature);
+        }
+      }));
       _supportTone = fc.SupportNotificationSound();
       _supportIncoming = support.client.incomingMessageStream.listen((_) {
         if (!isEmbeddedCustomerServiceVisible) {

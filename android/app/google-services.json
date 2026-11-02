@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "171988601215",
+    "project_id": "fastcat-b834c",
+    "storage_bucket": "fastcat-b834c.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:171988601215:android:23a49982b262e72059724a",
+        "android_client_info": {
+          "package_name": "com.fastcat.app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyD713innINhKGSWIzGYfIQiT5oIcaoYhEI"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

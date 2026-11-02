@@ -1592,7 +1592,7 @@ class XBoardUserAuthNotifier extends Notifier<UserAuthState> {
     }
     // 客服访客按账号隔离。登出时释放当前会话，避免下一账号复用身份。
     try {
-      CustomerServiceHelper.disposeSupport();
+      await CustomerServiceHelper.disposeSupport();
       if (TgoWidget.isInitialized) await TgoWidget.dispose();
     } catch (e) {
       _logger.warning('清理 FastCat Support 客服会话失败: $e');

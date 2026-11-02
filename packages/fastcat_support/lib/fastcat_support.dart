@@ -13,5 +13,4 @@ export 'src/assistance.dart';
 
 export 'src/repairs.dart';
 
-// Host tone for incoming messages while the chat is hidden.
 export 'src/notification_sound.dart';

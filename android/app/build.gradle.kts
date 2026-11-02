@@ -116,3 +116,12 @@ dependencies {
         exclude(group = "com.google.guava", module = "guava")
     }
 }
+
+// FCM is Android-only; desktop builds do not acquire Firebase dependencies.
+if (file("google-services.json").exists()) {
+    apply(plugin = "com.google.gms.google-services")
+}
+dependencies {
+    implementation(platform("com.google.firebase:firebase-bom:33.7.0"))
+    implementation("com.google.firebase:firebase-messaging")
+}

@@ -62,6 +62,59 @@ class FastCatClient {
     return _diagnosticDevice!;
   }
 
+  String? _pushDeviceId;
+  bool _pushChatVisible = false;
+
+  /// Host supplies its APNs/FCM token after starting/restoring the session.
+  Future<Map<String, dynamic>> registerPushDevice(
+      {required String deviceId,
+      required String token,
+      required String provider,
+      String environment = 'production',
+      String language = 'zh',
+      bool enabled = true}) async {
+    if (!hasSession) throw StateError('Start or restore a session first');
+    final result = await _json('/push/device', method: 'PUT', body: {
+      'id': conversationId,
+      'deviceId': deviceId,
+      'token': token,
+      'provider': provider,
+      'environment': environment,
+      'language': language,
+      'enabled': enabled
+    });
+    _pushDeviceId = deviceId;
+    await store?.write('$_storeKey:push-device', deviceId);
+    await setPushChatVisible(_pushChatVisible);
+    return result;
+  }
+
+  Future<Map<String, dynamic>> pushStatus() =>
+      _json('/push/status', query: {'id': conversationId!});
+
+  /// Used automatically by FastCatChat; custom chat UIs should heartbeat every 30s.
+  Future<void> setPushChatVisible(bool visible) async {
+    _pushChatVisible = visible;
+    if (_pushDeviceId == null || !hasSession || _closed) return;
+    await _json('/push/device', method: 'PATCH', body: {
+      'id': conversationId,
+      'deviceId': _pushDeviceId,
+      'foreground': visible
+    });
+  }
+
+  Future<void> unregisterPushDevice() async {
+    _pushDeviceId ??= await store?.read('$_storeKey:push-device');
+    if (_pushDeviceId == null || !hasSession) return;
+    await store?.write('$_storeKey:push-revoke', 'pending');
+    await _json('/push/device',
+        method: 'DELETE',
+        body: {'id': conversationId, 'deviceId': _pushDeviceId});
+    _pushDeviceId = null;
+    await store?.delete('$_storeKey:push-device');
+    await store?.delete('$_storeKey:push-revoke');
+  }
+
   Future<Map<String, dynamic>> assistance(
       {String? action, Map<String, dynamic> data = const {}}) {
     _requireSession();
@@ -299,6 +352,10 @@ class FastCatClient {
         decoded['token'] is! String)
       throw const FormatException('Invalid saved session');
     _session = decoded;
+    _pushDeviceId = await store?.read('$_storeKey:push-device');
+    if (await store?.read('$_storeKey:push-revoke') == 'pending') {
+      await unregisterPushDevice();
+    }
     try {
       await messages(limit: 1);
       return true;
@@ -312,6 +369,7 @@ class FastCatClient {
   }
 
   Future<void> reset() async {
+    await unregisterPushDevice();
     await endAssistance();
     _session = null;
     _readCursor = 0;
@@ -432,6 +490,7 @@ class FastCatClient {
 
   void close() {
     if (_closed) return;
+    unawaited(setPushChatVisible(false).catchError((Object _) {}));
     final ending = endAssistance();
     _closed = true;
     _setConnection(FastCatConnectionStatus.closed);
