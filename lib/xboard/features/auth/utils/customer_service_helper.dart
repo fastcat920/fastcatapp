@@ -1,3 +1,10 @@
+import 'package:http/io_client.dart';
+import 'package:fl_clash/xboard/features/auth/services/support_proxy_repairs.dart';
+import 'package:fl_clash/xboard/features/auth/services/support_connection_repairs.dart';
+import 'package:fl_clash/common/sensitive_masker.dart';
+import 'package:fl_clash/xboard/features/auth/services/support_assistance_service.dart';
+import 'package:fl_clash/common/picker.dart' as app_picker;
+import 'package:fastcat_support/fastcat_support.dart' as fc;
 import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
@@ -29,10 +36,9 @@ import 'package:flutter_inappwebview/flutter_inappwebview.dart' as iaw;
 import 'package:flutter/services.dart';
 import 'package:flutter_xboard_sdk/flutter_xboard_sdk.dart';
 import 'package:go_router/go_router.dart';
-import 'package:fastcat_support/fastcat_support.dart';
-import 'package:fl_clash/xboard/features/auth/utils/fastcat_push_service.dart';
-import 'package:uuid/uuid.dart';
-import 'package:shared_preferences/shared_preferences.dart';
+import 'package:tgo_widget/tgo_widget.dart';
+import 'package:fl_clash/xboard/config/utils/config_file_loader.dart'
+    as local_config;
 
 const _logger = FileLogger('customer_service_helper.dart');
 const _deviceGatewayApiPrefix = gatewayApiPrefix;
@@ -47,7 +53,6 @@ const _crispUserDataResolveTimeout = Duration(milliseconds: 1800);
 const _customerServiceHiddenTtl = Duration(minutes: 20);
 const _desktopRootMenuWidth = 96.0;
 const _mobileRootMenuHeight = 68.0;
-const _fastCatAnonymousVisitorKey = 'fastcat_support_anonymous_visitor_id';
 
 @immutable
 class CustomerServiceSessionState {
@@ -100,6 +105,54 @@ class CustomerServiceSessionState {
 /// Android/iOS/macOS/Linux → 内嵌 WebView（webview_flutter）
 /// Windows → 内嵌 WebView2 侧边面板（flutter_inappwebview）
 class CustomerServiceHelper {
+  static final _unreadEvents = StreamController<int>.broadcast();
+  static int supportUnreadCount = 0;
+  static Stream<int> get supportUnreadCountStream => _unreadEvents.stream;
+  static fc.FastCatSupport? _support;
+  static StreamSubscription<int>? _supportUnread;
+  static StreamSubscription<Map<String, dynamic>>? _supportIncoming;
+  static fc.SupportNotificationSound? _supportTone;
+  static StreamSubscription<fc.FastCatConnectionStatus>? _supportMonitor;
+  static int _actualSupportUnread = 0;
+  static AppLifecycleListener? _badgeLifecycle;
+  static void _refreshSupportBadge() {
+    // Desktop windows may be inactive while their conversation stays visible.
+    // Only hiding the support view should expose its unread badge.
+    final visibleCount =
+        isEmbeddedCustomerServiceVisible ? 0 : _actualSupportUnread;
+    if (supportUnreadCount == visibleCount) return;
+    supportUnreadCount = visibleCount;
+    _unreadEvents.add(visibleCount);
+  }
+
+  static void _publishUnread(int count) {
+    _actualSupportUnread = count;
+    _badgeLifecycle ??=
+        AppLifecycleListener(onStateChange: (_) => _refreshSupportBadge());
+    _refreshSupportBadge();
+  }
+
+  static void disposeSupport() {
+    _closeEmbeddedCustomerService();
+  }
+
+  static void _releaseSupport() {
+    SupportAssistanceService.instance.clear();
+    unawaited(_supportIncoming?.cancel());
+    _supportIncoming = null;
+    _supportTone?.dispose();
+    _supportTone = null;
+    unawaited(_supportUnread?.cancel());
+    unawaited(_supportMonitor?.cancel());
+    _supportUnread = null;
+    _supportMonitor = null;
+    _support?.close();
+    _support = null;
+    _publishUnread(0);
+    _badgeLifecycle?.dispose();
+    _badgeLifecycle = null;
+  }
+
   CustomerServiceHelper._();
 
   static const MethodChannel _androidBackChannel =
@@ -130,11 +183,13 @@ class CustomerServiceHelper {
   static Timer? _embeddedCustomerServiceCloseTimer;
   static String? _embeddedCustomerServiceSignature;
   static DateTime? _embeddedCustomerServiceHiddenAt;
+  static _FastCatSupportConfig? _fastCatSupportConfig;
 
-  /// 是否有任何客服渠道可用（FastCat Support 或远程 Crisp）
+  /// FastCat Support 有本地兜底配置，Crisp 保留为故障回退渠道。
   static bool get isAvailable =>
-      XBoardConfig.fastCatSupportUrl.isNotEmpty ||
-      XBoardConfig.crispWebsiteId.isNotEmpty;
+      XBoardConfig.fastCatSupportEnabled ||
+      XBoardConfig.crispWebsiteId.isNotEmpty ||
+      _fastCatSupportConfig != null;
 
   static bool get isEmbeddedCustomerServiceVisible {
     return _embeddedCustomerServiceState?.value.isVisible ?? false;
@@ -976,7 +1031,12 @@ class CustomerServiceHelper {
             },
             child: Material(
               type: MaterialType.transparency,
-              child: builder(_hideEmbeddedCustomerService, session),
+              child: Navigator(
+                onGenerateRoute: (_) => MaterialPageRoute<void>(
+                  builder: (_) =>
+                      builder(_hideEmbeddedCustomerService, session),
+                ),
+              ),
             ),
           ),
         ),
@@ -985,6 +1045,8 @@ class CustomerServiceHelper {
 
     _embeddedCustomerServiceEntry = entry;
     _embeddedCustomerServiceState = session;
+    session.addListener(_refreshSupportBadge);
+    _refreshSupportBadge();
     _embeddedCustomerServiceSignature = signature;
     _embeddedCustomerServiceHiddenAt = null;
     _embeddedCustomerServiceCloseTimer?.cancel();
@@ -1009,6 +1071,12 @@ class CustomerServiceHelper {
     final state = _embeddedCustomerServiceState;
     if (state == null) return;
     if (!state.value.isVisible) return;
+    // Messages received while the chat is open are already seen by the user.
+    // Clear their badge when the embedded chat is dismissed.
+    if (_embeddedCustomerServiceSignature?.contains('|fastcat-support|') ==
+        true) {
+      TgoWidget.clearUnreadCount();
+    }
     state.value = state.value.copyWith(isVisible: false);
     _embeddedCustomerServiceHiddenAt = DateTime.now();
     _embeddedCustomerServiceCloseTimer?.cancel();
@@ -1022,10 +1090,12 @@ class CustomerServiceHelper {
   }
 
   static void _closeEmbeddedCustomerService() {
+    _releaseSupport();
     _embeddedCustomerServiceCloseTimer?.cancel();
     _embeddedCustomerServiceCloseTimer = null;
     _embeddedCustomerServiceHiddenAt = null;
     _embeddedCustomerServiceSignature = null;
+    _embeddedCustomerServiceState?.removeListener(_refreshSupportBadge);
     _embeddedCustomerServiceState?.dispose();
     _embeddedCustomerServiceState = null;
     _embeddedCustomerServiceEntry?.remove();
@@ -1034,16 +1104,8 @@ class CustomerServiceHelper {
 
   /// 打开客服页面
   static Future<void> open(BuildContext context) async {
-    var fastCatUrl = XBoardConfig.fastCatSupportUrl.trim();
-    if (fastCatUrl.isEmpty) {
-      fastCatUrl =
-          (await ConfigFileLoaderHelper.getFallbackFastCatSupportUrl()).trim();
-    }
-    if (fastCatUrl.isNotEmpty) {
-      if (!context.mounted) return;
-      await _openFastCatSupport(context, fastCatUrl);
-      return;
-    }
+    if (await _openFastCatSupport(context)) return;
+    if (!context.mounted) return;
 
     final crispId = await _resolveCrispWebsiteId();
     if (crispId.isEmpty) {
@@ -1076,73 +1138,288 @@ class CustomerServiceHelper {
     );
   }
 
-  static Future<void> _openFastCatSupport(
-    BuildContext context,
-    String baseUrl,
-  ) async {
-    if (!context.mounted) return;
-    final navigator = Navigator.of(context);
+  static Future<bool> _openFastCatSupport(BuildContext context) async {
+    try {
+      final config = await _resolveFastCatSupportConfig();
+      if (config == null || !context.mounted) return false;
+
+      final signature = _embeddedCustomerServiceSessionSignature(
+        channel: 'fastcat-support-v019',
+        websiteId: '${config.baseUrl}|${config.appKey}',
+      );
+      if (_showExistingEmbeddedCustomerService(context, signature)) return true;
+      final visitor = _buildFastCatSupportVisitor(context);
+      final deviceIdentity =
+          await XBoardDeviceIdentityService.buildLoginPayload();
+      if (!context.mounted) return true;
+      final diagnosticRequests = <String>{};
+      final diagnosticContainer =
+          ProviderScope.containerOf(context, listen: false);
+      final support = fc.FastCatSupport(
+        repairHandlers: visitor?.platformOpenId == null
+            ? {}
+            : supportConnectionRepairs(
+                accountId: visitor!.platformOpenId!,
+                deviceId: deviceIdentity['device_id'] as String,
+                identityValid: () =>
+                    context.mounted &&
+                    _buildFastCatSupportVisitor(context)?.platformOpenId ==
+                        visitor.platformOpenId,
+                proxyPort: () =>
+                    diagnosticContainer.read(proxyStateProvider).port,
+              ),
+        diagnosticHandlers: {
+          for (final capability in ['basic', 'status', 'network', 'logs'])
+            capability: (request) async {
+              void check() {
+                request.throwIfCancelled();
+                if (!context.mounted ||
+                    _buildFastCatSupportVisitor(context)?.platformOpenId !=
+                        visitor?.platformOpenId) {
+                  throw StateError('Support identity changed');
+                }
+              }
+
+              check();
+              if (diagnosticRequests.length >= 100 ||
+                  !diagnosticRequests.add(request.id)) {
+                throw StateError(
+                    'Duplicate diagnostic request or session limit');
+              }
+              Map<String, dynamic> report;
+              switch (capability) {
+                case 'basic':
+                  report = {
+                    'appVersion':
+                        '${globalState.packageInfo.version}+${globalState.packageInfo.buildNumber}',
+                    'osVersion': Platform.operatingSystemVersion,
+                    'platform': Platform.operatingSystem
+                  };
+                case 'status':
+                  final proxy = diagnosticContainer.read(proxyStateProvider);
+                  report = {
+                    'connection': {'connected': globalState.isStart},
+                    'kernel': {'running': globalState.appState.runTime != null},
+                    'proxy': {
+                      'systemProxy': proxy.systemProxy,
+                      'isStart': proxy.isStart,
+                      'port': proxy.port
+                    },
+                    'tun': {
+                      'enabled': diagnosticContainer.read(realTunEnableProvider)
+                    }
+                  };
+                case 'network':
+                  final timer = Stopwatch()..start();
+                  final addresses =
+                      await InternetAddress.lookup('www.gstatic.com')
+                          .timeout(const Duration(seconds: 8));
+                  check();
+                  report = {
+                    'checks': [
+                      {
+                        'type': 'system_dns',
+                        'success': addresses.isNotEmpty,
+                        'elapsedMs': timer.elapsedMilliseconds
+                      }
+                    ],
+                    'summary':
+                        'System DNS check only; does not verify the proxy route'
+                  };
+                default:
+                  final logs = globalState.appState.logs.list;
+                  final recent =
+                      logs.skip(logs.length > 60 ? logs.length - 60 : 0);
+                  var budget = 14000;
+                  final rows = <String>[];
+                  for (final log in recent.toList().reversed) {
+                    final text = SensitiveMasker.maskText(log.payload);
+                    final bounded =
+                        text.length > 1000 ? text.substring(0, 1000) : text;
+                    if (bounded.length > budget) break;
+                    rows.insert(0, bounded);
+                    budget -= bounded.length;
+                  }
+                  report = {'logs': rows};
+              }
+              check();
+              return jsonDecode(SensitiveMasker.maskText(jsonEncode(report)))
+                  as Map<String, dynamic>;
+            },
+        },
+        httpClient: IOClient(HttpClient()..findProxy = (_) => 'DIRECT'),
+        store: _ResilientSupportSessionStore.instance,
+        baseUrl: Uri.parse(config.baseUrl),
+        appKey: config.appKey,
+        user: visitor == null
+            ? null
+            : fc.FastCatUser(
+                id: visitor.platformOpenId ?? visitor.email ?? 'anonymous',
+                email: visitor.email,
+                name: visitor.name,
+                profile: {'custom': visitor.customAttributes},
+              ),
+      );
+      if (visitor?.platformOpenId != null) {
+        support.client.repairHandlers.addAll(supportProxyRepairs(
+          accountId: visitor!.platformOpenId!,
+          deviceId: deviceIdentity['device_id'] as String,
+          identityValid: () =>
+              context.mounted &&
+              _buildFastCatSupportVisitor(context)?.platformOpenId ==
+                  visitor.platformOpenId,
+          port: () => diagnosticContainer.read(proxyStateProvider).port,
+          bypass: () => diagnosticContainer.read(proxyStateProvider).bassDomain,
+        ));
+      }
+      if (Platform.isMacOS || Platform.isWindows || Platform.isLinux) {
+        if (!await support.client.restore()) {
+          final email = visitor?.email;
+          if (email == null || email.isEmpty) {
+            support.close();
+            return false;
+          }
+          await support.client.start(
+              email: email,
+              profile: {'custom': visitor?.customAttributes ?? {}});
+        }
+      }
+      if (!context.mounted) {
+        support.close();
+        return true;
+      }
+      await _openEmbeddedCustomerService(context,
+          signature: signature,
+          builder: (hide, session) => Scaffold(
+                appBar: AppBar(
+                    title:
+                        Text(AppLocalizations.of(context).onlineSupportTitle),
+                    leading: BackButton(onPressed: hide)),
+                body: ValueListenableBuilder<CustomerServiceSessionState>(
+                  valueListenable: session,
+                  builder: (context, state, child) =>
+                      TickerMode(enabled: state.isVisible, child: child!),
+                  child: fc.FastCatSupportView(
+                    support: support,
+                    showHeader: true,
+                    pickAttachment: () async {
+                      final file = await app_picker.picker.pickerFile();
+                      if (file == null) return null;
+                      if (file.size > 8 * 1024 * 1024) {
+                        throw StateError('Attachment exceeds 8 MB');
+                      }
+                      final bytes = file.bytes ??
+                          (file.path == null
+                              ? null
+                              : await File(file.path!).readAsBytes());
+                      if (bytes == null)
+                        throw StateError('Cannot read attachment');
+                      return fc.FastCatAttachment(
+                          filename: file.name, bytes: bytes);
+                    },
+                    onAttachment: (filename, bytes) async {
+                      await app_picker.picker.saveFile(
+                          filename.replaceAll('\\', '/').split('/').last,
+                          bytes);
+                    },
+                  ),
+                ),
+              ));
+      _support = support;
+      _supportTone = fc.SupportNotificationSound();
+      _supportIncoming = support.client.incomingMessageStream.listen((_) {
+        if (!isEmbeddedCustomerServiceVisible) {
+          unawaited(_supportTone?.play());
+        }
+      });
+      _supportUnread = support.client.unreadCountStream.listen(_publishUnread);
+      _publishUnread(support.client.unreadCount);
+      var reconnecting = false;
+      _supportMonitor = support.client.connectionStatusStream.listen((status) {
+        if (status == fc.FastCatConnectionStatus.reconnecting &&
+            !reconnecting) {
+          reconnecting = true;
+          _logger.warning('[FastCatSupport] 消息连接异常，正在重连');
+        } else if (status == fc.FastCatConnectionStatus.connected &&
+            reconnecting) {
+          reconnecting = false;
+          _logger.info('[FastCatSupport] 消息连接已恢复');
+        }
+      });
+      return true;
+    } catch (error, stackTrace) {
+      _logger.warning(
+        '[FastCatSupport] 打开失败，回退 Crisp: $error',
+        stackTrace,
+      );
+      try {
+        await TgoWidget.dispose();
+      } catch (_) {}
+      return false;
+    }
+  }
+
+  static Future<_FastCatSupportConfig?> _resolveFastCatSupportConfig() async {
+    final remoteBaseUrl = XBoardConfig.fastCatSupportBaseUrl.trim();
+    final remoteAppKey = XBoardConfig.fastCatSupportAppKey.trim();
+    if (XBoardConfig.fastCatSupportEnabled &&
+        remoteBaseUrl.isNotEmpty &&
+        remoteAppKey.isNotEmpty) {
+      return _fastCatSupportConfig = _FastCatSupportConfig(
+        baseUrl: remoteBaseUrl,
+        appKey: remoteAppKey,
+      );
+    }
+    // A remote entry is authoritative, including an explicit disable. Only
+    // use the bundled fallback while older OSS configurations omit the key.
+    if (XBoardConfig.fastCatSupportConfigured) return null;
+
+    final cached = _fastCatSupportConfig;
+    if (cached != null) return cached;
+    final contact =
+        await local_config.ConfigFileLoaderHelper.getContactFallbackConfig();
+    final rawLocal = contact['fastcat_support'];
+    final local = rawLocal is Map
+        ? rawLocal.map((key, value) => MapEntry(key.toString(), value))
+        : const <String, dynamic>{};
+    final enabled = local['enabled'] != false;
+    final baseUrl = local['base_url']?.toString().trim() ?? '';
+    final appKey = local['app_key']?.toString().trim() ?? '';
+    if (!enabled || baseUrl.isEmpty || appKey.isEmpty) return null;
+    return _fastCatSupportConfig = _FastCatSupportConfig(
+      baseUrl: baseUrl,
+      appKey: appKey,
+    );
+  }
+
+  static VisitorInfo? _buildFastCatSupportVisitor(BuildContext context) {
     final container = ProviderScope.containerOf(context, listen: false);
     final userState = container.read(xboardUserProvider);
-    final user = container.read(userInfoProvider) ?? userState.userInfo;
-    final email = (user?.email ?? userState.email ?? '').trim();
-    final visitorId = await _resolveFastCatVisitorId(user?.uuid);
-    if (!context.mounted) return;
-
-    final projectId = XBoardConfig.fastCatSupportProjectId.trim().isNotEmpty
-        ? XBoardConfig.fastCatSupportProjectId.trim()
-        : await ConfigFileLoaderHelper.getFallbackFastCatSupportProjectId();
-    final configuredKey = XBoardConfig.fastCatSupportProjectKey.trim();
-    final projectKey = configuredKey.isNotEmpty
-        ? configuredKey
-        : await ConfigFileLoaderHelper.getFallbackFastCatSupportProjectKey();
-    final supportClient = FastCatSupport(
-      baseUrl: baseUrl,
-      projectId: projectId,
-      projectKey: projectKey.isEmpty ? null : projectKey,
-      visitorId: visitorId,
+    final userInfo = container.read(userInfoProvider);
+    final subscriptionInfo = container.read(subscriptionInfoProvider);
+    final email = (userInfo?.email ?? userState.email ?? '').trim();
+    final openId = _firstNonEmpty(
+      userInfo?.uuid,
+      subscriptionInfo?.uuid,
     );
-    final profile = FastCatProfile(
+    if (email.isEmpty && openId.isEmpty) return null;
+
+    final crispData = _buildCrispUserData(context);
+    final attributes = <String, String?>{};
+    for (final entry in crispData['sessionData'] as List<List<String>>) {
+      if (entry.length == 2 && entry[0].isNotEmpty && entry[1].isNotEmpty) {
+        attributes[entry[0]] = entry[1];
+      }
+    }
+    return VisitorInfo(
+      platformOpenId: openId.isNotEmpty ? openId : email,
       name: email.isEmpty ? null : email.split('@').first,
       nickname: email.isEmpty ? null : email.split('@').first,
       email: email.isEmpty ? null : email,
-      systemInfo: {
-        'client': 'FastCatAPP',
-        'app_version': _getAppVersionText(),
-        'os': Platform.operatingSystem,
-        'os_version': Platform.operatingSystemVersion,
-        'locale': Platform.localeName,
-        'account_uuid': user?.uuid,
-      }..removeWhere((_, value) => value == null || value == ''),
+      avatarUrl:
+          userInfo?.avatarUrl.isNotEmpty == true ? userInfo!.avatarUrl : null,
+      customAttributes: attributes,
     );
-    if (!navigator.mounted) {
-      supportClient.dispose();
-      return;
-    }
-    final pushSubscription = FastCatPushService.register(supportClient);
-    await navigator.push<void>(
-      MaterialPageRoute<void>(
-        builder: (_) => FastCatChatScreen(
-          client: supportClient,
-          initialProfile: profile,
-          disposeClient: true,
-        ),
-      ),
-    );
-    await (await pushSubscription)?.cancel();
-  }
-
-  static Future<String> _resolveFastCatVisitorId(String? accountUuid) async {
-    if (accountUuid?.trim().isNotEmpty == true) {
-      return 'app-${accountUuid!.trim()}';
-    }
-    final preferences = await SharedPreferences.getInstance();
-    final existing = preferences.getString(_fastCatAnonymousVisitorKey);
-    if (existing?.isNotEmpty == true) return existing!;
-    const uuid = Uuid();
-    final visitorId = 'app-${uuid.v4()}';
-    await preferences.setString(_fastCatAnonymousVisitorKey, visitorId);
-    return visitorId;
   }
 
   // ignore: unused_element
@@ -1800,6 +2077,13 @@ if(window===window.top){
   }
 }
 
+class _FastCatSupportConfig {
+  const _FastCatSupportConfig({required this.baseUrl, required this.appKey});
+
+  final String baseUrl;
+  final String appKey;
+}
+
 class _EmbeddedCustomerServiceFrame extends StatefulWidget {
   const _EmbeddedCustomerServiceFrame({
     required this.showRootMenu,
@@ -2014,4 +2298,67 @@ class _DeviceGatewayEndpoint {
 
   final String baseUrl;
   final String apiPrefix;
+}
+
+/// Keep the current process usable when platform credential storage is unavailable.
+/// Keys supplied by the SDK include server, platform and account scope.
+class _ResilientSupportSessionStore implements fc.FastCatSessionStore {
+  static final instance = _ResilientSupportSessionStore();
+  final fc.FastCatSecureSessionStore _secure =
+      const fc.FastCatSecureSessionStore();
+  final Map<String, String> _memory = {};
+  final Set<String> _deleted = {};
+  bool _unavailable = false;
+
+  void _failed(Object error) {
+    if (!_unavailable) {
+      _logger.warning(
+          '[FastCatSupport] 安全存储不可用，当前运行使用内存会话；重启后可能无法恢复历史会话。错误类型: ${error.runtimeType}');
+    }
+    _unavailable = true;
+  }
+
+  @override
+  Future<String?> read(String key) async {
+    if (_deleted.contains(key)) return null;
+    if (_memory.containsKey(key)) return _memory[key];
+    if (!_unavailable) {
+      try {
+        final value = await _secure.read(key);
+        if (value != null) {
+          _memory[key] = value;
+        }
+        return value;
+      } catch (error) {
+        _failed(error);
+      }
+    }
+    return null;
+  }
+
+  @override
+  Future<void> write(String key, String value) async {
+    _deleted.remove(key);
+    _memory[key] = value;
+    if (!_unavailable) {
+      try {
+        await _secure.write(key, value);
+      } catch (error) {
+        _failed(error);
+      }
+    }
+  }
+
+  @override
+  Future<void> delete(String key) async {
+    _memory.remove(key);
+    _deleted.add(key);
+    // Attempt deletion even after a previous failure; never restore a removed
+    // identity from persistent storage during this process.
+    try {
+      await _secure.delete(key);
+    } catch (error) {
+      _failed(error);
+    }
+  }
 }

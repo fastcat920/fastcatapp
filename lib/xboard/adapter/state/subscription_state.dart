@@ -10,7 +10,7 @@ part 'generated/subscription_state.g.dart';
 /// 订阅状态管理
 
 /// 获取订阅信息
-@riverpod
+@Riverpod(keepAlive: true)
 Future<SubscriptionModel> getSubscription(Ref ref) async {
   final epoch = ref.watch(sessionEpochProvider);
   var active = true;
@@ -31,7 +31,7 @@ Future<SubscriptionModel> getSubscription(Ref ref) async {
 }
 
 /// 获取订阅链接
-@riverpod
+@Riverpod(keepAlive: true)
 Future<String> getSubscribeUrl(Ref ref) async {
   final epoch = ref.watch(sessionEpochProvider);
   var active = true;

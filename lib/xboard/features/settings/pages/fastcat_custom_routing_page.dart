@@ -1,3 +1,5 @@
+import 'package:fl_clash/xboard/features/settings/utils/account_routing_store.dart';
+import 'package:fl_clash/xboard/features/auth/providers/xboard_user_provider.dart';
 import 'package:fl_clash/mihomo/mihomo.dart';
 import '../utils/routing_rule.dart';
 
@@ -87,6 +89,8 @@ class _FastCatCustomRoutingPageState
     if (_isApplying) return false;
     final profile = ref.read(currentProfileProvider);
     if (profile == null) return false;
+    final account = ref.read(userInfoProvider)?.uuid ?? '';
+    if (account.isEmpty) return false;
     setState(() => _isApplying = true);
     try {
       final updatedProfile = profile.copyWith(
@@ -100,7 +104,10 @@ class _FastCatCustomRoutingPageState
       );
       ref.read(profilesProvider.notifier).setProfile(updatedProfile);
       await ref.read(coreGatewayProvider).applyCurrentProfile();
-      return ref.read(currentProfileIdProvider) == profile.id;
+      if (ref.read(currentProfileIdProvider) != profile.id) return false;
+      if (ref.read(userInfoProvider)?.uuid != account) return false;
+      await AccountRoutingStore.save(account, candidate);
+      return true;
     } catch (_) {
       // 配置热更新失败时恢复上一份已知可用配置，避免 UI 显示已保存、
       // 实际核心仍运行旧规则的分裂状态。

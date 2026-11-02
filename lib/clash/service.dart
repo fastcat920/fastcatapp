@@ -165,8 +165,17 @@ class ClashService extends ClashHandlerInterface {
       await socketCompleter.future.timeout(connectionTimeout);
       if (!isConnected) throw StateError('Core channel closed during startup');
       commonPrint.log('[CoreRestart] core channel connected');
+      if (!globalState.isCoreSwitchingNotifier.value) {
+        globalState.resetCoreSwitchStatus();
+      }
     } catch (e) {
       commonPrint.log('[CoreRestart] failed: $e');
+      if (!globalState.isCoreSwitchingNotifier.value) {
+        globalState.updateCoreSwitchStatus(
+          CoreSwitchStage.failed,
+          message: '核心启动失败',
+        );
+      }
       // Stop this attempt before releasing the repair lock. A Future.timeout
       // on the entire repair would leave a late restart running in background.
       await shutdown();

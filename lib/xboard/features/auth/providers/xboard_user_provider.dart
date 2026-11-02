@@ -1,3 +1,5 @@
+import 'package:fl_clash/xboard/features/settings/utils/account_routing_store.dart';
+import 'package:fl_clash/xboard/features/auth/utils/customer_service_helper.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'dart:async';
 
@@ -32,6 +34,7 @@ import 'package:fl_clash/enum/enum.dart';
 import 'package:fl_clash/common/serial_operation_queue.dart';
 import 'package:fl_clash/xboard/infrastructure/cache/content_cache_scope.dart';
 import 'session_epoch_provider.dart';
+import 'package:tgo_widget/tgo_widget.dart';
 
 // 初始化文件级日志器
 const _logger = FileLogger('xboard_user_provider.dart');
@@ -1523,6 +1526,12 @@ class XBoardUserAuthNotifier extends Notifier<UserAuthState> {
     if (!allowWhenServiceUnavailable && !connectivity.isOnline) {
       throw const LogoutProtectedException();
     }
+    final routingAccount = ref.read(userInfoProvider)?.uuid ?? '';
+    final routingProfile = ref.read(currentProfileProvider);
+    if (routingAccount.isNotEmpty && routingProfile != null) {
+      await AccountRoutingStore.save(
+          routingAccount, routingProfile.overrideData.rule.addedRules);
+    }
     _sessionClosing = true;
     _nextAuthGeneration();
     state = state.copyWith(isLoading: true, errorMessage: null);
@@ -1581,6 +1590,13 @@ class XBoardUserAuthNotifier extends Notifier<UserAuthState> {
     } catch (e) {
       _logger.warning('清理认证存储失败，继续登出: $e');
     }
+    // 客服访客按账号隔离。登出时释放当前会话，避免下一账号复用身份。
+    try {
+      CustomerServiceHelper.disposeSupport();
+      if (TgoWidget.isInitialized) await TgoWidget.dispose();
+    } catch (e) {
+      _logger.warning('清理 FastCat Support 客服会话失败: $e');
+    }
     // 清除域名竞速缓存，确保重新登录时从 OSS 拉取最新域名
     try {
       await XBoardConfig.clearRacingCache();
@@ -1629,7 +1645,10 @@ class XBoardUserAuthNotifier extends Notifier<UserAuthState> {
         if (profile.url.isNotEmpty) {
           ref.read(profilesProvider.notifier).updateProfile(
                 profile.id,
-                (p) => p.copyWith(url: ''),
+                (p) => p.copyWith(
+                    url: '',
+                    overrideData: p.overrideData.copyWith(
+                        rule: p.overrideData.rule.copyWith(addedRules: []))),
               );
         }
       }

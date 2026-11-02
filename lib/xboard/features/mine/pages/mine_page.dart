@@ -37,11 +37,18 @@ class _MinePageState extends ConsumerState<MinePage>
     with SingleTickerProviderStateMixin {
   late final AnimationController _refreshAnim;
   StreamSubscription? _configSub;
+  StreamSubscription<int>? _supportUnreadSub;
+  int _supportUnreadCount = 0;
   bool _isOpeningCustomerService = false;
 
   @override
   void initState() {
     super.initState();
+    _supportUnreadCount = CustomerServiceHelper.supportUnreadCount;
+    _supportUnreadSub = CustomerServiceHelper.supportUnreadCountStream.listen((count) {
+      if (!mounted) return;
+      setState(() => _supportUnreadCount = count);
+    });
     _refreshAnim = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 700),
@@ -61,6 +68,7 @@ class _MinePageState extends ConsumerState<MinePage>
   @override
   void dispose() {
     _configSub?.cancel();
+    _supportUnreadSub?.cancel();
     _refreshAnim.dispose();
     super.dispose();
   }
@@ -98,34 +106,62 @@ class _MinePageState extends ConsumerState<MinePage>
   Widget _buildCustomerServiceButton(BuildContext context) {
     final theme = Theme.of(context);
     final primary = theme.colorScheme.primary;
-    return TextButton.icon(
-      style: XbUiButton.textChipPrimary(context),
-      icon: AnimatedSwitcher(
-        duration: const Duration(milliseconds: 180),
-        child: _isOpeningCustomerService
-            ? SizedBox(
-                key: const ValueKey('opening'),
-                width: 18,
-                height: 18,
-                child: CircularProgressIndicator(
-                  strokeWidth: 2,
-                  valueColor: AlwaysStoppedAnimation(primary),
-                ),
-              )
-            : Icon(
-                Icons.support_agent_outlined,
-                key: const ValueKey('support'),
-                size: 18,
-                color: primary,
+    return Stack(
+      clipBehavior: Clip.none,
+      children: [
+        TextButton.icon(
+          style: XbUiButton.textChipPrimary(context),
+          icon: AnimatedSwitcher(
+            duration: const Duration(milliseconds: 180),
+            child: _isOpeningCustomerService
+                ? SizedBox(
+                    key: const ValueKey('opening'),
+                    width: 18,
+                    height: 18,
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2,
+                      valueColor: AlwaysStoppedAnimation(primary),
+                    ),
+                  )
+                : Icon(
+                    Icons.support_agent_outlined,
+                    key: const ValueKey('support'),
+                    size: 18,
+                    color: primary,
+                  ),
+          ),
+          label: Text(
+            appLocalizations.contactSupport,
+            style: TextStyle(color: primary),
+          ),
+          onPressed: _isOpeningCustomerService
+              ? null
+              : () => _openCustomerService(context),
+        ),
+        if (_supportUnreadCount > 0)
+          Positioned(
+            right: 0,
+            top: 0,
+            child: Container(
+              constraints: const BoxConstraints(minWidth: 15, minHeight: 15),
+              padding: const EdgeInsets.symmetric(horizontal: 4),
+              decoration: const BoxDecoration(
+                color: Colors.red,
+                shape: BoxShape.circle,
               ),
-      ),
-      label: Text(
-        appLocalizations.contactSupport,
-        style: TextStyle(color: primary),
-      ),
-      onPressed: _isOpeningCustomerService
-          ? null
-          : () => _openCustomerService(context),
+              alignment: Alignment.center,
+              child: Text(
+                _supportUnreadCount > 99 ? '99+' : '$_supportUnreadCount',
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontSize: 9,
+                  height: 1,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ),
+          ),
+      ],
     );
   }
 

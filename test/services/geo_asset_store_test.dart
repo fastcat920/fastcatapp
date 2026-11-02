@@ -47,6 +47,15 @@ void main() {
     expect(await File(p.join(home.path, names.first)).readAsBytes(), [4, 5, 6]);
   });
 
+  test('older cores without Geo validation do not block profile setup',
+      () async {
+    await seed();
+    await store.ensure(home.path,
+        checkGeoData: () async => 'unsupported action method: checkGeoData');
+    expect(restored, isEmpty);
+    expect(await File(p.join(home.path, names.first)).readAsBytes(), [4, 5, 6]);
+  });
+
   test('only rejected alias is restored and revalidated', () async {
     await seed();
     await File(p.join(home.path, names.first))

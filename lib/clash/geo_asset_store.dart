@@ -66,14 +66,23 @@ class GeoAssetStore {
         }
       }
       if (checkGeoData == null) return;
-      final invalid = _invalidFiles(await checkGeoData());
+      final firstResponse = await checkGeoData();
+      // checkGeoData was added after the desktop core IPC protocol was
+      // already in use.  Older bundled cores can still load the Geo files,
+      // but answer this optional health check with plain text instead of
+      // JSON.  Do not let that compatibility response abort profile setup.
+      if (_isUnsupportedCheck(firstResponse)) return;
+      final invalid = _invalidFiles(firstResponse);
       for (final name in invalid) {
         await _restore(home, name);
       }
-      if (invalid.isNotEmpty &&
-          _invalidFiles(await checkGeoData()).isNotEmpty) {
-        throw const FormatException(
-            'Bundled Geo data failed native validation');
+      if (invalid.isNotEmpty) {
+        final secondResponse = await checkGeoData();
+        if (_isUnsupportedCheck(secondResponse)) return;
+        if (_invalidFiles(secondResponse).isNotEmpty) {
+          throw const FormatException(
+              'Bundled Geo data failed native validation');
+        }
       }
     } on FileSystemException catch (error) {
       throw FileSystemException(
@@ -83,6 +92,9 @@ class GeoAssetStore {
       );
     }
   }
+
+  bool _isUnsupportedCheck(String response) =>
+      response.trimLeft().startsWith('unsupported action method: checkGeoData');
 
   List<String> _invalidFiles(String response) {
     final result = jsonDecode(response);

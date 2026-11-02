@@ -1,442 +1,444 @@
+import 'repairs.dart';
+import 'assistance.dart';
 import 'dart:async';
 import 'dart:convert';
-import 'package:flutter/foundation.dart';
+import 'dart:math';
+import 'dart:typed_data';
 import 'package:http/http.dart' as http;
-import 'package:shared_preferences/shared_preferences.dart';
-import 'package:web_socket_channel/web_socket_channel.dart';
-import 'models.dart';
+
+/// Implement with app-owned secure storage. The value contains a visitor token.
+abstract interface class FastCatSessionStore {
+  Future<String?> read(String key);
+  Future<void> write(String key, String value);
+  Future<void> delete(String key);
+}
 
 class FastCatException implements Exception {
-  FastCatException(this.message, {this.statusCode});
+  final int status;
   final String message;
-  final int? statusCode;
+  FastCatException(this.status, this.message);
   @override
   String toString() => message;
 }
 
-/// Visitor-side SDK. For non-default projects, pass the public widget API key.
-class FastCatSupport extends ChangeNotifier {
-  FastCatSupport({
-    required String baseUrl,
-    required this.visitorId,
-    this.projectId = 'default',
-    this.projectKey,
-    http.Client? httpClient,
-    this.maxReconnectDelay = const Duration(seconds: 30),
-  })  : baseUri = Uri.parse(baseUrl.endsWith('/') ? baseUrl : '$baseUrl/'),
-        _http = httpClient ?? http.Client();
+enum FastCatConnectionStatus {
+  idle,
+  connecting,
+  connected,
+  reconnecting,
+  closed
+}
 
-  final Uri baseUri;
-  final String visitorId;
-  final String projectId;
-  final String? projectKey;
-  final Duration maxReconnectDelay;
-  final http.Client _http;
-  final List<FastCatMessage> _messages = [];
-  final StreamController<Map<String, dynamic>> _events =
-      StreamController.broadcast();
-  WebSocketChannel? _socket;
-  StreamSubscription<dynamic>? _subscription;
-  Timer? _reconnect;
-  bool _disposed = false,
-      _connected = false,
-      _connecting = false,
-      _registered = false;
-  int _attempt = 0;
-  Timer? _cacheWrite;
-  String? _pendingMessageId;
-  String? _pendingMessageContent;
-  String _mode = 'ai';
-  String? _lastError;
-
-  String get _cacheKey =>
-      'fastcat.messages.${baseUri.host}.${Uri.encodeComponent(projectId)}.${Uri.encodeComponent(visitorId)}';
-
-  List<FastCatMessage> get messages => List.unmodifiable(_messages);
-  Stream<Map<String, dynamic>> get events => _events.stream;
-  bool get connected => _connected;
-  bool get connecting => _connecting;
-  bool get registered => _registered;
-  String get mode => _mode;
-  String? get lastError => _lastError;
-
-  Map<String, String> get _headers => {
-        'content-type': 'application/json',
-        if (projectKey?.isNotEmpty == true)
-          'X-FastCat-Project-Key': projectKey!,
-      };
-  Uri _uri(String path, [Map<String, String>? query]) =>
-      baseUri.resolve(path).replace(queryParameters: query);
-
-  Future<dynamic> _call(
-    String method,
-    String path, {
-    Map<String, String>? query,
-    Object? body,
-    Uint8List? bytes,
-    String? filename,
-  }) async {
-    final uri = _uri(path, query);
-    late http.Response response;
-    if (bytes != null) {
-      final request = http.MultipartRequest('POST', uri);
-      if (projectKey?.isNotEmpty == true) {
-        request.headers['X-FastCat-Project-Key'] = projectKey!;
-      }
-      request.files.add(
-        http.MultipartFile.fromBytes(
-          'file',
-          bytes,
-          filename: filename ?? 'upload.bin',
-        ),
-      );
-      response = await http.Response.fromStream(await _http.send(request));
-    } else {
-      final request = http.Request(method, uri)..headers.addAll(_headers);
-      if (body != null) request.body = jsonEncode(body);
-      response = await http.Response.fromStream(await _http.send(request));
-    }
-    dynamic value;
+class FastCatClient {
+  final String consentSessionId = newClientId();
+  final Set<String> activeConsentIds = {};
+  bool get isClosed => _closed;
+  Future<void> endAssistance() async {
+    activeConsentIds.clear();
+    if (_session == null || _diagnosticDevice == null || _closed) return;
     try {
-      value = jsonDecode(response.body);
-    } on FormatException {
-      value = response.body;
+      await assistance(action: 'scope_end', data: {
+        'deviceId': _diagnosticDevice,
+        'consentSessionId': consentSessionId
+      }).timeout(const Duration(seconds: 2));
+    } catch (_) {}
+  }
+
+  /// Supported keys: basic, status, network, logs, routes. The host must redact secrets.
+  Map<String, FastCatDiagnosticHandler> diagnosticHandlers = {};
+  Map<String, FastCatRepairHandler> repairHandlers = {};
+
+  /// Read local metadata only: at most three alternate routes, opaque IDs and redacted names.
+  Future<List<FastCatRouteOption>> Function()? routeOptions;
+  late final FastCatRepairCoordinator repairs = FastCatRepairCoordinator(this);
+  String get repairStorageKey => '$_storeKey:repairs:$conversationId';
+  String? _diagnosticDevice;
+  Future<String> diagnosticDeviceId() async {
+    if (_diagnosticDevice != null) return _diagnosticDevice!;
+    final key = '$_storeKey:diagnostic-device';
+    final saved = await store?.read(key);
+    _diagnosticDevice = saved ?? newClientId();
+    if (saved == null) await store?.write(key, _diagnosticDevice!);
+    return _diagnosticDevice!;
+  }
+
+  Future<Map<String, dynamic>> assistance(
+      {String? action, Map<String, dynamic> data = const {}}) {
+    _requireSession();
+    return _json('/assistance',
+        method: action == null ? 'GET' : 'POST',
+        body: action == null
+            ? null
+            : {'id': conversationId, 'action': action, ...data},
+        query: action == null ? {'id': conversationId!} : const {});
+  }
+
+  final _connectionEvents =
+      StreamController<FastCatConnectionStatus>.broadcast();
+  final _readEvents = StreamController<int>.broadcast();
+  final _unreadEvents = StreamController<int>.broadcast();
+  final _messageEvents = StreamController<Map<String, dynamic>>.broadcast();
+  final _unreadSequences = <int>{};
+  final _seenNotificationSequences = <int>{};
+  bool _notificationBaseline = false;
+  int get unreadCount => _unreadSequences.length;
+  Stream<int> get unreadCountStream => _unreadEvents.stream;
+
+  /// New remote messages after initial history; host may play its own sound.
+  Stream<Map<String, dynamic>> get incomingMessageStream =>
+      _messageEvents.stream;
+  void _publishUnread() {
+    _unreadSequences.removeWhere((seq) => seq <= _readCursor);
+    if (!_closed) _unreadEvents.add(unreadCount);
+  }
+
+  void _observePage(Map<String, dynamic> page) {
+    for (final value in page['messages'] as List? ?? const []) {
+      final message = Map<String, dynamic>.from(value as Map);
+      final seq = message['seq'];
+      if (seq is! int ||
+          message['role'] == 'visitor' ||
+          message['source'] == 'system') continue;
+      if (seq > _readCursor) _unreadSequences.add(seq);
+      if (_seenNotificationSequences.add(seq) &&
+          _notificationBaseline &&
+          !_closed) _messageEvents.add(message);
     }
-    if (response.statusCode < 200 || response.statusCode >= 300) {
-      final detail = value is Map ? value['detail'] : null;
+    if (page['hasMore'] != true) _notificationBaseline = true;
+    _publishUnread();
+  }
+
+  FastCatConnectionStatus _connectionStatus = FastCatConnectionStatus.idle;
+  int _watchers = 0, _readCursor = 0;
+  FastCatConnectionStatus get connectionStatus => _connectionStatus;
+  Stream<FastCatConnectionStatus> get connectionStatusStream =>
+      _connectionEvents.stream;
+  int get readCursor => _readCursor;
+  Stream<int> get readCursorStream => _readEvents.stream;
+  void _setConnection(FastCatConnectionStatus value) {
+    if (_connectionStatus == value) return;
+    _connectionStatus = value;
+    if (!_connectionEvents.isClosed) _connectionEvents.add(value);
+  }
+
+  final Uri baseUrl;
+  final String appKey;
+  final FastCatSessionStore? store;
+
+  /// Optional stable business-account scope. Use a different client per account.
+  final String? sessionScope;
+  final http.Client _http;
+  Map<String, dynamic>? _session;
+  bool _closed = false;
+  String get _storeKey =>
+      'fastcat:${baseUrl.origin}:$appKey' +
+      (sessionScope == null
+          ? ''
+          : ':user:${Uri.encodeComponent(sessionScope!)}');
+  String? get conversationId => _session?['id'] as String?;
+  bool get hasSession => _session != null;
+
+  FastCatClient(
+      {required this.baseUrl,
+      required this.appKey,
+      this.store,
+      this.sessionScope,
+      http.Client? client})
+      : _http = client ?? http.Client() {
+    if ((!['https'].contains(baseUrl.scheme) &&
+            !(baseUrl.scheme == 'http' &&
+                ['localhost', '127.0.0.1', '10.0.2.2', '::1']
+                    .contains(baseUrl.host))) ||
+        baseUrl.userInfo.isNotEmpty ||
+        baseUrl.path.isNotEmpty && baseUrl.path != '/' ||
+        baseUrl.hasQuery ||
+        baseUrl.hasFragment ||
+        appKey.isEmpty ||
+        (sessionScope != null && sessionScope!.trim().isEmpty)) {
+      throw ArgumentError(
+          'Use an HTTPS origin and a platform appKey (HTTP is allowed for local development).');
+    }
+  }
+
+  static String newClientId() {
+    final random = Random.secure();
+    return 'fc_${List.generate(24, (_) => random.nextInt(256).toRadixString(16).padLeft(2, '0')).join()}';
+  }
+
+  Uri _uri(String path, [Map<String, String> query = const {}]) => baseUrl
+      .resolve('/api/widget$path')
+      .replace(queryParameters: {'appKey': appKey, ...query});
+  Map<String, String> get _headers => {
+        'Content-Type': 'application/json',
+        if (_session != null) 'Authorization': 'Bearer ${_session!['token']}'
+      };
+  void _requireSession() {
+    if (_closed) throw StateError('Client is closed');
+    if (_session == null) throw StateError('Start or restore a session first');
+  }
+
+  static final _appearanceCache = <String, Map<String, dynamic>>{};
+  Future<Map<String, dynamic>>? _configurationRequest;
+  String get _appearanceKey => 'fastcat:appearance:${baseUrl.origin}:$appKey';
+  Map<String, dynamic>? get cachedConfiguration {
+    final record = _appearanceCache[_appearanceKey];
+    if (record == null ||
+        DateTime.now().millisecondsSinceEpoch < (record['saved'] as int) ||
+        DateTime.now().millisecondsSinceEpoch - (record['saved'] as int) >
+            86400000) return null;
+    return Map<String, dynamic>.from(record['data'] as Map);
+  }
+
+  Future<Map<String, dynamic>?> loadCachedConfiguration() async {
+    if (cachedConfiguration != null) return cachedConfiguration;
+    try {
+      final raw = await store?.read(_appearanceKey);
+      if (cachedConfiguration != null) return cachedConfiguration;
+      if (raw != null) {
+        final record = jsonDecode(raw);
+        if (record is Map &&
+            record['saved'] is int &&
+            record['data'] is Map &&
+            _validAppearance(
+                Map<String, dynamic>.from(record['data'] as Map))) {
+          _appearanceCache[_appearanceKey] = Map<String, dynamic>.from(record);
+        }
+      }
+    } catch (_) {}
+    return cachedConfiguration;
+  }
+
+  bool _validAppearance(Map<String, dynamic> data) {
+    final w = data['widget'];
+    if (w is! Map) return false;
+    return RegExp(r'^#[0-9a-fA-F]{6}$')
+            .hasMatch(w['themeColor']?.toString() ?? '') &&
+        (w['language'] == null ||
+            ['auto', 'zh-CN', 'en'].contains(w['language'])) &&
+        (w['theme'] == null ||
+            ['auto', 'light', 'dark'].contains(w['theme'])) &&
+        (w['showHandoffButton'] == null || w['showHandoffButton'] is bool) &&
+        ['welcomeMessage', 'welcomeMessageZh', 'welcomeMessageEn']
+            .every((key) => w[key] == null || w[key] is String);
+  }
+
+  /// Fresh public configuration; concurrent callers share the same request.
+  Future<Map<String, dynamic>> configuration() {
+    return _configurationRequest ??=
+        _fetchConfiguration().whenComplete(() => _configurationRequest = null);
+  }
+
+  Future<Map<String, dynamic>> _fetchConfiguration() async {
+    final data = await _json('/config');
+    if (!_validAppearance(data))
+      throw const FormatException('Invalid appearance configuration');
+    if (_validAppearance(data)) {
+      final record = <String, dynamic>{
+        'saved': DateTime.now().millisecondsSinceEpoch,
+        'data': data
+      };
+      if (_appearanceCache.length >= 32)
+        _appearanceCache.remove(_appearanceCache.keys.first);
+      _appearanceCache[_appearanceKey] = record;
+      if (store != null)
+        unawaited(store!
+            .write(_appearanceKey, jsonEncode(record))
+            .then<void>((_) {}, onError: (Object _) {}));
+    }
+    return data;
+  }
+
+  Future<Map<String, dynamic>> _json(String path,
+      {String method = 'GET',
+      Map<String, String> query = const {},
+      Map<String, dynamic>? body}) async {
+    if (_closed) throw StateError('Client is closed');
+    final request = http.Request(method, _uri(path, query))
+      ..headers.addAll(_headers);
+    if (body != null) request.body = jsonEncode(body);
+    final response = await http.Response.fromStream(
+        await _http.send(request).timeout(const Duration(seconds: 30)));
+    final value =
+        jsonDecode(utf8.decode(response.bodyBytes)) as Map<String, dynamic>;
+    if (response.statusCode >= 400)
       throw FastCatException(
-        detail == null ? '请求失败 (${response.statusCode})' : '$detail',
-        statusCode: response.statusCode,
-      );
+          response.statusCode, value['error'] as String? ?? 'Request failed');
+    return value;
+  }
+
+  Future<void> start(
+      {required String email,
+      String? name,
+      Map<String, dynamic> profile = const {}}) async {
+    if (hasSession)
+      throw StateError(
+          'A session already exists; reset explicitly to start a new conversation');
+    final result = await _json('/start',
+        method: 'POST', body: {'email': email, 'profile': profile});
+    _session = {'id': result['id'], 'token': result['token'], 'appKey': appKey};
+    await store?.write(_storeKey, jsonEncode(_session));
+  }
+
+  /// Update only this authenticated conversation's visitor profile.
+  Future<void> updateProfile(
+      {String? email, Map<String, dynamic> profile = const {}}) async {
+    _requireSession();
+    await _json('/profile', method: 'POST', body: {
+      'id': conversationId,
+      if (email != null) 'email': email,
+      'profile': profile
+    });
+  }
+
+  Future<bool> restore() async {
+    final value = await store?.read(_storeKey);
+    if (value == null) return false;
+    final decoded = jsonDecode(value) as Map<String, dynamic>;
+    if (decoded['appKey'] != appKey ||
+        decoded['id'] is! String ||
+        decoded['token'] is! String)
+      throw const FormatException('Invalid saved session');
+    _session = decoded;
+    try {
+      await messages(limit: 1);
+      return true;
+    } on FastCatException catch (e) {
+      if (e.status == 403) {
+        await reset();
+        return false;
+      }
+      rethrow;
+    }
+  }
+
+  Future<void> reset() async {
+    await endAssistance();
+    _session = null;
+    _readCursor = 0;
+    _unreadSequences.clear();
+    _seenNotificationSequences.clear();
+    _notificationBaseline = false;
+    _publishUnread();
+    if (!_readEvents.isClosed) _readEvents.add(0);
+    await store?.delete(_storeKey);
+  }
+
+  Future<Map<String, dynamic>> messages({int after = 0, int limit = 200}) {
+    _requireSession();
+    return _json('',
+        query: {'id': conversationId!, 'after': '$after', 'limit': '$limit'});
+  }
+
+  /// Retain the same clientId when retrying a send whose result is unknown.
+  Future<Map<String, dynamic>> sendText(String text,
+      {required String clientId}) {
+    _requireSession();
+    return _json('/messages',
+        method: 'POST',
+        body: {'id': conversationId, 'body': text, 'clientId': clientId});
+  }
+
+  Future<Map<String, dynamic>> requestHuman() {
+    _requireSession();
+    return _json('/handoff', method: 'POST', body: {'id': conversationId});
+  }
+
+  Future<Map<String, dynamic>> acknowledge(
+      {required int deliveredSeq, required int readSeq}) async {
+    _requireSession();
+    final current = conversationId;
+    final value = await _json('/receipts', method: 'POST', body: {
+      'id': current,
+      'deliveredSeq': deliveredSeq,
+      'readSeq': readSeq
+    });
+    if (conversationId == current && readSeq > _readCursor) {
+      _readCursor = readSeq;
+      _publishUnread();
+      if (!_readEvents.isClosed) _readEvents.add(readSeq);
     }
     return value;
   }
 
-  Future<void> register({
-    FastCatProfile profile = const FastCatProfile(),
-  }) async {
-    final value = await _call(
-      'POST',
-      'api/visitors',
-      body: {
-        'visitor_id': visitorId,
-        'project_id': projectId,
-        ...profile.toJson(),
-        'system_info': {
-          'platform': defaultTargetPlatform.name,
-          'is_web': kIsWeb,
-          ...profile.systemInfo,
-        },
-      },
-    );
-    if (value is Map && value['mode'] is String) {
-      _mode = value['mode'] as String;
-    }
-    _registered = true;
-    _lastError = null;
-    notifyListeners();
+  Future<Map<String, dynamic>> sendAttachment(Uint8List data,
+      {required String filename, required String clientId}) async {
+    _requireSession();
+    if (data.isEmpty || data.length > 8 * 1024 * 1024)
+      throw ArgumentError('Attachment must be 1 byte to 8 MB');
+    final response = await _http
+        .post(_uri('/attachments', {'id': conversationId!}),
+            headers: {
+              ..._headers,
+              'Content-Type': 'application/octet-stream',
+              'X-Filename': Uri.encodeComponent(filename),
+              'X-Client-Id': clientId
+            },
+            body: data)
+        .timeout(const Duration(seconds: 60));
+    final value =
+        jsonDecode(utf8.decode(response.bodyBytes)) as Map<String, dynamic>;
+    if (response.statusCode >= 400)
+      throw FastCatException(
+          response.statusCode, value['error'] as String? ?? 'Upload failed');
+    return value;
   }
 
-  Future<List<FastCatMessage>> history() async {
-    final value = await _call(
-      'GET',
-      'api/widget/history/${Uri.encodeComponent(visitorId)}',
-    );
-    if (value is! List) throw FastCatException('消息历史格式错误');
-    _messages
-      ..clear()
-      ..addAll(
-        value.whereType<Map>().map(
-              (row) => FastCatMessage.fromJson(Map<String, dynamic>.from(row)),
-            ),
-      );
-    _scheduleCacheWrite();
-    notifyListeners();
-    return messages;
+  Future<Uint8List> downloadAttachment(String attachmentId) async {
+    _requireSession();
+    final response = await _http
+        .get(
+            _uri('/attachments/${Uri.encodeComponent(attachmentId)}',
+                {'id': conversationId!}),
+            headers: _headers)
+        .timeout(const Duration(seconds: 60));
+    if (response.statusCode >= 400)
+      throw FastCatException(response.statusCode, 'Attachment unavailable');
+    return response.bodyBytes;
   }
 
-  /// Registers an FCM installation ID so the visitor can receive replies
-  /// while away. Obtain it from the host app's Firebase Messaging integration.
-  Future<void> registerPushToken(
-    String token, {
-    String? platform,
-    bool enabled = true,
-  }) async {
-    if (token.trim().length < 20) {
-      throw FastCatException('Firebase 推送令牌无效');
-    }
-    await _call(
-      'POST',
-      'api/widget/push-token',
-      body: {
-        'visitor_id': visitorId,
-        'token': token.trim(),
-        'platform': platform ?? defaultTargetPlatform.name,
-        'enabled': enabled,
-      },
-    );
-  }
-
-  Future<void> load({FastCatProfile profile = const FastCatProfile()}) async {
-    await _restoreCache();
-    if (!_registered) await register(profile: profile);
-    await history();
-    connect();
-  }
-
-  Future<void> _restoreCache() async {
+  /// Polling uses durable message cursors; transient failures reach onError and
+  /// polling continues. Read receipts must be sent by the visible UI separately.
+  Stream<Map<String, dynamic>> watch(
+      {Duration interval = const Duration(seconds: 2),
+      int after = 0,
+      void Function(Object)? onError}) async* {
+    _requireSession();
+    final id = conversationId;
+    var cursor = after;
+    _watchers++;
+    _setConnection(FastCatConnectionStatus.connecting);
     try {
-      final prefs = await SharedPreferences.getInstance();
-      final raw = prefs.getString(_cacheKey);
-      if (raw == null) return;
-      final decoded = jsonDecode(raw);
-      if (decoded is! List) return;
-      _messages
-        ..clear()
-        ..addAll(decoded.whereType<Map>().map((row) {
-          final json = Map<String, dynamic>.from(row);
-          json['streaming'] = false;
-          return FastCatMessage.fromJson(json);
-        }));
-      notifyListeners();
-    } catch (_) {
-      // A corrupt or unavailable device cache must not prevent server history loading.
-    }
-  }
-
-  void _scheduleCacheWrite() {
-    _cacheWrite?.cancel();
-    _cacheWrite = Timer(const Duration(milliseconds: 300), () {
-      _cacheWrite = null;
-      _writeCache();
-    });
-  }
-
-  Future<void> _writeCache() async {
-    try {
-      final prefs = await SharedPreferences.getInstance();
-      final recent = _messages.length > 200
-          ? _messages.sublist(_messages.length - 200)
-          : _messages;
-      await prefs.setString(
-        _cacheKey,
-        jsonEncode(recent.map((message) => message.toJson()).toList()),
-      );
-    } catch (_) {
-      // Persistence is best effort; live chat continues if local storage is full/unavailable.
-    }
-  }
-
-  void connect() {
-    if (_disposed || _connecting || _connected || !_registered) return;
-    _connecting = true;
-    notifyListeners();
-    final scheme = baseUri.scheme == 'https' ? 'wss' : 'ws';
-    final socketUri = baseUri.replace(
-      scheme: scheme,
-      path: '${baseUri.path}ws/${Uri.encodeComponent(visitorId)}'.replaceAll(
-        '//',
-        '/',
-      ),
-      queryParameters: projectKey == null ? null : {'key': projectKey!},
-    );
-    try {
-      final channel = WebSocketChannel.connect(socketUri);
-      _socket = channel;
-      channel.ready.then((_) {
-        if (_disposed || _socket != channel) return;
-        _connected = true;
-        _connecting = false;
-        _attempt = 0;
-        _lastError = null;
-        notifyListeners();
-      }).catchError((Object error) {
-        _socketError(error);
-      });
-      _subscription = channel.stream.listen(
-        _onData,
-        onError: _socketError,
-        onDone: _socketClosed,
-        cancelOnError: true,
-      );
-    } catch (error) {
-      _socketError(error);
-    }
-  }
-
-  void _onData(dynamic raw) {
-    if (raw is! String) return;
-    try {
-      final event = Map<String, dynamic>.from(jsonDecode(raw) as Map);
-      final type = event['type'];
-      if (type == 'stream.start') {
-        _upsert(
-          FastCatMessage(
-            id: '${event['id']}',
-            visitorId: visitorId,
-            role: 'ai',
-            content: '',
-            createdAt: DateTime.now(),
-            streaming: true,
-          ),
-        );
-      } else if (type == 'stream.delta') {
-        final i = _messages.indexWhere((m) => m.id == '${event['id']}');
-        if (i >= 0) {
-          _messages[i] = _messages[i].copyWith(
-            content: '${_messages[i].content}${event['delta'] ?? ''}',
-            streaming: true,
-          );
+      while (!_closed && conversationId == id) {
+        try {
+          final page = await messages(after: cursor);
+          _setConnection(FastCatConnectionStatus.connected);
+          _observePage(page);
+          yield page;
+          cursor = page['nextCursor'] as int? ?? cursor;
+          if (page['hasMore'] == true) continue;
+        } catch (e) {
+          _setConnection(FastCatConnectionStatus.reconnecting);
+          onError?.call(e);
+          if (e is FastCatException && [403, 409].contains(e.status)) rethrow;
         }
-      } else if (type == 'stream.reset') {
-        final i = _messages.indexWhere((m) => m.id == '${event['id']}');
-        if (i >= 0) {
-          _messages[i] = _messages[i].copyWith(content: '', streaming: true);
-        }
-      } else if (type == 'stream.close') {
-        final message = event['message'];
-        if (message is Map) {
-          _upsert(FastCatMessage.fromJson(Map<String, dynamic>.from(message)));
-        } else {
-          final i = _messages.indexWhere((m) => m.id == '${event['id']}');
-          if (i >= 0) _messages[i] = _messages[i].copyWith(streaming: false);
-        }
-      } else if (event['id'] != null && event['role'] != null) {
-        _upsert(FastCatMessage.fromJson(event));
-      } else if (type == 'conversation.mode') {
-        _mode = '${event['mode'] ?? _mode}';
+        await Future<void>.delayed(interval);
       }
-      _events.add(event);
-      notifyListeners();
-    } catch (error) {
-      _lastError = '无法解析实时消息：$error';
-      notifyListeners();
+    } finally {
+      _watchers--;
+      if (!_closed && _watchers == 0)
+        _setConnection(FastCatConnectionStatus.idle);
     }
   }
 
-  void _upsert(FastCatMessage message) {
-    final i = _messages.indexWhere((m) => m.id == message.id);
-    if (i < 0) {
-      _messages.add(message);
-    } else {
-      _messages[i] = message;
-    }
-    _scheduleCacheWrite();
-  }
-
-  void _socketError(Object error) {
-    if (_disposed) return;
-    _lastError = '实时连接暂时中断';
-    _socketClosed();
-  }
-
-  void _socketClosed() {
-    if (_disposed) return;
-    _connected = false;
-    _connecting = false;
-    notifyListeners();
-    _scheduleReconnect();
-  }
-
-  void _scheduleReconnect() {
-    if (_disposed || _reconnect?.isActive == true || !_registered) return;
-    final delay = (1 << _attempt.clamp(0, 5)).clamp(
-      1,
-      maxReconnectDelay.inSeconds,
-    );
-    _attempt++;
-    _reconnect = Timer(Duration(seconds: delay), () async {
-      _reconnect = null;
-      try {
-        await history();
-      } catch (_) {
-        _lastError = '重连时同步消息失败';
-      }
-      connect();
-    });
-  }
-
-  Future<void> send(String content) async {
-    final text = content.trim();
-    if (text.isEmpty) return;
-    if (!_registered) await register();
-    if (_pendingMessageId == null || _pendingMessageContent != text) {
-      _pendingMessageId = '$visitorId-${DateTime.now().microsecondsSinceEpoch}';
-      _pendingMessageContent = text;
-    }
-    final value = await _call(
-      'POST',
-      'api/messages',
-      body: {
-        'visitor_id': visitorId,
-        'content': text,
-        'source': 'flutter',
-        'message_id': _pendingMessageId,
-      },
-    );
-    _pendingMessageId = null;
-    _pendingMessageContent = null;
-    if (value is Map && value['visitor_message'] is Map) {
-      _upsert(
-        FastCatMessage.fromJson(
-          Map<String, dynamic>.from(value['visitor_message'] as Map),
-        ),
-      );
-    }
-    if (value is Map && value['reply'] is Map) {
-      _upsert(
-        FastCatMessage.fromJson(
-          Map<String, dynamic>.from(value['reply'] as Map),
-        ),
-      );
-    }
-    if (value is Map && value['mode'] is String) {
-      _mode = value['mode'] as String;
-    }
-    notifyListeners();
-  }
-
-  Future<void> sendFile(Uint8List bytes, String filename) async {
-    if (!_registered) await register();
-    final value = await _call(
-      'POST',
-      'api/upload',
-      query: {'visitor_id': visitorId},
-      bytes: bytes,
-      filename: filename,
-    );
-    if (value is! Map) throw FastCatException('附件上传响应格式错误');
-    final url = baseUri.resolve('${value['url']}');
-    final ext = filename.split('.').last.toLowerCase();
-    final kind = const {'png', 'jpg', 'jpeg', 'gif', 'webp'}.contains(ext)
-        ? '图片'
-        : const {'mp4', 'mov'}.contains(ext)
-            ? '视频'
-            : const {'mp3', 'm4a', 'ogg', 'wav'}.contains(ext)
-                ? '音频'
-                : '附件';
-    await send('[$kind] ${value['name']} | $url');
-  }
-
-  Future<void> handoff() async {
-    final value = await _call(
-      'POST',
-      'api/conversations/${Uri.encodeComponent(visitorId)}/handoff',
-    );
-    if (value is Map) _mode = '${value['mode'] ?? 'human'}';
-    notifyListeners();
-  }
-
-  @override
-  void dispose() {
-    _disposed = true;
-    _reconnect?.cancel();
-    _cacheWrite?.cancel();
-    _writeCache();
-    _subscription?.cancel();
-    _socket?.sink.close();
-    _events.close();
-    _http.close();
-    super.dispose();
+  void close() {
+    if (_closed) return;
+    final ending = endAssistance();
+    _closed = true;
+    _setConnection(FastCatConnectionStatus.closed);
+    unawaited(_connectionEvents.close());
+    unawaited(_readEvents.close());
+    unawaited(_unreadEvents.close());
+    unawaited(_messageEvents.close());
+    unawaited(ending.whenComplete(_http.close));
   }
 }

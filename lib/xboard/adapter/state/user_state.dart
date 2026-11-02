@@ -10,7 +10,7 @@ part 'generated/user_state.g.dart';
 /// 用户状态管理
 
 /// 获取用户信息
-@riverpod
+@Riverpod(keepAlive: true)
 Future<UserModel> getUserInfo(Ref ref) async {
   final epoch = ref.watch(sessionEpochProvider);
   var active = true;

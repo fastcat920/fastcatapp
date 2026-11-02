@@ -1,3 +1,6 @@
+import 'package:fl_clash/enum/enum.dart';
+import 'package:fl_clash/xboard/features/settings/utils/account_routing_store.dart';
+import 'package:fl_clash/xboard/features/auth/providers/xboard_user_provider.dart';
 import 'dart:async';
 import 'dart:io';
 import 'package:flutter/foundation.dart';
@@ -73,6 +76,8 @@ class XBoardProfileImportService {
       final oldProfile = _ref.read(currentProfileProvider);
       final oldSelectedMap = oldProfile?.selectedMap ?? {};
       final oldOverrideData = oldProfile?.overrideData;
+      final routingAccount = _ref.read(userInfoProvider)?.uuid ?? '';
+      final savedRules = await AccountRoutingStore.load(routingAccount);
 
       final connectivity = _ref.read(serviceConnectivityProvider);
       if (connectivity.isOffline) {
@@ -95,9 +100,18 @@ class XBoardProfileImportService {
       final profileWithSelection = profile.copyWith(
         selectedMap:
             oldSelectedMap.isNotEmpty ? oldSelectedMap : profile.selectedMap,
-        overrideData: oldOverrideData ?? profile.overrideData,
+        overrideData: savedRules == null
+            ? oldOverrideData ?? profile.overrideData
+            : (oldOverrideData ?? profile.overrideData).copyWith(
+                enable: (oldOverrideData ?? profile.overrideData).enable ||
+                    savedRules.isNotEmpty,
+                rule: (oldOverrideData ?? profile.overrideData).rule.copyWith(
+                    type: OverrideRuleType.added, addedRules: savedRules)),
       );
 
+      if ((_ref.read(userInfoProvider)?.uuid ?? '') != routingAccount) {
+        throw StateError('Account changed during import');
+      }
       // 2. 先添加新配置（保持 groups 非空，VPN 不断线）
       onProgress?.call(ImportStatus.adding, 0.8, '应用新配置');
       _throwIfCancelled(cancelToken);

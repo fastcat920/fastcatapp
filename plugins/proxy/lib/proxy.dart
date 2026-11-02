@@ -57,6 +57,59 @@ class SystemProxyStatus {
 }
 
 class Proxy extends ProxyPlatform {
+  /// Opaque local-only snapshot. Never include this data in support reports.
+  Future<Map<String, dynamic>> captureConfiguration() async {
+    final result = <String, dynamic>{'platform': _operatingSystem};
+    if (_operatingSystem == 'macos') {
+      final services = await _getNetworkDeviceListWithMacos();
+      for (final service in services) {
+        final values = await _readMacosConfiguration(service);
+        if (values == null)
+          throw StateError('Proxy configuration cannot be captured');
+        result[service] = values;
+      }
+      if (services.isEmpty) throw StateError('No network services');
+    } else {
+      final values = _operatingSystem == 'windows'
+          ? await ProxyPlatform.instance.readProxyConfiguration()
+          : await _readLinuxConfiguration();
+      if (values == null) throw StateError('Proxy configuration unavailable');
+      result['values'] = values;
+    }
+    return result;
+  }
+
+  /// Compare the whole snapshot before writing; external changes block restore.
+  Future<bool> restoreConfiguration(
+          Map<String, dynamic> before, Map<String, dynamic> expected) =>
+      _serialize(() async {
+        bool equal(dynamic a, dynamic b) {
+          if (a is Map && b is Map)
+            return a.length == b.length &&
+                a.keys.every(
+                    (key) => b.containsKey(key) && equal(a[key], b[key]));
+          return a == b;
+        }
+
+        if (before['platform'] != _operatingSystem ||
+            !equal(await captureConfiguration(), expected)) return false;
+        if (_operatingSystem == 'macos') {
+          for (final service in before.keys.where((key) => key != 'platform')) {
+            if (!await _writeMacosConfiguration(
+                service, Map<String, String>.from(before[service] as Map)))
+              return false;
+          }
+        } else {
+          final values = Map<String, String>.from(before['values'] as Map);
+          final ok = _operatingSystem == 'windows'
+              ? await ProxyPlatform.instance.writeProxyConfiguration(values) ==
+                  true
+              : await _writeLinuxConfiguration(values);
+          if (!ok) return false;
+        }
+        return equal(await captureConfiguration(), before);
+      });
+
   Proxy({
     this.onDiagnostic,
     @visibleForTesting String? operatingSystem,

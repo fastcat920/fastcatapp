@@ -48,10 +48,11 @@ class XBoardConfigAccessor {
   // 远程配置 contact 字段
   String _crispWebsiteId = '';
   String _crispProxyUrl = '';
+  bool _fastCatSupportEnabled = false;
+  bool _fastCatSupportConfigured = false;
+  String _fastCatSupportBaseUrl = '';
+  String _fastCatSupportAppKey = '';
   String _salesmartlyToken = '';
-  String _fastCatSupportUrl = '';
-  String _fastCatSupportProjectId = 'default';
-  String _fastCatSupportProjectKey = '';
   List<String> _websiteUrls = [];
   String _telegramGroupUrl = '';
   String _inviteDomain = '';
@@ -377,17 +378,19 @@ class XBoardConfigAccessor {
   /// 获取 Crisp 反向代理地址（来自远程配置 contact.crisp_proxy_url）
   String get crispProxyUrl => _crispProxyUrl;
 
+  bool get fastCatSupportEnabled => _fastCatSupportEnabled;
+
+  bool get fastCatSupportConfigured => _fastCatSupportConfigured;
+
+  String get fastCatSupportBaseUrl => _fastCatSupportBaseUrl;
+
+  String get fastCatSupportAppKey => _fastCatSupportAppKey;
+
   /// 获取 Salesmartly 客服配置（来自远程配置 contact.salesmartly_token）
   /// 支持两种格式：
   /// - 新版：完整 JS URL，如 https://assets.salesmartly.com/js/project_XXXXX_XXXXX_XXXXXXXXXX.js
   /// - 旧版：Widget Token 字符串
   String get salesmartlyToken => _salesmartlyToken;
-
-  String get fastCatSupportUrl => _fastCatSupportUrl;
-
-  String get fastCatSupportProjectId => _fastCatSupportProjectId;
-
-  String get fastCatSupportProjectKey => _fastCatSupportProjectKey;
 
   /// 获取官方网站 URL 列表（来自远程配置 contact.website，支持 string 或 array）
   List<String> get websiteUrls => _websiteUrls;
@@ -489,12 +492,21 @@ class XBoardConfigAccessor {
       final contact = configData['contact'] as Map<String, dynamic>? ?? {};
       _crispWebsiteId = contact['crisp_website_id'] as String? ?? '';
       _crispProxyUrl = contact['crisp_proxy_url'] as String? ?? '';
+      final rawFastCatSupport = contact['fastcat_support'];
+      _fastCatSupportConfigured = rawFastCatSupport is Map;
+      final fastCatSupport = rawFastCatSupport is Map
+          ? rawFastCatSupport.map(
+              (key, value) => MapEntry(key.toString(), value),
+            )
+          : const <String, dynamic>{};
+      _fastCatSupportBaseUrl =
+          fastCatSupport['base_url']?.toString().trim() ?? '';
+      _fastCatSupportAppKey =
+          fastCatSupport['app_key']?.toString().trim() ?? '';
+      _fastCatSupportEnabled = fastCatSupport['enabled'] != false &&
+          _fastCatSupportBaseUrl.isNotEmpty &&
+          _fastCatSupportAppKey.isNotEmpty;
       _salesmartlyToken = contact['salesmartly_token'] as String? ?? '';
-      _fastCatSupportUrl = contact['fastcat_support_url'] as String? ?? '';
-      _fastCatSupportProjectId =
-          contact['fastcat_support_project_id'] as String? ?? 'default';
-      _fastCatSupportProjectKey =
-          contact['fastcat_support_project_key'] as String? ?? '';
       final rawWebsite = contact['website'];
       if (rawWebsite is String) {
         _websiteUrls = rawWebsite.isNotEmpty ? [rawWebsite] : [];

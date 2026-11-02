@@ -77,15 +77,15 @@ dependencies:
   webview_flutter_wkwebview: ^3.26.1
   flutter_xboard_sdk:
     path: lib/sdk/flutter_xboard_sdk
-  fastcat_support:
-    path: packages/fastcat_support
   desktop_webview_window:
     path: plugins/desktop_webview_window
   flutter_inappwebview: ^6.1.5
   webview_win_floating:
     path: plugins/webview_win_floating
-  firebase_core: ^5.1.0
-  firebase_messaging: ^17.0.1
+  fastcat_support:
+    path: packages/fastcat_support
+  tgo_widget:
+    path: packages/tgo_widget
 dev_dependencies:
   flutter_test:
     sdk: flutter
