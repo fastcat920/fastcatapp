@@ -14,6 +14,18 @@ class SupportPushService {
   AppLifecycleListener? _lifecycle;
   bool _busy = false, _closed = false;
   String? _registered;
+  DateTime? _nextTokenAttempt;
+  static Future<void> notifyReply(String conversationId, String messageId) async {
+    if (!Platform.isAndroid) return;
+    try {
+      await _channel.invokeMethod<void>('showReply', {
+        'conversationId': conversationId, 'messageId': messageId,
+      });
+    } catch (error) {
+      _logger.debug('Local notification unavailable: ${error.runtimeType}');
+    }
+  }
+
   Future<void> attach(FastCatClient client, String deviceId, String language,
       bool Function() visible,
       {Future<void> Function()? onNotification}) async {
@@ -32,6 +44,9 @@ class SupportPushService {
             seenMessages.add(notification!['messageId'] as String)) {
           await onNotification?.call();
         }
+        if (_nextTokenAttempt != null &&
+            DateTime.now().isBefore(_nextTokenAttempt!)) return;
+        _nextTokenAttempt = DateTime.now().add(const Duration(minutes: 5));
         final token = await _channel.invokeMethod<String>('token');
         if (_closed || token == null || token.isEmpty) return;
         if (_registered != token) {
@@ -44,7 +59,7 @@ class SupportPushService {
               language: language.startsWith('zh') ? 'zh' : 'en');
           _registered = token;
         }
-        await client.setPushChatVisible(visible());
+        // Chat owns visibility transitions and its single presence heartbeat.
       } catch (error) {
         _logger.debug('Push registration pending: ${error.runtimeType}');
       } finally {
@@ -52,7 +67,10 @@ class SupportPushService {
       }
     }
 
-    _lifecycle = AppLifecycleListener(onResume: () => unawaited(sync()));
+    _lifecycle = AppLifecycleListener(onResume: () {
+      _nextTokenAttempt = null;
+      unawaited(sync());
+    });
     await sync();
     if (!_closed)
       _timer =

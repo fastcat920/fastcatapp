@@ -1358,8 +1358,16 @@ class CustomerServiceHelper {
         }
       }));
       _supportTone = fc.SupportNotificationSound();
-      _supportIncoming = support.client.incomingMessageStream.listen((_) {
-        if (!isEmbeddedCustomerServiceVisible) {
+      _supportIncoming = support.client.incomingMessageStream.listen((message) {
+        final foreground = WidgetsBinding.instance.lifecycleState == null ||
+            WidgetsBinding.instance.lifecycleState == AppLifecycleState.resumed;
+        if (!foreground) {
+          final conversation = support.client.conversationId;
+          final messageId = message['id']?.toString();
+          if (conversation != null && messageId != null) {
+            unawaited(SupportPushService.notifyReply(conversation, messageId));
+          }
+        } else if (!isEmbeddedCustomerServiceVisible) {
           unawaited(_supportTone?.play());
         }
       });

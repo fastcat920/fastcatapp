@@ -36,6 +36,16 @@ class MainActivity : FlutterActivity() {
                         intent.removeExtra("type")
                     } else result.success(null)
                 }
+                "showReply" -> {
+                    val conversation = call.argument<String>("conversationId")
+                    val message = call.argument<String>("messageId")
+                    if (conversation == null || message == null) {
+                        result.error("ARGUMENT", "Missing reply identity", null)
+                    } else {
+                        SupportPushService.showReply(this, conversation, message)
+                        result.success(null)
+                    }
+                }
                 "token" -> {
                     if (Build.VERSION.SDK_INT >= 33 && checkSelfPermission(android.Manifest.permission.POST_NOTIFICATIONS) != android.content.pm.PackageManager.PERMISSION_GRANTED) {
                         if (!supportNotificationPermissionRequested) {
@@ -45,6 +55,12 @@ class MainActivity : FlutterActivity() {
                         result.success(null)
                     } else {
                         try {
+                            try {
+                                packageManager.getPackageInfo("com.google.android.gms", 0)
+                            } catch (_: android.content.pm.PackageManager.NameNotFoundException) {
+                                result.success(null)
+                                return@setMethodCallHandler
+                            }
                             com.google.firebase.FirebaseApp.initializeApp(this)
                             com.google.firebase.messaging.FirebaseMessaging.getInstance().token
                                 .addOnSuccessListener { result.success(it) }
@@ -61,6 +77,16 @@ class MainActivity : FlutterActivity() {
         flutterEngine.plugins.add(TilePlugin())
         GlobalState.flutterEngine = flutterEngine
         GlobalState.syncStatus()
+    }
+
+    override fun onResume() {
+        super.onResume()
+        SupportPushService.appForeground = true
+    }
+
+    override fun onPause() {
+        SupportPushService.appForeground = false
+        super.onPause()
     }
 
     override fun onNewIntent(intent: android.content.Intent) {

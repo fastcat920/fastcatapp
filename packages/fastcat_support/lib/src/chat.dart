@@ -240,7 +240,7 @@ class _FastCatChatState extends State<FastCatChat> with WidgetsBindingObserver {
       var incoming = false;
       final previousDraft = _aiDraft;
       final wasTyping = _typing;
-      setState(() {
+      void applyPage() {
         if (_pendingId == null) _error = null;
         _closed = (page['conversation'] as Map?)?['status'] == 'closed';
         _peerReadSeq =
@@ -283,13 +283,21 @@ class _FastCatChatState extends State<FastCatChat> with WidgetsBindingObserver {
           }
         }
         _lastSeq = page['nextCursor'] as int? ?? _lastSeq;
-      });
+      }
+      final visible = _hostVisible &&
+          WidgetsBinding.instance.lifecycleState != AppLifecycleState.paused;
+      if (visible) {
+        setState(applyPage);
+      } else {
+        applyPage();
+      }
       final shouldShowLatest = incoming ||
           (_typing && (!wasTyping || previousDraft != _aiDraft)) ||
           _scrollAfterSend ||
           (_openingScrollPending && page['hasMore'] != true);
       if (page['hasMore'] != true) _openingScrollPending = false;
       _scrollAfterSend = false;
+      if (!visible) return;
       WidgetsBinding.instance.addPostFrameCallback((_) {
         if (!mounted) return;
         if (shouldShowLatest && _scroll.hasClients)
@@ -330,7 +338,10 @@ class _FastCatChatState extends State<FastCatChat> with WidgetsBindingObserver {
 
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
-    if (state == AppLifecycleState.resumed) _ack();
+    if (state == AppLifecycleState.resumed) {
+      setState(() {});
+      _ack();
+    }
     _pushPresence();
   }
 
