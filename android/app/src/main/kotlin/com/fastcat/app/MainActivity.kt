@@ -20,6 +20,7 @@ class MainActivity : FlutterActivity() {
     private var customerServiceBackPending = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
+        sanitizeSupportNotificationIntent(intent)
         super.onCreate(savedInstanceState)
         registerCustomerServiceBackCallback()
     }
@@ -89,7 +90,16 @@ class MainActivity : FlutterActivity() {
         super.onPause()
     }
 
+    // Notification metadata belongs to the support channel, not GoRouter.
+    // Also handles notifications issued by older builds with fastcat://support.
+    private fun sanitizeSupportNotificationIntent(intent: android.content.Intent?) {
+        if (intent?.getStringExtra("type") == "support.reply") {
+            intent.data = null
+        }
+    }
+
     override fun onNewIntent(intent: android.content.Intent) {
+        sanitizeSupportNotificationIntent(intent)
         super.onNewIntent(intent)
         setIntent(intent)
     }

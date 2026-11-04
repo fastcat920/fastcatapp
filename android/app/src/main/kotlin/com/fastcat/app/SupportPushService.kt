@@ -40,7 +40,7 @@ class SupportPushService : FirebaseMessagingService() {
                 .putExtra("type", "support.reply")
                 .putExtra("conversationId", conversation)
                 .putExtra("messageId", message)
-                .setData(android.net.Uri.parse("fastcat://support/${android.net.Uri.encode(conversation)}/${android.net.Uri.encode(message)}"))
+                .setAction("com.fastcat.app.SUPPORT_REPLY.$conversation")
             val pending = PendingIntent.getActivity(context, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE)
             val builder = if (Build.VERSION.SDK_INT >= 26) {
                 android.app.Notification.Builder(context, "fastcat_support")
