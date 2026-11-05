@@ -17,6 +17,10 @@ int ClashCore_init(const char *homeDir, const char *config) {
 
 void ClashCore_shutdown(void) {}
 
+int ClashCore_init_probe(const char *homeDir, const char *config) {
+  return ClashCore_init(homeDir, config);
+}
+
 char *ClashCore_invoke(const char *method, const char *data) {
   (void)method;
   (void)data;

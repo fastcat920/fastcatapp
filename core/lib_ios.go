@@ -29,6 +29,15 @@ import (
 //
 //export ClashCore_init
 func ClashCore_init(homeDir *C.char, configYaml *C.char) C.int {
+	return initIOSCore(homeDir, configYaml, false)
+}
+
+//export ClashCore_init_probe
+func ClashCore_init_probe(homeDir *C.char, configYaml *C.char) C.int {
+	return initIOSCore(homeDir, configYaml, true)
+}
+
+func initIOSCore(homeDir *C.char, configYaml *C.char, probe bool) C.int {
 	homeDirStr := C.GoString(homeDir)
 	configStr := C.GoString(configYaml)
 	var cacheOptions struct {
@@ -63,6 +72,16 @@ func ClashCore_init(homeDir *C.char, configYaml *C.char) C.int {
 
 	// Force iOS-specific config overrides on the parsed config object.
 	patchConfigForIOS(rawCfg)
+	if probe {
+		rawCfg.Port = 0
+		rawCfg.SocksPort = 0
+		rawCfg.MixedPort = 0
+		rawCfg.RedirPort = 0
+		rawCfg.TProxyPort = 0
+		rawCfg.DNS.Listen = ""
+		rawCfg.ExternalController = ""
+		rawCfg.ExternalControllerTLS = ""
+	}
 
 	params := &SetupParams{
 		Config:      rawCfg,
@@ -74,7 +93,7 @@ func ClashCore_init(homeDir *C.char, configYaml *C.char) C.int {
 	}
 
 	// Start listener
-	if !handleStartListener() {
+	if !probe && !handleStartListener() {
 		return 4
 	}
 	return 0

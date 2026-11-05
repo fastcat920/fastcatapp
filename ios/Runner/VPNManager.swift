@@ -50,6 +50,59 @@ class VPNManager: NSObject {
     return "disconnected"
   }
 
+  /// `startVPNTunnel` only submits a launch request.  The Packet Tunnel needs
+  /// a short time to enter `.connected` and expose its IPC endpoint.  Flutter
+  /// queries mihomo immediately after this callback, so reporting success too
+  /// early makes a healthy tunnel look like a failed core and triggers a
+  /// rollback.
+  private func waitForTunnelReady(
+    timeout: TimeInterval = 15,
+    completion: @escaping (String?) -> Void
+  ) {
+    let deadline = Date().addingTimeInterval(timeout)
+    var finished = false
+    var observedStarting = false
+
+    func finish(_ error: String?) {
+      guard !finished else { return }
+      finished = true
+      completion(error)
+    }
+
+    func poll() {
+      DispatchQueue.main.async {
+        guard !finished else { return }
+        let status = self.manager?.connection.status ?? .invalid
+        if status == .connecting || status == .reasserting {
+          observedStarting = true
+        }
+        switch status {
+        case .connected:
+          NSLog("[VPNManager] tunnel is connected and ready")
+          finish(nil)
+        case .disconnected, .invalid:
+          // The status notification arrives asynchronously after the start
+          // request. An initial disconnected value is not a failed launch.
+          if observedStarting || Date() >= deadline {
+            finish("VPN tunnel stopped before it became ready (status=\(status.rawValue))")
+          } else {
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.15) { poll() }
+          }
+        default:
+          guard Date() < deadline else {
+            finish("Timed out waiting for VPN tunnel readiness")
+            return
+          }
+          DispatchQueue.main.asyncAfter(deadline: .now() + 0.15) {
+            poll()
+          }
+        }
+      }
+    }
+
+    poll()
+  }
+
   private override init() {
     super.init()
     loadManager(createIfMissing: false, completion: nil)
@@ -191,7 +244,7 @@ class VPNManager: NSObject {
           NSLog("[VPNManager] ensureTunnelRunning: starting tunnel in idle mode...")
           try mgr.connection.startVPNTunnel(options: options)
           NSLog("[VPNManager] ensureTunnelRunning: startVPNTunnel called successfully")
-          completion(nil)
+          self?.waitForTunnelReady(completion: completion)
         } catch {
           let err = "startVPNTunnel: \(error.localizedDescription)"
           NSLog("[VPNManager] ensureTunnelRunning %@", err)
@@ -281,9 +334,17 @@ class VPNManager: NSObject {
           ]
           NSLog("[VPNManager] connect: starting VPN tunnel (active mode)...")
           try mgr.connection.startVPNTunnel(options: options)
-          self?.isTrafficActive = true
           NSLog("[VPNManager] connect: startVPNTunnel called successfully")
-          completion(nil)
+          self?.waitForTunnelReady { readyError in
+            if let readyError = readyError {
+              self?.lastError = readyError
+              completion(readyError)
+              return
+            }
+            self?.isTrafficActive = true
+            self?.notifyStatusChange()
+            completion(nil)
+          }
         } catch {
           let err = "startVPNTunnel: \(error.localizedDescription)"
           NSLog("[VPNManager] connect %@", err)

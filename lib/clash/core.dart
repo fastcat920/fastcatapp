@@ -12,6 +12,7 @@ import 'package:fl_clash/state.dart';
 import 'package:flutter/services.dart';
 
 import 'geo_asset_store.dart';
+import '../security/ios_profile_config.dart';
 
 class ClashCore {
   static final _geoAssets = GeoAssetStore(
@@ -257,6 +258,24 @@ class ClashCore {
   }
 
   Future<Delay> getDelay(String url, String proxyName) async {
+    if (Platform.isIOS && !globalState.isStart) {
+      await initGeo(validate: false);
+      final config = iosProfileConfig(await globalState.patchRawConfig(
+        patchConfig: globalState.config.patchClashConfig,
+      ));
+      config['rules'] = config.remove('rule') ?? config['rules'] ?? [];
+      final data = await const MethodChannel('fastcat/latency')
+          .invokeMethod<String>('test', {
+        'home': await appPath.homeDirPath,
+        'config': json.encode(config),
+        'data': json.encode(
+            {'proxy-name': proxyName, 'test-url': url, 'timeout': 5000}),
+      }).timeout(const Duration(seconds: 20));
+      if (data == null || data.isEmpty) {
+        throw StateError('Latency core returned no result');
+      }
+      return Delay.fromJson(json.decode(data));
+    }
     final data = await clashInterface.asyncTestDelay(url, proxyName);
     if (data.isEmpty) {
       return Delay(name: proxyName, url: url, value: -1);

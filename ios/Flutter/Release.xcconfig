@@ -2,3 +2,4 @@
 #include "Generated.xcconfig"
 
 APS_ENVIRONMENT=production
+OTHER_LDFLAGS=$(inherited) -lresolv

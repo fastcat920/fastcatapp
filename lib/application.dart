@@ -13,6 +13,7 @@ import 'package:fl_clash/providers/providers.dart';
 import 'package:fl_clash/enum/enum.dart' as client_enum;
 import 'package:fl_clash/state.dart';
 import 'package:flutter/material.dart';
+import 'common/ios_fullscreen_back.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -56,7 +57,7 @@ class ApplicationState extends ConsumerState<Application>
   final _pageTransitionsTheme = const PageTransitionsTheme(
     builders: <TargetPlatform, PageTransitionsBuilder>{
       TargetPlatform.android: CommonPageTransitionsBuilder(),
-      TargetPlatform.iOS: CommonPageTransitionsBuilder(),
+      TargetPlatform.iOS: IOSFullscreenBackTransitionsBuilder(),
       TargetPlatform.windows: CommonPageTransitionsBuilder(),
       TargetPlatform.linux: CommonPageTransitionsBuilder(),
       TargetPlatform.macOS: CommonPageTransitionsBuilder(),

@@ -4,10 +4,11 @@ import 'package:fl_clash/models/models.dart';
 import 'package:fl_clash/state.dart';
 import 'package:fl_clash/widgets/dialog.dart';
 import 'package:flutter/material.dart';
+import 'dart:io';
 
 class BaseNavigator {
   static Future<T?> push<T>(BuildContext context, Widget child) async {
-    if (globalState.appState.viewMode != ViewMode.mobile) {
+    if (!Platform.isIOS && globalState.appState.viewMode != ViewMode.mobile) {
       return await Navigator.of(context).push<T>(
         CommonDesktopRoute(
           builder: (context) => child,
@@ -22,7 +23,7 @@ class BaseNavigator {
   }
 
   static Future<T?> modal<T>(BuildContext context, Widget child) async {
-    if (globalState.appState.viewMode != ViewMode.mobile) {
+    if (!Platform.isIOS && globalState.appState.viewMode != ViewMode.mobile) {
       return await globalState.showCommonDialog<T>(
         child: CommonModal(
           child: child,
@@ -86,7 +87,8 @@ class CommonRoute<T> extends MaterialPageRoute<T> {
   Duration get transitionDuration => const Duration(milliseconds: 500);
 
   @override
-  Duration get reverseTransitionDuration => const Duration(milliseconds: 500);
+  Duration get reverseTransitionDuration =>
+      Duration(milliseconds: Platform.isIOS ? 220 : 500);
 }
 
 final Animatable<Offset> _kRightMiddleTween = Tween<Offset>(

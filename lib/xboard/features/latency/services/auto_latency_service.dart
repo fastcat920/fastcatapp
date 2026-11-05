@@ -182,6 +182,7 @@ class AutoLatencyService {
   Future<void> testCurrentGroupNodes({
     int maxNodes = 5,
     void Function(String proxyName)? onResult,
+    bool includeRecentlyTested = false,
   }) async {
     if (!_ensureServiceActive()) {
       return;
@@ -199,6 +200,7 @@ class AutoLatencyService {
       final recentlyTested = _lastTestedProxy ?? _activeProxy;
       final nodesToTest = currentGroup.all
           .where((proxy) {
+            if (includeRecentlyTested) return true;
             if (proxy.name == recentlyTested || proxy.name == _activeProxy) {
               return false;
             }

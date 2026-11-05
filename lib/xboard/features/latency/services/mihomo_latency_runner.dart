@@ -1,4 +1,5 @@
 import 'package:fl_clash/clash/clash.dart';
+import 'dart:io';
 import 'package:fl_clash/common/common.dart';
 import 'package:fl_clash/models/models.dart';
 import 'package:fl_clash/state.dart';
@@ -14,11 +15,7 @@ Future<void> testNodeLatency(Proxy proxy, [String? testUrl]) async {
   }
   controller.setDelay(Delay(url: url, name: state.proxyName, value: 0));
   final target = _LatencyTestTarget(url: url, proxyName: state.proxyName);
-  var result = await _testTargetTwice(target);
-  if (_isTimedOut(result)) {
-    await _recoverLatencyCore();
-    result = await _testTargetTwice(target);
-  }
+  final result = await _testTargetOnce(target);
   controller.setDelay(result);
 }
 
@@ -59,9 +56,7 @@ Future<void> testNodesLatency(
     await _waitForLatencyCoreReady();
   }
 
-  // Keep full concurrency as intended, but launch only one request for each
-  // resolved node + URL pair. Results are staged so a transient all-timeout
-  // immediately after foreground resume never overwrites valid cached delays.
+  // One request per resolved node + URL pair; never retry a failed batch.
   for (final target in targets) {
     controller.setDelay(
       Delay(url: target.url, name: target.proxyName, value: 0),
@@ -69,13 +64,9 @@ Future<void> testNodesLatency(
   }
 
   final publishedTargets = <int>{};
-  var results = await _runLatencyTargets(
+  final results = await _runLatencyTargets(
     targets,
     onResult: (index, result) {
-      // Defer failures until the whole attempt is known. Successful nodes
-      // still appear immediately; an all-timeout batch gets one transparent
-      // mobile-idle recovery before timeout is published.
-      if (_isTimedOut(result)) return;
       _publishTargetResult(
         setDelay: controller.setDelay,
         target: targets[index],
@@ -85,21 +76,6 @@ Future<void> testNodesLatency(
       publishedTargets.add(index);
     },
   );
-  if (_allTargetsTimedOut(results)) {
-    await _recoverLatencyCore();
-    results = await _runLatencyTargets(
-      targets,
-      onResult: (index, result) {
-        _publishTargetResult(
-          setDelay: controller.setDelay,
-          target: targets[index],
-          result: result,
-          onResult: onResult,
-        );
-        publishedTargets.add(index);
-      },
-    );
-  }
 
   for (var index = 0; index < targets.length; index++) {
     if (publishedTargets.contains(index)) continue;
@@ -116,32 +92,54 @@ Future<void> testNodesLatency(
 Future<List<Delay>> _runLatencyTargets(
   List<_LatencyTestTarget> targets, {
   required void Function(int index, Delay result) onResult,
-}) {
+}) async {
+  if (Platform.isIOS) {
+    final results = List<Delay?>.filled(targets.length, null);
+    var next = 0;
+    Future<void> worker() async {
+      while (next < targets.length) {
+        final index = next++;
+        final result = await _testTargetOnce(targets[index]);
+        results[index] = result;
+        onResult(index, result);
+      }
+    }
+
+    await Future.wait(List.generate(
+        targets.length < 4 ? targets.length : 4, (_) => worker()));
+    return results.cast<Delay>();
+  }
   return Future.wait(targets.indexed.map((entry) async {
     final index = entry.$1;
     final target = entry.$2;
-    final result = await _testTargetTwice(target);
+    final result = await _testTargetOnce(target);
     onResult(index, result);
     return result;
   }));
 }
 
-Future<Delay> _testTargetTwice(_LatencyTestTarget target) async {
-  // Run samples sequentially so they do not share the same instant of stale
-  // mobile network state and represent two independent connection attempts.
-  final samples = <Delay>[];
-  for (var attempt = 0; attempt < 2; attempt++) {
-    try {
-      samples.add(await clashCore.getDelay(target.url, target.proxyName));
-    } catch (_) {
-      samples.add(Delay(url: target.url, name: target.proxyName, value: -1));
+final Map<String, Future<Delay>> _pendingLatencyTests = {};
+
+Future<Delay> _testTargetOnce(_LatencyTestTarget target) {
+  final key = '${target.url}\u0000${target.proxyName}';
+  final existing = _pendingLatencyTests[key];
+  if (existing != null) return existing;
+  late final Future<Delay> task;
+  task = _performTargetTest(target).whenComplete(() {
+    if (identical(_pendingLatencyTests[key], task)) {
+      _pendingLatencyTests.remove(key);
     }
+  });
+  _pendingLatencyTests[key] = task;
+  return task;
+}
+
+Future<Delay> _performTargetTest(_LatencyTestTarget target) async {
+  try {
+    return await clashCore.getDelay(target.url, target.proxyName);
+  } catch (_) {
+    return Delay(url: target.url, name: target.proxyName, value: -1);
   }
-  return lowestSuccessfulDelay(
-    samples,
-    url: target.url,
-    proxyName: target.proxyName,
-  );
 }
 
 Delay lowestSuccessfulDelay(
@@ -156,22 +154,6 @@ Delay lowestSuccessfulDelay(
   return successful.reduce(
     (best, sample) => sample.value! < best.value! ? sample : best,
   );
-}
-
-bool _allTargetsTimedOut(List<Delay> results) {
-  return results.isNotEmpty && results.every(_isTimedOut);
-}
-
-bool _isTimedOut(Delay delay) => delay.value == null || delay.value! <= 0;
-
-Future<void> _recoverLatencyCore() async {
-  // resetConnections only resets Mihomo's resolver/idle transport cache. It
-  // does not stop VPN or close active user proxy sessions.
-  try {
-    await clashCore.resetConnections();
-  } catch (_) {}
-  await Future<void>.delayed(const Duration(milliseconds: 300));
-  await _waitForLatencyCoreReady();
 }
 
 void _publishTargetResult({

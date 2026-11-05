@@ -524,6 +524,7 @@ class _FastCatNodesPageState extends ConsumerState<FastCatNodesPage> {
     try {
       await autoLatencyService.testCurrentGroupNodes(
         maxNodes: 999,
+        includeRecentlyTested: true,
         onResult: (nodeName) => unawaited(_finishNodeTesting(nodeName)),
       );
     } finally {

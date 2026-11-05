@@ -88,6 +88,7 @@ extern "C" {
 #endif
 
 extern int ClashCore_init(char* homeDir, char* configYaml);
+extern int ClashCore_init_probe(char* homeDir, char* configYaml);
 extern int ClashCore_get_mixed_port(void);
 extern void ClashCore_shutdown(void);
 extern char* ClashCore_invoke(char* method, char* data);

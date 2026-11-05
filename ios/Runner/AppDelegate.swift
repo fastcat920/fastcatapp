@@ -7,7 +7,6 @@ import UserNotifications
 @objc class AppDelegate: FlutterAppDelegate {
   private var supportNotification: [String: String]?
   private var supportPushToken: String?
-  private lazy var flutterEngine = FlutterEngine(name: "my flutter engine")
   
   override func userNotificationCenter(_ center: UNUserNotificationCenter,
       didReceive response: UNNotificationResponse,
@@ -30,14 +29,23 @@ import UserNotifications
     _ application: UIApplication,
     didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?
   ) -> Bool {
-    // 显式创建 Flutter 引擎并启动（解决无 storyboard 时引擎未初始化的问题）
-    flutterEngine.run()
-    
-    // 显式创建 window 和 FlutterViewController
+    // The app does not use a main storyboard. Let FlutterViewController own
+    // its engine instead of attaching a manually-run engine during launch.
+    // This avoids a fatal engine/view-controller attachment failure on iOS 16.
     window = UIWindow(frame: UIScreen.main.bounds)
-    let controller = FlutterViewController(engine: flutterEngine, nibName: nil, bundle: nil)
+    let controller = FlutterViewController(project: nil, initialRoute: nil, nibName: nil, bundle: nil)
     window?.rootViewController = controller
     window?.makeKeyAndVisible()
+
+    let probeChannel = FlutterMethodChannel(name: "fastcat/latency", binaryMessenger: controller.binaryMessenger)
+    probeChannel.setMethodCallHandler { call, result in
+      guard call.method == "test", let args = call.arguments as? [String: String],
+        let config = args["config"], let home = args["home"], let data = args["data"] else {
+        result(FlutterMethodNotImplemented)
+        return
+      }
+      IOSLatencyProbe.shared.test(config: config, home: home, data: data, completion: result)
+    }
 
     let pushChannel = FlutterMethodChannel(name: "fastcat/support_push", binaryMessenger: controller.binaryMessenger)
     pushChannel.setMethodCallHandler { [weak self] call, result in
@@ -132,5 +140,52 @@ import UserNotifications
 
     GeneratedPluginRegistrant.register(with: self)
     return super.application(application, didFinishLaunchingWithOptions: launchOptions)
+  }
+}
+
+/// Isolated from the NetworkExtension process; never starts packet forwarding.
+private final class IOSLatencyProbe {
+  static let shared = IOSLatencyProbe()
+  private let queue = OperationQueue()
+  private let lock = NSCondition()
+  private var running = 0
+  private var activeConfig: String?
+  private var cleanup: DispatchWorkItem?
+  private init() { queue.maxConcurrentOperationCount = 4 }
+
+  func test(config: String, home: String, data: String, completion: @escaping FlutterResult) {
+    queue.addOperation {
+      self.lock.lock()
+      while self.running > 0 && self.activeConfig != config { self.lock.wait() }
+      self.cleanup?.cancel()
+      let code = self.activeConfig == config ? 0 : ClashCore_init_probe(home, config)
+      guard code == 0 else {
+        self.lock.unlock()
+        DispatchQueue.main.async { completion(FlutterError(code: "PROBE_INIT", message: "Latency core initialization failed: \(code)", details: nil)) }
+        return
+      }
+      self.activeConfig = config
+      self.running += 1
+      self.lock.unlock()
+      let started = Date()
+      let pointer = ClashCore_invoke("asyncTestDelay", data)
+      let response = pointer.map { String(cString: $0) }
+      ClashCore_free(pointer)
+      NSLog("[LatencyProbe] completed in %.0f ms", Date().timeIntervalSince(started) * 1000)
+      self.lock.lock()
+      self.running -= 1
+      self.lock.broadcast()
+      let cleanup = DispatchWorkItem {
+        self.lock.lock()
+        defer { self.lock.unlock() }
+        guard self.running == 0 else { return }
+        ClashCore_shutdown()
+        self.activeConfig = nil
+      }
+      self.cleanup = cleanup
+      DispatchQueue.global(qos: .utility).asyncAfter(deadline: .now() + 2, execute: cleanup)
+      self.lock.unlock()
+      DispatchQueue.main.async { completion(response) }
+    }
   }
 }
