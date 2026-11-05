@@ -2,6 +2,7 @@ import 'package:fl_clash/common/common.dart';
 import 'package:fl_clash/providers/config.dart';
 import 'package:fl_clash/state.dart';
 import 'package:fl_clash/xboard/features/auth/utils/customer_service_helper.dart';
+import 'package:fl_clash/xboard/features/invite/providers/referral_program_provider.dart';
 import 'package:fl_clash/xboard/features/subscription/utils/home_layout.dart';
 import 'package:fl_clash/xboard/widgets/navigation/desktop_navigation_rail.dart';
 import 'package:fl_clash/xboard/widgets/navigation/mobile_navigation_bar.dart';
@@ -29,6 +30,8 @@ class _AdaptiveShellLayoutState extends ConsumerState<AdaptiveShellLayout> {
   @override
   void initState() {
     super.initState();
+    // 主框架出现后立即预取等级数据，用户进入邀请或个人中心时可直接展示。
+    Future<void>(() => ref.read(referralProgramProvider.notifier).refresh());
     ref.listenManual(
       appSettingProvider.select((s) => s.logCapture),
       (prev, next) {

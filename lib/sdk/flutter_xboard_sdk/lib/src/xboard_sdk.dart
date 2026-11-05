@@ -16,6 +16,7 @@ import 'api/interfaces/ticket_api.dart';
 import 'api/interfaces/config_api.dart';
 import 'api/interfaces/payment_api.dart';
 import 'api/interfaces/auth_api.dart';
+import 'api/catboard_api.dart';
 
 /// XBoard SDK主类
 /// 提供对XBoard API的统一访问接口
@@ -41,6 +42,7 @@ class XBoardSDK {
   ConfigApi? _configApi;
   PaymentApi? _paymentApi;
   AuthApi? _authApi;
+  CatboardApi? _catboardApi;
 
   bool _isInitialized = false;
 
@@ -252,6 +254,13 @@ class XBoardSDK {
     return _authApi ??= _apiFactory.createAuthApi();
   }
 
+  /// APIs introduced by the FastCat Catboard backend. Callers should use the
+  /// advertised feature flags before showing capability-specific UI.
+  CatboardApi get catboard {
+    _checkInitialized();
+    return _catboardApi ??= CatboardApi(_httpService);
+  }
+
   /// 获取基础URL
   String? get baseUrl => _isInitialized ? _httpService.baseUrl : null;
 
@@ -309,6 +318,9 @@ class XBoardSDK {
       _configApi = null;
       _paymentApi = null;
       _authApi = null;
+      // Catboard also owns the old HttpService; never reuse it after login
+      // rebuilds the SDK (coupons, invited users and commission ledger).
+      _catboardApi = null;
 
       _isInitialized = false;
       SdkLogger.i('XBoardSDK disposed');

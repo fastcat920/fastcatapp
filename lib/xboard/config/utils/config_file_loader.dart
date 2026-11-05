@@ -456,6 +456,17 @@ extension ConfigFileLoaderHelper on ConfigFileLoader {
     return contact['crisp_proxy_url'] as String? ?? '';
   }
 
+  /// 获取本地 FastCat Support 兜底配置。
+  static Future<Map<String, dynamic>> getFallbackFastCatSupport() async {
+    final contact = await getContactFallbackConfig();
+    final raw = contact['fastcat_support'];
+    if (raw is Map<String, dynamic>) return raw;
+    if (raw is Map) {
+      return raw.map((key, value) => MapEntry(key.toString(), value));
+    }
+    return const {};
+  }
+
   /// 启动缓存开关（startup_cache.enabled），默认 true
   static Future<bool> getStartupCacheEnabled() async {
     try {

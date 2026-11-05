@@ -32,6 +32,9 @@ _$PlanModelImpl _$$PlanModelImplFromJson(Map<String, dynamic> json) =>
       sort: (json['sort'] as num?)?.toInt(),
       createdAt: (json['created_at'] as num?)?.toInt(),
       updatedAt: (json['updated_at'] as num?)?.toInt(),
+      activeFlashSales: json['active_flash_sales'] == null
+          ? const {}
+          : _flashSalesFromJson(json['active_flash_sales']),
     );
 
 Map<String, dynamic> _$$PlanModelImplToJson(_$PlanModelImpl instance) =>
@@ -60,4 +63,5 @@ Map<String, dynamic> _$$PlanModelImplToJson(_$PlanModelImpl instance) =>
       'sort': instance.sort,
       'created_at': instance.createdAt,
       'updated_at': instance.updatedAt,
+      'active_flash_sales': instance.activeFlashSales,
     };

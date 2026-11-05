@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_xboard_sdk/flutter_xboard_sdk.dart';
 import 'package:fl_clash/xboard/adapter/state/ticket_state.dart';
 import 'package:fl_clash/xboard/features/shared/styles/styles.dart';
+import 'package:fl_clash/xboard/features/shared/widgets/xb_error_state.dart';
 import 'package:fl_clash/common/common.dart';
 import 'package:fl_clash/l10n/l10n.dart';
 import 'ticket_detail_page.dart';
@@ -80,8 +81,8 @@ class _TicketPageState extends ConsumerState<TicketPage>
       ),
       body: ticketsAsync.when(
         loading: () => const Center(child: CircularProgressIndicator()),
-        error: (e, _) => _ErrorView(
-          message: e.toString(),
+        error: (e, _) => XbErrorState(
+          message: e,
           onRetry: () => ref.invalidate(getTicketsProvider),
         ),
         data: (tickets) => tickets.isEmpty
@@ -267,41 +268,6 @@ class _TicketCard extends StatelessWidget {
 }
 
 // ─── 公共组件 ─────────────────────────────────────────────────────────────────
-
-class _ErrorView extends StatelessWidget {
-  final String message;
-  final VoidCallback onRetry;
-  const _ErrorView({required this.message, required this.onRetry});
-
-  @override
-  Widget build(BuildContext context) {
-    return Center(
-      child: Padding(
-        padding: const EdgeInsets.all(24),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(Icons.error_outline,
-                size: 56, color: Theme.of(context).colorScheme.error),
-            const SizedBox(height: 12),
-            Text(AppLocalizations.of(context).xboardLoadingFailed,
-                style: Theme.of(context).textTheme.titleMedium),
-            const SizedBox(height: 6),
-            Text(message,
-                style: Theme.of(context).textTheme.bodySmall,
-                textAlign: TextAlign.center,
-                maxLines: 3,
-                overflow: TextOverflow.ellipsis),
-            const SizedBox(height: 16),
-            FilledButton(
-                onPressed: onRetry,
-                child: Text(AppLocalizations.of(context).xboardRetry)),
-          ],
-        ),
-      ),
-    );
-  }
-}
 
 class _EmptyView extends StatelessWidget {
   @override

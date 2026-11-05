@@ -25,7 +25,6 @@ import 'package:fl_clash/xboard/features/docs/pages/docs_page.dart';
 import 'package:fl_clash/xboard/features/payment/pages/recharge_page.dart';
 import 'package:fl_clash/xboard/features/update_check/providers/update_check_provider.dart';
 import 'package:fl_clash/xboard/features/about/pages/fastcat_about_page.dart';
-import 'package:fl_clash/xboard/features/auth/pages/qr_login_scanner_page.dart';
 
 class MinePage extends ConsumerStatefulWidget {
   const MinePage({super.key});
@@ -38,11 +37,18 @@ class _MinePageState extends ConsumerState<MinePage>
     with SingleTickerProviderStateMixin {
   late final AnimationController _refreshAnim;
   StreamSubscription? _configSub;
+  StreamSubscription<int>? _supportUnreadSub;
+  int _supportUnreadCount = 0;
   bool _isOpeningCustomerService = false;
 
   @override
   void initState() {
     super.initState();
+    _supportUnreadCount = CustomerServiceHelper.supportUnreadCount;
+    _supportUnreadSub = CustomerServiceHelper.supportUnreadCountStream.listen((count) {
+      if (!mounted) return;
+      setState(() => _supportUnreadCount = count);
+    });
     _refreshAnim = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 700),
@@ -62,6 +68,7 @@ class _MinePageState extends ConsumerState<MinePage>
   @override
   void dispose() {
     _configSub?.cancel();
+    _supportUnreadSub?.cancel();
     _refreshAnim.dispose();
     super.dispose();
   }
@@ -99,34 +106,62 @@ class _MinePageState extends ConsumerState<MinePage>
   Widget _buildCustomerServiceButton(BuildContext context) {
     final theme = Theme.of(context);
     final primary = theme.colorScheme.primary;
-    return TextButton.icon(
-      style: XbUiButton.textChipPrimary(context),
-      icon: AnimatedSwitcher(
-        duration: const Duration(milliseconds: 180),
-        child: _isOpeningCustomerService
-            ? SizedBox(
-                key: const ValueKey('opening'),
-                width: 18,
-                height: 18,
-                child: CircularProgressIndicator(
-                  strokeWidth: 2,
-                  valueColor: AlwaysStoppedAnimation(primary),
-                ),
-              )
-            : Icon(
-                Icons.support_agent_outlined,
-                key: const ValueKey('support'),
-                size: 18,
-                color: primary,
+    return Stack(
+      clipBehavior: Clip.none,
+      children: [
+        TextButton.icon(
+          style: XbUiButton.textChipPrimary(context),
+          icon: AnimatedSwitcher(
+            duration: const Duration(milliseconds: 180),
+            child: _isOpeningCustomerService
+                ? SizedBox(
+                    key: const ValueKey('opening'),
+                    width: 18,
+                    height: 18,
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2,
+                      valueColor: AlwaysStoppedAnimation(primary),
+                    ),
+                  )
+                : Icon(
+                    Icons.support_agent_outlined,
+                    key: const ValueKey('support'),
+                    size: 18,
+                    color: primary,
+                  ),
+          ),
+          label: Text(
+            appLocalizations.contactSupport,
+            style: TextStyle(color: primary),
+          ),
+          onPressed: _isOpeningCustomerService
+              ? null
+              : () => _openCustomerService(context),
+        ),
+        if (_supportUnreadCount > 0)
+          Positioned(
+            right: 0,
+            top: 0,
+            child: Container(
+              constraints: const BoxConstraints(minWidth: 15, minHeight: 15),
+              padding: const EdgeInsets.symmetric(horizontal: 4),
+              decoration: const BoxDecoration(
+                color: Colors.red,
+                shape: BoxShape.circle,
               ),
-      ),
-      label: Text(
-        appLocalizations.contactSupport,
-        style: TextStyle(color: primary),
-      ),
-      onPressed: _isOpeningCustomerService
-          ? null
-          : () => _openCustomerService(context),
+              alignment: Alignment.center,
+              child: Text(
+                _supportUnreadCount > 99 ? '99+' : '$_supportUnreadCount',
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontSize: 9,
+                  height: 1,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ),
+          ),
+      ],
     );
   }
 
@@ -179,8 +214,11 @@ class _MinePageState extends ConsumerState<MinePage>
             color: theme.colorScheme.primary.withValues(alpha: 0.1),
             borderRadius: BorderRadius.circular(10),
           ),
-          child: Icon(Icons.person_outline,
-              color: theme.colorScheme.primary, size: 20),
+          child: Icon(
+            Icons.person_outline,
+            color: theme.colorScheme.primary,
+            size: 20,
+          ),
         ),
         title: Text(
           appLocalizations.xboardAccountInfo,
@@ -193,10 +231,12 @@ class _MinePageState extends ConsumerState<MinePage>
           maxLines: 1,
           overflow: TextOverflow.ellipsis,
         ),
-        trailing: Icon(Icons.chevron_right,
-            color: isDark
-                ? theme.colorScheme.onSurfaceVariant
-                : XbUiTokens.chevronLight),
+        trailing: Icon(
+          Icons.chevron_right,
+          color: isDark
+              ? theme.colorScheme.onSurfaceVariant
+              : XbUiTokens.chevronLight,
+        ),
         onTap: () => context.push('/mine/account'),
         contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 2),
       ),
@@ -257,14 +297,6 @@ class _MinePageState extends ConsumerState<MinePage>
         automaticallyImplyLeading: false,
         actions: [
           if (!isDesktop)
-            IconButton(
-              tooltip: '扫一扫登录设备',
-              icon: const Icon(Icons.qr_code_scanner),
-              onPressed: () => Navigator.of(context).push(
-                MaterialPageRoute(builder: (_) => const QrLoginScannerPage()),
-              ),
-            ),
-          if (!isDesktop)
             Padding(
               padding: const EdgeInsets.only(right: 16),
               child: _buildCustomerServiceButton(context),
@@ -307,8 +339,7 @@ class _MinePageState extends ConsumerState<MinePage>
             _buildSectionHeader(appLocalizations.xboardMyServices, theme),
             _buildServicesCard(context, ref, userInfo, theme, isDark),
             const SizedBox(height: 16),
-            _buildSectionHeader(appLocalizations.xboardSoftwareSettings, theme),
-            _buildSettingsCard(context, isDesktop, theme, isDark),
+            _buildToolsSettingsCard(context),
             const SizedBox(height: 20),
             _buildVersionFooter(
               context,
@@ -317,6 +348,29 @@ class _MinePageState extends ConsumerState<MinePage>
             ),
             const SizedBox(height: 8),
           ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildToolsSettingsCard(BuildContext context) {
+    final theme = Theme.of(context);
+    return Card(
+      clipBehavior: Clip.antiAlias,
+      margin: EdgeInsets.zero,
+      elevation: XbUiCardStyle.elevation(context),
+      shadowColor: XbUiCardStyle.shadowColor(context),
+      color: XbUiCardStyle.background(context),
+      shape: XbUiCardStyle.shape(context).copyWith(
+        side: BorderSide(color: XbUiTokens.cardBorder(context)),
+      ),
+      child: _tile(
+        icon: Icons.settings_outlined,
+        label: AppLocalizations.of(context).xboardToolsSettings,
+        iconColor: theme.colorScheme.primary,
+        iconBgColor: theme.colorScheme.primary.withValues(alpha: 0.1),
+        onTap: () => Navigator.of(context).push(
+          MaterialPageRoute(builder: (_) => const FastCatSettingsPage()),
         ),
       ),
     );
@@ -487,40 +541,6 @@ class _MinePageState extends ConsumerState<MinePage>
               onTap: () => _openTelegramGroup(context),
             ),
           ],
-        ],
-      ),
-    );
-  }
-
-  // ─── 设置卡片（工具设置） ──────────────────────────────────────────
-
-  Widget _buildSettingsCard(
-      BuildContext context, bool isDesktop, ThemeData theme, bool isDark) {
-    return Card(
-      clipBehavior: Clip.antiAlias,
-      margin: EdgeInsets.zero,
-      elevation: isDark ? 0 : 1,
-      shadowColor: isDark ? null : Colors.black.withValues(alpha: 0.08),
-      color: isDark ? null : Colors.white,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(20),
-        side: isDark
-            ? BorderSide.none
-            : const BorderSide(color: Color(0xFFEEF0F4), width: 1),
-      ),
-      child: Column(
-        children: [
-          _tile(
-            icon: Icons.settings_outlined,
-            label: appLocalizations.xboardToolsSettings,
-            iconColor: theme.colorScheme.primary,
-            iconBgColor: theme.colorScheme.primary.withValues(alpha: 0.1),
-            onTap: () => Navigator.of(context).push(
-              MaterialPageRoute(
-                builder: (_) => const FastCatSettingsPage(),
-              ),
-            ),
-          ),
         ],
       ),
     );

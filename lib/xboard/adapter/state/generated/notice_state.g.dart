@@ -6,7 +6,7 @@ part of '../notice_state.dart';
 // RiverpodGenerator
 // **************************************************************************
 
-String _$getNoticesHash() => r'ece1b2f2ee8ea6b4d0199a0b816cea51777382b0';
+String _$getNoticesHash() => r'495dfbdead27fd80e83432a43d22b89a6435da47';
 
 /// 公告状态管理
 /// 获取公告列表

@@ -55,6 +55,46 @@ class AppLocalizations {
     return Localizations.of<AppLocalizations>(context, AppLocalizations);
   }
 
+  /// `Node selection was not applied. Please select the node again.`
+  String get xboardProxySelectionFailed {
+    return Intl.message(
+      'Node selection was not applied. Please select the node again.',
+      name: 'xboardProxySelectionFailed',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `TUN repair failed: Helper is unavailable or authorization was denied. Please check permissions and Helper service status.`
+  String get xboardProxyRepairHelperFailed {
+    return Intl.message(
+      'TUN repair failed: Helper is unavailable or authorization was denied. Please check permissions and Helper service status.',
+      name: 'xboardProxyRepairHelperFailed',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Actual proxy route (via local proxy port)`
+  String get xboardNetworkDiagnosticsLocalProxy {
+    return Intl.message(
+      'Actual proxy route (via local proxy port)',
+      name: 'xboardNetworkDiagnosticsLocalProxy',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `The selected node passed, but the actual local proxy route failed. Check the active proxy group selection and try again.`
+  String get xboardNetworkDiagnosticsLocalProxyFailed {
+    return Intl.message(
+      'The selected node passed, but the actual local proxy route failed. Check the active proxy group selection and try again.',
+      name: 'xboardNetworkDiagnosticsLocalProxyFailed',
+      desc: '',
+      args: [],
+    );
+  }
+
   /// `Smart Routing`
   String get rule {
     return Intl.message('Smart Routing', name: 'rule', desc: '', args: []);
@@ -5190,10 +5230,10 @@ class AppLocalizations {
     );
   }
 
-  /// `Configuration download failed, please check subscription link`
+  /// `Configuration file download failed. Please check that your plan is active and valid.`
   String get xboardConfigDownloadFailed {
     return Intl.message(
-      'Configuration download failed, please check subscription link',
+      'Configuration file download failed. Please check that your plan is active and valid.',
       name: 'xboardConfigDownloadFailed',
       desc: '',
       args: [],
@@ -8600,6 +8640,46 @@ class AppLocalizations {
     );
   }
 
+  /// `Withdrawal amount`
+  String get xboardWithdrawAmount {
+    return Intl.message(
+      'Withdrawal amount',
+      name: 'xboardWithdrawAmount',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Enter withdrawal amount (CNY)`
+  String get xboardEnterWithdrawAmount {
+    return Intl.message(
+      'Enter withdrawal amount (CNY)',
+      name: 'xboardEnterWithdrawAmount',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Enter an amount greater than 0 with up to two decimal places`
+  String get xboardInvalidWithdrawAmount {
+    return Intl.message(
+      'Enter an amount greater than 0 with up to two decimal places',
+      name: 'xboardInvalidWithdrawAmount',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Withdrawal amount cannot exceed ¥{amount}`
+  String xboardWithdrawAmountExceeded(String amount) {
+    return Intl.message(
+      'Withdrawal amount cannot exceed ¥$amount',
+      name: 'xboardWithdrawAmountExceeded',
+      desc: '',
+      args: [amount],
+    );
+  }
+
   /// `Withdrawal request submitted`
   String get withdrawRequestSubmitted {
     return Intl.message(
@@ -10525,10 +10605,10 @@ class AppLocalizations {
     );
   }
 
-  /// `Reload nodes`
+  /// `Reload`
   String get xboardReloadNodes {
     return Intl.message(
-      'Reload nodes',
+      'Reload',
       name: 'xboardReloadNodes',
       desc: '',
       args: [],
@@ -10538,6 +10618,131 @@ class AppLocalizations {
   /// `Got it`
   String get xboardGotIt {
     return Intl.message('Got it', name: 'xboardGotIt', desc: '', args: []);
+  }
+
+  /// `QR Login`
+  String get xboardQrLogin {
+    return Intl.message('QR Login', name: 'xboardQrLogin', desc: '', args: []);
+  }
+
+  /// `Account Login`
+  String get xboardAccountLogin {
+    return Intl.message(
+      'Account Login',
+      name: 'xboardAccountLogin',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Scan and confirm with a phone already signed in to FastCat`
+  String get xboardQrLoginDescription {
+    return Intl.message(
+      'Scan and confirm with a phone already signed in to FastCat',
+      name: 'xboardQrLoginDescription',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Generating QR code…`
+  String get xboardQrGenerating {
+    return Intl.message(
+      'Generating QR code…',
+      name: 'xboardQrGenerating',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `QR code unavailable`
+  String get xboardQrUnavailable {
+    return Intl.message(
+      'QR code unavailable',
+      name: 'xboardQrUnavailable',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `QR code expired`
+  String get xboardQrExpired {
+    return Intl.message(
+      'QR code expired',
+      name: 'xboardQrExpired',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Refresh QR code`
+  String get xboardQrRefresh {
+    return Intl.message(
+      'Refresh QR code',
+      name: 'xboardQrRefresh',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Could not refresh the QR code. Try again later.`
+  String get xboardQrRefreshFailed {
+    return Intl.message(
+      'Could not refresh the QR code. Try again later.',
+      name: 'xboardQrRefreshFailed',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Could not load the QR code`
+  String get xboardQrLoadFailed {
+    return Intl.message(
+      'Could not load the QR code',
+      name: 'xboardQrLoadFailed',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Login failed. Refresh the QR code.`
+  String get xboardQrLoginFailed {
+    return Intl.message(
+      'Login failed. Refresh the QR code.',
+      name: 'xboardQrLoginFailed',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Expires in {time}`
+  String xboardQrExpiresIn(String time) {
+    return Intl.message(
+      'Expires in $time',
+      name: 'xboardQrExpiresIn',
+      desc: '',
+      args: [time],
+    );
+  }
+
+  /// `QR code expired. Press Select to refresh it.`
+  String get xboardQrExpiredSemantics {
+    return Intl.message(
+      'QR code expired. Press Select to refresh it.',
+      name: 'xboardQrExpiredSemantics',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Login QR code. Expires in {time}. Press Select to refresh it.`
+  String xboardQrReadySemantics(String time) {
+    return Intl.message(
+      'Login QR code. Expires in $time. Press Select to refresh it.',
+      name: 'xboardQrReadySemantics',
+      desc: '',
+      args: [time],
+    );
   }
 
   /// `{count} devices`
@@ -11080,21 +11285,81 @@ class AppLocalizations {
     );
   }
 
-  /// `IPv4 / IPv6 connectivity`
+  /// `Device IPv4 / IPv6 (system routing)`
   String get xboardNetworkDiagnosticsIpConnectivity {
     return Intl.message(
-      'IPv4 / IPv6 connectivity',
+      'Device IPv4 / IPv6 (system routing)',
       name: 'xboardNetworkDiagnosticsIpConnectivity',
       desc: '',
       args: [],
     );
   }
 
-  /// `Local direct HTTPS (domestic baseline)`
+  /// `Device HTTPS (independent of core test API)`
   String get xboardNetworkDiagnosticsDirectHttps {
     return Intl.message(
-      'Local direct HTTPS (domestic baseline)',
+      'Device HTTPS (independent of core test API)',
       name: 'xboardNetworkDiagnosticsDirectHttps',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Device request without the core test API; still uses system DNS and routing`
+  String get xboardNetworkDiagnosticsNativeDirectDetail {
+    return Intl.message(
+      'Device request without the core test API; still uses system DNS and routing',
+      name: 'xboardNetworkDiagnosticsNativeDirectDetail',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Device request without the core test API; VPN/TUN may affect system DNS and routing, so this does not independently verify the physical network`
+  String get xboardNetworkDiagnosticsNativeTunDetail {
+    return Intl.message(
+      'Device request without the core test API; VPN/TUN may affect system DNS and routing, so this does not independently verify the physical network',
+      name: 'xboardNetworkDiagnosticsNativeTunDetail',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Prerequisite unavailable; this check was not performed`
+  String get xboardNetworkDiagnosticsSkippedPrerequisite {
+    return Intl.message(
+      'Prerequisite unavailable; this check was not performed',
+      name: 'xboardNetworkDiagnosticsSkippedPrerequisite',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `The proxy configuration has not been applied, or the selected node is missing from the core. Reload the subscription or configuration first; this does not indicate a local network or node DNS failure.`
+  String get xboardNetworkDiagnosticsConclusionConfiguration {
+    return Intl.message(
+      'The proxy configuration has not been applied, or the selected node is missing from the core. Reload the subscription or configuration first; this does not indicate a local network or node DNS failure.',
+      name: 'xboardNetworkDiagnosticsConclusionConfiguration',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `No usable core diagnostic result was obtained. Check the core and configuration, then retry; this alone does not indicate a local network failure.`
+  String get xboardNetworkDiagnosticsConclusionCoreUnavailable {
+    return Intl.message(
+      'No usable core diagnostic result was obtained. Check the core and configuration, then retry; this alone does not indicate a local network failure.',
+      name: 'xboardNetworkDiagnosticsConclusionCoreUnavailable',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Both the device baseline and node checks failed, but VPN/TUN may affect system routing. The results cannot distinguish a local network issue from a proxy issue. Check the core, configuration, and TUN state first.`
+  String get xboardNetworkDiagnosticsConclusionRouteUncertain {
+    return Intl.message(
+      'Both the device baseline and node checks failed, but VPN/TUN may affect system routing. The results cannot distinguish a local network issue from a proxy issue. Check the core, configuration, and TUN state first.',
+      name: 'xboardNetworkDiagnosticsConclusionRouteUncertain',
       desc: '',
       args: [],
     );
@@ -11420,10 +11685,10 @@ class AppLocalizations {
     );
   }
 
-  /// `Layered diagnostics are unavailable in the current core. Update or fully restart the client; the HTTPS results below remain valid.`
+  /// `No usable layered core diagnostic result was obtained. Unperformed checks are skipped; device HTTPS results are shown separately.`
   String get xboardNetworkDiagnosticsCoreUnavailable {
     return Intl.message(
-      'Layered diagnostics are unavailable in the current core. Update or fully restart the client; the HTTPS results below remain valid.',
+      'No usable layered core diagnostic result was obtained. Unperformed checks are skipped; device HTTPS results are shown separately.',
       name: 'xboardNetworkDiagnosticsCoreUnavailable',
       desc: '',
       args: [],
@@ -11480,10 +11745,10 @@ class AppLocalizations {
     );
   }
 
-  /// `Direct internet access works, but the selected node TCP endpoint timed out. The endpoint may be unreachable or restricted by the current network.`
+  /// `The device HTTPS baseline is reachable, but the selected node TCP endpoint timed out. The endpoint may be unreachable or restricted by the current network.`
   String get xboardNetworkDiagnosticsConclusionTcp {
     return Intl.message(
-      'Direct internet access works, but the selected node TCP endpoint timed out. The endpoint may be unreachable or restricted by the current network.',
+      'The device HTTPS baseline is reachable, but the selected node TCP endpoint timed out. The endpoint may be unreachable or restricted by the current network.',
       name: 'xboardNetworkDiagnosticsConclusionTcp',
       desc: '',
       args: [],
@@ -11520,10 +11785,10 @@ class AppLocalizations {
     );
   }
 
-  /// `The UDP-based node timed out while direct internet access works. UDP may be unavailable or restricted on the current network.`
+  /// `The UDP-based node timed out while the device HTTPS baseline is reachable. UDP may be unavailable or restricted on the current network.`
   String get xboardNetworkDiagnosticsConclusionUdp {
     return Intl.message(
-      'The UDP-based node timed out while direct internet access works. UDP may be unavailable or restricted on the current network.',
+      'The UDP-based node timed out while the device HTTPS baseline is reachable. UDP may be unavailable or restricted on the current network.',
       name: 'xboardNetworkDiagnosticsConclusionUdp',
       desc: '',
       args: [],
@@ -12015,6 +12280,16 @@ class AppLocalizations {
     return Intl.message(
       'Failed to write the device system proxy settings.',
       name: 'xboardProxyRepairWriteFailed',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Connection repair timed out. Reconnect; if it still fails, copy the runtime logs for diagnosis.`
+  String get xboardProxyRepairTimeout {
+    return Intl.message(
+      'Connection repair timed out. Reconnect; if it still fails, copy the runtime logs for diagnosis.',
+      name: 'xboardProxyRepairTimeout',
       desc: '',
       args: [],
     );
@@ -12835,6 +13110,136 @@ class AppLocalizations {
     return Intl.message(
       'Maybe later',
       name: 'xboardMaybeLater',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Sign in on a new device`
+  String get xboardQrAuthorizeTitle {
+    return Intl.message(
+      'Sign in on a new device',
+      name: 'xboardQrAuthorizeTitle',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Allow this computer or TV to sign in to your FastCat account?`
+  String get xboardQrAuthorizeMessage {
+    return Intl.message(
+      'Allow this computer or TV to sign in to your FastCat account?',
+      name: 'xboardQrAuthorizeMessage',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Allow sign-in`
+  String get xboardQrAuthorizeConfirm {
+    return Intl.message(
+      'Allow sign-in',
+      name: 'xboardQrAuthorizeConfirm',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Device sign-in approved`
+  String get xboardQrAuthorizeSuccess {
+    return Intl.message(
+      'Device sign-in approved',
+      name: 'xboardQrAuthorizeSuccess',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Authorization failed. Please try again.`
+  String get xboardQrAuthorizeFailed {
+    return Intl.message(
+      'Authorization failed. Please try again.',
+      name: 'xboardQrAuthorizeFailed',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Scan to sign in on a device`
+  String get xboardQrScannerTitle {
+    return Intl.message(
+      'Scan to sign in on a device',
+      name: 'xboardQrScannerTitle',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Scan the sign-in QR code on your computer or TV\nPinch to zoom`
+  String get xboardQrScannerHint {
+    return Intl.message(
+      'Scan the sign-in QR code on your computer or TV\nPinch to zoom',
+      name: 'xboardQrScannerHint',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Scan a valid FastCat sign-in QR code on your computer or TV`
+  String get xboardQrInvalidCode {
+    return Intl.message(
+      'Scan a valid FastCat sign-in QR code on your computer or TV',
+      name: 'xboardQrInvalidCode',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Reset the current plan's data usage`
+  String get xboardResetTrafficDescription {
+    return Intl.message(
+      'Reset the current plan\'s data usage',
+      name: 'xboardResetTrafficDescription',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Online support is not configured`
+  String get xboardCustomerServiceNotConfigured {
+    return Intl.message(
+      'Online support is not configured',
+      name: 'xboardCustomerServiceNotConfigured',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Loading timed out. Check your network and try again.`
+  String get xboardCustomerServiceLoadTimeout {
+    return Intl.message(
+      'Loading timed out. Check your network and try again.',
+      name: 'xboardCustomerServiceLoadTimeout',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Your device session has changed. Please sign in again.`
+  String get xboardDeviceGatewayRelogin {
+    return Intl.message(
+      'Your device session has changed. Please sign in again.',
+      name: 'xboardDeviceGatewayRelogin',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Password changed. Please enter your new password the next time you sign in.`
+  String get xboardPasswordChangedRememberFailed {
+    return Intl.message(
+      'Password changed. Please enter your new password the next time you sign in.',
+      name: 'xboardPasswordChangedRememberFailed',
       desc: '',
       args: [],
     );

@@ -64,17 +64,8 @@ List<Group> _buildRuleModeGroups(List<Group> groups) {
   final mainGroup = _findMainProxyGroup(groups);
   if (mainGroup == null) return [];
   final allProxies = _prioritizeComputedGroupProxies(mainGroup.all, groups);
-  // 修正 now：若指向 DIRECT/REJECT 等不应显示的代理，fallback 到第一个有效代理
-  String nowValue = mainGroup.now ?? '';
-  if (nowValue.isNotEmpty && allProxies.isNotEmpty) {
-    if (_isHiddenProxy(nowValue) ||
-        !allProxies.any((p) => p.name == nowValue)) {
-      nowValue = allProxies.first.name;
-    }
-  }
   return [
     mainGroup.copyWith(
-      now: nowValue,
       all: allProxies,
     ),
   ];
@@ -86,20 +77,11 @@ List<Group> _buildGlobalModeGroups(List<Group> groups) {
   final sourceGroup = mainGroup ?? globalGroup;
   if (sourceGroup == null) return [];
   final allProxies = _prioritizeComputedGroupProxies(sourceGroup.all, groups);
-  // Clash 默认 now 可能是 DIRECT/REJECT 或不在可见列表中的代理。
-  // 此时 fallback 到 all 第一个有效代理（通常是 URLTest 自动选择组）。
-  String nowValue = globalGroup?.now ?? sourceGroup.now ?? '';
-  if (nowValue.isNotEmpty && allProxies.isNotEmpty) {
-    if (_isHiddenProxy(nowValue) ||
-        !allProxies.any((p) => p.name == nowValue)) {
-      nowValue = allProxies.first.name;
-    }
-  }
   return [
     sourceGroup.copyWith(
       name: globalGroup?.name ?? sourceGroup.name,
       type: globalGroup?.type ?? sourceGroup.type,
-      now: nowValue,
+      now: globalGroup?.now ?? sourceGroup.now,
       testUrl: globalGroup?.testUrl ?? sourceGroup.testUrl,
       all: allProxies,
     ),
@@ -138,11 +120,6 @@ bool _isComputedGroupProxy(Proxy proxy, List<Group> groups) {
   final proxyType = GroupTypeExtension.getGroupType(proxy.type);
   return proxyGroup?.type.isComputedSelected == true ||
       proxyType?.isComputedSelected == true;
-}
-
-/// DIRECT 和 REJECT 是 Clash 内部特殊代理，不应作为默认选中项显示。
-bool _isHiddenProxy(String name) {
-  return name == UsedProxy.DIRECT.name || name == UsedProxy.REJECT.name;
 }
 
 @riverpod
@@ -556,17 +533,17 @@ int getProxiesColumns(Ref ref) {
 }
 
 ProxyCardState _getProxyCardState(
-  List<Group> groups,
-  SelectedMap selectedMap,
-  ProxyCardState proxyDelayState,
-) {
+    List<Group> groups, SelectedMap selectedMap, ProxyCardState proxyDelayState,
+    {bool preferActual = false}) {
   if (proxyDelayState.proxyName.isEmpty) return proxyDelayState;
   final index =
       groups.indexWhere((element) => element.name == proxyDelayState.proxyName);
   if (index == -1) return proxyDelayState;
   final group = groups[index];
-  final currentSelectedName = group
-      .getCurrentSelectedName(selectedMap[proxyDelayState.proxyName] ?? '');
+  final currentSelectedName = preferActual && group.realNow.isNotEmpty
+      ? group.realNow
+      : group
+          .getCurrentSelectedName(selectedMap[proxyDelayState.proxyName] ?? '');
   if (currentSelectedName.isEmpty) {
     return proxyDelayState;
   }
@@ -577,6 +554,7 @@ ProxyCardState _getProxyCardState(
       proxyName: currentSelectedName,
       testUrl: group.testUrl,
     ),
+    preferActual: preferActual,
   );
 }
 
@@ -585,7 +563,8 @@ ProxyCardState getProxyCardState(Ref ref, String proxyName) {
   final groups = ref.watch(groupsProvider);
   final selectedMap = ref.watch(selectedMapProvider);
   return _getProxyCardState(
-      groups, selectedMap, ProxyCardState(proxyName: proxyName));
+      groups, selectedMap, ProxyCardState(proxyName: proxyName),
+      preferActual: ref.watch(runTimeProvider) != null);
 }
 
 @riverpod
@@ -603,7 +582,9 @@ String? getSelectedProxyName(Ref ref, String groupName) {
       (state) => state.getGroup(groupName),
     ),
   );
-  return group?.getCurrentSelectedName(proxyName ?? '');
+  return ref.watch(runTimeProvider) != null && group?.realNow.isNotEmpty == true
+      ? group!.realNow
+      : group?.getCurrentSelectedName(proxyName ?? '');
 }
 
 @riverpod

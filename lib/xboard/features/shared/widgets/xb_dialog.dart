@@ -1,4 +1,5 @@
 import 'package:fl_clash/xboard/features/shared/styles/styles.dart';
+import 'package:fl_clash/widgets/widgets.dart';
 import 'package:flutter/material.dart';
 
 enum XbDialogTone { neutral, warning, danger }
@@ -73,17 +74,26 @@ class XbConfirmDialog extends StatelessWidget {
       content: Text(message),
       actionsPadding: const EdgeInsets.fromLTRB(24, 0, 24, 20),
       actions: [
-        OutlinedButton(
+        TVFocusable(
+          autofocus: true,
+          borderRadius: BorderRadius.circular(14),
           onPressed: () => Navigator.of(context).pop(false),
-          style: XbUiButton.outlinedNeutral(context),
-          child: Text(cancelLabel ?? (chinese ? '取消' : 'Cancel')),
+          child: OutlinedButton(
+            onPressed: () => Navigator.of(context).pop(false),
+            style: XbUiButton.outlinedNeutral(context),
+            child: Text(cancelLabel ?? (chinese ? '取消' : 'Cancel')),
+          ),
         ),
-        FilledButton(
+        TVFocusable(
+          borderRadius: BorderRadius.circular(14),
           onPressed: () => Navigator.of(context).pop(true),
-          style: isDanger
-              ? XbUiButton.filledDanger(context)
-              : XbUiButton.filledPrimary(context),
-          child: Text(confirmLabel),
+          child: FilledButton(
+            onPressed: () => Navigator.of(context).pop(true),
+            style: isDanger
+                ? XbUiButton.filledDanger(context)
+                : XbUiButton.filledPrimary(context),
+            child: Text(confirmLabel),
+          ),
         ),
       ],
     );
@@ -151,15 +161,22 @@ class _ChoiceTile<T> extends StatelessWidget {
   final String label;
 
   @override
-  Widget build(BuildContext context) => ListTile(
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(XbUiTokens.radiusSm),
-        ),
+  Widget build(BuildContext context) {
+    final radius = BorderRadius.circular(XbUiTokens.radiusSm);
+    void select() => Navigator.of(context).pop(value);
+    return TVFocusable(
+      borderRadius: radius,
+      onPressed: select,
+      child: ListTile(
+        shape: RoundedRectangleBorder(borderRadius: radius),
+        focusColor: Colors.transparent,
         leading: Icon(
           selected ? Icons.radio_button_checked : Icons.radio_button_off,
           color: selected ? Theme.of(context).colorScheme.primary : null,
         ),
         title: Text(label),
-        onTap: () => Navigator.of(context).pop(value),
-      );
+        onTap: select,
+      ),
+    );
+  }
 }

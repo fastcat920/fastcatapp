@@ -10,6 +10,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:fl_clash/xboard/features/auth/auth.dart';
 import 'package:fl_clash/xboard/features/latency/services/auto_latency_service.dart';
 import 'package:fl_clash/xboard/features/profile/providers/profile_import_provider.dart';
+import 'package:fl_clash/xboard/features/profile/models/import_models.dart';
 import 'package:fl_clash/xboard/features/subscription/services/traffic_recovery_service.dart';
 import 'package:fl_clash/xboard/features/subscription/services/subscription_guard_service.dart';
 import 'package:fl_clash/xboard/features/subscription/services/subscription_status_checker.dart';
@@ -17,6 +18,7 @@ import 'package:fl_clash/xboard/features/subscription/services/subscription_stat
 import 'package:fl_clash/xboard/features/subscription/widgets/subscription_status_dialog.dart';
 import 'package:fl_clash/xboard/features/shared/styles/styles.dart';
 import 'package:fl_clash/l10n/l10n.dart';
+import 'node_recovery_actions.dart';
 
 class NodeSelectorBar extends ConsumerStatefulWidget {
   const NodeSelectorBar({super.key});
@@ -210,6 +212,14 @@ class _NodeSelectorBarState extends ConsumerState<NodeSelectorBar> {
       }
     }
     if (currentGroup == null || currentGroup.all.isEmpty) {
+      return _buildEmptyState(context);
+    }
+    final usableProxies = currentGroup.all
+        .where((proxy) =>
+            proxy.name != UsedProxy.DIRECT.name &&
+            proxy.name != UsedProxy.REJECT.name)
+        .toList();
+    if (usableProxies.isEmpty) {
       return _buildEmptyState(context);
     }
     final selectedProxyName = selectedMap[currentGroup.name] ?? '';
@@ -408,6 +418,12 @@ class _NodeSelectorBarState extends ConsumerState<NodeSelectorBar> {
   Widget _buildEmptyState(BuildContext context) {
     final importState = ref.watch(profileImportProvider);
     final isReloading = importState.isImporting || _isReloadingNodes;
+    final failedMessage = importState.lastResult?.isSuccess == false
+        ? _localizedImportError(
+            context,
+            importState.lastResult?.errorType,
+          )
+        : null;
     return Container(
       decoration: BoxDecoration(
         color: XbUiCardStyle.background(context),
@@ -437,7 +453,10 @@ class _NodeSelectorBarState extends ConsumerState<NodeSelectorBar> {
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 Text(
-                  AppLocalizations.of(context).xboardNoAvailableNodes,
+                  failedMessage ??
+                      AppLocalizations.of(context).xboardNoAvailableNodes,
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
                   style: Theme.of(context).textTheme.titleSmall?.copyWith(
                         fontWeight: XbFontWeight.semibold,
                         color: Theme.of(context).colorScheme.onSurface,
@@ -446,38 +465,30 @@ class _NodeSelectorBarState extends ConsumerState<NodeSelectorBar> {
               ],
             ),
           ),
-          TextButton.icon(
-            onPressed: isReloading ? null : _reloadNodes,
-            style: XbUiButton.textChipPrimary(context),
-            icon: isReloading
-                ? const SizedBox(
-                    width: 14,
-                    height: 14,
-                    child: CircularProgressIndicator(strokeWidth: 2),
-                  )
-                : const Icon(Icons.refresh, size: 16),
-            label: Text(
-              AppLocalizations.of(context).xboardReloadNodes,
-              style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w500),
-            ),
-          ),
-          const SizedBox(width: 8),
-          ElevatedButton(
-            onPressed:
-                isReloading ? null : () => _handleOpenProxiesView(context),
-            style: XbUiButton.filledPrimary(context).copyWith(
-              minimumSize: const WidgetStatePropertyAll(Size(56, 30)),
-              padding: const WidgetStatePropertyAll(
-                  EdgeInsets.symmetric(horizontal: 10)),
-            ),
-            child: Text(
-              AppLocalizations.of(context).xboardSwitch,
-              style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w500),
-            ),
+          NodeRecoveryActions(
+            isBusy: isReloading,
+            onReload: _reloadNodes,
+            onSwitch: () => _handleOpenProxiesView(context),
           ),
         ],
       ),
     );
+  }
+
+  String _localizedImportError(
+    BuildContext context,
+    ImportErrorType? errorType,
+  ) {
+    final l10n = AppLocalizations.of(context);
+    return switch (errorType) {
+      ImportErrorType.networkError => l10n.xboardNetworkConnectionFailed,
+      ImportErrorType.downloadError => l10n.xboardConfigDownloadFailed,
+      ImportErrorType.validationError => l10n.xboardConfigFormatError,
+      ImportErrorType.storageError => l10n.xboardConfigSaveFailed,
+      ImportErrorType.concurrentImport => l10n.xboardImportFailed,
+      ImportErrorType.unknownError => l10n.xboardUnknownErrorRetry,
+      null => l10n.xboardImportFailed,
+    };
   }
 
   Future<void> _reloadNodes() async {

@@ -1,8 +1,10 @@
 import 'dart:convert';
 import 'dart:async';
+import '../utils/crisp_scripts.dart';
 import 'dart:io';
 import 'package:file_picker/file_picker.dart';
 import 'package:fl_clash/l10n/l10n.dart';
+import 'package:fl_clash/xboard/features/shared/widgets/xb_error_state.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -466,33 +468,7 @@ if (typeof window.__fastcatHideLoadingMask === 'function') {
     window.__fastcatCustomerServiceCrispLocale = '${_escapeJsString(crispLocale)}';
     window.CRISP_RUNTIME_CONFIG = window.CRISP_RUNTIME_CONFIG || {};
     window.CRISP_RUNTIME_CONFIG.locale = window.__fastcatCustomerServiceCrispLocale;
-    window.__fastcatApplyCustomerServiceTheme = function(theme){
-      try {
-        window.__fastcatCustomerServiceTheme = theme;
-        document.documentElement.style.background = theme.background;
-        document.documentElement.style.colorScheme = theme.isDark ? 'dark' : 'light';
-        if (document.body) {
-          document.body.style.background = theme.background;
-          document.body.style.color = theme.foreground;
-        }
-        var style = document.getElementById('fastcat-customer-service-theme');
-        if (!style) {
-          style = document.createElement('style');
-          style.id = 'fastcat-customer-service-theme';
-          (document.head || document.documentElement).appendChild(style);
-        }
-        style.textContent = ''
-          + 'html,body{background:' + theme.background + ' !important;color:' + theme.foreground + ' !important;color-scheme:' + (theme.isDark ? 'dark' : 'light') + ' !important;}'
-          + '#loading{background:' + theme.background + ' !important;color:' + theme.foreground + ' !important;}'
-          + '#spinner{border:2px solid rgba(148,163,184,0.35) !important;border-top-color:' + (theme.accent || '#2563eb') + ' !important;}'
-          + 'iframe[src*="crisp"],.crisp-client,[class*="crisp"],[id*="crisp"]{width:100% !important;height:100% !important;max-width:none !important;max-height:none !important;position:fixed !important;top:0 !important;left:0 !important;margin:0 !important;padding:0 !important;border:none !important;border-radius:0 !important;background:' + theme.background + ' !important;color-scheme:' + (theme.isDark ? 'dark' : 'light') + ' !important;}';
-        window.\$crisp = window.\$crisp || [];
-        window.\$crisp.push(["config", "locale", [window.__fastcatCustomerServiceCrispLocale || 'en']]);
-        window.\$crisp.push(["config", "color:mode", [theme.isDark ? "dark" : "light"]]);
-        window.CRISP_RUNTIME_CONFIG = window.CRISP_RUNTIME_CONFIG || {};
-        window.CRISP_RUNTIME_CONFIG.locale = window.__fastcatCustomerServiceCrispLocale || 'en';
-      } catch (_) {}
-    };
+    $crispThemeInstallerScript
     document.documentElement.style.background = '$background';
     document.documentElement.style.colorScheme = '${_isDarkMode ? 'dark' : 'light'}';
     document.documentElement.lang = window.__fastcatCustomerServiceLocale;
@@ -771,41 +747,14 @@ if (typeof window.__fastcatHideLoadingMask === 'function') {
   }
 
   Widget _buildErrorPage(BuildContext context) {
-    final l10n = AppLocalizations.of(context);
     final strings = _strings;
     final isDark = _isDarkMode;
     return Positioned.fill(
       child: ColoredBox(
         color: _customerServiceBackgroundColor(isDark),
-        child: Center(
-          child: Padding(
-            padding: const EdgeInsets.all(32),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Icon(
-                  Icons.cloud_off,
-                  size: 48,
-                  color: isDark ? Colors.white38 : Colors.grey,
-                ),
-                const SizedBox(height: 16),
-                Text(
-                  strings.loadFailed,
-                  textAlign: TextAlign.center,
-                  style: TextStyle(
-                    fontSize: 14,
-                    color: isDark ? Colors.white54 : Colors.grey,
-                  ),
-                ),
-                const SizedBox(height: 24),
-                FilledButton.icon(
-                  onPressed: () => _loadPreferredCrispUrl(),
-                  icon: const Icon(Icons.refresh, size: 18),
-                  label: Text(l10n.refresh),
-                ),
-              ],
-            ),
-          ),
+        child: XbErrorState(
+          message: strings.loadFailed,
+          onRetry: () => _loadPreferredCrispUrl(),
         ),
       ),
     );

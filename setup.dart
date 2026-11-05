@@ -7,6 +7,7 @@ import 'package:args/command_runner.dart';
 import 'package:path/path.dart';
 import 'package:crypto/crypto.dart';
 import 'package:yaml/yaml.dart';
+import 'tool/build_defines.dart';
 
 enum Target {
   windows,
@@ -355,7 +356,8 @@ class Build {
     return corePaths;
   }
 
-  static buildHelper(Target target, String token) async {
+  static buildHelper(Target target, String token,
+      {String clientSha256 = ''}) async {
     await exec(
       [
         "cargo",
@@ -366,6 +368,7 @@ class Build {
       ],
       environment: {
         "TOKEN": token,
+        "CLIENT_SHA256": clientSha256,
       },
       name: "build helper",
       workingDirectory: _servicesDir,
@@ -994,8 +997,12 @@ class BuildCommand extends Command {
   /// XOR_KEY / OSS_URL_1..4 / PANEL_TYPE 由 build.yaml 在 Build 步骤中
   /// 通过 env: 注入，setup.dart 读取后转为 dart-define 传给 flutter build。
   String get _dartDefinesArgs {
+    _validateRemoteConfigPublicKey();
     const keys = [
+      'FASTCAT_BUILD_COMMIT',
+      'FASTCAT_BUILD_CHANNEL',
       'XOR_KEY',
+      'REMOTE_CONFIG_PUBLIC_KEY',
       'FASTCAT_KEY_CURRENT_ID',
       'FASTCAT_KEY_CURRENT',
       'FASTCAT_KEY_NEXT_ID',
@@ -1044,8 +1051,12 @@ class BuildCommand extends Command {
   /// Unlike [_dartDefinesArgs] (for flutter_distributor), this returns
   /// `--dart-define=KEY=VAL` format suitable for `flutter build apk` etc.
   List<String> _dartDefineList(String env) {
+    _validateRemoteConfigPublicKey();
     const keys = [
+      'FASTCAT_BUILD_COMMIT',
+      'FASTCAT_BUILD_CHANNEL',
       'XOR_KEY',
+      'REMOTE_CONFIG_PUBLIC_KEY',
       'FASTCAT_KEY_CURRENT_ID',
       'FASTCAT_KEY_CURRENT',
       'FASTCAT_KEY_NEXT_ID',
@@ -1077,6 +1088,16 @@ class BuildCommand extends Command {
       }
     }
     return result;
+  }
+
+  void _validateRemoteConfigPublicKey() {
+    final value =
+        Platform.environment['REMOTE_CONFIG_PUBLIC_KEY']?.trim() ?? '';
+    try {
+      if (base64.decode(value).length == 32) return;
+    } catch (_) {}
+    throw StateError(
+        'REMOTE_CONFIG_PUBLIC_KEY is required: provide the Base64-encoded 32-byte Ed25519 public key for fastcat-config-v2.');
   }
 
   String? _dartDefineValueForKey(String key) {
@@ -1244,17 +1265,55 @@ end tell
   _buildDistributor({
     required Target target,
     required String targets,
-    String args = '',
+    List<String> args = const [],
     required String env,
   }) async {
     _applyDistributorOptions();
     await Build.getDistributor();
-    await Build.exec(
-      name: name,
-      Build.getExecutable(
-        "flutter_distributor --no-version-check package --skip-clean --platform ${target.name} --targets $targets --flutter-build-args=verbose$args --build-dart-define=APP_ENV=$env",
-      ),
-    );
+    // Distributor 0.6.6 splits --build-dart-define values on every '=' and
+    // silently drops Base64 padding. Pass a JSON file straight to Flutter.
+    final defines = dartDefinesToMap(_dartDefineList(env));
+    final temp =
+        await Directory.systemTemp.createTemp('fastcat-build-defines-');
+    final definesFile = File(join(temp.path, 'defines.json'));
+    try {
+      await definesFile.writeAsString(jsonEncode(defines));
+      if (!Platform.isWindows) {
+        await Build.exec(
+          ['chmod', '600', definesFile.path],
+          name: 'protect build defines',
+        );
+      }
+      await Build.exec(
+        [
+          'flutter_distributor',
+          '--no-version-check',
+          'package',
+          '--skip-clean',
+          '--platform',
+          target.name,
+          '--targets',
+          targets,
+          '--flutter-build-args=verbose,dart-define-from-file=${definesFile.path}',
+          ...args,
+        ],
+        name: name,
+      );
+      if (target == Target.linux) {
+        final generated = File(join(
+          current,
+          'linux',
+          'flutter',
+          'ephemeral',
+          'generated_config.cmake',
+        ));
+        verifyCompiledDartDefines(await generated.readAsString(), defines);
+        print(
+            '[setup.dart] Linux build parameters verified (${defines.length} keys)');
+      }
+    } finally {
+      await temp.delete(recursive: true);
+    }
   }
 
   Future<void> _injectLinuxDebPreinstall({
@@ -1489,6 +1548,9 @@ end tell
     final productName = Platform.environment["APP_NAME_EN"]?.isNotEmpty == true
         ? Platform.environment["APP_NAME_EN"]!
         : Build.appNameEn;
+    // 保持 DMG 内的 .app 文件名与历史版本一致，Finder 才会提示覆盖安装。
+    // 可执行文件继续使用 ASCII PRODUCT_NAME，避免 Xcode/脚本的 Unicode 路径问题。
+    final installedAppName = Build.appName;
     final dmgVolumeName = _safeAsciiDmgVolumeName(productName);
     if (dmgVolumeName != productName) {
       print(
@@ -1519,7 +1581,7 @@ end tell
         "cp",
         "-R",
         builtApp.path,
-        join(dmgRoot.path, "$productName.app"),
+        join(dmgRoot.path, "$installedAppName.app"),
       ],
       name: "copy macos app to dmg root",
     );
@@ -1546,7 +1608,7 @@ end tell
       final dmgConfigPath = join(dmgRoot.path, "make_config.json");
       final dmgConfig = _macosDmgConfigWithNames(
         sourceFile: File(dmgConfigSourcePath),
-        productName: productName,
+        productName: installedAppName,
         volumeName: dmgVolumeName,
       );
       File(dmgConfigPath)
@@ -1767,6 +1829,15 @@ end tell
   Future<void> run() async {
     final mode = target == Target.android ? Mode.lib : Mode.core;
     final String out = argResults?["out"] ?? (target.same ? "app" : "core");
+    final buildChannel = Platform.environment['FASTCAT_BUILD_CHANNEL'] ?? 'local';
+    if (!const {'local', 'normal', 'signed'}.contains(buildChannel)) {
+      throw StateError('FASTCAT_BUILD_CHANNEL must be local, normal or signed');
+    }
+    if (out == 'app' && buildChannel == 'signed' &&
+        (target == Target.windows || target == Target.macos)) {
+      throw StateError('Signed ${target.name} packaging requires a verified production signing pipeline. '
+          'Normal builds remain available. For Windows, sign the runner before binding the Helper client hash.');
+    }
     final rawArchName = argResults?["arch"];
     final archName = target == Target.macos &&
             (rawArchName == null || rawArchName.toString().trim().isEmpty)
@@ -1845,7 +1916,7 @@ end tell
       return;
     }
 
-    final ddArgs = _dartDefinesArgs;
+    _validateRemoteConfigPublicKey();
 
     switch (target) {
       case Target.windows:
@@ -1867,18 +1938,19 @@ end tell
           ],
           name: "build windows app",
         );
-        // Build zip via flutter_distributor; exe is built in CI workflow directly
-        await _buildDistributor(
-          target: target,
-          targets: "zip",
-          args: " --build-dart-define=CORE_SHA256=$token$ddArgs",
-          env: env,
-        );
-
-        _normalizeArtifactNames(
-          osName: 'Windows',
-          extensions: ['zip'],
-        );
+        // The bootstrap helper cannot authorize callers. Bind the final helper
+        // to this exact runner after Flutter has produced it, then replace both
+        // the build input and the installed bundle. No public shared secret.
+        final releaseDir = join('build', 'windows',
+            arch == Arch.arm64 ? 'arm64' : 'x64', 'runner', 'Release');
+        final runner = join(releaseDir, '${Build.appNameEn}.exe');
+        await Build.buildHelper(target, token,
+            clientSha256: await Build.calcSha256(runner));
+        await File(join(Build.outDir, target.name, 'fastcatHelperService.exe'))
+            .copy(join(releaseDir, 'fastcatHelperService.exe'));
+        // Windows release artifacts are produced by Inno Setup in CI. Keep the
+        // architecture-specific EXE installers only; do not also build a
+        // portable ZIP containing the same payload.
         return;
       case Target.linux:
         _applyDartConstant();
@@ -1897,7 +1969,7 @@ end tell
         await _buildDistributor(
           target: target,
           targets: targets,
-          args: " --build-target-platform $defaultTarget$ddArgs",
+          args: ['--build-target-platform', defaultTarget!],
           env: env,
         );
         await _injectLinuxDebPreinstall(
@@ -2045,8 +2117,8 @@ void _applyMacosAppName() {
         '[setup.dart]   ✅ AppInfo.xcconfig PRODUCT_NAME / DISPLAY_NAME → $productName, localized Chinese → $appName');
   }
 
-  // 2. DMG make_config.json: title 用 ASCII 卷标，.app path 用 PRODUCT_NAME。
-  // appdmg 写入的 Finder 背景图 alias 在中文卷标下可能无法解析。
+  // 2. DMG make_config.json: title 用 ASCII 卷标，.app 文件名保持历史中文名。
+  // Finder 以文件名判断覆盖目标；卷标仍保持 ASCII 以兼容背景图 alias。
   final dmgConfigPath =
       join(current, 'macos', 'packaging', 'dmg', 'make_config.json');
   final dmgConfigFile = File(dmgConfigPath);
@@ -2054,14 +2126,14 @@ void _applyMacosAppName() {
     final dmgVolumeName = _safeAsciiDmgVolumeName(appNameEn);
     final config = _macosDmgConfigWithNames(
       sourceFile: dmgConfigFile,
-      productName: productName,
+      productName: appName,
       volumeName: dmgVolumeName,
     );
     dmgConfigFile.writeAsStringSync(
       '${const JsonEncoder.withIndent('  ').convert(config)}\n',
     );
     print(
-        '[setup.dart]   ✅ make_config.json title → $dmgVolumeName, path → $productName.app');
+        '[setup.dart]   ✅ make_config.json title → $dmgVolumeName, path → $appName.app');
   }
 
   // 3. Runner.xcscheme: BuildableName 用 PRODUCT_NAME

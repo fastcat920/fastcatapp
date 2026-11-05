@@ -3,13 +3,11 @@ package com.fastcat.app.plugins
 import android.Manifest
 import android.app.Activity
 import android.app.ActivityManager
-import android.app.UiModeManager
 import android.content.Context
 import android.content.Intent
 import android.content.pm.ApplicationInfo
 import android.content.pm.ComponentInfo
 import android.content.pm.PackageManager
-import android.content.res.Configuration
 import android.net.VpnService
 import android.os.Build
 import android.widget.Toast
@@ -22,6 +20,7 @@ import androidx.core.content.pm.ShortcutManagerCompat
 import androidx.core.graphics.drawable.IconCompat
 import com.android.tools.smali.dexlib2.dexbacked.DexBackedDexFile
 import com.fastcat.app.FastCatApplication
+import com.fastcat.app.DeviceCapabilities
 import com.fastcat.app.GlobalState
 import com.fastcat.app.R
 import com.fastcat.app.extensions.awaitResult
@@ -238,21 +237,7 @@ class AppPlugin : FlutterPlugin, MethodChannel.MethodCallHandler, ActivityAware 
     }
 
     private fun isAndroidTV(): Boolean {
-        val context = FastCatApplication.getAppContext()
-        // Check UI mode
-        val uiModeManager = context.getSystemService(Context.UI_MODE_SERVICE) as? UiModeManager
-        if (uiModeManager?.currentModeType == Configuration.UI_MODE_TYPE_TELEVISION) {
-            return true
-        }
-        // Check for Leanback feature (Android TV devices declare this)
-        if (context.packageManager.hasSystemFeature(PackageManager.FEATURE_LEANBACK)) {
-            return true
-        }
-        // Check if touchscreen is absent (common on TV)
-        if (!context.packageManager.hasSystemFeature(PackageManager.FEATURE_TOUCHSCREEN)) {
-            return true
-        }
-        return false
+        return DeviceCapabilities.isTelevision(FastCatApplication.getAppContext())
     }
 
     private fun openFile(path: String) {

@@ -18,16 +18,20 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:desktop_webview_window/desktop_webview_window.dart';
 
 import 'application.dart';
+import 'xboard/features/shared/widgets/apple_privacy_gate.dart';
 import 'clash/core.dart';
 import 'clash/lib.dart';
 import 'common/common.dart';
 import 'common/boot_diag.dart';
 import 'common/desktop_shared_preferences_store.dart';
 import 'common/macos_startup_diagnostics.dart';
+import 'enum/enum.dart';
 import 'security/profile_vault.dart';
 import 'models/models.dart';
+import 'models/core.dart' as core_models;
 import 'package:fl_clash/xboard/features/auth/providers/xboard_user_provider.dart';
 import 'package:fl_clash/xboard/infrastructure/infrastructure.dart';
+import 'package:fl_clash/xboard/infrastructure/cache/content_cache_scope.dart';
 import 'package:fl_clash/xboard/services/services.dart';
 import 'package:flutter_xboard_sdk/flutter_xboard_sdk.dart';
 import 'package:webview_win_floating/webview_plugin.dart';
@@ -49,7 +53,12 @@ Future<void> main(List<String> args) async {
   BrandedDesktopSharedPreferencesStore.registerIfNeeded();
   unawaited(bootDiagLog('SharedPreferences store registered'));
   await ProfileVault.instance.clearAllRuntimeProviders();
-  unawaited(ProfileVault.instance.migrateAllLegacyProfiles());
+  final profileMigrationTask =
+      ProfileVault.instance.migrateAllLegacyProfiles().catchError(
+    (Object error) {
+      unawaited(bootDiagLog('legacy profile migration failed: $error'));
+    },
+  );
   const previewMode = bool.fromEnvironment('APP_PREVIEW_MODE');
 
   FlutterError.onError = (FlutterErrorDetails details) {
@@ -129,6 +138,7 @@ Future<void> main(List<String> args) async {
 
   int? version;
   Future<void>? appInitialization;
+  var appStateInitialized = false;
   try {
     final fastInitResult = await Future.wait([
       _initializeXBoardServicesWithPrefs(prefs),
@@ -141,6 +151,7 @@ Future<void> main(List<String> args) async {
     final initTask = globalState.initApp(version);
     appInitialization = initTask;
     await initTask.timeout(const Duration(seconds: 15));
+    appStateInitialized = true;
     // 优先加载缓存节点，避免启动时短暂显示"暂无可用节点"
     _loadCachedGroups(prefs);
     if (android != null) {
@@ -163,6 +174,7 @@ Future<void> main(List<String> args) async {
       final fallbackTask = appInitialization ?? globalState.initApp(version);
       appInitialization = fallbackTask;
       await fallbackTask.timeout(const Duration(seconds: 10));
+      appStateInitialized = true;
     } catch (fallbackError, fallbackStack) {
       unawaited(
         bootDiagLog('fallback app initialization failed: $fallbackError'),
@@ -171,6 +183,38 @@ Future<void> main(List<String> args) async {
       debugPrintStack(stackTrace: fallbackStack);
     }
     _loadCachedGroups(prefs);
+  }
+  if (appStateInitialized) {
+    unawaited(
+      profileMigrationTask
+          .then((_) {
+            // Read the IDs at execution time so a profile imported while the
+            // legacy migration is finishing cannot be mistaken for an orphan.
+            final retainedProfileIds = globalState.config.profiles
+                .map((profile) => profile.id)
+                .toSet();
+            final currentProfileId = globalState.config.currentProfileId;
+            if (currentProfileId != null) {
+              retainedProfileIds.add(currentProfileId);
+            }
+            return ProfileVault.instance.pruneOrphanedProfiles(
+              retainedProfileIds,
+              // Startup maintenance runs beside normal initialization. A
+              // grace period protects a newly written profile before its
+              // metadata transaction has completed.
+              minimumOrphanAge: const Duration(hours: 1),
+            );
+          })
+          .then(
+            (removed) => bootDiagLog(
+              'profile cache startup cleanup removed $removed orphaned items',
+            ),
+          )
+          .catchError((Object error) {
+            unawaited(
+                bootDiagLog('profile cache startup cleanup failed: $error'));
+          }),
+    );
   }
   unawaited(MacOSStartupDiagnostics.captureRendererInfo());
 
@@ -187,7 +231,9 @@ Future<void> main(List<String> args) async {
         (ref) => initialSnapshot.subscriptionInfo,
       ),
     ],
-    child: const Application(),
+    child: Platform.isIOS
+        ? ApplePrivacyGate(preferences: prefs, child: const Application())
+        : const Application(),
   ));
   unawaited(bootDiagLog('runApp called'));
 }
@@ -199,6 +245,9 @@ Future<InitialUserSnapshot> _loadInitialUserSnapshot(
   if (!initialHasToken) return const InitialUserSnapshot();
 
   final storageService = XBoardStorageService(storage);
+  final token = (await storage.getString('xboard_token')).dataOrNull;
+  final scope = ContentCacheScope.accountForToken(token);
+  if (scope == null) return const InitialUserSnapshot();
   String? email;
   DomainUser? userInfo;
   DomainSubscription? subscriptionInfo;
@@ -206,23 +255,26 @@ Future<InitialUserSnapshot> _loadInitialUserSnapshot(
   await Future.wait([
     () async {
       try {
-        email = (await storageService.getUserEmail()).dataOrNull;
+        email = (await storageService.getUserEmail(scope: scope)).dataOrNull;
       } catch (_) {}
     }(),
     () async {
       try {
-        userInfo = (await storageService.getDomainUser()).dataOrNull;
+        userInfo =
+            (await storageService.getDomainUser(scope: scope)).dataOrNull;
       } catch (_) {}
     }(),
     () async {
       try {
         subscriptionInfo =
-            (await storageService.getDomainSubscription()).dataOrNull;
+            (await storageService.getDomainSubscription(scope: scope))
+                .dataOrNull;
       } catch (_) {}
     }(),
   ]);
 
   return InitialUserSnapshot(
+    cacheScope: scope,
     email: email,
     userInfo: userInfo,
     subscriptionInfo: subscriptionInfo,
@@ -296,6 +348,19 @@ Future<void> _service(List<String> flags) async {
   globalState.isService = true;
   WidgetsFlutterBinding.ensureInitialized();
   final quickStart = flags.contains("quick");
+  AndroidVpnOptions? recoveryVpnOptions;
+  for (final flag in flags) {
+    if (!flag.startsWith('vpn-options=')) continue;
+    try {
+      final encoded = flag.substring('vpn-options='.length);
+      final decoded = utf8.decode(base64.decode(encoded));
+      recoveryVpnOptions = AndroidVpnOptions.fromJson(
+        json.decode(decoded) as Map<String, dynamic>,
+      );
+    } catch (error) {
+      debugPrint('Unable to decode persisted VPN options: $error');
+    }
+  }
   final clashLibHandler = ClashLibHandler();
   await globalState.init();
 
@@ -303,9 +368,16 @@ Future<void> _service(List<String> flags) async {
     _TileListenerWithService(
       onStop: () async {
         await app?.tip(appLocalizations.stopVpn);
-        clashLibHandler.stopListener();
-        await vpn?.stop();
-        exit(0);
+        try {
+          if (!await clashLibHandler.stopListener()) {
+            debugPrint('Core rejected listener stop');
+          }
+        } catch (error) {
+          debugPrint('Core listener stop failed: $error');
+        } finally {
+          await vpn?.stop();
+          exit(0);
+        }
       },
     ),
   );
@@ -313,6 +385,63 @@ Future<void> _service(List<String> flags) async {
   vpn?.handleGetStartForegroundParams = () {
     final traffic = clashLibHandler.getTraffic();
     return json.encode({"title": localizedAppName, "content": "$traffic"});
+  };
+
+  vpn?.handleHeartbeat = () {
+    try {
+      final runTime = clashLibHandler.getRunTime();
+      final totalTraffic = clashLibHandler.getTotalTraffic(true);
+      return <String, Object?>{
+        'healthy': runTime != null,
+        'runtime': runTime?.millisecondsSinceEpoch,
+        'trafficTotal': totalTraffic.up.value + totalTraffic.down.value,
+      };
+    } catch (error) {
+      debugPrint('VPN heartbeat failed: $error');
+      return const <String, Object?>{'healthy': false};
+    }
+  };
+
+  vpn?.handleRecoverDataPlane = () async {
+    try {
+      final closeConnections = core_models.Action(
+        id: 'vpn-dataplane-close-${DateTime.now().microsecondsSinceEpoch}',
+        method: ActionMethod.closeConnections,
+        data: null,
+      );
+      final clearCaches = core_models.Action(
+        id: 'vpn-dataplane-cache-${DateTime.now().microsecondsSinceEpoch}',
+        method: ActionMethod.clearNetworkCaches,
+        data: null,
+      );
+      await clashLibHandler
+          .invokeAction(json.encode(closeConnections))
+          .timeout(const Duration(seconds: 2));
+      await clashLibHandler
+          .invokeAction(json.encode(clearCaches))
+          .timeout(const Duration(seconds: 2));
+      return true;
+    } catch (error) {
+      debugPrint('VPN data-plane soft recovery failed: $error');
+      return false;
+    }
+  };
+
+  vpn?.handlePrepareRecovery = () async {
+    try {
+      final action = core_models.Action(
+        id: 'vpn-recovery-${DateTime.now().microsecondsSinceEpoch}',
+        method: ActionMethod.shutdown,
+        data: null,
+      );
+      await clashLibHandler
+          .invokeAction(json.encode(action))
+          .timeout(const Duration(seconds: 2));
+      return true;
+    } catch (error) {
+      debugPrint('Core shutdown before VPN recovery failed: $error');
+      return false;
+    }
   };
 
   vpn?.addListener(
@@ -327,7 +456,6 @@ Future<void> _service(List<String> flags) async {
     _handleMainIpc(clashLibHandler);
   } else {
     commonPrint.log("quick start");
-    await ClashCore.initGeo();
     app?.tip(appLocalizations.startVpn);
     final homeDirPath = await appPath.homeDirPath;
     final version = await system.version;
@@ -335,30 +463,40 @@ Future<void> _service(List<String> flags) async {
       enable: true,
     );
     Future(() async {
-      final profileId = globalState.config.currentProfileId;
-      if (profileId == null) {
-        return;
-      }
-      final params = await globalState.getSetupParams(
-        pathConfig: clashConfig,
-      );
-      final res = await clashLibHandler.quickStart(
-        InitParams(
-          homeDir: homeDirPath,
-          version: version,
-        ),
-        params,
-        globalState.getCoreState(),
-      );
-      debugPrint(res);
-      if (res.isNotEmpty) {
+      try {
+        final profileId = globalState.config.currentProfileId;
+        if (profileId == null) {
+          await vpn?.stop();
+          return;
+        }
+        await ClashCore.initGeo(validate: false);
+        final params = await globalState.getSetupParams(
+          pathConfig: clashConfig,
+        );
+        final res = await clashLibHandler.quickStart(
+          InitParams(
+            homeDir: homeDirPath,
+            version: version,
+          ),
+          params,
+          globalState.getCoreState(),
+        );
+        debugPrint(res);
+        if (res.isNotEmpty) {
+          await vpn?.stop();
+          return;
+        }
+        final started = await vpn?.start(
+          recoveryVpnOptions ?? clashLibHandler.getAndroidVpnOptions(),
+        );
+        if (started != true || !await clashLibHandler.startListener()) {
+          throw StateError('Quick VPN recovery did not start its listeners');
+        }
+      } catch (error, stack) {
+        debugPrint('Quick VPN recovery failed: $error');
+        debugPrintStack(stackTrace: stack);
         await vpn?.stop();
-        exit(0);
       }
-      await vpn?.start(
-        clashLibHandler.getAndroidVpnOptions(),
-      );
-      clashLibHandler.startListener();
     });
   }
 }

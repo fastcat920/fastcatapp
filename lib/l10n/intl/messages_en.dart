@@ -134,21 +134,28 @@ class MessageLookup extends MessageLookupByLibrary {
 
   static String m52(count) => "${count} nodes";
 
-  static String m53(error) => "Redeem failed: ${error}";
+  static String m53(time) => "Expires in ${time}";
 
-  static String m54(days) => "Used traffic will reset in ${days} days";
+  static String m54(time) =>
+      "Login QR code. Expires in ${time}. Press Select to refresh it.";
 
-  static String m55(time) => "Running time: ${time}";
+  static String m55(error) => "Redeem failed: ${error}";
 
-  static String m56(healthy, total) => "${healthy}/${total} available";
+  static String m56(days) => "Used traffic will reset in ${days} days";
 
-  static String m57(index) => "Backup ${index}";
+  static String m57(time) => "Running time: ${time}";
 
-  static String m58(seconds) => "Retry check in ${seconds}s";
+  static String m58(healthy, total) => "${healthy}/${total} available";
 
-  static String m59(latency) => "${latency}ms";
+  static String m59(index) => "Backup ${index}";
 
-  static String m60(current, required) => "Recovery ${current}/${required}";
+  static String m60(seconds) => "Retry check in ${seconds}s";
+
+  static String m61(latency) => "${latency}ms";
+
+  static String m62(current, required) => "Recovery ${current}/${required}";
+
+  static String m63(amount) => "Withdrawal amount cannot exceed ¥${amount}";
 
   final messages = _notInlinedMessages(_notInlinedMessages);
   static Map<String, Function> _notInlinedMessages(_) => <String, Function>{
@@ -1465,6 +1472,7 @@ class MessageLookup extends MessageLookupByLibrary {
       "This account has been banned. Please contact support.",
     ),
     "xboardAccountInfo": MessageLookupByLibrary.simpleMessage("My Account"),
+    "xboardAccountLogin": MessageLookupByLibrary.simpleMessage("Account Login"),
     "xboardAccountManagement": MessageLookupByLibrary.simpleMessage(
       "Account management",
     ),
@@ -1574,7 +1582,7 @@ class MessageLookup extends MessageLookupByLibrary {
       "2. Please complete payment in your browser",
     ),
     "xboardConfigDownloadFailed": MessageLookupByLibrary.simpleMessage(
-      "Configuration download failed, please check subscription link",
+      "Configuration file download failed. Please check that your plan is active and valid.",
     ),
     "xboardConfigFormatError": MessageLookupByLibrary.simpleMessage(
       "Configuration format error, please contact service provider",
@@ -1711,6 +1719,12 @@ class MessageLookup extends MessageLookupByLibrary {
     "xboardCustomRechargeAmount": MessageLookupByLibrary.simpleMessage(
       "Custom recharge amount",
     ),
+    "xboardCustomerServiceLoadTimeout": MessageLookupByLibrary.simpleMessage(
+      "Loading timed out. Check your network and try again.",
+    ),
+    "xboardCustomerServiceNotConfigured": MessageLookupByLibrary.simpleMessage(
+      "Online support is not configured",
+    ),
     "xboardDays": MessageLookupByLibrary.simpleMessage("days"),
     "xboardDeductedBalance": MessageLookupByLibrary.simpleMessage(
       "Deducted balance",
@@ -1728,6 +1742,9 @@ class MessageLookup extends MessageLookupByLibrary {
       "Current device",
     ),
     "xboardDeviceExpired": MessageLookupByLibrary.simpleMessage("Expired"),
+    "xboardDeviceGatewayRelogin": MessageLookupByLibrary.simpleMessage(
+      "Your device session has changed. Please sign in again.",
+    ),
     "xboardDeviceHealth": MessageLookupByLibrary.simpleMessage("Device status"),
     "xboardDeviceHistory": MessageLookupByLibrary.simpleMessage("History"),
     "xboardDeviceHistoryHint": MessageLookupByLibrary.simpleMessage(
@@ -1937,6 +1954,9 @@ class MessageLookup extends MessageLookupByLibrary {
     "xboardEnterGiftCardCodeHint": MessageLookupByLibrary.simpleMessage(
       "Enter gift card redemption code",
     ),
+    "xboardEnterWithdrawAmount": MessageLookupByLibrary.simpleMessage(
+      "Enter withdrawal amount (CNY)",
+    ),
     "xboardExcellent": MessageLookupByLibrary.simpleMessage("Excellent"),
     "xboardExpiredOnDate": m41,
     "xboardExpiresOnDate": m42,
@@ -2091,6 +2111,9 @@ class MessageLookup extends MessageLookupByLibrary {
     "xboardInvalidResponseFormat": MessageLookupByLibrary.simpleMessage(
       "Invalid response format from server",
     ),
+    "xboardInvalidWithdrawAmount": MessageLookupByLibrary.simpleMessage(
+      "Enter an amount greater than 0 with up to two decimal places",
+    ),
     "xboardInviteCode": MessageLookupByLibrary.simpleMessage("Invite Code"),
     "xboardJoinGroup": MessageLookupByLibrary.simpleMessage("Join Group"),
     "xboardKeepSubscriptionLinkSafe": MessageLookupByLibrary.simpleMessage(
@@ -2194,6 +2217,14 @@ class MessageLookup extends MessageLookupByLibrary {
     "xboardNetworkDiagnosticsConclusion": MessageLookupByLibrary.simpleMessage(
       "Diagnostic conclusion",
     ),
+    "xboardNetworkDiagnosticsConclusionConfiguration":
+        MessageLookupByLibrary.simpleMessage(
+          "The proxy configuration has not been applied, or the selected node is missing from the core. Reload the subscription or configuration first; this does not indicate a local network or node DNS failure.",
+        ),
+    "xboardNetworkDiagnosticsConclusionCoreUnavailable":
+        MessageLookupByLibrary.simpleMessage(
+          "No usable core diagnostic result was obtained. Check the core and configuration, then retry; this alone does not indicate a local network failure.",
+        ),
     "xboardNetworkDiagnosticsConclusionDisconnectedDns":
         MessageLookupByLibrary.simpleMessage(
           "VPN is not connected, and the basic network DNS result is abnormal. Fix the local network or DNS before diagnosing the node route.",
@@ -2242,8 +2273,12 @@ class MessageLookup extends MessageLookupByLibrary {
         MessageLookupByLibrary.simpleMessage(
           "The proxy route is working normally. Some direct targets are restricted on the current network, which does not affect proxy use.",
         ),
+    "xboardNetworkDiagnosticsConclusionRouteUncertain":
+        MessageLookupByLibrary.simpleMessage(
+          "Both the device baseline and node checks failed, but VPN/TUN may affect system routing. The results cannot distinguish a local network issue from a proxy issue. Check the core, configuration, and TUN state first.",
+        ),
     "xboardNetworkDiagnosticsConclusionTcp": MessageLookupByLibrary.simpleMessage(
-      "Direct internet access works, but the selected node TCP endpoint timed out. The endpoint may be unreachable or restricted by the current network.",
+      "The device HTTPS baseline is reachable, but the selected node TCP endpoint timed out. The endpoint may be unreachable or restricted by the current network.",
     ),
     "xboardNetworkDiagnosticsConclusionTcpRefused":
         MessageLookupByLibrary.simpleMessage(
@@ -2253,7 +2288,7 @@ class MessageLookup extends MessageLookupByLibrary {
       "TCP connectivity succeeded, but the node TLS handshake failed. Check SNI, certificates, or network TLS filtering.",
     ),
     "xboardNetworkDiagnosticsConclusionUdp": MessageLookupByLibrary.simpleMessage(
-      "The UDP-based node timed out while direct internet access works. UDP may be unavailable or restricted on the current network.",
+      "The UDP-based node timed out while the device HTTPS baseline is reachable. UDP may be unavailable or restricted on the current network.",
     ),
     "xboardNetworkDiagnosticsConnectFirst":
         MessageLookupByLibrary.simpleMessage(
@@ -2269,13 +2304,13 @@ class MessageLookup extends MessageLookupByLibrary {
       "Copy report",
     ),
     "xboardNetworkDiagnosticsCoreUnavailable": MessageLookupByLibrary.simpleMessage(
-      "Layered diagnostics are unavailable in the current core. Update or fully restart the client; the HTTPS results below remain valid.",
+      "No usable layered core diagnostic result was obtained. Unperformed checks are skipped; device HTTPS results are shown separately.",
     ),
     "xboardNetworkDiagnosticsDescription": MessageLookupByLibrary.simpleMessage(
       "DNS checks use the system resolver. Node diagnostics then check the actual endpoint DNS, TCP or UDP transport, proxy handshake, and HTTP reachability.",
     ),
     "xboardNetworkDiagnosticsDirectHttps": MessageLookupByLibrary.simpleMessage(
-      "Local direct HTTPS (domestic baseline)",
+      "Device HTTPS (independent of core test API)",
     ),
     "xboardNetworkDiagnosticsDisconnected":
         MessageLookupByLibrary.simpleMessage("Disconnected"),
@@ -2305,7 +2340,23 @@ class MessageLookup extends MessageLookupByLibrary {
       "HTTPS reachability",
     ),
     "xboardNetworkDiagnosticsIpConnectivity":
-        MessageLookupByLibrary.simpleMessage("IPv4 / IPv6 connectivity"),
+        MessageLookupByLibrary.simpleMessage(
+          "Device IPv4 / IPv6 (system routing)",
+        ),
+    "xboardNetworkDiagnosticsLocalProxy": MessageLookupByLibrary.simpleMessage(
+      "Actual proxy route (via local proxy port)",
+    ),
+    "xboardNetworkDiagnosticsLocalProxyFailed":
+        MessageLookupByLibrary.simpleMessage(
+          "The selected node passed, but the actual local proxy route failed. Check the active proxy group selection and try again.",
+        ),
+    "xboardNetworkDiagnosticsNativeDirectDetail":
+        MessageLookupByLibrary.simpleMessage(
+          "Device request without the core test API; still uses system DNS and routing",
+        ),
+    "xboardNetworkDiagnosticsNativeTunDetail": MessageLookupByLibrary.simpleMessage(
+      "Device request without the core test API; VPN/TUN may affect system DNS and routing, so this does not independently verify the physical network",
+    ),
     "xboardNetworkDiagnosticsNetworkEthernet":
         MessageLookupByLibrary.simpleMessage("Ethernet"),
     "xboardNetworkDiagnosticsNetworkMobile":
@@ -2365,6 +2416,10 @@ class MessageLookup extends MessageLookupByLibrary {
     "xboardNetworkDiagnosticsRunningTime": MessageLookupByLibrary.simpleMessage(
       "Running time",
     ),
+    "xboardNetworkDiagnosticsSkippedPrerequisite":
+        MessageLookupByLibrary.simpleMessage(
+          "Prerequisite unavailable; this check was not performed",
+        ),
     "xboardNetworkDiagnosticsStart": MessageLookupByLibrary.simpleMessage(
       "Start diagnostics",
     ),
@@ -2569,6 +2624,9 @@ class MessageLookup extends MessageLookupByLibrary {
     "xboardPasswordChanged": MessageLookupByLibrary.simpleMessage(
       "Password changed successfully",
     ),
+    "xboardPasswordChangedRememberFailed": MessageLookupByLibrary.simpleMessage(
+      "Password changed. Please enter your new password the next time you sign in.",
+    ),
     "xboardPayNow": MessageLookupByLibrary.simpleMessage("Pay now"),
     "xboardPayableAmount": MessageLookupByLibrary.simpleMessage(
       "Payable amount",
@@ -2697,14 +2755,23 @@ class MessageLookup extends MessageLookupByLibrary {
     "xboardProxyRepairCoreNotRunning": MessageLookupByLibrary.simpleMessage(
       "The proxy core is not running and its stale system proxy has been stopped. Connect first, then run one-click repair.",
     ),
+    "xboardProxyRepairHelperFailed": MessageLookupByLibrary.simpleMessage(
+      "TUN repair failed: Helper is unavailable or authorization was denied. Please check permissions and Helper service status.",
+    ),
     "xboardProxyRepairPortUnavailable": MessageLookupByLibrary.simpleMessage(
       "The local proxy port is not listening. Its stale system proxy has been stopped; reconnect to continue.",
+    ),
+    "xboardProxyRepairTimeout": MessageLookupByLibrary.simpleMessage(
+      "Connection repair timed out. Reconnect; if it still fails, copy the runtime logs for diagnosis.",
     ),
     "xboardProxyRepairVerifyFailed": MessageLookupByLibrary.simpleMessage(
       "System proxy verification failed after repair; the IP or port still does not match.",
     ),
     "xboardProxyRepairWriteFailed": MessageLookupByLibrary.simpleMessage(
       "Failed to write the device system proxy settings.",
+    ),
+    "xboardProxySelectionFailed": MessageLookupByLibrary.simpleMessage(
+      "Node selection was not applied. Please select the node again.",
     ),
     "xboardProxyStatusClientDisabled": MessageLookupByLibrary.simpleMessage(
       "The client system proxy setting is not enabled",
@@ -2740,6 +2807,56 @@ class MessageLookup extends MessageLookupByLibrary {
     "xboardPurchaseTraffic": MessageLookupByLibrary.simpleMessage(
       "Purchase traffic",
     ),
+    "xboardQrAuthorizeConfirm": MessageLookupByLibrary.simpleMessage(
+      "Allow sign-in",
+    ),
+    "xboardQrAuthorizeFailed": MessageLookupByLibrary.simpleMessage(
+      "Authorization failed. Please try again.",
+    ),
+    "xboardQrAuthorizeMessage": MessageLookupByLibrary.simpleMessage(
+      "Allow this computer or TV to sign in to your FastCat account?",
+    ),
+    "xboardQrAuthorizeSuccess": MessageLookupByLibrary.simpleMessage(
+      "Device sign-in approved",
+    ),
+    "xboardQrAuthorizeTitle": MessageLookupByLibrary.simpleMessage(
+      "Sign in on a new device",
+    ),
+    "xboardQrExpired": MessageLookupByLibrary.simpleMessage("QR code expired"),
+    "xboardQrExpiredSemantics": MessageLookupByLibrary.simpleMessage(
+      "QR code expired. Press Select to refresh it.",
+    ),
+    "xboardQrExpiresIn": m53,
+    "xboardQrGenerating": MessageLookupByLibrary.simpleMessage(
+      "Generating QR code…",
+    ),
+    "xboardQrInvalidCode": MessageLookupByLibrary.simpleMessage(
+      "Scan a valid FastCat sign-in QR code on your computer or TV",
+    ),
+    "xboardQrLoadFailed": MessageLookupByLibrary.simpleMessage(
+      "Could not load the QR code",
+    ),
+    "xboardQrLogin": MessageLookupByLibrary.simpleMessage("QR Login"),
+    "xboardQrLoginDescription": MessageLookupByLibrary.simpleMessage(
+      "Scan and confirm with a phone already signed in to FastCat",
+    ),
+    "xboardQrLoginFailed": MessageLookupByLibrary.simpleMessage(
+      "Login failed. Refresh the QR code.",
+    ),
+    "xboardQrReadySemantics": m54,
+    "xboardQrRefresh": MessageLookupByLibrary.simpleMessage("Refresh QR code"),
+    "xboardQrRefreshFailed": MessageLookupByLibrary.simpleMessage(
+      "Could not refresh the QR code. Try again later.",
+    ),
+    "xboardQrScannerHint": MessageLookupByLibrary.simpleMessage(
+      "Scan the sign-in QR code on your computer or TV\nPinch to zoom",
+    ),
+    "xboardQrScannerTitle": MessageLookupByLibrary.simpleMessage(
+      "Scan to sign in on a device",
+    ),
+    "xboardQrUnavailable": MessageLookupByLibrary.simpleMessage(
+      "QR code unavailable",
+    ),
     "xboardQuarterlyPayment": MessageLookupByLibrary.simpleMessage("Quarterly"),
     "xboardRecharge": MessageLookupByLibrary.simpleMessage("Recharge"),
     "xboardRechargeAmount": MessageLookupByLibrary.simpleMessage(
@@ -2756,7 +2873,7 @@ class MessageLookup extends MessageLookupByLibrary {
     ),
     "xboardRechargeNow": MessageLookupByLibrary.simpleMessage("Recharge now"),
     "xboardRedeemFailed": MessageLookupByLibrary.simpleMessage("Redeem failed"),
-    "xboardRedeemFailedWithError": m53,
+    "xboardRedeemFailedWithError": m55,
     "xboardRedeemNow": MessageLookupByLibrary.simpleMessage("Redeem now"),
     "xboardRedeemSuccess": MessageLookupByLibrary.simpleMessage(
       "Redeem successful",
@@ -2785,7 +2902,7 @@ class MessageLookup extends MessageLookupByLibrary {
       "This will remove offline devices that still occupy your device limit. Your current device will not be affected. Continue?",
     ),
     "xboardReload": MessageLookupByLibrary.simpleMessage("Reload"),
-    "xboardReloadNodes": MessageLookupByLibrary.simpleMessage("Reload nodes"),
+    "xboardReloadNodes": MessageLookupByLibrary.simpleMessage("Reload"),
     "xboardRelogin": MessageLookupByLibrary.simpleMessage("Login Again"),
     "xboardRemainingBalance": MessageLookupByLibrary.simpleMessage("Remaining"),
     "xboardRememberPassword": MessageLookupByLibrary.simpleMessage(
@@ -2819,7 +2936,10 @@ class MessageLookup extends MessageLookupByLibrary {
     "xboardResetTrafficConfirmContent": MessageLookupByLibrary.simpleMessage(
       "This will reset the used traffic, but will not extend the plan duration. Continue?",
     ),
-    "xboardResetTrafficInDays": m54,
+    "xboardResetTrafficDescription": MessageLookupByLibrary.simpleMessage(
+      "Reset the current plan\'s data usage",
+    ),
+    "xboardResetTrafficInDays": m56,
     "xboardResetTrafficToday": MessageLookupByLibrary.simpleMessage(
       "Used traffic has been reset today",
     ),
@@ -2830,7 +2950,7 @@ class MessageLookup extends MessageLookupByLibrary {
       "3. Return to app after payment, system will detect automatically",
     ),
     "xboardRunDiagnosis": MessageLookupByLibrary.simpleMessage("Run check"),
-    "xboardRunningTime": m55,
+    "xboardRunningTime": m57,
     "xboardSecureEncryption": MessageLookupByLibrary.simpleMessage(
       "Secure encryption",
     ),
@@ -2851,15 +2971,15 @@ class MessageLookup extends MessageLookupByLibrary {
     ),
     "xboardServerError": MessageLookupByLibrary.simpleMessage("Server error"),
     "xboardServerStatus": MessageLookupByLibrary.simpleMessage("Server status"),
-    "xboardServiceAvailableCount": m56,
-    "xboardServiceBackup": m57,
+    "xboardServiceAvailableCount": m58,
+    "xboardServiceBackup": m59,
     "xboardServiceCheckedAt": MessageLookupByLibrary.simpleMessage(
       "Checked at",
     ),
     "xboardServiceCheckingEndpoints": MessageLookupByLibrary.simpleMessage(
       "Checking all endpoints",
     ),
-    "xboardServiceCircuitRemaining": m58,
+    "xboardServiceCircuitRemaining": m60,
     "xboardServiceConnectionDegraded": MessageLookupByLibrary.simpleMessage(
       "Service connection unstable",
     ),
@@ -2867,7 +2987,7 @@ class MessageLookup extends MessageLookupByLibrary {
       "A business request failed. The client is checking the local network and business gateways.",
     ),
     "xboardServiceInUse": MessageLookupByLibrary.simpleMessage("In use"),
-    "xboardServiceLatency": m59,
+    "xboardServiceLatency": m61,
     "xboardServiceNetworkRestricted": MessageLookupByLibrary.simpleMessage(
       "Network access restricted",
     ),
@@ -2893,7 +3013,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "xboardServiceRecoveringTooltip": MessageLookupByLibrary.simpleMessage(
       "The network has recovered. The client is confirming business gateway availability.",
     ),
-    "xboardServiceRecoveryProgress": m60,
+    "xboardServiceRecoveryProgress": m62,
     "xboardServiceStateCircuitOpen": MessageLookupByLibrary.simpleMessage(
       "Circuit open",
     ),
@@ -3262,6 +3382,10 @@ class MessageLookup extends MessageLookupByLibrary {
     "xboardWalletBalance": MessageLookupByLibrary.simpleMessage(
       "Wallet balance",
     ),
+    "xboardWithdrawAmount": MessageLookupByLibrary.simpleMessage(
+      "Withdrawal amount",
+    ),
+    "xboardWithdrawAmountExceeded": m63,
     "xboardYearlyPayment": MessageLookupByLibrary.simpleMessage("Yearly"),
     "years": MessageLookupByLibrary.simpleMessage("Years"),
     "zh_CN": MessageLookupByLibrary.simpleMessage("Simplified Chinese"),

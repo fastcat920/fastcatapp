@@ -24,6 +24,7 @@ import (
 	"os"
 	"runtime"
 	"sync"
+	"time"
 )
 
 var (
@@ -121,7 +122,7 @@ func updateListeners() {
 	if !isRunning {
 		return
 	}
-	if currentConfig == nil {
+	if currentConfig == nil || currentConfig.General == nil {
 		return
 	}
 	listeners := currentConfig.Listeners
@@ -193,9 +194,31 @@ func readFile(path string) ([]byte, error) {
 	return data, err
 }
 
-func updateConfig(params *UpdateParams) {
+func updateConfig(params *UpdateParams) error {
 	runLock.Lock()
 	defer runLock.Unlock()
+	if params == nil {
+		return errors.New("missing configuration update")
+	}
+	if err := checkSetupDeadline(params.DeadlineUnixMs); err != nil {
+		return err
+	}
+	// The first Flutter frame may change logging before setupConfig has run.
+	// Process logging does not depend on a profile and must never create one,
+	// dereference an absent one, or reconfigure the VPN/TUN data plane.
+	if params.LogLevel != nil && params.Tun == nil && params.AllowLan == nil &&
+		params.MixedPort == nil && params.FindProcessMode == nil && params.Mode == nil &&
+		params.IPv6 == nil && params.Sniffing == nil && params.TCPConcurrent == nil &&
+		params.ExternalController == nil && params.Interface == nil && params.UnifiedDelay == nil {
+		log.SetLevel(*params.LogLevel)
+		if currentConfig != nil && currentConfig.General != nil {
+			currentConfig.General.LogLevel = *params.LogLevel
+		}
+		return nil
+	}
+	if currentConfig == nil || currentConfig.General == nil {
+		return errors.New("core configuration is not ready; apply a profile before updating it")
+	}
 	general := currentConfig.General
 	if params.MixedPort != nil {
 		general.MixedPort = *params.MixedPort
@@ -249,25 +272,52 @@ func updateConfig(params *UpdateParams) {
 	}
 
 	updateListeners()
+	return nil
 }
 
 func setupConfig(params *SetupParams) error {
 	runLock.Lock()
 	defer runLock.Unlock()
-	var err error
+	if params == nil || params.Config == nil {
+		return errors.New("missing configuration")
+	}
+	if err := checkSetupDeadline(params.DeadlineUnixMs); err != nil {
+		return err
+	}
+	if err := checkGeoHome(constant.Path.HomeDir(), false); err != nil {
+		return err
+	}
+	nextConfig, err := config.ParseRawConfig(params.Config)
+	if err != nil {
+		// A rejected edit must never replace a working profile with an empty one.
+		return err
+	}
+	return commitSetupConfig(params, nextConfig)
+}
+
+// Called with runLock held. A timed-out native request must not commit after
+// Flutter has already reported failure and restored its previous selection.
+func commitSetupConfig(params *SetupParams, nextConfig *config.Config) error {
+	if err := checkSetupDeadline(params.DeadlineUnixMs); err != nil {
+		return err
+	}
 	if params.TestURL != "" {
 		testURL = params.TestURL
 	} else {
 		testURL = constant.DefaultTestURL
 	}
-	currentConfig, err = config.ParseRawConfig(params.Config)
-	if err != nil {
-		currentConfig, _ = config.ParseRawConfig(config.DefaultRawConfig())
-	}
+	currentConfig = nextConfig
 	hub.ApplyConfig(currentConfig)
 	patchSelectGroup(params.SelectedMap)
 	updateListeners()
-	return err
+	return nil
+}
+
+func checkSetupDeadline(deadlineUnixMs int64) error {
+	if deadlineUnixMs > 0 && time.Now().UnixMilli() >= deadlineUnixMs {
+		return errors.New("configuration request expired before it could be applied")
+	}
+	return nil
 }
 
 func UnmarshalJson(data []byte, v any) error {

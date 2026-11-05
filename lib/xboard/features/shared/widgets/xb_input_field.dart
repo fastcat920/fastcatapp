@@ -1,3 +1,5 @@
+import 'package:fl_clash/common/common.dart';
+import 'package:fl_clash/xboard/features/auth/widgets/auth_tv_layout.dart';
 import 'package:flutter/material.dart';
 import 'tv_deferred_input.dart';
 
@@ -39,6 +41,10 @@ class XBInputField extends StatelessWidget {
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
     final isDark = Theme.of(context).brightness == Brightness.dark;
+    final isTv = system.isTV;
+    final radius = BorderRadius.circular(
+      isTv ? AuthTvLayout.controlRadius : 14,
+    );
     return TVDeferredInput(
       focusNode: focusNode,
       onKeyEvent: onKeyEvent,
@@ -57,46 +63,55 @@ class XBInputField extends StatelessWidget {
           onChanged: onChanged,
           onFieldSubmitted: onFieldSubmitted,
           enabled: enabled,
-          style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                color: colorScheme.onSurface,
-              ),
+          style: (isTv
+                  ? Theme.of(context).textTheme.bodyMedium
+                  : Theme.of(context).textTheme.bodyLarge)
+              ?.copyWith(
+            color: colorScheme.onSurface,
+          ),
           decoration: InputDecoration(
+            isDense: isTv,
             labelText: labelText,
             hintText: hintText,
             prefixIcon: prefixIcon != null
                 ? Icon(
                     prefixIcon,
+                    size: isTv ? 20 : null,
                     color: colorScheme.onSurfaceVariant,
                   )
                 : null,
+            prefixIconConstraints:
+                isTv ? const BoxConstraints(minWidth: 40, minHeight: 40) : null,
+            suffixIconConstraints:
+                isTv ? const BoxConstraints(minWidth: 40, minHeight: 40) : null,
             suffixIcon: suffixIcon,
             border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(14),
+              borderRadius: radius,
               borderSide: BorderSide(
                 color: isDark ? colorScheme.outline : const Color(0xFFEEF0F4),
               ),
             ),
             enabledBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(14),
+              borderRadius: radius,
               borderSide: BorderSide(
                 color: isDark ? colorScheme.outline : const Color(0xFFEEF0F4),
               ),
             ),
             focusedBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(14),
+              borderRadius: radius,
               borderSide: BorderSide(
                 color: colorScheme.primary,
                 width: 1.5,
               ),
             ),
             errorBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(14),
+              borderRadius: radius,
               borderSide: BorderSide(
                 color: colorScheme.error,
               ),
             ),
             focusedErrorBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(14),
+              borderRadius: radius,
               borderSide: BorderSide(
                 color: colorScheme.error,
                 width: 1.5,
@@ -106,16 +121,19 @@ class XBInputField extends StatelessWidget {
             fillColor: isDark
                 ? colorScheme.surfaceContainerLow
                 : const Color(0xFFF5F7FA),
-            labelStyle: TextStyle(
-              color: colorScheme.onSurfaceVariant,
-            ),
-            hintStyle: TextStyle(
+            labelStyle: (isTv
+                    ? Theme.of(context).textTheme.bodyMedium
+                    : Theme.of(context).textTheme.bodyLarge)
+                ?.copyWith(color: colorScheme.onSurfaceVariant),
+            hintStyle: (isTv
+                    ? Theme.of(context).textTheme.bodyMedium
+                    : Theme.of(context).textTheme.bodyLarge)
+                ?.copyWith(
               color: colorScheme.onSurfaceVariant.withValues(alpha: 0.6),
             ),
-            contentPadding: const EdgeInsets.symmetric(
-              horizontal: 18,
-              vertical: 16,
-            ),
+            contentPadding: isTv
+                ? AuthTvLayout.fieldContentPadding
+                : const EdgeInsets.symmetric(horizontal: 18, vertical: 16),
           ),
         );
       },

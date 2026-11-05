@@ -10,6 +10,8 @@ import 'package:fl_clash/providers/providers.dart';
 import 'package:fl_clash/state.dart';
 import 'package:fl_clash/xboard/utils/xboard_notification.dart';
 import 'package:fl_clash/xboard/features/diagnostics/services/network_diagnostic_snapshot.dart';
+import 'package:fl_clash/xboard/features/diagnostics/services/local_proxy_probe.dart';
+import 'package:fl_clash/xboard/features/diagnostics/services/native_network_probe.dart';
 import 'package:fl_clash/xboard/features/shared/services/diagnostic_bundle_service.dart';
 import 'package:fl_clash/xboard/features/shared/styles/styles.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
@@ -48,6 +50,7 @@ class _NetCheckPageState extends ConsumerState<NetCheckPage> {
   List<_StepResult> _dnsResults = [];
   List<_StepResult> _directResults = [];
   List<_StepResult> _proxyResults = [];
+  List<_StepResult> _localProxyResults = [];
   List<_StepResult> _ipResults = [];
   List<_StepResult> _nodeLayerResults = [];
   NetworkDiagnosticSnapshot? _reportSnapshot;
@@ -80,6 +83,7 @@ class _NetCheckPageState extends ConsumerState<NetCheckPage> {
       _dnsResults = [];
       _directResults = [];
       _proxyResults = [];
+      _localProxyResults = [];
       _ipResults = [];
       _nodeLayerResults = [];
       _reportSnapshot = null;
@@ -88,6 +92,24 @@ class _NetCheckPageState extends ConsumerState<NetCheckPage> {
       _conclusion = null;
     });
 
+    try {
+      await _runDiagnostics(generation, domain, l10n);
+    } catch (_) {
+      if (_isRunValid(generation)) {
+        XBoardNotification.showError(l10n.xboardOperationFailed);
+      }
+    } finally {
+      if (mounted && generation == _runGeneration) {
+        setState(() => _running = false);
+      }
+    }
+  }
+
+  Future<void> _runDiagnostics(
+    int generation,
+    String domain,
+    AppLocalizations l10n,
+  ) async {
     final networkType = await _resolveNetworkType(l10n);
     if (!_isRunValid(generation)) return;
     setState(() => _networkType = networkType);
@@ -114,40 +136,64 @@ class _NetCheckPageState extends ConsumerState<NetCheckPage> {
 
     final nodeName = connected ? await _resolveCurrentNodeName() : null;
     if (!_isRunValid(generation)) return;
+    final coreReady = globalState.coreStatusReadyNotifier.value;
+    // An explicit HTTP DIRECT setting bypasses HTTP proxy configuration, not
+    // the operating system's VPN/TUN routing. Keep that limitation visible.
+    final directMayUseTun = ref.read(realTunEnableProvider) ||
+        ref.read(patchClashConfigProvider).tun.enable ||
+        Platform.isAndroid ||
+        Platform.isIOS;
+    final baselineDetail = directMayUseTun
+        ? l10n.xboardNetworkDiagnosticsNativeTunDetail
+        : l10n.xboardNetworkDiagnosticsNativeDirectDetail;
     final results = await Future.wait<Object>([
       Future.wait(
-        _directTargets.map((url) => _checkRoute(url, 'DIRECT', l10n)),
+        _directTargets.map((url) => _checkNativeRoute(
+              url,
+              _routeTargetLabel(url, l10n),
+              baselineDetail,
+            )),
       ),
-      nodeName == null
+      nodeName == null || !coreReady
           ? Future.value(<_StepResult>[])
           : Future.wait(
               _proxyTargets.map((url) => _checkRoute(url, nodeName, l10n)),
             ),
-      _checkIpConnectivity(l10n),
-      nodeName == null
-          ? Future.value(<String, dynamic>{})
-          : clashCore.diagnoseProxy(_proxyTargets.first, nodeName),
-      nodeName == null
-          ? Future.value(_StepResult.fail(
+      _checkIpConnectivity(baselineDetail),
+      _diagnoseNode(nodeName, coreReady: coreReady),
+      nodeName == null || !coreReady
+          ? Future.value(_StepResult.skipped(
               l10n.xboardCurrentNode,
-              l10n.xboardNetworkDiagnosticsEndpointUnavailable,
+              l10n.xboardNetworkDiagnosticsSkippedPrerequisite,
             ))
           : _checkCurrentNode(nodeName, l10n),
+      _checkLocalProxy(l10n),
     ]);
     if (!_isRunValid(generation)) return;
     final directResults = results[0] as List<_StepResult>;
-    final proxyResults = results[1] as List<_StepResult>;
     final ipResults = results[2] as List<_StepResult>;
     final rawNodeDiagnostic = results[3] as Map<String, dynamic>;
-    final currentNodeResult = results[4] as _StepResult;
+    final localProxyResults = results[5] as List<_StepResult>;
     final nodeDiagnostic = connected
-        ? rawNodeDiagnostic
+        ? normalizeNodeDiagnosticResult(rawNodeDiagnostic)
         : <String, dynamic>{
             'diagnostic-status': 'skipped_not_connected',
             'dns-status': 'skipped',
             'tcp-status': 'skipped',
             'proxy-status': 'skipped',
           };
+    final missingPrerequisite =
+        nodeDiagnosticHasMissingPrerequisite(nodeDiagnostic);
+    final currentNodeResult = missingPrerequisite
+        ? _StepResult.skipped(l10n.xboardCurrentNode,
+            l10n.xboardNetworkDiagnosticsSkippedPrerequisite)
+        : results[4] as _StepResult;
+    final proxyResults = missingPrerequisite
+        ? _proxyTargets
+            .map((url) => _StepResult.skipped(_routeTargetLabel(url, l10n),
+                l10n.xboardNetworkDiagnosticsSkippedPrerequisite))
+            .toList()
+        : results[1] as List<_StepResult>;
     final nodeLayerResults = _buildNodeLayerResults(
       nodeDiagnostic,
       l10n,
@@ -160,6 +206,10 @@ class _NetCheckPageState extends ConsumerState<NetCheckPage> {
       ipResults,
       connected,
       nodeDiagnostic,
+      directMayUseTun: directMayUseTun,
+      localProxyOk: localProxyResults.isEmpty
+          ? null
+          : localProxyResults.every((item) => item.ok),
       networkDisconnected:
           networkType == l10n.xboardNetworkDiagnosticsNetworkNone,
     );
@@ -179,18 +229,41 @@ class _NetCheckPageState extends ConsumerState<NetCheckPage> {
       directResults: _toSnapshotItems(directResults),
       proxyResults: _toSnapshotItems(proxyResults),
       nodeResult: sanitizeNetworkDiagnosticNodeResult(nodeDiagnostic),
+      localProxyResults: _toSnapshotItems(localProxyResults),
     );
     NetworkDiagnosticSnapshotStore.latest = snapshot;
     setState(() {
       _nodeName = nodeName;
       _directResults = directResults;
       _proxyResults = proxyResults;
+      _localProxyResults = localProxyResults;
       _ipResults = ipResults;
       _nodeLayerResults = nodeLayerResults;
       _reportSnapshot = snapshot;
       _conclusion = conclusion;
       _running = false;
     });
+  }
+
+  Future<Map<String, dynamic>> _diagnoseNode(
+    String? nodeName, {
+    required bool coreReady,
+  }) async {
+    if (!coreReady) return {'diagnostic-status': 'core_unavailable'};
+    if (nodeName == null) {
+      return {
+        'diagnostic-status': 'complete',
+        'failure-stage': 'configuration',
+        'error': 'no selected proxy is available',
+      };
+    }
+    try {
+      return await clashCore
+          .diagnoseProxy(_proxyTargets.first, nodeName)
+          .timeout(const Duration(seconds: 17));
+    } catch (_) {
+      return {'diagnostic-status': 'unavailable'};
+    }
   }
 
   bool _isRunValid(int generation) {
@@ -208,6 +281,7 @@ class _NetCheckPageState extends ConsumerState<NetCheckPage> {
       _dnsResults = [];
       _directResults = [];
       _proxyResults = [];
+      _localProxyResults = [];
       _ipResults = [];
       _nodeLayerResults = [];
       _reportSnapshot = null;
@@ -284,7 +358,8 @@ class _NetCheckPageState extends ConsumerState<NetCheckPage> {
         ),
       ];
     }
-    if (data['diagnostic-status'] == 'unavailable') {
+    if (data['diagnostic-status'] == 'unavailable' ||
+        data['diagnostic-status'] == 'core_unavailable') {
       return [
         ...results,
         _StepResult.skipped(
@@ -310,14 +385,18 @@ class _NetCheckPageState extends ConsumerState<NetCheckPage> {
         .map((value) => _maskIp(value.toString()))
         .where((value) => value.isNotEmpty)
         .join(', ');
+    final dnsSkipped = dnsStatus == 'skipped' || dnsStatus == 'unavailable';
     results.add(_StepResult(
       label: l10n.xboardNetworkDiagnosticsNodeDns,
       ok: dnsStatus == 'success',
-      detail: dnsStatus == 'success'
-          ? resolvedIps.isEmpty
-              ? l10n.xboardNetworkDiagnosticsNodeDnsSuccess
-              : '${l10n.xboardNetworkDiagnosticsNodeDnsSuccess} · $resolvedIps'
-          : l10n.xboardNetworkDiagnosticsNodeDnsFailed,
+      skipped: dnsSkipped,
+      detail: dnsSkipped
+          ? l10n.xboardNetworkDiagnosticsSkippedPrerequisite
+          : dnsStatus == 'success'
+              ? resolvedIps.isEmpty
+                  ? l10n.xboardNetworkDiagnosticsNodeDnsSuccess
+                  : '${l10n.xboardNetworkDiagnosticsNodeDnsSuccess} · $resolvedIps'
+              : l10n.xboardNetworkDiagnosticsNodeDnsFailed,
       elapsedMs: _asInt(data['dns-elapsed-ms']),
     ));
 
@@ -330,7 +409,7 @@ class _NetCheckPageState extends ConsumerState<NetCheckPage> {
             ? l10n.xboardNetworkDiagnosticsTcpSkippedUdp
             : failureStage == 'dns'
                 ? l10n.xboardNetworkDiagnosticsNodeDnsFailed
-                : l10n.xboardNetworkDiagnosticsUnavailable,
+                : l10n.xboardNetworkDiagnosticsSkippedPrerequisite,
       ));
     } else {
       results.add(_StepResult(
@@ -342,14 +421,19 @@ class _NetCheckPageState extends ConsumerState<NetCheckPage> {
     }
 
     final proxyStatus = data['proxy-status']?.toString();
+    final proxySkipped =
+        proxyStatus == 'skipped' || proxyStatus == 'unavailable';
     results.add(_StepResult(
       label: failureStage == 'tls'
           ? l10n.xboardNetworkDiagnosticsNodeTls
           : l10n.xboardNetworkDiagnosticsNodeHandshake,
       ok: proxyStatus == 'success',
-      detail: proxyStatus == 'success'
-          ? l10n.xboardNetworkDiagnosticsNodeHttpSuccess
-          : _proxyFailureText(failureStage, l10n),
+      skipped: proxySkipped,
+      detail: proxySkipped
+          ? l10n.xboardNetworkDiagnosticsSkippedPrerequisite
+          : proxyStatus == 'success'
+              ? l10n.xboardNetworkDiagnosticsNodeHttpSuccess
+              : _proxyFailureText(failureStage, l10n),
       elapsedMs: _asInt(data['http-elapsed-ms']),
     ));
     return results;
@@ -616,6 +700,47 @@ class _NetCheckPageState extends ConsumerState<NetCheckPage> {
     }
   }
 
+  Future<List<_StepResult>> _checkLocalProxy(AppLocalizations l10n) async {
+    if (!(Platform.isWindows || Platform.isMacOS || Platform.isLinux)) {
+      return [];
+    }
+    final port = ref.read(proxyStateProvider).port;
+    final mode = ref.read(patchClashConfigProvider).mode;
+    var route = mode.name;
+    try {
+      final live = await clashCore
+          .getProxiesGroups()
+          .timeout(const Duration(seconds: 3));
+      if (mode == Mode.global) {
+        var name = 'GLOBAL';
+        final chain = <String>[];
+        while (!chain.contains(name) && chain.length < 10) {
+          chain.add(name);
+          final group = live.getGroup(name);
+          if (group == null || group.realNow.isEmpty) break;
+          name = group.realNow;
+        }
+        route = chain.join(' → ');
+      }
+    } catch (_) {
+      // Keep route state unknown, never replace it with a displayed node.
+      route = '${mode.name} · ?';
+    }
+    final result = await probeLocalProxy(
+      port: port,
+      target: Uri.parse('https://www.google.com/generate_204'),
+    );
+    return [
+      _StepResult(
+        label: 'Google · 127.0.0.1:$port',
+        ok: result.ok,
+        detail:
+            '$route · ${result.ok ? l10n.xboardNetworkDiagnosticsReachable : l10n.xboardNetworkDiagnosticsUnreachable}',
+        elapsedMs: result.elapsedMs,
+      ),
+    ];
+  }
+
   String _routeTargetLabel(String url, AppLocalizations l10n) {
     return switch (Uri.parse(url).host) {
       'connect.rom.miui.com' => l10n.xboardNetworkDiagnosticsTargetXiaomi204,
@@ -629,52 +754,35 @@ class _NetCheckPageState extends ConsumerState<NetCheckPage> {
     };
   }
 
-  Future<List<_StepResult>> _checkIpConnectivity(
-    AppLocalizations l10n,
-  ) async {
+  Future<List<_StepResult>> _checkIpConnectivity(String detail) async {
     return Future.wait([
-      _checkAddressFamily('https://ipv4.icanhazip.com', 'IPv4', l10n),
-      _checkAddressFamily(
+      _checkNativeRoute('https://ipv4.icanhazip.com', 'IPv4', detail,
+          expectedStatus: HttpStatus.ok),
+      _checkNativeRoute(
         'https://ipv6.icanhazip.com',
         'IPv6',
-        l10n,
+        detail,
+        expectedStatus: HttpStatus.ok,
       ),
     ]);
   }
 
-  Future<_StepResult> _checkAddressFamily(
+  Future<_StepResult> _checkNativeRoute(
     String url,
     String label,
-    AppLocalizations l10n,
-  ) async {
-    final stopwatch = Stopwatch()..start();
-    try {
-      final delay = await clashCore
-          .getDelay(url, 'DIRECT')
-          .timeout(const Duration(seconds: 8));
-      stopwatch.stop();
-      final value = delay.value;
-      if (value == null || value <= 0) {
-        return _StepResult.fail(
-          label,
-          l10n.xboardNetworkDiagnosticsUnreachable,
-          elapsedMs: stopwatch.elapsedMilliseconds,
-        );
-      }
-      return _StepResult(
-        label: label,
-        ok: true,
-        detail: l10n.xboardNetworkDiagnosticsReachable,
-        elapsedMs: value,
-      );
-    } catch (_) {
-      stopwatch.stop();
-      return _StepResult.fail(
-        label,
-        l10n.xboardNetworkDiagnosticsUnreachable,
-        elapsedMs: stopwatch.elapsedMilliseconds,
-      );
-    }
+    String detail, {
+    int expectedStatus = HttpStatus.noContent,
+  }) async {
+    final result = await probeNativeNetwork(
+      target: Uri.parse(url),
+      expectedStatus: expectedStatus,
+    );
+    return _StepResult(
+      label: label,
+      ok: result.ok,
+      detail: detail,
+      elapsedMs: result.elapsedMs,
+    );
   }
 
   NetworkDiagnosticDecision _buildConclusion(
@@ -685,16 +793,19 @@ class _NetCheckPageState extends ConsumerState<NetCheckPage> {
     bool connected,
     Map<String, dynamic> nodeDiagnostic, {
     required bool networkDisconnected,
+    bool? localProxyOk,
+    bool directMayUseTun = false,
   }) {
     final dnsOk = dns.isNotEmpty && dns.every((item) => item.ok);
     final directOk = direct.any((item) => item.ok);
     final directAllOk = direct.isNotEmpty && direct.every((item) => item.ok);
-    final proxyOk = proxy.any((item) => item.ok);
+    final proxyOk = proxy.any((item) => !item.skipped && item.ok);
     final ipOk = ip.any((item) => item.ok);
     final failureStage = nodeDiagnostic['failure-stage']?.toString();
     final tcpStatus = nodeDiagnostic['tcp-status']?.toString();
     final diagnosticUnavailable =
-        nodeDiagnostic['diagnostic-status'] == 'unavailable';
+        nodeDiagnostic['diagnostic-status'] == 'unavailable' ||
+            nodeDiagnostic['diagnostic-status'] == 'core_unavailable';
     return evaluateNetworkDiagnostic(
       networkDisconnected: networkDisconnected,
       connected: connected,
@@ -702,11 +813,13 @@ class _NetCheckPageState extends ConsumerState<NetCheckPage> {
       directOk: directOk,
       directAllOk: directAllOk,
       proxyOk: proxyOk,
-      proxyEmpty: proxy.isEmpty,
+      proxyEmpty: proxy.every((item) => item.skipped),
       ipOk: ipOk,
       diagnosticUnavailable: diagnosticUnavailable,
       failureStage: failureStage,
       tcpStatus: tcpStatus,
+      localProxyOk: localProxyOk,
+      directMayUseTun: directMayUseTun,
     );
   }
 
@@ -715,6 +828,14 @@ class _NetCheckPageState extends ConsumerState<NetCheckPage> {
     AppLocalizations l10n,
   ) {
     return switch (conclusion.reason) {
+      NetworkDiagnosticReason.configuration =>
+        l10n.xboardNetworkDiagnosticsConclusionConfiguration,
+      NetworkDiagnosticReason.coreUnavailable =>
+        l10n.xboardNetworkDiagnosticsConclusionCoreUnavailable,
+      NetworkDiagnosticReason.routeUncertain =>
+        l10n.xboardNetworkDiagnosticsConclusionRouteUncertain,
+      NetworkDiagnosticReason.localProxy =>
+        l10n.xboardNetworkDiagnosticsLocalProxyFailed,
       NetworkDiagnosticReason.noNetwork =>
         l10n.xboardNetworkDiagnosticsConclusionNoNetwork,
       NetworkDiagnosticReason.disconnectedHealthy =>
@@ -912,6 +1033,10 @@ class _NetCheckPageState extends ConsumerState<NetCheckPage> {
         if (_directResults.isNotEmpty) ...[
           _SectionHeader(l10n.xboardNetworkDiagnosticsDirectHttps),
           _ResultList(results: _directResults),
+        ],
+        if (_localProxyResults.isNotEmpty) ...[
+          _SectionHeader(l10n.xboardNetworkDiagnosticsLocalProxy),
+          _ResultList(results: _localProxyResults),
         ],
         if (_proxyResults.isNotEmpty) ...[
           _SectionHeader(l10n.xboardNetworkDiagnosticsProxyHttps),

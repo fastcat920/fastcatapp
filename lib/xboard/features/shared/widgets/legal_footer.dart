@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:fl_clash/widgets/widgets.dart';
 
 abstract final class FastCatLegalLinks {
   static const String _privacyPolicyUrl = String.fromEnvironment(
@@ -50,10 +51,17 @@ class FastCatLegalFooter extends StatelessWidget {
         Wrap(
           crossAxisAlignment: WrapCrossAlignment.center,
           children: [
-            TextButton(
+            TVFocusable(
+              borderRadius: BorderRadius.circular(10),
               onPressed: FastCatLegalLinks.openPrivacyPolicy,
-              child:
-                  Text(chinese ? '隐私政策' : 'Privacy Policy', style: legalStyle),
+              child: TextButton(
+                style: const ButtonStyle(
+                  overlayColor: WidgetStatePropertyAll(Colors.transparent),
+                ),
+                onPressed: FastCatLegalLinks.openPrivacyPolicy,
+                child: Text(chinese ? '隐私政策' : 'Privacy Policy',
+                    style: legalStyle),
+              ),
             ),
             Text(
               '|',
@@ -61,10 +69,17 @@ class FastCatLegalFooter extends StatelessWidget {
                     color: colorScheme.onSurfaceVariant,
                   ),
             ),
-            TextButton(
+            TVFocusable(
+              borderRadius: BorderRadius.circular(10),
               onPressed: FastCatLegalLinks.openTermsOfService,
-              child: Text(chinese ? '服务条款' : 'Terms of Service',
-                  style: legalStyle),
+              child: TextButton(
+                style: const ButtonStyle(
+                  overlayColor: WidgetStatePropertyAll(Colors.transparent),
+                ),
+                onPressed: FastCatLegalLinks.openTermsOfService,
+                child: Text(chinese ? '服务条款' : 'Terms of Service',
+                    style: legalStyle),
+              ),
             ),
           ],
         ),
@@ -110,34 +125,50 @@ class FastCatLegalAgreement extends StatelessWidget {
         crossAxisAlignment: WrapCrossAlignment.center,
         runSpacing: 2,
         children: [
-          SizedBox(
-            width: 32,
-            height: 32,
-            child: Checkbox(
-              value: value,
-              visualDensity: VisualDensity.compact,
-              materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
-              onChanged: (checked) => onChanged(checked ?? false),
+          TVFocusable(
+            borderRadius: BorderRadius.circular(8),
+            onPressed: () => onChanged(!value),
+            child: SizedBox(
+              width: 32,
+              height: 32,
+              child: Checkbox(
+                value: value,
+                visualDensity: VisualDensity.compact,
+                materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                onChanged: (checked) => onChanged(checked ?? false),
+              ),
             ),
           ),
           const SizedBox(width: 4),
           Text(chinese ? '我已阅读并同意' : 'I have read and agree to ',
               style: textStyle),
-          TextButton(
-            style: linkButtonStyle,
+          TVFocusable(
+            borderRadius: BorderRadius.circular(8),
             onPressed: FastCatLegalLinks.openPrivacyPolicy,
-            child: Text(
-              chinese ? '《隐私政策》' : 'Privacy Policy',
-              style: linkStyle,
+            child: TextButton(
+              style: linkButtonStyle.copyWith(
+                overlayColor: const WidgetStatePropertyAll(Colors.transparent),
+              ),
+              onPressed: FastCatLegalLinks.openPrivacyPolicy,
+              child: Text(
+                chinese ? '《隐私政策》' : 'Privacy Policy',
+                style: linkStyle,
+              ),
             ),
           ),
           Text(chinese ? '和' : ' and ', style: textStyle),
-          TextButton(
-            style: linkButtonStyle,
+          TVFocusable(
+            borderRadius: BorderRadius.circular(8),
             onPressed: FastCatLegalLinks.openTermsOfService,
-            child: Text(
-              chinese ? '《服务条款》' : 'Terms of Service',
-              style: linkStyle,
+            child: TextButton(
+              style: linkButtonStyle.copyWith(
+                overlayColor: const WidgetStatePropertyAll(Colors.transparent),
+              ),
+              onPressed: FastCatLegalLinks.openTermsOfService,
+              child: Text(
+                chinese ? '《服务条款》' : 'Terms of Service',
+                style: linkStyle,
+              ),
             ),
           ),
         ],

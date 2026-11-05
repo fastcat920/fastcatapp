@@ -1,3 +1,4 @@
+import 'support_unread_badge.dart';
 import 'package:fl_clash/common/common.dart';
 import 'package:fl_clash/l10n/l10n.dart';
 import 'package:fl_clash/widgets/widgets.dart';
@@ -92,12 +93,15 @@ class DesktopNavigationRail extends ConsumerWidget {
                           : Colors.transparent,
                       borderRadius: BorderRadius.circular(14),
                     ),
-                    child: Icon(
-                      isSelected ? selectedIcon : icon,
-                      color: isSelected
-                          ? colorScheme.primary
-                          : colorScheme.onSurfaceVariant,
-                      size: 24,
+                    child: SupportUnreadBadge(
+                      enabled: index == 3,
+                      child: Icon(
+                        isSelected ? selectedIcon : icon,
+                        color: isSelected
+                            ? colorScheme.primary
+                            : colorScheme.onSurfaceVariant,
+                        size: 24,
+                      ),
                     ),
                   ),
                   if (showBadge)

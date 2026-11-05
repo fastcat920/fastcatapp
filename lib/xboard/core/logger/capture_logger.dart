@@ -5,7 +5,6 @@
 library;
 
 import 'package:fl_clash/common/constant.dart';
-import 'package:fl_clash/common/sensitive_masker.dart';
 import 'package:fl_clash/enum/enum.dart' as fl_enum;
 import 'package:fl_clash/models/common.dart' show Log;
 import 'package:fl_clash/state.dart';
@@ -32,9 +31,12 @@ LogLevel mapFastcatLogLevel(fl_enum.LogLevel level) {
 /// 将 XBoard 日志转发到 fl_clash 的 logsProvider，同时保留控制台输出。
 class CaptureLogger implements LoggerInterface {
   final ConsoleLogger _console;
+  final void Function(Log)? _onCapture;
 
-  CaptureLogger({LogLevel minLevel = LogLevel.info})
-      : _console = ConsoleLogger(minLevel: minLevel);
+  CaptureLogger(
+      {LogLevel minLevel = LogLevel.info, void Function(Log)? onCapture})
+      : _onCapture = onCapture,
+        _console = ConsoleLogger(minLevel: minLevel);
 
   @override
   LogLevel get minLevel => _console.minLevel;
@@ -46,7 +48,7 @@ class CaptureLogger implements LoggerInterface {
   void debug(String message, [Object? error, StackTrace? stackTrace]) {
     _console.debug(message, error, stackTrace);
     if (minLevel.index <= LogLevel.debug.index) {
-      _addLog(fl_enum.LogLevel.debug, message);
+      _addLog(fl_enum.LogLevel.debug, message, error, stackTrace);
     }
   }
 
@@ -54,7 +56,7 @@ class CaptureLogger implements LoggerInterface {
   void info(String message, [Object? error, StackTrace? stackTrace]) {
     _console.info(message, error, stackTrace);
     if (minLevel.index <= LogLevel.info.index) {
-      _addLog(fl_enum.LogLevel.info, message);
+      _addLog(fl_enum.LogLevel.info, message, error, stackTrace);
     }
   }
 
@@ -62,23 +64,31 @@ class CaptureLogger implements LoggerInterface {
   void warning(String message, [Object? error, StackTrace? stackTrace]) {
     _console.warning(message, error, stackTrace);
     if (minLevel.index <= LogLevel.warning.index) {
-      _addLog(fl_enum.LogLevel.warning, message);
+      _addLog(fl_enum.LogLevel.warning, message, error, stackTrace);
     }
   }
 
   @override
   void error(String message, [Object? error, StackTrace? stackTrace]) {
     _console.error(message, error, stackTrace);
-    _addLog(fl_enum.LogLevel.error, message);
+    _addLog(fl_enum.LogLevel.error, message, error, stackTrace);
   }
 
-  void _addLog(fl_enum.LogLevel level, String message) {
+  void _addLog(fl_enum.LogLevel level, String message, Object? error,
+      StackTrace? stackTrace) {
     try {
-      if (!globalState.isInit) return;
-      globalState.appController.addLog(
+      if (_onCapture == null && !globalState.isInit) return;
+      final payload = [
+        '[$appName] $message',
+        if (error != null) 'Error: $error',
+        if (stackTrace != null) 'StackTrace:\n$stackTrace',
+      ].join('\n');
+      (_onCapture ?? globalState.appController.addLog)(
         Log(
           logLevel: level,
-          payload: '[$appName] ${SensitiveMasker.maskText(message)}',
+          // The shared buffer redacts before storage and uses the original
+          // identity to avoid merging different masked endpoints.
+          payload: payload,
           dateTime: DateTime.now().toString(),
         ),
       );

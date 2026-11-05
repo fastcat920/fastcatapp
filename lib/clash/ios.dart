@@ -1,8 +1,10 @@
 import 'dart:async';
+import 'dart:convert';
 import 'dart:io';
 
 import 'package:fl_clash/clash/interface.dart';
 import 'package:fl_clash/enum/enum.dart';
+import 'package:fl_clash/models/models.dart';
 import 'package:flutter/services.dart';
 
 /// iOS implementation of [ClashHandlerInterface].
@@ -50,24 +52,48 @@ class ClashIOS extends ClashHandlerInterface {
       final result = await _channel
           .invokeMethod<dynamic>(method.name, data)
           .timeout(effectiveTimeout);
-      if (result == null) return _default<T>(defaultValue);
-      if (result is T) return result;
-      // Common safe coercions
-      if (T == String) return (result.toString()) as T;
-      if (T == bool) return (result as bool) as T;
-      if (T == Map) return (result as Map) as T;
-      return result as T;
-    } catch (_) {
+      if (result == null) {
+        if (ClashHandlerInterface.requiresAcknowledgement(method)) {
+          throw StateError('Core ${method.name} returned no acknowledgement');
+        }
+        return _default<T>(defaultValue, method);
+      }
+      return _decode<T>(result);
+    } on TimeoutException {
       if (onTimeout != null) return onTimeout();
-      return _default<T>(defaultValue);
+      if (ClashHandlerInterface.requiresAcknowledgement(method)) rethrow;
+      return _default<T>(defaultValue, method);
+    } catch (_) {
+      if (ClashHandlerInterface.requiresAcknowledgement(method)) rethrow;
+      return _default<T>(defaultValue, method);
     }
   }
 
-  T _default<T>(T? provided) {
+  T _decode<T>(Object result) {
+    if (result is T) return result as T;
+    // The Go bridge returns JSON as UTF-8 strings, not StandardMessageCodec
+    // maps/bools. Keep String replies verbatim: an explicit empty string is a
+    // valid acknowledgement, and provider/probe callers decode their own JSON.
+    final decoded = result is String && (T == Map || T == bool || T == Result)
+        ? json.decode(result)
+        : result;
+    if (decoded is T) return decoded;
+    if (T == Result && decoded is Map) {
+      // getConfig/getConfigContent return the raw configuration object on iOS,
+      // unlike the ActionResult envelope used by the desktop transport.
+      return Result.success(Map<String, dynamic>.from(decoded)) as T;
+    }
+    throw FormatException('Unexpected iOS core response type for $T');
+  }
+
+  T _default<T>(T? provided, ActionMethod method) {
     if (provided != null) return provided;
     if (T == bool) return false as T;
     if (T == String) return '' as T;
     if (T == Map) return <String, dynamic>{} as T;
+    if (T == Result) {
+      return Result.error('CORE_METHOD_UNAVAILABLE:${method.name}') as T;
+    }
     return provided as T;
   }
 }

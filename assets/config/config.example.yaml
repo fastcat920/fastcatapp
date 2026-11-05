@@ -12,6 +12,13 @@ panel_type: xboard
 latency:
   display_discount_percent: 0
 
+# 客服平台本地兜底。远程配置 contact.fastcat_support 优先。
+contact_fallback:
+  fastcat_support:
+    enabled: false
+    base_url: "https://support.example.com"
+    app_key: "your-public-platform-app-key"
+
 # 远程配置源
 # 客户端启动时从这里拉取面板域名列表（domains）
 #

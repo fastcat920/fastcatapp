@@ -10,6 +10,7 @@ import 'package:fl_clash/manager/hotkey_manager.dart';
 import 'package:fl_clash/manager/manager.dart';
 import 'package:fl_clash/plugins/app.dart';
 import 'package:fl_clash/providers/providers.dart';
+import 'package:fl_clash/enum/enum.dart' as client_enum;
 import 'package:fl_clash/state.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
@@ -39,18 +40,6 @@ class Application extends ConsumerStatefulWidget {
 
 class ApplicationState extends ConsumerState<Application>
     with WidgetsBindingObserver {
-  static const _fontFamilyFallback = [
-    'Noto Sans CJK SC',
-    'Noto Sans CJK',
-    'Noto Sans SC',
-    'Source Han Sans SC',
-    'WenQuanYi Micro Hei',
-    'Microsoft YaHei',
-    'PingFang SC',
-    'Arial Unicode MS',
-    'sans-serif',
-  ];
-
   Timer? _autoUpdateProfilesTaskTimer;
   Timer? _customerServicePrewarmTimer;
   Timer? _mobileLogRecoveryTimer;
@@ -126,7 +115,9 @@ class ApplicationState extends ConsumerState<Application>
         // 未初始化时留在登录页（Widget 层的加载遮罩盖在上方，用户不会看到登录页）
         if (!isInitialized) return '/login';
         if (!isAuthenticated && !isLoginPage) return '/login';
-        if (isAuthenticated && isLoginPage) return '/';
+        // 登录后的用户、订阅和节点初始化完成前继续停留在登录页。
+        // 账号密码和扫码登录共用该状态，避免先进入首页再闪现空节点/DIRECT。
+        if (isAuthenticated && !userState.isLoading && isLoginPage) return '/';
         return null;
       },
     );
@@ -209,6 +200,19 @@ class ApplicationState extends ConsumerState<Application>
     ref.listenManual(
       appSettingProvider.select((s) => s.logCapture),
       (_, next) {
+        // Log capture is now one unified stream. Do not restore the old
+        // page-level severity preference (which could suppress all but errors).
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          if (!mounted) return;
+          final capture = ref.read(appSettingProvider).logCapture;
+          final level =
+              capture ? client_enum.LogLevel.info : client_enum.LogLevel.error;
+          if (ref.read(patchClashConfigProvider).logLevel == level) return;
+          ref.read(patchClashConfigProvider.notifier).updateState(
+                (state) => state.copyWith(logLevel: level),
+              );
+          // ClashManager applies this as a log-only update, without reconnecting.
+        });
         if (next) {
           final currentLogLevel = ref.read(patchClashConfigProvider).logLevel;
           XBoardLogger.setLogger(
@@ -244,9 +248,13 @@ class ApplicationState extends ConsumerState<Application>
             ),
           );
         }
-        if (previous?.isAuthenticated != next.isAuthenticated ||
-            previous?.isInitialized != next.isInitialized) {
+        final authStateChanged =
+            previous?.isAuthenticated != next.isAuthenticated ||
+                previous?.isInitialized != next.isInitialized;
+        if (authStateChanged) {
           syncDeviceHeartbeat();
+        }
+        if (authStateChanged || previous?.isLoading != next.isLoading) {
           WidgetsBinding.instance.addPostFrameCallback((_) {
             if (mounted) {
               _router.refresh();
@@ -313,6 +321,9 @@ class ApplicationState extends ConsumerState<Application>
       await ref.read(xboardUserProvider.notifier).refreshSubscriptionInfo(
             importProfile: false,
           );
+      if (mounted) {
+        ref.read(xboardUserProvider.notifier).retryAutomaticSubscriptionImport();
+      }
     } catch (error) {
       debugPrint('[Application] 网络恢复后刷新订阅信息失败: $error');
     }
@@ -458,13 +469,22 @@ class ApplicationState extends ConsumerState<Application>
       _ => 'unknown',
     };
     final info = config.platformInfo(platform);
-    if (info == null || info.version.trim().isEmpty) return null;
+    if (info == null || (info.enabled && info.version.trim().isEmpty)) {
+      return null;
+    }
     return [
       platform,
       info.version.trim(),
-      info.url.trim(),
+      info.resolvedUrl,
       info.force,
+      info.enabled,
+      info.source.trim(),
+      info.minSupportedVersion?.trim() ?? '',
+      info.changelog.entries
+          .map((entry) => '${entry.key}:${entry.value}')
+          .join(','),
       config.minVersion?.trim() ?? '',
+      config.changelog?.trim() ?? '',
     ].join('|');
   }
 
@@ -770,20 +790,16 @@ class ApplicationState extends ConsumerState<Application>
                   ),
                 );
 
-                // TV 10ft UI: text scale 1.3x + overscan-safe padding (5%)
+                // TV 10ft UI keeps the larger text scale, but the application
+                // itself remains full-bleed. Individual pages own their content
+                // padding so backgrounds and navigation can fill the display.
                 if (system.isTV) {
                   final mq = MediaQuery.of(context);
                   content = MediaQuery(
                     data: mq.copyWith(
                       textScaler: const TextScaler.linear(1.3),
                     ),
-                    child: SafeArea(
-                      minimum: EdgeInsets.symmetric(
-                        horizontal: mq.size.width * 0.05,
-                        vertical: mq.size.height * 0.05,
-                      ),
-                      child: content,
-                    ),
+                    child: content,
                   );
                 }
 
@@ -811,7 +827,7 @@ class ApplicationState extends ConsumerState<Application>
               themeMode: themeProps.themeMode,
               theme: ThemeData(
                 useMaterial3: true,
-                fontFamilyFallback: _fontFamilyFallback,
+                fontFamilyFallback: appFontFamilyFallback,
                 pageTransitionsTheme: _pageTransitionsTheme,
                 colorScheme: lightColorScheme,
                 typography: buildAppTypography(
@@ -841,16 +857,8 @@ class ApplicationState extends ConsumerState<Application>
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(24),
                   ),
-                  titleTextStyle: const TextStyle(
-                    color: Color(0xFF1A2138),
-                    fontSize: 16,
-                    fontWeight: FontWeight.w600,
-                  ),
-                  contentTextStyle: const TextStyle(
-                    color: Color(0xFF475467),
-                    fontSize: 14,
-                    height: 1.45,
-                  ),
+                  titleTextStyle: appDialogTitleStyle,
+                  contentTextStyle: appDialogContentStyle,
                   actionsPadding: const EdgeInsets.fromLTRB(24, 0, 24, 20),
                 ),
                 navigationBarTheme: NavigationBarThemeData(
@@ -926,7 +934,7 @@ class ApplicationState extends ConsumerState<Application>
               ),
               darkTheme: ThemeData(
                 useMaterial3: true,
-                fontFamilyFallback: _fontFamilyFallback,
+                fontFamilyFallback: appFontFamilyFallback,
                 pageTransitionsTheme: _pageTransitionsTheme,
                 colorScheme: darkColorScheme,
                 typography: buildAppTypography(

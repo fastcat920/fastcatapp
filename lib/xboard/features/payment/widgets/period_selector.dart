@@ -10,6 +10,7 @@ class PeriodSelector extends StatelessWidget {
   final Function(String) onPeriodSelected;
   final int? couponType;
   final int? couponValue;
+  final bool forceFourColumns;
 
   const PeriodSelector({
     super.key,
@@ -18,6 +19,7 @@ class PeriodSelector extends StatelessWidget {
     required this.onPeriodSelected,
     this.couponType,
     this.couponValue,
+    this.forceFourColumns = false,
   });
 
   @override
@@ -49,7 +51,8 @@ class PeriodSelector extends StatelessWidget {
   Widget _buildGridLayout(BuildContext context) {
     return LayoutBuilder(
       builder: (context, constraints) {
-        final crossAxisCount = _columnCountForWidth(constraints.maxWidth);
+        final crossAxisCount =
+            forceFourColumns ? 4 : _columnCountForWidth(constraints.maxWidth);
         const spacing = 12.0;
 
         return GridView.builder(

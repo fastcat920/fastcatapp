@@ -32,6 +32,13 @@ set(CMAKE_CXX_FLAGS_PROFILE "${CMAKE_CXX_FLAGS_RELEASE}")
 # Use Unicode for all projects.
 add_definitions(-DUNICODE -D_UNICODE)
 
+# WebView2 still includes <experimental/coroutine>. Newer MSVC toolchains
+# turn its deprecation into a hard error unless this compatibility switch is
+# set. Define it at directory scope so every generated Flutter plugin inherits
+# it, including plugins that do not call APPLY_STANDARD_SETTINGS.
+add_compile_definitions(
+  _SILENCE_EXPERIMENTAL_COROUTINE_DEPRECATION_WARNINGS)
+
 # Compilation settings that should be applied to most targets.
 #
 # Be cautious about adding new options here, as plugins use this function by

@@ -1,3 +1,4 @@
+import 'package:fl_clash/widgets/tv_focusable.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -126,7 +127,7 @@ class UpdateDialog extends ConsumerWidget {
               onPressed: () => Navigator.of(context).pop(),
               style: XbUiButton.outlinedNeutral(context),
               child: Text(appLocalizations.updateCheckUpdateLater),
-            ),
+            ).withTvFocus(autofocus: true),
           FilledButton.icon(
             onPressed: () {
               if (state.updateUrl != null) {
@@ -143,7 +144,7 @@ class UpdateDialog extends ConsumerWidget {
             style: state.forceUpdate
                 ? XbUiButton.filledDanger(context)
                 : XbUiButton.filledPrimary(context),
-          ),
+          ).withTvFocus(autofocus: state.forceUpdate),
         ],
       ),
     );

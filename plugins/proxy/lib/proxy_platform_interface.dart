@@ -31,4 +31,14 @@ abstract class ProxyPlatform extends PlatformInterface {
   Future<Map<String, dynamic>?> getProxyStatus() {
     throw UnimplementedError('getProxyStatus() has not been implemented.');
   }
+
+  Future<Map<String, String>?> readProxyConfiguration() {
+    throw UnimplementedError(
+        'readProxyConfiguration() has not been implemented.');
+  }
+
+  Future<bool?> writeProxyConfiguration(Map<String, String> values) {
+    throw UnimplementedError(
+        'writeProxyConfiguration() has not been implemented.');
+  }
 }

@@ -18,6 +18,7 @@ import 'package:fl_clash/xboard/features/shared/utils/desktop_webview_window_hel
 import 'package:fl_clash/xboard/features/shared/styles/styles.dart';
 import '../services/payment_status_poller.dart';
 import '../services/payment_user_agent.dart';
+import '../services/apple_checkout.dart';
 
 const _logger = FileLogger('payment_webview_page.dart');
 Webview? _desktopPaymentWebview;
@@ -72,14 +73,7 @@ class PaymentWebViewPage extends ConsumerStatefulWidget {
   /// WKWebView. Only HTTPS checkout URLs are allowed here: custom payment-app
   /// schemes remain unavailable on iOS after the browser handoff.
   static Future<void> _openIOSExternalBrowser(String paymentUrl) async {
-    final uri = Uri.tryParse(paymentUrl);
-    if (uri == null || !uri.hasAuthority || uri.scheme != 'https') {
-      throw ArgumentError.value(
-        paymentUrl,
-        'paymentUrl',
-        'iOS external payments require an HTTPS checkout URL.',
-      );
-    }
+    final uri = appleCheckoutUri(paymentUrl);
 
     final launched = await launchUrl(uri, mode: LaunchMode.externalApplication);
     if (!launched) {

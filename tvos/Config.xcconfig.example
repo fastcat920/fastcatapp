@@ -1,0 +1,16 @@
+// Local signing defaults only. Client endpoints live exclusively in
+// ../assets/config/config.yaml and its OSS remote configuration.
+// CI/build commands inject encryption values with xcodebuild KEY=value.
+FASTCAT_API_BASE_URL =
+XOR_KEY =
+REMOTE_CONFIG_PUBLIC_KEY =
+FASTCAT_KEY_CURRENT_ID =
+FASTCAT_KEY_CURRENT =
+FASTCAT_KEY_NEXT_ID =
+FASTCAT_KEY_NEXT =
+FASTCAT_SUBSCRIPTION_FLAG = fastcat-v1
+FASTCAT_REQUIRE_ENCRYPTION = YES
+APP_GROUP_ID = group.com.fastcat.app
+// Keep this equal to the iOS app identifier for Universal Purchase.
+FASTCAT_TV_BUNDLE_IDENTIFIER = com.fastcat.app
+DEVELOPMENT_TEAM =

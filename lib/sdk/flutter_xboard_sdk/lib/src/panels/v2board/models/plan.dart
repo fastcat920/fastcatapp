@@ -4,11 +4,16 @@ import 'package:freezed_annotation/freezed_annotation.dart';
 part 'plan.freezed.dart';
 part 'plan.g.dart';
 
+Map<String, dynamic> _flashSalesFromJson(dynamic value) {
+  if (value is! Map) return const {};
+  return value.map((key, item) => MapEntry(key.toString(), item));
+}
+
 /// 套餐计划数据模型
 @freezed
 class Plan with _$Plan {
   const Plan._();
-  
+
   const factory Plan({
     required int id,
     @JsonKey(name: 'group_id') int? groupId,
@@ -30,10 +35,13 @@ class Plan with _$Plan {
     @JsonKey(name: 'capacity_limit') int? capacityLimit,
     @JsonKey(name: 'speed_limit') int? speedLimit,
     @JsonKey(name: 'device_limit') int? deviceLimit,
+    @JsonKey(name: 'active_flash_sales', fromJson: _flashSalesFromJson)
+    @Default({})
+    Map<String, dynamic> activeFlashSales,
   }) = _Plan;
-  
+
   factory Plan.fromJson(Map<String, dynamic> json) => _$PlanFromJson(json);
-  
+
   /// 获取指定周期的价格
   int? getPriceForPeriod(String period) {
     switch (period) {
@@ -57,13 +65,13 @@ class Plan with _$Plan {
         return null;
     }
   }
-  
+
   /// 是否显示
   bool get isVisible => show == 1;
-  
+
   /// 是否可续费
   bool get isRenewable => renew == 1;
-  
+
   /// 流量大小（GB）
   double? get transferGB {
     if (transferEnable == null) return null;

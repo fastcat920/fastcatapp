@@ -54,6 +54,9 @@ mixin _$Plan {
   int? get speedLimit => throw _privateConstructorUsedError;
   @JsonKey(name: 'device_limit')
   int? get deviceLimit => throw _privateConstructorUsedError;
+  @JsonKey(name: 'active_flash_sales', fromJson: _flashSalesFromJson)
+  Map<String, dynamic> get activeFlashSales =>
+      throw _privateConstructorUsedError;
 
   /// Serializes this Plan to a JSON map.
   Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
@@ -89,7 +92,9 @@ abstract class $PlanCopyWith<$Res> {
       @JsonKey(name: 'reset_traffic_method') int? resetTrafficMethod,
       @JsonKey(name: 'capacity_limit') int? capacityLimit,
       @JsonKey(name: 'speed_limit') int? speedLimit,
-      @JsonKey(name: 'device_limit') int? deviceLimit});
+      @JsonKey(name: 'device_limit') int? deviceLimit,
+      @JsonKey(name: 'active_flash_sales', fromJson: _flashSalesFromJson)
+      Map<String, dynamic> activeFlashSales});
 }
 
 /// @nodoc
@@ -127,6 +132,7 @@ class _$PlanCopyWithImpl<$Res, $Val extends Plan>
     Object? capacityLimit = freezed,
     Object? speedLimit = freezed,
     Object? deviceLimit = freezed,
+    Object? activeFlashSales = null,
   }) {
     return _then(_value.copyWith(
       id: null == id
@@ -209,6 +215,10 @@ class _$PlanCopyWithImpl<$Res, $Val extends Plan>
           ? _value.deviceLimit
           : deviceLimit // ignore: cast_nullable_to_non_nullable
               as int?,
+      activeFlashSales: null == activeFlashSales
+          ? _value.activeFlashSales
+          : activeFlashSales // ignore: cast_nullable_to_non_nullable
+              as Map<String, dynamic>,
     ) as $Val);
   }
 }
@@ -240,7 +250,9 @@ abstract class _$$PlanImplCopyWith<$Res> implements $PlanCopyWith<$Res> {
       @JsonKey(name: 'reset_traffic_method') int? resetTrafficMethod,
       @JsonKey(name: 'capacity_limit') int? capacityLimit,
       @JsonKey(name: 'speed_limit') int? speedLimit,
-      @JsonKey(name: 'device_limit') int? deviceLimit});
+      @JsonKey(name: 'device_limit') int? deviceLimit,
+      @JsonKey(name: 'active_flash_sales', fromJson: _flashSalesFromJson)
+      Map<String, dynamic> activeFlashSales});
 }
 
 /// @nodoc
@@ -275,6 +287,7 @@ class __$$PlanImplCopyWithImpl<$Res>
     Object? capacityLimit = freezed,
     Object? speedLimit = freezed,
     Object? deviceLimit = freezed,
+    Object? activeFlashSales = null,
   }) {
     return _then(_$PlanImpl(
       id: null == id
@@ -357,6 +370,10 @@ class __$$PlanImplCopyWithImpl<$Res>
           ? _value.deviceLimit
           : deviceLimit // ignore: cast_nullable_to_non_nullable
               as int?,
+      activeFlashSales: null == activeFlashSales
+          ? _value._activeFlashSales
+          : activeFlashSales // ignore: cast_nullable_to_non_nullable
+              as Map<String, dynamic>,
     ));
   }
 }
@@ -384,8 +401,11 @@ class _$PlanImpl extends _Plan {
       @JsonKey(name: 'reset_traffic_method') this.resetTrafficMethod,
       @JsonKey(name: 'capacity_limit') this.capacityLimit,
       @JsonKey(name: 'speed_limit') this.speedLimit,
-      @JsonKey(name: 'device_limit') this.deviceLimit})
-      : super._();
+      @JsonKey(name: 'device_limit') this.deviceLimit,
+      @JsonKey(name: 'active_flash_sales', fromJson: _flashSalesFromJson)
+      final Map<String, dynamic> activeFlashSales = const {}})
+      : _activeFlashSales = activeFlashSales,
+        super._();
 
   factory _$PlanImpl.fromJson(Map<String, dynamic> json) =>
       _$$PlanImplFromJson(json);
@@ -444,10 +464,18 @@ class _$PlanImpl extends _Plan {
   @override
   @JsonKey(name: 'device_limit')
   final int? deviceLimit;
+  final Map<String, dynamic> _activeFlashSales;
+  @override
+  @JsonKey(name: 'active_flash_sales', fromJson: _flashSalesFromJson)
+  Map<String, dynamic> get activeFlashSales {
+    if (_activeFlashSales is EqualUnmodifiableMapView) return _activeFlashSales;
+    // ignore: implicit_dynamic_type
+    return EqualUnmodifiableMapView(_activeFlashSales);
+  }
 
   @override
   String toString() {
-    return 'Plan(id: $id, groupId: $groupId, transferEnable: $transferEnable, name: $name, show: $show, sort: $sort, renew: $renew, content: $content, monthPrice: $monthPrice, quarterPrice: $quarterPrice, halfYearPrice: $halfYearPrice, yearPrice: $yearPrice, twoYearPrice: $twoYearPrice, threeYearPrice: $threeYearPrice, onetimePrice: $onetimePrice, resetPrice: $resetPrice, resetTrafficMethod: $resetTrafficMethod, capacityLimit: $capacityLimit, speedLimit: $speedLimit, deviceLimit: $deviceLimit)';
+    return 'Plan(id: $id, groupId: $groupId, transferEnable: $transferEnable, name: $name, show: $show, sort: $sort, renew: $renew, content: $content, monthPrice: $monthPrice, quarterPrice: $quarterPrice, halfYearPrice: $halfYearPrice, yearPrice: $yearPrice, twoYearPrice: $twoYearPrice, threeYearPrice: $threeYearPrice, onetimePrice: $onetimePrice, resetPrice: $resetPrice, resetTrafficMethod: $resetTrafficMethod, capacityLimit: $capacityLimit, speedLimit: $speedLimit, deviceLimit: $deviceLimit, activeFlashSales: $activeFlashSales)';
   }
 
   @override
@@ -487,7 +515,9 @@ class _$PlanImpl extends _Plan {
             (identical(other.speedLimit, speedLimit) ||
                 other.speedLimit == speedLimit) &&
             (identical(other.deviceLimit, deviceLimit) ||
-                other.deviceLimit == deviceLimit));
+                other.deviceLimit == deviceLimit) &&
+            const DeepCollectionEquality()
+                .equals(other._activeFlashSales, _activeFlashSales));
   }
 
   @JsonKey(includeFromJson: false, includeToJson: false)
@@ -513,7 +543,8 @@ class _$PlanImpl extends _Plan {
         resetTrafficMethod,
         capacityLimit,
         speedLimit,
-        deviceLimit
+        deviceLimit,
+        const DeepCollectionEquality().hash(_activeFlashSales)
       ]);
 
   /// Create a copy of Plan
@@ -553,7 +584,9 @@ abstract class _Plan extends Plan {
       @JsonKey(name: 'reset_traffic_method') final int? resetTrafficMethod,
       @JsonKey(name: 'capacity_limit') final int? capacityLimit,
       @JsonKey(name: 'speed_limit') final int? speedLimit,
-      @JsonKey(name: 'device_limit') final int? deviceLimit}) = _$PlanImpl;
+      @JsonKey(name: 'device_limit') final int? deviceLimit,
+      @JsonKey(name: 'active_flash_sales', fromJson: _flashSalesFromJson)
+      final Map<String, dynamic> activeFlashSales}) = _$PlanImpl;
   const _Plan._() : super._();
 
   factory _Plan.fromJson(Map<String, dynamic> json) = _$PlanImpl.fromJson;
@@ -612,6 +645,9 @@ abstract class _Plan extends Plan {
   @override
   @JsonKey(name: 'device_limit')
   int? get deviceLimit;
+  @override
+  @JsonKey(name: 'active_flash_sales', fromJson: _flashSalesFromJson)
+  Map<String, dynamic> get activeFlashSales;
 
   /// Create a copy of Plan
   /// with the given fields replaced by the non-null parameter values.

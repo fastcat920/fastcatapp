@@ -6,13 +6,12 @@ part of '../sdk_provider.dart';
 // RiverpodGenerator
 // **************************************************************************
 
-String _$xboardSdkHash() => r'3e78dbe99849b0fb8c059692ef9b10d26f6835bc';
+String _$xboardSdkHash() => r'1223a04c7cd4c673c13b4151e7737e12b0b1c761';
 
 /// XBoard SDK Provider
 ///
 /// 负责SDK的初始化和生命周期管理
-/// - 等待 InitializationProvider 完成域名检查
-/// - 使用 InitializationProvider 已选定的可用域名
+/// - 使用 InitializationProvider 已选定的可用域名（逐个尝试后确定）
 /// - 自动加载HTTP配置
 /// - 缓存SDK实例
 ///

@@ -6,7 +6,7 @@ part of '../payment_state.dart';
 // RiverpodGenerator
 // **************************************************************************
 
-String _$getPaymentMethodsHash() => r'4041b697796dfd399ba4b6ff28f467cf9ef5aeac';
+String _$getPaymentMethodsHash() => r'bc43f9957319e43fb18cf7ebece1df66172e38e0';
 
 /// 支付状态管理
 /// 获取支付方式列表

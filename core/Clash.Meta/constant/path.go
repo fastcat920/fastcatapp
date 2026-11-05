@@ -126,7 +126,7 @@ func (p *path) GetPathByHash(prefix, name string) string {
 func (p *path) MMDB() string {
 	files, err := os.ReadDir(p.homeDir)
 	if err != nil {
-		return ""
+		return P.Join(p.homeDir, "geoip.metadb")
 	}
 	for _, fi := range files {
 		if fi.IsDir() {
@@ -147,7 +147,7 @@ func (p *path) MMDB() string {
 func (p *path) ASN() string {
 	files, err := os.ReadDir(p.homeDir)
 	if err != nil {
-		return ""
+		return P.Join(p.homeDir, ASNName)
 	}
 	for _, fi := range files {
 		if fi.IsDir() {
@@ -193,7 +193,7 @@ func (p *path) Cache() string {
 func (p *path) GeoIP() string {
 	files, err := os.ReadDir(p.homeDir)
 	if err != nil {
-		return ""
+		return P.Join(p.homeDir, "GeoIP.dat")
 	}
 	for _, fi := range files {
 		if fi.IsDir() {
@@ -212,7 +212,7 @@ func (p *path) GeoIP() string {
 func (p *path) GeoSite() string {
 	files, err := os.ReadDir(p.homeDir)
 	if err != nil {
-		return ""
+		return P.Join(p.homeDir, "GeoSite.dat")
 	}
 	for _, fi := range files {
 		if fi.IsDir() {

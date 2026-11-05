@@ -7,6 +7,8 @@ import 'package:fl_clash/xboard/features/mine/pages/account_info_page.dart';
 import 'package:fl_clash/xboard/features/mine/pages/device_page.dart';
 import 'package:fl_clash/xboard/features/mine/pages/gift_card_page.dart';
 import 'package:fl_clash/xboard/features/mine/pages/order_page.dart';
+import 'package:fl_clash/xboard/features/mine/pages/coupon_wallet_page.dart';
+import 'package:fl_clash/xboard/features/mine/pages/balance_records_page.dart';
 import 'package:fl_clash/xboard/features/auth/pages/login_page.dart';
 import 'package:fl_clash/xboard/features/logs/pages/fastcat_logs_page.dart';
 import 'package:flutter/material.dart';
@@ -19,7 +21,7 @@ import 'shell_layout.dart';
 ///
 /// 分支布局（StatefulShellRoute）：
 ///   Branch 0: /        — 首页（桌面 idx 0，移动 idx 0）
-///   Branch 1: /plans   — 套餐（桌面 idx 1，移动 idx 1）
+///   Branch 1: /plans   — 套餐（桌面 idx 1，移动 idx 1），子路由 /plans/coupons
 ///   Branch 2: /invite  — 邀请（idx 2）
 ///   Branch 3: /mine    — 我的（idx 3），子路由 /mine/gift-card
 ///   Branch 4: /logs    — 日志（logCapture 开启时可见，idx 4）
@@ -53,6 +55,15 @@ final List<RouteBase> routes = [
             pageBuilder: (context, state) => const NoTransitionPage(
               child: PlansView(),
             ),
+            routes: [
+              GoRoute(
+                path: 'coupons',
+                name: 'coupons',
+                pageBuilder: (context, state) => const MaterialPage(
+                  child: CouponWalletPage(),
+                ),
+              ),
+            ],
           ),
         ],
       ),
@@ -120,6 +131,13 @@ final List<RouteBase> routes = [
                 name: 'gift_card',
                 pageBuilder: (context, state) => const MaterialPage(
                   child: GiftCardPage(),
+                ),
+              ),
+              GoRoute(
+                path: 'balance-records',
+                name: 'balance_records',
+                pageBuilder: (context, state) => const MaterialPage(
+                  child: BalanceRecordsPage(),
                 ),
               ),
             ],

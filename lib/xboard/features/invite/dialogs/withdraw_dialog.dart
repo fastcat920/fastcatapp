@@ -6,6 +6,7 @@ import 'package:fl_clash/xboard/features/invite/providers/invite_provider.dart';
 import 'package:fl_clash/xboard/features/shared/styles/styles.dart';
 import 'package:fl_clash/xboard/features/shared/widgets/tv_deferred_input.dart';
 import 'package:fl_clash/xboard/utils/backend_message_mapper.dart';
+import 'package:fl_clash/xboard/features/invite/utils/withdraw_amount.dart';
 
 class WithdrawDialog extends ConsumerStatefulWidget {
   const WithdrawDialog({super.key});
@@ -15,6 +16,8 @@ class WithdrawDialog extends ConsumerStatefulWidget {
 }
 
 class _WithdrawDialogState extends ConsumerState<WithdrawDialog> {
+  final _formKey = GlobalKey<FormState>();
+  final TextEditingController _amountController = TextEditingController();
   final TextEditingController _accountController = TextEditingController();
   bool _isWithdrawing = false;
   bool _isSuccess = false;
@@ -23,6 +26,7 @@ class _WithdrawDialogState extends ConsumerState<WithdrawDialog> {
 
   @override
   void dispose() {
+    _amountController.dispose();
     _accountController.dispose();
     super.dispose();
   }
@@ -38,132 +42,128 @@ class _WithdrawDialogState extends ConsumerState<WithdrawDialog> {
     final isDark = theme.brightness == Brightness.dark;
 
     return AlertDialog(
+      scrollable: true,
       shape: XbUiDialog.shape(),
       backgroundColor: XbUiDialog.background(context),
       title: Text(
         appLocalizations.withdrawCommission,
         style: XbUiText.sectionTitle(context),
       ),
-      content: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          AnimatedSwitcher(
-            duration: const Duration(milliseconds: 300),
-            child: _isSuccess
-                ? const Icon(
-                    Icons.check_circle,
-                    size: 48,
-                    color: Colors.green,
-                    key: ValueKey('success'),
-                  )
-                : _isWithdrawing
-                    ? const SizedBox(
-                        width: 48,
-                        height: 48,
-                        child: CircularProgressIndicator(
-                          key: ValueKey('loading'),
-                        ),
-                      )
-                    : Icon(
-                        Icons.account_balance_wallet,
-                        size: 48,
-                        color: theme.colorScheme.primary,
-                        key: ValueKey('wallet'),
-                      ),
-          ),
-          const SizedBox(height: 16),
-          AnimatedSwitcher(
-            duration: const Duration(milliseconds: 300),
-            child: _isSuccess
-                ? Text(
-                    appLocalizations.withdrawRequestSubmitted,
-                    style: const TextStyle(
-                      fontSize: 18,
-                      fontWeight: XbFontWeight.bold,
+      content: Form(
+        key: _formKey,
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            AnimatedSwitcher(
+              duration: const Duration(milliseconds: 300),
+              child: _isSuccess
+                  ? const Icon(
+                      Icons.check_circle,
+                      size: 48,
                       color: Colors.green,
-                    ),
-                    key: const ValueKey('success-text'),
-                  )
-                : _isWithdrawing
-                    ? Text(
-                        appLocalizations.xboardSubmitting,
-                        style: const TextStyle(
-                          fontSize: 20,
-                          fontWeight: XbFontWeight.bold,
+                      key: ValueKey('success'),
+                    )
+                  : _isWithdrawing
+                      ? const SizedBox(
+                          width: 48,
+                          height: 48,
+                          child: CircularProgressIndicator(
+                            key: ValueKey('loading'),
+                          ),
+                        )
+                      : Icon(
+                          Icons.account_balance_wallet,
+                          size: 48,
+                          color: theme.colorScheme.primary,
+                          key: ValueKey('wallet'),
                         ),
-                        key: const ValueKey('loading-text'),
-                      )
-                    : Text(
-                        appLocalizations.withdrawableAmount(
-                            '¥${availableAmount.toStringAsFixed(2)}'),
-                        style: const TextStyle(
-                          fontSize: 20,
-                          fontWeight: XbFontWeight.bold,
-                        ),
-                        key: const ValueKey('balance-text'),
-                      ),
-          ),
-          const SizedBox(height: 16),
-          if (!_isWithdrawing && !_isSuccess) ...[
-            DropdownButtonFormField<String>(
-              // Keep value for CI's Flutter 3.27 SDK.
-              // ignore: deprecated_member_use
-              value: _selectedMethod,
-              decoration: InputDecoration(
-                labelText: appLocalizations.withdrawMethod,
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(14),
-                  borderSide: BorderSide(
-                    color: isDark
-                        ? theme.colorScheme.outline
-                        : XbUiTokens.cardBorderLight,
-                  ),
-                ),
-                enabledBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(14),
-                  borderSide: BorderSide(
-                    color: isDark
-                        ? theme.colorScheme.outline
-                        : XbUiTokens.cardBorderLight,
-                  ),
-                ),
-                focusedBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(14),
-                  borderSide: BorderSide(
-                    color: theme.colorScheme.primary,
-                  ),
-                ),
-                filled: true,
-                fillColor: isDark ? null : XbUiTokens.inputFillLight,
-                prefixIcon: const Icon(Icons.payment),
-              ),
-              items: withdrawMethods.map((String method) {
-                return DropdownMenuItem<String>(
-                  value: method,
-                  child: Text(method),
-                );
-              }).toList(),
-              onChanged: (String? newValue) {
-                setState(() {
-                  _selectedMethod = newValue;
-                });
-              },
-              hint: Text(appLocalizations.pleaseSelectWithdrawMethod),
             ),
-            const SizedBox(height: 12),
-            TVDeferredInput(
-              borderRadius: BorderRadius.circular(14),
-              builder:
-                  (context, focusNode, readOnly, showCursor, beginEditing) =>
-                      TextField(
-                focusNode: focusNode,
-                readOnly: readOnly,
-                showCursor: showCursor,
-                onTap: beginEditing,
-                controller: _accountController,
+            const SizedBox(height: 16),
+            AnimatedSwitcher(
+              duration: const Duration(milliseconds: 300),
+              child: _isSuccess
+                  ? Text(
+                      appLocalizations.withdrawRequestSubmitted,
+                      style: const TextStyle(
+                        fontSize: 18,
+                        fontWeight: XbFontWeight.bold,
+                        color: Colors.green,
+                      ),
+                      key: const ValueKey('success-text'),
+                    )
+                  : _isWithdrawing
+                      ? Text(
+                          appLocalizations.xboardSubmitting,
+                          style: const TextStyle(
+                            fontSize: 20,
+                            fontWeight: XbFontWeight.bold,
+                          ),
+                          key: const ValueKey('loading-text'),
+                        )
+                      : Text(
+                          appLocalizations.withdrawableAmount(
+                              '¥${availableAmount.toStringAsFixed(2)}'),
+                          style: const TextStyle(
+                            fontSize: 20,
+                            fontWeight: XbFontWeight.bold,
+                          ),
+                          key: const ValueKey('balance-text'),
+                        ),
+            ),
+            const SizedBox(height: 16),
+            if (!_isWithdrawing && !_isSuccess) ...[
+              TVDeferredInput(
+                borderRadius: BorderRadius.circular(14),
+                builder:
+                    (context, focusNode, readOnly, showCursor, beginEditing) =>
+                        TextFormField(
+                  key: const ValueKey('withdraw-amount'),
+                  controller: _amountController,
+                  focusNode: focusNode,
+                  readOnly: readOnly,
+                  showCursor: showCursor,
+                  onTap: beginEditing,
+                  keyboardType:
+                      const TextInputType.numberWithOptions(decimal: true),
+                  autovalidateMode: AutovalidateMode.onUserInteraction,
+                  validator: (value) {
+                    final cents = parseWithdrawAmountInCents(value ?? '');
+                    if (cents == null) {
+                      return appLocalizations.xboardInvalidWithdrawAmount;
+                    }
+                    if (cents > (availableAmount * 100).round()) {
+                      return appLocalizations.xboardWithdrawAmountExceeded(
+                          availableAmount.toStringAsFixed(2));
+                    }
+                    return null;
+                  },
+                  decoration: InputDecoration(
+                    labelText: appLocalizations.xboardWithdrawAmount,
+                    hintText: appLocalizations.xboardEnterWithdrawAmount,
+                    prefixIcon: const Icon(Icons.payments_outlined),
+                    prefixText: '¥ ',
+                    errorMaxLines: 3,
+                    border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(14)),
+                    enabledBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(14),
+                      borderSide: BorderSide(
+                          color: isDark
+                              ? theme.colorScheme.outline
+                              : XbUiTokens.cardBorderLight),
+                    ),
+                    filled: true,
+                    fillColor: isDark ? null : XbUiTokens.inputFillLight,
+                  ),
+                ),
+              ),
+              const SizedBox(height: 12),
+              DropdownButtonFormField<String>(
+                // Keep value for CI's Flutter 3.27 SDK.
+                // ignore: deprecated_member_use
+                value: _selectedMethod,
                 decoration: InputDecoration(
-                  labelText: appLocalizations.withdrawAccount,
-                  hintText: appLocalizations.pleaseEnterWithdrawAccount,
+                  labelText: appLocalizations.withdrawMethod,
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(14),
                     borderSide: BorderSide(
@@ -188,21 +188,76 @@ class _WithdrawDialogState extends ConsumerState<WithdrawDialog> {
                   ),
                   filled: true,
                   fillColor: isDark ? null : XbUiTokens.inputFillLight,
-                  prefixIcon: const Icon(Icons.account_box),
+                  prefixIcon: const Icon(Icons.payment),
+                ),
+                items: withdrawMethods.map((String method) {
+                  return DropdownMenuItem<String>(
+                    value: method,
+                    child: Text(method),
+                  );
+                }).toList(),
+                onChanged: (String? newValue) {
+                  setState(() {
+                    _selectedMethod = newValue;
+                  });
+                },
+                hint: Text(appLocalizations.pleaseSelectWithdrawMethod),
+              ),
+              const SizedBox(height: 12),
+              TVDeferredInput(
+                borderRadius: BorderRadius.circular(14),
+                builder:
+                    (context, focusNode, readOnly, showCursor, beginEditing) =>
+                        TextField(
+                  focusNode: focusNode,
+                  readOnly: readOnly,
+                  showCursor: showCursor,
+                  onTap: beginEditing,
+                  controller: _accountController,
+                  key: const ValueKey('withdraw-account'),
+                  decoration: InputDecoration(
+                    labelText: appLocalizations.withdrawAccount,
+                    hintText: appLocalizations.pleaseEnterWithdrawAccount,
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(14),
+                      borderSide: BorderSide(
+                        color: isDark
+                            ? theme.colorScheme.outline
+                            : XbUiTokens.cardBorderLight,
+                      ),
+                    ),
+                    enabledBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(14),
+                      borderSide: BorderSide(
+                        color: isDark
+                            ? theme.colorScheme.outline
+                            : XbUiTokens.cardBorderLight,
+                      ),
+                    ),
+                    focusedBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(14),
+                      borderSide: BorderSide(
+                        color: theme.colorScheme.primary,
+                      ),
+                    ),
+                    filled: true,
+                    fillColor: isDark ? null : XbUiTokens.inputFillLight,
+                    prefixIcon: const Icon(Icons.account_box),
+                  ),
                 ),
               ),
-            ),
-            const SizedBox(height: 12),
-            Text(
-              appLocalizations.withdrawSubmissionNote,
-              style: const TextStyle(
-                fontSize: 12,
-                color: Colors.grey,
+              const SizedBox(height: 12),
+              Text(
+                appLocalizations.withdrawSubmissionNote,
+                style: const TextStyle(
+                  fontSize: 12,
+                  color: Colors.grey,
+                ),
+                textAlign: TextAlign.center,
               ),
-              textAlign: TextAlign.center,
-            ),
+            ],
           ],
-        ],
+        ),
       ),
       actions: [
         if (!_isWithdrawing && !_isSuccess) ...[
@@ -222,6 +277,9 @@ class _WithdrawDialogState extends ConsumerState<WithdrawDialog> {
   }
 
   Future<void> _performWithdraw() async {
+    if (_isWithdrawing || _isSuccess) return;
+    if (!(_formKey.currentState?.validate() ?? false)) return;
+    final amountInCents = parseWithdrawAmountInCents(_amountController.text)!;
     if (_selectedMethod == null || _selectedMethod!.isEmpty) {
       if (mounted) {
         XBoardNotification.showError(
@@ -245,6 +303,7 @@ class _WithdrawDialogState extends ConsumerState<WithdrawDialog> {
 
     try {
       final result = await ref.read(inviteProvider.notifier).withdrawCommission(
+            amountInCents: amountInCents,
             withdrawMethod: _selectedMethod!,
             withdrawAccount: account,
           );

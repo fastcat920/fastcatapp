@@ -14,7 +14,14 @@ import 'package:fl_clash/l10n/l10n.dart';
 final _logger = FileLogger('xboard_outbound_mode.dart');
 
 class XBoardOutboundMode extends StatelessWidget {
-  const XBoardOutboundMode({super.key});
+  final double maxWidth;
+  final double height;
+
+  const XBoardOutboundMode({
+    super.key,
+    this.maxWidth = 230,
+    this.height = 38,
+  });
 
   void _handleModeChange(WidgetRef ref, Mode modeOption) {
     _logger.debug('[XBoardOutboundMode] 切换模式到: $modeOption');
@@ -33,9 +40,9 @@ class XBoardOutboundMode extends StatelessWidget {
 
         return Center(
           child: ConstrainedBox(
-            constraints: const BoxConstraints(maxWidth: 230),
+            constraints: BoxConstraints(maxWidth: maxWidth),
             child: Container(
-              height: 38,
+              height: height,
               decoration: BoxDecoration(
                 color: isDark
                     ? Theme.of(context).colorScheme.surfaceContainer

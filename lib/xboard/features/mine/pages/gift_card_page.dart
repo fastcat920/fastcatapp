@@ -3,6 +3,7 @@ import 'package:fl_clash/xboard/features/auth/providers/xboard_user_provider.dar
 import 'package:fl_clash/xboard/features/mine/services/gift_card_redeem_service.dart';
 import 'package:fl_clash/xboard/features/shared/styles/styles.dart';
 import 'package:fl_clash/xboard/features/shared/widgets/tv_deferred_input.dart';
+import 'package:fl_clash/xboard/features/shared/widgets/xb_error_state.dart';
 import 'package:fl_clash/xboard/utils/xboard_notification.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -199,12 +200,11 @@ class _GiftCardRecords extends StatelessWidget {
             child: Center(child: CircularProgressIndicator()),
           )
         else if (errorMessage != null)
-          Center(
-              child: TextButton.icon(
-            onPressed: onRetry,
-            icon: const Icon(Icons.refresh_outlined),
-            label: Text(errorMessage!),
-          ))
+          XbErrorState(
+            message: errorMessage,
+            onRetry: onRetry,
+            compact: true,
+          )
         else if (records.isEmpty)
           Padding(
             padding: const EdgeInsets.symmetric(vertical: 26),

@@ -33,7 +33,9 @@ class ApiRequestCache {
       return cached.future.then((value) => value as T);
     }
 
-    final future = fetch();
+    _entries.removeWhere((_, entry) => entry.isExpired);
+    if (_entries.length >= 128) _entries.remove(_entries.keys.first);
+    final future = Future<T>.sync(fetch);
     final entry = _ApiRequestCacheEntry(
       future: future,
       createdAt: DateTime.now(),

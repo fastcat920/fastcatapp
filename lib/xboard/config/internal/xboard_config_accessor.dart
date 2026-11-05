@@ -37,6 +37,8 @@ class XBoardConfigAccessor {
   ParsedConfiguration? _currentConfig;
   String? _lastError;
   DateTime? _lastUpdateTime;
+  bool remoteConfirmed = false;
+  bool usingStaleCache = false;
 
   // 服务实例
   PanelService? _panelService;
@@ -46,6 +48,10 @@ class XBoardConfigAccessor {
   // 远程配置 contact 字段
   String _crispWebsiteId = '';
   String _crispProxyUrl = '';
+  bool _fastCatSupportEnabled = false;
+  bool _fastCatSupportConfigured = false;
+  String _fastCatSupportBaseUrl = '';
+  String _fastCatSupportAppKey = '';
   String _salesmartlyToken = '';
   List<String> _websiteUrls = [];
   String _telegramGroupUrl = '';
@@ -158,6 +164,7 @@ class XBoardConfigAccessor {
 
   /// 刷新配置（纯远程实时获取）
   Future<void> refreshConfiguration() async {
+    remoteConfirmed = false;
     await _updateState(ConfigAccessorState.loading);
     _lastError = null;
 
@@ -177,6 +184,8 @@ class XBoardConfigAccessor {
       if (result.isSuccess && result.data != null) {
         final configData = _parser.extractConfigFromRemoteResult(result.data!);
         if (configData != null) {
+          remoteConfirmed = result.source != 'local_cache';
+          usingStaleCache = result.isStale;
           await _processConfigData(configData, result.source);
           return;
         }
@@ -185,6 +194,7 @@ class XBoardConfigAccessor {
       // 远程获取失败
       throw Exception('Remote config fetch failed');
     } catch (e) {
+      remoteConfirmed = false;
       _lastError = 'Configuration refresh failed: $e';
       await _updateState(ConfigAccessorState.error);
       _logger.error('Configuration refresh failed', e);
@@ -230,48 +240,19 @@ class XBoardConfigAccessor {
   /// 用外部已解析的配置数据直接注入（fallback 路径）
   Future<void> loadParsedConfig(
       Map<String, dynamic> configData, String source) async {
+    remoteConfirmed = false;
     await _processConfigData(configData, source);
   }
 
   /// 从指定源刷新配置
   Future<void> refreshFromSource(String sourceName) async {
-    await _updateState(ConfigAccessorState.loading);
-    _lastError = null;
-
+    // Legacy aliases are retained, but every refresh now observes the same
+    // validation, anti-regression and cache rules instead of bypassing them.
     try {
-      ConfigResult<Map<String, dynamic>> result;
-
-      switch (sourceName.toLowerCase()) {
-        case 'remote':
-          final multiResult = await _remoteManager.fetchAllConfigs();
-          result = multiResult.firstSuccessful ??
-              ConfigResult.failure('No successful remote source', 'remote');
-          break;
-        case 'redirect':
-          result = await _remoteManager.getRedirectConfig();
-          break;
-        case 'gitee':
-          result = await _remoteManager.getGiteeConfig();
-          break;
-        default:
-          result = ConfigResult.failure(
-              'Unknown source: $sourceName. Only remote sources (redirect, gitee) are supported.',
-              sourceName);
+      if (!['remote', 'redirect', 'gitee'].contains(sourceName.toLowerCase())) {
+        throw ArgumentError('Unknown remote source: $sourceName');
       }
-
-      if (result.isSuccess && result.data != null) {
-        // 提取配置数据（所有源都是远程源）
-        final configData = _parser.extractConfigFromRemoteResult(result.data!);
-
-        if (configData != null) {
-          await _processConfigData(configData, result.source);
-        } else {
-          throw Exception('Invalid config data from $sourceName');
-        }
-      } else {
-        throw Exception(
-            'Failed to get config from $sourceName: ${result.error}');
-      }
+      await refreshConfiguration();
     } catch (e) {
       _lastError = 'Refresh from $sourceName failed: $e';
       await _updateState(ConfigAccessorState.error);
@@ -397,6 +378,14 @@ class XBoardConfigAccessor {
   /// 获取 Crisp 反向代理地址（来自远程配置 contact.crisp_proxy_url）
   String get crispProxyUrl => _crispProxyUrl;
 
+  bool get fastCatSupportEnabled => _fastCatSupportEnabled;
+
+  bool get fastCatSupportConfigured => _fastCatSupportConfigured;
+
+  String get fastCatSupportBaseUrl => _fastCatSupportBaseUrl;
+
+  String get fastCatSupportAppKey => _fastCatSupportAppKey;
+
   /// 获取 Salesmartly 客服配置（来自远程配置 contact.salesmartly_token）
   /// 支持两种格式：
   /// - 新版：完整 JS URL，如 https://assets.salesmartly.com/js/project_XXXXX_XXXXX_XXXXXXXXXX.js
@@ -470,6 +459,8 @@ class XBoardConfigAccessor {
       'currentProvider': _currentProvider,
       'lastUpdateTime': _lastUpdateTime?.toIso8601String(),
       'sourceHash': _currentConfig!.sourceHash,
+      'remoteConfirmed': remoteConfirmed,
+      'usingStaleCache': usingStaleCache,
     };
   }
 
@@ -501,6 +492,20 @@ class XBoardConfigAccessor {
       final contact = configData['contact'] as Map<String, dynamic>? ?? {};
       _crispWebsiteId = contact['crisp_website_id'] as String? ?? '';
       _crispProxyUrl = contact['crisp_proxy_url'] as String? ?? '';
+      final rawFastCatSupport = contact['fastcat_support'];
+      _fastCatSupportConfigured = rawFastCatSupport is Map;
+      final fastCatSupport = rawFastCatSupport is Map
+          ? rawFastCatSupport.map(
+              (key, value) => MapEntry(key.toString(), value),
+            )
+          : const <String, dynamic>{};
+      _fastCatSupportBaseUrl =
+          fastCatSupport['base_url']?.toString().trim() ?? '';
+      _fastCatSupportAppKey =
+          fastCatSupport['app_key']?.toString().trim() ?? '';
+      _fastCatSupportEnabled = fastCatSupport['enabled'] != false &&
+          _fastCatSupportBaseUrl.isNotEmpty &&
+          _fastCatSupportAppKey.isNotEmpty;
       _salesmartlyToken = contact['salesmartly_token'] as String? ?? '';
       final rawWebsite = contact['website'];
       if (rawWebsite is String) {

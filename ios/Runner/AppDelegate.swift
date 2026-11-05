@@ -1,11 +1,31 @@
 import UIKit
 import Flutter
 import NetworkExtension
+import UserNotifications
 
 @main
 @objc class AppDelegate: FlutterAppDelegate {
+  private var supportNotification: [String: String]?
+  private var supportPushToken: String?
   private lazy var flutterEngine = FlutterEngine(name: "my flutter engine")
   
+  override func userNotificationCenter(_ center: UNUserNotificationCenter,
+      didReceive response: UNNotificationResponse,
+      withCompletionHandler completionHandler: @escaping () -> Void) {
+    let info = response.notification.request.content.userInfo
+    if info["type"] as? String == "support.reply" {
+      supportNotification = ["type": "support.reply",
+        "conversationId": info["conversationId"] as? String ?? "",
+        "messageId": info["messageId"] as? String ?? ""]
+    }
+    completionHandler()
+  }
+
+  override func application(_ application: UIApplication, didRegisterForRemoteNotificationsWithDeviceToken deviceToken: Data) {
+    supportPushToken = deviceToken.map { String(format: "%02x", $0) }.joined()
+    super.application(application, didRegisterForRemoteNotificationsWithDeviceToken: deviceToken)
+  }
+
   override func application(
     _ application: UIApplication,
     didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?
@@ -18,6 +38,22 @@ import NetworkExtension
     let controller = FlutterViewController(engine: flutterEngine, nibName: nil, bundle: nil)
     window?.rootViewController = controller
     window?.makeKeyAndVisible()
+
+    let pushChannel = FlutterMethodChannel(name: "fastcat/support_push", binaryMessenger: controller.binaryMessenger)
+    pushChannel.setMethodCallHandler { [weak self] call, result in
+      if call.method == "notification" {
+        result(self?.supportNotification)
+        self?.supportNotification = nil
+        return
+      }
+      guard call.method == "token" else { result(FlutterMethodNotImplemented); return }
+      UNUserNotificationCenter.current().requestAuthorization(options: [.alert, .sound, .badge]) { granted, _ in
+        DispatchQueue.main.async {
+          if granted { UIApplication.shared.registerForRemoteNotifications() }
+          result(granted ? self?.supportPushToken : nil)
+        }
+      }
+    }
 
     // ── VPN control channel ──────────────────────────────────────────────
     let vpnChannel = FlutterMethodChannel(
@@ -77,7 +113,13 @@ import NetworkExtension
         method: call.method,
         data: call.arguments as? String
       ) { response in
-        result(response ?? "")
+        if call.method == "_updateConfig", response == nil {
+          result(FlutterError(code: "TUNNEL_UNAVAILABLE", message: "The VPN tunnel did not acknowledge the configuration.", details: nil))
+        } else {
+          // nil means the tunnel did not reply. An explicit empty string is a
+          // valid core mutation acknowledgement and must remain distinct.
+          result(response)
+        }
       }
     }
 

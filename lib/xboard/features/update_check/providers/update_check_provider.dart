@@ -115,11 +115,11 @@ class UpdateCheckNotifier extends StateNotifier<UpdateCheckState> {
     state = state.copyWith(isChecking: true, error: null);
 
     try {
-      var configurationConfirmed = !refreshRemoteConfig;
+      var configurationConfirmed = XBoardConfig.remoteConfigConfirmed;
       if (refreshRemoteConfig) {
         try {
           await XBoardConfig.refresh();
-          configurationConfirmed = true;
+          configurationConfirmed = XBoardConfig.remoteConfigConfirmed;
         } catch (error) {
           _logger.warning('主动刷新更新配置失败，尝试使用当前有效配置: $error');
         }
@@ -141,6 +141,7 @@ class UpdateCheckNotifier extends StateNotifier<UpdateCheckState> {
         state = state.copyWith(
           isChecking: false,
           currentVersion: currentVersion,
+          forceUpdate: false,
           error: null,
         );
         _logger.warning('OSS 刷新失败，当前无更新结果不清除本地提示');
@@ -181,6 +182,7 @@ class UpdateCheckNotifier extends StateNotifier<UpdateCheckState> {
       // 暂时失败时保留从缓存恢复的 hasUpdate 与版本信息。
       state = state.copyWith(
         isChecking: false,
+        forceUpdate: XBoardConfig.remoteConfigConfirmed && state.forceUpdate,
         error: error.toString(),
       );
     }

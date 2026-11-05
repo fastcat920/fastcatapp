@@ -45,6 +45,7 @@ class V2BoardPlanAdapter implements PlanApi {
       threeYearPrice: plan.threeYearPrice,
       onetimePrice: plan.onetimePrice,
       resetPrice: plan.resetPrice,
+      activeFlashSales: plan.activeFlashSales,
     );
   }
 }

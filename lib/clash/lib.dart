@@ -11,9 +11,11 @@ import 'package:fl_clash/enum/enum.dart';
 import 'package:fl_clash/models/models.dart';
 import 'package:fl_clash/plugins/service.dart';
 import 'package:fl_clash/state.dart';
+import 'package:fl_clash/security/provider_cache_config.dart';
 
 import 'generated/clash_ffi.dart';
 import 'interface.dart';
+import 'native_listener_command.dart';
 
 class ClashLib extends ClashHandlerInterface with AndroidClashInterface {
   static ClashLib? _instance;
@@ -151,7 +153,7 @@ class ClashLibHandler {
     return _instance!;
   }
 
-  Future<String> invokeAction(String actionParams) {
+  Future<String> invokeAction(String actionParams, {Duration? timeout}) async {
     final completer = Completer<String>();
     final receiver = ReceivePort();
     receiver.listen((message) {
@@ -161,12 +163,23 @@ class ClashLibHandler {
       }
     });
     final actionParamsChar = actionParams.toNativeUtf8().cast<Char>();
-    clashFFI.invokeAction(
-      actionParamsChar,
-      receiver.sendPort.nativePort,
-    );
-    malloc.free(actionParamsChar);
-    return completer.future;
+    try {
+      // The receive port is listening before Go starts its asynchronous work.
+      // This reply port also works during recovery without a main-isolate port.
+      try {
+        clashFFI.invokeAction(
+          actionParamsChar,
+          receiver.sendPort.nativePort,
+        );
+      } finally {
+        malloc.free(actionParamsChar);
+      }
+      return await (timeout == null
+          ? completer.future
+          : completer.future.timeout(timeout));
+    } finally {
+      receiver.close();
+    }
   }
 
   attachMessagePort(int messagePort) {
@@ -221,15 +234,15 @@ class ClashLibHandler {
     return Traffic.fromMap(json.decode(trafficString));
   }
 
-  startListener() async {
-    clashFFI.startListener();
-    return true;
-  }
+  Future<bool> startListener() => invokeNativeListenerCommand(
+        ActionMethod.startListener,
+        (message) => invokeAction(message, timeout: nativeListenerTimeout),
+      );
 
-  stopListener() async {
-    clashFFI.stopListener();
-    return true;
-  }
+  Future<bool> stopListener() => invokeNativeListenerCommand(
+        ActionMethod.stopListener,
+        (message) => invokeAction(message, timeout: nativeListenerTimeout),
+      );
 
   DateTime? getRunTime() {
     final runTimeRaw = clashFFI.getRunTime();
@@ -268,7 +281,11 @@ class ClashLibHandler {
       }
     });
     final params = json.encode(setupParams);
-    final initValue = json.encode(initParams);
+    final initValue = json.encode({
+      ...initParams.toJson(),
+      if (providerCacheConfiguration() case final cache?)
+        'provider-cache': cache,
+    });
     final stateParams = json.encode(state);
     final initParamsChar = initValue.toNativeUtf8().cast<Char>();
     final paramsChar = params.toNativeUtf8().cast<Char>();

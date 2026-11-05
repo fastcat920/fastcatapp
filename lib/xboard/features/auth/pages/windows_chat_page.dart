@@ -1,9 +1,11 @@
 import 'dart:async';
+import '../utils/crisp_scripts.dart';
 import 'dart:convert';
 import 'dart:io';
 
 import 'package:fl_clash/common/webview2_check.dart';
 import 'package:fl_clash/l10n/l10n.dart';
+import 'package:fl_clash/xboard/features/shared/widgets/xb_error_state.dart';
 import 'package:fl_clash/xboard/core/core.dart';
 import 'package:fl_clash/xboard/features/auth/utils/crisp_url_helper.dart';
 import 'package:fl_clash/xboard/features/auth/utils/customer_service_helper.dart';
@@ -360,32 +362,7 @@ class _WindowsChatPageState extends State<WindowsChatPage> {
     window.__fastcatCustomerServiceCrispLocale = '${_escapeJsString(crispLocale)}';
     window.CRISP_RUNTIME_CONFIG = window.CRISP_RUNTIME_CONFIG || {};
     window.CRISP_RUNTIME_CONFIG.locale = window.__fastcatCustomerServiceCrispLocale;
-    window.__fastcatApplyCustomerServiceTheme = function(theme){
-      try {
-        window.__fastcatCustomerServiceTheme = theme;
-        document.documentElement.style.background = theme.background;
-        document.documentElement.style.colorScheme = theme.isDark ? 'dark' : 'light';
-        if (document.body) {
-          document.body.style.background = theme.background;
-          document.body.style.color = theme.foreground;
-        }
-        var style = document.getElementById('fastcat-customer-service-theme');
-        if (!style) {
-          style = document.createElement('style');
-          style.id = 'fastcat-customer-service-theme';
-          (document.head || document.documentElement).appendChild(style);
-        }
-        style.textContent = ''
-          + 'html,body{background:' + theme.background + ' !important;color:' + theme.foreground + ' !important;color-scheme:' + (theme.isDark ? 'dark' : 'light') + ' !important;}'
-          + '#loading{background:' + theme.background + ' !important;color:' + theme.foreground + ' !important;}'
-          + 'iframe[src*="crisp"],.crisp-client,[class*="crisp"],[id*="crisp"]{width:100% !important;height:100% !important;max-width:none !important;max-height:none !important;position:fixed !important;top:0 !important;left:0 !important;margin:0 !important;padding:0 !important;border:none !important;border-radius:0 !important;background:' + theme.background + ' !important;color-scheme:' + (theme.isDark ? 'dark' : 'light') + ' !important;}';
-        window.\$crisp = window.\$crisp || [];
-        window.\$crisp.push(["config", "locale", [window.__fastcatCustomerServiceCrispLocale || 'en']]);
-        window.\$crisp.push(["config", "color:mode", [theme.isDark ? "dark" : "light"]]);
-        window.CRISP_RUNTIME_CONFIG = window.CRISP_RUNTIME_CONFIG || {};
-        window.CRISP_RUNTIME_CONFIG.locale = window.__fastcatCustomerServiceCrispLocale || 'en';
-      } catch (_) {}
-    };
+    $crispThemeInstallerScript
     document.documentElement.style.background = '$background';
     document.documentElement.style.colorScheme = '${_isDarkMode ? 'dark' : 'light'}';
     document.documentElement.lang = window.__fastcatCustomerServiceLocale;
@@ -438,16 +415,17 @@ class _WindowsChatPageState extends State<WindowsChatPage> {
     iaw.InAppWebViewController controller,
   ) async {
     final scriptUrl = widget.salesmartlyScriptUrl!;
-    final scriptUrlEscaped =
-        scriptUrl.replaceAll('\\', '\\\\').replaceAll("'", "\\'");
+    final l10n = AppLocalizations.of(context);
+    final loadingHtml =
+        '<html><head><meta charset="utf-8"><style>*{margin:0;padding:0}html,body{width:100%;height:100%;background:#f5f5f5}#ss_loading{display:flex;align-items:center;justify-content:center;height:100%;color:#999;font-family:-apple-system,sans-serif;font-size:14px}</style></head><body><div id="ss_loading">${htmlEscape.convert(l10n.onlineSupportConnecting)}</div></body></html>';
     await controller.evaluateJavascript(source: '''
       document.open();
-      document.write('<html><head><meta charset="utf-8"><style>*{margin:0;padding:0}html,body{width:100%;height:100%;background:#f5f5f5}#ss_loading{display:flex;align-items:center;justify-content:center;height:100%;color:#999;font-family:-apple-system,sans-serif;font-size:14px}</style></head><body><div id="ss_loading">正在连接客服...</div></body></html>');
+      document.write(${jsonEncode(loadingHtml)});
       document.close();
       window.__ssc = window.__ssc || {};
       window.__ssc.setting = { hideIcon: true };
       var s = document.createElement('script');
-      s.src = '$scriptUrlEscaped';
+      s.src = ${jsonEncode(scriptUrl)};
       s.id = 'ss_chat';
       s.onload = function() {
         (function w() {
@@ -463,7 +441,7 @@ class _WindowsChatPageState extends State<WindowsChatPage> {
       };
       s.onerror = function() {
         var e = document.getElementById('ss_loading');
-        if (e) e.textContent = '加载失败，请检查网络后重试';
+        if (e) e.textContent = ${jsonEncode(l10n.customerServiceLoadFailed)};
       };
       document.head.appendChild(s);
     ''');
@@ -483,7 +461,12 @@ class _WindowsChatPageState extends State<WindowsChatPage> {
 
   Widget _buildErrorPage(BuildContext context, String message,
       {bool canRetry = true}) {
-    final l10n = AppLocalizations.of(context);
+    if (canRetry) {
+      return XbErrorState(
+        message: message,
+        onRetry: _loadEmbed,
+      );
+    }
     final isDark = _isDarkMode;
     return Center(
       child: Padding(
@@ -492,7 +475,7 @@ class _WindowsChatPageState extends State<WindowsChatPage> {
           mainAxisSize: MainAxisSize.min,
           children: [
             Icon(
-              canRetry ? Icons.cloud_off : Icons.warning_amber_rounded,
+              Icons.warning_amber_rounded,
               size: 48,
               color: isDark ? Colors.white38 : Colors.grey,
             ),
@@ -505,14 +488,6 @@ class _WindowsChatPageState extends State<WindowsChatPage> {
                 color: isDark ? Colors.white54 : Colors.grey,
               ),
             ),
-            if (canRetry) ...[
-              const SizedBox(height: 24),
-              FilledButton.icon(
-                onPressed: () => _loadEmbed(),
-                icon: const Icon(Icons.refresh, size: 18),
-                label: Text(l10n.refresh),
-              ),
-            ],
           ],
         ),
       ),

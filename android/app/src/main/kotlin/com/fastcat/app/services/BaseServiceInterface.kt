@@ -9,6 +9,7 @@ import android.app.PendingIntent
 import android.app.Service
 import android.content.Intent
 import android.content.pm.ServiceInfo.FOREGROUND_SERVICE_TYPE_DATA_SYNC
+import android.content.pm.ServiceInfo.FOREGROUND_SERVICE_TYPE_SPECIAL_USE
 import android.os.Build
 import androidx.core.app.NotificationCompat
 import com.fastcat.app.GlobalState
@@ -69,6 +70,20 @@ fun Service.createFastCatNotificationBuilder(): Deferred<NotificationCompat.Buil
         }
     }
 
+/** Promote a started service before the Flutter engine is ready for IPC. */
+fun Service.startFastCatPlaceholderForeground() {
+    NotificationCompat.Builder(this, GlobalState.NOTIFICATION_CHANNEL)
+        .setSmallIcon(R.drawable.ic)
+        .setContentTitle(getString(R.string.app_name))
+        .setContentText(getString(R.string.app_name))
+        .setCategory(NotificationCompat.CATEGORY_SERVICE)
+        .setOngoing(true)
+        .setShowWhen(false)
+        .setOnlyAlertOnce(true)
+        .build()
+        .also { startForeground(it) }
+}
+
 @SuppressLint("ForegroundServiceType")
 fun Service.startForeground(notification: Notification) {
     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
@@ -84,8 +99,13 @@ fun Service.startForeground(notification: Notification) {
 
     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
         try {
+            val foregroundServiceType = if (this is FastCatVpnService) {
+                FOREGROUND_SERVICE_TYPE_SPECIAL_USE
+            } else {
+                FOREGROUND_SERVICE_TYPE_DATA_SYNC
+            }
             startForeground(
-                GlobalState.NOTIFICATION_ID, notification, FOREGROUND_SERVICE_TYPE_DATA_SYNC
+                GlobalState.NOTIFICATION_ID, notification, foregroundServiceType
             )
         } catch (_: Exception) {
             startForeground(GlobalState.NOTIFICATION_ID, notification)

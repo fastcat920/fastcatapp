@@ -1,5 +1,6 @@
 # Flutter
 build/
+services/helper/target/
 .dart_tool/
 .build_user/
 .packages
@@ -42,6 +43,9 @@ windows/flutter/ephemeral/
 # lib/**/*.freezed.dart
 # lib/**/*.g.dart
 android/app/keystore.jks
+tvos/Config.xcconfig
+tvos/**/xcuserdata/
+tvos/Frameworks/libclash.xcframework/**/libclash.a
 
 # Security: plaintext config should not be committed
 release_config_plaintext.json

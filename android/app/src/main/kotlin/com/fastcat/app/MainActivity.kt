@@ -15,21 +15,93 @@ import io.flutter.embedding.engine.FlutterEngine
 import io.flutter.plugin.common.MethodChannel
 
 class MainActivity : FlutterActivity() {
+    private var supportNotificationPermissionRequested = false
     private var customerServiceBackCallback: OnBackInvokedCallback? = null
     private var customerServiceBackPending = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
+        sanitizeSupportNotificationIntent(intent)
         super.onCreate(savedInstanceState)
         registerCustomerServiceBackCallback()
     }
 
     override fun configureFlutterEngine(flutterEngine: FlutterEngine) {
         super.configureFlutterEngine(flutterEngine)
+        SupportPushService.createChannel(this)
+        MethodChannel(flutterEngine.dartExecutor.binaryMessenger, "fastcat/support_push").setMethodCallHandler { call, result ->
+            when (call.method) {
+                "notification" -> {
+                    val extras = intent?.extras
+                    if (extras?.getString("type") == "support.reply") {
+                        result.success(mapOf("type" to "support.reply", "conversationId" to extras.getString("conversationId"), "messageId" to extras.getString("messageId")))
+                        intent.removeExtra("type")
+                    } else result.success(null)
+                }
+                "showReply" -> {
+                    val conversation = call.argument<String>("conversationId")
+                    val message = call.argument<String>("messageId")
+                    if (conversation == null || message == null) {
+                        result.error("ARGUMENT", "Missing reply identity", null)
+                    } else {
+                        SupportPushService.showReply(this, conversation, message)
+                        result.success(null)
+                    }
+                }
+                "token" -> {
+                    if (Build.VERSION.SDK_INT >= 33 && checkSelfPermission(android.Manifest.permission.POST_NOTIFICATIONS) != android.content.pm.PackageManager.PERMISSION_GRANTED) {
+                        if (!supportNotificationPermissionRequested) {
+                            supportNotificationPermissionRequested = true
+                            requestPermissions(arrayOf(android.Manifest.permission.POST_NOTIFICATIONS), 9721)
+                        }
+                        result.success(null)
+                    } else {
+                        try {
+                            try {
+                                packageManager.getPackageInfo("com.google.android.gms", 0)
+                            } catch (_: android.content.pm.PackageManager.NameNotFoundException) {
+                                result.success(null)
+                                return@setMethodCallHandler
+                            }
+                            com.google.firebase.FirebaseApp.initializeApp(this)
+                            com.google.firebase.messaging.FirebaseMessaging.getInstance().token
+                                .addOnSuccessListener { result.success(it) }
+                                .addOnFailureListener { result.error("FCM", "Token unavailable", null) }
+                        } catch (e: Exception) { result.error("FCM_CONFIG", "Firebase configuration unavailable", null) }
+                    }
+                }
+                else -> result.notImplemented()
+            }
+        }
+
         flutterEngine.plugins.add(AppPlugin())
         flutterEngine.plugins.add(ServicePlugin)
         flutterEngine.plugins.add(TilePlugin())
         GlobalState.flutterEngine = flutterEngine
         GlobalState.syncStatus()
+    }
+
+    override fun onResume() {
+        super.onResume()
+        SupportPushService.appForeground = true
+    }
+
+    override fun onPause() {
+        SupportPushService.appForeground = false
+        super.onPause()
+    }
+
+    // Notification metadata belongs to the support channel, not GoRouter.
+    // Also handles notifications issued by older builds with fastcat://support.
+    private fun sanitizeSupportNotificationIntent(intent: android.content.Intent?) {
+        if (intent?.getStringExtra("type") == "support.reply") {
+            intent.data = null
+        }
+    }
+
+    override fun onNewIntent(intent: android.content.Intent) {
+        sanitizeSupportNotificationIntent(intent)
+        super.onNewIntent(intent)
+        setIntent(intent)
     }
 
     override fun onBackPressed() {

@@ -104,6 +104,8 @@ class XBoardOrderAdapter implements OrderApi {
       tradeNo: order.tradeNo,
       totalAmount: order.totalAmount,
       balanceAmount: order.balanceAmount,
+      handlingAmount: order.handlingAmount,
+      paymentId: order.paymentId,
       surplusAmount: order.surplusAmount,
       refundAmount: order.refundAmount,
       depositAmount: order.depositAmount,
@@ -118,6 +120,8 @@ class XBoardOrderAdapter implements OrderApi {
       couponPrice: order.couponPrice,
       couponCode: order.couponCode,
       discountAmount: order.discountAmount,
+      flashSaleDiscountAmount: order.flashSaleDiscountAmount,
+      couponDiscountAmount: order.couponDiscountAmount,
       orderPlan:
           order.orderPlan != null ? _mapOrderPlan(order.orderPlan!) : null,
     );
@@ -137,6 +141,8 @@ class XBoardOrderAdapter implements OrderApi {
       id: method.id,
       name: method.name,
       icon: method.icon,
+      handlingFeeFixed: method.handlingFeeFixed,
+      handlingFeePercent: method.handlingFeePercent,
       isAvailable: method.isAvailable,
       config: method.config,
     );

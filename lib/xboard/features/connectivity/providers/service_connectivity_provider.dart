@@ -52,21 +52,20 @@ class ServiceConnectivityNotifier
 
   bool get _hasActiveMobileProxy => _isMobile && globalState.isStart;
 
-  bool _deferIosProbeUntilInitializationReady() {
+  bool _deferProbeUntilInitializationReady() {
     final initialization = ref.read(initializationProvider);
-    if (!Platform.isIOS ||
-        initialization.isReady ||
-        initialization.isFailed) {
+    if (initialization.isReady || initialization.isFailed) {
       return false;
     }
-    // iOS 冷启动时，Network Extension 与网关配置的就绪时序晚于首帧。
-    // 此前直接探测会把“尚未准备好”累计为网关离线，随后又在隧道就绪后
-    // 切到恢复状态，造成顶部提示闪烁。初始化监听器在 ready 时会主动验证。
+    // All platforms can reach the first frame before signed config / SDK setup.
+    // Missing candidates during that window are not a network failure.
+    _retryTimer?.cancel();
+    _onlineConfirmationTimer?.cancel();
     state = state.copyWith(
       status: ServiceConnectivityStatus.recovering,
       consecutiveFailures: 0,
       consecutiveSuccesses: 0,
-      reason: 'ios_initialization_pending',
+      reason: 'initialization_pending',
       clearCause: true,
     );
     return true;
@@ -141,7 +140,7 @@ class ServiceConnectivityNotifier
   }
 
   Future<void> _bootstrap() async {
-    if (_deferIosProbeUntilInitializationReady()) return;
+    if (_deferProbeUntilInitializationReady()) return;
     final results = await Connectivity().checkConnectivity();
     await handleConnectivityChanged(results, debounce: false);
   }
@@ -150,6 +149,10 @@ class ServiceConnectivityNotifier
     InitializationState? previous,
     InitializationState next,
   ) {
+    if (!next.isReady && !next.isFailed) {
+      _deferProbeUntilInitializationReady();
+      return;
+    }
     if (next.isFailed) {
       _setOffline(
         next.errorMessage ?? 'initialization_failed',
@@ -223,8 +226,8 @@ class ServiceConnectivityNotifier
   Future<void> recover() async {
     if (_isChecking) return;
     final initState = ref.read(initializationProvider);
-    if (Platform.isIOS && !initState.isReady && !initState.isFailed) {
-      _deferIosProbeUntilInitializationReady();
+    if (!initState.isReady && !initState.isFailed) {
+      _deferProbeUntilInitializationReady();
       return;
     }
     if (initState.isFailed) {
@@ -250,7 +253,7 @@ class ServiceConnectivityNotifier
 
   Future<bool> verifyNow() async {
     if (_isChecking) return state.isOnline;
-    if (_deferIosProbeUntilInitializationReady()) return false;
+    if (_deferProbeUntilInitializationReady()) return false;
     if (_deferForMobileConnectionWarmup()) return false;
     _isChecking = true;
     try {
@@ -268,6 +271,7 @@ class ServiceConnectivityNotifier
         state = state.copyWith(status: ServiceConnectivityStatus.recovering);
       }
       final reachable = await _probeService();
+      if (!mounted || _deferProbeUntilInitializationReady()) return false;
       if (reachable) {
         reportRequestSuccess(authoritative: false);
         return true;
@@ -277,6 +281,7 @@ class ServiceConnectivityNotifier
           (!baseNetworkReachable &&
               _hasActiveMobileProxy &&
               await _probeActiveProxy());
+      if (!mounted || _deferProbeUntilInitializationReady()) return false;
       _recordFailure(
         'service_probe_failed',
         cause: classifyServiceConnectivityFailure(
@@ -287,6 +292,7 @@ class ServiceConnectivityNotifier
       );
       return false;
     } catch (error) {
+      if (!mounted || _deferProbeUntilInitializationReady()) return false;
       final proxyNetworkReachable =
           _hasActiveMobileProxy && await _probeActiveProxy();
       _recordFailure(

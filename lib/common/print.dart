@@ -23,7 +23,9 @@ class CommonPrint {
     Future<void>(() {
       if (!globalState.isInit) return;
       globalState.appController.addLog(
-        Log.app(payload),
+        // The buffer computes a private repetition identity before redaction,
+        // then stores only masked text. Console output above is already masked.
+        Log.app('[$appName] ${text ?? ''}'),
       );
     });
   }

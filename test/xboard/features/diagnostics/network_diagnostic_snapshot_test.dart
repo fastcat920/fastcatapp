@@ -14,6 +14,8 @@ void main() {
     bool diagnosticUnavailable = false,
     String? failureStage,
     String? tcpStatus,
+    bool? localProxyOk,
+    bool directMayUseTun = false,
   }) {
     return evaluateNetworkDiagnostic(
       networkDisconnected: networkDisconnected,
@@ -27,8 +29,140 @@ void main() {
       diagnosticUnavailable: diagnosticUnavailable,
       failureStage: failureStage,
       tcpStatus: tcpStatus,
+      localProxyOk: localProxyOk,
+      directMayUseTun: directMayUseTun,
     );
   }
+
+  test('missing proxy skips node stages instead of failing node DNS', () {
+    final raw = <String, dynamic>{
+      'diagnostic-status': 'complete',
+      'failure-stage': 'configuration',
+      'dns-status': 'unavailable',
+      'tcp-status': 'skipped',
+      'proxy-status': 'failed',
+      'error': 'proxy not found',
+    };
+    final normalized = normalizeNodeDiagnosticResult(raw);
+
+    expect(normalized['dns-status'], 'skipped');
+    expect(normalized['tcp-status'], 'skipped');
+    expect(normalized['proxy-status'], 'skipped');
+    expect(nodeDiagnosticHasMissingPrerequisite(normalized), isTrue);
+    expect(raw['dns-status'], 'unavailable');
+    expect(raw['proxy-status'], 'failed');
+  });
+
+  test('legacy proxy-not-found error identifies missing configuration', () {
+    final normalized = normalizeNodeDiagnosticResult({
+      'error': 'proxy not found',
+      'dns-status': 'failed',
+    });
+    expect(normalized['failure-stage'], 'configuration');
+    expect(normalized['dns-status'], 'skipped');
+    expect(nodeDiagnosticHasMissingPrerequisite(normalized), isTrue);
+  });
+
+  test('unavailable core skips checks that did not run', () {
+    for (final source in <Map<String, dynamic>>[
+      {},
+      {'diagnostic-status': 'unavailable', 'proxy-status': 'failed'},
+      {'diagnostic-status': 'core_unavailable'},
+    ]) {
+      final normalized = normalizeNodeDiagnosticResult(source);
+      expect(normalized['dns-status'], 'skipped');
+      expect(normalized['tcp-status'], 'skipped');
+      expect(normalized['proxy-status'], 'skipped');
+    }
+  });
+
+  test('real DNS failure remains failed but downstream checks are skipped', () {
+    final normalized = normalizeNodeDiagnosticResult({
+      'diagnostic-status': 'complete',
+      'failure-stage': 'dns',
+      'dns-status': 'failed',
+      'tcp-status': 'unavailable',
+      'proxy-status': 'failed',
+    });
+    expect(normalized['dns-status'], 'failed');
+    expect(normalized['tcp-status'], 'skipped');
+    expect(normalized['proxy-status'], 'skipped');
+    expect(nodeDiagnosticHasMissingPrerequisite(normalized), isFalse);
+  });
+
+  test('real TCP failure does not claim the proxy handshake was performed', () {
+    final normalized = normalizeNodeDiagnosticResult({
+      'diagnostic-status': 'complete',
+      'failure-stage': 'tcp',
+      'dns-status': 'success',
+      'tcp-status': 'refused',
+      'proxy-status': 'failed',
+    });
+    expect(normalized['dns-status'], 'success');
+    expect(normalized['tcp-status'], 'refused');
+    expect(normalized['proxy-status'], 'skipped');
+  });
+
+  test('proxy not found is not diagnosed as a broken LAN or DNS', () {
+    final result = evaluate(
+      dnsOk: false,
+      directOk: false,
+      directAllOk: false,
+      ipOk: false,
+      proxyOk: false,
+      proxyEmpty: true,
+      failureStage: 'configuration',
+      tcpStatus: 'skipped',
+    );
+    expect(result.reason, NetworkDiagnosticReason.configuration);
+    expect(result.severity, NetworkDiagnosticSeverity.error);
+  });
+
+  test('empty core is distinct from network failure even if its DIRECT fails',
+      () {
+    // Core DIRECT URL tests used to share the unavailable core and all fail.
+    // Missing configuration is decisive, not those dependent failures.
+    for (final nativeBaselineOk in [false, true]) {
+      final result = evaluate(
+        directOk: nativeBaselineOk,
+        directAllOk: nativeBaselineOk,
+        ipOk: nativeBaselineOk,
+        proxyOk: false,
+        failureStage: 'configuration',
+        diagnosticUnavailable: true,
+      );
+      expect(result.reason, NetworkDiagnosticReason.configuration);
+    }
+  });
+
+  test('unavailable diagnostic does not infer a physical network failure', () {
+    final result = evaluate(
+      dnsOk: false,
+      directOk: false,
+      directAllOk: false,
+      ipOk: false,
+      proxyOk: false,
+      diagnosticUnavailable: true,
+    );
+    expect(result.reason, NetworkDiagnosticReason.coreUnavailable);
+    expect(result.severity, NetworkDiagnosticSeverity.warning);
+  });
+
+  test('failed native probes under TUN do not isolate the physical network',
+      () {
+    final result = evaluate(
+      dnsOk: false,
+      directOk: false,
+      directAllOk: false,
+      ipOk: false,
+      proxyOk: false,
+      directMayUseTun: true,
+      failureStage: 'tcp',
+      tcpStatus: 'timeout',
+    );
+    expect(result.reason, NetworkDiagnosticReason.routeUncertain);
+    expect(result.severity, NetworkDiagnosticSeverity.warning);
+  });
 
   test('no underlying network wins over downstream TCP failure', () {
     final result = evaluate(
@@ -83,6 +217,15 @@ void main() {
 
     expect(result.reason, NetworkDiagnosticReason.healthy);
     expect(result.severity, NetworkDiagnosticSeverity.healthy);
+  });
+
+  test('successful node test does not hide failure of actual local proxy route',
+      () {
+    final result = evaluate(localProxyOk: false);
+    expect(result.reason, NetworkDiagnosticReason.localProxy);
+    expect(result.severity, NetworkDiagnosticSeverity.error);
+    expect(
+        evaluate(localProxyOk: true).reason, NetworkDiagnosticReason.healthy);
   });
 
   test('healthy base network without VPN is a warning', () {

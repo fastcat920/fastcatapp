@@ -5,9 +5,36 @@ import 'package:fl_clash/clash/clash.dart';
 import 'package:fl_clash/models/models.dart';
 import 'package:fl_clash/state.dart';
 import 'package:fl_clash/xboard/features/streaming_check/models/streaming_test_result.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+
+final streamingCheckServiceProvider =
+    Provider<StreamingCheckService>((ref) => streamingCheckService);
+
+/// Per-run cancellation also prevents retries from issuing new native requests.
+class StreamingCheckRun {
+  StreamingCheckRun() : id = DateTime.now().microsecondsSinceEpoch.toString();
+  final String id;
+  bool cancelled = false;
+
+  Future<void> cancel() async {
+    if (cancelled) return;
+    cancelled = true;
+    try {
+      await clashCore.cancelStreamingProbes(id);
+    } catch (_) {
+      // Older cores may not expose cancellation; requests still have timeouts.
+    }
+  }
+}
 
 class StreamingCheckService {
-  const StreamingCheckService();
+  const StreamingCheckService({this.run});
+  final StreamingCheckRun? run;
+
+  StreamingCheckService newRun() =>
+      StreamingCheckService(run: StreamingCheckRun());
+
+  Future<void> cancel() async => run?.cancel();
 
   static const targets = <StreamingTarget>[
     StreamingTarget(
@@ -122,9 +149,9 @@ class StreamingCheckService {
   }
 
   Future<String?> detectRegion(String proxyName) async {
-    final raw = await clashCore.streamingProbe(
-      'https://www.cloudflare.com/cdn-cgi/trace',
+    final raw = await _probe(
       proxyName,
+      'https://www.cloudflare.com/cdn-cgi/trace',
     );
     if (raw['ok'] != true) return null;
     final body = raw['body']?.toString() ?? '';
@@ -984,21 +1011,25 @@ class StreamingCheckService {
     int maxBodySize = 256 * 1024,
     bool retryTransient = false,
   }) async {
-    Future<Map<String, dynamic>> run() => clashCore.streamingProbe(
-          url,
-          proxyName,
-          method: method,
-          body: body,
-          headers: headers,
-          followRedirects: followRedirects,
-          timeout: timeout,
-          maxBodySize: maxBodySize,
-        );
+    Future<Map<String, dynamic>> probe() async {
+      if (run?.cancelled == true) return {'ok': false, 'error': 'cancelled'};
+      return clashCore.streamingProbe(
+        url,
+        proxyName,
+        runId: run?.id,
+        method: method,
+        body: body,
+        headers: headers,
+        followRedirects: followRedirects,
+        timeout: timeout,
+        maxBodySize: maxBodySize,
+      );
+    }
 
-    var result = await run();
+    var result = await probe();
     if (retryTransient && _isTransientProbeFailure(result)) {
       await Future<void>.delayed(const Duration(milliseconds: 400));
-      result = await run();
+      result = await probe();
     }
     return result;
   }

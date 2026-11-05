@@ -19,6 +19,19 @@ class _ProxyManagerState extends ConsumerState<ProxyManager> {
 
   Future<void> _updateProxy(ProxyState proxyState) async {
     final updateId = ++_proxyUpdateId;
+    try {
+      await _applyProxy(proxyState, updateId);
+    } catch (error) {
+      commonPrint.log('[ProxyManager] system proxy operation failed: $error');
+      if (mounted && updateId == _proxyUpdateId) {
+        globalState.showNotifier(
+          '${appLocalizations.systemProxy} ${appLocalizations.xboardOperationFailed}',
+        );
+      }
+    }
+  }
+
+  Future<void> _applyProxy(ProxyState proxyState, int updateId) async {
     final isStart = proxyState.isStart;
     final systemProxy = proxyState.systemProxy;
     final port = proxyState.port;
@@ -50,7 +63,16 @@ class _ProxyManagerState extends ConsumerState<ProxyManager> {
     } else {
       commonPrint.log(
           "[ProxyManager] >>> Calling stopProxy (isStart=$isStart, systemProxy=$systemProxy)");
-      await proxy?.stopProxy();
+      final stopped = await proxy?.stopProxy();
+      commonPrint.log('[ProxyManager] <<< stopProxy result: $stopped');
+      if (stopped == false &&
+          proxy?.hasAuthorizedSystemProxy == true &&
+          mounted &&
+          updateId == _proxyUpdateId) {
+        globalState.showNotifier(
+          '${appLocalizations.systemProxy} ${appLocalizations.xboardOperationFailed}',
+        );
+      }
     }
   }
 

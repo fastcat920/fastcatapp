@@ -6,7 +6,7 @@ part of '../plan_state.dart';
 // RiverpodGenerator
 // **************************************************************************
 
-String _$getPlansHash() => r'fa708ce102b2591f31f294a416a97ecc19f2ab6d';
+String _$getPlansHash() => r'81a74abb909e228bf94fbb0b72d0104d8e566222';
 
 /// 套餐状态管理
 /// 获取套餐列表
@@ -25,7 +25,7 @@ final getPlansProvider = AutoDisposeFutureProvider<List<PlanModel>>.internal(
 @Deprecated('Will be removed in 3.0. Use Ref instead')
 // ignore: unused_element
 typedef GetPlansRef = AutoDisposeFutureProviderRef<List<PlanModel>>;
-String _$getPlanHash() => r'8b839686c467cf4fea1a6a75b0370d84a8166105';
+String _$getPlanHash() => r'3b42dc836c35d9c491a4a04c7beaf352ec710e73';
 
 /// Copied from Dart SDK
 class _SystemHash {

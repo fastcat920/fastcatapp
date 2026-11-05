@@ -12,11 +12,16 @@ import 'package:fl_clash/providers/providers.dart';
 import 'package:fl_clash/services/app_exit_service.dart';
 import 'package:fl_clash/services/app_profile_controller.dart';
 import 'package:fl_clash/services/core_switch_status.dart';
+import 'package:fl_clash/services/proxy_selection_sync.dart';
+import 'package:fl_clash/services/verified_connection_start.dart';
+import 'package:fl_clash/services/live_core_groups.dart';
+import 'package:fl_clash/xboard/utils/xboard_notification.dart';
 import 'package:fl_clash/state.dart';
 import 'package:fl_clash/widgets/dialog.dart';
 import 'package:fl_clash/xboard/features/auth/services/device_heartbeat_service.dart';
 import 'package:fl_clash/xboard/features/auth/utils/customer_service_helper.dart';
 import 'package:fl_clash/xboard/features/shared/widgets/legal_footer.dart';
+import 'package:fl_clash/xboard/features/shared/styles/styles.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter/material.dart';
 import 'package:yaml/yaml.dart';
@@ -24,6 +29,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'common/common.dart';
 import 'common/boot_diag.dart';
+import 'common/diagnostic_log_buffer.dart';
+import 'common/serial_operation_queue.dart';
 import 'security/profile_vault.dart';
 import 'models/models.dart';
 
@@ -134,7 +141,10 @@ class AppController {
   /// 解决非管理员运行时反复弹 UAC 的问题。
   bool _tunAdminDenied = true;
   bool _isCoreSwitching = false;
+  bool _isConnectionRepair = false;
+  Future<void>? _configUpdateFuture;
   Future<void>? _disconnectCleanupFuture;
+  final _profileApplications = SerialOperationQueue();
   String? _lastConnectivityFingerprint;
   Timer? _networkRecoveryTimer;
   DateTime? _lastNetworkRecoveryAt;
@@ -144,10 +154,83 @@ class AppController {
 
   bool get isCoreSwitching => _isCoreSwitching;
 
+  Future<T> runConnectionRepair<T>(Future<T> Function() repair) async {
+    if (_isCoreSwitching) {
+      throw StateError('Core operation already in progress');
+    }
+    _isCoreSwitching = true;
+    _isConnectionRepair = true;
+    globalState.isCoreSwitchingNotifier.value = true;
+    try {
+      return await repair();
+    } finally {
+      _isConnectionRepair = false;
+      _isCoreSwitching = false;
+      globalState.isCoreSwitchingNotifier.value = false;
+      globalState.resetCoreSwitchStatus();
+    }
+  }
+
+  late final _proxySelection = ProxySelectionSync(
+    readGroups: () async => await clashCore.getProxiesGroups(),
+    writeSelection: (group, node) async => await clashCore.changeProxy(
+      ChangeProxyParams(groupName: group, proxyName: node),
+    ),
+    publishGroups: (groups) =>
+        _ref.read(groupsProvider.notifier).value = groups,
+  );
+
+  Future<void> synchronizeProxySelection() async {
+    final mode = _ref.read(patchClashConfigProvider).mode;
+    if (mode == Mode.direct) return;
+    final groups = getCurrentGroups();
+    await _proxySelection.synchronize(
+      saved: Map<String, String>.from(
+          _ref.read(currentProfileProvider)?.selectedMap ?? {}),
+      activeGroup: mode == Mode.global ? 'GLOBAL' : groups.firstOrNull?.name,
+    );
+  }
+
   /// 订阅导入流程正在执行 applyProfile 时为 true，
   /// 防止 ClashManager 的 needSetupProvider 监听器重复触发 handleChangeProfile，
   /// 避免两个并发 applyProfile 竞争导致 groups 被清空。
   bool isImportApplying = false;
+
+  /// Keep profile publication and rollback in the same connection-operation
+  /// lock. Restoring an ID must not trigger a competing listener application.
+  Future<T> runProfileImport<T>(Future<T> Function() operation) async {
+    await _acquireConfigurationSwitch();
+    isImportApplying = true;
+    try {
+      return await operation();
+    } finally {
+      isImportApplying = false;
+      _isCoreSwitching = false;
+      globalState.isCoreSwitchingNotifier.value = false;
+      globalState.resetCoreSwitchStatus();
+    }
+  }
+
+  Future<void> restoreProfileConnection() => _restoreVerifiedConnection();
+
+  Future<void> stopAfterConfigurationFailure() => _rollbackFailedStart();
+
+  /// Session exit must not ignore a busy connect/apply/repair operation. The
+  /// caller first drains subscription imports, then waits here for any other
+  /// connection operation before clearing account identity.
+  Future<void> disconnectAfterPendingOperations() async {
+    final deadline = DateTime.now().add(const Duration(seconds: 30));
+    while (_isCoreSwitching) {
+      if (DateTime.now().isAfter(deadline)) {
+        throw TimeoutException('Connection operation is still in progress');
+      }
+      await Future<void>.delayed(const Duration(milliseconds: 50));
+    }
+    // No await between observing idle and updateStatus acquiring the lock.
+    if (!await updateStatus(false)) {
+      throw StateError('Session connection could not be stopped');
+    }
+  }
 
   /// 用户在设置中主动开启 TUN 时调用，允许再次弹出 UAC
   void resetTunAdminDenied() => _tunAdminDenied = false;
@@ -279,40 +362,62 @@ class AppController {
   changeProxyDebounce(String groupName, String proxyName) {
     debouncer.call(FunctionTag.changeProxy,
         (String groupName, String proxyName) async {
-      if (Platform.isIOS) {
-        // iOS: selection already saved locally by updateCurrentSelectedMap().
-        // If VPN is connected, tell mihomo to switch proxy but do NOT call
-        // updateGroups() — IPC getProxies can return empty and wipe the list.
-        if (globalState.isStart) {
-          try {
+      try {
+        if (Platform.isIOS) {
+          // iOS: selection already saved locally by updateCurrentSelectedMap().
+          // If VPN is connected, tell mihomo to switch proxy but do NOT call
+          // updateGroups() — IPC getProxies can return empty and wipe the list.
+          if (globalState.isStart) {
             await changeProxy(
               groupName: groupName,
               proxyName: proxyName,
             );
-          } catch (_) {}
+          }
+          return;
         }
-        return;
+        await changeProxy(
+          groupName: groupName,
+          proxyName: proxyName,
+        );
+        await updateGroups();
+      } catch (error) {
+        commonPrint.log('[ProxySelection] failed: $error');
+        XBoardNotification.showError(
+            appLocalizations.xboardProxySelectionFailed);
       }
-      await changeProxy(
-        groupName: groupName,
-        proxyName: proxyName,
-      );
-      await updateGroups();
     }, args: [groupName, proxyName]);
   }
 
   restartCore({
     bool setupProfile = true,
     bool restoreStart = true,
+    bool requireHelper = false,
   }) async {
     commonPrint.log('restart core');
     final wasStart = _ref.read(runTimeProvider.notifier).isStart;
-    await clashService?.reStart();
-    await _initCore(setupProfile: setupProfile);
+    try {
+      await clashService?.reStart(requireHelper: requireHelper);
+      await _initCore(setupProfile: setupProfile);
+    } catch (_) {
+      if (system.isDesktop) {
+        await clashService?.shutdown();
+        _markDesktopCoreStopped();
+      }
+      rethrow;
+    }
     if (restoreStart && wasStart) {
       globalState.startTime = null; // 重启后计时归零
-      await globalState.handleStart();
+      await _restoreVerifiedConnection();
     }
+  }
+
+  void _markDesktopCoreStopped() {
+    globalState.startTime = null;
+    globalState.stopUpdateTasks();
+    _ref.read(runTimeProvider.notifier).value = null;
+    _ref.read(realTunEnableProvider.notifier).value = false;
+    // A failed TUN repair must not cause repeated authorization attempts.
+    _tunAdminDenied = true;
   }
 
   Future<bool> updateStatus(bool isStart) async {
@@ -335,53 +440,32 @@ class AppController {
         globalState.updateCoreSwitchStatus(
           CoreSwitchStage.coreConnecting,
         );
-        final started = await globalState.handleStart([
-          updateRunTime,
-          updateTraffic,
-        ]);
+        final started = await runVerifiedConnectionStart(
+          start: () async {
+            if (system.isDesktop && clashService?.isConnected != true) {
+              await restartCore(restoreStart: false);
+            }
+            final profile = _ref.read(currentProfileProvider);
+            if (profile == null) throw StateError('No profile available');
+            final modified = await profile.profileLastModified;
+            if (!Platform.isIOS &&
+                (lastProfileModified == null ||
+                    modified != lastProfileModified)) {
+              await applyProfile(silence: true);
+            }
+            return globalState.prepareStart();
+          },
+          verify: _verifyStartedConnection,
+          commit: () =>
+              globalState.commitStarted([updateRunTime, updateTraffic]),
+          rollback: _rollbackFailedStart,
+        );
         if (!started) {
           globalState.updateCoreSwitchStatus(
             CoreSwitchStage.failed,
           );
           return false;
         }
-        if (_ref.read(realTunEnableProvider)) {
-          globalState.updateCoreSwitchStatus(
-            CoreSwitchStage.tunApplying,
-          );
-        }
-        if (Platform.isIOS) {
-          // The user-approved connection has started the Packet Tunnel. Refresh
-          // groups from the core and re-apply the selected proxy.
-          await _refreshGroupsAfterConnect();
-          addCheckIpNumDebounce();
-          globalState.updateCoreSwitchStatus(
-            CoreSwitchStage.connected,
-          );
-          return true;
-        }
-        // 桌面/Android 的核心已经成功启动时，UI 节点状态仍可能因冷启动、
-        // 订阅下载失败而为空。此时无论配置修改时间是否变化，都从核心恢复。
-        if (_ref.read(groupsProvider).isEmpty) {
-          await updateGroups();
-        }
-        final currentLastModified =
-            await _ref.read(currentProfileProvider)?.profileLastModified;
-        if (currentLastModified == null || lastProfileModified == null) {
-          addCheckIpNumDebounce();
-          globalState.updateCoreSwitchStatus(
-            CoreSwitchStage.connected,
-          );
-          return true;
-        }
-        if (currentLastModified <= (lastProfileModified ?? 0)) {
-          addCheckIpNumDebounce();
-          globalState.updateCoreSwitchStatus(
-            CoreSwitchStage.connected,
-          );
-          return true;
-        }
-        applyProfileDebounce();
         addCheckIpNumDebounce();
         globalState.updateCoreSwitchStatus(
           CoreSwitchStage.connected,
@@ -420,6 +504,49 @@ class AppController {
           CoreSwitchStage.failed) {
         globalState.resetCoreSwitchStatus();
       }
+    }
+  }
+
+  Future<void> _verifyStartedConnection() async {
+    await updateGroups(requireLive: true);
+    await synchronizeProxySelection();
+    if (!system.isDesktop) return;
+    final port = _ref.read(proxyStateProvider).port;
+    if (port <= 0 && _ref.read(realTunEnableProvider)) return;
+    Socket? socket;
+    try {
+      socket = await Socket.connect(InternetAddress.loopbackIPv4, port,
+          timeout: const Duration(seconds: 2));
+    } catch (_) {
+      throw StateError('Core proxy listener unavailable');
+    } finally {
+      socket?.destroy();
+    }
+  }
+
+  Future<void> _restoreVerifiedConnection() async {
+    final started = await runVerifiedConnectionStart(
+      start: globalState.prepareStart,
+      verify: _verifyStartedConnection,
+      commit: () => globalState.commitStarted([updateRunTime, updateTraffic]),
+      rollback: _rollbackFailedStart,
+    );
+    if (!started) throw StateError('Core connection could not be restored');
+  }
+
+  Future<void> _rollbackFailedStart() async {
+    // The UI must converge even if the native shutdown itself fails.
+    globalState.startTime = null;
+    globalState.stopUpdateTasks();
+    _ref.read(runTimeProvider.notifier).value = null;
+    try {
+      await globalState.handleStop();
+    } catch (error) {
+      commonPrint.log('[Connection] rollback failed: $error');
+      if (system.isDesktop) await clashService?.shutdown();
+    } finally {
+      _ref.read(realTunEnableProvider.notifier).value = false;
+      lastProfileModified = null;
     }
   }
 
@@ -582,9 +709,39 @@ class AppController {
   }
 
   Future<void> updateClashConfig() async {
-    if (_isCoreSwitching) return;
+    // Every caller waits for its update; never report an ignored update as saved.
+    final previous = _configUpdateFuture;
+    final operation = () async {
+      if (previous != null) {
+        try {
+          await previous;
+        } catch (_) {/* A newer update may recover. */}
+      }
+      await _acquireConfigurationSwitch();
+      await _performConfigUpdate();
+    }();
+    _configUpdateFuture = operation;
+    try {
+      await operation;
+    } finally {
+      if (identical(_configUpdateFuture, operation)) _configUpdateFuture = null;
+    }
+  }
+
+  Future<void> _acquireConfigurationSwitch() async {
+    final deadline = DateTime.now().add(const Duration(seconds: 30));
+    while (_isCoreSwitching) {
+      if (DateTime.now().isAfter(deadline)) {
+        throw TimeoutException(
+            'The core is busy; configuration was not applied.');
+      }
+      await Future<void>.delayed(const Duration(milliseconds: 50));
+    }
     _isCoreSwitching = true;
     globalState.isCoreSwitchingNotifier.value = true;
+  }
+
+  Future<void> _performConfigUpdate() async {
     final commonScaffoldState = globalState.homeScaffoldKey.currentState;
     try {
       if (commonScaffoldState?.mounted == true) {
@@ -599,6 +756,7 @@ class AppController {
     } finally {
       _isCoreSwitching = false;
       globalState.isCoreSwitchingNotifier.value = false;
+      globalState.resetCoreSwitchStatus();
     }
   }
 
@@ -607,7 +765,7 @@ class AppController {
     final wasStart = _ref.read(runTimeProvider.notifier).isStart;
     final res = await _requestAdmin(updateParams.tun.enable);
     if (res.isError) {
-      return;
+      throw StateError('Could not prepare core configuration');
     }
     final adminResult = res.data!;
     if (adminResult.didRestartCore) {
@@ -621,7 +779,7 @@ class AppController {
       await updateProviders();
       if (wasStart) {
         globalState.startTime = null;
-        await globalState.handleStart();
+        await _restoreVerifiedConnection();
       }
       return;
     }
@@ -661,10 +819,23 @@ class AppController {
             globalState.updateCoreSwitchStatus(
               CoreSwitchStage.coreConnecting,
             );
-            await restartCore(setupProfile: false, restoreStart: false);
+            await restartCore(
+              setupProfile: false,
+              restoreStart: false,
+              requireHelper: Platform.isWindows,
+            );
             didRestartCore = true;
             break;
           case AuthorizeCode.none:
+            // Helper may be ready while the old core is still unprivileged.
+            if (Platform.isWindows) {
+              await restartCore(
+                setupProfile: false,
+                restoreStart: false,
+                requireHelper: true,
+              );
+              didRestartCore = true;
+            }
             break;
           case AuthorizeCode.error:
             _tunAdminDenied = true;
@@ -705,7 +876,7 @@ class AppController {
     _ref.read(realTunEnableProvider.notifier).value = adminResult.enableTun;
     if (adminResult.didRestartCore && wasStart) {
       globalState.startTime = null;
-      await globalState.handleStart();
+      await _restoreVerifiedConnection();
     }
   }
 
@@ -713,32 +884,71 @@ class AppController {
     ClashConfig patchConfig,
     bool enableTun,
   ) async {
+    await ClashCore.initGeo();
     final realPatchConfig = patchConfig.copyWith.tun(enable: enableTun);
     final params = await globalState.getSetupParams(
       pathConfig: realPatchConfig,
     );
-    final message = await clashCore.setupConfig(params);
+    late String message;
+    try {
+      message = await clashCore.setupConfig(
+        params,
+        timeout: _isConnectionRepair && system.isDesktop
+            ? const Duration(seconds: 30)
+            : const Duration(minutes: 2),
+      );
+    } on TimeoutException {
+      if (system.isDesktop) {
+        // Stop the stalled native operation; do not leave it applying a late
+        // configuration after the UI has released the operation lock.
+        await clashService?.shutdown();
+        _markDesktopCoreStopped();
+      }
+      rethrow;
+    }
+    if (message.isNotEmpty) {
+      throw StateError(message);
+    }
     lastProfileModified = await _ref.read(
       currentProfileProvider.select(
         (state) => state?.profileLastModified,
       ),
     );
-    if (message.isNotEmpty) {
-      throw message;
-    }
   }
 
   Future _applyProfile() async {
-    if (Platform.isIOS) {
-      // iOS: clash core runs in the PacketTunnel extension (separate process).
-      // The extension can't access the main app's file paths, so setupConfig
-      // and updateGroups via IPC will fail. Always parse YAML in Dart instead.
-      await _applyProfileFromYaml();
+    if (_ref.read(currentProfileProvider) == null) {
+      // First launch and logout legitimately have no subscription. Import and
+      // connection boundaries still require an actual selected profile.
+      if (isImportApplying) throw StateError('Profile unavailable');
       return;
+    }
+    if (Platform.isIOS) {
+      if (globalState.isStart || _ref.read(runTimeProvider) != null) {
+        // Pass configuration contents, not app-private paths, to the running
+        // extension. Publishing local YAML alone would leave the old nodes live.
+        final params = await globalState.getSetupParams(
+          pathConfig: _ref.read(patchClashConfigProvider),
+        );
+        final vpnService = service;
+        if (vpnService == null) throw StateError('VPN service unavailable');
+        await vpnService.reloadConfiguration(json.encode(params));
+        await updateGroups(requireLive: true);
+        await synchronizeProxySelection();
+      } else {
+        // The extension is unavailable until the first connection starts.
+        await _applyProfileFromYaml(requireNodes: true);
+      }
+      return;
+    }
+    if (system.isDesktop && clashService?.isConnected != true) {
+      await restartCore(setupProfile: false, restoreStart: false);
     }
     await clashCore.requestGc();
     await _setupClashConfig();
-    await Future.wait<void>([updateGroups(), updateProviders()]);
+    await Future.wait<void>(
+        [updateGroups(requireLive: true), updateProviders()]);
+    await synchronizeProxySelection();
   }
 
   /// iOS/fallback: parse profile YAML directly in Dart to build Groups.
@@ -746,14 +956,25 @@ class AppController {
   /// unavailable. Gives users a node list before connecting.
   ///
   /// Handles both inline `proxies:` and `proxy-providers:` with `use:`.
-  Future<void> _applyProfileFromYaml() async {
+  Future<void> _applyProfileFromYaml({
+    bool requireNodes = false,
+    bool Function()? canApply,
+  }) async {
     try {
       final profile = _ref.read(currentProfileProvider);
-      if (profile == null) return;
-      if (!await profile.check()) return;
+      if (profile == null || !await profile.check()) {
+        if (requireNodes) throw StateError('Profile unavailable');
+        return;
+      }
       final content = await ProfileVault.instance.readText(profile.id);
+      if (canApply?.call() == false) return;
+      await ProfileVault.instance.prepareRuntimeProviders(profile.id);
+      if (canApply?.call() == false) return;
       final yamlDoc = loadYaml(content);
-      if (yamlDoc is! YamlMap) return;
+      if (yamlDoc is! YamlMap) {
+        if (requireNodes) throw StateError('Invalid profile configuration');
+        return;
+      }
 
       // 1. Extract inline proxies
       final proxiesList = yamlDoc['proxies'] as YamlList? ?? YamlList();
@@ -787,7 +1008,7 @@ class AppController {
 
           final providerFile = File(
             url != null && url.isNotEmpty
-                ? await appPath.getProvidersFilePath(
+                ? await appPath.getRuntimeProvidersFilePath(
                     profile.id,
                     'proxies',
                     url,
@@ -796,7 +1017,8 @@ class AppController {
           );
           try {
             if (await providerFile.exists()) {
-              final providerContent = await providerFile.readAsString();
+              final providerContent = await ProfileVault.instance
+                  .readRuntimeProvider(profile.id, providerFile.path);
               final providerYaml = loadYaml(providerContent);
               // Provider files can be a list of proxies or a map with proxies key
               YamlList? providerProxiesList;
@@ -898,70 +1120,30 @@ class AppController {
         }
       }
 
+      if (requireNodes && groups.isEmpty) {
+        throw StateError('Profile contains no proxy groups');
+      }
+      if (canApply?.call() == false) return;
       final existing = _ref.read(groupsProvider);
       if (groups.isNotEmpty || existing.isEmpty) {
-        final corrected = _correctGroupNowValues(groups);
-        _ref.read(groupsProvider.notifier).value = corrected;
+        _ref.read(groupsProvider.notifier).value = groups;
       }
     } catch (e) {
       commonPrint.log('_applyProfileFromYaml error: $e');
+      if (requireNodes) rethrow;
     }
   }
 
   /// 从磁盘中的当前 Profile 和 provider 缓存重建节点列表。
   ///
   /// 不访问业务后端，供离线启动和订阅更新失败时恢复节点选择界面。
-  Future<void> loadGroupsFromLocalProfile() => _applyProfileFromYaml();
+  Future<void> loadGroupsFromLocalProfile({bool Function()? canApply}) =>
+      _applyProfileFromYaml(canApply: canApply);
 
-  /// After VPN connects on iOS, mihomo is now running in PacketTunnel.
-  /// Fetch live groups from the core and re-apply the user's proxy selections.
-  Future<void> _refreshGroupsAfterConnect() async {
-    try {
-      // 立即尝试一次，未就绪则等待后快速重试
-      var newGroups = await clashCore.getProxiesGroups();
-      if (newGroups.isEmpty) {
-        await Future.delayed(const Duration(milliseconds: 250));
-        newGroups = await retry(
-          task: () async {
-            return await clashCore.getProxiesGroups();
-          },
-          retryIf: (res) => res.isEmpty,
-          maxAttempts: 6,
-          delay: const Duration(milliseconds: 300),
-        );
-      }
-      if (newGroups.isNotEmpty) {
-        final correctedGroups = _correctGroupNowValues(newGroups);
-        _ref.read(groupsProvider.notifier).value = correctedGroups;
-        _correctDirectNodes();
-      }
-      // Re-apply saved proxy selections
-      final profile = _ref.read(currentProfileProvider);
-      if (profile != null) {
-        for (final entry in profile.selectedMap.entries) {
-          try {
-            await clashCore.changeProxy(
-              ChangeProxyParams(
-                groupName: entry.key,
-                proxyName: entry.value,
-              ),
-            );
-          } catch (_) {}
-        }
-        // Refresh groups again to get updated "now" values
-        final refreshed = await clashCore.getProxiesGroups();
-        if (refreshed.isNotEmpty) {
-          final correctedRefreshed = _correctGroupNowValues(refreshed);
-          _ref.read(groupsProvider.notifier).value = correctedRefreshed;
-          _correctDirectNodes();
-        }
-      }
-    } catch (e) {
-      commonPrint.log('iOS _refreshGroupsAfterConnect error: $e');
-    }
-  }
+  Future<void> applyProfile({bool silence = false}) =>
+      _profileApplications.run(() => _runProfileApplication(silence: silence));
 
-  Future applyProfile({bool silence = false}) async {
+  Future<void> _runProfileApplication({required bool silence}) async {
     unawaited(XBoardDeviceHeartbeatService.markActive(reason: 'apply_profile'));
     if (silence) {
       await _applyProfile();
@@ -978,13 +1160,42 @@ class AppController {
     addCheckIpNumDebounce();
   }
 
+  /// Apply user overrides through the complete profile path, including rules.
+  Future<void> applyUserConfiguration() async {
+    final previous = _configUpdateFuture;
+    final operation = () async {
+      if (previous != null) {
+        try {
+          await previous;
+        } catch (_) {}
+      }
+      await _acquireConfigurationSwitch();
+      try {
+        await _applyUserConfiguration();
+      } finally {
+        _isCoreSwitching = false;
+        globalState.isCoreSwitchingNotifier.value = false;
+      }
+    }();
+    _configUpdateFuture = operation;
+    try {
+      await operation;
+    } finally {
+      if (identical(_configUpdateFuture, operation)) _configUpdateFuture = null;
+    }
+  }
+
+  Future<void> _applyUserConfiguration() async {
+    await applyProfile(silence: true);
+  }
+
   handleChangeProfile() {
     // 订阅导入流程自己会调用 applyProfile，跳过此处避免并发竞争
     if (isImportApplying) return;
     _ref.read(delayDataSourceProvider.notifier).value = {};
     // On iOS, YAML parsing is fast and doesn't need a loading overlay.
     applyProfile(silence: Platform.isIOS);
-    _ref.read(logsProvider.notifier).value = FixedList(500);
+    // Keep the causal history across profile changes and connection repairs.
     _ref.read(requestsProvider.notifier).value = FixedList(500);
     globalState.cacheHeightMap = {};
     globalState.cacheScrollPosition = {};
@@ -1013,31 +1224,34 @@ class AppController {
     }
   }
 
-  Future<void> updateGroups() async {
-    if (Platform.isIOS && !globalState.isStart) {
+  Future<void> updateGroups({bool requireLive = false}) async {
+    if (Platform.isIOS && !globalState.isStart && !requireLive) {
       // VPN not connected — mihomo not running. Parse YAML locally.
       await _applyProfileFromYaml();
       return;
     }
     try {
-      final newGroups = await retry(
-        task: () async {
-          return await clashCore.getProxiesGroups();
-        },
-        retryIf: (res) => res.isEmpty,
-      );
+      final newGroups = requireLive
+          ? await waitForLiveCoreGroups(
+              read: clashCore.getProxiesGroups,
+              timeout: Duration(seconds: Platform.isIOS ? 10 : 5),
+            )
+          : await retry(
+              task: clashCore.getProxiesGroups,
+              retryIf: (res) => res.isEmpty,
+            );
       final existing = _ref.read(groupsProvider);
       if (newGroups.isEmpty) {
+        if (requireLive) throw StateError('Core proxy groups unavailable');
         if (existing.isNotEmpty) return;
         await _applyProfileFromYaml();
         return;
       }
-      // 写入前修正 now: 避免 UI 短暂显示 DIRECT
-      final correctedGroups = _correctGroupNowValues(newGroups);
-      _ref.read(groupsProvider.notifier).value = correctedGroups;
-      _correctDirectNodes();
+      // Preserve the core's actual selection, including DIRECT/REJECT.
+      _ref.read(groupsProvider.notifier).value = newGroups;
     } catch (e) {
       commonPrint.log('updateGroups error: $e');
+      if (requireLive) rethrow;
       final existing = _ref.read(groupsProvider);
       if (existing.isNotEmpty) return;
       await _applyProfileFromYaml();
@@ -1059,13 +1273,13 @@ class AppController {
     required String groupName,
     required String proxyName,
   }) async {
+    if (Platform.isIOS && !globalState.isStart) {
+      updateCurrentSelectedMap(groupName, proxyName);
+      return;
+    }
     unawaited(XBoardDeviceHeartbeatService.markActive(reason: 'change_proxy'));
-    await clashCore.changeProxy(
-      ChangeProxyParams(
-        groupName: groupName,
-        proxyName: proxyName,
-      ),
-    );
+    await _proxySelection.select(groupName, proxyName);
+    updateCurrentSelectedMap(groupName, proxyName);
     if (_ref.read(appSettingProvider).closeConnections) {
       await clashCore.closeConnections();
     }
@@ -1175,10 +1389,12 @@ class AppController {
     if (!Platform.isIOS) {
       final isInit = await clashCore.isInit;
       if (!isInit) {
-        await clashCore.init();
-        await clashCore.setState(
+        final initialized = await clashCore.init();
+        if (!initialized) throw StateError('Core initialization failed');
+        final stateApplied = await clashCore.setState(
           globalState.getCoreState(),
         );
+        if (!stateApplied) throw StateError('Core state setup failed');
       }
     }
     if (setupProfile) {
@@ -1305,19 +1521,21 @@ class AppController {
                 ? '数据与隐私说明'
                 : 'Data & Privacy Notice',
             actions: [
-              TextButton(
+              OutlinedButton(
                 onPressed: () {
                   Navigator.of(context).pop<bool>(false);
                 },
+                style: XbUiButton.outlinedNeutral(context),
                 child: Text(appLocalizations.exit),
               ),
-              TextButton(
+              FilledButton(
                 onPressed: () {
                   _ref.read(appSettingProvider.notifier).updateState(
                         (state) => state.copyWith(disclaimerAccepted: true),
                       );
                   Navigator.of(context).pop<bool>(true);
                 },
+                style: XbUiButton.filledPrimary(context),
                 child: Text(appLocalizations.agree),
               )
             ],
@@ -1531,87 +1749,15 @@ class AppController {
         );
     if (mode == Mode.global) {
       updateCurrentGroupName(GroupName.GLOBAL.name);
-      // 同步修正 GLOBAL 默认节点，避免 UI 先显示错误节点再跳回自动选择。
-      _correctGlobalDefaultNode();
+    }
+    if (mode != Mode.direct && (!Platform.isIOS || globalState.isStart)) {
+      unawaited(synchronizeProxySelection().catchError((Object error) {
+        commonPrint.log('[ProxySelection] mode sync failed: $error');
+        XBoardNotification.showError(
+            appLocalizations.xboardProxySelectionFailed);
+      }));
     }
     addCheckIpNumDebounce();
-  }
-
-  /// 切换到全局模式时，如果 GLOBAL 组的当前选中是 DIRECT（已被隐藏），
-  /// 自动切换到第一个有效代理（通常是 URLTest 自动选择组）。
-  void _correctGlobalDefaultNode() {
-    // 读取已排序/修正的显示用分组（URLTest/自动选择排在前面），
-    // 而非原始 Clash 分组（其中线路节点可能排在 URLTest 之前）。
-    final displayGroups = _ref.read(currentGroupsStateProvider).value;
-    final globalGroup = displayGroups.getGroup(GroupName.GLOBAL.name);
-    if (globalGroup == null || globalGroup.all.isEmpty) return;
-    final correctedNow = globalGroup.now ?? '';
-    if (correctedNow.isEmpty) return;
-    // 检查原始 Clash 数据中 GLOBAL 的 now 是否已是修正后的值
-    final rawGroups = _ref.read(groupsProvider);
-    final rawGlobal = rawGroups.getGroup(GroupName.GLOBAL.name);
-    if (rawGlobal == null) return;
-    if (rawGlobal.now == correctedNow) return;
-    // 将修正后的选择（优先 URLTest 自动选择）同步到 Clash
-    changeProxyDebounce(GroupName.GLOBAL.name, correctedNow);
-    updateCurrentSelectedMap(GroupName.GLOBAL.name, correctedNow);
-  }
-
-  /// 在写入 groupsProvider 之前修正所有分组的 now 值，
-  /// 将 DIRECT/REJECT 替换为第一个有效代理，优先 URLTest/Fallback 计算组。
-  List<Group> _correctGroupNowValues(List<Group> groups) {
-    return groups.map((group) {
-      final nowValue = group.now ?? '';
-      if (nowValue.isEmpty) return group;
-      if (nowValue == UsedProxy.DIRECT.name ||
-          nowValue == UsedProxy.REJECT.name) {
-        final validProxies = group.all
-            .where((p) =>
-                p.name != UsedProxy.DIRECT.name &&
-                p.name != UsedProxy.REJECT.name)
-            .toList();
-        if (validProxies.isEmpty) return group;
-        // 优先选择 URLTest/Fallback 计算组（如自动选择、故障转移）
-        final computedProxy = validProxies.cast<Proxy?>().firstWhere(
-              (p) => groups
-                  .any((g) => g.name == p!.name && g.type.isComputedSelected),
-              orElse: () => null,
-            );
-        return group.copyWith(now: (computedProxy ?? validProxies.first).name);
-      }
-      return group;
-    }).toList();
-  }
-
-  /// 修正所有可见分组中 now=DIRECT/REJECT 的情况。
-  /// 注意：GLOBAL 组由 _correctGlobalDefaultNode 单独处理，
-  /// 以使用排序后的代理列表（URLTest 优先）。
-  void _correctDirectNodes() {
-    final groups = _ref.read(groupsProvider);
-    for (final group in groups) {
-      if (group.hidden == true) continue;
-      if (group.name == GroupName.GLOBAL.name) continue;
-      final nowValue = group.now ?? '';
-      if (nowValue.isEmpty) continue;
-      if (nowValue == UsedProxy.DIRECT.name ||
-          nowValue == UsedProxy.REJECT.name) {
-        final validProxies = group.all
-            .where((p) =>
-                p.name != UsedProxy.DIRECT.name &&
-                p.name != UsedProxy.REJECT.name)
-            .toList();
-        if (validProxies.isEmpty) continue;
-        // 优先选择 URLTest/Fallback 计算组（如自动选择、故障转移）
-        final computedProxy = validProxies.cast<Proxy?>().firstWhere(
-              (p) => groups
-                  .any((g) => g.name == p!.name && g.type.isComputedSelected),
-              orElse: () => null,
-            );
-        final proxyName = (computedProxy ?? validProxies.first).name;
-        changeProxyDebounce(group.name, proxyName);
-        updateCurrentSelectedMap(group.name, proxyName);
-      }
-    }
   }
 
   updateAutoLaunch() {
@@ -1647,12 +1793,16 @@ class AppController {
   }
 
   Future<bool> exportLogs() async {
-    final logsRaw = _ref.read(logsProvider).list.map(
-          (item) => SensitiveMasker.maskText(item),
-        );
+    final report = DiagnosticLogBuffer.fromList(_ref.read(logsProvider)).export(
+      chinese: (globalState.config.appSetting.locale ?? Platform.localeName)
+          .startsWith('zh'),
+      clientVersion:
+          '${globalState.packageInfo.version}+${globalState.packageInfo.buildNumber}',
+      systemVersion:
+          '${Platform.operatingSystem} ${Platform.operatingSystemVersion}',
+    );
     final data = await Isolate.run<List<int>>(() async {
-      final logsRawString = logsRaw.join('\n');
-      return utf8.encode(logsRawString);
+      return utf8.encode(report);
     });
     return await picker.saveFile(
           utils.logFile,

@@ -37,6 +37,7 @@ class AutoLatencyService {
     _ref = ref;
     if (!_isServiceActive) {
       _isServiceActive = true;
+      globalState.coreStatusReadyNotifier.addListener(_handleCoreReady);
       _startPeriodicTesting();
       _logger.info('自动延迟测试服务已启动');
     } else {
@@ -49,6 +50,7 @@ class AutoLatencyService {
     _periodicTimer = null;
     _nodeChangeTimer?.cancel();
     _nodeChangeTimer = null;
+    globalState.coreStatusReadyNotifier.removeListener(_handleCoreReady);
     _isServiceActive = false;
     _ref = null;
     _proxyTestCache.clear();
@@ -58,6 +60,12 @@ class AutoLatencyService {
   bool _ensureServiceActive() {
     if (!_isServiceActive || _ref == null) {
       _logger.warning('服务未激活或ref为空');
+      return false;
+    }
+
+    if (!globalState.coreStatusReadyNotifier.value ||
+        globalState.isCoreSwitchingNotifier.value) {
+      _logger.debug('Clash 内核尚未就绪，跳过延迟测试');
       return false;
     }
 
@@ -144,6 +152,12 @@ class AutoLatencyService {
       return;
     }
 
+    if (!globalState.coreStatusReadyNotifier.value ||
+        globalState.isCoreSwitchingNotifier.value) {
+      _logger.debug('Clash 内核尚未就绪，跳过指定节点延迟测试');
+      return;
+    }
+
     if (!_isRefValid()) {
       _logger.warning('Ref已失效，跳过指定节点延迟测试');
       return;
@@ -208,6 +222,16 @@ class AutoLatencyService {
   }
 
   Timer? _nodeChangeTimer;
+
+  void _handleCoreReady() {
+    if (!_isServiceActive || !globalState.coreStatusReadyNotifier.value) return;
+    Future<void>.delayed(const Duration(milliseconds: 300), () {
+      if (!_isServiceActive || !globalState.coreStatusReadyNotifier.value) {
+        return;
+      }
+      unawaited(testCurrentNode());
+    });
+  }
 
   void onNodeChanged() {
     _nodeChangeTimer?.cancel();

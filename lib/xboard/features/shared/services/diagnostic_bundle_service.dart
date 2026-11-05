@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:fl_clash/common/common.dart';
+import 'package:fl_clash/common/build_identity.dart';
 import 'package:fl_clash/enum/enum.dart';
 import 'package:fl_clash/l10n/l10n.dart';
 import 'package:fl_clash/mihomo/mihomo.dart';
@@ -200,6 +201,7 @@ class DiagnosticBundleService {
         ..writeln(
           '${l10n.xboardStreamingReportVersion}: ${_clientVersionLabel()}',
         )
+        ..writeln('build_identity: ${BuildIdentity.label}')
         ..writeln(
           '${l10n.xboardStreamingReportSystem}: ${_systemVersionLabel()}',
         )
@@ -291,7 +293,7 @@ class DiagnosticBundleService {
             ? l10n.xboardImportingSubscription
             : currentProxy == null
                 ? l10n.xboardNoAvailableNodes
-                : '${l10n.xboardCurrentNode}: ${currentProxy.name}',
+                : '${l10n.xboardCurrentNode}: [redacted-node]',
         details: [l10n.xboardNodeCount(nodeCount)],
       ),
       if (Platform.isWindows)
@@ -399,6 +401,7 @@ class DiagnosticBundleService {
         '${l10n.xboardStreamingReportVersion}: '
         '${_clientVersionLabel(clientVersion)}',
       )
+      ..writeln('build_identity: ${BuildIdentity.label}')
       ..writeln(
         '${l10n.xboardStreamingReportSystem}: '
         '${_systemVersionLabel(systemVersion)}',
@@ -445,17 +448,19 @@ class DiagnosticBundleService {
     final buffer = StringBuffer()
       ..writeln('[node_latency_snapshot]')
       ..writeln('source: latest_client_result (no_retest)')
-      ..writeln('group: ${group.name}');
+      ..writeln('group: [redacted-group]');
+    var nodeIndex = 0;
     for (final node in group.nodes) {
       final name = node.name;
       if (!seen.add(name)) continue;
+      nodeIndex++;
       final delay = node.delayMs;
       final value = delay == null
           ? 'not_tested'
           : delay < 0
               ? 'timeout'
               : '${delay}ms';
-      buffer.writeln('- $name: $value');
+      buffer.writeln('- node_$nodeIndex: $value');
     }
     if (seen.isEmpty) buffer.writeln('status: no_available_nodes');
     return buffer.toString();
@@ -529,6 +534,11 @@ class DiagnosticBundleService {
       l10n.xboardNetworkDiagnosticsProxyHttps,
       snapshot.proxyResults,
     );
+    _writeNetworkItems(
+      buffer,
+      l10n.xboardNetworkDiagnosticsLocalProxy,
+      snapshot.localProxyResults,
+    );
   }
 
   static void _writeSection(
@@ -578,6 +588,10 @@ class DiagnosticBundleService {
     AppLocalizations l10n,
   ) {
     return switch (snapshot.conclusionReason) {
+      NetworkDiagnosticReason.configuration ||
+      NetworkDiagnosticReason.coreUnavailable ||
+      NetworkDiagnosticReason.routeUncertain =>
+        snapshot.conclusion,
       NetworkDiagnosticReason.noNetwork ||
       NetworkDiagnosticReason.disconnectedDns ||
       NetworkDiagnosticReason.disconnectedNetwork ||
@@ -591,7 +605,8 @@ class DiagnosticBundleService {
       NetworkDiagnosticReason.protocol ||
       NetworkDiagnosticReason.udp ||
       NetworkDiagnosticReason.nodeUnknown ||
-      NetworkDiagnosticReason.proxy =>
+      NetworkDiagnosticReason.proxy ||
+      NetworkDiagnosticReason.localProxy =>
         l10n.xboardDiagnosticSuggestionNode,
       NetworkDiagnosticReason.disconnectedHealthy ||
       NetworkDiagnosticReason.proxyWorking =>

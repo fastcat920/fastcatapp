@@ -1,5 +1,7 @@
+import 'package:fl_clash/widgets/tv_focusable.dart';
 import 'dart:async';
 
+import 'package:fl_clash/common/common.dart';
 import 'package:fl_clash/l10n/l10n.dart';
 import 'package:fl_clash/xboard/domain/domain.dart';
 import 'package:fl_clash/xboard/features/auth/providers/xboard_user_provider.dart';
@@ -31,6 +33,14 @@ Future<void> showTrafficRecoveryDialog({
 }) async {
   if (isNewPeriodEnabled(ref, subscriptionInfo: subscriptionInfo)) {
     await showNewPeriodDialog(context: context, ref: ref);
+    return;
+  }
+  // Eligibility can change after the TV dialog was displayed. Never fall back
+  // to a paid reset order on TV when the new-period permission disappears.
+  if (system.isTV) {
+    XBoardNotification.showError(
+      AppLocalizations.of(context).xboardNewPeriodNotAllowed,
+    );
     return;
   }
   await showResetTrafficOrderDialog(
@@ -325,7 +335,7 @@ class _NewPeriodConfirmDialogState extends State<_NewPeriodConfirmDialog> {
                     ),
                   ),
                   child: Text(l10n.cancel),
-                ),
+                ).withTvFocus(autofocus: true),
               ),
               const SizedBox(width: 10),
               Expanded(
@@ -351,7 +361,7 @@ class _NewPeriodConfirmDialogState extends State<_NewPeriodConfirmDialog> {
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                   ),
-                ),
+                ).withTvFocus(),
               ),
             ],
           ),

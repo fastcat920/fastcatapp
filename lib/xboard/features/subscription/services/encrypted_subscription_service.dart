@@ -167,6 +167,7 @@ class EncryptedSubscriptionService {
       return SubscriptionResult.success(
         content: decoded,
         encryptionUsed: true,
+        encryptedEnvelope: encryptedData.data,
         keyUsed: null,
         originalUrl: subscriptionUrl,
         subscriptionUserInfo: encryptedData.subscriptionUserInfo,
@@ -463,6 +464,7 @@ class DataResult {
 class SubscriptionResult {
   final bool success;
   final String? content;
+  final String? encryptedEnvelope;
   final bool encryptionUsed;
   final String? keyUsed;
   final String? originalUrl;
@@ -472,6 +474,7 @@ class SubscriptionResult {
   const SubscriptionResult._({
     required this.success,
     this.content,
+    this.encryptedEnvelope,
     this.encryptionUsed = false,
     this.keyUsed,
     this.originalUrl,
@@ -482,6 +485,7 @@ class SubscriptionResult {
   factory SubscriptionResult.success({
     required String content,
     required bool encryptionUsed,
+    String? encryptedEnvelope,
     String? keyUsed,
     String? originalUrl,
     String? subscriptionUserInfo,
@@ -489,6 +493,7 @@ class SubscriptionResult {
       SubscriptionResult._(
         success: true,
         content: content,
+        encryptedEnvelope: encryptedEnvelope,
         encryptionUsed: encryptionUsed,
         keyUsed: keyUsed,
         originalUrl: originalUrl,

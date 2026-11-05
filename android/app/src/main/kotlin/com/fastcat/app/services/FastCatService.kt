@@ -12,6 +12,20 @@ import com.fastcat.app.models.VpnOptions
 
 
 class FastCatService : Service(), BaseServiceInterface {
+    override fun onCreate() {
+        super.onCreate()
+        startFastCatPlaceholderForeground()
+    }
+
+    override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
+        if (VpnRecoveryStore.isDesiredRunning()) {
+            GlobalState.initServiceEngine(
+                forceQuickStart = true,
+                recoveryOptionsJson = VpnRecoveryStore.getOptionsJson(),
+            )
+        }
+        return START_STICKY
+    }
 
     override fun start(options: VpnOptions) = 0
 

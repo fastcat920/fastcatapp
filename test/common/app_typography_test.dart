@@ -4,6 +4,63 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
+  test('ordinary text never falls back to the emoji font', () {
+    expect(appFontFamilyFallback, isNot(contains('Twemoji')));
+    expect(appFontFamilyFallback, contains('Noto Sans CJK SC'));
+    expect(appFontFamilyFallback.last, 'sans-serif');
+    expect(appDialogContentStyle.fontFamilyFallback, appFontFamilyFallback);
+    expect(appDialogTitleStyle.fontFamilyFallback, appFontFamilyFallback);
+  });
+
+  for (final brightness in Brightness.values) {
+    testWidgets('Android $brightness numeric labels inherit text-only fallback',
+        (tester) async {
+      const label = '2026/10/09 12:34:56 · 78.90 MB · 12% · 68ms · #*';
+      await tester.pumpWidget(MaterialApp(
+        theme: ThemeData(
+          platform: TargetPlatform.android,
+          brightness: brightness,
+          fontFamilyFallback: appFontFamilyFallback,
+        ),
+        home: const Scaffold(body: Text(label)),
+      ));
+      final richText = tester.widget<RichText>(find.descendant(
+        of: find.text(label),
+        matching: find.byType(RichText),
+      ));
+      expect(richText.text.toPlainText(), label);
+      expect(richText.text.style?.fontFamilyFallback, appFontFamilyFallback);
+      expect(
+          richText.text.style?.fontFamilyFallback, isNot(contains('Twemoji')));
+      expect(tester.takeException(), isNull);
+    });
+  }
+
+  testWidgets('Linux dialog body retains the same CJK fallback as themed text',
+      (tester) async {
+    await tester.pumpWidget(MaterialApp(
+      theme: ThemeData(
+        platform: TargetPlatform.linux,
+        fontFamilyFallback: appFontFamilyFallback,
+        dialogTheme: const DialogThemeData(
+          titleTextStyle: appDialogTitleStyle,
+          contentTextStyle: appDialogContentStyle,
+        ),
+      ),
+      home: const Scaffold(
+          body: AlertDialog(
+        title: Text('登录保护已开启'),
+        content: Text('当前服务连接异常，退出后可能暂时无法重新登录。'),
+      )),
+    ));
+    final bodyContext = tester.element(find.text('当前服务连接异常，退出后可能暂时无法重新登录。'));
+    expect(DefaultTextStyle.of(bodyContext).style.fontFamilyFallback,
+        appFontFamilyFallback);
+    expect(DefaultTextStyle.of(bodyContext).style.fontSize, 14);
+    expect(appDialogTitleStyle.fontFamilyFallback, appFontFamilyFallback);
+    expect(tester.takeException(), isNull);
+  });
+
   test('softens ordinary titles and labels without changing body text', () {
     final typography = buildAppTypography(
       platform: TargetPlatform.android,

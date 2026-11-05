@@ -14,11 +14,13 @@ final _logger = FileLogger('profile_import_provider.dart');
 class ProfileImportNotifier extends StateNotifier<ImportState> {
   final Ref _ref;
   int _generation = 0;
+  Future<void>? _cancellation;
 
   ProfileImportNotifier(this._ref) : super(const ImportState());
 
   Future<bool> importSubscription(String url,
       {bool forceRefresh = false}) async {
+    if (_cancellation != null) return false;
     final generation = ++_generation;
     _logger.info(
         '开始导入订阅: ${SensitiveMasker.maskUrl(url)}, forceRefresh: $forceRefresh');
@@ -131,16 +133,30 @@ class ProfileImportNotifier extends StateNotifier<ImportState> {
   }
 
   void cancelImport() {
-    if (state.isImporting) {
-      _generation++;
-      _ref.read(xboardProfileImportServiceProvider).cancelCurrentImport();
+    unawaited(cancelImportAndWait());
+  }
+
+  Future<void> cancelImportAndWait() =>
+      _cancellation ??= _cancelImportAndWait().whenComplete(() {
+        _cancellation = null;
+      });
+
+  Future<void> _cancelImportAndWait() async {
+    final generation = ++_generation;
+    final service = _ref.read(xboardProfileImportServiceProvider);
+    // Consult the service even if the UI state was already cleared.
+    if (mounted) {
+      state = state.copyWith(isImporting: service.hasPendingImport);
+    }
+    await service.cancelCurrentImportAndWait();
+    if (mounted && generation == _generation) {
       state = state.copyWith(
         status: ImportStatus.idle,
         isImporting: false,
         message: '导入已取消',
       );
     }
-    _logger.info('请求取消导入操作');
+    _logger.info('导入及回滚已结束');
   }
 
   void clearState() {

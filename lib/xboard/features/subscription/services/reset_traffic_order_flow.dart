@@ -1,3 +1,4 @@
+import 'package:fl_clash/widgets/tv_focusable.dart';
 import 'dart:async';
 
 import 'package:fl_clash/xboard/adapter/state/order_state.dart';
@@ -236,7 +237,7 @@ class _ResetTrafficConfirmDialogState
                     ),
                   ),
                   child: Text(l10n.cancel),
-                ),
+                ).withTvFocus(autofocus: true),
               ),
               const SizedBox(width: 10),
               Expanded(
@@ -255,7 +256,7 @@ class _ResetTrafficConfirmDialogState
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                   ),
-                ),
+                ).withTvFocus(),
               ),
             ],
           ),

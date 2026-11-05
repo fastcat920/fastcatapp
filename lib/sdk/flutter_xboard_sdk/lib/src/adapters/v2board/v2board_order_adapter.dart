@@ -7,6 +7,44 @@ import '../../panels/v2board/apis/v2board_coupon_api.dart';
 import '../../panels/xboard/models/xboard_order_models.dart';
 import '../../panels/xboard/models/xboard_coupon_models.dart'; // Reusing XBoard models if compatible, or V2Board models
 
+/// Maps the shared V2Board order payload without dropping Catboard's locked
+/// pricing fields. Kept outside the adapter so the mapping can be regression
+/// tested independently from HTTP.
+OrderModel mapV2BoardOrder(Order order) {
+  return OrderModel(
+    planId: order.planId,
+    tradeNo: order.tradeNo,
+    totalAmount: order.totalAmount,
+    balanceAmount: order.balanceAmount,
+    handlingAmount: order.handlingAmount,
+    paymentId: order.paymentId,
+    surplusAmount: order.surplusAmount,
+    refundAmount: order.refundAmount,
+    depositAmount: order.depositAmount,
+    depositBonusAmount: order.depositBonusAmount,
+    depositCreditedAmount: order.depositCreditedAmount,
+    depositSource: order.depositSource,
+    commissionBalance: order.commissionBalance,
+    actualCommissionBalance: order.actualCommissionBalance,
+    period: order.period,
+    status: order.status,
+    createdAt: order.createdAt,
+    couponPrice: order.couponPrice,
+    couponCode: order.couponCode,
+    discountAmount: order.discountAmount,
+    flashSaleDiscountAmount: order.flashSaleDiscountAmount,
+    couponDiscountAmount: order.couponDiscountAmount,
+    orderPlan: order.orderPlan != null
+        ? OrderPlanModel(
+            id: order.orderPlan!.id,
+            name: order.orderPlan!.name,
+            onetimePrice: order.orderPlan!.onetimePrice,
+            content: order.orderPlan!.content,
+          )
+        : null,
+  );
+}
+
 class V2BoardOrderAdapter implements OrderApi {
   final V2BoardOrderApi _api;
   final V2BoardCouponApi _couponApi;
@@ -26,14 +64,14 @@ class V2BoardOrderAdapter implements OrderApi {
       if (data.length < pageSize) break;
       currentPage++;
     }
-    return allOrders.map(_mapOrder).toList();
+    return allOrders.map(mapV2BoardOrder).toList();
   }
 
   @override
   Future<OrdersPageResult> getOrdersPage(
       {required int page, int pageSize = 30}) async {
     final response = await _api.fetchUserOrders(page: page, pageSize: pageSize);
-    final orders = response.data.map(_mapOrder).toList();
+    final orders = response.data.map(mapV2BoardOrder).toList();
     return OrdersPageResult(
         orders: orders, total: response.total ?? orders.length);
   }
@@ -102,41 +140,7 @@ class V2BoardOrderAdapter implements OrderApi {
   @override
   Future<OrderModel> getOrder(String tradeNo) async {
     final order = await _api.getOrderDetails(tradeNo);
-    return _mapOrder(order);
-  }
-
-  OrderModel _mapOrder(Order order) {
-    return OrderModel(
-      planId: order.planId,
-      tradeNo: order.tradeNo,
-      totalAmount: order.totalAmount,
-      balanceAmount: order.balanceAmount,
-      surplusAmount: order.surplusAmount,
-      refundAmount: order.refundAmount,
-      depositAmount: order.depositAmount,
-      depositBonusAmount: order.depositBonusAmount,
-      depositCreditedAmount: order.depositCreditedAmount,
-      depositSource: order.depositSource,
-      commissionBalance: order.commissionBalance,
-      actualCommissionBalance: order.actualCommissionBalance,
-      period: order.period,
-      status: order.status,
-      createdAt: order.createdAt,
-      couponPrice: order.couponPrice,
-      couponCode: order.couponCode,
-      discountAmount: order.discountAmount,
-      orderPlan:
-          order.orderPlan != null ? _mapOrderPlan(order.orderPlan!) : null,
-    );
-  }
-
-  OrderPlanModel _mapOrderPlan(OrderPlan plan) {
-    return OrderPlanModel(
-      id: plan.id,
-      name: plan.name,
-      onetimePrice: plan.onetimePrice,
-      content: plan.content,
-    );
+    return mapV2BoardOrder(order);
   }
 
   PaymentMethodModel _mapPaymentMethod(PaymentMethod method) {

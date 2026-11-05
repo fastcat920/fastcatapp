@@ -1,6 +1,7 @@
 #!/bin/bash
 set -euo pipefail
 cd "$(dirname "$0")/.."
+python3 scripts/check_release_readiness.py ios
 
 if [ -z "${XOR_KEY:-}" ]; then
   echo "Usage: XOR_KEY=<your_key> ./scripts/package_ipa.sh"
@@ -8,6 +9,7 @@ if [ -z "${XOR_KEY:-}" ]; then
 fi
 
 : "${FASTCAT_KEY_CURRENT_ID:?FASTCAT_KEY_CURRENT_ID is required}"
+: "${REMOTE_CONFIG_PUBLIC_KEY:?REMOTE_CONFIG_PUBLIC_KEY is required for fastcat-config-v2}"
 : "${FASTCAT_KEY_CURRENT:?FASTCAT_KEY_CURRENT is required}"
 : "${FASTCAT_KEY_NEXT_ID:?FASTCAT_KEY_NEXT_ID is required}"
 : "${FASTCAT_KEY_NEXT:?FASTCAT_KEY_NEXT is required}"
@@ -33,7 +35,10 @@ mkdir -p dist
 /usr/libexec/PlistBuddy -c "Set :CFBundleName ${APP_NAME_EN}" ios/Runner/Info.plist
 
 flutter build ipa --release --no-codesign \
+  --dart-define=FASTCAT_BUILD_COMMIT="${FASTCAT_BUILD_COMMIT:-}" \
+  --dart-define=FASTCAT_BUILD_CHANNEL="${FASTCAT_BUILD_CHANNEL:-local}" \
   --dart-define=XOR_KEY="${XOR_KEY}" \
+  --dart-define=REMOTE_CONFIG_PUBLIC_KEY="${REMOTE_CONFIG_PUBLIC_KEY:-}" \
   --dart-define=FASTCAT_KEY_CURRENT_ID="${FASTCAT_KEY_CURRENT_ID}" \
   --dart-define=FASTCAT_KEY_CURRENT="${FASTCAT_KEY_CURRENT}" \
   --dart-define=FASTCAT_KEY_NEXT_ID="${FASTCAT_KEY_NEXT_ID}" \

@@ -10,31 +10,55 @@ import android.net.NetworkCapabilities
 import android.net.NetworkRequest
 import android.os.Build
 import android.os.IBinder
+import android.os.SystemClock
+import android.util.Log
 import androidx.core.content.getSystemService
+import androidx.core.content.ContextCompat
 import com.fastcat.app.FastCatApplication
 import com.fastcat.app.GlobalState
 import com.fastcat.app.RunState
 import com.fastcat.app.core.Core
-import com.fastcat.app.extensions.awaitResult
 import com.fastcat.app.extensions.resolveDns
 import com.fastcat.app.models.StartForegroundParams
 import com.fastcat.app.models.VpnOptions
 import com.fastcat.app.services.BaseServiceInterface
 import com.fastcat.app.services.FastCatService
 import com.fastcat.app.services.FastCatVpnService
+import com.fastcat.app.services.VpnRecoveryStore
 import com.google.gson.Gson
 import io.flutter.embedding.engine.plugins.FlutterPlugin
 import io.flutter.plugin.common.MethodCall
 import io.flutter.plugin.common.MethodChannel
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.cancel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock as withCoroutineLock
 import kotlinx.coroutines.withContext
+import kotlinx.coroutines.withTimeoutOrNull
+import java.net.HttpURLConnection
 import java.net.InetSocketAddress
+import java.net.URL
+import java.util.concurrent.ConcurrentHashMap
 import kotlin.concurrent.withLock
+
+enum class VpnConnectionHealth {
+    CONNECTED,
+    DEGRADED,
+    RECOVERING,
+    DISCONNECTED,
+}
+
+private data class DataPlaneProbeResult(
+    val reachable: Boolean,
+    val durationMillis: Long,
+)
 
 data object VpnPlugin : FlutterPlugin, MethodChannel.MethodCallHandler {
     private lateinit var flutterMethodChannel: MethodChannel
@@ -44,6 +68,17 @@ data object VpnPlugin : FlutterPlugin, MethodChannel.MethodCallHandler {
     private lateinit var scope: CoroutineScope
     private var lastStartForegroundParams: StartForegroundParams? = null
     private var timerJob: Job? = null
+    private var heartbeatJob: Job? = null
+    private var consecutiveHeartbeatFailures = 0
+    private var lastHealthyHeartbeatAt = 0L
+    private var lastTrafficTotal: Long? = null
+    private var lastTrafficProgressAt = 0L
+    private var lastDataPlaneProbeAt = 0L
+    private var consecutiveDataPlaneFailures = 0
+    private var dataPlaneRecoveryStage = 0
+    private val heartbeatMutex = Mutex()
+    @Volatile
+    private var connectionHealth = VpnConnectionHealth.DISCONNECTED
     private val uidPageNameMap = mutableMapOf<Int, String>()
 
     private val connectivity by lazy {
@@ -64,11 +99,23 @@ data object VpnPlugin : FlutterPlugin, MethodChannel.MethodCallHandler {
         override fun onServiceDisconnected(arg: ComponentName) {
             isBind = false
             fastCatService = null
+            // The VPN disappeared underneath the Flutter UI (usually a ROM
+            // reclaim or service crash). Never leave the UI showing a stale
+            // connected state.
+            connectionHealth = if (VpnRecoveryStore.isDesiredRunning()) {
+                VpnConnectionHealth.RECOVERING
+            } else {
+                VpnConnectionHealth.DISCONNECTED
+            }
+            GlobalState.runState.postValue(
+                if (VpnRecoveryStore.isDesiredRunning()) RunState.PENDING else RunState.STOP,
+            )
+            GlobalState.restartServiceEngineForRecovery("VPN service binder disconnected")
         }
     }
 
     override fun onAttachedToEngine(flutterPluginBinding: FlutterPlugin.FlutterPluginBinding) {
-        scope = CoroutineScope(Dispatchers.Default)
+        scope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
         scope.launch {
             registerNetworkCallback()
         }
@@ -77,7 +124,11 @@ data object VpnPlugin : FlutterPlugin, MethodChannel.MethodCallHandler {
     }
 
     override fun onDetachedFromEngine(flutterPluginBinding: FlutterPlugin.FlutterPluginBinding) {
-        unRegisterNetworkCallback()
+        stopForegroundJob()
+        stopHeartbeatJob()
+        runCatching { unRegisterNetworkCallback() }
+        unbindServiceSafely()
+        scope.cancel()
         flutterMethodChannel.setMethodCallHandler(null)
     }
 
@@ -122,9 +173,10 @@ data object VpnPlugin : FlutterPlugin, MethodChannel.MethodCallHandler {
         flutterMethodChannel.invokeMethod("gc", null)
     }
 
-    val networks = mutableSetOf<Network>()
+    val networks: MutableSet<Network> = ConcurrentHashMap.newKeySet()
 
     fun onUpdateNetwork() {
+        (fastCatService as? FastCatVpnService)?.refreshWifiLock()
         val dns = networks.flatMap { network ->
             connectivity?.resolveDns(network) ?: emptyList()
         }.toSet().joinToString(",")
@@ -165,24 +217,29 @@ data object VpnPlugin : FlutterPlugin, MethodChannel.MethodCallHandler {
     }
 
     private suspend fun startForeground() {
-        GlobalState.runLock.lock()
-        try {
-            if (GlobalState.runState.value != RunState.START) return
-            val data = flutterMethodChannel.awaitResult<String>("getStartForegroundParams")
-            val startForegroundParams = if (data != null) Gson().fromJson(
-                data, StartForegroundParams::class.java
-            ) else StartForegroundParams(
-                title = "", content = ""
-            )
+        if (GlobalState.runState.value != RunState.START) return
+        val data = requestDartResult(
+            method = "getStartForegroundParams",
+            timeoutMillis = NOTIFICATION_RPC_TIMEOUT_MS,
+        ) as? String ?: return
+        if (data.isBlank()) return
+        val startForegroundParams = runCatching {
+            Gson().fromJson(data, StartForegroundParams::class.java)
+        }.getOrNull() ?: return
+        val shouldUpdate = GlobalState.runLock.withLock {
+            if (GlobalState.runState.value != RunState.START) return@withLock false
             if (lastStartForegroundParams != startForegroundParams) {
                 lastStartForegroundParams = startForegroundParams
-                fastCatService?.startForeground(
-                    startForegroundParams.title,
-                    startForegroundParams.content,
-                )
+                true
+            } else {
+                false
             }
-        } finally {
-            GlobalState.runLock.unlock()
+        }
+        if (shouldUpdate) {
+            fastCatService?.startForeground(
+                startForegroundParams.title,
+                startForegroundParams.content,
+            )
         }
     }
 
@@ -201,11 +258,304 @@ data object VpnPlugin : FlutterPlugin, MethodChannel.MethodCallHandler {
         timerJob = null
     }
 
+    private fun startHeartbeatJob() {
+        stopHeartbeatJob()
+        consecutiveHeartbeatFailures = 0
+        consecutiveDataPlaneFailures = 0
+        dataPlaneRecoveryStage = 0
+        val now = SystemClock.elapsedRealtime()
+        lastHealthyHeartbeatAt = now
+        lastTrafficProgressAt = now
+        lastDataPlaneProbeAt = 0L
+        lastTrafficTotal = null
+        heartbeatJob = scope.launch {
+            while (isActive) {
+                delay(HEARTBEAT_INTERVAL_MS)
+                performHeartbeat()
+            }
+        }
+    }
+
+    private fun stopHeartbeatJob() {
+        heartbeatJob?.cancel()
+        heartbeatJob = null
+    }
+
+    private suspend fun performHeartbeat() {
+        heartbeatMutex.withCoroutineLock {
+            performHeartbeatLocked()
+        }
+    }
+
+    private suspend fun performHeartbeatLocked() {
+        if (GlobalState.runState.value != RunState.START) return
+        val vpnService = fastCatService as? FastCatVpnService
+        val tunHealthy = if (options?.enable == false) {
+            fastCatService != null
+        } else {
+            vpnService?.isTunActive() == true
+        }
+        val response = requestDartResult(
+            method = "heartbeat",
+            timeoutMillis = HEARTBEAT_RPC_TIMEOUT_MS,
+        ) as? Map<*, *>
+        val coreHealthy = response?.get("healthy") == true
+        val trafficTotal = (response?.get("trafficTotal") as? Number)?.toLong()
+
+        if (!tunHealthy || !coreHealthy) {
+            handleControlPlaneFailure(tunHealthy, coreHealthy)
+            return
+        }
+
+        val now = SystemClock.elapsedRealtime()
+        consecutiveHeartbeatFailures = 0
+        lastHealthyHeartbeatAt = now
+        vpnService?.refreshWifiLock()
+
+        val trafficProgressed = trafficTotal != null &&
+                (lastTrafficTotal == null || trafficTotal != lastTrafficTotal)
+        lastTrafficTotal = trafficTotal
+        if (trafficProgressed) {
+            markDataPlaneHealthy(now, "traffic")
+            return
+        }
+
+        if (options?.enable == false) {
+            markDataPlaneHealthy(now, "service")
+            return
+        }
+
+        val idleThreshold = if (vpnService?.isTelevisionDevice() == true) {
+            TV_IDLE_PROBE_AFTER_MS
+        } else {
+            MOBILE_IDLE_PROBE_AFTER_MS
+        }
+        if (now - lastTrafficProgressAt < idleThreshold ||
+            now - lastDataPlaneProbeAt < DATA_PLANE_PROBE_MIN_INTERVAL_MS
+        ) {
+            return
+        }
+
+        lastDataPlaneProbeAt = now
+        if (networks.isEmpty()) {
+            connectionHealth = VpnConnectionHealth.DEGRADED
+            Log.w(
+                TAG,
+                "vpn_health event=probe outcome=skipped reason=no_underlying_network " +
+                        lockState(vpnService),
+            )
+            return
+        }
+
+        val probe = probeDataPlane()
+        if (probe.reachable) {
+            markDataPlaneHealthy(SystemClock.elapsedRealtime(), "probe")
+            Log.i(
+                TAG,
+                "vpn_health event=probe outcome=success duration_ms=${probe.durationMillis} " +
+                        lockState(vpnService),
+            )
+            return
+        }
+
+        consecutiveDataPlaneFailures += 1
+        connectionHealth = VpnConnectionHealth.DEGRADED
+        Log.w(
+            TAG,
+            "vpn_health event=probe outcome=failure duration_ms=${probe.durationMillis} " +
+                    "count=$consecutiveDataPlaneFailures stage=$dataPlaneRecoveryStage " +
+                    lockState(vpnService),
+        )
+        recoverDataPlane(vpnService)
+    }
+
+    private suspend fun handleControlPlaneFailure(
+        tunHealthy: Boolean,
+        coreHealthy: Boolean,
+    ) {
+        connectionHealth = VpnConnectionHealth.DEGRADED
+        consecutiveHeartbeatFailures += 1
+        Log.w(
+            TAG,
+            "vpn_health event=control_heartbeat outcome=failure " +
+                    "count=$consecutiveHeartbeatFailures tun=$tunHealthy core=$coreHealthy",
+        )
+        if (consecutiveHeartbeatFailures < HEARTBEAT_FAILURE_LIMIT) return
+
+        connectionHealth = VpnConnectionHealth.RECOVERING
+        requestDartResult(
+            method = "prepareRecovery",
+            timeoutMillis = CORE_SHUTDOWN_TIMEOUT_MS,
+        )
+        GlobalState.restartServiceEngineForRecovery(
+            "heartbeat failures=$consecutiveHeartbeatFailures tun=$tunHealthy core=$coreHealthy",
+        )
+    }
+
+    private fun markDataPlaneHealthy(now: Long, source: String) {
+        val wasUnhealthy = connectionHealth != VpnConnectionHealth.CONNECTED
+        connectionHealth = VpnConnectionHealth.CONNECTED
+        consecutiveDataPlaneFailures = 0
+        dataPlaneRecoveryStage = 0
+        lastTrafficProgressAt = now
+        if (wasUnhealthy) {
+            Log.i(TAG, "vpn_health event=data_plane outcome=recovered source=$source")
+        }
+    }
+
+    private suspend fun recoverDataPlane(vpnService: FastCatVpnService?) {
+        when (dataPlaneRecoveryStage) {
+            0 -> {
+                dataPlaneRecoveryStage = 1
+                val recovered = requestDartResult(
+                    method = "recoverDataPlane",
+                    timeoutMillis = SOFT_RECOVERY_TIMEOUT_MS,
+                ) == true
+                vpnService?.refreshWifiLock()
+                Log.w(
+                    TAG,
+                    "vpn_health event=recovery level=soft outcome=${if (recovered) "applied" else "failed"}",
+                )
+            }
+
+            1 -> {
+                connectionHealth = VpnConnectionHealth.RECOVERING
+                val rebuilt = rebuildTun()
+                if (rebuilt) {
+                    dataPlaneRecoveryStage = 2
+                    consecutiveDataPlaneFailures = 0
+                    lastDataPlaneProbeAt = SystemClock.elapsedRealtime()
+                    Log.w(TAG, "vpn_health event=recovery level=tun outcome=rebuilt")
+                } else {
+                    restartCoreForDataPlaneFailure("TUN rebuild failed")
+                }
+            }
+
+            else -> restartCoreForDataPlaneFailure("probe failed after TUN rebuild")
+        }
+    }
+
+    private suspend fun rebuildTun(): Boolean {
+        val vpnService = fastCatService as? FastCatVpnService ?: return false
+        val nextOptions = options ?: return false
+        if (!nextOptions.enable || !VpnRecoveryStore.isDesiredRunning()) return false
+
+        return withContext(Dispatchers.Main) {
+            runCatching {
+                GlobalState.runLock.withLock {
+                    GlobalState.runState.value = RunState.PENDING
+                    Core.stopTun()
+                    vpnService.markTunStopped()
+                    val fd = vpnService.start(nextOptions)
+                    Core.startTun(
+                        fd = fd,
+                        protect = this@VpnPlugin::protect,
+                        resolverProcess = this@VpnPlugin::resolverProcess,
+                    )
+                    GlobalState.runState.value = RunState.START
+                    lastHealthyHeartbeatAt = SystemClock.elapsedRealtime()
+                }
+                true
+            }.getOrElse { error ->
+                Log.e(
+                    TAG,
+                    "vpn_health event=recovery level=tun outcome=failure " +
+                            "error=${error.javaClass.simpleName}",
+                )
+                false
+            }
+        }
+    }
+
+    private suspend fun restartCoreForDataPlaneFailure(reason: String) {
+        connectionHealth = VpnConnectionHealth.RECOVERING
+        Log.e(TAG, "vpn_health event=recovery level=core outcome=started")
+        requestDartResult(
+            method = "prepareRecovery",
+            timeoutMillis = CORE_SHUTDOWN_TIMEOUT_MS,
+        )
+        GlobalState.restartServiceEngineForRecovery(reason)
+    }
+
+    private suspend fun probeDataPlane(): DataPlaneProbeResult =
+        withContext(Dispatchers.IO) {
+            val startedAt = SystemClock.elapsedRealtime()
+            var reachable = false
+            for (probeUrl in DATA_PLANE_PROBE_URLS) {
+                val connection = runCatching {
+                    URL(probeUrl).openConnection() as HttpURLConnection
+                }.getOrNull() ?: continue
+                try {
+                    connection.requestMethod = "GET"
+                    connection.connectTimeout = DATA_PLANE_PROBE_TIMEOUT_MS.toInt()
+                    connection.readTimeout = DATA_PLANE_PROBE_TIMEOUT_MS.toInt()
+                    connection.instanceFollowRedirects = false
+                    connection.useCaches = false
+                    connection.setRequestProperty("Cache-Control", "no-cache")
+                    val responseCode = connection.responseCode
+                    if (responseCode in 200..399) {
+                        reachable = true
+                        break
+                    }
+                } catch (_: Exception) {
+                    // Try the next fixed connectivity endpoint.
+                } finally {
+                    connection.disconnect()
+                }
+            }
+            DataPlaneProbeResult(
+                reachable = reachable,
+                durationMillis = SystemClock.elapsedRealtime() - startedAt,
+            )
+        }
+
+    private fun lockState(vpnService: FastCatVpnService?): String =
+        "tv=${vpnService?.isTelevisionDevice() == true} " +
+                "wifi=${vpnService?.isUsingWifiConnection() == true} " +
+                "wake_lock=${vpnService?.isWakeLockHeld() == true} " +
+                "wifi_lock=${vpnService?.isWifiLockHeld() == true}"
+
+    private suspend fun requestDartResult(
+        method: String,
+        arguments: Any? = null,
+        timeoutMillis: Long,
+    ): Any? {
+        val result = CompletableDeferred<Any?>()
+        withContext(Dispatchers.Main) {
+            flutterMethodChannel.invokeMethod(
+                method,
+                arguments,
+                object : MethodChannel.Result {
+                    override fun success(value: Any?) {
+                        result.complete(value)
+                    }
+
+                    override fun error(code: String, message: String?, details: Any?) {
+                        result.complete(null)
+                    }
+
+                    override fun notImplemented() {
+                        result.complete(null)
+                    }
+                },
+            )
+        }
+        return withTimeoutOrNull(timeoutMillis) { result.await() }
+    }
+
 
     suspend fun getStatus(): Boolean? {
-        return withContext(Dispatchers.Default) {
-            flutterMethodChannel.awaitResult<Boolean>("status", null)
+        if (GlobalState.runState.value == RunState.START &&
+            SystemClock.elapsedRealtime() - lastHealthyHeartbeatAt >
+            HEARTBEAT_STALE_AFTER_MS
+        ) {
+            performHeartbeat()
         }
+        if (!isActuallyRunning()) return false
+        return requestDartResult(
+            method = "status",
+            timeoutMillis = HEARTBEAT_RPC_TIMEOUT_MS,
+        ) as? Boolean ?: false
     }
 
     private fun handleStartService() {
@@ -215,14 +565,26 @@ data object VpnPlugin : FlutterPlugin, MethodChannel.MethodCallHandler {
         }
         GlobalState.runLock.withLock {
             if (GlobalState.runState.value == RunState.START) return
-            GlobalState.runState.value = RunState.START
-            val fd = fastCatService?.start(options!!)
-            Core.startTun(
-                fd = fd ?: 0,
-                protect = this::protect,
-                resolverProcess = this::resolverProcess,
-            )
-            startForegroundJob()
+            val nextOptions = options ?: return
+            VpnRecoveryStore.persistRunning(nextOptions)
+            try {
+                val fd = fastCatService?.start(nextOptions)
+                Core.startTun(
+                    fd = fd ?: 0,
+                    protect = this::protect,
+                    resolverProcess = this::resolverProcess,
+                )
+                GlobalState.runState.value = RunState.START
+                connectionHealth = VpnConnectionHealth.CONNECTED
+                lastHealthyHeartbeatAt = SystemClock.elapsedRealtime()
+                startForegroundJob()
+                startHeartbeatJob()
+            } catch (error: Throwable) {
+                VpnRecoveryStore.clearDesiredRunning()
+                GlobalState.runState.value = RunState.STOP
+                connectionHealth = VpnConnectionHealth.DISCONNECTED
+                throw error
+            }
         }
     }
 
@@ -253,16 +615,44 @@ data object VpnPlugin : FlutterPlugin, MethodChannel.MethodCallHandler {
     }
 
     fun handleStop() {
+        VpnRecoveryStore.clearDesiredRunning()
+        connectionHealth = VpnConnectionHealth.DISCONNECTED
         GlobalState.runLock.withLock {
             if (GlobalState.runState.value == RunState.STOP) return
             GlobalState.runState.value = RunState.STOP
             // 先停 TUN 释放 fd，让系统有机会清理 VPN 网络接口及其代理/DNS 设置
             // 再停 VPN Service，避免部分 ROM 上 HTTP 代理残留
             Core.stopTun()
+            (fastCatService as? FastCatVpnService)?.markTunStopped()
             stopForegroundJob()
+            stopHeartbeatJob()
             fastCatService?.stop()
             GlobalState.handleTryDestroy()
         }
+    }
+
+    fun isActuallyRunning(): Boolean {
+        val heartbeatFresh = SystemClock.elapsedRealtime() - lastHealthyHeartbeatAt <=
+                HEARTBEAT_STALE_AFTER_MS
+        val tunHealthy = (fastCatService as? FastCatVpnService)?.isTunActive()
+            ?: (options?.enable == false)
+        return GlobalState.runState.value == RunState.START &&
+                heartbeatFresh && tunHealthy &&
+                connectionHealth != VpnConnectionHealth.DISCONNECTED
+    }
+
+    fun getConnectionState(): String = connectionHealth.name.lowercase()
+
+    fun prepareForRecovery() {
+        connectionHealth = VpnConnectionHealth.RECOVERING
+        stopForegroundJob()
+        stopHeartbeatJob()
+        Core.stopTun()
+        (fastCatService as? FastCatVpnService)?.markTunStopped()
+        GlobalState.runState.value = RunState.PENDING
+        unbindServiceSafely()
+        fastCatService = null
+        isBind = false
     }
 
     private fun bindService() {
@@ -273,6 +663,40 @@ data object VpnPlugin : FlutterPlugin, MethodChannel.MethodCallHandler {
             true -> Intent(FastCatApplication.getAppContext(), FastCatVpnService::class.java)
             false -> Intent(FastCatApplication.getAppContext(), FastCatService::class.java)
         }
+        // A bound-only service can be reclaimed when the TV puts the activity
+        // in the background. Start it explicitly so Android can recreate it
+        // while the VPN is still expected to run.
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            ContextCompat.startForegroundService(FastCatApplication.getAppContext(), intent)
+        } else {
+            FastCatApplication.getAppContext().startService(intent)
+        }
         FastCatApplication.getAppContext().bindService(intent, connection, Context.BIND_AUTO_CREATE)
     }
+
+    private fun unbindServiceSafely() {
+        if (!isBind) return
+        runCatching {
+            FastCatApplication.getAppContext().unbindService(connection)
+        }
+        isBind = false
+    }
+
+    private const val TAG = "FastCatVpnPlugin"
+    private const val NOTIFICATION_RPC_TIMEOUT_MS = 3_000L
+    private const val HEARTBEAT_INTERVAL_MS = 15_000L
+    private const val HEARTBEAT_RPC_TIMEOUT_MS = 5_000L
+    private const val CORE_SHUTDOWN_TIMEOUT_MS = 3_000L
+    private const val SOFT_RECOVERY_TIMEOUT_MS = 5_000L
+    private const val HEARTBEAT_FAILURE_LIMIT = 3
+    private const val HEARTBEAT_STALE_AFTER_MS = 60_000L
+    private const val TV_IDLE_PROBE_AFTER_MS = 60_000L
+    private const val MOBILE_IDLE_PROBE_AFTER_MS = 120_000L
+    private const val DATA_PLANE_PROBE_MIN_INTERVAL_MS = 15_000L
+    private const val DATA_PLANE_PROBE_TIMEOUT_MS = 3_000L
+    private val DATA_PLANE_PROBE_URLS = listOf(
+        "https://connect.rom.miui.com/generate_204",
+        "https://wifi.vivo.com.cn/generate_204",
+        "https://connectivitycheck.platform.hicloud.com/generate_204",
+    )
 }

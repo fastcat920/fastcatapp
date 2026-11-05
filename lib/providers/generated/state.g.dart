@@ -23,7 +23,7 @@ final configStateProvider = AutoDisposeProvider<Config>.internal(
 // ignore: unused_element
 typedef ConfigStateRef = AutoDisposeProviderRef<Config>;
 String _$currentGroupsStateHash() =>
-    r'6222c006e1970e7435268d32903b9019cf1a4351';
+    r'd673959bc38519e149e6a35bb761079a32446c08';
 
 /// See also [currentGroupsState].
 @ProviderFor(currentGroupsState)
@@ -59,7 +59,7 @@ final navigationsStateProvider =
 // ignore: unused_element
 typedef NavigationsStateRef = AutoDisposeProviderRef<NavigationItemsState>;
 String _$currentNavigationsStateHash() =>
-    r'0eecc0ffef6e000ae45e069d1ad79f4da4a8f082';
+    r'996dee0bc9685fb5d45c0e35cbe844b91916e449';
 
 /// See also [currentNavigationsState].
 @ProviderFor(currentNavigationsState)
@@ -78,7 +78,7 @@ final currentNavigationsStateProvider =
 // ignore: unused_element
 typedef CurrentNavigationsStateRef
     = AutoDisposeProviderRef<NavigationItemsState>;
-String _$coreStateHash() => r'33f01ee9173525862c89522bf73b3174beb63daa';
+String _$coreStateHash() => r'a6fe664879a4beef17b68c4eda9881336155e5bf';
 
 /// See also [coreState].
 @ProviderFor(coreState)
@@ -110,7 +110,7 @@ final updateParamsProvider = AutoDisposeProvider<UpdateParams>.internal(
 @Deprecated('Will be removed in 3.0. Use Ref instead')
 // ignore: unused_element
 typedef UpdateParamsRef = AutoDisposeProviderRef<UpdateParams>;
-String _$proxyStateHash() => r'22478fb593aaca11dfe2cf64472013190475a5bc';
+String _$proxyStateHash() => r'2ac084e4f1b9fca9d9346baa42ef0123cdc17200';
 
 /// See also [proxyState].
 @ProviderFor(proxyState)
@@ -764,7 +764,7 @@ class _GetRealTestUrlProviderElement extends AutoDisposeProviderElement<String>
   String? get testUrl => (origin as GetRealTestUrlProvider).testUrl;
 }
 
-String _$getDelayHash() => r'b5920ac7de0aaadb8ff63fac993bd90ff87cd25a';
+String _$getDelayHash() => r'dce84ddf50c9db5a1a9b2fb87b1a9cf66d145a46';
 
 /// See also [getDelay].
 @ProviderFor(getDelay)
@@ -1779,7 +1779,7 @@ final layoutChangeProvider = AutoDisposeProvider<VM2?>.internal(
 @Deprecated('Will be removed in 3.0. Use Ref instead')
 // ignore: unused_element
 typedef LayoutChangeRef = AutoDisposeProviderRef<VM2?>;
-String _$checkIpHash() => r'07ebf8d032349e2b3adda483e68b1936ffbed68d';
+String _$checkIpHash() => r'f44fbacb373c85739a2c013e19b0696ae275ce1f';
 
 /// See also [checkIp].
 @ProviderFor(checkIp)
@@ -1795,7 +1795,7 @@ final checkIpProvider = AutoDisposeProvider<VM2<int, bool>>.internal(
 @Deprecated('Will be removed in 3.0. Use Ref instead')
 // ignore: unused_element
 typedef CheckIpRef = AutoDisposeProviderRef<VM2<int, bool>>;
-String _$genColorSchemeHash() => r'b18f15c938a8132ee4ed02cdfc02f3b9f01724e2';
+String _$genColorSchemeHash() => r'f743982b38a8d46042a518445dda1fa646775ddb';
 
 /// See also [genColorScheme].
 @ProviderFor(genColorScheme)
