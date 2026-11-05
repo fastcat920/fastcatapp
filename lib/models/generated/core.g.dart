@@ -297,7 +297,6 @@ const _$ActionMethodEnumMap = {
   ActionMethod.forceGc: 'forceGc',
   ActionMethod.shutdown: 'shutdown',
   ActionMethod.validateConfig: 'validateConfig',
-  ActionMethod.checkGeoData: 'checkGeoData',
   ActionMethod.updateConfig: 'updateConfig',
   ActionMethod.getConfig: 'getConfig',
   ActionMethod.getConfigContent: 'getConfigContent',

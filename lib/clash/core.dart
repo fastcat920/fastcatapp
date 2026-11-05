@@ -9,18 +9,11 @@ import 'package:fl_clash/common/common.dart';
 import 'package:fl_clash/enum/enum.dart';
 import 'package:fl_clash/models/models.dart';
 import 'package:fl_clash/state.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
-
-import 'geo_asset_store.dart';
+import 'package:path/path.dart';
 
 class ClashCore {
-  static final _geoAssets = GeoAssetStore(
-    loadAsset: (name) async {
-      final data = await rootBundle.load('assets/data/$name');
-      return data.buffer.asUint8List(data.offsetInBytes, data.lengthInBytes);
-    },
-    onRestored: (name) => commonPrint.log('[GeoData] restored bundled $name'),
-  );
   static ClashCore? _instance;
   late ClashHandlerInterface clashInterface;
   Timer? _logPollingTimer;
@@ -45,19 +38,39 @@ class ClashCore {
     return clashInterface.preload();
   }
 
-  static Future<void> initGeo({bool validate = true}) async {
+  static Future<void> initGeo() async {
     final homePath = await appPath.homeDirPath;
-    // The Android service isolate owns ClashLibHandler, not the main-isolate
-    // ClashLib singleton. Its quick-start path prepares assets before init.
-    final canUseMainCore = !(Platform.isAndroid && globalState.isService);
-    final nativeReady = validate && canUseMainCore && await clashCore.isInit;
-    await _geoAssets.ensure(homePath,
-        checkGeoData:
-            nativeReady ? clashCore.clashInterface.checkGeoData : null);
+    final homeDir = Directory(homePath);
+    final isExists = await homeDir.exists();
+    if (!isExists) {
+      await homeDir.create(recursive: true);
+    }
+    const geoFileNameList = [
+      mmdbFileName,
+      geoIpFileName,
+      geoSiteFileName,
+      asnFileName,
+    ];
+    for (final geoFileName in geoFileNameList) {
+      final geoFile = File(
+        join(homePath, geoFileName),
+      );
+      final isExists = await geoFile.exists();
+      if (isExists) {
+        continue;
+      }
+      try {
+        final data = await rootBundle.load('assets/data/$geoFileName');
+        List<int> bytes = data.buffer.asUint8List();
+        await geoFile.writeAsBytes(bytes, flush: true);
+      } on FlutterError {
+        commonPrint.log("Built-in geodata not found: $geoFileName");
+      }
+    }
   }
 
   Future<bool> init() async {
-    await initGeo(validate: false);
+    await initGeo();
     final homeDirPath = await appPath.homeDirPath;
     final initialized = await clashInterface.init(
       InitParams(
@@ -65,7 +78,6 @@ class ClashCore {
         version: globalState.appState.version,
       ),
     );
-    if (initialized) await initGeo();
     // 日志订阅依赖已经初始化完成的内核消息通道。旧顺序会在 Android
     // 冷启动时过早发送 startLog，且 openLogs 已为 true 时不会再补发。
     if (globalState.config.appSetting.openLogs) {
@@ -100,11 +112,8 @@ class ClashCore {
         data: json.encode({'log-level': level.name}),
       );
 
-  Future<String> setupConfig(
-    SetupParams setupParams, {
-    Duration timeout = const Duration(minutes: 2),
-  }) async {
-    return await clashInterface.setupConfig(setupParams, timeout: timeout);
+  Future<String> setupConfig(SetupParams setupParams) async {
+    return await clashInterface.setupConfig(setupParams);
   }
 
   Future<List<Group>> getProxiesGroups() async {

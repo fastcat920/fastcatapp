@@ -254,7 +254,6 @@ enum ActionMethod {
   forceGc,
   shutdown,
   validateConfig,
-  checkGeoData,
   updateConfig,
   getConfig,
   getConfigContent,

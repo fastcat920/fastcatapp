@@ -48,10 +48,6 @@ class XBoardConfigAccessor {
   // 远程配置 contact 字段
   String _crispWebsiteId = '';
   String _crispProxyUrl = '';
-  bool _fastCatSupportEnabled = false;
-  bool _fastCatSupportConfigured = false;
-  String _fastCatSupportBaseUrl = '';
-  String _fastCatSupportAppKey = '';
   String _salesmartlyToken = '';
   List<String> _websiteUrls = [];
   String _telegramGroupUrl = '';
@@ -378,14 +374,6 @@ class XBoardConfigAccessor {
   /// 获取 Crisp 反向代理地址（来自远程配置 contact.crisp_proxy_url）
   String get crispProxyUrl => _crispProxyUrl;
 
-  bool get fastCatSupportEnabled => _fastCatSupportEnabled;
-
-  bool get fastCatSupportConfigured => _fastCatSupportConfigured;
-
-  String get fastCatSupportBaseUrl => _fastCatSupportBaseUrl;
-
-  String get fastCatSupportAppKey => _fastCatSupportAppKey;
-
   /// 获取 Salesmartly 客服配置（来自远程配置 contact.salesmartly_token）
   /// 支持两种格式：
   /// - 新版：完整 JS URL，如 https://assets.salesmartly.com/js/project_XXXXX_XXXXX_XXXXXXXXXX.js
@@ -492,20 +480,6 @@ class XBoardConfigAccessor {
       final contact = configData['contact'] as Map<String, dynamic>? ?? {};
       _crispWebsiteId = contact['crisp_website_id'] as String? ?? '';
       _crispProxyUrl = contact['crisp_proxy_url'] as String? ?? '';
-      final rawFastCatSupport = contact['fastcat_support'];
-      _fastCatSupportConfigured = rawFastCatSupport is Map;
-      final fastCatSupport = rawFastCatSupport is Map
-          ? rawFastCatSupport.map(
-              (key, value) => MapEntry(key.toString(), value),
-            )
-          : const <String, dynamic>{};
-      _fastCatSupportBaseUrl =
-          fastCatSupport['base_url']?.toString().trim() ?? '';
-      _fastCatSupportAppKey =
-          fastCatSupport['app_key']?.toString().trim() ?? '';
-      _fastCatSupportEnabled = fastCatSupport['enabled'] != false &&
-          _fastCatSupportBaseUrl.isNotEmpty &&
-          _fastCatSupportAppKey.isNotEmpty;
       _salesmartlyToken = contact['salesmartly_token'] as String? ?? '';
       final rawWebsite = contact['website'];
       if (rawWebsite is String) {

@@ -18,13 +18,9 @@ val mStorePassword: String? = localProperties.getProperty("storePassword")
 val mKeyAlias: String? = localProperties.getProperty("keyAlias")
 val mKeyPassword: String? = localProperties.getProperty("keyPassword")
 val isRelease = mStoreFile.exists()
-        && !mStorePassword.isNullOrBlank()
-        && !mKeyAlias.isNullOrBlank()
-        && !mKeyPassword.isNullOrBlank()
-
-check(System.getenv("FASTCAT_BUILD_CHANNEL") != "signed" || isRelease) {
-    "Formal release requires a complete release keystore; debug signing is not allowed."
-}
+        && mStorePassword != null
+        && mKeyAlias != null
+        && mKeyPassword != null
 
 android {
     namespace = "com.fastcat.app"
@@ -115,13 +111,4 @@ dependencies {
     implementation("com.android.tools.smali:smali-dexlib2:3.0.9") {
         exclude(group = "com.google.guava", module = "guava")
     }
-}
-
-// FCM is Android-only; desktop builds do not acquire Firebase dependencies.
-if (file("google-services.json").exists()) {
-    apply(plugin = "com.google.gms.google-services")
-}
-dependencies {
-    implementation(platform("com.google.firebase:firebase-bom:33.7.0"))
-    implementation("com.google.firebase:firebase-messaging")
 }

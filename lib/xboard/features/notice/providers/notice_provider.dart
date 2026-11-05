@@ -81,10 +81,13 @@ class NoticeState {
 
 /// 公告Provider
 class NoticeNotifier extends StateNotifier<NoticeState> {
-  NoticeNotifier(this._ref) : super(const NoticeState(isLoading: true)) {
+  NoticeNotifier(this._ref) : super(const NoticeState()) {
     SchedulerBinding.instance.addPostFrameCallback((_) {
       Future<void>(() async {
-        await fetchNotices();
+        if (!await _ensureScope()) return;
+        await _loadDismissedIds();
+        await _loadPopupShownIds();
+        await _loadCachedNotices();
       });
     });
   }
@@ -97,7 +100,7 @@ class NoticeNotifier extends StateNotifier<NoticeState> {
     if (scope != _scope) {
       _scope = scope;
       _lastFetchedAt = null;
-      state = const NoticeState(isLoading: true);
+      state = const NoticeState();
     }
     return scope != null;
   }
@@ -158,16 +161,10 @@ class NoticeNotifier extends StateNotifier<NoticeState> {
   }
 
   Future<void> _fetchNotices({required bool forceRefresh}) async {
-    if (!await _ensureScope()) {
-      if (mounted) state = state.copyWith(isLoading: false);
-      return;
-    }
+    if (!await _ensureScope()) return;
     final scope = _scope;
     await _loadDismissedIds();
     await _loadPopupShownIds();
-    // Restore persisted content before starting any network request. Refreshes
-    // keep the current content visible, including when the request fails.
-    await _loadCachedNotices();
     if (!await _isCurrent(scope)) return;
     // 缓存命中：已有数据且未超过 5 分钟，且不是强制刷新
     if (!forceRefresh &&

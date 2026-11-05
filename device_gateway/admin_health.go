@@ -201,7 +201,7 @@ func (s *Server) probeAdminOSSSource(
 		item.Error = err.Error()
 		return adminOSSProbeResult{item: item}
 	}
-	decrypted, _, err := decodeOSSRaw(body, xorKey)
+	decrypted, err := xorDecrypt(body, xorKey)
 	if err != nil {
 		item.Status = "decrypt_error"
 		item.Error = err.Error()

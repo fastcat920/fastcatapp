@@ -12,10 +12,14 @@ struct TVLoginView: View {
 
   @State private var screen: TVAuthScreen = .login
   @State private var loginMethod: TVLoginMethod = .qr
-  @StateObject private var qr = TVQRLoginCoordinator()
-  @State private var formLoading = false
+  @State private var challenge: QRLoginChallenge?
+  @State private var remainingSeconds = 0
+  @State private var isLoading = false
   @State private var errorMessage: String?
   @State private var successMessage: String?
+  @State private var pollTask: Task<Void, Never>?
+  @State private var countdownTask: Task<Void, Never>?
+  @State private var lastQRRefreshAt: Date?
   @State private var showLanguagePicker = false
   @State private var guestConfig = TVGuestConfig(requiresEmailVerification: false, requiresInviteCode: false)
 
@@ -34,10 +38,7 @@ struct TVLoginView: View {
   @FocusState private var englishLanguageFocused: Bool
 
   private var isChinese: Bool { TVLanguage.resolved(from: language) == .simplifiedChinese }
-  private var challenge: QRLoginChallenge? { qr.challenge }
-  private var remainingSeconds: Int { qr.remainingSeconds }
-  private var isLoading: Bool { formLoading || qr.isLoading }
-  private var qrExpired: Bool { qr.isExpired }
+  private var qrExpired: Bool { challenge != nil && remainingSeconds <= 0 }
 
   var body: some View {
     TVDesignCanvas {
@@ -61,20 +62,21 @@ struct TVLoginView: View {
     }
     .task {
       restoreSavedCredentials()
-      await activateQR()
+      if challenge == nil { await refreshChallenge(userInitiated: false) }
       await loadGuestConfig()
     }
     .onDisappear {
-      qr.deactivate()
-    }
-    .onReceive(qr.$errorMessage) { value in
-      if screen == .login, loginMethod == .qr { errorMessage = value }
+      pollTask?.cancel()
+      countdownTask?.cancel()
+      if let challenge, !qrExpired {
+        Task { try? await GatewayClient.configured().cancelQRSession(challenge) }
+      }
     }
     .onExitCommand {
       if showLanguagePicker {
         showLanguagePicker = false
       } else if screen != .login {
-        open(.login)
+        screen = .login
       }
     }
     .onChange(of: loginMethodFocused) { _, focused in
@@ -194,9 +196,10 @@ struct TVLoginView: View {
     errorMessage = nil
     successMessage = nil
     if method == .qr {
-      Task { await activateQR() }
+      if let challenge, !qrExpired { beginPolling(challenge) }
+      else { Task { await refreshChallenge(userInitiated: false) } }
     } else {
-      qr.deactivate()
+      pollTask?.cancel()
     }
   }
 
@@ -504,25 +507,83 @@ struct TVLoginView: View {
     confirmPassword = ""
     emailCode = ""
     inviteCode = ""
-    if destination == .login, loginMethod == .qr { Task { await activateQR() } }
-    else { qr.deactivate() }
-  }
-
-  @MainActor
-  private func activateQR() async {
-    guard screen == .login, loginMethod == .qr else { return }
-    await qr.activate { token, email in
-      guard screen == .login, loginMethod == .qr, !session.isSignedIn else { return }
-      session.signIn(token: token, email: email)
-    }
+    if destination == .login, loginMethod == .qr, let challenge, !qrExpired { beginPolling(challenge) }
+    else { pollTask?.cancel() }
   }
 
   @MainActor
   private func refreshChallenge(userInitiated: Bool) async {
-    guard !formLoading else { return }
+    guard !isLoading else { return }
+    if userInitiated, let lastQRRefreshAt,
+       Date().timeIntervalSince(lastQRRefreshAt) < 5, !qrExpired { return }
+    isLoading = true
+    errorMessage = nil
     successMessage = nil
-    await qr.refresh(userInitiated: userInitiated)
-    if qr.challenge != nil { qrFocused = true }
+    pollTask?.cancel()
+    countdownTask?.cancel()
+    let previous = challenge
+    do {
+      let client = try await GatewayClient.configured()
+      if let previous, previous.expiresAt > Date() {
+        try await client.cancelQRSession(previous)
+      }
+      let next = try await client.createQRSession()
+      challenge = next
+      lastQRRefreshAt = Date()
+      updateRemainingTime(for: next)
+      beginCountdown(next)
+      beginPolling(next)
+      qrFocused = true
+    } catch {
+      errorMessage = error.localizedDescription
+      if let previous { updateRemainingTime(for: previous) }
+    }
+    isLoading = false
+  }
+
+  private func beginCountdown(_ challenge: QRLoginChallenge) {
+    countdownTask?.cancel()
+    countdownTask = Task {
+      while !Task.isCancelled {
+        await MainActor.run { updateRemainingTime(for: challenge) }
+        if challenge.expiresAt <= Date() {
+          pollTask?.cancel()
+          return
+        }
+        try? await Task.sleep(for: .seconds(1))
+      }
+    }
+  }
+
+  @MainActor
+  private func updateRemainingTime(for challenge: QRLoginChallenge) {
+    remainingSeconds = max(0, Int(ceil(challenge.expiresAt.timeIntervalSinceNow)))
+  }
+
+  private func beginPolling(_ challenge: QRLoginChallenge) {
+    pollTask?.cancel()
+    guard challenge.expiresAt > Date(), loginMethod == .qr, screen == .login else { return }
+    pollTask = Task {
+      while !Task.isCancelled, challenge.expiresAt > Date() {
+        do {
+          let client = try await GatewayClient.configured()
+          let status = try await client.pollQRSession(challenge)
+          if status.status == "expired" {
+            await MainActor.run { remainingSeconds = 0 }
+            return
+          }
+          if status.status == "approved", let login = status.login,
+             let token = login.authData ?? login.token, !token.isEmpty {
+            await MainActor.run { session.signIn(token: token, email: login.email) }
+            return
+          }
+        } catch {
+          await MainActor.run { errorMessage = error.localizedDescription }
+          return
+        }
+        try? await Task.sleep(for: .seconds(2))
+      }
+    }
   }
 
   private func loginWithAccount() {
@@ -531,7 +592,7 @@ struct TVLoginView: View {
       errorMessage = tvText("请输入邮箱和密码", "Enter your email and password", language: language)
       return
     }
-    formLoading = true
+    isLoading = true
     errorMessage = nil
     Task {
       do {
@@ -548,11 +609,11 @@ struct TVLoginView: View {
           KeychainStore.delete(key: "saved-login-password")
         }
         await MainActor.run {
-          formLoading = false
+          isLoading = false
           session.signIn(token: token, email: result.email ?? normalizedEmail)
         }
       } catch {
-        await MainActor.run { formLoading = false; errorMessage = error.localizedDescription }
+        await MainActor.run { isLoading = false; errorMessage = error.localizedDescription }
       }
     }
   }
@@ -592,7 +653,7 @@ struct TVLoginView: View {
       errorMessage = tvText("请输入邀请码", "Enter an invite code", language: language)
       return
     }
-    formLoading = true
+    isLoading = true
     errorMessage = nil
     Task {
       do {
@@ -608,13 +669,13 @@ struct TVLoginView: View {
           )
         }
         await MainActor.run {
-          formLoading = false
+          isLoading = false
           successMessage = isReset
             ? tvText("密码已重置，请返回登录", "Password reset. Return to sign in.", language: language)
             : tvText("注册成功，请返回登录", "Account created. Return to sign in.", language: language)
         }
       } catch {
-        await MainActor.run { formLoading = false; errorMessage = error.localizedDescription }
+        await MainActor.run { isLoading = false; errorMessage = error.localizedDescription }
       }
     }
   }

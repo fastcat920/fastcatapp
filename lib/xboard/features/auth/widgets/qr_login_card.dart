@@ -20,13 +20,10 @@ class _QrLoginCard extends StatefulWidget {
 class _QrLoginCardState extends State<_QrLoginCard> {
   static const _refreshCooldown = Duration(seconds: 5);
 
-  final _attempt = QrLoginAttemptController();
   QrLoginChallenge? _challenge;
   Timer? _pollTimer;
   Timer? _countdownTimer;
   bool _loading = false;
-  bool _authorizing = false;
-  int _creationGeneration = 0;
   bool _expired = false;
   Duration _remaining = Duration.zero;
   DateTime? _refreshAvailableAt;
@@ -35,14 +32,12 @@ class _QrLoginCardState extends State<_QrLoginCard> {
   @override
   void initState() {
     super.initState();
-    _attempt.setEnabled(widget.enabled);
     WidgetsBinding.instance.addPostFrameCallback((_) => _create());
   }
 
   @override
   void didUpdateWidget(covariant _QrLoginCard oldWidget) {
     super.didUpdateWidget(oldWidget);
-    _attempt.setEnabled(widget.enabled);
     if (!oldWidget.enabled && widget.enabled) {
       final challenge = _challenge;
       if (challenge == null) {
@@ -53,20 +48,12 @@ class _QrLoginCardState extends State<_QrLoginCard> {
         _startTimers(challenge);
       }
     }
-    if (oldWidget.enabled && !widget.enabled) {
-      _creationGeneration++;
-      _stopTimers();
-      // Returning to QR login gets a fresh challenge. An in-flight poll may
-      // already have consumed the hidden QR at the gateway.
-      _challenge = null;
-      if (!_authorizing) _loading = false;
-    }
+    if (oldWidget.enabled && !widget.enabled) _stopTimers();
   }
 
   @override
   void dispose() {
     _stopTimers();
-    _attempt.dispose();
     super.dispose();
   }
 
@@ -85,7 +72,6 @@ class _QrLoginCardState extends State<_QrLoginCard> {
     _stopTimers();
     _refreshAvailableAt = DateTime.now().add(_refreshCooldown);
     _updateCountdown();
-    if (_expired) return;
     _countdownTimer = Timer.periodic(
       const Duration(seconds: 1),
       (_) => _updateCountdown(),
@@ -105,16 +91,12 @@ class _QrLoginCardState extends State<_QrLoginCard> {
       _remaining = Duration(seconds: seconds);
       _expired = expired;
     });
-    if (expired) {
-      _stopTimers();
-      _attempt.invalidate();
-    }
+    if (expired) _stopTimers();
   }
 
   void _markExpired() {
     if (!mounted) return;
     _stopTimers();
-    _attempt.invalidate();
     setState(() {
       _remaining = Duration.zero;
       _expired = true;
@@ -122,27 +104,35 @@ class _QrLoginCardState extends State<_QrLoginCard> {
   }
 
   Future<void> _create({bool invalidateCurrent = false}) async {
-    if (!mounted || _loading || _authorizing || !widget.enabled) return;
-    final generation = ++_creationGeneration;
+    if (_loading || !widget.enabled) return;
     final previous = _challenge;
-    _stopTimers();
+    final previousWasExpired = previous != null && _hasExpired(previous);
+    var previousInvalidated = previous == null;
     setState(() {
       _loading = true;
       _error = null;
-      _challenge = null;
-      _remaining = Duration.zero;
-      _expired = false;
+      if (previousWasExpired) {
+        _challenge = null;
+        _remaining = Duration.zero;
+        _expired = false;
+      }
     });
     try {
-      final challenge =
-          await _attempt.create(invalidateCurrent: invalidateCurrent);
-      if (!mounted ||
-          !widget.enabled ||
-          generation != _creationGeneration ||
-          challenge == null ||
-          !identical(challenge, _attempt.challenge)) {
-        return;
+      if (invalidateCurrent && previous != null) {
+        await QrLoginService.cancel(previous);
+        previousInvalidated = true;
       }
+      if (invalidateCurrent && previous != null && previousInvalidated) {
+        _stopTimers();
+        if (!mounted) return;
+        setState(() {
+          _challenge = null;
+          _remaining = Duration.zero;
+          _expired = false;
+        });
+      }
+      final challenge = await QrLoginService.create();
+      if (!mounted) return;
       setState(() {
         _challenge = challenge;
         _loading = false;
@@ -151,13 +141,16 @@ class _QrLoginCardState extends State<_QrLoginCard> {
       });
       _startTimers(challenge);
     } catch (_) {
-      if (mounted && widget.enabled && generation == _creationGeneration) {
+      if (mounted) {
         setState(() {
           _loading = false;
-          // Keep the old image visibly unusable; never restart polling it.
-          _challenge = previous;
-          _remaining = Duration.zero;
-          _expired = true;
+          if (previousWasExpired) {
+            _challenge = previous;
+            _remaining = Duration.zero;
+            _expired = true;
+          } else if (previousInvalidated) {
+            _challenge = null;
+          }
           _error = invalidateCurrent
               ? AppLocalizations.of(context).xboardQrRefreshFailed
               : AppLocalizations.of(context).xboardQrLoadFailed;
@@ -167,7 +160,7 @@ class _QrLoginCardState extends State<_QrLoginCard> {
   }
 
   Future<void> _refresh() async {
-    if (_loading || _authorizing || !widget.enabled) return;
+    if (_loading || !widget.enabled) return;
     final availableAt = _refreshAvailableAt;
     if (!_expired &&
         availableAt != null &&
@@ -184,37 +177,22 @@ class _QrLoginCardState extends State<_QrLoginCard> {
     final challenge = _challenge;
     if (!widget.enabled || challenge == null || _loading || _expired) return;
     try {
-      final result = await _attempt.poll();
-      if (result == null ||
-          !mounted ||
-          !widget.enabled ||
-          !identical(challenge, _challenge) ||
-          _expired ||
-          _loading ||
-          _hasExpired(challenge)) {
-        return;
-      }
+      final result = await QrLoginService.poll(challenge);
+      if (result == null) return;
       _stopTimers();
-      _authorizing = true;
+      if (!mounted) return;
       setState(() => _loading = true);
-      var success = false;
-      try {
-        success = await _attempt.authorize(result, widget.onAuthorized);
-      } finally {
-        _authorizing = false;
-        if (mounted) {
-          setState(() {
-            _loading = false;
-            if (!success) {
-              _error = AppLocalizations.of(context).xboardQrLoginFailed;
-              _remaining = Duration.zero;
-              _expired = true;
-            }
-          });
-        }
+      final success = await widget.onAuthorized(result);
+      if (mounted && !success) {
+        setState(() {
+          _loading = false;
+          _error = AppLocalizations.of(context).xboardQrLoginFailed;
+          _remaining = Duration.zero;
+          _expired = true;
+        });
       }
     } on QrLoginExpiredException {
-      if (mounted && identical(challenge, _challenge)) _markExpired();
+      _markExpired();
     } catch (_) {
       // An expired/consumed challenge is replaced explicitly so transient
       // polling failures do not make the login page flicker.

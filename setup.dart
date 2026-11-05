@@ -356,8 +356,7 @@ class Build {
     return corePaths;
   }
 
-  static buildHelper(Target target, String token,
-      {String clientSha256 = ''}) async {
+  static buildHelper(Target target, String token) async {
     await exec(
       [
         "cargo",
@@ -368,7 +367,6 @@ class Build {
       ],
       environment: {
         "TOKEN": token,
-        "CLIENT_SHA256": clientSha256,
       },
       name: "build helper",
       workingDirectory: _servicesDir,
@@ -999,8 +997,6 @@ class BuildCommand extends Command {
   String get _dartDefinesArgs {
     _validateRemoteConfigPublicKey();
     const keys = [
-      'FASTCAT_BUILD_COMMIT',
-      'FASTCAT_BUILD_CHANNEL',
       'XOR_KEY',
       'REMOTE_CONFIG_PUBLIC_KEY',
       'FASTCAT_KEY_CURRENT_ID',
@@ -1053,8 +1049,6 @@ class BuildCommand extends Command {
   List<String> _dartDefineList(String env) {
     _validateRemoteConfigPublicKey();
     const keys = [
-      'FASTCAT_BUILD_COMMIT',
-      'FASTCAT_BUILD_CHANNEL',
       'XOR_KEY',
       'REMOTE_CONFIG_PUBLIC_KEY',
       'FASTCAT_KEY_CURRENT_ID',
@@ -1273,8 +1267,7 @@ end tell
     // Distributor 0.6.6 splits --build-dart-define values on every '=' and
     // silently drops Base64 padding. Pass a JSON file straight to Flutter.
     final defines = dartDefinesToMap(_dartDefineList(env));
-    final temp =
-        await Directory.systemTemp.createTemp('fastcat-build-defines-');
+    final temp = await Directory.systemTemp.createTemp('fastcat-build-defines-');
     final definesFile = File(join(temp.path, 'defines.json'));
     try {
       await definesFile.writeAsString(jsonEncode(defines));
@@ -1290,10 +1283,8 @@ end tell
           '--no-version-check',
           'package',
           '--skip-clean',
-          '--platform',
-          target.name,
-          '--targets',
-          targets,
+          '--platform', target.name,
+          '--targets', targets,
           '--flutter-build-args=verbose,dart-define-from-file=${definesFile.path}',
           ...args,
         ],
@@ -1301,15 +1292,10 @@ end tell
       );
       if (target == Target.linux) {
         final generated = File(join(
-          current,
-          'linux',
-          'flutter',
-          'ephemeral',
-          'generated_config.cmake',
+          current, 'linux', 'flutter', 'ephemeral', 'generated_config.cmake',
         ));
         verifyCompiledDartDefines(await generated.readAsString(), defines);
-        print(
-            '[setup.dart] Linux build parameters verified (${defines.length} keys)');
+        print('[setup.dart] Linux build parameters verified (${defines.length} keys)');
       }
     } finally {
       await temp.delete(recursive: true);
@@ -1829,15 +1815,6 @@ end tell
   Future<void> run() async {
     final mode = target == Target.android ? Mode.lib : Mode.core;
     final String out = argResults?["out"] ?? (target.same ? "app" : "core");
-    final buildChannel = Platform.environment['FASTCAT_BUILD_CHANNEL'] ?? 'local';
-    if (!const {'local', 'normal', 'signed'}.contains(buildChannel)) {
-      throw StateError('FASTCAT_BUILD_CHANNEL must be local, normal or signed');
-    }
-    if (out == 'app' && buildChannel == 'signed' &&
-        (target == Target.windows || target == Target.macos)) {
-      throw StateError('Signed ${target.name} packaging requires a verified production signing pipeline. '
-          'Normal builds remain available. For Windows, sign the runner before binding the Helper client hash.');
-    }
     final rawArchName = argResults?["arch"];
     final archName = target == Target.macos &&
             (rawArchName == null || rawArchName.toString().trim().isEmpty)
@@ -1938,16 +1915,6 @@ end tell
           ],
           name: "build windows app",
         );
-        // The bootstrap helper cannot authorize callers. Bind the final helper
-        // to this exact runner after Flutter has produced it, then replace both
-        // the build input and the installed bundle. No public shared secret.
-        final releaseDir = join('build', 'windows',
-            arch == Arch.arm64 ? 'arm64' : 'x64', 'runner', 'Release');
-        final runner = join(releaseDir, '${Build.appNameEn}.exe');
-        await Build.buildHelper(target, token,
-            clientSha256: await Build.calcSha256(runner));
-        await File(join(Build.outDir, target.name, 'fastcatHelperService.exe'))
-            .copy(join(releaseDir, 'fastcatHelperService.exe'));
         // Windows release artifacts are produced by Inno Setup in CI. Keep the
         // architecture-specific EXE installers only; do not also build a
         // portable ZIP containing the same payload.

@@ -288,7 +288,6 @@ dependencies = [
  "tokio",
  "warp",
  "windows-service",
- "windows-sys",
 ]
 
 [[package]]

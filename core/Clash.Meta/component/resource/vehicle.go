@@ -19,7 +19,8 @@ import (
 const (
 	DefaultHttpTimeout = time.Second * 20
 
-	dirMode os.FileMode = 0o755
+	fileMode os.FileMode = 0o666
+	dirMode  os.FileMode = 0o755
 )
 
 var (
@@ -35,10 +36,6 @@ func SetETag(b bool) {
 }
 
 func safeWrite(path string, buf []byte) error {
-	encoded, err := encryptProviderCache(path, buf)
-	if err != nil {
-		return err
-	}
 	dir := filepath.Dir(path)
 
 	if _, err := os.Stat(dir); os.IsNotExist(err) {
@@ -47,24 +44,7 @@ func safeWrite(path string, buf []byte) error {
 		}
 	}
 
-	// Atomic replacement: a crash cannot leave half an encrypted envelope.
-	temp, err := os.CreateTemp(dir, ".provider-*")
-	if err != nil {
-		return err
-	}
-	defer os.Remove(temp.Name())
-	if _, err = temp.Write(encoded); err != nil {
-		temp.Close()
-		return err
-	}
-	if err = temp.Sync(); err != nil {
-		temp.Close()
-		return err
-	}
-	if err = temp.Close(); err != nil {
-		return err
-	}
-	return os.Rename(temp.Name(), path)
+	return os.WriteFile(path, buf, fileMode)
 }
 
 type FileVehicle struct {
@@ -84,7 +64,7 @@ func (f *FileVehicle) Url() string {
 }
 
 func (f *FileVehicle) Read(ctx context.Context, oldHash utils.HashType) (buf []byte, hash utils.HashType, err error) {
-	buf, err = readProviderCache(f.path, false)
+	buf, err = os.ReadFile(f.path)
 	if err != nil {
 		return
 	}

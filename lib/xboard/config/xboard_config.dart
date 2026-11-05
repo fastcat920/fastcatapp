@@ -666,19 +666,6 @@ class XBoardConfig {
   /// 为空字符串表示直接使用官方 Crisp 域名
   static String get crispProxyUrl => _instance?.crispProxyUrl ?? '';
 
-  /// FastCat Support 客服平台配置（远程 contact.fastcat_support）。
-  static bool get fastCatSupportEnabled =>
-      _instance?.fastCatSupportEnabled ?? false;
-
-  static bool get fastCatSupportConfigured =>
-      _instance?.fastCatSupportConfigured ?? false;
-
-  static String get fastCatSupportBaseUrl =>
-      _instance?.fastCatSupportBaseUrl ?? '';
-
-  static String get fastCatSupportAppKey =>
-      _instance?.fastCatSupportAppKey ?? '';
-
   /// 获取 Salesmartly 客服配置（来自远程配置 contact.salesmartly_token）
   /// 支持两种格式：
   /// - 新版：完整 JS URL，如 https://assets.salesmartly.com/js/project_XXXXX_XXXXX_XXXXXXXXXX.js
@@ -688,9 +675,7 @@ class XBoardConfig {
 
   /// 是否有任何客服渠道已配置（Salesmartly 或 Crisp）
   static bool get hasCustomerService =>
-      fastCatSupportEnabled ||
-      salesmartlyToken.isNotEmpty ||
-      crispWebsiteId.isNotEmpty;
+      salesmartlyToken.isNotEmpty || crispWebsiteId.isNotEmpty;
 
   /// 获取邀请链接自定义域名（来自远程配置 contact.invite_domain）
   /// 为空字符串表示使用面板域名拼接邀请链接

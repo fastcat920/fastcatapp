@@ -4,14 +4,12 @@
 
 list(APPEND FLUTTER_PLUGIN_LIST
   app_links
-  audioplayers_windows
   connectivity_plus
   desktop_webview_window
   dynamic_color
   file_selector_windows
   flutter_inappwebview_windows
   flutter_js
-  flutter_secure_storage_windows
   fullscreen_window
   hotkey_manager_windows
   proxy

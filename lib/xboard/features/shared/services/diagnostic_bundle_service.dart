@@ -2,7 +2,6 @@ import 'dart:io';
 
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:fl_clash/common/common.dart';
-import 'package:fl_clash/common/build_identity.dart';
 import 'package:fl_clash/enum/enum.dart';
 import 'package:fl_clash/l10n/l10n.dart';
 import 'package:fl_clash/mihomo/mihomo.dart';
@@ -201,7 +200,6 @@ class DiagnosticBundleService {
         ..writeln(
           '${l10n.xboardStreamingReportVersion}: ${_clientVersionLabel()}',
         )
-        ..writeln('build_identity: ${BuildIdentity.label}')
         ..writeln(
           '${l10n.xboardStreamingReportSystem}: ${_systemVersionLabel()}',
         )
@@ -401,7 +399,6 @@ class DiagnosticBundleService {
         '${l10n.xboardStreamingReportVersion}: '
         '${_clientVersionLabel(clientVersion)}',
       )
-      ..writeln('build_identity: ${BuildIdentity.label}')
       ..writeln(
         '${l10n.xboardStreamingReportSystem}: '
         '${_systemVersionLabel(systemVersion)}',
@@ -534,11 +531,6 @@ class DiagnosticBundleService {
       l10n.xboardNetworkDiagnosticsProxyHttps,
       snapshot.proxyResults,
     );
-    _writeNetworkItems(
-      buffer,
-      l10n.xboardNetworkDiagnosticsLocalProxy,
-      snapshot.localProxyResults,
-    );
   }
 
   static void _writeSection(
@@ -588,10 +580,6 @@ class DiagnosticBundleService {
     AppLocalizations l10n,
   ) {
     return switch (snapshot.conclusionReason) {
-      NetworkDiagnosticReason.configuration ||
-      NetworkDiagnosticReason.coreUnavailable ||
-      NetworkDiagnosticReason.routeUncertain =>
-        snapshot.conclusion,
       NetworkDiagnosticReason.noNetwork ||
       NetworkDiagnosticReason.disconnectedDns ||
       NetworkDiagnosticReason.disconnectedNetwork ||
@@ -605,8 +593,7 @@ class DiagnosticBundleService {
       NetworkDiagnosticReason.protocol ||
       NetworkDiagnosticReason.udp ||
       NetworkDiagnosticReason.nodeUnknown ||
-      NetworkDiagnosticReason.proxy ||
-      NetworkDiagnosticReason.localProxy =>
+      NetworkDiagnosticReason.proxy =>
         l10n.xboardDiagnosticSuggestionNode,
       NetworkDiagnosticReason.disconnectedHealthy ||
       NetworkDiagnosticReason.proxyWorking =>

@@ -1,11 +1,3 @@
-import 'package:fl_clash/xboard/features/auth/services/support_push_service.dart';
-import 'package:http/io_client.dart';
-import 'package:fl_clash/xboard/features/auth/services/support_proxy_repairs.dart';
-import 'package:fl_clash/xboard/features/auth/services/support_connection_repairs.dart';
-import 'package:fl_clash/common/sensitive_masker.dart';
-import 'package:fl_clash/xboard/features/auth/services/support_assistance_service.dart';
-import 'package:fl_clash/common/picker.dart' as app_picker;
-import 'package:fastcat_support/fastcat_support.dart' as fc;
 import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
@@ -14,8 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:desktop_webview_window/desktop_webview_window.dart';
-import 'package:fl_clash/common/common.dart' show system, appLocalizations;
-import 'package:fl_clash/l10n/l10n.dart';
+import 'package:fl_clash/common/common.dart' show system;
 import 'package:fl_clash/common/color.dart';
 import 'package:fl_clash/common/path.dart';
 import 'package:fl_clash/providers/providers.dart';
@@ -37,9 +28,6 @@ import 'package:flutter_inappwebview/flutter_inappwebview.dart' as iaw;
 import 'package:flutter/services.dart';
 import 'package:flutter_xboard_sdk/flutter_xboard_sdk.dart';
 import 'package:go_router/go_router.dart';
-import 'package:tgo_widget/tgo_widget.dart';
-import 'package:fl_clash/xboard/config/utils/config_file_loader.dart'
-    as local_config;
 
 const _logger = FileLogger('customer_service_helper.dart');
 const _deviceGatewayApiPrefix = gatewayApiPrefix;
@@ -106,69 +94,6 @@ class CustomerServiceSessionState {
 /// Android/iOS/macOS/Linux → 内嵌 WebView（webview_flutter）
 /// Windows → 内嵌 WebView2 侧边面板（flutter_inappwebview）
 class CustomerServiceHelper {
-  static final _unreadEvents = StreamController<int>.broadcast();
-  static int supportUnreadCount = 0;
-  static Stream<int> get supportUnreadCountStream => _unreadEvents.stream;
-  static fc.FastCatSupport? _support;
-  static SupportPushService? _pushService;
-  static StreamSubscription<int>? _supportUnread;
-  static StreamSubscription<Map<String, dynamic>>? _supportIncoming;
-  static fc.SupportNotificationSound? _supportTone;
-  static StreamSubscription<fc.FastCatConnectionStatus>? _supportMonitor;
-  static int _actualSupportUnread = 0;
-  static AppLifecycleListener? _badgeLifecycle;
-  static void _refreshSupportBadge() {
-    // Desktop windows may be inactive while their conversation stays visible.
-    // Only hiding the support view should expose its unread badge.
-    final visibleCount =
-        isEmbeddedCustomerServiceVisible ? 0 : _actualSupportUnread;
-    if (supportUnreadCount == visibleCount) return;
-    supportUnreadCount = visibleCount;
-    _unreadEvents.add(visibleCount);
-  }
-
-  static void _publishUnread(int count) {
-    _actualSupportUnread = count;
-    _badgeLifecycle ??=
-        AppLifecycleListener(onStateChange: (_) => _refreshSupportBadge());
-    _refreshSupportBadge();
-  }
-
-  static Future<void> disposeSupport() async {
-    try {
-      for (var attempt = 0; attempt < 3; attempt++) {
-        try {
-          await _support?.client.unregisterPushDevice();
-          break;
-        } catch (_) {
-          if (attempt == 2) rethrow;
-          await Future<void>.delayed(Duration(seconds: attempt + 1));
-        }
-      }
-    } finally {
-      _closeEmbeddedCustomerService();
-    }
-  }
-
-  static void _releaseSupport() {
-    _pushService?.close();
-    _pushService = null;
-    SupportAssistanceService.instance.clear();
-    unawaited(_supportIncoming?.cancel());
-    _supportIncoming = null;
-    _supportTone?.dispose();
-    _supportTone = null;
-    unawaited(_supportUnread?.cancel());
-    unawaited(_supportMonitor?.cancel());
-    _supportUnread = null;
-    _supportMonitor = null;
-    _support?.close();
-    _support = null;
-    _publishUnread(0);
-    _badgeLifecycle?.dispose();
-    _badgeLifecycle = null;
-  }
-
   CustomerServiceHelper._();
 
   static const MethodChannel _androidBackChannel =
@@ -199,13 +124,9 @@ class CustomerServiceHelper {
   static Timer? _embeddedCustomerServiceCloseTimer;
   static String? _embeddedCustomerServiceSignature;
   static DateTime? _embeddedCustomerServiceHiddenAt;
-  static _FastCatSupportConfig? _fastCatSupportConfig;
 
-  /// FastCat Support 有本地兜底配置，Crisp 保留为故障回退渠道。
-  static bool get isAvailable =>
-      XBoardConfig.fastCatSupportEnabled ||
-      XBoardConfig.crispWebsiteId.isNotEmpty ||
-      _fastCatSupportConfig != null;
+  /// 是否有任何客服渠道可用（仅远程 Crisp）
+  static bool get isAvailable => XBoardConfig.crispWebsiteId.isNotEmpty;
 
   static bool get isEmbeddedCustomerServiceVisible {
     return _embeddedCustomerServiceState?.value.isVisible ?? false;
@@ -1047,12 +968,7 @@ class CustomerServiceHelper {
             },
             child: Material(
               type: MaterialType.transparency,
-              child: Navigator(
-                onGenerateRoute: (_) => MaterialPageRoute<void>(
-                  builder: (_) =>
-                      builder(_hideEmbeddedCustomerService, session),
-                ),
-              ),
+              child: builder(_hideEmbeddedCustomerService, session),
             ),
           ),
         ),
@@ -1061,8 +977,6 @@ class CustomerServiceHelper {
 
     _embeddedCustomerServiceEntry = entry;
     _embeddedCustomerServiceState = session;
-    session.addListener(_refreshSupportBadge);
-    _refreshSupportBadge();
     _embeddedCustomerServiceSignature = signature;
     _embeddedCustomerServiceHiddenAt = null;
     _embeddedCustomerServiceCloseTimer?.cancel();
@@ -1084,17 +998,9 @@ class CustomerServiceHelper {
   }
 
   static void _hideEmbeddedCustomerService() {
-    unawaited(
-        _support?.client.setPushChatVisible(false).catchError((Object _) {}));
     final state = _embeddedCustomerServiceState;
     if (state == null) return;
     if (!state.value.isVisible) return;
-    // Messages received while the chat is open are already seen by the user.
-    // Clear their badge when the embedded chat is dismissed.
-    if (_embeddedCustomerServiceSignature?.contains('|fastcat-support|') ==
-        true) {
-      TgoWidget.clearUnreadCount();
-    }
     state.value = state.value.copyWith(isVisible: false);
     _embeddedCustomerServiceHiddenAt = DateTime.now();
     _embeddedCustomerServiceCloseTimer?.cancel();
@@ -1108,12 +1014,10 @@ class CustomerServiceHelper {
   }
 
   static void _closeEmbeddedCustomerService() {
-    _releaseSupport();
     _embeddedCustomerServiceCloseTimer?.cancel();
     _embeddedCustomerServiceCloseTimer = null;
     _embeddedCustomerServiceHiddenAt = null;
     _embeddedCustomerServiceSignature = null;
-    _embeddedCustomerServiceState?.removeListener(_refreshSupportBadge);
     _embeddedCustomerServiceState?.dispose();
     _embeddedCustomerServiceState = null;
     _embeddedCustomerServiceEntry?.remove();
@@ -1122,16 +1026,9 @@ class CustomerServiceHelper {
 
   /// 打开客服页面
   static Future<void> open(BuildContext context) async {
-    if (await _openFastCatSupport(context)) return;
-    if (!context.mounted) return;
-
     final crispId = await _resolveCrispWebsiteId();
     if (crispId.isEmpty) {
-      if (context.mounted) {
-        XBoardNotification.showError(
-          AppLocalizations.of(context).xboardCustomerServiceNotConfigured,
-        );
-      }
+      XBoardNotification.showError('未配置在线客服');
       return;
     }
     if (!context.mounted) return;
@@ -1153,311 +1050,6 @@ class CustomerServiceHelper {
         if (!context.mounted || ipData == null) return null;
         return _buildCrispUserScript(context, ipData: ipData);
       },
-    );
-  }
-
-  static Future<bool> _openFastCatSupport(BuildContext context) async {
-    try {
-      final config = await _resolveFastCatSupportConfig();
-      if (config == null || !context.mounted) return false;
-
-      final signature = _embeddedCustomerServiceSessionSignature(
-        channel: 'fastcat-support-v019',
-        websiteId: '${config.baseUrl}|${config.appKey}',
-      );
-      if (_showExistingEmbeddedCustomerService(context, signature)) return true;
-      final visitor = _buildFastCatSupportVisitor(context);
-      final deviceIdentity =
-          await XBoardDeviceIdentityService.buildLoginPayload();
-      if (!context.mounted) return true;
-      final diagnosticRequests = <String>{};
-      final diagnosticContainer =
-          ProviderScope.containerOf(context, listen: false);
-      final support = fc.FastCatSupport(
-        repairHandlers: visitor?.platformOpenId == null
-            ? {}
-            : supportConnectionRepairs(
-                accountId: visitor!.platformOpenId!,
-                deviceId: deviceIdentity['device_id'] as String,
-                identityValid: () =>
-                    context.mounted &&
-                    _buildFastCatSupportVisitor(context)?.platformOpenId ==
-                        visitor.platformOpenId,
-                proxyPort: () =>
-                    diagnosticContainer.read(proxyStateProvider).port,
-              ),
-        diagnosticHandlers: {
-          for (final capability in ['basic', 'status', 'network', 'logs'])
-            capability: (request) async {
-              void check() {
-                request.throwIfCancelled();
-                if (!context.mounted ||
-                    _buildFastCatSupportVisitor(context)?.platformOpenId !=
-                        visitor?.platformOpenId) {
-                  throw StateError('Support identity changed');
-                }
-              }
-
-              check();
-              if (diagnosticRequests.length >= 100 ||
-                  !diagnosticRequests.add(request.id)) {
-                throw StateError(
-                    'Duplicate diagnostic request or session limit');
-              }
-              Map<String, dynamic> report;
-              switch (capability) {
-                case 'basic':
-                  report = {
-                    'appVersion':
-                        '${globalState.packageInfo.version}+${globalState.packageInfo.buildNumber}',
-                    'osVersion': Platform.operatingSystemVersion,
-                    'platform': Platform.operatingSystem
-                  };
-                case 'status':
-                  final proxy = diagnosticContainer.read(proxyStateProvider);
-                  report = {
-                    'connection': {'connected': globalState.isStart},
-                    'kernel': {'running': globalState.appState.runTime != null},
-                    'proxy': {
-                      'systemProxy': proxy.systemProxy,
-                      'isStart': proxy.isStart,
-                      'port': proxy.port
-                    },
-                    'tun': {
-                      'enabled': diagnosticContainer.read(realTunEnableProvider)
-                    }
-                  };
-                case 'network':
-                  final timer = Stopwatch()..start();
-                  final addresses =
-                      await InternetAddress.lookup('www.gstatic.com')
-                          .timeout(const Duration(seconds: 8));
-                  check();
-                  report = {
-                    'checks': [
-                      {
-                        'type': 'system_dns',
-                        'success': addresses.isNotEmpty,
-                        'elapsedMs': timer.elapsedMilliseconds
-                      }
-                    ],
-                    'summary':
-                        'System DNS check only; does not verify the proxy route'
-                  };
-                default:
-                  final logs = globalState.appState.logs.list;
-                  final recent =
-                      logs.skip(logs.length > 60 ? logs.length - 60 : 0);
-                  var budget = 14000;
-                  final rows = <String>[];
-                  for (final log in recent.toList().reversed) {
-                    final text = SensitiveMasker.maskText(log.payload);
-                    final bounded =
-                        text.length > 1000 ? text.substring(0, 1000) : text;
-                    if (bounded.length > budget) break;
-                    rows.insert(0, bounded);
-                    budget -= bounded.length;
-                  }
-                  report = {'logs': rows};
-              }
-              check();
-              return jsonDecode(SensitiveMasker.maskText(jsonEncode(report)))
-                  as Map<String, dynamic>;
-            },
-        },
-        httpClient: IOClient(HttpClient()..findProxy = (_) => 'DIRECT'),
-        store: _ResilientSupportSessionStore.instance,
-        baseUrl: Uri.parse(config.baseUrl),
-        appKey: config.appKey,
-        user: visitor == null
-            ? null
-            : fc.FastCatUser(
-                id: visitor.platformOpenId ?? visitor.email ?? 'anonymous',
-                email: visitor.email,
-                name: visitor.name,
-                profile: {'custom': visitor.customAttributes},
-              ),
-      );
-      if (visitor?.platformOpenId != null) {
-        support.client.repairHandlers.addAll(supportProxyRepairs(
-          accountId: visitor!.platformOpenId!,
-          deviceId: deviceIdentity['device_id'] as String,
-          identityValid: () =>
-              context.mounted &&
-              _buildFastCatSupportVisitor(context)?.platformOpenId ==
-                  visitor.platformOpenId,
-          port: () => diagnosticContainer.read(proxyStateProvider).port,
-          bypass: () => diagnosticContainer.read(proxyStateProvider).bassDomain,
-        ));
-      }
-      if (Platform.isMacOS || Platform.isWindows || Platform.isLinux) {
-        if (!await support.client.restore()) {
-          final email = visitor?.email;
-          if (email == null || email.isEmpty) {
-            support.close();
-            return false;
-          }
-          await support.client.start(
-              email: email,
-              profile: {'custom': visitor?.customAttributes ?? {}});
-        }
-      }
-      if (!context.mounted) {
-        support.close();
-        return true;
-      }
-      await _openEmbeddedCustomerService(context,
-          signature: signature,
-          builder: (hide, session) => Scaffold(
-                appBar: AppBar(
-                    title:
-                        Text(AppLocalizations.of(context).onlineSupportTitle),
-                    leading: BackButton(onPressed: hide)),
-                body: ValueListenableBuilder<CustomerServiceSessionState>(
-                  valueListenable: session,
-                  builder: (context, state, child) =>
-                      TickerMode(enabled: state.isVisible, child: child!),
-                  child: fc.FastCatSupportView(
-                    support: support,
-                    showHeader: true,
-                    pickAttachment: () async {
-                      final file = await app_picker.picker.pickerFile();
-                      if (file == null) return null;
-                      if (file.size > 8 * 1024 * 1024) {
-                        throw StateError('Attachment exceeds 8 MB');
-                      }
-                      final bytes = file.bytes ??
-                          (file.path == null
-                              ? null
-                              : await File(file.path!).readAsBytes());
-                      if (bytes == null)
-                        throw StateError('Cannot read attachment');
-                      return fc.FastCatAttachment(
-                          filename: file.name, bytes: bytes);
-                    },
-                    onAttachment: (filename, bytes) async {
-                      await app_picker.picker.saveFile(
-                          filename.replaceAll('\\', '/').split('/').last,
-                          bytes);
-                    },
-                  ),
-                ),
-              ));
-      _support = support;
-      _pushService = SupportPushService();
-      unawaited(_pushService!.attach(
-          support.client,
-          deviceIdentity['device_id'] as String,
-          Localizations.localeOf(context).toLanguageTag(),
-          () =>
-              isEmbeddedCustomerServiceVisible &&
-              WidgetsBinding.instance.lifecycleState ==
-                  AppLifecycleState.resumed, onNotification: () async {
-        if (context.mounted && _support == support) {
-          _showExistingEmbeddedCustomerService(context, signature);
-        }
-      }));
-      _supportTone = fc.SupportNotificationSound();
-      _supportIncoming = support.client.incomingMessageStream.listen((message) {
-        final foreground = WidgetsBinding.instance.lifecycleState == null ||
-            WidgetsBinding.instance.lifecycleState == AppLifecycleState.resumed;
-        if (!foreground) {
-          final conversation = support.client.conversationId;
-          final messageId = message['id']?.toString();
-          if (conversation != null && messageId != null) {
-            unawaited(SupportPushService.notifyReply(conversation, messageId));
-          }
-        } else if (!isEmbeddedCustomerServiceVisible) {
-          unawaited(_supportTone?.play());
-        }
-      });
-      _supportUnread = support.client.unreadCountStream.listen(_publishUnread);
-      _publishUnread(support.client.unreadCount);
-      var reconnecting = false;
-      _supportMonitor = support.client.connectionStatusStream.listen((status) {
-        if (status == fc.FastCatConnectionStatus.reconnecting &&
-            !reconnecting) {
-          reconnecting = true;
-          _logger.warning('[FastCatSupport] 消息连接异常，正在重连');
-        } else if (status == fc.FastCatConnectionStatus.connected &&
-            reconnecting) {
-          reconnecting = false;
-          _logger.info('[FastCatSupport] 消息连接已恢复');
-        }
-      });
-      return true;
-    } catch (error, stackTrace) {
-      _logger.warning(
-        '[FastCatSupport] 打开失败，回退 Crisp: $error',
-        stackTrace,
-      );
-      try {
-        await TgoWidget.dispose();
-      } catch (_) {}
-      return false;
-    }
-  }
-
-  static Future<_FastCatSupportConfig?> _resolveFastCatSupportConfig() async {
-    final remoteBaseUrl = XBoardConfig.fastCatSupportBaseUrl.trim();
-    final remoteAppKey = XBoardConfig.fastCatSupportAppKey.trim();
-    if (XBoardConfig.fastCatSupportEnabled &&
-        remoteBaseUrl.isNotEmpty &&
-        remoteAppKey.isNotEmpty) {
-      return _fastCatSupportConfig = _FastCatSupportConfig(
-        baseUrl: remoteBaseUrl,
-        appKey: remoteAppKey,
-      );
-    }
-    // A remote entry is authoritative, including an explicit disable. Only
-    // use the bundled fallback while older OSS configurations omit the key.
-    if (XBoardConfig.fastCatSupportConfigured) return null;
-
-    final cached = _fastCatSupportConfig;
-    if (cached != null) return cached;
-    final contact =
-        await local_config.ConfigFileLoaderHelper.getContactFallbackConfig();
-    final rawLocal = contact['fastcat_support'];
-    final local = rawLocal is Map
-        ? rawLocal.map((key, value) => MapEntry(key.toString(), value))
-        : const <String, dynamic>{};
-    final enabled = local['enabled'] != false;
-    final baseUrl = local['base_url']?.toString().trim() ?? '';
-    final appKey = local['app_key']?.toString().trim() ?? '';
-    if (!enabled || baseUrl.isEmpty || appKey.isEmpty) return null;
-    return _fastCatSupportConfig = _FastCatSupportConfig(
-      baseUrl: baseUrl,
-      appKey: appKey,
-    );
-  }
-
-  static VisitorInfo? _buildFastCatSupportVisitor(BuildContext context) {
-    final container = ProviderScope.containerOf(context, listen: false);
-    final userState = container.read(xboardUserProvider);
-    final userInfo = container.read(userInfoProvider);
-    final subscriptionInfo = container.read(subscriptionInfoProvider);
-    final email = (userInfo?.email ?? userState.email ?? '').trim();
-    final openId = _firstNonEmpty(
-      userInfo?.uuid,
-      subscriptionInfo?.uuid,
-    );
-    if (email.isEmpty && openId.isEmpty) return null;
-
-    final crispData = _buildCrispUserData(context);
-    final attributes = <String, String?>{};
-    for (final entry in crispData['sessionData'] as List<List<String>>) {
-      if (entry.length == 2 && entry[0].isNotEmpty && entry[1].isNotEmpty) {
-        attributes[entry[0]] = entry[1];
-      }
-    }
-    return VisitorInfo(
-      platformOpenId: openId.isNotEmpty ? openId : email,
-      name: email.isEmpty ? null : email.split('@').first,
-      nickname: email.isEmpty ? null : email.split('@').first,
-      email: email.isEmpty ? null : email,
-      avatarUrl:
-          userInfo?.avatarUrl.isNotEmpty == true ? userInfo!.avatarUrl : null,
-      customAttributes: attributes,
     );
   }
 
@@ -1539,7 +1131,7 @@ class CustomerServiceHelper {
       final dataFolder = Platform.isWindows ? await _webview2DataFolder() : '';
       final webview = await WebviewWindow.create(
         configuration: CreateConfiguration(
-          title: appLocalizations.xboardOnlineSupport,
+          title: '在线客服',
           windowWidth: _desktopCustomerServiceWindowWidth,
           windowHeight: _desktopCustomerServiceWindowHeight,
           titleBarHeight: _desktopCustomerServiceTitleBarHeight,
@@ -1554,17 +1146,16 @@ class CustomerServiceHelper {
         isDarkMode: isDarkMode,
       );
 
+      final scriptUrlEscaped = scriptUrl.replaceAll("'", "\\'");
       final bg = _customerServiceBackground(isDarkMode);
       final fg = _customerServiceForeground(isDarkMode);
-      final loadingHtml =
-          '''<html><head><meta charset=utf-8><meta name=viewport content="width=device-width,initial-scale=1"><title>${htmlEscape.convert(appLocalizations.xboardOnlineSupport)}</title><style>*{margin:0;padding:0}html,body{width:100%;height:100%;background:$bg;overflow:hidden}#loading{display:flex;align-items:center;justify-content:center;height:100%;color:$fg;font-family:-apple-system,sans-serif;font-size:14px}</style></head><body><div id=loading>${htmlEscape.convert(appLocalizations.onlineSupportConnecting)}</div><script src='${htmlEscape.convert(scriptUrl)}' id=ss_chat></script><script>(function w(){if(window.ssq&&typeof window.ssq==="function"){ssq.push("chatOpen");ssq.push("onReady",function(){ssq.push("chatOpen");var e=document.getElementById("loading");if(e)e.style.display="none";});}else{setTimeout(w,300);}})();setTimeout(function(){var e=document.getElementById("loading");if(e&&e.style.display!=="none")e.textContent=${jsonEncode(appLocalizations.xboardCustomerServiceLoadTimeout)};},20000);new MutationObserver(function(){var fs=document.querySelectorAll("iframe");for(var i=0;i<fs.length;i++){var s=fs[i].src||"";if(s.indexOf("salesmartly")!==-1||s.indexOf("ssm")!==-1){fs[i].style.cssText="position:fixed!important;top:0!important;left:0!important;width:100vw!important;height:100vh!important;max-width:none!important;max-height:none!important;border:none!important;border-radius:0!important;z-index:99999!important;";var p=fs[i].parentElement;if(p){p.style.cssText="position:fixed!important;top:0!important;left:0!important;width:100vw!important;height:100vh!important;z-index:99999!important;";}var e=document.getElementById("loading");if(e)e.style.display="none";}}}).observe(document.documentElement,{childList:true,subtree:true,attributes:true});</script></body></html>''';
       // 注入脚本：在 DOMContentLoaded 后用 document.write 重写页面，注入 SDK
       // 使用 ssq.push API（官方文档推荐）
       final injectJs = '''
 if(window===window.top){
   document.addEventListener('DOMContentLoaded',function(){
     document.open();
-    document.write(${jsonEncode(loadingHtml)});
+    document.write('<html><head><meta charset=utf-8><meta name=viewport content="width=device-width,initial-scale=1"><title>在线客服</title><style>*{margin:0;padding:0}html,body{width:100%;height:100%;background:$bg;overflow:hidden}#loading{display:flex;align-items:center;justify-content:center;height:100%;color:$fg;font-family:-apple-system,sans-serif;font-size:14px}</style></head><body><div id=loading>正在连接客服...</div><scr'+'ipt src=\\'$scriptUrlEscaped\\' id=ss_chat></scr'+'ipt><scr'+'ipt>(function w(){if(window.ssq&&typeof window.ssq==="function"){ssq.push("chatOpen");ssq.push("onReady",function(){ssq.push("chatOpen");var e=document.getElementById("loading");if(e)e.style.display="none";});}else{setTimeout(w,300);}})();setTimeout(function(){var e=document.getElementById("loading");if(e&&e.style.display!=="none")e.textContent="加载超时，请检查网络";},20000);new MutationObserver(function(){var fs=document.querySelectorAll("iframe");for(var i=0;i<fs.length;i++){var s=fs[i].src||"";if(s.indexOf("salesmartly")!==-1||s.indexOf("ssm")!==-1){fs[i].style.cssText="position:fixed!important;top:0!important;left:0!important;width:100vw!important;height:100vh!important;max-width:none!important;max-height:none!important;border:none!important;border-radius:0!important;z-index:99999!important;";var p=fs[i].parentElement;if(p){p.style.cssText="position:fixed!important;top:0!important;left:0!important;width:100vw!important;height:100vh!important;z-index:99999!important;";}var e=document.getElementById("loading");if(e)e.style.display="none";}}}).observe(document.documentElement,{childList:true,subtree:true,attributes:true});</scr'+'ipt></body></html>');
     document.close();
   });
 }''';
@@ -1593,7 +1184,7 @@ if(window===window.top){
 <html>
 <head>
   <meta charset="utf-8">
-  <title>${htmlEscape.convert(appLocalizations.xboardOnlineSupport)}</title>
+  <title>在线客服</title>
   <style>
     * { margin: 0; padding: 0; }
     html, body { width: 100%; height: 100%; background: $bg; }
@@ -1604,8 +1195,8 @@ if(window===window.top){
   </style>
 </head>
 <body>
-  <div id="loading">${htmlEscape.convert(appLocalizations.onlineSupportConnecting)}</div>
-  <script src="${htmlEscape.convert(scriptUrl)}" id="ss_chat"></script>
+  <div id="loading">正在连接客服...</div>
+  <script src="$scriptUrl" id="ss_chat"></script>
   <script>
     (function check(){
       if(window.ssq && typeof window.ssq==='function'){
@@ -2116,13 +1707,6 @@ if(window===window.top){
   }
 }
 
-class _FastCatSupportConfig {
-  const _FastCatSupportConfig({required this.baseUrl, required this.appKey});
-
-  final String baseUrl;
-  final String appKey;
-}
-
 class _EmbeddedCustomerServiceFrame extends StatefulWidget {
   const _EmbeddedCustomerServiceFrame({
     required this.showRootMenu,
@@ -2337,67 +1921,4 @@ class _DeviceGatewayEndpoint {
 
   final String baseUrl;
   final String apiPrefix;
-}
-
-/// Keep the current process usable when platform credential storage is unavailable.
-/// Keys supplied by the SDK include server, platform and account scope.
-class _ResilientSupportSessionStore implements fc.FastCatSessionStore {
-  static final instance = _ResilientSupportSessionStore();
-  final fc.FastCatSecureSessionStore _secure =
-      const fc.FastCatSecureSessionStore();
-  final Map<String, String> _memory = {};
-  final Set<String> _deleted = {};
-  bool _unavailable = false;
-
-  void _failed(Object error) {
-    if (!_unavailable) {
-      _logger.warning(
-          '[FastCatSupport] 安全存储不可用，当前运行使用内存会话；重启后可能无法恢复历史会话。错误类型: ${error.runtimeType}');
-    }
-    _unavailable = true;
-  }
-
-  @override
-  Future<String?> read(String key) async {
-    if (_deleted.contains(key)) return null;
-    if (_memory.containsKey(key)) return _memory[key];
-    if (!_unavailable) {
-      try {
-        final value = await _secure.read(key);
-        if (value != null) {
-          _memory[key] = value;
-        }
-        return value;
-      } catch (error) {
-        _failed(error);
-      }
-    }
-    return null;
-  }
-
-  @override
-  Future<void> write(String key, String value) async {
-    _deleted.remove(key);
-    _memory[key] = value;
-    if (!_unavailable) {
-      try {
-        await _secure.write(key, value);
-      } catch (error) {
-        _failed(error);
-      }
-    }
-  }
-
-  @override
-  Future<void> delete(String key) async {
-    _memory.remove(key);
-    _deleted.add(key);
-    // Attempt deletion even after a previous failure; never restore a removed
-    // identity from persistent storage during this process.
-    try {
-      await _secure.delete(key);
-    } catch (error) {
-      _failed(error);
-    }
-  }
 }

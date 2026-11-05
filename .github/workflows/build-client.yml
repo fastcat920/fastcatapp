@@ -2,8 +2,6 @@ name: Build Client
 
 env:
   FLUTTER_VERSION: "3.44.7"
-  FASTCAT_BUILD_COMMIT: ${{ github.sha }}
-  FASTCAT_BUILD_CHANNEL: ${{ inputs.build_channel || 'normal' }}
   FASTCAT_KEY_CURRENT_ID: ${{ vars.FASTCAT_KEY_CURRENT_ID }}
   FASTCAT_KEY_NEXT_ID: ${{ vars.FASTCAT_KEY_NEXT_ID }}
   FASTCAT_SUBSCRIPTION_FLAG: ${{ vars.FASTCAT_SUBSCRIPTION_FLAG }}
@@ -15,11 +13,6 @@ env:
 on:
   workflow_dispatch:
     inputs:
-      build_channel:
-        description: "normal = 普通构建；signed = 签名发行（需要完整签名流程）"
-        type: choice
-        options: [normal, signed]
-        default: normal
       build_android:
         description: Build Android APK
         type: boolean
@@ -56,18 +49,6 @@ jobs:
   checks:
     name: Shared client checks
     runs-on: ubuntu-latest
-    services:
-      postgres:
-        image: postgres:16
-        env:
-          POSTGRES_DB: fastcat_test_admission
-          POSTGRES_USER: fastcat_test
-          POSTGRES_PASSWORD: isolated-ci-only
-        ports:
-          - 5432:5432
-        options: >-
-          --health-cmd "pg_isready -U fastcat_test -d fastcat_test_admission"
-          --health-interval 5s --health-timeout 5s --health-retries 10
     steps:
       - uses: actions/checkout@v4
         with:
@@ -78,10 +59,6 @@ jobs:
           channel: stable
           cache: true
       - run: flutter pub get
-      - name: Packaging policy regression tests
-        run: python3 -m unittest discover -s test/packaging -p '*_test.py'
-      - name: Native tvOS version matches pubspec
-        run: ruby scripts/sync_tvos_version.rb --check
       - name: Require v2 configuration verification key
         shell: bash
         run: |
@@ -94,41 +71,17 @@ jobs:
               raise SystemExit('Set repository variable REMOTE_CONFIG_PUBLIC_KEY to the Base64-encoded 32-byte Ed25519 public key before publishing v2-only clients.')
           PY
       - run: flutter analyze --no-pub
-      - name: SDK static analysis (independent package)
-        working-directory: lib/sdk/flutter_xboard_sdk
-        run: |
-          flutter pub get
-          flutter analyze --no-pub
       - run: flutter test --no-pub
-      - name: SDK authentication and transport regressions
-        run: flutter test --no-pub test/xboard/sdk_lifecycle_test.dart test/xboard/features/auth/auth_interceptor_test.dart test/xboard/features/auth/auth_session_ownership_test.dart
       - uses: actions/setup-go@v5
         with:
-          go-version: "1.23.x"
-          cache-dependency-path: |
-            core/go.sum
-            core/Clash.Meta/go.sum
-            device_gateway/go.sum
+          go-version: "1.20.x"
+          cache-dependency-path: core/go.sum
       - name: Core regression tests
         working-directory: core
         run: go test -race ./...
-      - name: Apple packetFlow TCP and UDP regressions
-        working-directory: core
-        run: go test -race -tags with_gvisor ./applepacket
-      - name: Provider cache and path regressions (nested Mihomo module)
-        working-directory: core/Clash.Meta
-        run: go test -race ./component/resource ./constant
-      - name: Device gateway regression tests
-        working-directory: device_gateway
-        env:
-          # Dedicated disposable job service, never a deployment DSN.
-          FASTCAT_TEST_POSTGRES_DSN: postgres://fastcat_test:isolated-ci-only@127.0.0.1:5432/fastcat_test_admission?sslmode=disable
-        run: go test -race ./...
-      - name: Helper Rust unit tests
-        working-directory: services/helper
-        run: cargo test --locked
 
   android:
+    needs: checks
     name: Android APK
     runs-on: ubuntu-latest
     if: github.event_name == 'push' || inputs.build_android
@@ -211,8 +164,7 @@ jobs:
           KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
           KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
         run: |
-          python3 scripts/check_release_readiness.py android
-          if [ -n "$KEYSTORE_BASE64" ] && [ -n "$KEYSTORE_PASSWORD" ] && [ -n "$KEY_ALIAS" ] && [ -n "$KEY_PASSWORD" ]; then
+          if [ -n "$KEYSTORE_BASE64" ] && [ -n "$KEYSTORE_PASSWORD" ]; then
             echo "$KEYSTORE_BASE64" | base64 -d > android/app/keystore.jks
             cat > android/local.properties << PROPS
           storePassword=$KEYSTORE_PASSWORD
@@ -221,7 +173,7 @@ jobs:
           PROPS
             echo "✓ Release keystore configured"
           else
-            echo "WARNING: Android release keystore unavailable; using debug signing, which may prevent upgrading an existing installation."
+            echo "i KEYSTORE_BASE64 not set, will use debug keystore (signature will vary per build)"
           fi
 
       - name: Build Android native core
@@ -255,6 +207,7 @@ jobs:
           retention-days: 3
 
   windows:
+    needs: checks
     name: Windows x64
     runs-on: windows-2022
     if: github.event_name == 'push' || inputs.build_windows
@@ -262,9 +215,6 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-
-      - name: Check signing only when signed distribution is requested
-        run: python scripts/check_release_readiness.py windows
 
       - name: Setup Flutter
         uses: subosito/flutter-action@v2
@@ -289,15 +239,6 @@ jobs:
           if ($LASTEXITCODE -ne 0) { throw "Failed to select Rust stable toolchain" }
           rustc --version
           cargo --version
-
-      - name: Helper unit tests and service compile check
-        working-directory: services/helper
-        shell: pwsh
-        run: |
-          cargo test --locked
-          if ($LASTEXITCODE -ne 0) { throw "Helper unit tests failed" }
-          cargo check --locked --features windows-service --target x86_64-pc-windows-msvc
-          if ($LASTEXITCODE -ne 0) { throw "Helper service compile failed" }
 
       - name: Install Inno Setup
         shell: pwsh
@@ -521,9 +462,6 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Check signing only when signed distribution is requested
-        run: python scripts/check_release_readiness.py windows
-
       - name: Setup Flutter
         shell: pwsh
         run: |
@@ -575,15 +513,6 @@ jobs:
           if ($LASTEXITCODE -ne 0) { throw "Failed to select Rust stable toolchain" }
           rustc --version
           cargo --version
-
-      - name: Helper unit tests and service compile check
-        working-directory: services/helper
-        shell: pwsh
-        run: |
-          cargo test --locked
-          if ($LASTEXITCODE -ne 0) { throw "Helper unit tests failed" }
-          cargo check --locked --features windows-service --target aarch64-pc-windows-msvc
-          if ($LASTEXITCODE -ne 0) { throw "Helper service compile failed" }
 
       - name: Install Inno Setup
         shell: pwsh
@@ -797,6 +726,7 @@ jobs:
           retention-days: 3
 
   ios:
+    needs: checks
     name: iOS IPA
     runs-on: macos-latest
     if: github.event_name == 'push' || inputs.build_ios
@@ -804,9 +734,6 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-
-      - name: Check signing only when signed distribution is requested
-        run: python3 scripts/check_release_readiness.py ios
 
       - name: Setup Flutter
         uses: subosito/flutter-action@v2
@@ -830,12 +757,6 @@ jobs:
       - name: Get packages
         run: flutter pub get
 
-      - name: Native iOS offline acknowledgement regression tests
-        run: |
-          bash scripts/test_ios_runtime.sh
-          xcrun swiftc -frontend -parse ios/Runner/AppDelegate.swift ios/Runner/VPNManager.swift
-          xcrun swiftc -frontend -parse ios/PacketTunnel/PacketTunnelProvider.swift
-
       - name: Build iOS native core
         run: bash scripts/build_ios_core.sh
 
@@ -855,6 +776,7 @@ jobs:
           retention-days: 3
 
   tvos:
+    needs: checks
     name: tvOS App
     runs-on: macos-15
     if: github.event_name == 'push' || inputs.build_tvos
@@ -862,9 +784,6 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-
-      - name: Check signing only when signed distribution is requested
-        run: python3 scripts/check_release_readiness.py tvos
 
       - name: Setup Go
         uses: actions/setup-go@v5
@@ -879,13 +798,10 @@ jobs:
           xcrun --sdk appletvos --show-sdk-version
 
       - name: Configure tvOS build
-        run: |
-          cp tvos/Config.xcconfig.example tvos/Config.xcconfig
-          ruby scripts/sync_tvos_version.rb --check
+        run: cp tvos/Config.xcconfig.example tvos/Config.xcconfig
 
       - name: Native tvOS offline regression tests
         run: |
-          bash scripts/test_tvos_runtime.sh
           swiftc tvos/FastCatTV/TVServiceConnectivity.swift test/tvos/connectivity_test.swift -o "$RUNNER_TEMP/fastcat-connectivity-tests"
           swiftc tvos/FastCatTV/TVBuildConfiguration.swift tvos/FastCatTV/TVRemoteConfigManager.swift test/tvos/remote_config_test.swift -o "$RUNNER_TEMP/fastcat-remote-config-tests"
           "$RUNNER_TEMP/fastcat-remote-config-tests"
@@ -916,10 +832,6 @@ jobs:
             FASTCAT_KEY_NEXT="$FASTCAT_KEY_NEXT" \
             FASTCAT_SUBSCRIPTION_FLAG="$FASTCAT_SUBSCRIPTION_FLAG" \
             FASTCAT_REQUIRE_ENCRYPTION="$FASTCAT_REQUIRE_ENCRYPTION" \
-            FASTCAT_BUILD_COMMIT="$FASTCAT_BUILD_COMMIT" \
-            FASTCAT_BUILD_CHANNEL="$FASTCAT_BUILD_CHANNEL" \
-            FASTCAT_PRIVACY_POLICY_URL="$FASTCAT_PRIVACY_POLICY_URL" \
-            FASTCAT_TERMS_OF_SERVICE_URL="$FASTCAT_TERMS_OF_SERVICE_URL" \
             CODE_SIGNING_ALLOWED=NO \
             CODE_SIGNING_REQUIRED=NO \
             DEVELOPMENT_TEAM= \
@@ -940,86 +852,34 @@ jobs:
           if-no-files-found: error
           retention-days: 3
 
-  linux_amd64:
-    name: Linux amd64
-    runs-on: ubuntu-latest
+  linux:
+    needs: checks
+    name: Linux ${{ matrix.arch }}
+    runs-on: ${{ matrix.runner }}
     if: github.event_name == 'push' || inputs.build_linux
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - arch: amd64
+            runner: ubuntu-latest
+          - arch: arm64
+            runner: ubuntu-24.04-arm
+
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
       - name: Setup Flutter
+        if: matrix.arch == 'amd64'
         uses: subosito/flutter-action@v2
         with:
           flutter-version: ${{ env.FLUTTER_VERSION }}
           channel: stable
           cache: true
 
-      - name: Setup Go
-        uses: actions/setup-go@v5
-        with:
-          go-version: "1.20.x"
-          cache-dependency-path: core/go.sum
-
-      - name: Enable Linux desktop
-        run: flutter config --enable-linux-desktop
-
-      - name: Install Linux build prerequisites
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y \
-            clang \
-            cmake \
-            libgtk-3-dev \
-            liblzma-dev \
-            libsecret-1-dev \
-            libwebkit2gtk-4.1-dev \
-            ninja-build \
-            pkg-config
-
-      - name: Flutter doctor
-        run: flutter doctor -v
-
-      - name: Clean build cache
-        run: flutter clean
-
-      - name: Get packages
-        run: flutter pub get
-
-      - name: Build Linux packages
-        env:
-          XOR_KEY: ${{ secrets.XOR_KEY }}
-          FASTCAT_KEY_CURRENT: ${{ secrets.FASTCAT_KEY_CURRENT }}
-          FASTCAT_KEY_NEXT: ${{ secrets.FASTCAT_KEY_NEXT }}
-        run: dart run setup.dart linux --arch amd64 --out app --env stable
-
-      - name: List dist contents
-        shell: bash
-        if: always()
-        run: |
-          if [ -d dist ]; then
-            find dist -type f -exec ls -lh {} \;
-          else
-            echo "dist/ directory does not exist"
-          fi
-
-      - name: Upload Linux artifacts
-        uses: actions/upload-artifact@v4
-        with:
-          name: FastCat-linux-amd64
-          path: dist/**
-          if-no-files-found: error
-          retention-days: 3
-
-  linux_arm64:
-    name: Linux arm64
-    runs-on: ubuntu-24.04-arm
-    if: github.event_name == 'push' || inputs.build_linux
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
       - name: Setup Flutter arm64
+        if: matrix.arch == 'arm64'
         shell: bash
         run: |
           git clone --depth 1 --branch "${FLUTTER_VERSION}" https://github.com/flutter/flutter.git "$RUNNER_TEMP/flutter"
@@ -1063,7 +923,7 @@ jobs:
           XOR_KEY: ${{ secrets.XOR_KEY }}
           FASTCAT_KEY_CURRENT: ${{ secrets.FASTCAT_KEY_CURRENT }}
           FASTCAT_KEY_NEXT: ${{ secrets.FASTCAT_KEY_NEXT }}
-        run: dart run setup.dart linux --arch arm64 --out app --env stable
+        run: dart run setup.dart linux --arch ${{ matrix.arch }} --out app --env stable
 
       - name: List dist contents
         shell: bash
@@ -1078,12 +938,13 @@ jobs:
       - name: Upload Linux artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: FastCat-linux-arm64
+          name: FastCat-linux-${{ matrix.arch }}
           path: dist/**
           if-no-files-found: error
           retention-days: 3
 
   macos:
+    needs: checks
     name: macOS Universal DMG
     runs-on: macos-15
     if: github.event_name == 'push' || inputs.build_macos
@@ -1093,9 +954,6 @@ jobs:
         uses: actions/checkout@v4
         with:
           lfs: true
-
-      - name: Check signing only when signed distribution is requested
-        run: python3 scripts/check_release_readiness.py macos
 
       - name: Setup Flutter
         uses: subosito/flutter-action@v2

@@ -31,12 +31,4 @@ class MethodChannelProxy extends ProxyPlatform {
     );
     return result == null ? null : Map<String, dynamic>.from(result);
   }
-
-  @override
-  Future<Map<String, String>?> readProxyConfiguration() =>
-      methodChannel.invokeMapMethod<String, String>('ReadProxyConfiguration');
-
-  @override
-  Future<bool?> writeProxyConfiguration(Map<String, String> values) =>
-      methodChannel.invokeMethod<bool>('WriteProxyConfiguration', values);
 }

@@ -19,11 +19,16 @@ private let kAppGroupId: String = {
   return "group.\(appId.isEmpty ? "com.fastcat.app" : appId)"
 }()
 
-/// NEPacketTunnelProvider hosting Mihomo and a userspace IP packet stack.
+/// NEPacketTunnelProvider that hosts the mihomo (libclash) core in **proxy mode**.
 ///
-/// NetworkExtension owns routes and exchanges raw IPv4/IPv6 packets with
-/// a bounded Go bridge using the public packetFlow API. sing-tun/gVisor
-/// forwards TCP/UDP through Mihomo, including rule matching and DNS hijacking.
+/// Architecture:
+///   1. mihomo starts with `mixed-port` (HTTP+SOCKS5 proxy on 127.0.0.1).
+///      TUN is force-disabled in the Go layer — sing-tun is NOT used.
+///   2. NEPacketTunnelNetworkSettings configures:
+///      - DNS → mihomo fake-ip resolver (198.18.0.2)
+///      - HTTP/HTTPS proxy → 127.0.0.1:<mixed-port>
+///   3. The OS routes HTTP/HTTPS traffic through the local proxy automatically.
+///      DNS queries are hijacked to mihomo for fake-ip / rule-based resolution.
 ///
 /// Communication with the main app:
 ///   Main app  →  NETunnelProviderSession.sendProviderMessage()
@@ -34,70 +39,6 @@ private let kAppGroupId: String = {
 /// The bridging header PacketTunnel-Bridging-Header.h exposes
 /// the C API from libclash.a.
 class PacketTunnelProvider: NEPacketTunnelProvider {
-  private let packetLock = NSLock()
-  private var packetGeneration: UInt64 = 0
-  private let packetInputQueue = DispatchQueue(label: "fastcat.packet.input")
-  private let packetOutputQueue = DispatchQueue(label: "fastcat.packet.output")
-
-  private func packetSessionIsCurrent(_ generation: UInt64) -> Bool {
-    packetLock.lock()
-    defer { packetLock.unlock() }
-    return packetGeneration == generation && generation != 0
-  }
-
-  private func startPacketForwarding() -> Bool {
-    let generation = ClashCore_start_packets()
-    guard generation != 0 else { return false }
-    packetLock.lock()
-    packetGeneration = generation
-    packetLock.unlock()
-    readPacketBatch(generation)
-    packetOutputQueue.async { [weak self] in
-      var bytes = [UInt8](repeating: 0, count: 65535)
-      while self?.packetSessionIsCurrent(generation) == true {
-        let count = ClashCore_read_packet(generation, &bytes, Int32(bytes.count))
-        guard let owner = self, owner.packetSessionIsCurrent(generation) else { return }
-        guard count > 0 else {
-          owner.cancelTunnelWithError(owner.makeError("VPN packet stack stopped unexpectedly"))
-          return
-        }
-        let family = (bytes[0] >> 4) == 6 ? AF_INET6 : AF_INET
-        let written = autoreleasepool {
-          owner.packetFlow.writePackets([Data(bytes.prefix(Int(count)))],
-                                        withProtocols: [NSNumber(value: family)])
-        }
-        if !written {
-          owner.cancelTunnelWithError(owner.makeError("Unable to write VPN packets"))
-          return
-        }
-      }
-    }
-    return true
-  }
-
-  private func readPacketBatch(_ generation: UInt64) {
-    guard packetSessionIsCurrent(generation) else { return }
-    packetFlow.readPackets { [weak self] packets, _ in
-      self?.packetInputQueue.async { [weak self] in
-        guard let owner = self, owner.packetSessionIsCurrent(generation) else { return }
-        for packet in packets {
-          guard owner.packetSessionIsCurrent(generation) else { return }
-          packet.withUnsafeBytes { raw in
-            guard let address = raw.bindMemory(to: UInt8.self).baseAddress else { return }
-            _ = ClashCore_write_packet(generation, address, Int32(packet.count))
-          }
-        }
-        owner.readPacketBatch(generation)
-      }
-    }
-  }
-
-  private func stopPacketForwarding() {
-    packetLock.lock()
-    packetGeneration = 0
-    packetLock.unlock()
-    ClashCore_stop_packets()
-  }
 
   /// Whether traffic routing (proxy/DNS network settings) is active.
   /// When false, mihomo is running for IPC (delay tests etc.) but no traffic is routed.
@@ -140,18 +81,11 @@ class PacketTunnelProvider: NEPacketTunnelProvider {
       return
     }
     NSLog("[PacketTunnel] ClashCore_init succeeded")
-    guard startPacketForwarding() else {
-      ClashCore_shutdown()
-      completionHandler(makeError("Unable to start VPN packet stack"))
-      return
-    }
 
     // Get the mixed-port that mihomo is listening on.
     let mixedPort = Int(ClashCore_get_mixed_port())
     guard mixedPort > 0 else {
       NSLog("[PacketTunnel] ERROR: mixed-port not available")
-      stopPacketForwarding()
-      ClashCore_shutdown()
       completionHandler(makeError("mihomo mixed-port not available"))
       return
     }
@@ -171,8 +105,6 @@ class PacketTunnelProvider: NEPacketTunnelProvider {
       setTunnelNetworkSettings(settings) { [weak self] error in
         if let error = error {
           NSLog("[PacketTunnel] ERROR: setTunnelNetworkSettings: %@", error.localizedDescription)
-          self?.stopPacketForwarding()
-          ClashCore_shutdown()
           completionHandler(error)
           return
         }
@@ -187,8 +119,6 @@ class PacketTunnelProvider: NEPacketTunnelProvider {
       setTunnelNetworkSettings(settings) { [weak self] error in
         if let error = error {
           NSLog("[PacketTunnel] ERROR: setTunnelNetworkSettings (idle): %@", error.localizedDescription)
-          self?.stopPacketForwarding()
-          ClashCore_shutdown()
           completionHandler(error)
           return
         }
@@ -205,8 +135,6 @@ class PacketTunnelProvider: NEPacketTunnelProvider {
     with reason: NEProviderStopReason,
     completionHandler: @escaping () -> Void
   ) {
-    stopPacketForwarding()
-    isTrafficEnabled = false
     ClashCore_shutdown()
     completionHandler()
   }
@@ -248,54 +176,45 @@ class PacketTunnelProvider: NEPacketTunnelProvider {
     let resultCStr = ClashCore_invoke(method, data)
     defer { ClashCore_free(resultCStr) }
 
-    let resultString = resultCStr.map { String(cString: $0) }
-    if method == "updateConfig" || method == "changeProxy" {
-      completionHandler?(TVCoreProtocol.acknowledgement(error:
-        resultString == "" ? nil : (resultString ?? "Missing core response")))
-    } else {
-      completionHandler?(resultString?.data(using: .utf8))
-    }
+    let resultString = resultCStr.map { String(cString: $0) } ?? ""
+    completionHandler?(resultString.data(using: .utf8))
   }
 
   // MARK: - Traffic mode toggle
 
   /// Switch between active (proxy routing) and idle (mihomo running, no routing).
   private func handleSetTrafficMode(_ mode: String, completionHandler: ((Data?) -> Void)?) {
-    guard mode == "active" || mode == "idle" else {
-      completionHandler?(TVCoreProtocol.acknowledgement(error: "Invalid traffic mode"))
-      return
-    }
     let wantActive = (mode == "active")
     NSLog("[PacketTunnel] setTrafficMode: %@ (currently %@)", mode, isTrafficEnabled ? "active" : "idle")
 
     if wantActive {
       guard cachedMixedPort > 0 else {
         NSLog("[PacketTunnel] ERROR: cannot enable traffic, mixedPort not available")
-        completionHandler?(TVCoreProtocol.acknowledgement(error: "Mixed port unavailable"))
+        completionHandler?("error: mixedPort not available".data(using: .utf8))
         return
       }
       let settings = buildNetworkSettings(mixedPort: cachedMixedPort)
       setTunnelNetworkSettings(settings) { [weak self] error in
         if let error = error {
           NSLog("[PacketTunnel] ERROR: setTrafficMode active: %@", error.localizedDescription)
-          completionHandler?(TVCoreProtocol.acknowledgement(error: "Network settings failed"))
+          completionHandler?("error: \(error.localizedDescription)".data(using: .utf8))
           return
         }
         self?.isTrafficEnabled = true
         NSLog("[PacketTunnel] Traffic mode: active (port %d)", self?.cachedMixedPort ?? 0)
-        completionHandler?(TVCoreProtocol.acknowledgement())
+        completionHandler?("ok".data(using: .utf8))
       }
     } else {
       let settings = buildIdleNetworkSettings()
       setTunnelNetworkSettings(settings) { [weak self] error in
         if let error = error {
           NSLog("[PacketTunnel] ERROR: setTrafficMode idle: %@", error.localizedDescription)
-          completionHandler?(TVCoreProtocol.acknowledgement(error: "Network settings failed"))
+          completionHandler?("error: \(error.localizedDescription)".data(using: .utf8))
           return
         }
         self?.isTrafficEnabled = false
         NSLog("[PacketTunnel] Traffic mode: idle")
-        completionHandler?(TVCoreProtocol.acknowledgement())
+        completionHandler?("ok".data(using: .utf8))
       }
     }
   }
@@ -303,60 +222,77 @@ class PacketTunnelProvider: NEPacketTunnelProvider {
   /// Hot-reload mihomo config without restarting the tunnel.
   private func handleUpdateConfig(_ config: String, completionHandler: ((Data?) -> Void)?) {
     guard !config.isEmpty else {
-      completionHandler?(TVCoreProtocol.acknowledgement(error: "Empty configuration"))
+      completionHandler?("error: empty config".data(using: .utf8))
       return
     }
     // Use mihomo's built-in config reload via ClashCore_invoke
-    let resultCStr = ClashCore_invoke("setupConfigYaml", config)
+    let resultCStr = ClashCore_invoke("setupConfig", config)
     defer { ClashCore_free(resultCStr) }
-    let resultString = resultCStr.map { String(cString: $0) }
-    guard resultString == "" else {
-      completionHandler?(TVCoreProtocol.acknowledgement(error: resultString ?? "Missing core response"))
-      return
-    }
-    cachedMixedPort = Int(ClashCore_get_mixed_port())
-    guard cachedMixedPort > 0 else {
-      completionHandler?(TVCoreProtocol.acknowledgement(error: "Mixed port unavailable"))
+    let resultString = resultCStr.map { String(cString: $0) } ?? "ok"
+    guard resultString.isEmpty || resultString == "ok" else {
+      completionHandler?(resultString.data(using: .utf8))
       return
     }
     cachedDnsServers = extractDnsServers(from: config)
     if isTrafficEnabled && cachedMixedPort > 0 {
       setTunnelNetworkSettings(buildNetworkSettings(mixedPort: cachedMixedPort)) { error in
-        completionHandler?(TVCoreProtocol.acknowledgement(error: error.map { _ in "Network settings failed" }))
+        let result = error.map { "error: \($0.localizedDescription)" } ?? resultString
+        completionHandler?(result.data(using: .utf8))
       }
       return
     }
-    completionHandler?(TVCoreProtocol.acknowledgement())
+    completionHandler?(resultString.data(using: .utf8))
   }
 
-  // MARK: - Network settings (packet forwarding)
+  // MARK: - Network settings (proxy mode)
 
   private func buildNetworkSettings(mixedPort: Int) -> NEPacketTunnelNetworkSettings {
     let settings = NEPacketTunnelNetworkSettings(tunnelRemoteAddress: "198.18.0.1")
 
-    // A virtual resolver address; TCP and UDP port 53 enter Mihomo's resolver.
-    let dnsServers = ["198.18.0.2"]
+    // DNS servers must be Chinese-accessible (8.8.8.8 is blocked/polluted).
+    // DNS pollution doesn't matter: HTTP CONNECT proxy sends hostnames,
+    // not resolved IPs, so mihomo resolves the real address remotely.
+    let dnsServers = cachedDnsServers
 
-    // NetworkExtension owns routes; the userspace stack owns TCP/UDP and DNS.
-    // Provider-originated upstream sockets use the underlying network.
+    // IPv4: minimal TUN interface — needed for the VPN to appear "active".
+    // We do NOT use NEIPv4Route.default() because:
+    // 1. There's no TUN packet reader, so routed traffic would be blackholed
+    // 2. mihomo's own connections to remote proxy servers would also be lost
+    // Instead, traffic routing is handled entirely by NEProxySettings below.
     let ipv4 = NEIPv4Settings(
       addresses: ["198.18.0.1"],
-      subnetMasks: ["255.255.255.252"]
+      subnetMasks: ["255.255.255.0"]
     )
-    ipv4.includedRoutes = [NEIPv4Route.default()]
+    ipv4.includedRoutes = [
+      // Only route the fake-ip range through the tunnel (for mihomo's
+      // internal DNS mapping). All other traffic uses proxy settings.
+      NEIPv4Route(destinationAddress: "198.18.0.0", subnetMask: "255.254.0.0")
+    ]
     settings.ipv4Settings = ipv4
-    let ipv6 = NEIPv6Settings(addresses: ["fdfe:dcba:9876::1"],
-                             networkPrefixLengths: [126])
-    ipv6.includedRoutes = [NEIPv6Route.default()]
-    settings.ipv6Settings = ipv6
 
     // DNS settings
     let dns = NEDNSSettings(servers: dnsServers)
     dns.matchDomains = [""]  // capture all DNS queries
     settings.dnsSettings = dns
 
-    // Do not install HTTP/PAC proxy settings: all application sockets now
-    // traverse packetFlow, and rules decide DIRECT versus proxy in Mihomo.
+    // Proxy: route HTTP/HTTPS/SOCKS through mihomo's mixed-port.
+    // mixed-port supports both HTTP CONNECT and SOCKS5 protocols.
+    let proxy = NEProxySettings()
+    proxy.httpEnabled = true
+    proxy.httpServer = NEProxyServer(address: "127.0.0.1", port: mixedPort)
+    proxy.httpsEnabled = true
+    proxy.httpsServer = NEProxyServer(address: "127.0.0.1", port: mixedPort)
+    // Auto-proxy via PAC: ensures all traffic (not just browser HTTP) uses
+    // the proxy. The PAC script routes everything through SOCKS5 first
+    // (better for non-HTTP traffic), with HTTP CONNECT as fallback.
+    proxy.proxyAutoConfigurationJavaScript = """
+      function FindProxyForURL(url, host) {
+        return "SOCKS 127.0.0.1:\(mixedPort); PROXY 127.0.0.1:\(mixedPort); DIRECT";
+      }
+      """
+    proxy.matchDomains = [""]  // apply to all domains
+    proxy.excludeSimpleHostnames = false
+    settings.proxySettings = proxy
 
     settings.mtu = 1500
 
@@ -364,14 +300,10 @@ class PacketTunnelProvider: NEPacketTunnelProvider {
   }
 
   private func extractDnsServers(from setupPayload: String) -> [String] {
-    // tvOS transports raw YAML. Let the same core parser decode it, instead of
-    // treating it as Flutter's JSON SetupParams and silently losing custom DNS.
-    let parsed = ClashCore_invoke("getConfigContent", setupPayload)
-    defer { ClashCore_free(parsed) }
     guard
-      let json = parsed.map({ String(cString: $0) }),
-      let data = json.data(using: .utf8),
-      let config = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
+      let data = setupPayload.data(using: .utf8),
+      let root = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
+      let config = root["config"] as? [String: Any],
       let dns = config["dns"] as? [String: Any]
     else { return ["223.5.5.5", "119.29.29.29"] }
 

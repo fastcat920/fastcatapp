@@ -1,6 +1,5 @@
 # Flutter
 build/
-services/helper/target/
 .dart_tool/
 .build_user/
 .packages

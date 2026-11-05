@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"github.com/metacubex/mihomo/adapter/provider"
 	P "github.com/metacubex/mihomo/component/process"
-	"github.com/metacubex/mihomo/component/resource"
 	"github.com/metacubex/mihomo/config"
 	"github.com/metacubex/mihomo/constant"
 	"github.com/metacubex/mihomo/log"
@@ -14,16 +13,14 @@ import (
 )
 
 type InitParams struct {
-	HomeDir       string                    `json:"home-dir"`
-	Version       int                       `json:"version"`
-	ProviderCache *resource.CacheEncryption `json:"provider-cache,omitempty"`
+	HomeDir string `json:"home-dir"`
+	Version int    `json:"version"`
 }
 
 type SetupParams struct {
-	Config         *config.RawConfig `json:"config"`
-	SelectedMap    map[string]string `json:"selected-map"`
-	TestURL        string            `json:"test-url"`
-	DeadlineUnixMs int64             `json:"deadlineUnixMs,omitempty"`
+	Config      *config.RawConfig `json:"config"`
+	SelectedMap map[string]string `json:"selected-map"`
+	TestURL     string            `json:"test-url"`
 }
 
 type UpdateParams struct {
@@ -39,7 +36,6 @@ type UpdateParams struct {
 	ExternalController *string            `json:"external-controller"`
 	Interface          *string            `json:"interface-name"`
 	UnifiedDelay       *bool              `json:"unified-delay"`
-	DeadlineUnixMs     int64              `json:"deadlineUnixMs,omitempty"`
 }
 
 type tunSchema struct {
@@ -102,7 +98,6 @@ const (
 	forceGcMethod                  Method = "forceGc"
 	shutdownMethod                 Method = "shutdown"
 	validateConfigMethod           Method = "validateConfig"
-	checkGeoDataMethod             Method = "checkGeoData"
 	updateConfigMethod             Method = "updateConfig"
 	getProxiesMethod               Method = "getProxies"
 	changeProxyMethod              Method = "changeProxy"

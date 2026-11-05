@@ -415,17 +415,16 @@ class _WindowsChatPageState extends State<WindowsChatPage> {
     iaw.InAppWebViewController controller,
   ) async {
     final scriptUrl = widget.salesmartlyScriptUrl!;
-    final l10n = AppLocalizations.of(context);
-    final loadingHtml =
-        '<html><head><meta charset="utf-8"><style>*{margin:0;padding:0}html,body{width:100%;height:100%;background:#f5f5f5}#ss_loading{display:flex;align-items:center;justify-content:center;height:100%;color:#999;font-family:-apple-system,sans-serif;font-size:14px}</style></head><body><div id="ss_loading">${htmlEscape.convert(l10n.onlineSupportConnecting)}</div></body></html>';
+    final scriptUrlEscaped =
+        scriptUrl.replaceAll('\\', '\\\\').replaceAll("'", "\\'");
     await controller.evaluateJavascript(source: '''
       document.open();
-      document.write(${jsonEncode(loadingHtml)});
+      document.write('<html><head><meta charset="utf-8"><style>*{margin:0;padding:0}html,body{width:100%;height:100%;background:#f5f5f5}#ss_loading{display:flex;align-items:center;justify-content:center;height:100%;color:#999;font-family:-apple-system,sans-serif;font-size:14px}</style></head><body><div id="ss_loading">正在连接客服...</div></body></html>');
       document.close();
       window.__ssc = window.__ssc || {};
       window.__ssc.setting = { hideIcon: true };
       var s = document.createElement('script');
-      s.src = ${jsonEncode(scriptUrl)};
+      s.src = '$scriptUrlEscaped';
       s.id = 'ss_chat';
       s.onload = function() {
         (function w() {
@@ -441,7 +440,7 @@ class _WindowsChatPageState extends State<WindowsChatPage> {
       };
       s.onerror = function() {
         var e = document.getElementById('ss_loading');
-        if (e) e.textContent = ${jsonEncode(l10n.customerServiceLoadFailed)};
+        if (e) e.textContent = '加载失败，请检查网络后重试';
       };
       document.head.appendChild(s);
     ''');

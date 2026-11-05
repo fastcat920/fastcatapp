@@ -92,10 +92,7 @@ extern int ClashCore_get_mixed_port(void);
 extern void ClashCore_shutdown(void);
 extern char* ClashCore_invoke(char* method, char* data);
 extern void ClashCore_free(char* p);
-extern unsigned long long ClashCore_start_packets(void);
-extern void ClashCore_stop_packets(void);
-extern int ClashCore_write_packet(unsigned long long generation, uint8_t* data, int length);
-extern int ClashCore_read_packet(unsigned long long generation, uint8_t* data, int capacity);
+extern void ClashCore_write_packet(uint8_t* data, int length);
 
 #ifdef __cplusplus
 }

@@ -54,26 +54,6 @@ class TokenManager {
   /// 缓存的token，避免频繁读取存储
   String? _cachedToken;
 
-  // A process-local ownership marker, never a token or a persisted identifier.
-  // Rotate before a write starts so responses from the previous login become
-  // stale immediately, including events already queued on the async stream.
-  Object _sessionIdentity = Object();
-  int _pendingTokenMutations = 0;
-  bool _disposed = false;
-
-  Object get sessionIdentity => _sessionIdentity;
-
-  bool isCurrentSession(Object? identity) =>
-      !_disposed &&
-      _pendingTokenMutations == 0 &&
-      identical(identity, _sessionIdentity);
-
-  Object _beginTokenMutation() {
-    if (_disposed) throw StateError('TokenManager is disposed');
-    _pendingTokenMutations++;
-    return _sessionIdentity = Object();
-  }
-
   /// 创建持久化存储的TokenManager（默认）
   TokenManager() : _useMemoryStorage = false {
     _initializeTokenState();
@@ -95,7 +75,6 @@ class TokenManager {
 
   /// 保存token
   Future<void> saveToken(String token) async {
-    final identity = _beginTokenMutation();
     try {
       if (_useMemoryStorage) {
         _memoryToken = token;
@@ -104,25 +83,17 @@ class TokenManager {
         await prefs.setString(_storageKey, token);
       }
 
-      if (!_disposed && identical(identity, _sessionIdentity)) {
-        _cachedToken = token;
-        _updateAuthState(AuthState.authenticated);
-      }
+      _cachedToken = token;
+      _updateAuthState(AuthState.authenticated);
     } catch (e, stackTrace) {
       SdkLogger.e('[TokenManager] Failed to save token', e, stackTrace);
-      if (identical(identity, _sessionIdentity)) {
-        _updateAuthState(AuthState.unauthenticated);
-      }
+      _updateAuthState(AuthState.unauthenticated);
       rethrow;
-    } finally {
-      _pendingTokenMutations--;
     }
   }
 
   /// 获取token
   Future<String?> getToken() async {
-    if (_disposed) return null;
-    final identity = _sessionIdentity;
     try {
       // 优先返回缓存的token
       if (_cachedToken != null) {
@@ -130,17 +101,12 @@ class TokenManager {
       }
 
       // 从存储读取
-      String? token;
       if (_useMemoryStorage) {
-        token = _memoryToken;
+        _cachedToken = _memoryToken;
       } else {
         final prefs = await SharedPreferences.getInstance();
-        token = prefs.getString(_storageKey);
+        _cachedToken = prefs.getString(_storageKey);
       }
-
-      // A late storage read must not restore a token after logout/re-login.
-      if (!isCurrentSession(identity)) return _cachedToken;
-      _cachedToken = token;
 
       // 更新认证状态
       if (_cachedToken != null && _cachedToken!.isNotEmpty) {
@@ -164,7 +130,6 @@ class TokenManager {
 
   /// 清除token
   Future<void> clearToken() async {
-    final identity = _beginTokenMutation();
     try {
       if (_useMemoryStorage) {
         _memoryToken = null;
@@ -173,28 +138,21 @@ class TokenManager {
         await prefs.remove(_storageKey);
       }
 
-      if (!_disposed && identical(identity, _sessionIdentity)) {
-        _cachedToken = null;
-        _updateAuthState(AuthState.unauthenticated);
-      }
+      _cachedToken = null;
+      _updateAuthState(AuthState.unauthenticated);
     } catch (e, stackTrace) {
       SdkLogger.e('[TokenManager] Failed to clear token', e, stackTrace);
       rethrow;
-    } finally {
-      _pendingTokenMutations--;
     }
   }
 
   /// 释放资源
   void dispose() {
-    _disposed = true;
-    _sessionIdentity = Object();
     _authStateController.close();
   }
 
   /// 初始化token状态
   Future<void> _initializeTokenState() async {
-    final identity = _sessionIdentity;
     try {
       String? token;
       if (_useMemoryStorage) {
@@ -204,7 +162,6 @@ class TokenManager {
         token = prefs.getString(_storageKey);
       }
 
-      if (!isCurrentSession(identity)) return;
       if (token != null && token.isNotEmpty) {
         _cachedToken = token;
         _updateAuthState(AuthState.authenticated);
@@ -214,15 +171,12 @@ class TokenManager {
     } catch (e, stackTrace) {
       SdkLogger.e(
           '[TokenManager] Failed to initialize token state', e, stackTrace);
-      if (isCurrentSession(identity)) {
-        _updateAuthState(AuthState.unauthenticated);
-      }
+      _updateAuthState(AuthState.unauthenticated);
     }
   }
 
   /// 更新认证状态
   void _updateAuthState(AuthState newState) {
-    if (_disposed) return;
     if (_currentState != newState) {
       _currentState = newState;
       _authStateController.add(newState);

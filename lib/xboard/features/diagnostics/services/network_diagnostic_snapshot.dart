@@ -1,37 +1,5 @@
 import 'package:fl_clash/common/sensitive_masker.dart';
 
-/// Older cores initialize downstream stages as failed/unavailable even when
-/// configuration, DNS or TCP failed before those stages could run.
-Map<String, dynamic> normalizeNodeDiagnosticResult(
-    Map<String, dynamic> source) {
-  final result = Map<String, dynamic>.from(source);
-  if (result['failure-stage'] == 'configuration' ||
-      result['error']?.toString().toLowerCase().contains('proxy not found') ==
-          true) {
-    result['failure-stage'] = 'configuration';
-    result['dns-status'] = 'skipped';
-    result['tcp-status'] = 'skipped';
-    result['proxy-status'] = 'skipped';
-  } else if (result.isEmpty ||
-      result['diagnostic-status'] == 'unavailable' ||
-      result['diagnostic-status'] == 'core_unavailable') {
-    result['diagnostic-status'] ??= 'unavailable';
-    result['dns-status'] = 'skipped';
-    result['tcp-status'] = 'skipped';
-    result['proxy-status'] = 'skipped';
-  } else if (result['failure-stage'] == 'dns') {
-    result['tcp-status'] = 'skipped';
-    result['proxy-status'] = 'skipped';
-  } else if (result['failure-stage'] == 'tcp') {
-    result['proxy-status'] = 'skipped';
-  }
-  return result;
-}
-
-bool nodeDiagnosticHasMissingPrerequisite(Map<String, dynamic> result) =>
-    result['failure-stage'] == 'configuration' ||
-    result['diagnostic-status'] == 'core_unavailable';
-
 Map<String, dynamic> sanitizeNetworkDiagnosticNodeResult(
   Map<String, dynamic> source,
 ) {
@@ -73,7 +41,6 @@ class NetworkDiagnosticSnapshot {
     required this.directResults,
     required this.proxyResults,
     required this.nodeResult,
-    this.localProxyResults = const [],
   });
 
   final DateTime generatedAt;
@@ -90,7 +57,6 @@ class NetworkDiagnosticSnapshot {
   final List<NetworkDiagnosticItem> directResults;
   final List<NetworkDiagnosticItem> proxyResults;
   final Map<String, dynamic> nodeResult;
-  final List<NetworkDiagnosticItem> localProxyResults;
 }
 
 enum NetworkDiagnosticSeverity { healthy, warning, error }
@@ -112,10 +78,6 @@ enum NetworkDiagnosticReason {
   proxy,
   proxyWorking,
   healthy,
-  localProxy,
-  configuration,
-  coreUnavailable,
-  routeUncertain,
 }
 
 class NetworkDiagnosticDecision {
@@ -137,25 +99,8 @@ NetworkDiagnosticDecision evaluateNetworkDiagnostic({
   required bool diagnosticUnavailable,
   required String? failureStage,
   required String? tcpStatus,
-  bool? localProxyOk,
-  bool directMayUseTun = false,
 }) {
   const error = NetworkDiagnosticSeverity.error;
-
-  // Missing proxies/configuration are not failed DNS or a broken LAN. These
-  // findings must precede the downstream failures caused by an empty core.
-  if (connected && !proxyOk && failureStage == 'configuration') {
-    return const NetworkDiagnosticDecision(
-      NetworkDiagnosticReason.configuration,
-      error,
-    );
-  }
-  if (connected && !proxyOk && diagnosticUnavailable) {
-    return const NetworkDiagnosticDecision(
-      NetworkDiagnosticReason.coreUnavailable,
-      NetworkDiagnosticSeverity.warning,
-    );
-  }
 
   // When every end-to-end probe fails, loss of the underlying network makes
   // node-layer errors downstream symptoms and should win over them.
@@ -170,10 +115,6 @@ NetworkDiagnosticDecision evaluateNetworkDiagnostic({
   // network filters a probe target, and must not be reported as total loss of
   // connectivity.
   if (connected && proxyOk) {
-    if (localProxyOk == false) {
-      return const NetworkDiagnosticDecision(
-          NetworkDiagnosticReason.localProxy, error);
-    }
     if (!dnsOk || !directAllOk || !ipOk) {
       return const NetworkDiagnosticDecision(
         NetworkDiagnosticReason.proxyWorking,
@@ -186,12 +127,6 @@ NetworkDiagnosticDecision evaluateNetworkDiagnostic({
     );
   }
   if (!directOk && !ipOk) {
-    if (connected && directMayUseTun) {
-      return const NetworkDiagnosticDecision(
-        NetworkDiagnosticReason.routeUncertain,
-        NetworkDiagnosticSeverity.warning,
-      );
-    }
     return NetworkDiagnosticDecision(
       connected
           ? NetworkDiagnosticReason.network

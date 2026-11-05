@@ -311,12 +311,8 @@ class _HomeNoticeCardState extends ConsumerState<_HomeNoticeCard> {
                       ? Padding(
                           padding: const EdgeInsets.fromLTRB(16, 12, 16, 12),
                           child: _NoticeCardContent(
-                            title: noticeState.isLoading ? '公告' : '暂无公告',
-                            content: noticeState.isLoading
-                                ? '正在加载公告…'
-                                : noticeState.error != null
-                                    ? '暂时无法获取公告'
-                                    : '当前没有最新公告',
+                            title: '暂无公告',
+                            content: '当前没有最新公告',
                             isLoading: noticeState.isLoading,
                             colorScheme: colorScheme,
                             theme: theme,

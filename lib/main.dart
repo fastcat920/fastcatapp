@@ -18,7 +18,6 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:desktop_webview_window/desktop_webview_window.dart';
 
 import 'application.dart';
-import 'xboard/features/shared/widgets/apple_privacy_gate.dart';
 import 'clash/core.dart';
 import 'clash/lib.dart';
 import 'common/common.dart';
@@ -31,7 +30,6 @@ import 'models/models.dart';
 import 'models/core.dart' as core_models;
 import 'package:fl_clash/xboard/features/auth/providers/xboard_user_provider.dart';
 import 'package:fl_clash/xboard/infrastructure/infrastructure.dart';
-import 'package:fl_clash/xboard/infrastructure/cache/content_cache_scope.dart';
 import 'package:fl_clash/xboard/services/services.dart';
 import 'package:flutter_xboard_sdk/flutter_xboard_sdk.dart';
 import 'package:webview_win_floating/webview_plugin.dart';
@@ -231,9 +229,7 @@ Future<void> main(List<String> args) async {
         (ref) => initialSnapshot.subscriptionInfo,
       ),
     ],
-    child: Platform.isIOS
-        ? ApplePrivacyGate(preferences: prefs, child: const Application())
-        : const Application(),
+    child: const Application(),
   ));
   unawaited(bootDiagLog('runApp called'));
 }
@@ -245,9 +241,6 @@ Future<InitialUserSnapshot> _loadInitialUserSnapshot(
   if (!initialHasToken) return const InitialUserSnapshot();
 
   final storageService = XBoardStorageService(storage);
-  final token = (await storage.getString('xboard_token')).dataOrNull;
-  final scope = ContentCacheScope.accountForToken(token);
-  if (scope == null) return const InitialUserSnapshot();
   String? email;
   DomainUser? userInfo;
   DomainSubscription? subscriptionInfo;
@@ -255,26 +248,23 @@ Future<InitialUserSnapshot> _loadInitialUserSnapshot(
   await Future.wait([
     () async {
       try {
-        email = (await storageService.getUserEmail(scope: scope)).dataOrNull;
+        email = (await storageService.getUserEmail()).dataOrNull;
       } catch (_) {}
     }(),
     () async {
       try {
-        userInfo =
-            (await storageService.getDomainUser(scope: scope)).dataOrNull;
+        userInfo = (await storageService.getDomainUser()).dataOrNull;
       } catch (_) {}
     }(),
     () async {
       try {
         subscriptionInfo =
-            (await storageService.getDomainSubscription(scope: scope))
-                .dataOrNull;
+            (await storageService.getDomainSubscription()).dataOrNull;
       } catch (_) {}
     }(),
   ]);
 
   return InitialUserSnapshot(
-    cacheScope: scope,
     email: email,
     userInfo: userInfo,
     subscriptionInfo: subscriptionInfo,
@@ -368,16 +358,9 @@ Future<void> _service(List<String> flags) async {
     _TileListenerWithService(
       onStop: () async {
         await app?.tip(appLocalizations.stopVpn);
-        try {
-          if (!await clashLibHandler.stopListener()) {
-            debugPrint('Core rejected listener stop');
-          }
-        } catch (error) {
-          debugPrint('Core listener stop failed: $error');
-        } finally {
-          await vpn?.stop();
-          exit(0);
-        }
+        clashLibHandler.stopListener();
+        await vpn?.stop();
+        exit(0);
       },
     ),
   );
@@ -456,6 +439,7 @@ Future<void> _service(List<String> flags) async {
     _handleMainIpc(clashLibHandler);
   } else {
     commonPrint.log("quick start");
+    await ClashCore.initGeo();
     app?.tip(appLocalizations.startVpn);
     final homeDirPath = await appPath.homeDirPath;
     final version = await system.version;
@@ -469,7 +453,6 @@ Future<void> _service(List<String> flags) async {
           await vpn?.stop();
           return;
         }
-        await ClashCore.initGeo(validate: false);
         final params = await globalState.getSetupParams(
           pathConfig: clashConfig,
         );
@@ -486,12 +469,10 @@ Future<void> _service(List<String> flags) async {
           await vpn?.stop();
           return;
         }
-        final started = await vpn?.start(
+        await vpn?.start(
           recoveryVpnOptions ?? clashLibHandler.getAndroidVpnOptions(),
         );
-        if (started != true || !await clashLibHandler.startListener()) {
-          throw StateError('Quick VPN recovery did not start its listeners');
-        }
+        clashLibHandler.startListener();
       } catch (error, stack) {
         debugPrint('Quick VPN recovery failed: $error');
         debugPrintStack(stackTrace: stack);

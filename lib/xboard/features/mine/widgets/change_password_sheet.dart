@@ -5,9 +5,6 @@ import 'package:fl_clash/xboard/utils/backend_message_mapper.dart';
 import 'package:fl_clash/xboard/utils/xboard_notification.dart';
 import 'package:fl_clash/l10n/l10n.dart';
 import 'package:fl_clash/xboard/features/shared/styles/styles.dart';
-import 'package:fl_clash/xboard/features/auth/providers/session_epoch_provider.dart';
-import 'package:fl_clash/xboard/features/auth/providers/xboard_user_provider.dart';
-import 'package:fl_clash/xboard/services/storage/xboard_storage_provider.dart';
 
 Future<void> showChangePasswordSheet(
   BuildContext context,
@@ -71,46 +68,17 @@ class _ChangePasswordSheetState extends ConsumerState<_ChangePasswordSheet> {
     }
 
     setState(() => _isSubmitting = true);
-    final container = ProviderScope.containerOf(context, listen: false);
-    final epoch = container.read(sessionEpochProvider);
-    final user = container.read(xboardUserProvider);
-    final email = user.userInfo?.email ?? user.email;
-    final storage = container.read(storageServiceProvider);
-    bool isCurrentSession() => container.read(sessionEpochProvider) == epoch;
     try {
-      final sdk = await container.read(xboardSdkProvider.future);
-      if (!isCurrentSession()) return;
+      final sdk = await widget.ref.read(xboardSdkProvider.future);
       final resp = await sdk.httpService.postRequest(
         '/user/changePassword',
         {'old_password': oldPwd, 'new_password': newPwd},
       );
-      if (!isCurrentSession()) return;
-      final success = resp['data'] == true;
-      var rememberedPasswordUpdated = true;
-      if (success && email != null && email.isNotEmpty) {
-        try {
-          final saved = await storage.updateRememberedPassword(
-            email: email,
-            previousPassword: oldPwd,
-            newPassword: newPwd,
-            isCurrentSession: isCurrentSession,
-          );
-          rememberedPasswordUpdated = saved.dataOrNull == true;
-        } catch (_) {
-          // A local save failure must not mask a successful server change.
-          rememberedPasswordUpdated = false;
-        }
-        if (!isCurrentSession()) return;
-      }
-      if (mounted && isCurrentSession()) {
+      if (mounted) {
+        final success = resp['data'] == true;
         if (success) {
           Navigator.of(context).pop();
-          if (rememberedPasswordUpdated) {
-            XBoardNotification.showSuccess(l10n.xboardPasswordChanged);
-          } else {
-            XBoardNotification.showInfo(
-                l10n.xboardPasswordChangedRememberFailed);
-          }
+          XBoardNotification.showSuccess(l10n.xboardPasswordChanged);
         } else {
           final msg = BackendMessageMapper.map(
             resp['message'] as String?,
@@ -120,7 +88,7 @@ class _ChangePasswordSheetState extends ConsumerState<_ChangePasswordSheet> {
         }
       }
     } catch (e) {
-      if (mounted && isCurrentSession()) {
+      if (mounted) {
         XBoardNotification.showError(
           BackendMessageMapper.mapError(
             e,

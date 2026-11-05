@@ -7,15 +7,11 @@ package main
 */
 import "C"
 import (
-	"core/applepacket"
 	"encoding/json"
-	"sync"
 	"unsafe"
 
-	"github.com/metacubex/mihomo/component/resource"
 	"github.com/metacubex/mihomo/config"
 	MC "github.com/metacubex/mihomo/constant"
-	"go.yaml.in/yaml/v3"
 )
 
 // ClashCore_init initialises the mihomo core.
@@ -23,25 +19,19 @@ import (
 // config:  raw YAML config string.
 // Returns 0 on success, non-zero on failure.
 //
-// NetworkExtension owns the TUN device. A separate public packetFlow bridge
-// connects to the userspace stack; YAML TUN remains disabled so config reloads
-// cannot create a second device or take over OS routing inside the sandbox.
+// On iOS the NetworkExtension owns the TUN device; mihomo runs in proxy mode
+// only (mixed-port / HTTP / SOCKS). TUN is force-disabled in the config to
+// prevent sing-tun from trying to create its own TUN device (which would fail
+// inside the sandbox).
 //
 //export ClashCore_init
 func ClashCore_init(homeDir *C.char, configYaml *C.char) C.int {
 	homeDirStr := C.GoString(homeDir)
 	configStr := C.GoString(configYaml)
-	var cacheOptions struct {
-		ProviderCache *resource.CacheEncryption `yaml:"fastcat-provider-cache"`
-	}
-	if err := yaml.Unmarshal([]byte(configStr), &cacheOptions); err != nil {
-		return 2
-	}
 
 	// Initialise clash home directory
 	initParams := InitParams{
-		HomeDir:       homeDirStr,
-		ProviderCache: cacheOptions.ProviderCache,
+		HomeDir: homeDirStr,
 	}
 	initData, _ := json.Marshal(initParams)
 	if !handleInitClash(string(initData)) {
@@ -74,21 +64,22 @@ func ClashCore_init(homeDir *C.char, configYaml *C.char) C.int {
 	}
 
 	// Start listener
-	if !handleStartListener() {
-		return 4
-	}
+	handleStartListener()
 	return 0
 }
 
-// Keep OS device creation disabled: the separately managed packetFlow stack
-// forwards packets. Retain a loopback listener for diagnostics and enable DNS.
+// patchConfigForIOS modifies the parsed RawConfig for iOS proxy mode:
+// - Disables TUN (sing-tun can't create a device inside the NE sandbox)
+// - Ensures mixed-port is set (proxy listener)
+// - Enables DNS with fake-ip mode so domains resolve through proxy
+// - Sets allow-lan so the local proxy is accessible
 func patchConfigForIOS(cfg *config.RawConfig) {
-	// The separately managed packetFlow stack survives configuration reloads.
+	// Disable TUN — iOS uses proxy mode, not packet forwarding
 	cfg.Tun.Enable = false
 
-	// Diagnostic proxy must not expose a listener to other LAN devices.
-	cfg.AllowLan = false
-	cfg.BindAddress = "127.0.0.1"
+	// Allow LAN connections so proxy is reachable on 127.0.0.1
+	cfg.AllowLan = true
+	cfg.BindAddress = "*"
 
 	// Ensure mixed-port exists (default 7890)
 	if cfg.MixedPort == 0 {
@@ -145,7 +136,6 @@ func ClashCore_get_mixed_port() C.int {
 //
 //export ClashCore_shutdown
 func ClashCore_shutdown() {
-	ClashCore_stop_packets()
 	handleStopListener()
 	handleStopLog()
 	handleShutdown()
@@ -196,8 +186,6 @@ func ClashCore_invoke(method *C.char, data *C.char) *C.char {
 			ch <- string(data)
 		case validateConfigMethod:
 			ch <- handleValidateConfig([]byte(dataStr))
-		case checkGeoDataMethod:
-			ch <- handleCheckGeoData()
 		case updateConfigMethod:
 			ch <- handleUpdateConfig([]byte(dataStr))
 		case setupConfigMethod:
@@ -213,20 +201,6 @@ func ClashCore_invoke(method *C.char, data *C.char) *C.char {
 				} else {
 					ch <- ""
 				}
-			}
-		case Method("setupConfigYaml"):
-			raw, err := config.UnmarshalRawConfig([]byte(dataStr))
-			if err != nil {
-				ch <- err.Error()
-				break
-			}
-			patchConfigForIOS(raw)
-			params := defaultSetupParams()
-			params.Config = raw
-			if err := setupConfig(params); err != nil {
-				ch <- err.Error()
-			} else {
-				ch <- ""
 			}
 		case getProxiesMethod:
 			data, _ := json.Marshal(handleGetProxies())
@@ -331,71 +305,14 @@ func ClashCore_free(p *C.char) {
 	}
 }
 
-var applePackets struct {
-	sync.Mutex
-	bridge     *applepacket.Bridge
-	generation uint64
-}
-
-//export ClashCore_start_packets
-func ClashCore_start_packets() C.ulonglong {
-	applePackets.Lock()
-	defer applePackets.Unlock()
-	if applePackets.bridge != nil {
-		return C.ulonglong(applePackets.generation)
-	}
-	b, err := applepacket.New()
-	if err != nil {
-		return 0
-	}
-	applePackets.generation++
-	applePackets.bridge = b
-	return C.ulonglong(applePackets.generation)
-}
-
-func packetBridge(generation C.ulonglong) *applepacket.Bridge {
-	applePackets.Lock()
-	defer applePackets.Unlock()
-	if uint64(generation) != applePackets.generation {
-		return nil
-	}
-	return applePackets.bridge
-}
-
-//export ClashCore_stop_packets
-func ClashCore_stop_packets() {
-	applePackets.Lock()
-	b := applePackets.bridge
-	applePackets.bridge = nil
-	applePackets.Unlock()
-	if b != nil {
-		_ = b.Close()
-	}
-}
-
+// ClashCore_write_packet is a no-op on iOS.
+// iOS uses proxy mode (mixed-port) instead of TUN packet forwarding.
+// The NetworkExtension routes traffic to mihomo's local proxy via
+// NEProxySettings; raw IP packet handling is not needed.
+//
 //export ClashCore_write_packet
-func ClashCore_write_packet(generation C.ulonglong, data *C.uint8_t, length C.int) C.int {
-	b := packetBridge(generation)
-	if b == nil || data == nil || length <= 0 || length > 65535 {
-		return -1
-	}
-	if err := b.Inject(unsafe.Slice((*byte)(unsafe.Pointer(data)), int(length))); err != nil {
-		return -1
-	}
-	return 0
-}
-
-//export ClashCore_read_packet
-func ClashCore_read_packet(generation C.ulonglong, data *C.uint8_t, capacity C.int) C.int {
-	b := packetBridge(generation)
-	if b == nil || data == nil || capacity <= 0 || capacity > 65535 {
-		return -1
-	}
-	n, err := b.Receive(unsafe.Slice((*byte)(unsafe.Pointer(data)), int(capacity)))
-	if err != nil {
-		return -1
-	}
-	return C.int(n)
+func ClashCore_write_packet(data *C.uint8_t, length C.int) {
+	// Intentionally empty — iOS proxy mode, no packet forwarding.
 }
 
 // sendMessage is a no-op on iOS. Core logs are stored by handleStartLog and

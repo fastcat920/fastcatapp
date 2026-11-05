@@ -24,7 +24,6 @@ import (
 	"os"
 	"runtime"
 	"sync"
-	"time"
 )
 
 var (
@@ -122,7 +121,7 @@ func updateListeners() {
 	if !isRunning {
 		return
 	}
-	if currentConfig == nil || currentConfig.General == nil {
+	if currentConfig == nil {
 		return
 	}
 	listeners := currentConfig.Listeners
@@ -199,9 +198,6 @@ func updateConfig(params *UpdateParams) error {
 	defer runLock.Unlock()
 	if params == nil {
 		return errors.New("missing configuration update")
-	}
-	if err := checkSetupDeadline(params.DeadlineUnixMs); err != nil {
-		return err
 	}
 	// The first Flutter frame may change logging before setupConfig has run.
 	// Process logging does not depend on a profile and must never create one,
@@ -281,24 +277,9 @@ func setupConfig(params *SetupParams) error {
 	if params == nil || params.Config == nil {
 		return errors.New("missing configuration")
 	}
-	if err := checkSetupDeadline(params.DeadlineUnixMs); err != nil {
-		return err
-	}
-	if err := checkGeoHome(constant.Path.HomeDir(), false); err != nil {
-		return err
-	}
 	nextConfig, err := config.ParseRawConfig(params.Config)
 	if err != nil {
 		// A rejected edit must never replace a working profile with an empty one.
-		return err
-	}
-	return commitSetupConfig(params, nextConfig)
-}
-
-// Called with runLock held. A timed-out native request must not commit after
-// Flutter has already reported failure and restored its previous selection.
-func commitSetupConfig(params *SetupParams, nextConfig *config.Config) error {
-	if err := checkSetupDeadline(params.DeadlineUnixMs); err != nil {
 		return err
 	}
 	if params.TestURL != "" {
@@ -310,14 +291,7 @@ func commitSetupConfig(params *SetupParams, nextConfig *config.Config) error {
 	hub.ApplyConfig(currentConfig)
 	patchSelectGroup(params.SelectedMap)
 	updateListeners()
-	return nil
-}
-
-func checkSetupDeadline(deadlineUnixMs int64) error {
-	if deadlineUnixMs > 0 && time.Now().UnixMilli() >= deadlineUnixMs {
-		return errors.New("configuration request expired before it could be applied")
-	}
-	return nil
+	return err
 }
 
 func UnmarshalJson(data []byte, v any) error {

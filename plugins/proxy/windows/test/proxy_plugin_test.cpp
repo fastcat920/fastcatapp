@@ -2,6 +2,7 @@
 #include <flutter/method_result_functions.h>
 #include <flutter/standard_method_codec.h>
 #include <gtest/gtest.h>
+#include <windows.h>
 
 #include <memory>
 #include <string>
@@ -11,33 +12,31 @@
 
 namespace proxy {
 namespace test {
+
+namespace {
+
 using flutter::EncodableMap;
 using flutter::EncodableValue;
 using flutter::MethodCall;
 using flutter::MethodResultFunctions;
 
-TEST(ProxyPlugin, UnknownAndLegacyMutationsAreUnsupported) {
-  ProxyPlugin plugin;
-  for (const auto* method : {"StartProxy", "StopProxy", "unknown"}) {
-    bool unsupported = false;
-    plugin.HandleMethodCall(MethodCall(method, std::make_unique<EncodableValue>()),
-        std::make_unique<MethodResultFunctions<>>(nullptr, nullptr,
-            [&unsupported]() { unsupported = true; }));
-    EXPECT_TRUE(unsupported);
-  }
-}
+}  // namespace
 
-TEST(ProxyPlugin, InvalidPartialWriteDoesNotTouchSystemSettings) {
+TEST(ProxyPlugin, GetPlatformVersion) {
   ProxyPlugin plugin;
-  EncodableMap patch{{EncodableValue("connection"), EncodableValue("RAS")}};
-  bool replied = false;
-  plugin.HandleMethodCall(MethodCall("WriteProxyConfiguration", std::make_unique<EncodableValue>(patch)),
+  // Save the reply value from the success callback.
+  std::string result_string;
+  plugin.HandleMethodCall(
+      MethodCall("getPlatformVersion", std::make_unique<EncodableValue>()),
       std::make_unique<MethodResultFunctions<>>(
-          [&replied](const EncodableValue* result) {
-            replied = true;
-            EXPECT_FALSE(std::get<bool>(*result));
-          }, nullptr, nullptr));
-  EXPECT_TRUE(replied);
+          [&result_string](const EncodableValue* result) {
+            result_string = std::get<std::string>(*result);
+          },
+          nullptr, nullptr));
+
+  // Since the exact string varies by host, just ensure that it's a string
+  // with the expected format.
+  EXPECT_TRUE(result_string.rfind("Windows ", 0) == 0);
 }
 
 }  // namespace test

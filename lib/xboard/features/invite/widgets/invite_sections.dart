@@ -529,7 +529,6 @@ class _InviteCodesTabContentState
   Widget build(BuildContext context) {
     final idx = widget.tabController.index;
     final state = widget.state;
-    final sessionEpoch = ref.watch(sessionEpochProvider);
 
     if (idx == 0) {
       final siteUrlAsync = ref.watch(panelSiteUrlProvider);
@@ -541,8 +540,8 @@ class _InviteCodesTabContentState
         rewardRestrictionPolicy: widget.rewardRestrictionPolicy,
       );
     }
-    if (idx == 1) return _InviteUsersTab(key: ValueKey(sessionEpoch));
-    return _CommissionLedgerTab(key: ValueKey(sessionEpoch));
+    if (idx == 1) return const _InviteUsersTab();
+    return const _CommissionLedgerTab();
   }
 }
 
@@ -800,7 +799,7 @@ class _InviteCodeItem extends StatelessWidget {
 // ─── 邀请用户与统一佣金账本 ────────────────────────────────────────────────────
 
 class _InviteUsersTab extends ConsumerStatefulWidget {
-  const _InviteUsersTab({super.key});
+  const _InviteUsersTab();
 
   @override
   ConsumerState<_InviteUsersTab> createState() => _InviteUsersTabState();
@@ -822,21 +821,18 @@ class _InviteUsersTabState extends ConsumerState<_InviteUsersTab> {
   static const _pageSize = 10;
 
   Future<void> _load({int page = 1}) async {
-    if (!mounted || _loading) return;
-    final epoch = ref.read(sessionEpochProvider);
-    bool isCurrent() => mounted && ref.read(sessionEpochProvider) == epoch;
+    if (_loading) return;
     setState(() {
       _loading = true;
       _error = null;
     });
     try {
       final sdk = await ref.read(xboardSdkProvider.future);
-      if (!isCurrent()) return;
       final result = await sdk.catboard.getInviteUsers(
         current: page,
         pageSize: _pageSize,
       );
-      if (!isCurrent()) return;
+      if (!mounted) return;
       setState(() {
         _items
           ..clear()
@@ -845,9 +841,9 @@ class _InviteUsersTabState extends ConsumerState<_InviteUsersTab> {
         _total = result.total;
       });
     } catch (error) {
-      if (isCurrent()) setState(() => _error = error.toString());
+      if (mounted) setState(() => _error = error.toString());
     } finally {
-      if (isCurrent()) setState(() => _loading = false);
+      if (mounted) setState(() => _loading = false);
     }
   }
 
@@ -913,7 +909,7 @@ class _InviteUsersTabState extends ConsumerState<_InviteUsersTab> {
 }
 
 class _CommissionLedgerTab extends ConsumerStatefulWidget {
-  const _CommissionLedgerTab({super.key});
+  const _CommissionLedgerTab();
 
   @override
   ConsumerState<_CommissionLedgerTab> createState() =>
@@ -936,21 +932,18 @@ class _CommissionLedgerTabState extends ConsumerState<_CommissionLedgerTab> {
   static const _pageSize = 10;
 
   Future<void> _load({int page = 1}) async {
-    if (!mounted || _loading) return;
-    final epoch = ref.read(sessionEpochProvider);
-    bool isCurrent() => mounted && ref.read(sessionEpochProvider) == epoch;
+    if (_loading) return;
     setState(() {
       _loading = true;
       _error = null;
     });
     try {
       final sdk = await ref.read(xboardSdkProvider.future);
-      if (!isCurrent()) return;
       final result = await sdk.catboard.getCommissionRecords(
         current: page,
         pageSize: _pageSize,
       );
-      if (!isCurrent()) return;
+      if (!mounted) return;
       setState(() {
         _items
           ..clear()
@@ -959,9 +952,9 @@ class _CommissionLedgerTabState extends ConsumerState<_CommissionLedgerTab> {
         _total = result.total;
       });
     } catch (error) {
-      if (isCurrent()) setState(() => _error = error.toString());
+      if (mounted) setState(() => _error = error.toString());
     } finally {
-      if (isCurrent()) setState(() => _loading = false);
+      if (mounted) setState(() => _loading = false);
     }
   }
 

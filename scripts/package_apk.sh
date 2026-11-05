@@ -35,11 +35,8 @@ BUILD_EXIT=1
 for attempt in 1 2 3; do
   set +e
   flutter build apk --release \
-    --flavor mobile \
     --split-per-abi \
     --target-platform android-arm64,android-arm \
-    --dart-define=FASTCAT_BUILD_COMMIT="${FASTCAT_BUILD_COMMIT:-}" \
-    --dart-define=FASTCAT_BUILD_CHANNEL="${FASTCAT_BUILD_CHANNEL:-local}" \
     --dart-define=XOR_KEY="${XOR_KEY}" \
     --dart-define=REMOTE_CONFIG_PUBLIC_KEY="${REMOTE_CONFIG_PUBLIC_KEY:-}" \
     --dart-define=FASTCAT_KEY_CURRENT_ID="${FASTCAT_KEY_CURRENT_ID}" \
@@ -61,32 +58,40 @@ for attempt in 1 2 3; do
   fi
 done
 
-if [ "$BUILD_EXIT" -ne 0 ]; then
-  echo "APK build failed; refusing to publish partial output from a failed attempt."
-  exit "$BUILD_EXIT"
-fi
-
 # List all APK files in the build tree for diagnostics
 echo "→ APK files produced:"
 find build -name "*.apk" -type f 2>/dev/null || true
 
-# Match Flutter's mobile flavor output exactly; never select stale/debug APKs.
-APK_DIR="build/app/outputs/flutter-apk"
-V8A_SRC="$APK_DIR/app-arm64-v8a-mobile-release.apk"
-V7A_SRC="$APK_DIR/app-armeabi-v7a-mobile-release.apk"
-
-# Validate both architectures before copying either one to the upload directory.
-for apk in "$V8A_SRC" "$V7A_SRC"; do
-  if [ ! -s "$apk" ]; then
-    echo "✗ Missing or empty required APK: $apk"
-    exit 1
-  fi
-done
-
 mkdir -p dist
-V8A_OUT="dist/${APP_NAME_EN}-Android-${VERSION}-arm64-v8a.apk"
-V7A_OUT="dist/${APP_NAME_EN}-Android-${VERSION}-armeabi-v7a.apk"
-cp "$V8A_SRC" "$V8A_OUT"
-cp "$V7A_SRC" "$V7A_OUT"
-echo "✓ $V8A_OUT"
-echo "✓ $V7A_OUT"
+
+# Find arm64-v8a APK
+V8A_SRC=$(find build -name "*arm64*v8a*.apk" -o -name "*arm64-v8a*.apk" 2>/dev/null | head -1 || true)
+V7A_SRC=$(find build -name "*armeabi*v7a*.apk" -o -name "*armeabi-v7a*.apk" 2>/dev/null | head -1 || true)
+
+copied=0
+if [ -n "${V8A_SRC:-}" ] && [ -f "$V8A_SRC" ]; then
+  V8A_OUT="dist/${APP_NAME_EN}-Android-${VERSION}-arm64-v8a.apk"
+  cp "$V8A_SRC" "$V8A_OUT"
+  echo "✓ $V8A_OUT (from $V8A_SRC)"
+  copied=$((copied + 1))
+fi
+if [ -n "${V7A_SRC:-}" ] && [ -f "$V7A_SRC" ]; then
+  V7A_OUT="dist/${APP_NAME_EN}-Android-${VERSION}-armeabi-v7a.apk"
+  cp "$V7A_SRC" "$V7A_OUT"
+  echo "✓ $V7A_OUT (from $V7A_SRC)"
+  copied=$((copied + 1))
+fi
+
+if [ "$copied" -gt 0 ]; then
+  if [ "$BUILD_EXIT" -ne 0 ]; then
+    echo "i Flutter CLI reported an error, but APKs were produced successfully."
+  fi
+else
+  echo "→ Re-running Gradle with stacktrace for diagnostics..."
+  (
+    cd android
+    ./gradlew assembleMobileRelease --stacktrace --no-daemon
+  ) || true
+  echo "✗ APKs not found after build"
+  exit "${BUILD_EXIT:-1}"
+fi

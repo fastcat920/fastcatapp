@@ -1,4 +1,3 @@
-import 'package:fl_clash/xboard/core/core.dart';
 import 'dart:io';
 
 import 'package:fl_clash/common/common.dart';
@@ -11,7 +10,7 @@ class FastcatHttpOverrides extends HttpOverrides {
     }
     final port = globalState.config.patchClashConfig.mixedPort;
     final isStart = globalState.appState.runTime != null;
-    const FileLogger('http.dart').debug('find $url proxy:$isStart');
+    commonPrint.log("find $url proxy:$isStart");
     if (!isStart) return "DIRECT";
     return "PROXY localhost:$port";
   }

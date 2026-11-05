@@ -1,4 +1,3 @@
-import 'support_unread_badge.dart';
 import 'package:fl_clash/xboard/features/shared/styles/font_weights.dart';
 import 'package:flutter/material.dart';
 import 'package:fl_clash/l10n/l10n.dart';
@@ -130,15 +129,12 @@ class _MobileNavItem extends StatelessWidget {
                           : Colors.transparent,
                       borderRadius: BorderRadius.circular(14),
                     ),
-                    child: SupportUnreadBadge(
-                      enabled: index == 3,
-                      child: Icon(
-                        isSelected ? selectedIcon : icon,
-                        color: isSelected
-                            ? colorScheme.primary
-                            : colorScheme.onSurfaceVariant,
-                        size: 22,
-                      ),
+                    child: Icon(
+                      isSelected ? selectedIcon : icon,
+                      color: isSelected
+                          ? colorScheme.primary
+                          : colorScheme.onSurfaceVariant,
+                      size: 22,
                     ),
                   ),
                   if (showBadge)

@@ -37,32 +37,17 @@ class XBoardStorageService {
   static const String _autoLoginKey = 'xboard_auto_login';
   static const String _cachedApiEndpointKey = 'xboard_cached_api_endpoint';
 
-  Future<Result<bool>> saveUserEmail(String email, {String? scope}) async {
-    return await _storage.setString(_userEmailKey,
-        scope == null ? email : jsonEncode({'scope': scope, 'data': email}));
+  Future<Result<bool>> saveUserEmail(String email) async {
+    return await _storage.setString(_userEmailKey, email);
   }
 
-  Future<Result<String?>> getUserEmail({String? scope}) async {
-    final result = await _storage.getString(_userEmailKey);
-    if (scope == null) return result;
-    return result.map((raw) {
-      if (raw == null) return null;
-      try {
-        final value = jsonDecode(raw);
-        return value is Map && value['scope'] == scope
-            ? value['data'] as String?
-            : null;
-      } catch (_) {
-        return null;
-      }
-    });
+  Future<Result<String?>> getUserEmail() async {
+    return await _storage.getString(_userEmailKey);
   }
 
-  Future<Result<bool>> saveDomainUser(DomainUser user, {String? scope}) async {
+  Future<Result<bool>> saveDomainUser(DomainUser user) async {
     try {
-      final userJson = jsonEncode(scope == null
-          ? user.toJson()
-          : {'scope': scope, 'data': user.toJson()});
+      final userJson = jsonEncode(user.toJson());
       return await _storage.setString(_domainUserKey, userJson);
     } catch (e, stackTrace) {
       return Result.failure(XBoardStorageException(
@@ -75,17 +60,13 @@ class XBoardStorageService {
     }
   }
 
-  Future<Result<DomainUser?>> getDomainUser({String? scope}) async {
+  Future<Result<DomainUser?>> getDomainUser() async {
     final result = await _storage.getString(_domainUserKey);
     return result.when(
       success: (userJson) {
         if (userJson == null) return Result.success(null);
         try {
-          Map<String, dynamic> userMap = jsonDecode(userJson);
-          if (scope != null) {
-            if (userMap['scope'] != scope) return Result.success(null);
-            userMap = Map<String, dynamic>.from(userMap['data'] as Map);
-          }
+          final Map<String, dynamic> userMap = jsonDecode(userJson);
           return Result.success(DomainUser.fromJson(userMap));
         } catch (e, stackTrace) {
           return Result.failure(XBoardParseException(
@@ -102,12 +83,10 @@ class XBoardStorageService {
 
   // ===== 领域模型：订阅信息 =====
 
-  Future<Result<bool>> saveDomainSubscription(DomainSubscription subscription,
-      {String? scope}) async {
+  Future<Result<bool>> saveDomainSubscription(
+      DomainSubscription subscription) async {
     try {
-      final subscriptionJson = jsonEncode(scope == null
-          ? subscription.toJson()
-          : {'scope': scope, 'data': subscription.toJson()});
+      final subscriptionJson = jsonEncode(subscription.toJson());
       return await _storage.setString(_domainSubscriptionKey, subscriptionJson);
     } catch (e, stackTrace) {
       return Result.failure(XBoardStorageException(
@@ -120,19 +99,14 @@ class XBoardStorageService {
     }
   }
 
-  Future<Result<DomainSubscription?>> getDomainSubscription(
-      {String? scope}) async {
+  Future<Result<DomainSubscription?>> getDomainSubscription() async {
     final result = await _storage.getString(_domainSubscriptionKey);
     return result.when(
       success: (subscriptionJson) {
         if (subscriptionJson == null) return Result.success(null);
         try {
-          Map<String, dynamic> subscriptionMap = jsonDecode(subscriptionJson);
-          if (scope != null) {
-            if (subscriptionMap['scope'] != scope) return Result.success(null);
-            subscriptionMap =
-                Map<String, dynamic>.from(subscriptionMap['data'] as Map);
-          }
+          final Map<String, dynamic> subscriptionMap =
+              jsonDecode(subscriptionJson);
           return Result.success(DomainSubscription.fromJson(subscriptionMap));
         } catch (e, stackTrace) {
           return Result.failure(XBoardParseException(
@@ -187,10 +161,9 @@ class XBoardStorageService {
     );
   }
 
-  Future<Result<bool>> saveDomainInvite(DomainInvite invite,
-      {required String scope}) async {
+  Future<Result<bool>> saveDomainInvite(DomainInvite invite) async {
     try {
-      final inviteJson = jsonEncode({'scope': scope, 'data': invite.toJson()});
+      final inviteJson = jsonEncode(invite.toJson());
       return await _storage.setString(_domainInviteKey, inviteJson);
     } catch (e, stackTrace) {
       return Result.failure(XBoardStorageException(
@@ -203,7 +176,7 @@ class XBoardStorageService {
     }
   }
 
-  Future<Result<DomainInvite?>> getDomainInvite({required String scope}) async {
+  Future<Result<DomainInvite?>> getDomainInvite() async {
     final result = await _storage.getString(_domainInviteKey);
     return result.when(
       success: (inviteJson) {
@@ -212,11 +185,7 @@ class XBoardStorageService {
         }
         try {
           final inviteMap = jsonDecode(inviteJson) as Map<String, dynamic>;
-          // Unscoped legacy caches have no reliable owner and must not be
-          // shown to whichever account happens to log in next.
-          if (inviteMap['scope'] != scope) return Result.success(null);
-          return Result.success(
-              DomainInvite.fromJson(inviteMap['data'] as Map<String, dynamic>));
+          return Result.success(DomainInvite.fromJson(inviteMap));
         } catch (e, stackTrace) {
           return Result.failure(XBoardParseException(
             message: '解析邀请信息失败',
@@ -231,14 +200,11 @@ class XBoardStorageService {
   }
 
   Future<Result<bool>> saveDomainCommissionHistory(
-    List<DomainCommission> history, {
-    required String scope,
-  }) async {
+    List<DomainCommission> history,
+  ) async {
     try {
-      final historyJson = jsonEncode({
-        'scope': scope,
-        'data': history.map((item) => item.toJson()).toList(),
-      });
+      final historyJson =
+          jsonEncode(history.map((item) => item.toJson()).toList());
       return await _storage.setString(
         _domainCommissionHistoryKey,
         historyJson,
@@ -254,8 +220,7 @@ class XBoardStorageService {
     }
   }
 
-  Future<Result<List<DomainCommission>>> getDomainCommissionHistory(
-      {required String scope}) async {
+  Future<Result<List<DomainCommission>>> getDomainCommissionHistory() async {
     final result = await _storage.getString(_domainCommissionHistoryKey);
     return result.when(
       success: (historyJson) {
@@ -263,11 +228,7 @@ class XBoardStorageService {
           return Result.success(<DomainCommission>[]);
         }
         try {
-          final envelope = jsonDecode(historyJson);
-          if (envelope is! Map || envelope['scope'] != scope) {
-            return Result.success(<DomainCommission>[]);
-          }
-          final history = (envelope['data'] as List)
+          final history = (jsonDecode(historyJson) as List)
               .map((item) =>
                   DomainCommission.fromJson(item as Map<String, dynamic>))
               .toList();
@@ -286,13 +247,12 @@ class XBoardStorageService {
   }
 
   Future<Result<bool>> saveCatboardReferralProgram(
-    CatboardReferralProgram program, {
-    required String scope,
-  }) async {
+    CatboardReferralProgram program,
+  ) async {
     try {
       return await _storage.setString(
         _catboardReferralProgramKey,
-        jsonEncode({'scope': scope, 'data': program.toJson()}),
+        jsonEncode(program.toJson()),
       );
     } catch (e, stackTrace) {
       return Result.failure(XBoardStorageException(
@@ -305,8 +265,7 @@ class XBoardStorageService {
     }
   }
 
-  Future<Result<CatboardReferralProgram?>> getCatboardReferralProgram(
-      {required String scope}) async {
+  Future<Result<CatboardReferralProgram?>> getCatboardReferralProgram() async {
     final result = await _storage.getString(_catboardReferralProgramKey);
     return result.when(
       success: (programJson) {
@@ -315,9 +274,7 @@ class XBoardStorageService {
         }
         try {
           final programMap = jsonDecode(programJson) as Map<String, dynamic>;
-          if (programMap['scope'] != scope) return Result.success(null);
-          return Result.success(CatboardReferralProgram.fromJson(
-              programMap['data'] as Map<String, dynamic>));
+          return Result.success(CatboardReferralProgram.fromJson(programMap));
         } catch (e, stackTrace) {
           return Result.failure(XBoardParseException(
             message: '解析推广等级信息失败',
@@ -394,23 +351,6 @@ class XBoardStorageService {
       'password': passwordResult.dataOrNull,
       'rememberPassword': rememberResult.dataOrNull ?? false,
     });
-  }
-
-  /// Keep an explicitly remembered password consistent after a successful
-  /// account password change. Never replace another account's saved login.
-  Future<Result<bool>> updateRememberedPassword({
-    required String email,
-    required String previousPassword,
-    required String newPassword,
-    required bool Function() isCurrentSession,
-  }) async {
-    final saved = (await getSavedCredentials()).dataOrNull;
-    if (!isCurrentSession() || saved == null ||
-        (saved['email'] as String?)?.trim().toLowerCase() != email.trim().toLowerCase() ||
-        saved['rememberPassword'] != true || saved['password'] != previousPassword) {
-      return Result.success(true);
-    }
-    return _storage.setString(_savedPasswordKey, newPassword);
   }
 
   // 便捷方法：获取单个保存的凭据字段
