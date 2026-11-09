@@ -1,3 +1,4 @@
+import '../models/legal_links.dart';
 import 'dart:async';
 import '../models/parsed_configuration.dart';
 import '../models/config_entry.dart';
@@ -55,6 +56,7 @@ class XBoardConfigAccessor {
   String _salesmartlyToken = '';
   List<String> _websiteUrls = [];
   String _telegramGroupUrl = '';
+  LegalLinks legalLinks = const LegalLinks();
   String _inviteDomain = '';
 
   // 远程配置 ticket 字段
@@ -487,6 +489,8 @@ class XBoardConfigAccessor {
       _panelService = PanelService(_currentConfig!.panels);
       _proxyService = ProxyService(_currentConfig!.proxies);
       _webSocketService = WebSocketService(_currentConfig!.webSockets);
+
+      legalLinks = LegalLinks.fromJson(configData['legal']);
 
       // 提取 contact 字段
       final contact = configData['contact'] as Map<String, dynamic>? ?? {};

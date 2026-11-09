@@ -3,6 +3,8 @@
 /// 这是重构后的XBoard配置模块，提供清晰的分层架构和统一的API接口
 library;
 
+import 'models/legal_links.dart';
+
 // ========== 公共API导出 ==========
 // 只导出外部需要使用的类和接口
 
@@ -702,6 +704,9 @@ class XBoardConfig {
 
   /// 获取 Telegram 群组链接（来自远程配置 contact.telegram_group）
   /// 为空字符串表示未配置，回退到 API /api/v1/user/comm/config 的 telegram_discuss_link
+  static LegalLinks get legalLinks =>
+      _instance?.legalLinks ?? const LegalLinks();
+
   static String get telegramGroupUrl => _instance?.telegramGroupUrl ?? '';
 
   /// 获取 ImgBB API Key（来自远程配置 ticket.imgbb_api_key）

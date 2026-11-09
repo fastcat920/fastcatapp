@@ -20,6 +20,7 @@ import androidx.core.content.pm.ShortcutManagerCompat
 import androidx.core.graphics.drawable.IconCompat
 import com.android.tools.smali.dexlib2.dexbacked.DexBackedDexFile
 import com.fastcat.app.FastCatApplication
+import com.fastcat.app.BackgroundProtection
 import com.fastcat.app.DeviceCapabilities
 import com.fastcat.app.GlobalState
 import com.fastcat.app.R
@@ -155,6 +156,34 @@ class AppPlugin : FlutterPlugin, MethodChannel.MethodCallHandler, ActivityAware 
 
     override fun onMethodCall(call: MethodCall, result: Result) {
         when (call.method) {
+            "getBackgroundProtection" -> result.success(
+                BackgroundProtection.status(FastCatApplication.getAppContext()),
+            )
+            "openBackgroundProtectionSettings" -> result.success(
+                BackgroundProtection.openDetailed(
+                    FastCatApplication.getAppContext(),
+                    call.argument<String>("target") ?: "",
+                ),
+            )
+            "openBackgroundProtection" -> result.success(
+                BackgroundProtection.open(
+                    FastCatApplication.getAppContext(),
+                    call.argument<String>("target") ?: "",
+                ),
+            )
+            "openAppSettings" -> {
+                try {
+                    val context = FastCatApplication.getAppContext()
+                    val intent = Intent(android.provider.Settings.ACTION_APPLICATION_DETAILS_SETTINGS,
+                        android.net.Uri.parse("package:" + context.packageName))
+                    intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                    context.startActivity(intent)
+                    result.success(true)
+                } catch (error: Exception) {
+                    result.error("SETTINGS_UNAVAILABLE", "Cannot open app settings", null)
+                }
+            }
+
             "moveTaskToBack" -> {
                 activityRef?.get()?.moveTaskToBack(true)
                 result.success(true)

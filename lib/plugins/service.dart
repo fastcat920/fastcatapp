@@ -1,3 +1,4 @@
+import 'package:fl_clash/models/models.dart';
 import 'dart:async';
 import 'dart:convert';
 import 'package:fl_clash/security/ios_profile_config.dart';
@@ -9,6 +10,8 @@ import 'package:fl_clash/state.dart';
 import 'package:flutter/services.dart';
 
 import '../clash/lib.dart';
+import '../services/core_switch_status.dart';
+import '../services/ios_vpn_status.dart';
 
 class Service {
   static Service? _instance;
@@ -50,16 +53,32 @@ class Service {
       if (globalState.config.currentProfileId == null) {
         throw StateError('No subscription configuration is selected');
       }
+      final attempt = DateTime.now().millisecondsSinceEpoch;
+      final elapsed = Stopwatch()..start();
+      commonPrint.log('[IOSVPN:$attempt] preparing configuration');
+      globalState.updateCoreSwitchStatus(CoreSwitchStage.coreConnecting,
+          message: '正在准备 VPN 配置');
       final config = iosProfileConfig(await globalState.patchRawConfig(
         patchConfig: globalState.config.patchClashConfig,
-      ));
+      ).timeout(const Duration(seconds: 20)));
+      globalState.updateCoreSwitchStatus(CoreSwitchStage.tunApplying,
+          message: '正在启动系统 VPN');
       // JSON is valid YAML; the startup path expects a raw profile, not SetupParams.
       config['rules'] = config.remove('rule') ?? config['rules'] ?? [];
+      config['fastcat-selected-map'] = globalState.config.currentProfile?.selectedMap ?? <String, String>{};
       // This will throw PlatformException if VPN start fails.
       // The caller (handleStart) catches this and shows the error.
-      return await methodChannel.invokeMethod<bool>("start", {
-        'config': json.encode(config),
-      });
+      commonPrint.log('[IOSVPN:$attempt] requesting tunnel at ${elapsed.elapsedMilliseconds}ms');
+      try {
+        final started = await methodChannel.invokeMethod<bool>("start", {
+          'config': json.encode(config),
+        });
+        commonPrint.log('[IOSVPN:$attempt] tunnel result=$started at ${elapsed.elapsedMilliseconds}ms');
+        return started;
+      } catch (error) {
+        commonPrint.log('[IOSVPN:$attempt] tunnel failed at ${elapsed.elapsedMilliseconds}ms: $error');
+        rethrow;
+      }
     }
     final options = await clashLib?.getAndroidVpnOptions();
     await requestNotificationsPermission();
@@ -81,14 +100,19 @@ class Service {
     await reloadIosTunnelConfiguration(config);
   }
 
+  Future<Map<String, dynamic>> restoreIosVpnState() =>
+      const IosVpnStatusReader().restore();
+
   Future<bool> isVpnActuallyRunning() async {
-    if (Platform.isIOS) return globalState.isStart;
+    if (Platform.isIOS) {
+      return const IosVpnStatusReader().isConnected();
+    }
     return await methodChannel.invokeMethod<bool>('status') ?? false;
   }
 
   Future<String> getVpnConnectionState() async {
     if (Platform.isIOS) {
-      return globalState.isStart ? 'connected' : 'disconnected';
+      return const IosVpnStatusReader().state();
     }
     return await methodChannel.invokeMethod<String>('connectionState') ??
         'disconnected';

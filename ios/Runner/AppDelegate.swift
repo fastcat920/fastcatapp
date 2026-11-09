@@ -98,6 +98,11 @@ import UserNotifications
             result(true)
           }
         }
+      case "restoreState":
+        VPNManager.shared.restoreState { state in
+          if let state = state { result(state) }
+          else { result(FlutterError(code: "VPN_RESTORE", message: "Unable to read existing tunnel state", details: nil)) }
+        }
       case "isConnected":
         result(VPNManager.shared.isConnected)
       case "isTunnelRunning":

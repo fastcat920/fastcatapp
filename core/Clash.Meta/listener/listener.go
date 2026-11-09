@@ -27,8 +27,9 @@ import (
 )
 
 var (
-	allowLan    = false
-	bindAddress = "*"
+	newTunListener = sing_tun.New
+	allowLan       = false
+	bindAddress    = "*"
 
 	socksListener       *socks.Listener
 	socksUDPListener    *socks.UDPListener
@@ -72,6 +73,13 @@ type Ports struct {
 	MixedPort         int    `json:"mixed-port"`
 	ShadowSocksConfig string `json:"ss-config"`
 	VmessConfig       string `json:"vmess-config"`
+}
+
+// TunListenerReady reports actual construction, rather than the requested config.
+func TunListenerReady() bool {
+	tunMux.Lock()
+	defer tunMux.Unlock()
+	return tunLister != nil
 }
 
 func GetTunConf() LC.Tun {
@@ -525,7 +533,7 @@ func ReCreateTun(tunConf LC.Tun, tunnel C.Tunnel) {
 		return
 	}
 
-	lister, err := sing_tun.New(tunConf, tunnel)
+	lister, err := newTunListener(tunConf, tunnel)
 	if err != nil {
 		return
 	}

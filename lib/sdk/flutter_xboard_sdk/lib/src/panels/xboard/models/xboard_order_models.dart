@@ -98,7 +98,8 @@ class PaymentMethod with _$PaymentMethod {
     String? icon,
     @JsonKey(name: 'handling_fee_fixed') double? handlingFeeFixed,
     @JsonKey(name: 'handling_fee_percent') double? handlingFeePercent,
-    @JsonKey(name: 'is_available', defaultValue: false)
+    // The endpoint already returns enabled methods; older servers omit this flag.
+    @JsonKey(name: 'is_available', defaultValue: true)
     required bool isAvailable,
     Map<String, dynamic>? config,
   }) = _PaymentMethod;

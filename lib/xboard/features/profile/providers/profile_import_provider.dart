@@ -29,7 +29,7 @@ class ProfileImportNotifier extends StateNotifier<ImportState> {
       status: ImportStatus.downloading,
       isImporting: true,
       progress: 0.0,
-      message: '开始导入订阅',
+      message: appLocalizations.xboardPreparingImport,
       currentUrl: url,
     );
 
@@ -44,7 +44,7 @@ class ProfileImportNotifier extends StateNotifier<ImportState> {
           state = state.copyWith(
             status: status,
             progress: progress,
-            message: message,
+            message: ImportState(status: status).statusText,
           );
         },
       );
@@ -64,7 +64,10 @@ class ProfileImportNotifier extends StateNotifier<ImportState> {
         status: isSuccess ? ImportStatus.success : ImportStatus.failed,
         isImporting: false,
         progress: isSuccess ? 1.0 : 0.0,
-        message: isSuccess ? '导入成功' : result.errorMessage ?? '导入失败',
+        message: isSuccess
+            ? appLocalizations.xboardImportSuccess
+            : ImportState(lastResult: result).errorTypeMessage ??
+                appLocalizations.xboardImportFailed,
         lastSuccessTime: isSuccess ? DateTime.now() : null,
         lastResult: result,
       );
@@ -93,7 +96,7 @@ class ProfileImportNotifier extends StateNotifier<ImportState> {
         status: ImportStatus.failed,
         isImporting: false,
         progress: 0.0,
-        message: '导入失败: $e',
+        message: appLocalizations.xboardImportFailed,
         lastResult: ImportResult.failure(
           errorMessage: '导入失败: $e',
           errorType: ImportErrorType.unknownError,
@@ -153,7 +156,7 @@ class ProfileImportNotifier extends StateNotifier<ImportState> {
       state = state.copyWith(
         status: ImportStatus.idle,
         isImporting: false,
-        message: '导入已取消',
+        message: appLocalizations.xboardImportCancelled,
       );
     }
     _logger.info('导入及回滚已结束');

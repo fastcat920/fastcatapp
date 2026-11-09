@@ -9,7 +9,11 @@ import "C"
 import (
 	"core/applepacket"
 	"encoding/json"
+	"log"
+	"os"
+	"path/filepath"
 	"sync"
+	"time"
 	"unsafe"
 
 	"github.com/metacubex/mihomo/component/resource"
@@ -38,14 +42,23 @@ func ClashCore_init_probe(homeDir *C.char, configYaml *C.char) C.int {
 }
 
 func initIOSCore(homeDir *C.char, configYaml *C.char, probe bool) C.int {
+	started := time.Now()
+	log.Printf("[IOSCore] initialization begin probe=%v", probe)
+	defer func() { log.Printf("[IOSCore] initialization returned after %s", time.Since(started)) }()
+	configureAppleMemory()
+	sampleAppleMemoryStage("init.begin")
+	defer sampleAppleMemoryStage("init.return")
 	homeDirStr := C.GoString(homeDir)
 	configStr := C.GoString(configYaml)
 	var cacheOptions struct {
 		ProviderCache *resource.CacheEncryption `yaml:"fastcat-provider-cache"`
+		SelectedMap   map[string]string         `yaml:"fastcat-selected-map"`
 	}
 	if err := yaml.Unmarshal([]byte(configStr), &cacheOptions); err != nil {
 		return 2
 	}
+
+	sampleAppleMemoryStage("init.cache_options_parsed")
 
 	// Initialise clash home directory
 	initParams := InitParams{
@@ -54,8 +67,20 @@ func initIOSCore(homeDir *C.char, configYaml *C.char, probe bool) C.int {
 	}
 	initData, _ := json.Marshal(initParams)
 	if !handleInitClash(string(initData)) {
+		log.Print("[IOSCore] home/cache initialization failed")
 		return 1
 	}
+	sampleAppleMemoryStage("init.home_ready")
+	// Startup must not depend on downloading routing databases before VPN works.
+	// Swift seeds these from the app bundle into the shared container.
+	for _, path := range []string{MC.Path.GeoIP(), MC.Path.GeoSite(), MC.Path.ASN(), MC.Path.MMDB()} {
+		info, err := os.Stat(path)
+		if err != nil || info.Size() == 0 {
+			log.Printf("[IOSCore] missing bundled routing database: %s", filepath.Base(path))
+			return 6
+		}
+	}
+	log.Print("[IOSCore] home/cache ready; parsing profile")
 
 	if configStr == "" {
 		return 2
@@ -70,17 +95,12 @@ func initIOSCore(homeDir *C.char, configYaml *C.char, probe bool) C.int {
 		return 2
 	}
 
+	sampleAppleMemoryStage("init.yaml_parsed")
+
 	// Force iOS-specific config overrides on the parsed config object.
 	patchConfigForIOS(rawCfg)
 	if probe {
-		rawCfg.Port = 0
-		rawCfg.SocksPort = 0
-		rawCfg.MixedPort = 0
-		rawCfg.RedirPort = 0
-		rawCfg.TProxyPort = 0
-		rawCfg.DNS.Listen = ""
-		rawCfg.ExternalController = ""
-		rawCfg.ExternalControllerTLS = ""
+		rawCfg = probeIOSConfig(rawCfg)
 	}
 
 	params := &SetupParams{
@@ -89,7 +109,24 @@ func initIOSCore(homeDir *C.char, configYaml *C.char, probe bool) C.int {
 		SelectedMap: map[string]string{},
 	}
 	if err := setupConfig(params); err != nil {
+		log.Printf("[IOSCore] configuration initialization failed: %v", err)
 		return 3
+	}
+	sampleAppleMemoryStage("init.config_ready")
+	log.Print("[IOSCore] configuration ready")
+	if !probe {
+		for group, selected := range cacheOptions.SelectedMap {
+			if selected == "" {
+				continue
+			}
+			payload, _ := json.Marshal(map[string]string{"group-name": group, "proxy-name": selected})
+			done := make(chan string, 1)
+			handleChangeProxy(string(payload), func(response string) { done <- response })
+			if response := <-done; response != "" {
+				log.Print("[IOSCore] saved proxy selection could not be restored")
+				return 5
+			}
+		}
 	}
 
 	// Start listener
@@ -102,6 +139,7 @@ func initIOSCore(homeDir *C.char, configYaml *C.char, probe bool) C.int {
 // Keep OS device creation disabled: the separately managed packetFlow stack
 // forwards packets. Retain a loopback listener for diagnostics and enable DNS.
 func patchConfigForIOS(cfg *config.RawConfig) {
+	patchAppleMemoryConfig(cfg)
 	// The separately managed packetFlow stack survives configuration reloads.
 	cfg.Tun.Enable = false
 
@@ -363,6 +401,8 @@ func ClashCore_start_packets() C.ulonglong {
 	if applePackets.bridge != nil {
 		return C.ulonglong(applePackets.generation)
 	}
+	sampleAppleMemoryStage("packet_stack.before")
+	defer sampleAppleMemoryStage("packet_stack.after")
 	b, err := applepacket.New()
 	if err != nil {
 		return 0

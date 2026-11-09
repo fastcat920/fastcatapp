@@ -34,6 +34,54 @@ private let kAppGroupId: String = {
 /// The bridging header PacketTunnel-Bridging-Header.h exposes
 /// the C API from libclash.a.
 class PacketTunnelProvider: NEPacketTunnelProvider {
+  private let probeOperations: OperationQueue = {
+    let queue = OperationQueue()
+    queue.name = "fastcat.extension.probes"
+    queue.maxConcurrentOperationCount = 2
+    queue.qualityOfService = .utility
+    return queue
+  }()
+  private var memoryTimer: DispatchSourceTimer?
+
+  private let memoryCounterLock = NSLock()
+  private var runningMemoryProbes = 0
+  private var pendingMemoryProbes = 0
+
+  private func sampleMemory(_ stage: String) {
+    var info = task_vm_info_data_t()
+    var count = mach_msg_type_number_t(MemoryLayout<task_vm_info_data_t>.size / MemoryLayout<integer_t>.size)
+    let result = withUnsafeMutablePointer(to: &info) { pointer in
+      pointer.withMemoryRebound(to: integer_t.self, capacity: Int(count)) {
+        task_info(mach_task_self_, task_flavor_t(TASK_VM_INFO), $0, &count)
+      }
+    }
+    memoryCounterLock.lock()
+    let running = runningMemoryProbes
+    let pending = pendingMemoryProbes
+    memoryCounterLock.unlock()
+    if result == KERN_SUCCESS {
+      NSLog("[PacketTunnelMemory] stage=%@ pid=%d footprint=%llu resident=%llu probesRunning=%d probesPending=%d",
+            stage, getpid(), info.phys_footprint, info.resident_size, running, pending)
+    }
+  }
+
+  private func startMemoryDiagnostics() {
+    memoryTimer?.cancel()
+    probeOperations.cancelAllOperations()
+    let timer = DispatchSource.makeTimerSource(queue: DispatchQueue(label: "fastcat.memory"))
+    let started = Date()
+    var samples = 0
+    timer.schedule(deadline: .now(), repeating: 1, leeway: .milliseconds(100))
+    timer.setEventHandler { [weak self] in
+      samples += 1
+      if Date().timeIntervalSince(started) <= 60 || samples % 30 == 0 {
+        self?.sampleMemory("periodic")
+      }
+    }
+    memoryTimer = timer
+    timer.resume()
+  }
+
   private let packetLock = NSLock()
   private var packetGeneration: UInt64 = 0
   private let packetInputQueue = DispatchQueue(label: "fastcat.packet.input")
@@ -80,11 +128,13 @@ class PacketTunnelProvider: NEPacketTunnelProvider {
     packetFlow.readPackets { [weak self] packets, _ in
       self?.packetInputQueue.async { [weak self] in
         guard let owner = self, owner.packetSessionIsCurrent(generation) else { return }
-        for packet in packets {
-          guard owner.packetSessionIsCurrent(generation) else { return }
-          packet.withUnsafeBytes { raw in
-            guard let address = raw.bindMemory(to: UInt8.self).baseAddress else { return }
-            _ = ClashCore_write_packet(generation, address, Int32(packet.count))
+        autoreleasepool {
+          for packet in packets {
+            guard owner.packetSessionIsCurrent(generation) else { return }
+            packet.withUnsafeBytes { raw in
+              guard let address = raw.bindMemory(to: UInt8.self).baseAddress else { return }
+              _ = ClashCore_write_packet(generation, address, Int32(packet.count))
+            }
           }
         }
         owner.readPacketBatch(generation)
@@ -117,6 +167,8 @@ class PacketTunnelProvider: NEPacketTunnelProvider {
     options: [String: NSObject]?,
     completionHandler: @escaping (Error?) -> Void
   ) {
+    startMemoryDiagnostics()
+    sampleMemory("start.begin")
     NSLog("[PacketTunnel] startTunnel called")
     // The main app supplies the decoded profile only for this tunnel start.
     // Do not restore YAML from the shared container or VPN preferences: those
@@ -132,14 +184,26 @@ class PacketTunnelProvider: NEPacketTunnelProvider {
 
     let homeDir = appGroupContainerURL()?.path ?? NSTemporaryDirectory()
     NSLog("[PacketTunnel] homeDir: %@", homeDir)
+    do {
+      try prepareBundledGeoData(home: URL(fileURLWithPath: homeDir))
+    } catch {
+      NSLog("[PacketTunnel] Geo preparation failed: %@", error.localizedDescription)
+      completionHandler(makeError("Routing data preparation failed: \(error.localizedDescription)"))
+      return
+    }
 
+    sampleMemory("geo.ready")
     // Initialise the mihomo core (synchronous C call via bridging header).
     // The Go layer force-disables TUN, enables DNS on 127.0.0.1:53,
     // and ensures mixed-port is set.
+    sampleMemory("core.init.before")
     let initResult = ClashCore_init(homeDir, config)
+    sampleMemory("core.init.after")
     guard initResult == 0 else {
       NSLog("[PacketTunnel] ERROR: ClashCore_init failed with code %d", initResult)
-      completionHandler(makeError("ClashCore_init failed: \(initResult)"))
+      ClashCore_shutdown()
+      let message = initResult == 6 ? "Bundled routing databases are missing or empty" : initResult == 5 ? "Saved proxy selection is unavailable; select a valid node" : "ClashCore_init failed: \(initResult)"
+      completionHandler(makeError(message))
       return
     }
     NSLog("[PacketTunnel] ClashCore_init succeeded")
@@ -148,6 +212,8 @@ class PacketTunnelProvider: NEPacketTunnelProvider {
       completionHandler(makeError("Unable to start VPN packet stack"))
       return
     }
+
+    sampleMemory("packet_stack.ready")
 
     // Get the mixed-port that mihomo is listening on.
     let mixedPort = Int(ClashCore_get_mixed_port())
@@ -180,6 +246,7 @@ class PacketTunnelProvider: NEPacketTunnelProvider {
           return
         }
         self?.isTrafficEnabled = true
+        self?.sampleMemory("network_settings.ready")
         NSLog("[PacketTunnel] Tunnel started (active mode, port %d)", mixedPort)
         completionHandler(nil)
       }
@@ -196,6 +263,7 @@ class PacketTunnelProvider: NEPacketTunnelProvider {
           return
         }
         self?.isTrafficEnabled = false
+        self?.sampleMemory("network_settings.ready")
         NSLog("[PacketTunnel] Tunnel started (idle mode, mihomo on port %d)", mixedPort)
         completionHandler(nil)
       }
@@ -204,10 +272,38 @@ class PacketTunnelProvider: NEPacketTunnelProvider {
 
   // MARK: - Tunnel stop
 
+  /// The extension has its own home; Flutter's asset preparation cannot fill it.
+  private func prepareBundledGeoData(home: URL) throws {
+    let files = FileManager.default
+    let app = Bundle.main.bundleURL.deletingLastPathComponent().deletingLastPathComponent()
+    let assets = app.appendingPathComponent("Frameworks/App.framework/flutter_assets/assets/data")
+    try files.createDirectory(at: home, withIntermediateDirectories: true)
+    let mapping = ["GeoIP.dat": "GeoIP.dat", "GeoSite.dat": "GeoSite.dat",
+                   "ASN.mmdb": "ASN.mmdb", "geoip.metadb": "geoip.metadb"]
+    let existing = try files.contentsOfDirectory(at: home, includingPropertiesForKeys: [.fileSizeKey])
+    for (name, asset) in mapping {
+      let aliases = name == "geoip.metadb" ? ["geoip.metadb", "country.mmdb", "geoip.db"] : [name.lowercased()]
+      if let found = existing.first(where: { aliases.contains($0.lastPathComponent.lowercased()) }),
+         (try found.resourceValues(forKeys: [.fileSizeKey]).fileSize ?? 0) > 0 { continue }
+      let source = assets.appendingPathComponent(asset)
+      let destination = home.appendingPathComponent(name)
+      // Atomic replacement prevents a cancelled first start leaving half a file.
+      let data = try Data(contentsOf: source, options: .mappedIfSafe)
+      guard !data.isEmpty else { throw makeError("Bundled routing data is empty") }
+      try data.write(to: destination, options: .atomic)
+      NSLog("[PacketTunnel] Prepared bundled routing data: %@", name)
+    }
+    NSLog("[PacketTunnel] Routing data preparation complete")
+  }
+
   override func stopTunnel(
     with reason: NEProviderStopReason,
     completionHandler: @escaping () -> Void
   ) {
+    NSLog("[PacketTunnel] stopTunnel reason=%ld", reason.rawValue)
+    sampleMemory("stop.begin")
+    memoryTimer?.cancel()
+    memoryTimer = nil
     stopPacketForwarding()
     isTrafficEnabled = false
     ClashCore_shutdown()
@@ -249,8 +345,30 @@ class PacketTunnelProvider: NEPacketTunnelProvider {
     }
 
     // A probe can take seconds. Do not block delivery of its cancellation IPC.
-    if method == "streamingProbe" {
-      DispatchQueue.global(qos: .utility).async {
+    if method == "streamingProbe" || method == "asyncTestDelay" || method == "diagnoseProxy" {
+      // Network probes must not occupy NetworkExtension's message delivery
+      // thread: node selection and cancellation need immediate delivery.
+      let queuedAt = Date()
+      memoryCounterLock.lock()
+      pendingMemoryProbes += 1
+      memoryCounterLock.unlock()
+      sampleMemory("probe.queued." + method)
+      probeOperations.addOperation {
+        self.memoryCounterLock.lock()
+        self.pendingMemoryProbes -= 1
+        self.runningMemoryProbes += 1
+        self.memoryCounterLock.unlock()
+        self.sampleMemory("probe.begin." + method)
+        defer {
+          self.memoryCounterLock.lock()
+          self.runningMemoryProbes -= 1
+          self.memoryCounterLock.unlock()
+          self.sampleMemory("probe.end." + method)
+        }
+        guard Date().timeIntervalSince(queuedAt) < 8 else {
+          completionHandler?(nil)
+          return
+        }
         let result = ClashCore_invoke(method, data)
         defer { ClashCore_free(result) }
         let value = result.map { String(cString: $0) } ?? ""

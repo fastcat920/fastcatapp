@@ -258,6 +258,17 @@ class ClashCore {
   }
 
   Future<Delay> getDelay(String url, String proxyName) async {
+    if (Platform.isIOS && globalState.isCoreSwitchingNotifier.value) {
+      throw StateError('VPN 正在连接，请稍后测速');
+    }
+    if (Platform.isIOS && globalState.isStart) {
+      final connected = await const MethodChannel('fastcat/vpn')
+          .invokeMethod<bool>('isConnected')
+          .timeout(const Duration(seconds: 3));
+      if (connected != true) {
+        throw StateError('系统 VPN 未就绪，请重新连接后测速');
+      }
+    }
     if (Platform.isIOS && !globalState.isStart) {
       await initGeo(validate: false);
       final config = iosProfileConfig(await globalState.patchRawConfig(

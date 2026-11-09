@@ -10,6 +10,7 @@
 /// 网关只来自远程配置和上次验证成功缓存，不使用硬编码业务地址。
 library;
 
+import 'package:fl_clash/services/business_health_client.dart';
 import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
@@ -1139,9 +1140,7 @@ class GatewayRuntimeService {
   }) async {
     HttpClient? client;
     try {
-      client = HttpClient();
-      client.findProxy = (_) => 'DIRECT';
-      client.connectionTimeout = const Duration(seconds: 4);
+      client = createBusinessHealthClient();
 
       final testUrl = Uri.parse(
         '${candidate.baseUrl}${candidate.apiPrefix}/guest/comm/config',

@@ -79,8 +79,11 @@ List<Group> _buildGlobalModeGroups(List<Group> groups) {
   final allProxies = _prioritizeComputedGroupProxies(sourceGroup.all, groups);
   return [
     sourceGroup.copyWith(
-      name: globalGroup?.name ?? sourceGroup.name,
-      type: globalGroup?.type ?? sourceGroup.type,
+      // Local iOS profiles have no runtime-generated GLOBAL group. Expose
+      // the same selection target before and after the tunnel starts.
+      name: GroupName.GLOBAL.name,
+      type: globalGroup?.type ?? GroupType.Selector,
+      hidden: false,
       now: globalGroup?.now ?? sourceGroup.now,
       testUrl: globalGroup?.testUrl ?? sourceGroup.testUrl,
       all: allProxies,
@@ -577,11 +580,9 @@ String? getProxyName(Ref ref, String groupName) {
 @riverpod
 String? getSelectedProxyName(Ref ref, String groupName) {
   final proxyName = ref.watch(getProxyNameProvider(groupName));
-  final group = ref.watch(
-    groupsProvider.select(
-      (state) => state.getGroup(groupName),
-    ),
-  );
+  final group =
+      ref.watch(currentGroupsStateProvider).value.getGroup(groupName) ??
+          ref.watch(groupsProvider).getGroup(groupName);
   return ref.watch(runTimeProvider) != null && group?.realNow.isNotEmpty == true
       ? group!.realNow
       : group?.getCurrentSelectedName(proxyName ?? '');

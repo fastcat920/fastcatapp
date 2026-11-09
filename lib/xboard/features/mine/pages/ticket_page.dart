@@ -1,3 +1,4 @@
+import 'package:fl_clash/xboard/features/mine/utils/ticket_presentation.dart';
 import 'dart:io';
 
 import 'package:flutter/material.dart';
@@ -214,7 +215,7 @@ class _TicketCard extends StatelessWidget {
       case 0:
         return XbUiStatusColor.pending(context); // 待处理
       case 1:
-        return XbUiStatusColor.success(context); // 已回复
+        return XbUiStatusColor.muted(context); // 已关闭
       case 2:
         return XbUiStatusColor.muted(context); // 已关闭
       default:
@@ -222,12 +223,8 @@ class _TicketCard extends StatelessWidget {
     }
   }
 
-  String _statusLabel(BuildContext context, int status, int replyStatus) {
-    final l10n = AppLocalizations.of(context);
-    if (status == 2) return l10n.xboardTicketClosed;
-    if (replyStatus == 0) return l10n.xboardTicketPendingReply;
-    return l10n.xboardTicketReplied;
-  }
+  String _statusLabel(BuildContext context, int status, int replyStatus) =>
+      ticketStatusLabel(AppLocalizations.of(context), status, replyStatus);
 
   Color _priorityColor(BuildContext context, int level) {
     switch (level) {

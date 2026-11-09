@@ -1,174 +1,120 @@
-import 'package:fl_clash/common/utils.dart';
-import 'package:fl_clash/l10n/l10n.dart';
-import 'package:fl_clash/xboard/features/shared/styles/font_weights.dart';
+import 'package:fl_clash/xboard/features/shared/styles/ui_tokens.dart';
 import 'package:flutter/material.dart';
+import 'package:fl_clash/l10n/l10n.dart';
 
+/// Shared vector indicator. A zero result means a test is in progress;
+/// callers with a separate testing flag should normalize an idle zero to null.
 class LatencyIndicator extends StatelessWidget {
   final int? delayValue;
   final VoidCallback? onTap;
   final bool isCompact;
   final bool showIcon;
-  const LatencyIndicator({
-    super.key,
-    required this.delayValue,
-    this.onTap,
-    this.isCompact = false,
-    this.showIcon = true,
-  });
+  const LatencyIndicator(
+      {super.key,
+      required this.delayValue,
+      this.onTap,
+      this.isCompact = false,
+      this.showIcon = true});
+
   @override
   Widget build(BuildContext context) {
-    if (delayValue == 0) {
-      return _buildTestingState(context);
-    }
-    if (delayValue == null) {
-      return _buildUntestedState(context);
-    }
-    return _buildTestedState(context);
-  }
-
-  Widget _buildTestingState(BuildContext context) {
-    if (isCompact) {
-      return SizedBox(
-        width: 16,
-        height: 16,
-        child: CircularProgressIndicator(
-          strokeWidth: 2,
-          color: Theme.of(context).colorScheme.primary,
-        ),
-      );
-    }
-    return GestureDetector(
-      onTap: onTap,
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          SizedBox(
-            width: 12,
-            height: 12,
+    final theme = Theme.of(context);
+    final dark = theme.brightness == Brightness.dark;
+    final testing = delayValue == 0;
+    final failed = delayValue != null && delayValue! < 0;
+    final active =
+        failed ? 1 : (delayValue != null && delayValue! >= 500 ? 2 : 3);
+    final color = failed
+        ? XbUiStatusColor.error(context)
+        : active == 2
+            ? XbUiStatusColor.pending(context)
+            : XbUiStatusColor.success(context);
+    final l10n = AppLocalizations.of(context);
+    final label = testing
+        ? l10n.xboardTesting
+        : failed
+            ? l10n.xboardTimeout
+            : l10n.xboardTestLatency;
+    final Widget icon = testing
+        ? SizedBox.square(
+            dimension: 14,
             child: CircularProgressIndicator(
-              strokeWidth: 1.5,
-              color: Theme.of(context).colorScheme.primary,
-            ),
-          ),
-          if (!isCompact) ...[
-            const SizedBox(width: 4),
-            Text(
-              '测试中',
-              style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                    color: Theme.of(context).colorScheme.primary,
-                    fontWeight: FontWeight.w500,
-                  ),
-            ),
-          ],
-        ],
-      ),
-    );
+                strokeWidth: 1.7, color: theme.colorScheme.primary))
+        : delayValue == null
+            ? Icon(Icons.bolt_rounded,
+                size: 22, color: theme.colorScheme.primary)
+            : CustomPaint(
+                size: const Size(26 * 2 / 3, 22 * 2 / 3),
+                painter: LatencySignalPainter(
+                    activeBars: active,
+                    failed: failed,
+                    color: color,
+                    inactiveColor: theme.colorScheme.onSurface
+                        .withValues(alpha: dark ? 0.22 : 0.14),
+                    backgroundColor: theme.colorScheme.surface));
+    return Semantics(
+        label: label,
+        button: onTap != null && !testing,
+        child: GestureDetector(
+            behavior: HitTestBehavior.opaque,
+            onTap: testing ? null : onTap,
+            child:
+                SizedBox(width: 32, height: 28, child: Center(child: icon))));
+  }
+}
+
+class LatencySignalPainter extends CustomPainter {
+  const LatencySignalPainter(
+      {required this.activeBars,
+      required this.failed,
+      required this.color,
+      required this.inactiveColor,
+      required this.backgroundColor});
+  final int activeBars;
+  final bool failed;
+  final Color color, inactiveColor, backgroundColor;
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final paint = Paint()..isAntiAlias = true;
+    final width = size.width * 0.21;
+    for (var i = 0; i < 3; i++) {
+      final height = size.height * (0.36 + i * 0.29);
+      paint.color = i < activeBars ? color : inactiveColor;
+      canvas.drawRRect(
+          RRect.fromRectAndRadius(
+              Rect.fromLTWH(
+                  i * size.width * 0.33, size.height - height, width, height),
+              Radius.circular(width * 0.42)),
+          paint);
+    }
+    if (failed) {
+      // Overlay the cross on the last two bars, keeping it inside the icon.
+      final path = Path()
+        ..moveTo(size.width * 0.53, size.height * 0.52)
+        ..lineTo(size.width * 0.85, size.height * 0.89)
+        ..moveTo(size.width * 0.85, size.height * 0.52)
+        ..lineTo(size.width * 0.53, size.height * 0.89);
+      paint
+        ..style = PaintingStyle.stroke
+        ..strokeCap = StrokeCap.round
+        ..strokeWidth = size.width * (4.5 / 26)
+        ..color = backgroundColor;
+      canvas.drawPath(path, paint);
+      paint
+        ..strokeWidth = size.width * (2.3 / 26)
+        ..color = color;
+      canvas.drawPath(path, paint);
+    }
   }
 
-  Widget _buildUntestedState(BuildContext context) {
-    if (isCompact) {
-      return GestureDetector(
-        onTap: onTap,
-        child: Container(
-          width: 16,
-          height: 16,
-          decoration: BoxDecoration(
-            color: Theme.of(context).colorScheme.surfaceContainerHighest,
-            borderRadius: BorderRadius.circular(8),
-          ),
-          child: Icon(
-            Icons.refresh,
-            size: 12,
-            color: Theme.of(context).colorScheme.onSurfaceVariant,
-          ),
-        ),
-      );
-    }
-    return GestureDetector(
-      onTap: onTap,
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          if (showIcon) ...[
-            Icon(
-              Icons.refresh,
-              size: 14,
-              color: Theme.of(context).colorScheme.onSurfaceVariant,
-            ),
-            const SizedBox(width: 4),
-          ],
-          Text(
-            '自动测试中',
-            style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                  color: Theme.of(context).colorScheme.onSurfaceVariant,
-                ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildTestedState(BuildContext context) {
-    final timeoutText = AppLocalizations.of(context).xboardTimeout;
-    final displayText = delayValue! < 0 ? timeoutText : '${delayValue}ms';
-    final color = utils.getDelayColor(delayValue!);
-    if (isCompact) {
-      return GestureDetector(
-        onTap: onTap,
-        child: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
-          decoration: BoxDecoration(
-            color: color?.withValues(alpha: 0.1) ??
-                Colors.grey.withValues(alpha: 0.1),
-            borderRadius: BorderRadius.circular(4),
-            border: Border.all(
-                color: color?.withValues(alpha: 0.3) ??
-                    Colors.grey.withValues(alpha: 0.3)),
-          ),
-          child: Text(
-            delayValue! < 0 ? timeoutText : '$delayValue',
-            style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                  color: color,
-                  fontWeight: XbFontWeight.semibold,
-                  fontSize: 10,
-                ),
-          ),
-        ),
-      );
-    }
-    return GestureDetector(
-      onTap: onTap,
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Container(
-            width: 8,
-            height: 8,
-            decoration: BoxDecoration(
-              color: color,
-              shape: BoxShape.circle,
-              boxShadow: [
-                BoxShadow(
-                  color: color?.withValues(alpha: 0.3) ??
-                      Colors.grey.withValues(alpha: 0.3),
-                  blurRadius: 2,
-                  spreadRadius: 1,
-                ),
-              ],
-            ),
-          ),
-          const SizedBox(width: 6),
-          Text(
-            displayText,
-            style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                  color: color,
-                  fontWeight: XbFontWeight.semibold,
-                ),
-          ),
-        ],
-      ),
-    );
-  }
+  @override
+  bool shouldRepaint(LatencySignalPainter oldDelegate) =>
+      activeBars != oldDelegate.activeBars ||
+      failed != oldDelegate.failed ||
+      color != oldDelegate.color ||
+      inactiveColor != oldDelegate.inactiveColor ||
+      backgroundColor != oldDelegate.backgroundColor;
 }
 
 class LatencyQuality {

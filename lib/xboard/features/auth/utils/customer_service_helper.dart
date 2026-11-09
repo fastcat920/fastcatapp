@@ -1,3 +1,5 @@
+import 'package:fl_clash/common/cached_cupertino_page.dart';
+import 'package:fl_clash/xboard/features/auth/widgets/customer_service_viewport.dart';
 import 'package:fl_clash/xboard/features/auth/services/support_push_service.dart';
 import 'package:http/io_client.dart';
 import 'package:fl_clash/xboard/features/auth/services/support_proxy_repairs.dart';
@@ -194,6 +196,7 @@ class CustomerServiceHelper {
   static String? _desktopCustomerServiceLocaleTag;
   static String? _desktopCustomerServiceLoadingText;
   static OverlayEntry? _embeddedCustomerServiceEntry;
+  static CachedCupertinoPage? _iosCustomerServicePage;
   static ValueNotifier<CustomerServiceSessionState>?
       _embeddedCustomerServiceState;
   static Timer? _embeddedCustomerServiceCloseTimer;
@@ -977,7 +980,7 @@ class CustomerServiceHelper {
   ) {
     final entry = _embeddedCustomerServiceEntry;
     final state = _embeddedCustomerServiceState;
-    if (entry == null ||
+    if ((entry == null && _iosCustomerServicePage == null) ||
         state == null ||
         _embeddedCustomerServiceSignature != signature) {
       return false;
@@ -998,6 +1001,7 @@ class CustomerServiceHelper {
       isVisible: true,
       restoreToken: state.value.restoreToken + 1,
     );
+    _iosCustomerServicePage?.show(context);
     return true;
   }
 
@@ -1020,6 +1024,24 @@ class CustomerServiceHelper {
         restoreToken: 0,
       ),
     );
+    if (Platform.isIOS) {
+      final page = CachedCupertinoPage(
+        child: ValueListenableBuilder<CustomerServiceSessionState>(
+          valueListenable: session,
+          builder: (_, current, child) => TickerMode(enabled: current.isVisible, child: child!),
+          child: builder(_hideEmbeddedCustomerService, session),
+        ),
+        onHidden: _markEmbeddedCustomerServiceHidden,
+      );
+      _iosCustomerServicePage = page;
+      _embeddedCustomerServiceState = session;
+      session.addListener(_refreshSupportBadge);
+      _embeddedCustomerServiceSignature = signature;
+      _embeddedCustomerServiceHiddenAt = null;
+      _refreshSupportBadge();
+      page.show(context);
+      return;
+    }
     final showRootMenu = _shouldKeepRootMenuVisible(context);
     final initialRoutePath = _currentRoutePath(context);
     late final OverlayEntry entry;
@@ -1049,8 +1071,7 @@ class CustomerServiceHelper {
               type: MaterialType.transparency,
               child: Navigator(
                 onGenerateRoute: (_) => MaterialPageRoute<void>(
-                  builder: (_) =>
-                      builder(_hideEmbeddedCustomerService, session),
+                  builder: (_) => builder(_hideEmbeddedCustomerService, session),
                 ),
               ),
             ),
@@ -1084,6 +1105,14 @@ class CustomerServiceHelper {
   }
 
   static void _hideEmbeddedCustomerService() {
+    if (_iosCustomerServicePage != null) {
+      _iosCustomerServicePage!.hide();
+      return;
+    }
+    _markEmbeddedCustomerServiceHidden();
+  }
+
+  static void _markEmbeddedCustomerServiceHidden() {
     unawaited(
         _support?.client.setPushChatVisible(false).catchError((Object _) {}));
     final state = _embeddedCustomerServiceState;
@@ -1116,6 +1145,8 @@ class CustomerServiceHelper {
     _embeddedCustomerServiceState?.removeListener(_refreshSupportBadge);
     _embeddedCustomerServiceState?.dispose();
     _embeddedCustomerServiceState = null;
+    _iosCustomerServicePage?.dispose();
+    _iosCustomerServicePage = null;
     _embeddedCustomerServiceEntry?.remove();
     _embeddedCustomerServiceEntry = null;
   }
@@ -1306,6 +1337,7 @@ class CustomerServiceHelper {
         support.close();
         return true;
       }
+      final supportLocaleTag = Localizations.localeOf(context).toLanguageTag();
       await _openEmbeddedCustomerService(context,
           signature: signature,
           builder: (hide, session) => Scaffold(
@@ -1330,8 +1362,9 @@ class CustomerServiceHelper {
                           (file.path == null
                               ? null
                               : await File(file.path!).readAsBytes());
-                      if (bytes == null)
+                      if (bytes == null) {
                         throw StateError('Cannot read attachment');
+                      }
                       return fc.FastCatAttachment(
                           filename: file.name, bytes: bytes);
                     },
@@ -1348,7 +1381,7 @@ class CustomerServiceHelper {
       unawaited(_pushService!.attach(
           support.client,
           deviceIdentity['device_id'] as String,
-          Localizations.localeOf(context).toLanguageTag(),
+          supportLocaleTag,
           () =>
               isEmbeddedCustomerServiceVisible &&
               WidgetsBinding.instance.lifecycleState ==
@@ -2233,16 +2266,23 @@ class _EmbeddedCustomerServiceFrameState
         top: 0,
         right: 0,
         bottom: 0,
-        child: framedChild,
+        child: CustomerServiceViewport(
+          consumed: const EdgeInsets.only(left: _desktopRootMenuWidth),
+          child: framedChild,
+        ),
       );
     }
 
+    final bottom = _mobileRootMenuHeight + mediaQuery.padding.bottom;
     return Positioned(
       left: 0,
       top: 0,
       right: 0,
-      bottom: _mobileRootMenuHeight + mediaQuery.padding.bottom,
-      child: framedChild,
+      bottom: bottom,
+      child: CustomerServiceViewport(
+        consumed: EdgeInsets.only(bottom: bottom),
+        child: framedChild,
+      ),
     );
   }
 }

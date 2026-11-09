@@ -22,6 +22,7 @@
 		E8B23A1C6F0A4D218F1A0C01 /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = E8B23A1C6F0A4D218F1A0C02 /* PrivacyInfo.xcprivacy */; };
 		E8B23A1C6F0A4D218F1A0C03 /* PacketTunnel.appex in Embed App Extensions */ = {isa = PBXBuildFile; fileRef = F4DFA43D4873C2F30CBD1454 /* PacketTunnel.appex */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		FCA100010000000000000001 /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = FCA100050000000000000005 /* InfoPlist.strings */; };
+		FCA200010000000000000001 /* PacketTunnel PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = FCA200020000000000000002 /* PrivacyInfo.xcprivacy */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -101,6 +102,7 @@
 		FCA100020000000000000002 /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/InfoPlist.strings; sourceTree = "<group>"; };
 		FCA100030000000000000003 /* zh-Hans */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = "zh-Hans"; path = "zh-Hans.lproj/InfoPlist.strings"; sourceTree = "<group>"; };
 		FCA100040000000000000004 /* zh-Hant */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = "zh-Hant"; path = "zh-Hant.lproj/InfoPlist.strings"; sourceTree = "<group>"; };
+		FCA200020000000000000002 /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; lastKnownFileType = text.xml; path = PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -229,6 +231,7 @@
 		FCBD460264F4AF5E8E2600F0 /* PacketTunnel */ = {
 			isa = PBXGroup;
 			children = (
+				FCA200020000000000000002 /* PrivacyInfo.xcprivacy */,
 				A0BD588B29791DD5961A05CE /* PacketTunnelProvider.swift */,
 				D93357E9F89DCEFADB632A79 /* PacketTunnel-Bridging-Header.h */,
 				260EAB033FF7C8DF881CA00D /* Info.plist */,
@@ -364,6 +367,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				FCA200010000000000000001 /* PacketTunnel PrivacyInfo.xcprivacy in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

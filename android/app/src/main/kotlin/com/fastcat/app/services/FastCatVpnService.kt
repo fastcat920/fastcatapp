@@ -53,6 +53,11 @@ class FastCatVpnService : VpnService(), BaseServiceInterface {
             TAG,
             "VPN service start intent=${intent?.action} sticky=${intent == null} recover=$shouldRecover",
         )
+        if (intent == null && !shouldRecover) {
+            // A delayed sticky restart must not undo an explicit disconnect.
+            stopSelf(startId)
+            return START_NOT_STICKY
+        }
         if (intent == null && shouldRecover) {
             // START_STICKY may recreate only the Android service while the
             // previous Flutter engine is still alive but bound to a dead TUN.
@@ -303,8 +308,17 @@ class FastCatVpnService : VpnService(), BaseServiceInterface {
         }
     }
 
-    override fun onBind(intent: Intent): IBinder {
-        return binder
+    override fun onBind(intent: Intent): IBinder? {
+        // Android binds using SERVICE_INTERFACE to manage/revoke the VPN.
+        // Our explicit in-app binding has no action and uses a local binder.
+        return if (intent.action == SERVICE_INTERFACE) super.onBind(intent) else binder
+    }
+
+    override fun onTaskRemoved(rootIntent: Intent?) {
+        Log.i(TAG, "Main task removed tunActive=$tunActive desired=${VpnRecoveryStore.isDesiredRunning()}")
+        // Removing UI is not a disconnect. Do not stop TUN, clear recovery
+        // intent, or schedule alarms that could undo an explicit system stop.
+        super.onTaskRemoved(rootIntent)
     }
 
     override fun onUnbind(intent: Intent?): Boolean {

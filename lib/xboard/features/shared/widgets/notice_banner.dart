@@ -279,7 +279,7 @@ class _NoticeDetailDialogState extends State<NoticeDetailDialog>
     final radius = BorderRadius.circular(12);
     void dismiss() {
       widget.onDismiss?.call();
-      Navigator.of(context).pop();
+      Navigator.of(context).pop(true);
     }
 
     return Container(

@@ -12,18 +12,25 @@ part 'generated/payment_state.g.dart';
 /// 获取支付方式列表
 @riverpod
 Future<List<PaymentMethodModel>> getPaymentMethods(Ref ref) async {
-  final epoch = ref.watch(sessionEpochProvider);
-  var active = true;
-  ref.onDispose(() => active = false);
-  final sdk = await ref.watch(xboardSdkProvider.future);
-  if (!active || ref.read(sessionEpochProvider) != epoch) return [];
-  final methods = await ApiRequestCache.get<List<PaymentMethodModel>>(
-    'xboard:payment_methods:$epoch',
-    ttl: const Duration(minutes: 10),
-    fetch: sdk.payment.getPaymentMethods,
-  );
-  if (!active || ref.read(sessionEpochProvider) != epoch) return [];
-  return methods;
+  // Imperative callers await .future without a widget subscription. Keep the
+  // request alive until it completes; session invalidation still cancels it.
+  final requestLease = ref.keepAlive();
+  try {
+    final epoch = ref.watch(sessionEpochProvider);
+    var active = true;
+    ref.onDispose(() => active = false);
+    final sdk = await ref.watch(xboardSdkProvider.future);
+    if (!active || ref.read(sessionEpochProvider) != epoch) return [];
+    final methods = await ApiRequestCache.get<List<PaymentMethodModel>>(
+      'xboard:payment_methods:$epoch',
+      ttl: const Duration(minutes: 10),
+      fetch: sdk.payment.getPaymentMethods,
+    );
+    if (!active || ref.read(sessionEpochProvider) != epoch) return [];
+    return methods;
+  } finally {
+    requestLease.close();
+  }
 }
 
 void clearGetPaymentMethodsCache() {

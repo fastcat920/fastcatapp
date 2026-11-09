@@ -18,11 +18,15 @@ class Vpn {
   FutureOr<Map<String, Object?>> Function()? handleHeartbeat;
   FutureOr<bool> Function()? handleRecoverDataPlane;
   FutureOr<bool> Function()? handlePrepareRecovery;
+  void Function()? handleAttachMain;
 
   Vpn._internal() {
     methodChannel = const MethodChannel("vpn");
     methodChannel.setMethodCallHandler((call) async {
       switch (call.method) {
+        case "attachMain":
+          handleAttachMain?.call();
+          return true;
         case "gc":
           clashCore.requestGc();
         case "getStartForegroundParams":

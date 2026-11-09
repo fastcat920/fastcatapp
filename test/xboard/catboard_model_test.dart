@@ -9,6 +9,46 @@ void main() {
       expect(parseCatboardDate(null), isNull);
     });
 
+    test('integer cents survive server floating point serialization', () {
+      for (final sample in [
+        [3000, 1728, 100, 1171.9999999999998, 1172],
+        [4900, 1721, 100, 3078.9999999999995, 3079],
+        [67200, 1721, 100, 65378.99999999999, 65379],
+      ]) {
+        final preview = CatboardOrderPreview.fromJson({
+          'original_amount': sample[0],
+          'surplus_amount': sample[1],
+          'balance_amount': sample[2],
+          'final_amount': sample[3] + sample[2],
+          'payable_amount': sample[3],
+        });
+        expect(preview.payableAmount, sample[4]);
+        expect(
+            preview.originalAmount -
+                preview.surplusAmount -
+                preview.balanceAmount,
+            preview.payableAmount);
+      }
+      expect(
+          CatboardOrderPreview.fromJson({
+            'original_amount': '1900',
+            'final_amount': '1900.0',
+            'payable_amount': '1800.0',
+            'balance_amount': '100',
+          }).payableAmount,
+          1800);
+    });
+
+    test('promotion and ledger amounts use the same cent rounding', () {
+      expect(
+          CatboardPromotionOption.fromJson({'final_amount': 199.99999999999997})
+              .finalAmount,
+          200);
+      expect(
+          CatboardLedgerEntry.fromJson({'amount': -99.99999999999999}).amount,
+          -100);
+    });
+
     test('uses the server order amount and payable amount', () {
       final preview = CatboardOrderPreview.fromJson({
         'original_amount': 10000,

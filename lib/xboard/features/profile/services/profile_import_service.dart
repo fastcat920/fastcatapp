@@ -69,7 +69,8 @@ class XBoardProfileImportService {
       _logger.info('开始导入订阅配置: ${SensitiveMasker.maskUrl(url)}');
 
       // 1. 先下载并验证新配置（不删除旧配置）
-      onProgress?.call(ImportStatus.downloading, 0.3, '下载配置文件');
+      onProgress?.call(ImportStatus.downloading, 0.3,
+          appLocalizations.xboardDownloadingConfig);
 
       // 用户配置属于本地状态，订阅刷新只能替换远端内容，不能把节点选择
       // 或自定义分流一并覆盖掉。
@@ -93,7 +94,8 @@ class XBoardProfileImportService {
         _downloadCancelToken?.cancel();
         throw TimeoutException('订阅下载超时', downloadTimeout);
       });
-      onProgress?.call(ImportStatus.validating, 0.6, '验证配置格式');
+      onProgress?.call(ImportStatus.validating, 0.6,
+          appLocalizations.xboardValidatingConfigFormat);
       _throwIfCancelled(cancelToken);
 
       // 继承旧的节点选择与自定义分流，避免刷新订阅后本地规则丢失。
@@ -113,7 +115,8 @@ class XBoardProfileImportService {
         throw StateError('Account changed during import');
       }
       // 2. 先添加新配置（保持 groups 非空，VPN 不断线）
-      onProgress?.call(ImportStatus.adding, 0.8, '应用新配置');
+      onProgress?.call(
+          ImportStatus.adding, 0.8, appLocalizations.xboardAddingToConfigList);
       _throwIfCancelled(cancelToken);
       await globalState.appController.runProfileImport(() async {
         final rollbackSnapshot = _ProfileImportSnapshot.capture(_ref);
@@ -131,7 +134,8 @@ class XBoardProfileImportService {
 
         // Only prune after acknowledgement, while the import still owns the
         // operation lock. Never wrap application in a shorter UI timeout.
-        onProgress?.call(ImportStatus.cleaning, 0.95, '清理旧配置');
+        onProgress?.call(ImportStatus.cleaning, 0.95,
+            appLocalizations.xboardCleaningOldConfig);
         await _pruneOldUrlProfiles(profile.id);
         _logProfileDiff(
           rollbackSnapshot.profiles,
@@ -140,7 +144,8 @@ class XBoardProfileImportService {
       });
 
       stopwatch.stop();
-      onProgress?.call(ImportStatus.success, 1.0, '导入成功');
+      onProgress?.call(
+          ImportStatus.success, 1.0, appLocalizations.xboardImportSuccess);
       _logger.info('订阅配置导入成功，耗时: ${stopwatch.elapsedMilliseconds}ms');
       return ImportResult.success(
         profile: profileWithSelection,
@@ -542,34 +547,12 @@ class XBoardProfileImportService {
 
   String _getUserFriendlyErrorMessage(
       dynamic error, ImportErrorType errorType) {
-    final errorString = error.toString();
-
-    switch (errorType) {
-      case ImportErrorType.networkError:
-        return '网络连接失败，请检查网络设置后重试';
-      case ImportErrorType.downloadError:
-        // 特殊处理User-Agent相关错误
-        if (errorString.contains('Invalid HTTP header field value')) {
-          return '配置文件下载失败：HTTP请求头格式错误，请稍后重试';
-        }
-        if (errorString.contains('FormatException')) {
-          return '配置文件下载失败：请求格式错误，请稍后重试';
-        }
-        return '配置文件下载失败，请检查订阅链接是否正确';
-      case ImportErrorType.validationError:
-        return '配置文件格式验证失败，请联系服务提供商检查配置格式';
-      case ImportErrorType.storageError:
-        return '保存配置失败，请检查存储空间';
-      case ImportErrorType.concurrentImport:
-        return ''; // 并发导入由上层静默处理，不应到达此处
-      case ImportErrorType.unknownError:
-        // 简化未知错误的显示，避免显示技术细节
-        if (errorString.contains('Invalid HTTP header field value') ||
-            errorString.contains('FormatException')) {
-          return '导入失败：应用配置错误，请稍后重试或重启应用';
-        }
-        return '导入失败，请稍后重试或联系技术支持';
-    }
+    return ImportState(
+            lastResult: ImportResult.failure(
+          errorMessage: '',
+          errorType: errorType,
+        )).errorTypeMessage ??
+        appLocalizations.xboardImportFailed;
   }
 
   bool get isImporting => _isImporting;

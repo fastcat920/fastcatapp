@@ -1,3 +1,4 @@
+import 'package:fl_clash/xboard/features/mine/utils/ticket_presentation.dart';
 import 'dart:io';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
@@ -60,7 +61,9 @@ class _TicketDetailPageState extends ConsumerState<TicketDetailPage> {
   Future<void> _sendReply() async {
     final l10n = AppLocalizations.of(context);
     final message = _replyCtrl.text.trim();
-    if (message.isEmpty) return;
+    if (message.isEmpty || _isReplying || _isClosingTicket) return;
+    final detail = ref.read(getTicketProvider(widget.ticketId)).valueOrNull;
+    if (_isClosed || detail == null || detail.status != 0) return;
 
     setState(() => _isReplying = true);
     try {
@@ -70,6 +73,7 @@ class _TicketDetailPageState extends ConsumerState<TicketDetailPage> {
         if (ok) {
           _replyCtrl.clear();
           ref.invalidate(getTicketProvider(widget.ticketId));
+          ref.invalidate(getTicketsProvider);
           _scrollToBottom();
         } else {
           XBoardNotification.showError(l10n.xboardReplyFailedRetry);
@@ -90,7 +94,9 @@ class _TicketDetailPageState extends ConsumerState<TicketDetailPage> {
   }
 
   Future<void> _closeTicket() async {
-    if (_isClosingTicket) return;
+    if (_isClosingTicket || _isReplying || _isClosed) return;
+    final current = ref.read(getTicketProvider(widget.ticketId)).valueOrNull;
+    if (current == null || current.status != 0) return;
     final l10n = AppLocalizations.of(context);
     final confirm = await XbConfirmDialog.show(
       context,
@@ -101,7 +107,9 @@ class _TicketDetailPageState extends ConsumerState<TicketDetailPage> {
       tone: XbDialogTone.warning,
       icon: Icons.lock_outline,
     );
-    if (!confirm) return;
+    if (!confirm || !mounted) return;
+    final latest = ref.read(getTicketProvider(widget.ticketId)).valueOrNull;
+    if (latest == null || latest.status != 0 || _isClosed) return;
 
     setState(() => _isClosingTicket = true);
     try {
@@ -110,7 +118,10 @@ class _TicketDetailPageState extends ConsumerState<TicketDetailPage> {
       if (mounted && ok) {
         setState(() => _isClosed = true);
         ref.invalidate(getTicketProvider(widget.ticketId));
+        ref.invalidate(getTicketsProvider);
         XBoardNotification.showSuccess(l10n.xboardTicketClosedMessage);
+      } else if (mounted) {
+        XBoardNotification.showError(l10n.xboardOperationFailed);
       }
     } catch (e) {
       if (mounted) {
@@ -136,6 +147,26 @@ class _TicketDetailPageState extends ConsumerState<TicketDetailPage> {
       backgroundColor: isDark ? null : XbUiTokens.pageBackgroundLight,
       appBar: AppBar(
         title: Text(l10n.xboardTicketDetails),
+        actions: [
+          if (!_isClosed && detailAsync.valueOrNull?.status == 0)
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+              child: OutlinedButton(
+                onPressed:
+                    _isClosingTicket || _isReplying ? null : _closeTicket,
+                child: Row(mainAxisSize: MainAxisSize.min, children: [
+                  if (_isClosingTicket) ...[
+                    const SizedBox(
+                        width: 16,
+                        height: 16,
+                        child: CircularProgressIndicator(strokeWidth: 2)),
+                    const SizedBox(width: 6),
+                  ],
+                  Text(l10n.xboardCloseTicket),
+                ]),
+              ),
+            ),
+        ],
       ),
       body: detailAsync.when(
         loading: () => const Center(child: CircularProgressIndicator()),
@@ -144,7 +175,7 @@ class _TicketDetailPageState extends ConsumerState<TicketDetailPage> {
           onRetry: () => ref.invalidate(getTicketProvider(widget.ticketId)),
         ),
         data: (detail) {
-          final isClosed = _isClosed || detail.status == 2;
+          final isClosed = _isClosed || detail.status != 0;
           // 滚到底部
           _scrollToBottom();
           return Column(
@@ -182,7 +213,6 @@ class _TicketDetailPageState extends ConsumerState<TicketDetailPage> {
                   isReplying: _isReplying,
                   isClosing: _isClosingTicket,
                   onSend: _sendReply,
-                  onClose: _closeTicket,
                 ),
             ],
           );
@@ -202,7 +232,8 @@ class _TicketHeader extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final statusColor = _statusColor(context, detail.status);
-    final statusLabel = _statusLabel(context, detail.status);
+    final statusLabel =
+        _statusLabel(context, detail.status, detail.replyStatus);
 
     return Container(
       width: double.infinity,
@@ -233,17 +264,12 @@ class _TicketHeader extends StatelessWidget {
                         color: statusColor, fontWeight: XbFontWeight.semibold)),
               ),
               const SizedBox(width: 8),
-              Text(
-                '#${detail.id}',
-                style: theme.textTheme.bodySmall
-                    ?.copyWith(color: theme.colorScheme.onSurfaceVariant),
-              ),
-              const Spacer(),
-              Text(
+              Expanded(
+                  child: Text(
                 _formatDate(detail.createdAt),
                 style: theme.textTheme.bodySmall
                     ?.copyWith(color: theme.colorScheme.onSurfaceVariant),
-              ),
+              )),
             ],
           ),
         ],
@@ -256,7 +282,7 @@ class _TicketHeader extends StatelessWidget {
       case 0:
         return XbUiStatusColor.pending(context);
       case 1:
-        return XbUiStatusColor.success(context);
+        return XbUiStatusColor.muted(context);
       case 2:
         return XbUiStatusColor.muted(context);
       default:
@@ -264,22 +290,13 @@ class _TicketHeader extends StatelessWidget {
     }
   }
 
-  String _statusLabel(BuildContext context, int status) {
-    final l10n = AppLocalizations.of(context);
-    switch (status) {
-      case 0:
-        return l10n.xboardTicketPendingReply;
-      case 1:
-        return l10n.xboardTicketReplied;
-      case 2:
-        return l10n.xboardTicketClosed;
-      default:
-        return l10n.xboardStreamingUnknown;
-    }
-  }
+  String _statusLabel(BuildContext context, int status, int replyStatus) =>
+      ticketStatusLabel(AppLocalizations.of(context), status, replyStatus);
 
-  String _formatDate(DateTime date) =>
-      '${date.year}-${date.month.toString().padLeft(2, '0')}-${date.day.toString().padLeft(2, '0')}';
+  String _formatDate(DateTime date) {
+    final local = date.toLocal();
+    return '${local.year}-${local.month.toString().padLeft(2, '0')}-${local.day.toString().padLeft(2, '0')} ${local.hour.toString().padLeft(2, '0')}:${local.minute.toString().padLeft(2, '0')}:${local.second.toString().padLeft(2, '0')}';
+  }
 }
 
 // ─── 消息气泡 ─────────────────────────────────────────────────────────────────
@@ -296,115 +313,120 @@ class _MessageBubble extends StatelessWidget {
         isMe ? theme.colorScheme.onPrimary : theme.colorScheme.onSurface;
     final hasImage = msg.message.contains('![');
 
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 12),
-      child: Row(
-        mainAxisAlignment:
-            isMe ? MainAxisAlignment.end : MainAxisAlignment.start,
-        crossAxisAlignment: CrossAxisAlignment.end,
-        children: [
-          if (!isMe) ...[
-            CircleAvatar(
-              radius: 16,
-              backgroundColor: theme.colorScheme.secondaryContainer,
-              child: Icon(Icons.support_agent,
-                  size: 18, color: theme.colorScheme.onSecondaryContainer),
-            ),
-            const SizedBox(width: 8),
-          ],
-          Flexible(
-            child: Column(
-              crossAxisAlignment:
-                  isMe ? CrossAxisAlignment.end : CrossAxisAlignment.start,
-              children: [
-                Container(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-                  decoration: BoxDecoration(
-                    color: isMe
-                        ? theme.colorScheme.primary
-                        : theme.colorScheme.surfaceContainerHighest,
-                    borderRadius: BorderRadius.only(
-                      topLeft: const Radius.circular(16),
-                      topRight: const Radius.circular(16),
-                      bottomLeft: Radius.circular(isMe ? 16 : 4),
-                      bottomRight: Radius.circular(isMe ? 4 : 16),
-                    ),
-                  ),
-                  child: hasImage
-                      ? MarkdownBody(
-                          data: msg.message,
-                          styleSheet: MarkdownStyleSheet(
-                            p: theme.textTheme.bodyMedium
-                                ?.copyWith(color: textColor),
-                            a: theme.textTheme.bodyMedium?.copyWith(
-                              color: isMe
-                                  ? theme.colorScheme.onPrimary
-                                  : theme.colorScheme.primary,
-                              decoration: TextDecoration.underline,
-                            ),
-                          ),
-                          onTapLink: (text, href, title) {
-                            if (href != null) {
-                              launchUrl(Uri.parse(href),
-                                  mode: LaunchMode.externalApplication);
-                            }
-                          },
-                          sizedImageBuilder: (details) => Padding(
-                            padding: const EdgeInsets.only(top: 6),
-                            child: ClipRRect(
-                              borderRadius: BorderRadius.circular(8),
-                              child: CachedNetworkImage(
-                                imageUrl: details.uri.toString(),
-                                fit: BoxFit.cover,
-                                progressIndicatorBuilder:
-                                    (context, url, progress) => SizedBox(
-                                  height: 80,
-                                  child: Center(
-                                    child: CircularProgressIndicator(
-                                      strokeWidth: 2,
-                                      color: textColor.withValues(alpha: 0.6),
+    return Align(
+        alignment: isMe ? Alignment.centerRight : Alignment.centerLeft,
+        child: Padding(
+          padding: const EdgeInsets.only(bottom: 12),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            mainAxisAlignment:
+                isMe ? MainAxisAlignment.end : MainAxisAlignment.start,
+            crossAxisAlignment: CrossAxisAlignment.end,
+            children: [
+              if (!isMe) ...[
+                CircleAvatar(
+                  radius: 16,
+                  backgroundColor: theme.colorScheme.secondaryContainer,
+                  child: Icon(Icons.support_agent,
+                      size: 18, color: theme.colorScheme.onSecondaryContainer),
+                ),
+                const SizedBox(width: 8),
+              ],
+              Flexible(
+                child: Column(
+                  crossAxisAlignment:
+                      isMe ? CrossAxisAlignment.end : CrossAxisAlignment.start,
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 12, vertical: 10),
+                      decoration: BoxDecoration(
+                        color: isMe
+                            ? theme.colorScheme.primary
+                            : theme.colorScheme.surfaceContainerHighest,
+                        borderRadius: BorderRadius.only(
+                          topLeft: const Radius.circular(16),
+                          topRight: const Radius.circular(16),
+                          bottomLeft: Radius.circular(isMe ? 16 : 4),
+                          bottomRight: Radius.circular(isMe ? 4 : 16),
+                        ),
+                      ),
+                      child: hasImage
+                          ? MarkdownBody(
+                              data: msg.message,
+                              styleSheet: MarkdownStyleSheet(
+                                p: theme.textTheme.bodyMedium
+                                    ?.copyWith(color: textColor),
+                                a: theme.textTheme.bodyMedium?.copyWith(
+                                  color: isMe
+                                      ? theme.colorScheme.onPrimary
+                                      : theme.colorScheme.primary,
+                                  decoration: TextDecoration.underline,
+                                ),
+                              ),
+                              onTapLink: (text, href, title) {
+                                if (href != null) {
+                                  launchUrl(Uri.parse(href),
+                                      mode: LaunchMode.externalApplication);
+                                }
+                              },
+                              sizedImageBuilder: (details) => Padding(
+                                padding: const EdgeInsets.only(top: 6),
+                                child: ClipRRect(
+                                  borderRadius: BorderRadius.circular(8),
+                                  child: CachedNetworkImage(
+                                    imageUrl: details.uri.toString(),
+                                    fit: BoxFit.cover,
+                                    progressIndicatorBuilder:
+                                        (context, url, progress) => SizedBox(
+                                      height: 80,
+                                      child: Center(
+                                        child: CircularProgressIndicator(
+                                          strokeWidth: 2,
+                                          color:
+                                              textColor.withValues(alpha: 0.6),
+                                        ),
+                                      ),
+                                    ),
+                                    errorWidget: (_, __, ___) => Container(
+                                      height: 60,
+                                      color: Colors.black12,
+                                      child: const Icon(Icons.broken_image,
+                                          color: Colors.grey),
                                     ),
                                   ),
                                 ),
-                                errorWidget: (_, __, ___) => Container(
-                                  height: 60,
-                                  color: Colors.black12,
-                                  child: const Icon(Icons.broken_image,
-                                      color: Colors.grey),
-                                ),
                               ),
+                            )
+                          : Text(
+                              msg.message,
+                              style: theme.textTheme.bodyMedium
+                                  ?.copyWith(color: textColor),
                             ),
-                          ),
-                        )
-                      : Text(
-                          msg.message,
-                          style: theme.textTheme.bodyMedium
-                              ?.copyWith(color: textColor),
-                        ),
+                    ),
+                    const SizedBox(height: 3),
+                    Text(
+                      _formatTime(msg.createdAt),
+                      style: theme.textTheme.bodySmall?.copyWith(
+                          color: theme.colorScheme.onSurface
+                              .withValues(alpha: 0.4),
+                          fontSize: 11),
+                    ),
+                  ],
                 ),
-                const SizedBox(height: 3),
-                Text(
-                  _formatTime(msg.createdAt),
-                  style: theme.textTheme.bodySmall?.copyWith(
-                      color: theme.colorScheme.onSurface.withValues(alpha: 0.4),
-                      fontSize: 11),
+              ),
+              if (isMe) ...[
+                const SizedBox(width: 8),
+                CircleAvatar(
+                  radius: 16,
+                  backgroundColor: theme.colorScheme.primaryContainer,
+                  child: Icon(Icons.person,
+                      size: 18, color: theme.colorScheme.onPrimaryContainer),
                 ),
               ],
-            ),
+            ],
           ),
-          if (isMe) ...[
-            const SizedBox(width: 8),
-            CircleAvatar(
-              radius: 16,
-              backgroundColor: theme.colorScheme.primaryContainer,
-              child: Icon(Icons.person,
-                  size: 18, color: theme.colorScheme.onPrimaryContainer),
-            ),
-          ],
-        ],
-      ),
-    );
+        ));
   }
 
   String _formatTime(DateTime date) {
@@ -424,14 +446,12 @@ class _ReplyBar extends StatefulWidget {
   final bool isReplying;
   final bool isClosing;
   final VoidCallback onSend;
-  final VoidCallback onClose;
 
   const _ReplyBar({
     required this.controller,
     required this.isReplying,
     required this.isClosing,
     required this.onSend,
-    required this.onClose,
   });
 
   @override
@@ -455,11 +475,12 @@ class _ReplyBarState extends State<_ReplyBar> {
       imageQuality: 85,
       maxWidth: 1920,
     );
-    if (picked == null) return;
+    if (picked == null || !mounted) return;
 
     setState(() => _isUploadingImage = true);
     try {
       final url = await ImgBBService(apiKey).uploadImage(File(picked.path));
+      if (!mounted) return;
       // 在当前光标位置（或末尾）插入 Markdown 图片语法
       final text = widget.controller.text;
       final insertText = text.isEmpty ? '![image]($url)' : '\n![image]($url)';
@@ -493,21 +514,6 @@ class _ReplyBarState extends State<_ReplyBar> {
         ),
         child: Row(
           children: [
-            // 关闭工单按钮
-            IconButton(
-              icon: widget.isClosing
-                  ? const SizedBox(
-                      width: 20,
-                      height: 20,
-                      child: CircularProgressIndicator(strokeWidth: 2),
-                    )
-                  : const Icon(Icons.lock_outline),
-              tooltip: l10n.xboardCloseTicket,
-              onPressed: widget.isClosing ? null : widget.onClose,
-              style: IconButton.styleFrom(
-                foregroundColor: theme.colorScheme.onSurfaceVariant,
-              ),
-            ),
             // 图片上传按钮（仅 imgbbApiKey 已配置时显示）
             if (hasImgbb)
               _isUploadingImage
@@ -522,7 +528,9 @@ class _ReplyBarState extends State<_ReplyBar> {
                   : IconButton(
                       icon: const Icon(Icons.image_outlined),
                       tooltip: l10n.xboardUploadImage,
-                      onPressed: _pickAndUploadImage,
+                      onPressed: widget.isClosing || widget.isReplying
+                          ? null
+                          : _pickAndUploadImage,
                       style: IconButton.styleFrom(
                         foregroundColor: theme.colorScheme.onSurfaceVariant,
                       ),
@@ -558,23 +566,38 @@ class _ReplyBarState extends State<_ReplyBar> {
             ),
             const SizedBox(width: 8),
             // 发送按钮
-            IconButton.filled(
-              onPressed:
-                  widget.isReplying || widget.isClosing ? null : widget.onSend,
-              style: XbUiButton.filledIconPrimary(
-                context,
-                busy: widget.isReplying,
+            ValueListenableBuilder<TextEditingValue>(
+              valueListenable: widget.controller,
+              builder: (context, value, child) => IconButton.filled(
+                tooltip: l10n.onlineSupportSend,
+                onPressed: value.text.trim().isEmpty ||
+                        widget.isReplying ||
+                        widget.isClosing ||
+                        _isUploadingImage
+                    ? null
+                    : widget.onSend,
+                style: XbUiButton.filledIconPrimary(context,
+                        busy: widget.isReplying)
+                    .copyWith(
+                  backgroundColor: WidgetStateProperty.resolveWith((states) =>
+                      states.contains(WidgetState.disabled) &&
+                              !widget.isReplying
+                          ? theme.colorScheme.onSurface.withValues(alpha: 0.12)
+                          : theme.colorScheme.primary),
+                  foregroundColor: WidgetStateProperty.resolveWith((states) =>
+                      states.contains(WidgetState.disabled) &&
+                              !widget.isReplying
+                          ? theme.colorScheme.onSurface.withValues(alpha: 0.38)
+                          : theme.colorScheme.onPrimary),
+                ),
+                icon: widget.isReplying
+                    ? SizedBox(
+                        width: 18,
+                        height: 18,
+                        child: CircularProgressIndicator(
+                            strokeWidth: 2, color: theme.colorScheme.onPrimary))
+                    : const Icon(Icons.send),
               ),
-              icon: widget.isReplying
-                  ? SizedBox(
-                      width: 18,
-                      height: 18,
-                      child: CircularProgressIndicator(
-                        strokeWidth: 2,
-                        color: theme.colorScheme.onPrimary,
-                      ),
-                    )
-                  : const Icon(Icons.send),
             ),
           ],
         ),

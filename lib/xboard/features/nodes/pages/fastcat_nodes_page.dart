@@ -1,3 +1,4 @@
+import 'package:fl_clash/xboard/features/latency/widgets/latency_indicator.dart';
 import 'dart:async';
 
 import 'package:fl_clash/l10n/l10n.dart';
@@ -541,7 +542,8 @@ class _FastCatNodesPageState extends ConsumerState<FastCatNodesPage> {
   ) async {
     if (_testingNodes.contains(nodeName)) return;
     final sourceGroup = ref
-        .read(groupsProvider)
+        .read(currentGroupsStateProvider)
+        .value
         .where(
           (group) => group.name == groupName,
         )
@@ -630,40 +632,17 @@ class _DelayBadge extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final l10n = AppLocalizations.of(context);
-    Widget content;
-    if (testing) {
-      content = SizedBox.square(
-          dimension: 16,
-          child: CircularProgressIndicator(
-            strokeWidth: 2,
-            color: Theme.of(context).colorScheme.primary,
-          ));
-      return _LatencyTapTarget(content: content, onTap: null);
-    }
-    final Color color;
-    final String label;
-    if (node.timedOut) {
-      color = XbUiStatusColor.error(context);
-      label = l10n.xboardTimeout;
-    } else if (!node.hasDelay || node.delayMs == 0) {
-      color = XbUiStatusColor.muted(context);
-      label = '--';
-    } else {
-      color = node.delayMs! < 500
-          ? XbUiStatusColor.success(context)
-          : XbUiStatusColor.pending(context);
-      label = '${node.delayMs}ms';
-    }
-    content = Text(
-      label,
-      style: TextStyle(
-        fontSize: 11,
-        fontWeight: XbFontWeight.semibold,
-        color: color,
-      ),
+    return _LatencyTapTarget(
+      content: LatencyIndicator(
+          delayValue: testing
+              ? 0
+              : node.timedOut
+                  ? -1
+                  : node.delayMs == 0
+                      ? null
+                      : node.delayMs),
+      onTap: testing ? null : onTap,
     );
-    return _LatencyTapTarget(content: content, onTap: onTap);
   }
 }
 

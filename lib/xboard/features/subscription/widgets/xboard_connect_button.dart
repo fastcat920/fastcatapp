@@ -2,6 +2,7 @@ import 'package:fl_clash/common/common.dart';
 import 'package:fl_clash/l10n/l10n.dart';
 import 'package:fl_clash/providers/providers.dart';
 import 'package:fl_clash/services/core_switch_status.dart';
+import 'package:fl_clash/services/connection_button_activity.dart';
 import 'package:fl_clash/state.dart';
 import 'package:fl_clash/widgets/widgets.dart';
 import 'package:flutter/material.dart';
@@ -41,12 +42,21 @@ class _XBoardConnectButtonState extends ConsumerState<XBoardConnectButton>
   String? _subscriptionCheckLabel;
   late final FocusNode _tvFocusNode;
 
+  bool get _showProgress => showConnectionProgress(
+        ready: globalState.coreStatusReadyNotifier.value,
+        checkingSubscription: _isCheckingSubscription,
+        userSwitching: _isSwitching,
+        coreSwitching: globalState.isCoreSwitchingNotifier.value,
+        configurationSwitching:
+            globalState.appController.isConfigurationSwitching,
+        status: globalState.coreSwitchStatusNotifier.value,
+      );
+
+  // A silent configuration update still prevents conflicting user operations.
   bool get _isBusy =>
-      !globalState.coreStatusReadyNotifier.value ||
-      _isCheckingSubscription ||
-      _isSwitching ||
+      _showProgress ||
       globalState.isCoreSwitchingNotifier.value ||
-      globalState.coreSwitchStatusNotifier.value.isBusy;
+      globalState.appController.isCoreSwitching;
 
   @override
   void initState() {
@@ -334,7 +344,7 @@ class _XBoardConnectButtonState extends ConsumerState<XBoardConnectButton>
           final measuredTextWidth = globalState.measure
                   .computeTextSize(
                     Text(
-                      _isBusy
+                      _showProgress
                           ? _busyLabel(context)
                           : utils.getTimeDifference(
                               DateTime.now(),
@@ -350,7 +360,7 @@ class _XBoardConnectButtonState extends ConsumerState<XBoardConnectButton>
             materialTapTargetSize: MaterialTapTargetSize.padded,
             heroTag: 'xboard_connect_button',
             onPressed: _isBusy ? null : handleSwitchStart,
-            icon: _isBusy
+            icon: _showProgress
                 ? const SizedBox(
                     width: 20,
                     height: 20,
@@ -364,7 +374,7 @@ class _XBoardConnectButtonState extends ConsumerState<XBoardConnectButton>
                     progress: _animation,
                   ),
             label: SizedBox(
-              width: labelWidth * (_isBusy ? 1 : _animation.value),
+              width: labelWidth * (_showProgress ? 1 : _animation.value),
               child: child!,
             ),
           );
@@ -372,8 +382,9 @@ class _XBoardConnectButtonState extends ConsumerState<XBoardConnectButton>
         child: Consumer(
           builder: (_, ref, __) {
             final runTime = ref.watch(runTimeProvider);
-            final text =
-                _isBusy ? _busyLabel(context) : utils.getTimeText(runTime);
+            final text = _showProgress
+                ? _busyLabel(context)
+                : utils.getTimeText(runTime);
             return _LeftScrollingText(
               text: text,
               style:
@@ -481,7 +492,7 @@ class _XBoardConnectButtonState extends ConsumerState<XBoardConnectButton>
                                     child: AnimatedSwitcher(
                                       duration:
                                           const Duration(milliseconds: 250),
-                                      child: _isBusy
+                                      child: _showProgress
                                           ? Column(
                                               key: const ValueKey('switching'),
                                               mainAxisAlignment:

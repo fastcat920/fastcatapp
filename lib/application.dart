@@ -1,3 +1,7 @@
+import 'package:fl_clash/xboard/features/notice/providers/notice_popup_policy.dart';
+import 'package:flutter/services.dart';
+import 'package:fl_clash/plugins/service.dart';
+import 'package:fl_clash/services/core_switch_status.dart';
 import 'dart:async';
 import 'dart:io';
 
@@ -13,7 +17,7 @@ import 'package:fl_clash/providers/providers.dart';
 import 'package:fl_clash/enum/enum.dart' as client_enum;
 import 'package:fl_clash/state.dart';
 import 'package:flutter/material.dart';
-import 'common/ios_fullscreen_back.dart';
+import 'package:flutter/cupertino.dart' show CupertinoPageTransitionsBuilder;
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -46,6 +50,40 @@ class ApplicationState extends ConsumerState<Application>
   Timer? _mobileLogRecoveryTimer;
   Timer? _automaticUpdateRetryTimer;
   StreamSubscription<Map<String, dynamic>>? _updateConfigSubscription;
+  StreamSubscription<dynamic>? _iosVpnStatusSubscription;
+  bool _iosVpnSyncing = false;
+
+  Future<void> _syncIosVpnStatus() async {
+    if (!Platform.isIOS ||
+        !mounted ||
+        _iosVpnSyncing ||
+        globalState.isCoreSwitchingNotifier.value) {
+      return;
+    }
+    _iosVpnSyncing = true;
+    try {
+      final snapshot = await service?.restoreIosVpnState();
+      final status = snapshot?['status'];
+      if (!mounted || globalState.isCoreSwitchingNotifier.value) return;
+      if (status == 'connected' && ref.read(runTimeProvider) == null) {
+        await globalState.appController.restoreIosConnection();
+      }
+      if ((status == 'disconnected' || status == 'invalid') &&
+          ref.read(runTimeProvider) != null) {
+        globalState.startTime = null;
+        globalState.stopUpdateTasks();
+        ref.read(runTimeProvider.notifier).value = null;
+        globalState.updateCoreSwitchStatus(CoreSwitchStage.failed,
+            message: '系统 VPN 已断开，请重新连接');
+        debugPrint('[IOSVPN] reconciled system disconnect');
+      }
+    } catch (error) {
+      debugPrint('[IOSVPN] status query failed: $error');
+    } finally {
+      _iosVpnSyncing = false;
+    }
+  }
+
   bool _automaticUpdateCheckInFlight = false;
   bool _automaticUpdateCheckPending = false;
   int _automaticUpdateRetryIndex = 0;
@@ -57,7 +95,7 @@ class ApplicationState extends ConsumerState<Application>
   final _pageTransitionsTheme = const PageTransitionsTheme(
     builders: <TargetPlatform, PageTransitionsBuilder>{
       TargetPlatform.android: CommonPageTransitionsBuilder(),
-      TargetPlatform.iOS: IOSFullscreenBackTransitionsBuilder(),
+      TargetPlatform.iOS: CupertinoPageTransitionsBuilder(),
       TargetPlatform.windows: CommonPageTransitionsBuilder(),
       TargetPlatform.linux: CommonPageTransitionsBuilder(),
       TargetPlatform.macOS: CommonPageTransitionsBuilder(),
@@ -94,6 +132,15 @@ class ApplicationState extends ConsumerState<Application>
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
+    if (Platform.isIOS) {
+      _iosVpnStatusSubscription = const EventChannel('fastcat/vpn_status')
+          .receiveBroadcastStream()
+          .listen((_) {
+        unawaited(_syncIosVpnStatus());
+      }, onError: (Object error) {
+        debugPrint('[IOSVPN] status events failed: $error');
+      });
+    }
     CustomerServiceHelper.ensureAndroidBackHandlerRegistered();
     _autoUpdateProfilesTask();
     globalState.appController = AppController(context, ref);
@@ -271,39 +318,107 @@ class ApplicationState extends ConsumerState<Application>
       fireImmediately: true,
     );
 
-    // 监听公告弹窗：popupNoticeId 非 null 时自动弹出
+    _router.routeInformationProvider.addListener(_noticeEnvironmentChanged);
+    ref.listenManual(noticeProvider, (_, __) => _noticeEnvironmentChanged(),
+        fireImmediately: true);
     ref.listenManual(
-      noticeProvider.select((s) => s.popupNoticeId),
-      (_, next) {
-        if (next == null) return;
-        final noticeId = next;
-        final state = ref.read(noticeProvider);
-        final notice = state.notices.firstWhere(
-          (n) => n.id == noticeId,
-          orElse: () => state.notices.first,
-        );
-        WidgetsBinding.instance.addPostFrameCallback((_) {
-          if (!mounted) return;
-          final ctx = globalState.navigatorKey.currentContext;
-          if (ctx == null) return;
-          final previousFocus = TvFocusRestoration.capture();
-          showDialog(
-            context: ctx,
-            builder: (_) => NoticeDetailDialog(
-              notices: [notice],
-              onDismiss: () {
-                ref.read(noticeProvider.notifier).markPopupShown(noticeId);
-              },
-            ),
-          ).whenComplete(() {
-            final restoreContext = globalState.navigatorKey.currentContext;
-            if (restoreContext != null && restoreContext.mounted) {
-              TvFocusRestoration.restore(restoreContext, previousFocus);
-            }
-          });
-        });
-      },
-    );
+        xboardUserProvider, (_, __) => _noticeEnvironmentChanged());
+    ref.listenManual(initProvider, (_, __) => _noticeEnvironmentChanged());
+  }
+
+  DialogRoute<bool>? _noticePopupRoute;
+  String? _noticePopupScope;
+  Timer? _noticePopupTimer;
+  bool _noticeDialogOpen = false;
+  final _noticePopupPolicy = NoticePopupPolicy();
+
+  bool get _noticeEnvironmentReady {
+    final user = ref.read(xboardUserProvider);
+    final lifecycle = WidgetsBinding.instance.lifecycleState;
+    return user.isAuthenticated &&
+        user.isInitialized &&
+        !user.isLoading &&
+        (lifecycle == null || lifecycle == AppLifecycleState.resumed) &&
+        _router.routeInformationProvider.value.uri.path == '/';
+  }
+
+  void _noticeEnvironmentChanged() {
+    if (!mounted) return;
+    if (!_noticeEnvironmentReady) _noticePopupPolicy.reset();
+    final route = _noticePopupRoute;
+    if (route != null &&
+        route.isActive &&
+        (!_noticeEnvironmentReady ||
+            ref.read(noticeProvider.notifier).currentScope !=
+                _noticePopupScope)) {
+      route.navigator?.removeRoute(route);
+    }
+    _scheduleNoticePopup();
+  }
+
+  void _scheduleNoticePopup() {
+    if (!mounted || _noticeDialogOpen || _noticePopupTimer != null) return;
+    if (ref.read(noticeProvider).popupNoticeId == null ||
+        !_noticeEnvironmentReady) {
+      return;
+    }
+    _noticePopupTimer = Timer(const Duration(milliseconds: 400), () {
+      _noticePopupTimer = null;
+      unawaited(_tryNoticePopup());
+    });
+  }
+
+  Future<void> _tryNoticePopup() async {
+    if (!mounted || _noticeDialogOpen) return;
+    final state = ref.read(noticeProvider);
+    final id = state.popupNoticeId;
+    if (id == null) {
+      _noticePopupPolicy.reset();
+      return;
+    }
+    final navigator = globalState.navigatorKey.currentState;
+    final ready =
+        _noticeEnvironmentReady && navigator != null && !navigator.canPop();
+    if (!_noticePopupPolicy.canPresent(
+        environmentReady: ready, now: DateTime.now())) {
+      _scheduleNoticePopup();
+      return;
+    }
+    final notice =
+        state.notices.where((n) => n.id == id && n.isVisible).firstOrNull;
+    final ctx = globalState.navigatorKey.currentContext;
+    if (notice == null) return;
+    if (ctx == null) {
+      _scheduleNoticePopup();
+      return;
+    }
+    final scope = ref.read(noticeProvider.notifier).currentScope;
+    _noticeDialogOpen = true;
+    final focus = TvFocusRestoration.capture();
+    try {
+      final route = DialogRoute<bool>(
+          context: ctx,
+          barrierDismissible: false,
+          builder: (_) => NoticeDetailDialog(notices: [notice]));
+      _noticePopupRoute = route;
+      _noticePopupScope = scope;
+      final acknowledged = await navigator!.push(route);
+      if (mounted && acknowledged == true) {
+        await ref
+            .read(noticeProvider.notifier)
+            .markPopupShown(id, expectedScope: scope);
+      }
+    } finally {
+      _noticePopupRoute = null;
+      _noticePopupScope = null;
+      _noticeDialogOpen = false;
+      _noticePopupPolicy.reset();
+      final context = globalState.navigatorKey.currentContext;
+      if (context != null && context.mounted) {
+        TvFocusRestoration.restore(context, focus);
+      }
+      _scheduleNoticePopup();
+    }
   }
 
   void _scheduleCustomerServicePrewarm() {
@@ -323,7 +438,9 @@ class ApplicationState extends ConsumerState<Application>
             importProfile: false,
           );
       if (mounted) {
-        ref.read(xboardUserProvider.notifier).retryAutomaticSubscriptionImport();
+        ref
+            .read(xboardUserProvider.notifier)
+            .retryAutomaticSubscriptionImport();
       }
     } catch (error) {
       debugPrint('[Application] 网络恢复后刷新订阅信息失败: $error');
@@ -342,12 +459,14 @@ class ApplicationState extends ConsumerState<Application>
 
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
+    _noticeEnvironmentChanged();
     if (state == AppLifecycleState.paused ||
         state == AppLifecycleState.hidden) {
       globalState.appBackgroundedAt ??= DateTime.now();
       return;
     }
     if (state == AppLifecycleState.resumed) {
+      unawaited(_syncIosVpnStatus());
       final backgroundedAt = globalState.appBackgroundedAt;
       globalState.appBackgroundedAt = null;
       if (backgroundedAt != null &&
@@ -987,6 +1106,10 @@ class ApplicationState extends ConsumerState<Application>
   @override
   Future<void> dispose() async {
     try {
+      _router.routeInformationProvider
+          .removeListener(_noticeEnvironmentChanged);
+      _noticePopupTimer?.cancel();
+      await _iosVpnStatusSubscription?.cancel();
       WidgetsBinding.instance.removeObserver(this);
       linkManager.destroy();
       _autoUpdateProfilesTaskTimer?.cancel();

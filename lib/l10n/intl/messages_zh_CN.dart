@@ -1094,6 +1094,15 @@ class MessageLookup extends MessageLookupByLibrary {
     "xboardBuyNow": MessageLookupByLibrary.simpleMessage("立即购买"),
     "xboardBuyPlan": MessageLookupByLibrary.simpleMessage("购买套餐"),
     "xboardBuyoutPlan": MessageLookupByLibrary.simpleMessage("买断制"),
+    "xboardCameraPermissionDenied": MessageLookupByLibrary.simpleMessage(
+      "相机权限已关闭，请在系统设置中允许 FastCat 使用相机后重试。",
+    ),
+    "xboardCameraSettingsUnavailable": MessageLookupByLibrary.simpleMessage(
+      "无法打开设置，请手动前往系统设置开启相机权限。",
+    ),
+    "xboardCameraUnavailable": MessageLookupByLibrary.simpleMessage(
+      "相机暂不可用，请检查设备后重试。",
+    ),
     "xboardCancel": MessageLookupByLibrary.simpleMessage("取消"),
     "xboardCancelOrder": MessageLookupByLibrary.simpleMessage("取消订单"),
     "xboardCancelPayment": MessageLookupByLibrary.simpleMessage("取消支付"),
@@ -1172,6 +1181,8 @@ class MessageLookup extends MessageLookupByLibrary {
     "xboardCopySubscriptionLinkAbove": MessageLookupByLibrary.simpleMessage(
       "复制上方的订阅链接",
     ),
+    "xboardCoreDisconnectFailed": MessageLookupByLibrary.simpleMessage("断开失败"),
+    "xboardCoreRestoring": MessageLookupByLibrary.simpleMessage("系统 VPN 正在恢复"),
     "xboardCoreStageCheckingHelper": MessageLookupByLibrary.simpleMessage(
       "检查 helper",
     ),
@@ -1190,6 +1201,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "xboardCoreStageTunApplying": MessageLookupByLibrary.simpleMessage(
       "应用 TUN",
     ),
+    "xboardCoreVerifying": MessageLookupByLibrary.simpleMessage("正在确认内核连接"),
     "xboardCouponExpired": MessageLookupByLibrary.simpleMessage("优惠券已过期"),
     "xboardCouponNotYetActive": MessageLookupByLibrary.simpleMessage("优惠券尚未生效"),
     "xboardCouponOptional": MessageLookupByLibrary.simpleMessage("优惠券（可选）"),
@@ -1385,6 +1397,9 @@ class MessageLookup extends MessageLookupByLibrary {
     "xboardDiscountAmount": MessageLookupByLibrary.simpleMessage("优惠金额"),
     "xboardDiscounted": MessageLookupByLibrary.simpleMessage("已优惠"),
     "xboardDiscountedPrice": MessageLookupByLibrary.simpleMessage("优惠后价格"),
+    "xboardDocImageUnavailable": MessageLookupByLibrary.simpleMessage(
+      "教程图片暂不可用，请参考文字步骤或联系在线客服。",
+    ),
     "xboardDocsCenter": MessageLookupByLibrary.simpleMessage("使用文档"),
     "xboardDownloadingConfig": MessageLookupByLibrary.simpleMessage("下载配置文件"),
     "xboardEmail": MessageLookupByLibrary.simpleMessage("邮箱"),
@@ -1427,6 +1442,9 @@ class MessageLookup extends MessageLookupByLibrary {
     "xboardGatewayApiLabel": m44,
     "xboardGatewayCandidateCount": m45,
     "xboardGatewayStatus": MessageLookupByLibrary.simpleMessage("网关状态"),
+    "xboardGatewayUnavailable": MessageLookupByLibrary.simpleMessage(
+      "业务网关暂不可用，请稍后重试",
+    ),
     "xboardGetGroupLinkFailed": MessageLookupByLibrary.simpleMessage(
       "获取群组链接失败",
     ),
@@ -1509,11 +1527,18 @@ class MessageLookup extends MessageLookupByLibrary {
     "xboardImageUploadUnavailable": MessageLookupByLibrary.simpleMessage(
       "图片上传未配置，请联系管理员",
     ),
+    "xboardImportCancelled": MessageLookupByLibrary.simpleMessage("导入已取消"),
     "xboardImportFailed": MessageLookupByLibrary.simpleMessage("导入失败"),
     "xboardImportSuccess": MessageLookupByLibrary.simpleMessage("导入成功"),
     "xboardImportingSubscription": MessageLookupByLibrary.simpleMessage(
       "正在导入订阅",
     ),
+    "xboardInitConnecting": MessageLookupByLibrary.simpleMessage("正在连接服务器…"),
+    "xboardInitFailed": MessageLookupByLibrary.simpleMessage("初始化失败"),
+    "xboardInitFetchingConfig": MessageLookupByLibrary.simpleMessage("正在获取配置…"),
+    "xboardInitInitializing": MessageLookupByLibrary.simpleMessage("正在初始化…"),
+    "xboardInitPreparing": MessageLookupByLibrary.simpleMessage("正在准备初始化…"),
+    "xboardInitReady": MessageLookupByLibrary.simpleMessage("初始化完成"),
     "xboardInitializing": MessageLookupByLibrary.simpleMessage("正在初始化"),
     "xboardInsufficientBalance": MessageLookupByLibrary.simpleMessage("余额不足"),
     "xboardInvalidCredentials": MessageLookupByLibrary.simpleMessage(
@@ -1880,7 +1905,9 @@ class MessageLookup extends MessageLookupByLibrary {
     "xboardNoInternetConnection": MessageLookupByLibrary.simpleMessage(
       "无网络连接，请检查网络设置",
     ),
+    "xboardNoLatestNotice": MessageLookupByLibrary.simpleMessage("当前没有最新公告"),
     "xboardNoMessages": MessageLookupByLibrary.simpleMessage("暂无消息"),
+    "xboardNoNotice": MessageLookupByLibrary.simpleMessage("暂无公告"),
     "xboardNoOrderRecords": MessageLookupByLibrary.simpleMessage("暂无订单记录"),
     "xboardNoPaymentMethods": MessageLookupByLibrary.simpleMessage("暂无可用支付方式"),
     "xboardNoPlansAvailable": MessageLookupByLibrary.simpleMessage("暂无套餐信息"),
@@ -1895,10 +1922,14 @@ class MessageLookup extends MessageLookupByLibrary {
     "xboardNone": MessageLookupByLibrary.simpleMessage("无"),
     "xboardNormal": MessageLookupByLibrary.simpleMessage("普通"),
     "xboardNotLoggedIn": MessageLookupByLibrary.simpleMessage("未登录"),
+    "xboardNoticeLoading": MessageLookupByLibrary.simpleMessage("正在加载公告…"),
+    "xboardNoticeTitle": MessageLookupByLibrary.simpleMessage("公告"),
+    "xboardNoticeUnavailable": MessageLookupByLibrary.simpleMessage("暂时无法获取公告"),
     "xboardOfflineButActive": MessageLookupByLibrary.simpleMessage("离线占用"),
     "xboardOneClickRepair": MessageLookupByLibrary.simpleMessage("一键修复"),
     "xboardOneTimePayment": MessageLookupByLibrary.simpleMessage("一次性"),
     "xboardOnlineSupport": MessageLookupByLibrary.simpleMessage("在线客服"),
+    "xboardOpenCameraSettings": MessageLookupByLibrary.simpleMessage("去设置开启相机"),
     "xboardOpenPaymentFailed": MessageLookupByLibrary.simpleMessage("打开支付页面失败"),
     "xboardOpenPaymentLinkFailed": MessageLookupByLibrary.simpleMessage(
       "打开支付链接失败",
@@ -2195,7 +2226,7 @@ class MessageLookup extends MessageLookupByLibrary {
     ),
     "xboardServiceNetworkRestrictedTooltip":
         MessageLookupByLibrary.simpleMessage(
-          "检测到网络接口，但公网基准和业务网关均不可达，当前代理可能无法使用。请检查网络限制、DNS 或运行网络诊断。",
+          "当前网络或代理连接异常，暂时无法访问服务。请尝试更换节点；若仍未恢复，请检查 Wi-Fi、移动数据或 DNS 设置，也可运行网络诊断。",
         ),
     "xboardServiceNoNetwork": MessageLookupByLibrary.simpleMessage("本地网络不可用"),
     "xboardServiceNoNetworkTooltip": MessageLookupByLibrary.simpleMessage(
@@ -2239,6 +2270,9 @@ class MessageLookup extends MessageLookupByLibrary {
       "当前网关版本不支持详细检测",
     ),
     "xboardSetup": MessageLookupByLibrary.simpleMessage("设置"),
+    "xboardSignedConfigUnavailable": MessageLookupByLibrary.simpleMessage(
+      "没有可用的 fastcat-config-v2 签名配置，请检查网络、OSS文件和签名公钥",
+    ),
     "xboardSixMonthCycle": MessageLookupByLibrary.simpleMessage("6个月周期"),
     "xboardSmartLatencyStarted": MessageLookupByLibrary.simpleMessage(
       "已开始智能测速",
@@ -2372,6 +2406,9 @@ class MessageLookup extends MessageLookupByLibrary {
       "请详细描述你遇到的问题",
     ),
     "xboardTicketDetails": MessageLookupByLibrary.simpleMessage("工单详情"),
+    "xboardTicketPendingProcessing": MessageLookupByLibrary.simpleMessage(
+      "待处理",
+    ),
     "xboardTicketPendingReply": MessageLookupByLibrary.simpleMessage("待回复"),
     "xboardTicketReplied": MessageLookupByLibrary.simpleMessage("已回复"),
     "xboardTicketTitle": MessageLookupByLibrary.simpleMessage("工单标题"),

@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'package:fl_clash/services/desktop_shutdown.dart';
 import 'dart:io';
 
 import 'package:fl_clash/clash/clash.dart';
@@ -17,64 +18,34 @@ class AppExitService {
   }
 
   Future<void> handleExit() async {
-    var didExit = false;
-    void exitOnce() {
-      if (didExit) return;
-      didExit = true;
-      system.exit();
-    }
-
-    // 退出时必须给 VPN/TUN、系统代理和核心足够时间完成清理。超时后
-    // 仍继续退出，避免异常的底层调用永久阻塞系统关机或应用退出。
-    var proxyCleanupFailed = false;
-    final fallbackExitTimer = Timer.periodic(const Duration(seconds: 5), (_) {
-      // Do not terminate the app while macOS is asking permission to remove
-      // a proxy that was enabled by the user-confirmed repair.
-      if (proxy?.isAuthorizing != true) exitOnce();
-    });
     try {
       await savePreferences();
-      await system.setMacOSDns(true);
-      final stopped = await proxy?.stopProxy();
-      if (Platform.isMacOS &&
-          proxy?.hasAuthorizedSystemProxy == true &&
-          stopped != true) {
-        proxyCleanupFailed = true;
-        globalState.showNotifier(
-          '${appLocalizations.systemProxy} ${appLocalizations.xboardOperationFailed}',
-        );
-        return;
-      }
-      await clashCore.shutdown();
-      final profileId = globalState.config.currentProfileId;
-      if (profileId != null) {
-        await ProfileVault.instance.snapshotRuntimeProviders(profileId);
-        await ProfileVault.instance.clearRuntimeProviders(profileId);
-      }
-      await clashService?.destroy();
-    } finally {
-      fallbackExitTimer.cancel();
-      if (!proxyCleanupFailed) exitOnce();
+      await _shutdownRuntimeForRestart();
+      system.exit();
+    } catch (error) {
+      commonPrint
+          .log('[Exit] cleanup failed; keeping application open: $error');
+      globalState.showNotifier(appLocalizations.xboardCoreDisconnectFailed);
     }
   }
 
   Future<void> handleClearCacheAndRestart() async {
-    var didExit = false;
-    void exitOnce() {
-      if (didExit) return;
-      didExit = true;
-      system.exit();
-    }
-
+    var releasedLock = false;
     try {
+      if (globalState.isStart &&
+          !await globalState.appController.updateStatus(false)) {
+        throw StateError('Connection operation is still in progress');
+      }
+      await _shutdownRuntimeForRestart();
       await appPath.markClearCacheOnNextStart();
-      await _shutdownRuntimeForRestart(
-        timeout: const Duration(milliseconds: 700),
-      );
       await singleInstanceLock.release();
+      releasedLock = true;
       await _restartApplication();
-    } finally {
-      exitOnce();
+      system.exit();
+    } catch (error) {
+      if (releasedLock) await singleInstanceLock.acquire();
+      commonPrint.log('[Restart] cleanup or launch failed: $error');
+      globalState.showNotifier(appLocalizations.xboardCoreDisconnectFailed);
     }
   }
 
@@ -86,35 +57,24 @@ class AppExitService {
     );
   }
 
-  Future<void> _shutdownRuntimeForRestart({
-    required Duration timeout,
-  }) async {
-    try {
-      final shutdownTasks = <Future<void>>[
-        system.setMacOSDns(true),
-        clashCore.shutdown(),
-      ];
-      final proxyStop = proxy?.stopProxy();
-      if (proxyStop != null) {
-        shutdownTasks.add(_ignoreTaskResult(proxyStop));
-      }
-      final serviceDestroy = clashService?.destroy();
-      if (serviceDestroy != null) {
-        shutdownTasks.add(_ignoreTaskResult(serviceDestroy));
-      }
-      await Future.wait<void>(shutdownTasks).timeout(timeout);
-      final profileId = globalState.config.currentProfileId;
-      if (profileId != null) {
-        await ProfileVault.instance.snapshotRuntimeProviders(profileId);
-        await ProfileVault.instance.clearRuntimeProviders(profileId);
-      }
-    } catch (e) {
-      commonPrint.log('shutdown before restart timeout or failed: $e');
-    }
-  }
-
-  Future<void> _ignoreTaskResult(FutureOr<dynamic> task) async {
-    await task;
+  Future<void> _shutdownRuntimeForRestart() async {
+    await runOrderedDesktopShutdown(
+      restoreRouting: () async {
+        if (await proxy?.stopProxy() == false) return false;
+        return system.setMacOSDns(true);
+      },
+      shutdownCore: () async {
+        await clashCore.shutdown();
+        final profileId = globalState.config.currentProfileId;
+        if (profileId != null) {
+          await ProfileVault.instance.snapshotRuntimeProviders(profileId);
+          await ProfileVault.instance.clearRuntimeProviders(profileId);
+        }
+      },
+      destroyService: () async {
+        await clashService?.destroy();
+      },
+    );
   }
 
   Future<void> _restartApplication() async {

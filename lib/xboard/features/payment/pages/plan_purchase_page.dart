@@ -176,18 +176,6 @@ class _PlanPurchasePageState extends ConsumerState<PlanPurchasePage> {
     return sale.finalAmount > 0 ? sale.finalAmount / 100 : fallback;
   }
 
-  double? _getBasePeriodPrice(String? period) => switch (period) {
-        'month_price' => _plan.monthlyPrice,
-        'quarter_price' => _plan.quarterlyPrice,
-        'half_year_price' => _plan.halfYearlyPrice,
-        'year_price' => _plan.yearlyPrice,
-        'two_year_price' => _plan.twoYearPrice,
-        'three_year_price' => _plan.threeYearPrice,
-        'onetime_price' => _plan.onetimePrice,
-        'reset_price' => _plan.resetPrice,
-        _ => null,
-      };
-
   Future<void> _refreshOrderPreview() async {
     final period = _selectedPeriod;
     if (period == null) return;
@@ -1242,16 +1230,8 @@ class _PlanPurchasePageState extends ConsumerState<PlanPurchasePage> {
     BuildContext context,
     CatboardOrderPreview preview,
   ) {
-    final baseAmount =
-        ((_getBasePeriodPrice(_selectedPeriod) ?? 0) * 100).round();
-    final inferredSurplus = baseAmount > preview.originalAmount
-        ? baseAmount - preview.originalAmount
-        : 0;
-    final surplusAmount =
-        preview.surplusAmount > 0 ? preview.surplusAmount : inferredSurplus;
-    final originalAmount = surplusAmount > 0 && baseAmount > 0
-        ? baseAmount
-        : preview.originalAmount;
+    final surplusAmount = preview.surplusAmount;
+    final originalAmount = preview.originalAmount;
     Widget row(
       String label,
       int amount, {

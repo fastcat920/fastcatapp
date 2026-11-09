@@ -21,6 +21,8 @@ private let kAppGroupId: String = {
 class VPNManager: NSObject {
   static let shared = VPNManager()
   private var manager: NETunnelProviderManager?
+  private var connectionIdentity = UUID()
+  private var managerLoadIdentity = UUID()
   /// Last error message from VPN operations, readable from Dart.
   var lastError: String = ""
 
@@ -39,15 +41,13 @@ class VPNManager: NSObject {
   }
 
   var statusString: String {
-    if isTrafficActive {
-      switch manager?.connection.status {
-      case .connected:     return "connected"
-      case .connecting:    return "connecting"
-      case .disconnecting: return "disconnecting"
-      default:             return "disconnected"
-      }
+    switch manager?.connection.status {
+    case .connecting: return "connecting"
+    case .reasserting: return "recovering"
+    case .disconnecting: return "disconnecting"
+    case .connected: return isTrafficActive ? "connected" : "idle"
+    default: return "disconnected"
     }
-    return "disconnected"
   }
 
   /// `startVPNTunnel` only submits a launch request.  The Packet Tunnel needs
@@ -56,7 +56,7 @@ class VPNManager: NSObject {
   /// early makes a healthy tunnel look like a failed core and triggers a
   /// rollback.
   private func waitForTunnelReady(
-    timeout: TimeInterval = 15,
+    timeout: TimeInterval = 45,
     completion: @escaping (String?) -> Void
   ) {
     let deadline = Date().addingTimeInterval(timeout)
@@ -108,10 +108,30 @@ class VPNManager: NSObject {
     loadManager(createIfMissing: false, completion: nil)
     NotificationCenter.default.addObserver(
       self,
-      selector: #selector(vpnStatusDidChange),
+      selector: #selector(vpnStatusDidChange(_:)),
       name: .NEVPNStatusDidChange,
       object: nil
     )
+  }
+
+  func restoreState(completion: @escaping ([String: Any]?) -> Void) {
+    loadManager(createIfMissing: false) {
+      let connection = self.manager?.connection
+      let snapshot = {
+        completion(["status": self.statusString,
+                    "connectedAt": connection?.connectedDate.map { $0.timeIntervalSince1970 * 1000 } ?? 0])
+      }
+      guard connection?.status == .connected else {
+        self.isTrafficActive = false
+        snapshot()
+        return
+      }
+      self.sendClashMessage(method: "_getTrafficMode", data: nil) { mode in
+        guard let mode = mode else { completion(nil); return }
+        self.isTrafficActive = mode == "active"
+        snapshot()
+      }
+    }
   }
 
   // MARK: - Manager lifecycle
@@ -120,32 +140,25 @@ class VPNManager: NSObject {
     createIfMissing: Bool,
     completion: (() -> Void)? = nil
   ) {
+    let request = UUID()
+    managerLoadIdentity = request
     NETunnelProviderManager.loadAllFromPreferences { [weak self] managers, error in
+      guard let self = self else { completion?(); return }
+      guard self.managerLoadIdentity == request else { completion?(); return }
       if let error = error {
         NSLog("[VPNManager] loadAllFromPreferences error: %@", error.localizedDescription)
-        self?.lastError = "loadPreferences: \(error.localizedDescription)"
+        self.lastError = "loadPreferences: \(error.localizedDescription)"
       }
-      if let existing = managers?.first {
+      if let existing = managers?.first(where: { ($0.protocolConfiguration as? NETunnelProviderProtocol)?.providerBundleIdentifier == Bundle.main.bundleIdentifier! + ".PacketTunnel" }) {
         NSLog("[VPNManager] loaded existing manager")
-        // Migrate older builds away from always-on behavior. This prevents an
-        // idle Packet Tunnel from being restarted before a user action.
-        if existing.isOnDemandEnabled || !(existing.onDemandRules?.isEmpty ?? true) {
-          existing.isOnDemandEnabled = false
-          existing.onDemandRules = []
-          existing.saveToPreferences { saveError in
-            if let saveError = saveError {
-              NSLog("[VPNManager] disable on-demand error: %@", saveError.localizedDescription)
-            }
-          }
-        }
-        self?.manager = existing
+        self.manager = existing
         completion?()
       } else if createIfMissing {
         NSLog("[VPNManager] no existing manager, creating on user request")
-        self?.createManager(completion: completion)
+        self.createManager(completion: completion)
       } else {
         NSLog("[VPNManager] no existing manager; waiting for user connection")
-        self?.manager = nil
+        self.manager = nil
         completion?()
       }
     }
@@ -434,13 +447,21 @@ class VPNManager: NSObject {
       completion(nil)
       return
     }
+    let identity = connectionIdentity
+    let connectedDate = session.connectedDate
     let reply = IOSVPNReply(completion)
     let timeout: Double = method == "_updateConfig" ? 30 : 10
     DispatchQueue.global().asyncAfter(deadline: .now() + timeout) { reply.finish(nil) }
     do {
       try session.sendProviderMessage(encoded) { responseData in
-        guard let d = responseData else { reply.finish(nil); return }
-        reply.finish(String(data: d, encoding: .utf8))
+        DispatchQueue.main.async {
+          guard self.connectionIdentity == identity,
+                self.manager?.connection === session,
+                session.connectedDate == connectedDate,
+                session.status == .connected,
+                let d = responseData else { reply.finish(nil); return }
+          reply.finish(String(data: d, encoding: .utf8))
+        }
       }
     } catch {
       NSLog("[VPNManager] sendClashMessage(%@): IPC error: %@", method, error.localizedDescription)
@@ -450,7 +471,14 @@ class VPNManager: NSObject {
 
   // MARK: - Status notification
 
-  @objc private func vpnStatusDidChange() {
+  @objc private func vpnStatusDidChange(_ notification: Notification) {
+    guard let source = notification.object as? NEVPNConnection,
+          source === manager?.connection else { return }
+    if let nativeStatus = manager?.connection.status,
+       nativeStatus == .disconnected || nativeStatus == .invalid {
+      isTrafficActive = false
+    }
+    connectionIdentity = UUID()
     let status = statusString
     NSLog("[VPNManager] VPN status changed: %@ (tunnelRunning=%d, trafficActive=%d)",
           status, isTunnelRunning ? 1 : 0, isTrafficActive ? 1 : 0)

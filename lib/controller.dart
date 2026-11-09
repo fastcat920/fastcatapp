@@ -10,6 +10,7 @@ import 'package:fl_clash/plugins/app.dart';
 import 'package:fl_clash/plugins/service.dart';
 import 'package:fl_clash/providers/providers.dart';
 import 'package:fl_clash/services/app_exit_service.dart';
+import 'package:fl_clash/services/desktop_proxy_routing.dart';
 import 'package:fl_clash/services/app_profile_controller.dart';
 import 'package:fl_clash/services/core_switch_status.dart';
 import 'package:fl_clash/services/proxy_selection_sync.dart';
@@ -20,8 +21,6 @@ import 'package:fl_clash/state.dart';
 import 'package:fl_clash/widgets/dialog.dart';
 import 'package:fl_clash/xboard/features/auth/services/device_heartbeat_service.dart';
 import 'package:fl_clash/xboard/features/auth/utils/customer_service_helper.dart';
-import 'package:fl_clash/xboard/features/shared/widgets/legal_footer.dart';
-import 'package:fl_clash/xboard/features/shared/styles/styles.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter/material.dart';
 import 'package:yaml/yaml.dart';
@@ -44,95 +43,6 @@ class _TunAdminResult {
   final bool didRestartCore;
 }
 
-class _FirstLaunchPrivacyNotice extends StatelessWidget {
-  const _FirstLaunchPrivacyNotice({required this.chinese});
-
-  final bool chinese;
-
-  @override
-  Widget build(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
-    final secondaryStyle = Theme.of(context).textTheme.bodySmall?.copyWith(
-          color: colorScheme.onSurfaceVariant,
-        );
-    return ConstrainedBox(
-      constraints: const BoxConstraints(maxWidth: 460),
-      child: SingleChildScrollView(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              chinese
-                  ? '继续使用前，请阅读并同意以下数据与隐私说明：'
-                  : 'Please review and accept this data and privacy notice before continuing:',
-            ),
-            const SizedBox(height: 14),
-            _PrivacyNoticeItem(
-              title: chinese ? '账户与购买服务' : 'Account and purchases',
-              body: chinese
-                  ? '账户、订阅状态、套餐流量和订单记录仅用于身份验证、购买套餐和提供服务。'
-                  : 'Account, subscription status, plan usage, and order records are used only to authenticate you, process purchases, and provide the service.',
-            ),
-            const SizedBox(height: 12),
-            _PrivacyNoticeItem(
-              title: chinese ? '设备与连接服务' : 'Device and connection service',
-              body: chinese
-                  ? '设备标识、设备名称、系统和应用版本用于设备管理、安全保护及兼容性诊断；连接服务会处理提供 VPN 所必需的网络请求与连接信息。'
-                  : 'Device identifier, device name, OS, and app version are used for device management, security, and compatibility diagnostics; VPN service processes the network requests and connection data needed to provide it.',
-            ),
-            const SizedBox(height: 14),
-            Text(
-              chinese
-                  ? '这些信息不会用于广告追踪或出售。不同意即无法继续使用客户端。'
-                  : 'This information is not used for advertising tracking or sold. You cannot continue using the app without accepting.',
-              style: secondaryStyle,
-            ),
-            const SizedBox(height: 8),
-            Wrap(
-              spacing: 4,
-              children: [
-                TextButton.icon(
-                  onPressed: FastCatLegalLinks.openPrivacyPolicy,
-                  icon: const Icon(Icons.open_in_new, size: 16),
-                  label: Text(chinese ? '隐私政策' : 'Privacy Policy'),
-                ),
-                TextButton.icon(
-                  onPressed: FastCatLegalLinks.openTermsOfService,
-                  icon: const Icon(Icons.open_in_new, size: 16),
-                  label: Text(chinese ? '服务条款' : 'Terms of Service'),
-                ),
-              ],
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-class _PrivacyNoticeItem extends StatelessWidget {
-  const _PrivacyNoticeItem({required this.title, required this.body});
-
-  final String title;
-  final String body;
-
-  @override
-  Widget build(BuildContext context) => Text.rich(
-        TextSpan(
-          children: [
-            TextSpan(
-              text: '$title\n',
-              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                    fontWeight: FontWeight.w600,
-                  ),
-            ),
-            TextSpan(text: body),
-          ],
-        ),
-      );
-}
-
 class AppController {
   int? lastProfileModified;
 
@@ -141,6 +51,7 @@ class AppController {
   /// 解决非管理员运行时反复弹 UAC 的问题。
   bool _tunAdminDenied = true;
   bool _isCoreSwitching = false;
+  bool _isConfigurationSwitching = false;
   bool _isConnectionRepair = false;
   Future<void>? _configUpdateFuture;
   Future<void>? _disconnectCleanupFuture;
@@ -153,6 +64,7 @@ class AppController {
   bool _isExiting = false;
 
   bool get isCoreSwitching => _isCoreSwitching;
+  bool get isConfigurationSwitching => _isConfigurationSwitching;
 
   Future<T> runConnectionRepair<T>(Future<T> Function() repair) async {
     if (_isCoreSwitching) {
@@ -165,6 +77,7 @@ class AppController {
       return await repair();
     } finally {
       _isConnectionRepair = false;
+      _isConfigurationSwitching = false;
       _isCoreSwitching = false;
       globalState.isCoreSwitchingNotifier.value = false;
       globalState.resetCoreSwitchStatus();
@@ -205,6 +118,7 @@ class AppController {
       return await operation();
     } finally {
       isImportApplying = false;
+      _isConfigurationSwitching = false;
       _isCoreSwitching = false;
       globalState.isCoreSwitchingNotifier.value = false;
       globalState.resetCoreSwitchStatus();
@@ -241,6 +155,11 @@ class AppController {
   late final AppProfileController _profileController;
 
   AppController(this.context, WidgetRef ref) : _ref = ref {
+    if (system.isDesktop) {
+      clashService?.unexpectedDisconnects.listen((_) {
+        unawaited(_handleDesktopCoreDisconnected());
+      });
+    }
     _exitService = const AppExitService();
     _profileController = AppProfileController(
       _ref,
@@ -260,12 +179,21 @@ class AppController {
   }) {
     if (duration <= Duration.zero) {
       debouncer.cancel(FunctionTag.updateClashConfig);
-      unawaited(updateClashConfig());
+      unawaited(_updateConfigurationFromSettings());
       return;
     }
     debouncer.call(FunctionTag.updateClashConfig, () async {
-      await updateClashConfig();
+      await _updateConfigurationFromSettings();
     }, duration: duration);
+  }
+
+  Future<void> _updateConfigurationFromSettings() async {
+    try {
+      await updateClashConfig();
+    } catch (error) {
+      commonPrint.log('[Configuration] update failed: $error');
+      XBoardNotification.showError(appLocalizations.xboardConfigurationError);
+    }
   }
 
   updateGroupsDebounce() {
@@ -299,6 +227,7 @@ class AppController {
       return;
     }
     if (results.contains(ConnectivityResult.vpn) ||
+        globalState.isCoreSwitchingNotifier.value ||
         globalState.shouldSuppressConnectionCleanup) {
       return;
     }
@@ -411,17 +340,52 @@ class AppController {
     }
   }
 
-  void _markDesktopCoreStopped() {
+  Future<void> handleDesktopProxyFailure() async {
+    if (!system.isDesktop ||
+        !_ref.read(networkSettingProvider).systemProxy ||
+        _ref.read(realTunEnableProvider)) {
+      return;
+    }
+    await _handleDesktopCoreDisconnected();
+  }
+
+  Future<void> _handleDesktopCoreDisconnected() async {
+    if (!globalState.isStart) return;
+    // Publish before awaiting cleanup so a new click cannot retain a fake state.
+    _markDesktopCoreStopped(suppressAuthorization: false);
+    globalState.updateCoreSwitchStatus(CoreSwitchStage.failed);
+    final cleanup = () async {
+      try {
+        if (await proxy?.stopProxy() == false) {
+          commonPrint.log('[CoreDisconnect] system proxy restore failed');
+        }
+        await system.setMacOSDns(true);
+        await clashService?.shutdown();
+      } catch (error) {
+        commonPrint.log('[CoreDisconnect] system proxy cleanup failed: $error');
+      }
+    }();
+    _disconnectCleanupFuture = cleanup;
+    try {
+      await cleanup;
+    } finally {
+      if (identical(_disconnectCleanupFuture, cleanup)) {
+        _disconnectCleanupFuture = null;
+      }
+    }
+  }
+
+  void _markDesktopCoreStopped({bool suppressAuthorization = true}) {
     globalState.startTime = null;
     globalState.stopUpdateTasks();
     _ref.read(runTimeProvider.notifier).value = null;
     _ref.read(realTunEnableProvider.notifier).value = false;
     // A failed TUN repair must not cause repeated authorization attempts.
-    _tunAdminDenied = true;
+    if (suppressAuthorization) _tunAdminDenied = true;
   }
 
   Future<bool> updateStatus(bool isStart) async {
-    if (_isCoreSwitching) return false;
+    if (_isCoreSwitching || (_isExiting && isStart)) return false;
     _isCoreSwitching = true;
     globalState.isCoreSwitchingNotifier.value = true;
     unawaited(XBoardDeviceHeartbeatService.markActive(
@@ -482,6 +446,9 @@ class AppController {
           _startDisconnectCleanup();
           return true;
         }
+        if (await proxy?.stopProxy() != true) {
+          throw StateError('System proxy could not be restored');
+        }
         await globalState.handleStop();
         await clashCore.resetTraffic();
         _ref.read(trafficsProvider.notifier).clear();
@@ -494,10 +461,13 @@ class AppController {
     } catch (_) {
       globalState.updateCoreSwitchStatus(
         CoreSwitchStage.failed,
-        message: isStart ? '连接失败' : '断开失败',
+        message: isStart
+            ? appLocalizations.xboardCoreStageFailed
+            : appLocalizations.xboardCoreDisconnectFailed,
       );
       rethrow;
     } finally {
+      _isConfigurationSwitching = false;
       _isCoreSwitching = false;
       globalState.isCoreSwitchingNotifier.value = false;
       if (globalState.coreSwitchStatusNotifier.value.stage !=
@@ -508,19 +478,42 @@ class AppController {
   }
 
   Future<void> _verifyStartedConnection() async {
+    if (Platform.isIOS) {
+      globalState.updateCoreSwitchStatus(CoreSwitchStage.coreConnecting,
+          message: appLocalizations.xboardCoreVerifying);
+      if (await service?.isVpnActuallyRunning() != true) {
+        throw StateError('系统 VPN 未连接');
+      }
+    }
     await updateGroups(requireLive: true);
     await synchronizeProxySelection();
     if (!system.isDesktop) return;
-    final port = _ref.read(proxyStateProvider).port;
-    if (port <= 0 && _ref.read(realTunEnableProvider)) return;
-    Socket? socket;
-    try {
-      socket = await Socket.connect(InternetAddress.loopbackIPv4, port,
-          timeout: const Duration(seconds: 2));
-    } catch (_) {
-      throw StateError('Core proxy listener unavailable');
-    } finally {
-      socket?.destroy();
+    final proxyState = _ref.read(proxyStateProvider);
+    final port = proxyState.port;
+    if (port <= 0 &&
+        (!_ref.read(realTunEnableProvider) || proxyState.systemProxy)) {
+      throw StateError('Core proxy listener port is disabled');
+    }
+    if (port > 0) {
+      Socket? socket;
+      try {
+        socket = await Socket.connect(InternetAddress.loopbackIPv4, port,
+            timeout: const Duration(seconds: 2));
+      } catch (_) {
+        throw StateError('Core proxy listener unavailable');
+      } finally {
+        socket?.destroy();
+      }
+    }
+    await startVerifiedDesktopProxy(
+      enabled: proxyState.systemProxy,
+      start: () async => proxy?.startProxy(port, proxyState.bassDomain),
+      matches: () async =>
+          (await proxy?.getSystemProxyStatus())?.matches('127.0.0.1', port) ==
+          true,
+    );
+    if (clashService?.isConnected != true) {
+      throw StateError('Core disconnected during routing verification');
     }
   }
 
@@ -540,6 +533,9 @@ class AppController {
     globalState.stopUpdateTasks();
     _ref.read(runTimeProvider.notifier).value = null;
     try {
+      if (system.isDesktop && await proxy?.stopProxy() == false) {
+        commonPrint.log('[Connection] system proxy rollback failed');
+      }
       await globalState.handleStop();
     } catch (error) {
       commonPrint.log('[Connection] rollback failed: $error');
@@ -621,7 +617,9 @@ class AppController {
   }
 
   updateTraffic() async {
+    if (system.isDesktop && !globalState.isStart) return;
     final traffic = await clashCore.getTraffic();
+    if (system.isDesktop && !globalState.isStart) return;
     _ref.read(trafficsProvider.notifier).addTraffic(traffic);
     await tray.updateTrayTitle(traffic);
     _ref.read(totalTrafficProvider.notifier).value =
@@ -717,7 +715,17 @@ class AppController {
           await previous;
         } catch (_) {/* A newer update may recover. */}
       }
+      if (Platform.isIOS && !globalState.isStart) return;
+      if (!await clashCore.isInit) return;
       await _acquireConfigurationSwitch();
+      // Recheck after waiting for a concurrent disconnect to finish.
+      if (Platform.isIOS && !globalState.isStart) {
+        _isConfigurationSwitching = false;
+        _isCoreSwitching = false;
+        globalState.isCoreSwitchingNotifier.value = false;
+        globalState.resetCoreSwitchStatus();
+        return;
+      }
       await _performConfigUpdate();
     }();
     _configUpdateFuture = operation;
@@ -737,6 +745,7 @@ class AppController {
       }
       await Future<void>.delayed(const Duration(milliseconds: 50));
     }
+    _isConfigurationSwitching = true;
     _isCoreSwitching = true;
     globalState.isCoreSwitchingNotifier.value = true;
   }
@@ -754,6 +763,7 @@ class AppController {
         await _updateClashConfig();
       }
     } finally {
+      _isConfigurationSwitching = false;
       _isCoreSwitching = false;
       globalState.isCoreSwitchingNotifier.value = false;
       globalState.resetCoreSwitchStatus();
@@ -788,7 +798,7 @@ class AppController {
         enable: adminResult.enableTun,
       ),
     );
-    if (message.isNotEmpty) throw message;
+    await _checkCoreConfigurationResult(message);
     _ref.read(realTunEnableProvider.notifier).value = adminResult.enableTun;
   }
 
@@ -880,6 +890,15 @@ class AppController {
     }
   }
 
+  Future<void> _checkCoreConfigurationResult(String message) async {
+    if (message.isEmpty) return;
+    // This prefix is a native protocol code, not a translated UI message.
+    if (system.isDesktop && message.startsWith('TUN_START_FAILED:')) {
+      await _handleDesktopCoreDisconnected();
+    }
+    throw StateError(message);
+  }
+
   Future<void> _setupClashConfigWithTun(
     ClashConfig patchConfig,
     bool enableTun,
@@ -906,9 +925,7 @@ class AppController {
       }
       rethrow;
     }
-    if (message.isNotEmpty) {
-      throw StateError(message);
-    }
+    await _checkCoreConfigurationResult(message);
     lastProfileModified = await _ref.read(
       currentProfileProvider.select(
         (state) => state?.profileLastModified,
@@ -1173,6 +1190,7 @@ class AppController {
       try {
         await _applyUserConfiguration();
       } finally {
+        _isConfigurationSwitching = false;
         _isCoreSwitching = false;
         globalState.isCoreSwitchingNotifier.value = false;
       }
@@ -1362,8 +1380,15 @@ class AppController {
     }
   }
 
-  Future handleClearCacheAndRestart() =>
-      _exitService.handleClearCacheAndRestart();
+  Future<void> handleClearCacheAndRestart() async {
+    if (_isExiting || _isCoreSwitching) return;
+    _isExiting = true;
+    try {
+      await _exitService.handleClearCacheAndRestart();
+    } finally {
+      _isExiting = false;
+    }
+  }
 
   Future handleClear() => _exitService.handleClear();
 
@@ -1416,7 +1441,14 @@ class AppController {
       updateTray(true);
       await _syncLaunchWindowVisibility();
       await bootDiagLog('launch window visibility synced');
-      await _initCore();
+      // Adopt the existing system tunnel before any profile application.
+      if (Platform.isIOS) await restoreIosConnection();
+      final adoptAndroid =
+          Platform.isAndroid && await service?.isVpnActuallyRunning() == true;
+      if (adoptAndroid) await globalState.updateStartTime();
+      await _initCore(
+        setupProfile: !(Platform.isIOS || adoptAndroid) || !globalState.isStart,
+      );
       await bootDiagLog('core init complete');
       await _initStatus();
       await bootDiagLog('status init complete');
@@ -1430,7 +1462,6 @@ class AppController {
         window?.hide();
       }
       await _handlePreference();
-      await _handlerDisclaimer();
       _ref.read(initProvider.notifier).value = true;
       await bootDiagLog('AppController.init complete');
     } finally {
@@ -1448,7 +1479,39 @@ class AppController {
     await window?.show();
   }
 
+  Future<void> restoreIosConnection() async {
+    final snapshot = await service!.restoreIosVpnState();
+    final status = snapshot['status'];
+    if (status == 'connected') {
+      final milliseconds = (snapshot['connectedAt'] as num?)?.toInt() ?? 0;
+      globalState.startTime = milliseconds > 0
+          ? DateTime.fromMillisecondsSinceEpoch(milliseconds)
+          : DateTime.now().subtract(const Duration(milliseconds: 1));
+      globalState.startUpdateTasks([updateRunTime, updateTraffic]);
+      updateRunTime();
+      await updateGroups(requireLive: true);
+      globalState.updateCoreSwitchStatus(CoreSwitchStage.connected);
+    } else if (status == 'connecting' || status == 'recovering') {
+      globalState.updateCoreSwitchStatus(CoreSwitchStage.coreConnecting,
+          message: appLocalizations.xboardCoreRestoring);
+    }
+  }
+
   _initStatus() async {
+    if (Platform.isIOS) {
+      // Restoring the UI must never start, stop or reconfigure a system tunnel.
+      return;
+    }
+    if (Platform.isAndroid && await service?.isVpnActuallyRunning() == true) {
+      // Reopening the UI adopts the live service. Reapplying profiles or
+      // invoking start/stop here can reset its runtime or disturb traffic.
+      await globalState.updateStartTime();
+      await updateGroups(requireLive: true);
+      await updateProviders();
+      globalState.commitStarted([updateRunTime, updateTraffic]);
+      updateRunTime();
+      return;
+    }
     // 所有平台启动时先尝试从核心恢复真实运行时间。
     // handleStart 会保留这个时间，因此接管已有连接时不会重新从 0 计时。
     await globalState.updateStartTime();
@@ -1511,51 +1574,6 @@ class AppController {
         addProfileFormURL(url);
       },
     );
-  }
-
-  Future<bool> showDisclaimer() async {
-    return await globalState.showCommonDialog<bool>(
-          dismissible: false,
-          child: CommonDialog(
-            title: Localizations.localeOf(context).languageCode == 'zh'
-                ? '数据与隐私说明'
-                : 'Data & Privacy Notice',
-            actions: [
-              OutlinedButton(
-                onPressed: () {
-                  Navigator.of(context).pop<bool>(false);
-                },
-                style: XbUiButton.outlinedNeutral(context),
-                child: Text(appLocalizations.exit),
-              ),
-              FilledButton(
-                onPressed: () {
-                  _ref.read(appSettingProvider.notifier).updateState(
-                        (state) => state.copyWith(disclaimerAccepted: true),
-                      );
-                  Navigator.of(context).pop<bool>(true);
-                },
-                style: XbUiButton.filledPrimary(context),
-                child: Text(appLocalizations.agree),
-              )
-            ],
-            child: _FirstLaunchPrivacyNotice(
-              chinese: Localizations.localeOf(context).languageCode == 'zh',
-            ),
-          ),
-        ) ??
-        false;
-  }
-
-  _handlerDisclaimer() async {
-    if (_ref.read(appSettingProvider).disclaimerAccepted) {
-      return;
-    }
-    final isDisclaimerAccepted = await showDisclaimer();
-    if (!isDisclaimerAccepted) {
-      await handleExit();
-    }
-    return;
   }
 
   Future<void> importProfileInBackground(String url) =>

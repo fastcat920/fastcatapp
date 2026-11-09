@@ -947,7 +947,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                                                             .checkNetwork)
                                                     : (initState
                                                             .currentStepDescription ??
-                                                        '正在重试...'),
+                                                        appLocalizations.xboardInitPreparing),
                                                 style: TextStyle(
                                                   fontSize: 12,
                                                   color: initState.isFailed

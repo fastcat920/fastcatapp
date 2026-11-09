@@ -1,3 +1,6 @@
+import 'package:fl_clash/xboard/features/notice/providers/notice_bootstrap.dart';
+import 'package:fl_clash/xboard/core/content_locale.dart';
+import 'package:fl_clash/providers/config.dart';
 import 'dart:async';
 import 'dart:convert';
 import 'dart:ffi';
@@ -18,7 +21,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:desktop_webview_window/desktop_webview_window.dart';
 
 import 'application.dart';
-import 'xboard/features/shared/widgets/apple_privacy_gate.dart';
+import 'xboard/features/shared/widgets/privacy_gate.dart';
 import 'clash/core.dart';
 import 'clash/lib.dart';
 import 'common/common.dart';
@@ -221,8 +224,23 @@ Future<void> main(List<String> args) async {
   HttpOverrides.global = FastcatHttpOverrides();
   WidgetsBinding.instance.addObserver(AppLifecycleObserver());
 
+  final noticeLocale = appStateInitialized
+      ? xboardContentLocale(globalState.config.appSetting.locale)
+      : 'en-US';
+  final legacyNoticeScope = initialSnapshot.cacheScope == null
+      ? null
+      : '${initialSnapshot.cacheScope}:$noticeLocale';
+  final initialNotices = initialHasToken
+      ? await loadNoticeBootstrap(
+          prefs: prefs,
+          email: initialSnapshot.displayEmail,
+          locale: noticeLocale,
+          legacyScope: legacyNoticeScope)
+      : null;
+
   runApp(ProviderScope(
     overrides: [
+      initialNoticeBootstrapProvider.overrideWithValue(initialNotices),
       initialTokenProvider.overrideWithValue(initialHasToken),
       initialUserSnapshotProvider.overrideWithValue(initialSnapshot),
       storageProvider.overrideWith((ref) => initialStorage),
@@ -231,9 +249,15 @@ Future<void> main(List<String> args) async {
         (ref) => initialSnapshot.subscriptionInfo,
       ),
     ],
-    child: Platform.isIOS
-        ? ApplePrivacyGate(preferences: prefs, child: const Application())
-        : const Application(),
+    child: Consumer(builder: (context, ref, _) {
+      final locale =
+          ref.watch(appSettingProvider.select((state) => state.locale));
+      return PrivacyGate(
+        preferences: prefs,
+        localeTag: locale,
+        child: const Application(),
+      );
+    }),
   ));
   unawaited(bootDiagLog('runApp called'));
 }
@@ -452,9 +476,15 @@ Future<void> _service(List<String> flags) async {
       },
     ),
   );
-  if (!quickStart) {
-    _handleMainIpc(clashLibHandler);
-  } else {
+  void Function()? closeMainIpc;
+  void attachMain() {
+    closeMainIpc?.call();
+    closeMainIpc = _handleMainIpc(clashLibHandler);
+  }
+
+  vpn?.handleAttachMain = attachMain;
+  attachMain();
+  if (quickStart) {
     commonPrint.log("quick start");
     app?.tip(appLocalizations.startVpn);
     final homeDirPath = await appPath.homeDirPath;
@@ -501,10 +531,10 @@ Future<void> _service(List<String> flags) async {
   }
 }
 
-_handleMainIpc(ClashLibHandler clashLibHandler) {
+void Function()? _handleMainIpc(ClashLibHandler clashLibHandler) {
   final sendPort = IsolateNameServer.lookupPortByName(mainIsolate);
   if (sendPort == null) {
-    return;
+    return null;
   }
   final serviceReceiverPort = ReceivePort();
   serviceReceiverPort.listen((message) async {
@@ -519,6 +549,10 @@ _handleMainIpc(ClashLibHandler clashLibHandler) {
   messageReceiverPort.listen((message) {
     sendPort.send(message);
   });
+  return () {
+    serviceReceiverPort.close();
+    messageReceiverPort.close();
+  };
 }
 
 @immutable

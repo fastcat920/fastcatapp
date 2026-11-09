@@ -1,5 +1,7 @@
 import 'dart:async';
 
+import 'package:fl_clash/l10n/l10n.dart';
+
 import 'package:fl_clash/common/common.dart' show FixedList;
 import 'package:fl_clash/controller.dart';
 import 'package:fl_clash/models/models.dart' hide Result;
@@ -95,7 +97,8 @@ class _LogoutController extends AppController {
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
-  setUp(() {
+  setUp(() async {
+    await AppLocalizations.load(const Locale('en'));
     SharedPreferences.setMockInitialValues({});
     globalState.appState = AppState(
       viewSize: Size.zero,
@@ -240,7 +243,9 @@ void main() {
       expect(appRef.read(sessionEpochProvider), greaterThan(0));
       oldSubscription
           .complete(const SubscriptionModel(email: 'old@example.test'));
-      await tester.pump();
+      // Logout invalidates the pending provider; advance its bounded timeout
+      // because an invalidated Riverpod future need not deliver the old result.
+      await tester.pump(const Duration(minutes: 1));
       expect(await refreshing, isFalse);
       expect(appRef.read(subscriptionInfoProvider), isNull);
       expect(await importing, isFalse);

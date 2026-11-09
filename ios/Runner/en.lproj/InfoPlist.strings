@@ -1,2 +1,4 @@
 "CFBundleDisplayName" = "FastCat";
 "CFBundleName" = "FastCat";
+"NSCameraUsageDescription" = "Use the camera to scan sign-in QR codes or take photos to send as attachments in customer support conversations.";
+"NSPhotoLibraryUsageDescription" = "Select photos to send as attachments in customer support conversations.";

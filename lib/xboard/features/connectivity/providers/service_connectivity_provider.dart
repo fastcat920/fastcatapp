@@ -1,3 +1,4 @@
+import 'package:fl_clash/services/business_health_client.dart';
 import 'dart:async';
 import 'dart:io';
 
@@ -545,9 +546,7 @@ class ServiceConnectivityNotifier
   Future<bool> _probeEndpoint(String baseUrl, String apiPrefix) async {
     HttpClient? client;
     try {
-      client = HttpClient();
-      client.findProxy = (_) => 'DIRECT';
-      client.connectionTimeout = const Duration(seconds: 4);
+      client = createBusinessHealthClient();
       final normalizedBase = baseUrl.endsWith('/')
           ? baseUrl.substring(0, baseUrl.length - 1)
           : baseUrl;

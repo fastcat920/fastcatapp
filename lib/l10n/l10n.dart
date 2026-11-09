@@ -8370,6 +8370,16 @@ class AppLocalizations {
     );
   }
 
+  /// `Pending support`
+  String get xboardTicketPendingProcessing {
+    return Intl.message(
+      'Pending support',
+      name: 'xboardTicketPendingProcessing',
+      desc: '',
+      args: [],
+    );
+  }
+
   /// `Pending reply`
   String get xboardTicketPendingReply {
     return Intl.message(
@@ -12385,10 +12395,10 @@ class AppLocalizations {
     );
   }
 
-  /// `A network interface is present, but both public internet checks and business gateways are unreachable. The proxy may not work. Check network restrictions or DNS, or run network diagnostics.`
+  /// `A network or proxy connection issue is temporarily preventing access to the service. Try switching nodes. If the issue persists, check your Wi-Fi, mobile data, or DNS settings, or run network diagnostics.`
   String get xboardServiceNetworkRestrictedTooltip {
     return Intl.message(
-      'A network interface is present, but both public internet checks and business gateways are unreachable. The proxy may not work. Check network restrictions or DNS, or run network diagnostics.',
+      'A network or proxy connection issue is temporarily preventing access to the service. Try switching nodes. If the issue persists, check your Wi-Fi, mobile data, or DNS settings, or run network diagnostics.',
       name: 'xboardServiceNetworkRestrictedTooltip',
       desc: '',
       args: [],
@@ -13240,6 +13250,221 @@ class AppLocalizations {
     return Intl.message(
       'Password changed. Please enter your new password the next time you sign in.',
       name: 'xboardPasswordChangedRememberFailed',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Camera access is disabled. Allow FastCat to use the camera in system settings, then retry.`
+  String get xboardCameraPermissionDenied {
+    return Intl.message(
+      'Camera access is disabled. Allow FastCat to use the camera in system settings, then retry.',
+      name: 'xboardCameraPermissionDenied',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Camera unavailable. Check your device and retry.`
+  String get xboardCameraUnavailable {
+    return Intl.message(
+      'Camera unavailable. Check your device and retry.',
+      name: 'xboardCameraUnavailable',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Tutorial image unavailable. Follow the text instructions or contact support.`
+  String get xboardDocImageUnavailable {
+    return Intl.message(
+      'Tutorial image unavailable. Follow the text instructions or contact support.',
+      name: 'xboardDocImageUnavailable',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Preparing…`
+  String get xboardInitPreparing {
+    return Intl.message(
+      'Preparing…',
+      name: 'xboardInitPreparing',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Fetching configuration…`
+  String get xboardInitFetchingConfig {
+    return Intl.message(
+      'Fetching configuration…',
+      name: 'xboardInitFetchingConfig',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Connecting to server…`
+  String get xboardInitConnecting {
+    return Intl.message(
+      'Connecting to server…',
+      name: 'xboardInitConnecting',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Initializing…`
+  String get xboardInitInitializing {
+    return Intl.message(
+      'Initializing…',
+      name: 'xboardInitInitializing',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Ready`
+  String get xboardInitReady {
+    return Intl.message('Ready', name: 'xboardInitReady', desc: '', args: []);
+  }
+
+  /// `Initialization failed`
+  String get xboardInitFailed {
+    return Intl.message(
+      'Initialization failed',
+      name: 'xboardInitFailed',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Service gateway unavailable. Please try again later.`
+  String get xboardGatewayUnavailable {
+    return Intl.message(
+      'Service gateway unavailable. Please try again later.',
+      name: 'xboardGatewayUnavailable',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `No valid fastcat-config-v2 signed configuration. Check the network, OSS file and signing public key.`
+  String get xboardSignedConfigUnavailable {
+    return Intl.message(
+      'No valid fastcat-config-v2 signed configuration. Check the network, OSS file and signing public key.',
+      name: 'xboardSignedConfigUnavailable',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Import cancelled`
+  String get xboardImportCancelled {
+    return Intl.message(
+      'Import cancelled',
+      name: 'xboardImportCancelled',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Announcements`
+  String get xboardNoticeTitle {
+    return Intl.message(
+      'Announcements',
+      name: 'xboardNoticeTitle',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `No announcements`
+  String get xboardNoNotice {
+    return Intl.message(
+      'No announcements',
+      name: 'xboardNoNotice',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Loading announcements…`
+  String get xboardNoticeLoading {
+    return Intl.message(
+      'Loading announcements…',
+      name: 'xboardNoticeLoading',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Announcements are temporarily unavailable`
+  String get xboardNoticeUnavailable {
+    return Intl.message(
+      'Announcements are temporarily unavailable',
+      name: 'xboardNoticeUnavailable',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `No new announcements`
+  String get xboardNoLatestNotice {
+    return Intl.message(
+      'No new announcements',
+      name: 'xboardNoLatestNotice',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Disconnect failed`
+  String get xboardCoreDisconnectFailed {
+    return Intl.message(
+      'Disconnect failed',
+      name: 'xboardCoreDisconnectFailed',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Verifying core connection`
+  String get xboardCoreVerifying {
+    return Intl.message(
+      'Verifying core connection',
+      name: 'xboardCoreVerifying',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Restoring system VPN`
+  String get xboardCoreRestoring {
+    return Intl.message(
+      'Restoring system VPN',
+      name: 'xboardCoreRestoring',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Open camera settings`
+  String get xboardOpenCameraSettings {
+    return Intl.message(
+      'Open camera settings',
+      name: 'xboardOpenCameraSettings',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Unable to open settings. Enable camera access in system settings.`
+  String get xboardCameraSettingsUnavailable {
+    return Intl.message(
+      'Unable to open settings. Enable camera access in system settings.',
+      name: 'xboardCameraSettingsUnavailable',
       desc: '',
       args: [],
     );

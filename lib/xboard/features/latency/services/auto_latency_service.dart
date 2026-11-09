@@ -1,3 +1,8 @@
+import 'dart:io';
+import 'package:flutter/widgets.dart';
+import 'package:flutter/services.dart';
+import 'package:fl_clash/clash/clash.dart';
+import 'latency_foreground_gate.dart';
 import 'dart:async';
 import 'package:fl_clash/enum/enum.dart';
 import 'package:fl_clash/models/models.dart';
@@ -11,13 +16,100 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 // 初始化文件级日志器
 const _logger = FileLogger('auto_latency_service.dart');
 
-class AutoLatencyService {
+class AutoLatencyService with WidgetsBindingObserver {
   static final AutoLatencyService _instance = AutoLatencyService._internal();
   factory AutoLatencyService() => _instance;
   AutoLatencyService._internal();
   Timer? _periodicTimer;
+  LatencyForegroundGate? _foregroundGate;
+  Timer? _resumeRetryTimer;
+  int _resumeGeneration = 0;
+  bool get _foregroundReady => _foregroundGate?.allowsTesting ?? false;
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (!_isServiceActive) return;
+    if (state != AppLifecycleState.resumed) {
+      _resumeGeneration++;
+      _resumeRetryTimer?.cancel();
+      _foregroundGate?.pause();
+      invalidateLatencyTests();
+      _periodicTimer?.cancel();
+      _nodeChangeTimer?.cancel();
+      _connectionGeneration++;
+      _activeProxy = null;
+      _activeTestToken = null;
+      return;
+    }
+    unawaited(_resumeAfterCoreReady());
+  }
+
+  Future<void> _resumeAfterCoreReady() async {
+    final generation = ++_resumeGeneration;
+    _resumeRetryTimer?.cancel();
+    final gate = _foregroundGate;
+    if (gate == null) return;
+    final ready = await gate.resume(() async {
+      // Yield until the other lifecycle observers have reconciled VPN status.
+      await Future<void>.delayed(const Duration(milliseconds: 500));
+      for (var attempt = 0; attempt < 4; attempt++) {
+        if (!_isServiceActive ||
+            WidgetsBinding.instance.lifecycleState !=
+                AppLifecycleState.resumed) {
+          return false;
+        }
+        try {
+          if (!globalState.isCoreSwitchingNotifier.value) {
+            if (Platform.isIOS) {
+              final connected = await const MethodChannel('fastcat/vpn')
+                  .invokeMethod<bool>('isConnected')
+                  .timeout(const Duration(seconds: 3));
+              if (connected == true) {
+                final groups = await clashCore
+                    .getProxiesGroups()
+                    .timeout(const Duration(seconds: 3));
+                if (groups.isNotEmpty) return true;
+              } else if (!globalState.isStart && connected == false) {
+                return true; // Offline tests use the isolated probe core.
+              }
+            } else if (globalState.coreStatusReadyNotifier.value) {
+              return true;
+            }
+          }
+        } catch (_) {
+          // Readiness failure is not a node timeout; retain the previous RTT.
+        }
+        if (attempt < 3) {
+          await Future<void>.delayed(const Duration(milliseconds: 500));
+        }
+      }
+      return false;
+    });
+    if (generation != _resumeGeneration ||
+        !_isServiceActive ||
+        !identical(gate, _foregroundGate)) {
+      return;
+    }
+    if (!ready) {
+      if (WidgetsBinding.instance.lifecycleState == AppLifecycleState.resumed) {
+        _resumeRetryTimer = Timer(const Duration(seconds: 15), () {
+          if (_isServiceActive &&
+              WidgetsBinding.instance.lifecycleState ==
+                  AppLifecycleState.resumed) {
+            unawaited(_resumeAfterCoreReady());
+          }
+        });
+      }
+      return;
+    }
+    _logger.info('前台 VPN 通信就绪，恢复自动测速');
+    _startPeriodicTesting();
+    await testCurrentNode(forceTest: true);
+  }
+
   String? _lastTestedProxy;
   String? _activeProxy;
+  Object? _activeTestToken;
   DateTime? _lastTestTime;
   bool _isServiceActive = false;
   WidgetRef? _ref;
@@ -37,6 +129,11 @@ class AutoLatencyService {
     _ref = ref;
     if (!_isServiceActive) {
       _isServiceActive = true;
+      _foregroundGate = LatencyForegroundGate(
+          foreground: WidgetsBinding.instance.lifecycleState == null ||
+              WidgetsBinding.instance.lifecycleState ==
+                  AppLifecycleState.resumed);
+      WidgetsBinding.instance.addObserver(this);
       globalState.coreStatusReadyNotifier.addListener(_handleCoreReady);
       _startPeriodicTesting();
       _logger.info('自动延迟测试服务已启动');
@@ -46,6 +143,12 @@ class AutoLatencyService {
   }
 
   void dispose() {
+    _resumeGeneration++;
+    _resumeRetryTimer?.cancel();
+    WidgetsBinding.instance.removeObserver(this);
+    _foregroundGate?.pause();
+    _foregroundGate = null;
+    invalidateLatencyTests();
     _periodicTimer?.cancel();
     _periodicTimer = null;
     _nodeChangeTimer?.cancel();
@@ -58,7 +161,7 @@ class AutoLatencyService {
   }
 
   bool _ensureServiceActive() {
-    if (!_isServiceActive || _ref == null) {
+    if (!_isServiceActive || _ref == null || !_foregroundReady) {
       _logger.warning('服务未激活或ref为空');
       return false;
     }
@@ -131,12 +234,18 @@ class AutoLatencyService {
 
       _logger.info('开始测试节点延迟: ${currentProxy.name}');
       _activeProxy = currentProxy.name;
+      final token = Object();
+      _activeTestToken = token;
       final testUrl = _ref!.read(appSettingProvider).testUrl;
       try {
         await testNodeLatency(currentProxy, testUrl);
       } finally {
-        if (_activeProxy == currentProxy.name) _activeProxy = null;
+        if (identical(_activeTestToken, token)) {
+          _activeProxy = null;
+          _activeTestToken = null;
+        }
       }
+      if (!_foregroundReady) return;
       _lastTestedProxy = currentProxy.name;
       _lastTestTime = DateTime.now();
       _proxyTestCache[currentProxy.name] = DateTime.now();
@@ -147,7 +256,7 @@ class AutoLatencyService {
   }
 
   Future<void> testProxy(Proxy proxy, {bool forceTest = false}) async {
-    if (!_isServiceActive || _ref == null) {
+    if (!_isServiceActive || _ref == null || !_foregroundReady) {
       _logger.warning('服务未激活或ref为空，跳过指定节点测试');
       return;
     }
@@ -244,6 +353,8 @@ class AutoLatencyService {
 
   void onConnectionStatusChanged(bool isConnected) {
     final generation = ++_connectionGeneration;
+    _activeTestToken = null;
+    _activeProxy = null;
     if (!isConnected) {
       _nodeChangeTimer?.cancel();
       _nodeChangeTimer = null;
@@ -251,12 +362,13 @@ class AutoLatencyService {
     }
     Future.delayed(const Duration(seconds: 2), () {
       if (generation != _connectionGeneration) return;
-      testCurrentNode();
+      testCurrentNode(forceTest: true);
     });
   }
 
   void _startPeriodicTesting() {
     _periodicTimer?.cancel();
+    if (!_foregroundReady) return;
     _periodicTimer = Timer.periodic(_periodicInterval, (_) {
       if (_ref == null || !_isRefValid()) return;
       final isConnected = _ref!.read(runTimeProvider) != null;

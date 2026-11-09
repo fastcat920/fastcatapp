@@ -30,6 +30,7 @@ import 'package:fl_clash/xboard/utils/xboard_notification.dart';
 import 'package:fl_clash/plugins/service.dart';
 import 'package:fl_clash/widgets/widgets.dart';
 import '../widgets/subscription_usage_card.dart';
+import '../widgets/mobile_home_layout.dart';
 import '../widgets/xboard_connect_button.dart';
 import 'package:fl_clash/xboard/features/payment/widgets/coupon_entry_button.dart';
 
@@ -372,7 +373,6 @@ class _XBoardHomePageState extends ConsumerState<XBoardHomePage>
       body: Consumer(
         builder: (_, ref, __) {
           const horizontalPadding = 16.0;
-          final topInfoSlotHeight = isDesktop ? 136.0 : 148.0;
 
           return Container(
             color: Theme.of(context).brightness == Brightness.dark
@@ -380,19 +380,64 @@ class _XBoardHomePageState extends ConsumerState<XBoardHomePage>
                 : const Color(0xFFFAFBFD),
             child: LayoutBuilder(
               builder: (context, constraints) {
+                if (!isDesktop && !isTvHome) {
+                  final textScale =
+                      MediaQuery.textScalerOf(context).scale(14) / 14;
+                  final compact = shouldUseCompactHomeLayout(context) ||
+                      constraints.maxHeight < 560 ||
+                      textScale > 1.3;
+                  final tablet = MediaQuery.sizeOf(context).shortestSide >= 600;
+                  final buttonSize = compact ? 144.0 : (tablet ? 168.0 : 151.2);
+                  final statusHeight = 40.0 * textScale.clamp(1.0, 2.0);
+                  final modeHeight = 48.0 * textScale.clamp(1.0, 2.0);
+                  return MobileHomeLayout(
+                    information: _buildTopInfoSection(compact: compact),
+                    informationHeight:
+                        compact ? 72.0 * textScale.clamp(1.0, 2.0) : 148.0,
+                    connectionHeight:
+                        buttonSize + 24 + statusHeight + 20 + modeHeight,
+                    nodeHeight: 64.0 * textScale.clamp(1.0, 2.0),
+                    nodeSelector: const NodeSelectorBar(),
+                    connection: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        SizedBox.square(
+                          dimension: buttonSize,
+                          child: XBoardConnectButton(
+                              isFloating: false, outerSize: buttonSize),
+                        ),
+                        const SizedBox(height: 24),
+                        SizedBox(
+                            height: statusHeight,
+                            child: _buildStatusText(height: statusHeight)),
+                        const SizedBox(height: 20),
+                        SizedBox(
+                            height: modeHeight,
+                            child: XBoardOutboundMode(
+                              height: 44.0 * textScale.clamp(1.0, 2.0),
+                              maxWidth: 230.0 * textScale.clamp(1.0, 2.0),
+                            )),
+                      ],
+                    ),
+                  );
+                }
+
                 // 桌面端：响应式最大宽度
                 const contentMaxWidth = double.infinity;
 
                 final compactMode = shouldUseCompactHomeLayout(context) ||
                     (!isDesktop && constraints.maxHeight < 560);
+                final topInfoSlotHeight = isDesktop
+                    ? 136.0
+                    : compactMode
+                        ? 72.0
+                        : 148.0;
                 final isLandscapeHome =
                     constraints.maxWidth > constraints.maxHeight;
                 final isPortraitHome =
                     constraints.maxHeight >= constraints.maxWidth;
-                // TV keeps the compact control layout but still shows the
-                // announcement/subscription slot. Only short mobile viewports
-                // hide it to protect the primary controls from overflow.
-                final showTopInfo = isTvHome || !compactMode;
+                // Keep announcements reachable on small screens, using a
+                // compact row instead of hiding the entire information slot.
                 final topInfoTopGap = 12.0;
                 final shouldCompactConnectButton =
                     compactMode || isLandscapeHome;
@@ -409,11 +454,8 @@ class _XBoardHomePageState extends ConsumerState<XBoardHomePage>
                     ? (isLandscapeHome ? 24.0 : 22.0)
                     : (isPortraitHome ? 8.0 : 18.0);
                 final headerHeight = isDesktop && !compactMode ? 42.0 : 0.0;
-                final topInfoHeight = showTopInfo
-                    ? topInfoSlotHeight +
-                        topInfoTopGap +
-                        (isDesktop ? 8.0 : 0.0)
-                    : 0.0;
+                final topInfoHeight =
+                    topInfoSlotHeight + topInfoTopGap + (isDesktop ? 8.0 : 0.0);
                 final minBottomGap = compactMode ? 16.0 : 28.0;
                 final fixedHeight = headerHeight +
                     topInfoHeight +
@@ -441,7 +483,7 @@ class _XBoardHomePageState extends ConsumerState<XBoardHomePage>
                     minBottomGap + (availableGap - adaptiveTopGap);
 
                 // 纯 Flex 布局：优先保留连接按钮、模式切换和线路选择。
-                return Stack(
+                final content = Stack(
                   children: [
                     Center(
                       child: ConstrainedBox(
@@ -453,36 +495,37 @@ class _XBoardHomePageState extends ConsumerState<XBoardHomePage>
                           children: [
 // Desktop header is now rendered in the AppBar (stays fixed on scroll).
                             // ── 未连接显示公告，已连接显示套餐信息。空间不足时隐藏，优先保留主操作区。 ──
-                            if (showTopInfo)
-                              if (isDesktop)
-                                Padding(
-                                  padding: EdgeInsets.only(
-                                      left: horizontalPadding,
-                                      right: horizontalPadding,
-                                      top: topInfoTopGap),
-                                  child: SizedBox(
-                                    height: topInfoSlotHeight,
-                                    child: Align(
-                                      alignment: Alignment.topCenter,
-                                      child: _buildTopInfoSection(),
-                                    ),
-                                  ),
-                                )
-                              else
-                                Padding(
-                                  padding: EdgeInsets.only(
+                            if (isDesktop)
+                              Padding(
+                                padding: EdgeInsets.only(
                                     left: horizontalPadding,
                                     right: horizontalPadding,
-                                    top: topInfoTopGap,
-                                  ),
-                                  child: SizedBox(
-                                    height: topInfoSlotHeight,
-                                    child: Align(
-                                      alignment: Alignment.topCenter,
-                                      child: _buildTopInfoSection(),
-                                    ),
+                                    top: topInfoTopGap),
+                                child: SizedBox(
+                                  height: topInfoSlotHeight,
+                                  child: Align(
+                                    alignment: Alignment.topCenter,
+                                    child: _buildTopInfoSection(
+                                        compact: compactMode),
                                   ),
                                 ),
+                              )
+                            else
+                              Padding(
+                                padding: EdgeInsets.only(
+                                  left: horizontalPadding,
+                                  right: horizontalPadding,
+                                  top: topInfoTopGap,
+                                ),
+                                child: SizedBox(
+                                  height: topInfoSlotHeight,
+                                  child: Align(
+                                    alignment: Alignment.topCenter,
+                                    child: _buildTopInfoSection(
+                                        compact: compactMode),
+                                  ),
+                                ),
+                              ),
                             // ── 主操作区按可用高度自适应，按钮中心不高于屏幕中线 ──
                             SizedBox(height: adaptiveTopGap),
                             // ── 连接按钮（仅圆圈，Flexible 自动缩放）──
@@ -545,6 +588,13 @@ class _XBoardHomePageState extends ConsumerState<XBoardHomePage>
                       ),
                     ),
                   ],
+                );
+                return SingleChildScrollView(
+                  child: ConstrainedBox(
+                    constraints:
+                        BoxConstraints(minHeight: constraints.maxHeight),
+                    child: content,
+                  ),
                 );
               },
             ),
@@ -1011,11 +1061,15 @@ class _XBoardHomePageState extends ConsumerState<XBoardHomePage>
     }
   }
 
-  Widget _buildTopInfoSection() {
+  Widget _buildTopInfoSection({bool compact = false}) {
     return Consumer(
       builder: (context, ref, _) {
         final isRunning = ref.watch(runTimeProvider.select((s) => s != null));
-        return isRunning ? _buildUsageSection() : const _HomeNoticeCard();
+        return compact
+            ? const _HomeNoticeCard(compact: true)
+            : isRunning
+                ? _buildUsageSection()
+                : const _HomeNoticeCard();
       },
     );
   }
@@ -1072,10 +1126,10 @@ class _XBoardHomePageState extends ConsumerState<XBoardHomePage>
     );
   }
 
-  Widget _buildStatusText() {
+  Widget _buildStatusText({double height = 38}) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     return SizedBox(
-      height: 38,
+      height: height,
       child: ValueListenableBuilder<bool>(
         valueListenable: globalState.coreStatusReadyNotifier,
         builder: (context, isCoreStatusReady, _) {

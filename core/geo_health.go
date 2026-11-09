@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"net"
 	"os"
 	"path/filepath"
 	"strings"
@@ -140,8 +141,19 @@ func validateGeoFile(ctx context.Context, path string, size int64) error {
 	defer reader.Close()
 	// Use the same decoder as lookups, not Reader.Verify's deliberately stricter
 	// metadata rules, which reject some readable third-party database updates.
+	// Opening validates metadata; bounded lookups exercise both address families
+	// without scanning millions of records on the startup critical path.
+	for _, address := range []string{"0.0.0.0", "1.1.1.1", "8.8.8.8", "128.0.0.1", "192.0.2.1", "255.255.255.255", "::", "2001:db8::1", "2606:4700:4700::1111", "ffff::"} {
+		if err := ctx.Err(); err != nil {
+			return err
+		}
+		var value any
+		if err := reader.Lookup(net.ParseIP(address), &value); err != nil {
+			return err
+		}
+	}
 	networks := reader.Networks(maxminddb.SkipAliasedNetworks)
-	for networks.Next() {
+	for checked := 0; checked < 128 && networks.Next(); checked++ {
 		if err := ctx.Err(); err != nil {
 			return err
 		}

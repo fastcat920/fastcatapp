@@ -110,6 +110,7 @@ flutter {
 
 dependencies {
     implementation(project(":core"))
+    testImplementation("junit:junit:4.13.2")
     implementation("androidx.core:core-splashscreen:1.0.1")
     implementation("com.google.code.gson:gson:2.10.1")
     implementation("com.android.tools.smali:smali-dexlib2:3.0.9") {
@@ -117,8 +118,14 @@ dependencies {
     }
 }
 
+// Local Debug builds can omit Firebase when no matching debug client exists.
+// Production builds still require their original Google Services configuration.
+val skipGoogleServices = providers.gradleProperty("fastcatSkipGoogleServices").orNull == "true"
+check(!skipGoogleServices || gradle.startParameter.taskNames.all { it.contains("Debug", ignoreCase = true) }) {
+    "fastcatSkipGoogleServices is allowed only for Debug tasks."
+}
 // FCM is Android-only; desktop builds do not acquire Firebase dependencies.
-if (file("google-services.json").exists()) {
+if (file("google-services.json").exists() && !skipGoogleServices) {
     apply(plugin = "com.google.gms.google-services")
 }
 dependencies {

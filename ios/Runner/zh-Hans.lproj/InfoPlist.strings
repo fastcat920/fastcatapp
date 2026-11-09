@@ -1,2 +1,4 @@
 "CFBundleDisplayName" = "快猫";
 "CFBundleName" = "快猫";
+"NSCameraUsageDescription" = "用于扫描登录二维码，或拍摄照片并作为客服会话附件发送。";
+"NSPhotoLibraryUsageDescription" = "用于选择照片并作为客服会话附件发送。";

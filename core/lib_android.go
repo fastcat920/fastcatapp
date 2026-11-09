@@ -19,11 +19,13 @@ import (
 	"github.com/metacubex/mihomo/dns"
 	"github.com/metacubex/mihomo/listener/sing_tun"
 	"github.com/metacubex/mihomo/log"
+	ST "github.com/metacubex/sing-tun"
 	"golang.org/x/sync/semaphore"
 	"net"
 	"strconv"
 	"strings"
 	"sync"
+	"sync/atomic"
 	"syscall"
 	"time"
 	"unsafe"
@@ -31,6 +33,7 @@ import (
 
 type TunHandler struct {
 	listener *sing_tun.Listener
+	fd       int
 	callback unsafe.Pointer
 
 	limit *semaphore.Weighted
@@ -55,7 +58,7 @@ func (t *TunHandler) handleProtect(fd int) {
 	_ = t.limit.Acquire(context.Background(), 1)
 	defer t.limit.Release(1)
 
-	if t.listener == nil {
+	if t.callback == nil {
 		return
 	}
 
@@ -66,7 +69,7 @@ func (t *TunHandler) handleResolveProcess(source, target net.Addr) string {
 	_ = t.limit.Acquire(context.Background(), 1)
 	defer t.limit.Release(1)
 
-	if t.listener == nil {
+	if t.callback == nil {
 		return ""
 	}
 	var protocol int
@@ -85,56 +88,91 @@ func (t *TunHandler) handleResolveProcess(source, target net.Addr) string {
 
 var (
 	tunLock    sync.Mutex
-	runTime    *time.Time
+	tunRuntime atomic.Pointer[androidTunRuntime]
 	errBlocked = errors.New("blocked")
 	tunHandler *TunHandler
 )
 
-func handleStopTun() {
-	tunLock.Lock()
-	defer tunLock.Unlock()
-	runTime = nil
+type androidTunRuntime struct {
+	fd        int
+	startedAt time.Time
+}
+
+func stopTunLocked() {
+	tunRuntime.Store(nil)
 	if tunHandler != nil {
 		tunHandler.close()
+		tunHandler = nil
 	}
 }
+func handleStopTun() { tunLock.Lock(); defer tunLock.Unlock(); stopTunLocked() }
 
-func handleStartTun(fd int, callback unsafe.Pointer) {
-	handleStopTun()
+func handleStartTun(fd int, callback unsafe.Pointer) bool {
 	tunLock.Lock()
 	defer tunLock.Unlock()
-	now := time.Now()
-	runTime = &now
+	stopTunLocked()
+	handler := &TunHandler{callback: callback, fd: fd, limit: semaphore.NewWeighted(4)}
+	tunHandler = handler
+	// Protect must be usable while the stack is being constructed.
 	if fd != 0 {
-		tunHandler = &TunHandler{
-			callback: callback,
-			limit:    semaphore.NewWeighted(4),
-		}
 		initTunHook()
-		tunListener, _ := t.Start(fd, currentConfig.General.Tun.Device, currentConfig.General.Tun.Stack)
-		if tunListener != nil {
-			log.Infoln("TUN address: %v", tunListener.Address())
-			tunHandler.listener = tunListener
-		} else {
-			removeTunHook()
+		runLock.Lock()
+		cfg := currentConfig
+		if cfg == nil || cfg.General == nil {
+			runLock.Unlock()
+			_ = syscall.Close(fd)
+			stopTunLocked()
+			return false
 		}
+		device, stack := cfg.General.Tun.Device, cfg.General.Tun.Stack
+		runLock.Unlock()
+		listener, err := t.Start(fd, device, stack)
+		if err != nil || listener == nil {
+			log.Errorln("tun_lifecycle event=start outcome=failed")
+			stopTunLocked()
+			return false
+		}
+		handler.listener = listener
 	}
+	tunRuntime.Store(&androidTunRuntime{fd: fd, startedAt: time.Now()})
+	log.Infoln("tun_lifecycle event=start outcome=ready")
+	return true
 }
 
+func androidTunHealth() ST.ForwarderHealth {
+	snapshot := tunRuntime.Load()
+	if snapshot == nil {
+		return ST.ForwarderHealth{State: "stopped"}
+	}
+	if snapshot.fd != 0 {
+		if h, ok := ST.SystemForwarderHealth(snapshot.fd); ok {
+			return h
+		}
+	}
+	return ST.ForwarderHealth{State: "ready"}
+}
 func handleGetRunTime() string {
-	if runTime == nil {
+	snapshot := tunRuntime.Load()
+	if snapshot == nil || androidTunHealth().State == "failed" {
 		return ""
 	}
-	return strconv.FormatInt(runTime.UnixMilli(), 10)
+	return strconv.FormatInt(snapshot.startedAt.UnixMilli(), 10)
+}
+
+//export getAndroidTunStatus
+func getAndroidTunStatus() *C.char {
+	data, _ := json.Marshal(androidTunHealth())
+	return C.CString(string(data))
 }
 
 func initTunHook() {
+	handler := tunHandler
 	dialer.DefaultSocketHook = func(network, address string, conn syscall.RawConn) error {
 		if platform.ShouldBlockConnection() {
 			return errBlocked
 		}
 		return conn.Control(func(fd uintptr) {
-			tunHandler.handleProtect(int(fd))
+			handler.handleProtect(int(fd))
 		})
 	}
 	process.DefaultPackageNameResolver = func(metadata *constant.Metadata) (string, error) {
@@ -142,7 +180,7 @@ func initTunHook() {
 		if src == nil || dst == nil {
 			return "", process.ErrInvalidNetwork
 		}
-		return tunHandler.handleResolveProcess(src, dst), nil
+		return handler.handleResolveProcess(src, dst), nil
 	}
 }
 
@@ -225,10 +263,7 @@ func quickStart(initParamsChar *C.char, paramsChar *C.char, stateParamsChar *C.c
 
 //export startTUN
 func startTUN(fd C.int, callback unsafe.Pointer) bool {
-	go func() {
-		handleStartTun(int(fd), callback)
-	}()
-	return true
+	return handleStartTun(int(fd), callback)
 }
 
 //export getRunTime
@@ -238,9 +273,7 @@ func getRunTime() *C.char {
 
 //export stopTun
 func stopTun() {
-	go func() {
-		handleStopTun()
-	}()
+	handleStopTun()
 }
 
 //export getCurrentProfileName

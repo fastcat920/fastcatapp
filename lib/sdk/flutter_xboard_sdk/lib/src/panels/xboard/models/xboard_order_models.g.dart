@@ -117,7 +117,7 @@ _$PaymentMethodImpl _$$PaymentMethodImplFromJson(Map<String, dynamic> json) =>
       icon: json['icon'] as String?,
       handlingFeeFixed: (json['handling_fee_fixed'] as num?)?.toDouble(),
       handlingFeePercent: (json['handling_fee_percent'] as num?)?.toDouble(),
-      isAvailable: json['is_available'] as bool? ?? false,
+      isAvailable: json['is_available'] as bool? ?? true,
       config: json['config'] as Map<String, dynamic>?,
     );
 

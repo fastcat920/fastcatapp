@@ -1149,6 +1149,7 @@
   "xboardTicketClosed": "Closed",
   "xboardTicketDescription": "Description",
   "xboardTicketDescriptionHint": "Describe your issue in detail",
+  "xboardTicketPendingProcessing": "Pending support",
   "xboardTicketPendingReply": "Pending reply",
   "xboardTicketReplied": "Replied",
   "xboardTicketTitle": "Ticket title",
@@ -1216,7 +1217,11 @@
   "xboardInvalidWithdrawAmount": "Enter an amount greater than 0 with up to two decimal places",
   "xboardWithdrawAmountExceeded": "Withdrawal amount cannot exceed ¥{amount}",
   "@xboardWithdrawAmountExceeded": {
-    "placeholders": {"amount": {"type": "String"}}
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
   },
   "withdrawRequestSubmitted": "Withdrawal request submitted",
   "withdrawRequestSubmittedWaitReview": "Withdrawal request submitted, please wait for review",
@@ -1633,7 +1638,7 @@
   "xboardInitializing": "Initializing",
   "xboardServiceOfflineCacheTooltip": "The local internet connection is working, but the business service is temporarily unreachable. The proxy can continue using cached subscriptions and nodes, while login, plans, and payments may be unavailable. Offline cache mode ends automatically after recovery.",
   "xboardServiceNoNetworkTooltip": "This device has no usable network connection, so the proxy cannot work either. Check Wi-Fi, mobile data, or Ethernet.",
-  "xboardServiceNetworkRestrictedTooltip": "A network interface is present, but both public internet checks and business gateways are unreachable. The proxy may not work. Check network restrictions or DNS, or run network diagnostics.",
+  "xboardServiceNetworkRestrictedTooltip": "A network or proxy connection issue is temporarily preventing access to the service. Try switching nodes. If the issue persists, check your Wi-Fi, mobile data, or DNS settings, or run network diagnostics.",
   "xboardServiceDegradedTooltip": "A business request failed. The client is checking the local network and business gateways.",
   "xboardServiceRecoveringTooltip": "The network has recovered. The client is confirming business gateway availability.",
   "xboardCheckingCachedSubscription": "Offline mode: checking cached subscription",
@@ -1690,7 +1695,6 @@
   "xboardReplyFailedRetry": "Reply failed. Please try again later.",
   "xboardNoMessages": "No messages",
   "xboardTicketClosedMessage": "Ticket closed",
-  "xboardUploadImage": "Upload image",
   "xboardReplyHint": "Enter a reply...",
   "xboardImageUploadUnavailable": "Image upload is not configured. Contact support.",
   "xboardOnlineSupport": "Online support",
@@ -1706,8 +1710,7 @@
   "xboardTunRecommendedUsage": "Recommended usage",
   "xboardTunRuleRecommendation": "Daily use: Rules + TUN for smart routing and best performance",
   "xboardTunGlobalRecommendation": "Fallback: Global + TUN when rules mode does not work as expected",
-  "xboardMaybeLater": "Maybe later"
-,
+  "xboardMaybeLater": "Maybe later",
   "xboardQrAuthorizeTitle": "Sign in on a new device",
   "xboardQrAuthorizeMessage": "Allow this computer or TV to sign in to your FastCat account?",
   "xboardQrAuthorizeConfirm": "Allow sign-in",
@@ -1720,5 +1723,27 @@
   "xboardCustomerServiceNotConfigured": "Online support is not configured",
   "xboardCustomerServiceLoadTimeout": "Loading timed out. Check your network and try again.",
   "xboardDeviceGatewayRelogin": "Your device session has changed. Please sign in again.",
-  "xboardPasswordChangedRememberFailed": "Password changed. Please enter your new password the next time you sign in."
+  "xboardPasswordChangedRememberFailed": "Password changed. Please enter your new password the next time you sign in.",
+  "xboardCameraPermissionDenied": "Camera access is disabled. Allow FastCat to use the camera in system settings, then retry.",
+  "xboardCameraUnavailable": "Camera unavailable. Check your device and retry.",
+  "xboardDocImageUnavailable": "Tutorial image unavailable. Follow the text instructions or contact support.",
+  "xboardInitPreparing": "Preparing…",
+  "xboardInitFetchingConfig": "Fetching configuration…",
+  "xboardInitConnecting": "Connecting to server…",
+  "xboardInitInitializing": "Initializing…",
+  "xboardInitReady": "Ready",
+  "xboardInitFailed": "Initialization failed",
+  "xboardGatewayUnavailable": "Service gateway unavailable. Please try again later.",
+  "xboardSignedConfigUnavailable": "No valid fastcat-config-v2 signed configuration. Check the network, OSS file and signing public key.",
+  "xboardImportCancelled": "Import cancelled",
+  "xboardNoticeTitle": "Announcements",
+  "xboardNoNotice": "No announcements",
+  "xboardNoticeLoading": "Loading announcements…",
+  "xboardNoticeUnavailable": "Announcements are temporarily unavailable",
+  "xboardNoLatestNotice": "No new announcements",
+  "xboardCoreDisconnectFailed": "Disconnect failed",
+  "xboardCoreVerifying": "Verifying core connection",
+  "xboardCoreRestoring": "Restoring system VPN",
+  "xboardOpenCameraSettings": "Open camera settings",
+  "xboardCameraSettingsUnavailable": "Unable to open settings. Enable camera access in system settings."
 }

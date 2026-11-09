@@ -118,8 +118,12 @@ object GlobalState {
     fun initServiceEngine(
         forceQuickStart: Boolean = false,
         recoveryOptionsJson: String? = null,
+        reattachMain: Boolean = false,
     ) {
-        if (serviceEngine != null) return
+        if (serviceEngine != null) {
+            if (reattachMain) getCurrentVPNPlugin()?.attachMain()
+            return
+        }
         destroyServiceEngine()
         runLock.withLock {
             serviceEngine = FlutterEngine(FastCatApplication.getAppContext())

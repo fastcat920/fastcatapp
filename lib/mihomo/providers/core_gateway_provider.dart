@@ -10,7 +10,9 @@ final coreGatewayProvider = Provider<CoreGateway>(
 );
 
 final mihomoGroupsProvider = Provider<List<MihomoGroup>>((ref) {
-  ref.watch(groupsProvider);
+  // The gateway reads the mode-dependent view imperatively. Track that view
+  // here so changing mode also invalidates the cached node list.
+  ref.watch(currentGroupsStateProvider);
   ref.watch(delayDataSourceProvider);
   ref.watch(selectedMapProvider);
   return ref.watch(coreGatewayProvider).getGroups();

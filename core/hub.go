@@ -73,7 +73,12 @@ func handleStartListener() bool {
 		return false
 	}
 	isRunning = true
-	updateListeners()
+	if err := updateListeners(); err != nil {
+		isRunning = false
+		stopListeners()
+		log.Errorln("Cannot start listeners: %v", err)
+		return false
+	}
 	resolver.ResetConnection()
 	return true
 }
@@ -233,7 +238,18 @@ func handleAsyncTestDelay(paramsString string, fn func(string)) {
 		}
 		delayData.Url = testUrl
 
+		probeStarted := time.Now()
 		delay, err := proxy.URLTest(ctx, testUrl, expectedStatus)
+		category := "success"
+		if err != nil {
+			category = classifyProxyFailure(err, "success")
+			if isTimeoutError(err) {
+				category = "timeout"
+			}
+		} else if delay == 0 {
+			category = "zero_delay"
+		}
+		logAppleDiagnostic(fmt.Sprintf("[AppleProbe] elapsedMs=%d category=%s", time.Since(probeStarted).Milliseconds(), category))
 		if err != nil || delay == 0 {
 			delayData.Value = -1
 			data, _ := json.Marshal(delayData)

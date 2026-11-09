@@ -889,7 +889,7 @@ class XBoardUserAuthNotifier extends Notifier<UserAuthState> {
     // this forced refresh behind that request and fetches authenticated content
     // using the current locale before the home-page cache can be reused.
     unawaited(
-      ref.read(noticeProvider.notifier).fetchNotices(forceRefresh: true),
+      ref.read(noticeProvider.notifier).fetchNotices(),
     );
 
     final url = subscriptionInfo?.subscribeUrl ?? '';

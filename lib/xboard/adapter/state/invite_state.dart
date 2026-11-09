@@ -11,40 +11,55 @@ part 'generated/invite_state.g.dart';
 /// 获取邀请信息
 @riverpod
 Future<InviteInfoModel> getInviteInfo(Ref ref) async {
-  final epoch = ref.watch(sessionEpochProvider);
-  var active = true;
-  ref.onDispose(() => active = false);
-  const empty = InviteInfoModel(codes: [], stat: []);
-  final sdk = await ref.watch(xboardSdkProvider.future);
-  if (!active || ref.read(sessionEpochProvider) != epoch) return empty;
-  final info = await sdk.invite.getInviteInfo();
-  if (!active || ref.read(sessionEpochProvider) != epoch) return empty;
-  return info;
+  final keepAlive = ref.keepAlive();
+  try {
+    final epoch = ref.watch(sessionEpochProvider);
+    var active = true;
+    ref.onDispose(() => active = false);
+    const empty = InviteInfoModel(codes: [], stat: []);
+    final sdk = await ref.watch(xboardSdkProvider.future);
+    if (!active || ref.read(sessionEpochProvider) != epoch) return empty;
+    final info = await sdk.invite.getInviteInfo();
+    if (!active || ref.read(sessionEpochProvider) != epoch) return empty;
+    return info;
+  } finally {
+    keepAlive.close();
+  }
 }
 
 /// 获取邀请码列表
 @riverpod
 Future<List<InviteCodeModel>> getInviteCodes(Ref ref) async {
-  final epoch = ref.watch(sessionEpochProvider);
-  var active = true;
-  ref.onDispose(() => active = false);
-  final sdk = await ref.watch(xboardSdkProvider.future);
-  if (!active || ref.read(sessionEpochProvider) != epoch) return [];
-  final codes = await sdk.invite.getInviteCodes();
-  if (!active || ref.read(sessionEpochProvider) != epoch) return [];
-  return codes;
+  final keepAlive = ref.keepAlive();
+  try {
+    final epoch = ref.watch(sessionEpochProvider);
+    var active = true;
+    ref.onDispose(() => active = false);
+    final sdk = await ref.watch(xboardSdkProvider.future);
+    if (!active || ref.read(sessionEpochProvider) != epoch) return [];
+    final codes = await sdk.invite.getInviteCodes();
+    if (!active || ref.read(sessionEpochProvider) != epoch) return [];
+    return codes;
+  } finally {
+    keepAlive.close();
+  }
 }
 
 /// 获取佣金详情
 @riverpod
 Future<List<CommissionDetailModel>> getCommissionDetails(Ref ref,
     {int page = 1}) async {
-  final epoch = ref.watch(sessionEpochProvider);
-  var active = true;
-  ref.onDispose(() => active = false);
-  final sdk = await ref.watch(xboardSdkProvider.future);
-  if (!active || ref.read(sessionEpochProvider) != epoch) return [];
-  final history = await sdk.invite.getCommissionDetails(page: page);
-  if (!active || ref.read(sessionEpochProvider) != epoch) return [];
-  return history;
+  final keepAlive = ref.keepAlive();
+  try {
+    final epoch = ref.watch(sessionEpochProvider);
+    var active = true;
+    ref.onDispose(() => active = false);
+    final sdk = await ref.watch(xboardSdkProvider.future);
+    if (!active || ref.read(sessionEpochProvider) != epoch) return [];
+    final history = await sdk.invite.getCommissionDetails(page: page);
+    if (!active || ref.read(sessionEpochProvider) != epoch) return [];
+    return history;
+  } finally {
+    keepAlive.close();
+  }
 }

@@ -1,10 +1,37 @@
+import 'latency_epoch.dart';
 import 'package:fl_clash/clash/clash.dart';
 import 'dart:io';
 import 'package:fl_clash/common/common.dart';
 import 'package:fl_clash/models/models.dart';
 import 'package:fl_clash/state.dart';
 
+final _latencyEpoch = LatencyEpoch();
+
+void invalidateLatencyTests() => _latencyEpoch.invalidate();
+bool _observingCoreSwitches = false;
+int _captureLatencyEpoch() {
+  if (!_observingCoreSwitches) {
+    _observingCoreSwitches = true;
+    globalState.isCoreSwitchingNotifier.addListener(() {
+      if (globalState.isCoreSwitchingNotifier.value) _latencyEpoch.invalidate();
+    });
+  }
+  if (globalState.isCoreSwitchingNotifier.value) {
+    throw StateError('VPN 正在切换，测速已暂停');
+  }
+  return _latencyEpoch.capture();
+}
+
+bool _isLatencyEpochCurrent(int epoch) =>
+    _latencyEpoch.accepts(epoch) && !globalState.isCoreSwitchingNotifier.value;
+void _requireLatencyEpoch(int epoch) {
+  if (!_isLatencyEpochCurrent(epoch)) {
+    throw StateError('连接已切换，丢弃旧测速结果');
+  }
+}
+
 Future<void> testNodeLatency(Proxy proxy, [String? testUrl]) async {
+  final epoch = _captureLatencyEpoch();
   final controller = globalState.appController;
   final state = controller.getProxyCardState(proxy.name);
   final url = state.testUrl.getSafeValue(controller.getRealTestUrl(testUrl));
@@ -13,9 +40,11 @@ Future<void> testNodeLatency(Proxy proxy, [String? testUrl]) async {
   if (recoveringFromBackground) {
     await _waitForLatencyCoreReady();
   }
+  _requireLatencyEpoch(epoch);
   controller.setDelay(Delay(url: url, name: state.proxyName, value: 0));
   final target = _LatencyTestTarget(url: url, proxyName: state.proxyName);
   final result = await _testTargetOnce(target);
+  _requireLatencyEpoch(epoch);
   controller.setDelay(result);
 }
 
@@ -24,6 +53,7 @@ Future<void> testNodesLatency(
   String? testUrl,
   void Function(String proxyName)? onResult,
 ]) async {
+  final epoch = _captureLatencyEpoch();
   final controller = globalState.appController;
   final testsByTarget = <String, _LatencyTestTarget>{};
 
@@ -56,6 +86,7 @@ Future<void> testNodesLatency(
     await _waitForLatencyCoreReady();
   }
 
+  _requireLatencyEpoch(epoch);
   // One request per resolved node + URL pair; never retry a failed batch.
   for (final target in targets) {
     controller.setDelay(
@@ -66,7 +97,9 @@ Future<void> testNodesLatency(
   final publishedTargets = <int>{};
   final results = await _runLatencyTargets(
     targets,
+    isCurrent: () => _isLatencyEpochCurrent(epoch),
     onResult: (index, result) {
+      if (!_isLatencyEpochCurrent(epoch)) return;
       _publishTargetResult(
         setDelay: controller.setDelay,
         target: targets[index],
@@ -77,6 +110,7 @@ Future<void> testNodesLatency(
     },
   );
 
+  _requireLatencyEpoch(epoch);
   for (var index = 0; index < targets.length; index++) {
     if (publishedTargets.contains(index)) continue;
     _publishTargetResult(
@@ -92,12 +126,14 @@ Future<void> testNodesLatency(
 Future<List<Delay>> _runLatencyTargets(
   List<_LatencyTestTarget> targets, {
   required void Function(int index, Delay result) onResult,
+  required bool Function() isCurrent,
 }) async {
   if (Platform.isIOS) {
     final results = List<Delay?>.filled(targets.length, null);
     var next = 0;
     Future<void> worker() async {
       while (next < targets.length) {
+        if (!isCurrent()) throw StateError('连接切换，停止旧批次测速');
         final index = next++;
         final result = await _testTargetOnce(targets[index]);
         results[index] = result;
@@ -121,7 +157,8 @@ Future<List<Delay>> _runLatencyTargets(
 final Map<String, Future<Delay>> _pendingLatencyTests = {};
 
 Future<Delay> _testTargetOnce(_LatencyTestTarget target) {
-  final key = '${target.url}\u0000${target.proxyName}';
+  final key =
+      '${_latencyEpoch.capture()}\u0000${target.url}\u0000${target.proxyName}';
   final existing = _pendingLatencyTests[key];
   if (existing != null) return existing;
   late final Future<Delay> task;

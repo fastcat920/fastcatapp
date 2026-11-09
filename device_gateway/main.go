@@ -1308,23 +1308,21 @@ func (s *Server) writeUserDevices(w http.ResponseWriter, ctx *SessionContext) {
 	defer s.store.mu.RUnlock()
 
 	devices := s.devicesForUserLocked(ctx.User.ID)
+	now := time.Now()
+	sortDeviceList(devices, ctx.Device.ID, now)
 	activeCount := 0
 	items := make([]map[string]any, 0, len(devices))
 	for _, device := range devices {
 		if device.Status == statusActive {
 			activeCount++
 		}
-		pd := publicDevice(device, ctx.Device.ID)
+		pd := publicDeviceAt(device, ctx.Device.ID, now)
 		s.log.Printf("device %s status=%s last_seen=%s is_online=%v age=%v",
 			device.ID, device.Status,
 			device.LastSeenAt.Format(time.RFC3339),
 			pd["is_online"], time.Since(device.LastSeenAt))
 		items = append(items, pd)
 	}
-
-	sort.Slice(items, func(i, j int) bool {
-		return fmt.Sprint(items[i]["last_seen_at"]) > fmt.Sprint(items[j]["last_seen_at"])
-	})
 
 	writeJSON(w, http.StatusOK, map[string]any{
 		"success": true,
@@ -1512,13 +1510,12 @@ func (s *Server) handleAdminUserDevices(w http.ResponseWriter, r *http.Request, 
 		return
 	}
 	devices := s.devicesForUserLocked(user.ID)
+	now := time.Now()
+	sortDeviceList(devices, "", now)
 	items := make([]map[string]any, 0, len(devices))
 	for _, device := range devices {
-		items = append(items, publicDevice(device, ""))
+		items = append(items, publicDeviceAt(device, "", now))
 	}
-	sort.Slice(items, func(i, j int) bool {
-		return fmt.Sprint(items[i]["last_seen_at"]) > fmt.Sprint(items[j]["last_seen_at"])
-	})
 
 	writeJSON(w, http.StatusOK, map[string]any{
 		"success": true,
@@ -3527,6 +3524,10 @@ func publicUser(user *UserCache, effectiveLimit, activeCount int) map[string]any
 }
 
 func publicDevice(device *DeviceRecord, currentDeviceID string) map[string]any {
+	return publicDeviceAt(device, currentDeviceID, time.Now())
+}
+
+func publicDeviceAt(device *DeviceRecord, currentDeviceID string, now time.Time) map[string]any {
 	return map[string]any{
 		"id":             device.ID,
 		"device_name":    device.DeviceName,
@@ -3541,7 +3542,7 @@ func publicDevice(device *DeviceRecord, currentDeviceID string) map[string]any {
 		"last_ip":        device.LastIP,
 		"last_ip_region": device.LastIPRegion,
 		"last_ip_isp":    device.LastIPISP,
-		"is_online":      device.Status == statusActive && time.Since(device.LastSeenAt) < 5*time.Minute,
+		"is_online":      deviceOnlineAt(device, now),
 		"is_current":     currentDeviceID != "" && device.ID == currentDeviceID,
 	}
 }

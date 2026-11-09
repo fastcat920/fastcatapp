@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'package:fl_clash/services/runtime_task_runner.dart';
 import 'package:fl_clash/common/diagnostic_log_buffer.dart';
 import 'dart:convert';
 import 'dart:ffi' show Pointer;
@@ -34,6 +35,9 @@ class GlobalState {
   Map<CacheTag, FixedMap<String, double>> cacheHeightMap = {};
   bool isService = false;
   Timer? timer;
+  final _desktopTasks = RuntimeTaskRunner(
+    onError: (error) => commonPrint.log('[RuntimeTasks] update failed: $error'),
+  );
   Timer? groupsUpdateTimer;
   late Config config;
   late AppState appState;
@@ -134,6 +138,11 @@ class GlobalState {
   String get ua => config.patchClashConfig.globalUa ?? packageInfo.ua;
 
   startUpdateTasks([UpdateTasks? tasks]) async {
+    if (system.isDesktop) {
+      if (tasks != null) this.tasks = tasks;
+      _desktopTasks.start(this.tasks);
+      return;
+    }
     if (timer != null && timer!.isActive == true) return;
     if (tasks != null) {
       this.tasks = tasks;
@@ -152,6 +161,10 @@ class GlobalState {
   }
 
   stopUpdateTasks() {
+    if (system.isDesktop) {
+      _desktopTasks.stop();
+      return;
+    }
     if (timer == null || timer?.isActive == false) return;
     timer?.cancel();
     timer = null;

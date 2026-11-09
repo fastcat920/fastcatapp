@@ -116,6 +116,7 @@ mixin AndroidClashInterface {
 
 abstract class ClashHandlerInterface with ClashInterface {
   Map<String, Completer> callbackCompleterMap = {};
+  bool _geoCheckTimedOut = false;
 
   /// Empty strings are valid success replies for these commands. Never use
   /// that value to stand in for a missing acknowledgement.
@@ -217,13 +218,26 @@ abstract class ClashHandlerInterface with ClashInterface {
   }
 
   @override
-  Future<String> checkGeoData() => invoke<String>(
+  Future<String> checkGeoData() async {
+    if (_geoCheckTimedOut) {
+      throw StateError('代理内核未响应 Geo 检查，请重新初始化或更新客户端');
+    }
+    try {
+      return await invoke<String>(
         method: ActionMethod.checkGeoData,
         timeout: const Duration(seconds: 10),
       );
+    } on TimeoutException {
+      // Profile application and rollback share the same core. Once this
+      // handshake fails, do not repeat the full timeout for every queued job.
+      _geoCheckTimedOut = true;
+      rethrow;
+    }
+  }
 
   @override
   Future<bool> init(InitParams params) {
+    _geoCheckTimedOut = false;
     return invoke<bool>(
       method: ActionMethod.initClash,
       data: json.encode({

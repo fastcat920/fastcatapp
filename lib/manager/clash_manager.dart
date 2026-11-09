@@ -1,3 +1,4 @@
+import 'dart:io';
 import 'package:fl_clash/clash/clash.dart';
 import 'package:fl_clash/common/common.dart';
 import 'package:fl_clash/enum/enum.dart';
@@ -44,6 +45,7 @@ class _ClashContainerState extends ConsumerState<ClashManager>
     });
     ref.listenManual(updateParamsProvider, (prev, next) async {
       if (prev != next) {
+        if (Platform.isIOS && !globalState.isStart) return;
         if (prev != null && prev.copyWith(logLevel: next.logLevel) == next) {
           try {
             final error = await clashCore.updateLogLevel(next.logLevel);

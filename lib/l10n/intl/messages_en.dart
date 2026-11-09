@@ -1535,6 +1535,15 @@ class MessageLookup extends MessageLookupByLibrary {
     "xboardBuyNow": MessageLookupByLibrary.simpleMessage("Buy Now"),
     "xboardBuyPlan": MessageLookupByLibrary.simpleMessage("Buy plan"),
     "xboardBuyoutPlan": MessageLookupByLibrary.simpleMessage("Buyout plan"),
+    "xboardCameraPermissionDenied": MessageLookupByLibrary.simpleMessage(
+      "Camera access is disabled. Allow FastCat to use the camera in system settings, then retry.",
+    ),
+    "xboardCameraSettingsUnavailable": MessageLookupByLibrary.simpleMessage(
+      "Unable to open settings. Enable camera access in system settings.",
+    ),
+    "xboardCameraUnavailable": MessageLookupByLibrary.simpleMessage(
+      "Camera unavailable. Check your device and retry.",
+    ),
     "xboardCancel": MessageLookupByLibrary.simpleMessage("Cancel"),
     "xboardCancelOrder": MessageLookupByLibrary.simpleMessage("Cancel order"),
     "xboardCancelPayment": MessageLookupByLibrary.simpleMessage(
@@ -1647,6 +1656,12 @@ class MessageLookup extends MessageLookupByLibrary {
     "xboardCopySubscriptionLinkAbove": MessageLookupByLibrary.simpleMessage(
       "Copy the subscription link above",
     ),
+    "xboardCoreDisconnectFailed": MessageLookupByLibrary.simpleMessage(
+      "Disconnect failed",
+    ),
+    "xboardCoreRestoring": MessageLookupByLibrary.simpleMessage(
+      "Restoring system VPN",
+    ),
     "xboardCoreStageCheckingHelper": MessageLookupByLibrary.simpleMessage(
       "Checking helper",
     ),
@@ -1670,6 +1685,9 @@ class MessageLookup extends MessageLookupByLibrary {
     ),
     "xboardCoreStageTunApplying": MessageLookupByLibrary.simpleMessage(
       "Applying TUN",
+    ),
+    "xboardCoreVerifying": MessageLookupByLibrary.simpleMessage(
+      "Verifying core connection",
     ),
     "xboardCouponExpired": MessageLookupByLibrary.simpleMessage(
       "Coupon expired",
@@ -1932,6 +1950,9 @@ class MessageLookup extends MessageLookupByLibrary {
     "xboardDiscountedPrice": MessageLookupByLibrary.simpleMessage(
       "Discounted price",
     ),
+    "xboardDocImageUnavailable": MessageLookupByLibrary.simpleMessage(
+      "Tutorial image unavailable. Follow the text instructions or contact support.",
+    ),
     "xboardDocsCenter": MessageLookupByLibrary.simpleMessage("User guide"),
     "xboardDownloadingConfig": MessageLookupByLibrary.simpleMessage(
       "Downloading configuration file",
@@ -1983,6 +2004,9 @@ class MessageLookup extends MessageLookupByLibrary {
     "xboardGatewayCandidateCount": m45,
     "xboardGatewayStatus": MessageLookupByLibrary.simpleMessage(
       "Gateway status",
+    ),
+    "xboardGatewayUnavailable": MessageLookupByLibrary.simpleMessage(
+      "Service gateway unavailable. Please try again later.",
     ),
     "xboardGetGroupLinkFailed": MessageLookupByLibrary.simpleMessage(
       "Failed to get group link",
@@ -2091,6 +2115,9 @@ class MessageLookup extends MessageLookupByLibrary {
     "xboardImageUploadUnavailable": MessageLookupByLibrary.simpleMessage(
       "Image upload is not configured. Contact support.",
     ),
+    "xboardImportCancelled": MessageLookupByLibrary.simpleMessage(
+      "Import cancelled",
+    ),
     "xboardImportFailed": MessageLookupByLibrary.simpleMessage("Import failed"),
     "xboardImportSuccess": MessageLookupByLibrary.simpleMessage(
       "Import successful",
@@ -2098,6 +2125,20 @@ class MessageLookup extends MessageLookupByLibrary {
     "xboardImportingSubscription": MessageLookupByLibrary.simpleMessage(
       "Importing subscription",
     ),
+    "xboardInitConnecting": MessageLookupByLibrary.simpleMessage(
+      "Connecting to server…",
+    ),
+    "xboardInitFailed": MessageLookupByLibrary.simpleMessage(
+      "Initialization failed",
+    ),
+    "xboardInitFetchingConfig": MessageLookupByLibrary.simpleMessage(
+      "Fetching configuration…",
+    ),
+    "xboardInitInitializing": MessageLookupByLibrary.simpleMessage(
+      "Initializing…",
+    ),
+    "xboardInitPreparing": MessageLookupByLibrary.simpleMessage("Preparing…"),
+    "xboardInitReady": MessageLookupByLibrary.simpleMessage("Ready"),
     "xboardInitializing": MessageLookupByLibrary.simpleMessage("Initializing"),
     "xboardInsufficientBalance": MessageLookupByLibrary.simpleMessage(
       "Insufficient balance",
@@ -2534,7 +2575,11 @@ class MessageLookup extends MessageLookupByLibrary {
     "xboardNoInternetConnection": MessageLookupByLibrary.simpleMessage(
       "No internet connection, please check network settings",
     ),
+    "xboardNoLatestNotice": MessageLookupByLibrary.simpleMessage(
+      "No new announcements",
+    ),
     "xboardNoMessages": MessageLookupByLibrary.simpleMessage("No messages"),
+    "xboardNoNotice": MessageLookupByLibrary.simpleMessage("No announcements"),
     "xboardNoOrderRecords": MessageLookupByLibrary.simpleMessage(
       "No order records",
     ),
@@ -2565,6 +2610,13 @@ class MessageLookup extends MessageLookupByLibrary {
     "xboardNone": MessageLookupByLibrary.simpleMessage("None"),
     "xboardNormal": MessageLookupByLibrary.simpleMessage("Normal"),
     "xboardNotLoggedIn": MessageLookupByLibrary.simpleMessage("Not Logged In"),
+    "xboardNoticeLoading": MessageLookupByLibrary.simpleMessage(
+      "Loading announcements…",
+    ),
+    "xboardNoticeTitle": MessageLookupByLibrary.simpleMessage("Announcements"),
+    "xboardNoticeUnavailable": MessageLookupByLibrary.simpleMessage(
+      "Announcements are temporarily unavailable",
+    ),
     "xboardOfflineButActive": MessageLookupByLibrary.simpleMessage(
       "Offline, using slot",
     ),
@@ -2574,6 +2626,9 @@ class MessageLookup extends MessageLookupByLibrary {
     "xboardOneTimePayment": MessageLookupByLibrary.simpleMessage("One-time"),
     "xboardOnlineSupport": MessageLookupByLibrary.simpleMessage(
       "Online support",
+    ),
+    "xboardOpenCameraSettings": MessageLookupByLibrary.simpleMessage(
+      "Open camera settings",
     ),
     "xboardOpenPaymentFailed": MessageLookupByLibrary.simpleMessage(
       "Failed to open payment page",
@@ -2992,7 +3047,7 @@ class MessageLookup extends MessageLookupByLibrary {
       "Network access restricted",
     ),
     "xboardServiceNetworkRestrictedTooltip": MessageLookupByLibrary.simpleMessage(
-      "A network interface is present, but both public internet checks and business gateways are unreachable. The proxy may not work. Check network restrictions or DNS, or run network diagnostics.",
+      "A network or proxy connection issue is temporarily preventing access to the service. Try switching nodes. If the issue persists, check your Wi-Fi, mobile data, or DNS settings, or run network diagnostics.",
     ),
     "xboardServiceNoNetwork": MessageLookupByLibrary.simpleMessage(
       "Local network unavailable",
@@ -3048,6 +3103,9 @@ class MessageLookup extends MessageLookupByLibrary {
       "This gateway version does not support detailed checks",
     ),
     "xboardSetup": MessageLookupByLibrary.simpleMessage("Setup"),
+    "xboardSignedConfigUnavailable": MessageLookupByLibrary.simpleMessage(
+      "No valid fastcat-config-v2 signed configuration. Check the network, OSS file and signing public key.",
+    ),
     "xboardSixMonthCycle": MessageLookupByLibrary.simpleMessage(
       "6-month cycle",
     ),
@@ -3248,6 +3306,9 @@ class MessageLookup extends MessageLookupByLibrary {
     ),
     "xboardTicketDetails": MessageLookupByLibrary.simpleMessage(
       "Ticket details",
+    ),
+    "xboardTicketPendingProcessing": MessageLookupByLibrary.simpleMessage(
+      "Pending support",
     ),
     "xboardTicketPendingReply": MessageLookupByLibrary.simpleMessage(
       "Pending reply",

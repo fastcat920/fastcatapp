@@ -7,6 +7,7 @@ import 'package:fl_clash/providers/providers.dart';
 import 'package:fl_clash/xboard/features/about/pages/fastcat_about_page.dart';
 import 'package:fl_clash/xboard/features/diagnostics/pages/diagnostics_center_page.dart';
 import 'package:fl_clash/xboard/features/settings/pages/fastcat_auto_start_settings_page.dart';
+import 'package:fl_clash/xboard/features/settings/pages/fastcat_background_protection_page.dart';
 import 'package:fl_clash/xboard/features/settings/pages/fastcat_app_exclusion_page.dart';
 import 'package:fl_clash/xboard/features/settings/pages/fastcat_custom_routing_page.dart';
 import 'package:fl_clash/xboard/features/settings/pages/fastcat_dns_settings_page.dart';
@@ -70,6 +71,22 @@ class FastCatSettingsPage extends ConsumerWidget {
                         onTap: () => _open(
                             context, const FastCatAutoStartSettingsPage()),
                       ),
+                      if (Platform.isAndroid)
+                        _navigationTile(
+                          context,
+                          icon: Icons.shield_outlined,
+                          title: Localizations.localeOf(context).languageCode ==
+                                  'zh'
+                              ? '连接保护'
+                              : 'Connection protection',
+                          subtitle: Localizations.localeOf(context)
+                                      .languageCode ==
+                                  'zh'
+                              ? '减少锁屏、清理应用造成的连接中断'
+                              : 'Reduce connection drops when the app is in the background',
+                          onTap: () => _open(
+                              context, const FastCatBackgroundProtectionPage()),
+                        ),
                     ],
                   ),
                   _header(context, l10n.network),

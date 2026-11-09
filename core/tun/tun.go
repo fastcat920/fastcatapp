@@ -10,8 +10,10 @@ import (
 	"github.com/metacubex/mihomo/listener/sing_tun"
 	"github.com/metacubex/mihomo/log"
 	"github.com/metacubex/mihomo/tunnel"
+	ST "github.com/metacubex/sing-tun"
 	"net"
 	"net/netip"
+	"syscall"
 )
 
 type Props struct {
@@ -25,6 +27,12 @@ type Props struct {
 }
 
 func Start(fd int, device string, stack constant.TUNStack) (*sing_tun.Listener, error) {
+	// This call owns the provided descriptor, even when option validation fails.
+	// The driver duplicates it only when adoption succeeds; no stale fd is closed twice.
+	defer syscall.Close(fd)
+	release := ST.BorrowFileDescriptor(fd)
+	defer release()
+
 	var prefix4 []netip.Prefix
 	tempPrefix4, err := netip.ParsePrefix(state.DefaultIpv4Address)
 	if err != nil {

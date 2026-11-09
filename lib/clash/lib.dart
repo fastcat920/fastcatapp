@@ -22,6 +22,7 @@ class ClashLib extends ClashHandlerInterface with AndroidClashInterface {
   Completer<bool> _canSendCompleter = Completer();
   SendPort? sendPort;
   final receiverPort = ReceivePort();
+  bool _receiverListening = false;
 
   ClashLib._internal() {
     _initService();
@@ -32,25 +33,28 @@ class ClashLib extends ClashHandlerInterface with AndroidClashInterface {
     return _canSendCompleter.future;
   }
 
-  _initService() async {
-    await service?.destroy();
+  _initService({bool restart = false}) async {
+    if (restart) await service?.destroy();
     _registerMainPort(receiverPort.sendPort);
-    receiverPort.listen((message) {
-      if (message is SendPort) {
-        if (_canSendCompleter.isCompleted) {
-          sendPort = null;
-          _canSendCompleter = Completer();
+    if (!_receiverListening) {
+      _receiverListening = true;
+      receiverPort.listen((message) {
+        if (message is SendPort) {
+          if (_canSendCompleter.isCompleted) {
+            sendPort = null;
+            _canSendCompleter = Completer();
+          }
+          sendPort = message;
+          _canSendCompleter.complete(true);
+        } else {
+          handleResult(
+            ActionResult.fromJson(json.decode(
+              message,
+            )),
+          );
         }
-        sendPort = message;
-        _canSendCompleter.complete(true);
-      } else {
-        handleResult(
-          ActionResult.fromJson(json.decode(
-            message,
-          )),
-        );
-      }
-    });
+      });
+    }
     await service?.init();
   }
 
@@ -72,7 +76,7 @@ class ClashLib extends ClashHandlerInterface with AndroidClashInterface {
 
   @override
   reStart() {
-    _initService();
+    return _initService(restart: true);
   }
 
   @override

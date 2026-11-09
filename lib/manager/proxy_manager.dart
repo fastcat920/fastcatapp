@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:fl_clash/common/common.dart';
 import 'package:fl_clash/models/models.dart';
 import 'package:fl_clash/providers/state.dart';
@@ -27,6 +28,9 @@ class _ProxyManagerState extends ConsumerState<ProxyManager> {
         globalState.showNotifier(
           '${appLocalizations.systemProxy} ${appLocalizations.xboardOperationFailed}',
         );
+        if (proxyState.isStart && proxyState.systemProxy) {
+          unawaited(globalState.appController.handleDesktopProxyFailure());
+        }
       }
     }
   }
@@ -59,6 +63,7 @@ class _ProxyManagerState extends ConsumerState<ProxyManager> {
         globalState.showNotifier(
           "${appLocalizations.systemProxy} ${appLocalizations.xboardOperationFailed}",
         );
+        unawaited(globalState.appController.handleDesktopProxyFailure());
       }
     } else {
       commonPrint.log(

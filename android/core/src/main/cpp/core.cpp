@@ -1,13 +1,14 @@
 #ifdef LIBCLASH
 #include <jni.h>
+#include <cstdlib>
 #include "jni_helper.h"
 #include "libclash.h"
 
 extern "C"
-JNIEXPORT void JNICALL
+JNIEXPORT jboolean JNICALL
 Java_com_fastcat_app_core_Core_startTun(JNIEnv *env, jobject, const jint fd, jobject cb) {
     const auto interface = new_global(cb);
-    startTUN(fd, interface);
+    return startTUN(fd, interface) ? JNI_TRUE : JNI_FALSE;
 }
 
 extern "C"
@@ -16,6 +17,14 @@ Java_com_fastcat_app_core_Core_stopTun(JNIEnv *) {
     stopTun();
 }
 
+
+extern "C" JNIEXPORT jstring JNICALL
+Java_com_fastcat_app_core_Core_getTunStatus(JNIEnv *env, jobject) {
+    char *status = getAndroidTunStatus();
+    jstring result = env->NewStringUTF(status ? status : "{}");
+    std::free(status);
+    return result;
+}
 
 static jmethodID m_tun_interface_protect;
 static jmethodID m_tun_interface_resolve_process;

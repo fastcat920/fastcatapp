@@ -4,32 +4,57 @@ import 'legal_footer.dart';
 
 /// Display before mounting the signed-in application (and its auto-connect
 /// lifecycle). This acknowledgement is not a replacement for a legal policy.
-class ApplePrivacyGate extends StatefulWidget {
-  const ApplePrivacyGate(
-      {super.key, required this.preferences, required this.child});
+class PrivacyGate extends StatefulWidget {
+  const PrivacyGate(
+      {super.key,
+      required this.preferences,
+      required this.child,
+      this.localeTag});
   final SharedPreferences preferences;
   final Widget child;
-  static const preferenceKey = 'fastcat.apple.privacy-disclosure';
+  final String? localeTag;
+  static const preferenceKey = 'fastcat.privacy-disclosure';
+  static const legacyApplePreferenceKey = 'fastcat.apple.privacy-disclosure';
   static const version = '2026-10-v1';
 
   @override
-  State<ApplePrivacyGate> createState() => _ApplePrivacyGateState();
+  State<PrivacyGate> createState() => _PrivacyGateState();
 }
 
-class _ApplePrivacyGateState extends State<ApplePrivacyGate> {
+class _PrivacyGateState extends State<PrivacyGate> with WidgetsBindingObserver {
   late bool _accepted;
   bool _saving = false;
   bool _declined = false;
   String? _error;
-  late bool _chinese;
+  bool get _chinese {
+    final configured = widget.localeTag;
+    final language = configured != null && configured.isNotEmpty
+        ? configured.replaceAll('_', '-').split('-').first
+        : WidgetsBinding.instance.platformDispatcher.locale.languageCode;
+    return language.toLowerCase() == 'zh';
+  }
 
   @override
   void initState() {
     super.initState();
-    _accepted = widget.preferences.getString(ApplePrivacyGate.preferenceKey) ==
-        ApplePrivacyGate.version;
-    _chinese =
-        WidgetsBinding.instance.platformDispatcher.locale.languageCode == 'zh';
+    final acceptedVersion =
+        widget.preferences.getString(PrivacyGate.preferenceKey) ??
+            widget.preferences.getString(PrivacyGate.legacyApplePreferenceKey);
+    _accepted = acceptedVersion == PrivacyGate.version;
+    WidgetsBinding.instance.addObserver(this);
+  }
+
+  @override
+  void didChangeLocales(List<Locale>? locales) {
+    if (mounted && (widget.localeTag == null || widget.localeTag!.isEmpty)) {
+      setState(() {});
+    }
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
   }
 
   String copy(String zh, String en) => _chinese ? zh : en;
@@ -42,7 +67,7 @@ class _ApplePrivacyGateState extends State<ApplePrivacyGate> {
     });
     try {
       final saved = await widget.preferences
-          .setString(ApplePrivacyGate.preferenceKey, ApplePrivacyGate.version);
+          .setString(PrivacyGate.preferenceKey, PrivacyGate.version);
       if (!saved) throw StateError('Acknowledgement not saved');
       if (mounted) setState(() => _accepted = true);
     } catch (_) {
@@ -72,12 +97,7 @@ class _ApplePrivacyGateState extends State<ApplePrivacyGate> {
       debugShowCheckedModeBanner: false,
       theme: ThemeData(colorSchemeSeed: const Color(0xff2c4c96)),
       home: Scaffold(
-        appBar:
-            AppBar(title: Text(copy('VPN 数据使用说明', 'VPN Data Use')), actions: [
-          TextButton(
-              onPressed: () => setState(() => _chinese = !_chinese),
-              child: Text(_chinese ? 'English' : '中文')),
-        ]),
+        appBar: AppBar(title: Text(copy('VPN 数据使用说明', 'VPN Data Use'))),
         body: SafeArea(
             child: Center(
                 child: ConstrainedBox(
@@ -95,28 +115,52 @@ class _ApplePrivacyGateState extends State<ApplePrivacyGate> {
                     'Account and devices: Your email, account identifier, device identifier and device information support sign-in, device limits and session management.\n\nPlans and orders: Plan details, traffic usage and order information support service delivery and payment verification.\n\nVPN traffic: While connected, the client and selected server process destination addresses, DNS queries and network traffic to route your connections.\n\nDiagnostics and support: Network checks contact testing services. When you submit diagnostic reports, support messages or attachments, that information is sent to the selected service. Do not submit passwords or other sensitive information.\n\nRead the Privacy Policy for the detailed collection, retention, third-party processing and deletion rules.'),
                 style: const TextStyle(fontSize: 16, height: 1.5)),
             const SizedBox(height: 16),
-            TextButton(
-                onPressed: () => _open(FastCatLegalLinks.openPrivacyPolicy),
-                child: Text(copy('阅读隐私政策', 'Read Privacy Policy'))),
-            TextButton(
-                onPressed: () => _open(FastCatLegalLinks.openTermsOfService),
-                child: Text(copy('阅读服务条款', 'Read Terms of Service'))),
+            _buttonPair(
+              TextButton(
+                  onPressed: () => _open(FastCatLegalLinks.openPrivacyPolicy),
+                  child: Text(copy('阅读隐私政策', 'Read Privacy Policy'),
+                      textAlign: TextAlign.center)),
+              TextButton(
+                  onPressed: () => _open(FastCatLegalLinks.openTermsOfService),
+                  child: Text(copy('阅读服务条款', 'Read Terms of Service'),
+                      textAlign: TextAlign.center)),
+            ),
             if (_error != null)
               Text(_error!, style: const TextStyle(color: Colors.red)),
             if (_declined)
               Text(copy('你可以关闭应用；在继续之前不会进入登录或连接界面。',
                   'You may close the app. Sign-in and connection screens remain unavailable until you continue.')),
             const SizedBox(height: 16),
-            FilledButton(
-                onPressed: _saving ? null : _continue,
-                child: Text(copy('我已了解，继续', 'I understand — Continue'))),
-            TextButton(
-                onPressed:
-                    _saving ? null : () => setState(() => _declined = true),
-                child: Text(copy('暂不使用', 'Not now'))),
+            _buttonPair(
+              TextButton(
+                  style: TextButton.styleFrom(
+                      foregroundColor: const Color(0xFFB3261E)),
+                  onPressed:
+                      _saving ? null : () => setState(() => _declined = true),
+                  child: Text(copy('暂不使用', 'Not now'),
+                      textAlign: TextAlign.center)),
+              FilledButton(
+                  onPressed: _saving ? null : _continue,
+                  child: Text(copy('同意并继续', 'Agree and Continue'),
+                      textAlign: TextAlign.center)),
+            ),
           ]),
         ))),
       ),
     );
   }
+
+  Widget _buttonPair(Widget left, Widget right) => IntrinsicHeight(
+        child: Row(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
+          Expanded(
+              child: ConstrainedBox(
+                  constraints: const BoxConstraints(minHeight: 48),
+                  child: left)),
+          const SizedBox(width: 12),
+          Expanded(
+              child: ConstrainedBox(
+                  constraints: const BoxConstraints(minHeight: 48),
+                  child: right)),
+        ]),
+      );
 }

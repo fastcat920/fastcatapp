@@ -100,15 +100,18 @@ void main() {
     final checked = expectLater(operation, throwsStateError);
     await tester.pump();
     expect(controller.isImportApplying, isTrue);
+    expect(controller.isConfigurationSwitching, isTrue);
     expect(await controller.updateStatus(true), isFalse);
     applying.complete();
     await tester.pump();
     expect(controller.isCoreSwitching, isTrue);
     expect(controller.isImportApplying, isTrue);
+    expect(controller.isConfigurationSwitching, isTrue);
     rollback.complete();
     await checked;
     expect(controller.isCoreSwitching, isFalse);
     expect(controller.isImportApplying, isFalse);
+    expect(controller.isConfigurationSwitching, isFalse);
     expect(globalState.isCoreSwitchingNotifier.value, isFalse);
     expect(tester.takeException(), isNull);
   });
@@ -140,6 +143,7 @@ void main() {
       };
       expect(controller.isCoreSwitching, isTrue);
       expect(globalState.coreSwitchStatusNotifier.value.isBusy, isTrue);
+      expect(controller.isConfigurationSwitching, isFalse);
       // Do not start a second repair or race a connect/disconnect operation.
       await expectLater(
           controller.runConnectionRepair(() async {}), throwsStateError);

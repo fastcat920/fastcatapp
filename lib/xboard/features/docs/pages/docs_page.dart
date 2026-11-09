@@ -1,3 +1,5 @@
+import 'package:flutter/cupertino.dart';
+import 'package:flutter/gestures.dart';
 import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
@@ -330,12 +332,11 @@ class _DocsPageState extends ConsumerState<DocsPage>
   }
 
   void _showArticleDetail(KnowledgeArticle article, String language) {
-    Navigator.of(context).push(
-      MaterialPageRoute(
-        builder: (_) =>
-            _ArticleDetailPage(article: article, language: language),
-      ),
-    );
+    Widget buildArticle(BuildContext context) =>
+        _ArticleDetailPage(article: article, language: language);
+    Navigator.of(context).push(Platform.isIOS
+        ? CupertinoPageRoute<void>(builder: buildArticle)
+        : MaterialPageRoute<void>(builder: buildArticle));
   }
 
   String _formatDate(DateTime dt) {
@@ -381,7 +382,7 @@ class _ArticleDetailPageState extends ConsumerState<_ArticleDetailPage> {
   bool _isRefreshingDetail = false;
   int? _mobilePullPointer;
   bool _mobilePullEnabled = false;
-  double _mobilePullDistance = 0;
+  final _mobilePullDistance = ValueNotifier<double>(0);
   int _documentGeneration = 0;
 
   bool get _isDesktop =>
@@ -412,7 +413,7 @@ class _ArticleDetailPageState extends ConsumerState<_ArticleDetailPage> {
         '${dt.hour.toString().padLeft(2, '0')}:${dt.minute.toString().padLeft(2, '0')}';
   }
 
-  static String _buildDocumentHtml(
+  String _buildDocumentHtml(
     String renderedContent, {
     bool isDark = false,
     String? baseUrl,
@@ -451,10 +452,18 @@ hr{border:none;border-top:1px solid $hrColor;margin:16px 0}
 ul,ol{padding-left:24px}table{border-collapse:collapse;width:100%}
 th,td{border:1px solid #ddd;padding:8px;text-align:left}th{background:$codeBg}
 p{margin:8px 0}
+.warning-content{white-space:normal!important;min-width:0;overflow-wrap:anywhere;overflow-x:visible!important}
 </style>
 <script>
 (function(){
+  function prepareImages(){
+    document.querySelectorAll('img').forEach(function(image){
+      image.loading='lazy';
+      image.decoding='async';
+    });
+  }
   function reportRendered(){
+    prepareImages();
     if(window.__fastcatDocRenderReported)return;
     window.__fastcatDocRenderReported=true;
     requestAnimationFrame(function(){requestAnimationFrame(function(){
@@ -539,6 +548,7 @@ p{margin:8px 0}
 
   @override
   void dispose() {
+    _mobilePullDistance.dispose();
     _webViewLoadingFallback?.cancel();
     final platformController = _webController?.platform;
     if (platformController is WindowsPlatformWebViewController) {
@@ -605,7 +615,7 @@ p{margin:8px 0}
     }
     setState(() {
       _isRefreshingDetail = true;
-      _mobilePullDistance = 0;
+      _mobilePullDistance.value = 0;
       _resolvedBody = null;
       _renderedBodyHtml = null;
       _webController = null;
@@ -640,9 +650,17 @@ p{margin:8px 0}
     if (!_isMobile || _isRefreshingDetail) return;
 
     _mobilePullPointer = event.pointer;
-    _mobilePullEnabled = _webController == null;
-    _mobilePullDistance = 0;
+    _mobilePullEnabled = false;
+    _mobilePullDistance.value = 0;
 
+    final inAppController = _inAppController;
+    if (inAppController != null) {
+      unawaited(inAppController.getScrollY().then((y) {
+        if (!mounted || _mobilePullPointer != event.pointer) return;
+        _mobilePullEnabled = y != null && y <= 1;
+      }).catchError((_) {}));
+      return;
+    }
     final controller = _webController;
     if (controller == null) return;
     unawaited(
@@ -662,68 +680,73 @@ p{margin:8px 0}
       return;
     }
 
-    final nextDistance = (_mobilePullDistance + event.delta.dy)
+    final nextDistance = (_mobilePullDistance.value + event.delta.dy)
         .clamp(0.0, _maximumMobilePullDistance);
-    if (nextDistance == _mobilePullDistance) return;
-    setState(() => _mobilePullDistance = nextDistance);
+    if (nextDistance == _mobilePullDistance.value) return;
+    _mobilePullDistance.value = nextDistance;
   }
 
   void _finishMobilePull(int pointer) {
     if (_mobilePullPointer != pointer) return;
-    final shouldRefresh =
-        _mobilePullEnabled && _mobilePullDistance >= _mobileRefreshThreshold;
+    final shouldRefresh = _mobilePullEnabled &&
+        _mobilePullDistance.value >= _mobileRefreshThreshold;
     _mobilePullPointer = null;
     _mobilePullEnabled = false;
 
     if (shouldRefresh) {
       unawaited(_refreshDetail());
-    } else if (_mobilePullDistance != 0 && mounted) {
-      setState(() => _mobilePullDistance = 0);
+    } else if (_mobilePullDistance.value != 0 && mounted) {
+      _mobilePullDistance.value = 0;
     }
   }
 
   Widget _buildMobileRefreshArea(Widget child) {
     if (!_isMobile) return child;
 
-    final progress =
-        (_mobilePullDistance / _mobileRefreshThreshold).clamp(0.0, 1.0);
-    return Stack(
-      children: [
-        Listener(
-          behavior: HitTestBehavior.translucent,
-          onPointerDown: _handleMobilePullDown,
-          onPointerMove: _handleMobilePullMove,
-          onPointerUp: (event) => _finishMobilePull(event.pointer),
-          onPointerCancel: (event) => _finishMobilePull(event.pointer),
-          child: child,
-        ),
-        if (_isRefreshingDetail || _mobilePullDistance > 0)
-          Positioned(
-            top: 10,
-            left: 0,
-            right: 0,
-            child: IgnorePointer(
-              child: Center(
-                child: Material(
-                  elevation: 2,
-                  color: Theme.of(context).colorScheme.surface,
-                  shape: const CircleBorder(),
-                  child: Padding(
-                    padding: const EdgeInsets.all(8),
-                    child: SizedBox.square(
-                      dimension: 20,
-                      child: CircularProgressIndicator(
-                        strokeWidth: 2.4,
-                        value: _isRefreshingDetail ? null : progress,
-                      ),
-                    ),
-                  ),
+    // Keep the native WebView out of pointer-frequency rebuilds. Only the
+    // small pull indicator listens to drag distance changes.
+    return Stack(children: [
+      Listener(
+        behavior: HitTestBehavior.translucent,
+        onPointerDown: _handleMobilePullDown,
+        onPointerMove: _handleMobilePullMove,
+        onPointerUp: (event) => _finishMobilePull(event.pointer),
+        onPointerCancel: (event) => _finishMobilePull(event.pointer),
+        child: child,
+      ),
+      Positioned(
+        top: 10,
+        left: 0,
+        right: 0,
+        child: ValueListenableBuilder<double>(
+          valueListenable: _mobilePullDistance,
+          builder: (context, distance, _) {
+            if (!_isRefreshingDetail && distance <= 0) {
+              return const SizedBox.shrink();
+            }
+            return IgnorePointer(
+                child: Center(
+                    child: Material(
+              elevation: 2,
+              color: Theme.of(context).colorScheme.surface,
+              shape: const CircleBorder(),
+              child: Padding(
+                padding: const EdgeInsets.all(8),
+                child: SizedBox.square(
+                  dimension: 20,
+                  child: CircularProgressIndicator(
+                      strokeWidth: 2.4,
+                      value: _isRefreshingDetail
+                          ? null
+                          : (distance / _mobileRefreshThreshold)
+                              .clamp(0.0, 1.0)),
                 ),
               ),
-            ),
-          ),
-      ],
-    );
+            )));
+          },
+        ),
+      ),
+    ]);
   }
 
   Future<void> _prepareDocument(String content) async {
@@ -1371,7 +1394,14 @@ p{margin:8px 0}
       }
       return Stack(
         children: [
-          WebViewWidget(controller: _webController!),
+          WebViewWidget(
+            controller: _webController!,
+            // Let vertical reading win the arena before the standard edge-back
+            // recognizer, while leaving horizontal edge drags to Cupertino.
+            gestureRecognizers: Platform.isIOS
+                ? {Factory<OneSequenceGestureRecognizer>(() => VerticalDragGestureRecognizer())}
+                : const {},
+          ),
           if (_webViewLoading)
             Positioned.fill(
               child: ColoredBox(

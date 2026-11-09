@@ -8,6 +8,37 @@ import 'package:flutter_test/flutter_test.dart';
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
+  test('unexpected channel loss notifies once; intentional shutdown does not',
+      () async {
+    final peers = <Socket>[];
+    final service = ClashService.forTesting(
+      bindServer: () => ServerSocket.bind(InternetAddress.loopbackIPv4, 0),
+      launchCore: (port) async {
+        peers.add(await Socket.connect(
+            InternetAddress.loopbackIPv4, int.parse(port)));
+      },
+      stopCore: () async {},
+    );
+    addTearDown(service.destroy);
+    var losses = 0;
+    final lost = Completer<void>();
+    final subscription = service.unexpectedDisconnects.listen((_) {
+      losses++;
+      if (!lost.isCompleted) lost.complete();
+    });
+    addTearDown(subscription.cancel);
+    await service.reStart();
+    peers.last.destroy();
+    await lost.future.timeout(const Duration(seconds: 2));
+    expect(service.isConnected, isFalse);
+    expect(losses, 1);
+    await service.reStart();
+    await service.shutdown();
+    peers.last.destroy();
+    await Future<void>.delayed(const Duration(milliseconds: 20));
+    expect(losses, 1);
+  });
+
   test('messages during stop/start wait for the new core channel', () async {
     final stopGate = Completer<void>();
     final received = Completer<String>();

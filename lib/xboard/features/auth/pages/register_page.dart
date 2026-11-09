@@ -29,7 +29,7 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
   bool _isPasswordVisible = false;
   bool _isConfirmPasswordVisible = false;
   bool _isSendingEmailCode = false;
-  bool _hasAcceptedLegalTerms = false;
+  bool _hasAcceptedLegalTerms = true;
 
   @override
   void dispose() {
@@ -408,7 +408,8 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
                                       return appLocalizations
                                           .pleaseEnterEmailVerificationCode;
                                     }
-                                    if (value.length != 6) {
+                                    if (!RegExp(r'^[0-9]{6}$')
+                                        .hasMatch(value)) {
                                       return appLocalizations
                                           .verificationCode6Digits;
                                     }
@@ -493,8 +494,9 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
                             ),
                           ),
                           SizedBox(height: isTv ? 12 : 24),
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
+                          Wrap(
+                            alignment: WrapAlignment.center,
+                            crossAxisAlignment: WrapCrossAlignment.center,
                             children: [
                               Text(
                                 appLocalizations.alreadyHaveAccount,

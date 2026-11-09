@@ -401,7 +401,7 @@ class ConfigurationParser {
       };
 
       // 保留其他字段（announcement、contact、features 等）供将来使用
-      for (final key in ['announcement', 'maintenance', 'update', 'contact', 'features', 'latency', 'config_version', 'gateway_urls', 'gateway_url', 'ticket', 'subscription', 'api_prefix']) {
+      for (final key in ['announcement', 'maintenance', 'update', 'contact', 'features', 'latency', 'config_version', 'gateway_urls', 'gateway_url', 'ticket', 'subscription', 'api_prefix', 'legal']) {
         if (remoteResult.containsKey(key)) {
           normalized[key] = remoteResult[key];
         }
@@ -424,6 +424,7 @@ class ConfigurationParser {
       final panelUrls = remoteResult['panel_urls'] as List?;
       if (panelUrls != null) {
         return <String, dynamic>{
+          if (remoteResult.containsKey('legal')) 'legal': remoteResult['legal'],
           'panelType': 'xboard',
           'panels': {
             'xboard': panelUrls
@@ -467,6 +468,13 @@ class ConfigurationParser {
           final newList = config[key] as List;
           merged[key] = [...existingList, ...newList];
         }
+      }
+
+      if (config['legal'] is Map) {
+        merged['legal'] = {
+          ...?merged['legal'] as Map?,
+          ...config['legal'] as Map,
+        };
       }
 
       // update 为 Map 格式，后来者覆盖

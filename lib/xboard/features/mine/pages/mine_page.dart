@@ -20,7 +20,6 @@ import 'package:fl_clash/xboard/features/shared/styles/styles.dart';
 import 'package:fl_clash/xboard/utils/xboard_notification.dart';
 import 'order_page.dart';
 import 'gift_card_page.dart';
-import 'ticket_page.dart';
 import 'package:fl_clash/xboard/features/docs/pages/docs_page.dart';
 import 'package:fl_clash/xboard/features/payment/pages/recharge_page.dart';
 import 'package:fl_clash/xboard/features/update_check/providers/update_check_provider.dart';
@@ -45,7 +44,8 @@ class _MinePageState extends ConsumerState<MinePage>
   void initState() {
     super.initState();
     _supportUnreadCount = CustomerServiceHelper.supportUnreadCount;
-    _supportUnreadSub = CustomerServiceHelper.supportUnreadCountStream.listen((count) {
+    _supportUnreadSub =
+        CustomerServiceHelper.supportUnreadCountStream.listen((count) {
       if (!mounted) return;
       setState(() => _supportUnreadCount = count);
     });
@@ -296,16 +296,11 @@ class _MinePageState extends ConsumerState<MinePage>
         title: Text(appLocalizations.userCenter),
         automaticallyImplyLeading: false,
         actions: [
-          if (!isDesktop)
-            Padding(
-              padding: const EdgeInsets.only(right: 16),
-              child: _buildCustomerServiceButton(context),
-            ),
+          Padding(
+            padding: const EdgeInsets.only(right: 12),
+            child: _buildCustomerServiceButton(context),
+          ),
           if (isDesktop) ...[
-            Padding(
-              padding: const EdgeInsets.only(right: 12),
-              child: _buildCustomerServiceButton(context),
-            ),
             Padding(
               padding: const EdgeInsets.only(right: 12),
               child: _buildRefreshButton(),
@@ -493,18 +488,6 @@ class _MinePageState extends ConsumerState<MinePage>
                   ref.read(xboardUserAuthProvider.notifier).refreshUserInfo();
                 }
               },
-            ),
-            _divider(),
-          ],
-          if (XBoardConfig.isTicketsEnabled) ...[
-            _tile(
-              icon: Icons.confirmation_number_outlined,
-              label: appLocalizations.xboardMyTickets,
-              iconColor: theme.colorScheme.primary,
-              iconBgColor: theme.colorScheme.primary.withValues(alpha: 0.1),
-              onTap: () => Navigator.of(context).push(
-                MaterialPageRoute(builder: (_) => const TicketPage()),
-              ),
             ),
             _divider(),
           ],

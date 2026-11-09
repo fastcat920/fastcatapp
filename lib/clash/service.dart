@@ -27,6 +27,9 @@ class ClashService extends ClashHandlerInterface {
   final Future<void> Function(String)? _launchCore;
   final Future<void> Function()? _stopCore;
 
+  final _unexpectedDisconnects = StreamController<void>.broadcast(sync: true);
+  Stream<void> get unexpectedDisconnects => _unexpectedDisconnects.stream;
+
   Process? process;
 
   bool get isConnected => _acceptConnections && _connectedSocket != null;
@@ -103,10 +106,14 @@ class ClashService extends ClashHandlerInterface {
           },
           onError: (Object error) {
             commonPrint.log('[CoreRestart] channel error: $error');
-            if (identical(_connectedSocket, socket)) _destroySocket();
+            if (identical(_connectedSocket, socket)) {
+              _destroySocket(unexpected: true);
+            }
           },
           onDone: () {
-            if (identical(_connectedSocket, socket)) _destroySocket();
+            if (identical(_connectedSocket, socket)) {
+              _destroySocket(unexpected: true);
+            }
           },
         );
       }
@@ -291,7 +298,8 @@ class ClashService extends ClashHandlerInterface {
     }
   }
 
-  void _destroySocket() {
+  void _destroySocket({bool unexpected = false}) {
+    final hadConnection = isConnected;
     _acceptConnections = false;
     _connectedSocket?.destroy();
     _connectedSocket = null;
@@ -300,6 +308,7 @@ class ClashService extends ClashHandlerInterface {
           socketCompleter.future.then<void>((_) {}, onError: (Object _) {}));
       socketCompleter.completeError(StateError('Core channel closed'));
     }
+    if (unexpected && hadConnection) _unexpectedDisconnects.add(null);
   }
 
   @override

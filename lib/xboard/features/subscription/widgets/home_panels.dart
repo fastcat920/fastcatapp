@@ -209,7 +209,8 @@ class _HomeBrandHeader extends ConsumerWidget {
 }
 
 class _HomeNoticeCard extends ConsumerStatefulWidget {
-  const _HomeNoticeCard();
+  const _HomeNoticeCard({this.compact = false});
+  final bool compact;
 
   @override
   ConsumerState<_HomeNoticeCard> createState() => _HomeNoticeCardState();
@@ -277,6 +278,38 @@ class _HomeNoticeCardState extends ConsumerState<_HomeNoticeCard> {
       );
     }
 
+    if (widget.compact) {
+      final notice = notices.isEmpty ? null : notices[_index % notices.length];
+      return Material(
+        color: colorScheme.surfaceContainerLow,
+        borderRadius: BorderRadius.circular(16),
+        child: InkWell(
+          borderRadius: BorderRadius.circular(16),
+          onTap: notice == null ? null : openCurrentNotice,
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+            child: Row(children: [
+              Icon(Icons.campaign_outlined, color: colorScheme.primary),
+              const SizedBox(width: 10),
+              Expanded(
+                  child: Text(
+                      notice?.title ??
+                          (noticeState.isWaiting
+                              ? AppLocalizations.of(context).xboardNoticeLoading
+                              : noticeState.error != null
+                                  ? AppLocalizations.of(context)
+                                      .xboardNoticeUnavailable
+                                  : AppLocalizations.of(context)
+                                      .xboardNoNotice),
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis)),
+              const Icon(Icons.chevron_right),
+            ]),
+          ),
+        ),
+      );
+    }
+
     final card = Container(
       decoration: BoxDecoration(
         color: isDark ? colorScheme.surfaceContainerLow : Colors.white,
@@ -311,13 +344,19 @@ class _HomeNoticeCardState extends ConsumerState<_HomeNoticeCard> {
                       ? Padding(
                           padding: const EdgeInsets.fromLTRB(16, 12, 16, 12),
                           child: _NoticeCardContent(
-                            title: noticeState.isLoading ? '公告' : '暂无公告',
-                            content: noticeState.isLoading
-                                ? '正在加载公告…'
+                            title: noticeState.isLoading ||
+                                    !noticeState.hasSnapshot
+                                ? AppLocalizations.of(context).xboardNoticeTitle
+                                : AppLocalizations.of(context).xboardNoNotice,
+                            content: noticeState.isWaiting
+                                ? AppLocalizations.of(context)
+                                    .xboardNoticeLoading
                                 : noticeState.error != null
-                                    ? '暂时无法获取公告'
-                                    : '当前没有最新公告',
-                            isLoading: noticeState.isLoading,
+                                    ? AppLocalizations.of(context)
+                                        .xboardNoticeUnavailable
+                                    : AppLocalizations.of(context)
+                                        .xboardNoLatestNotice,
+                            isLoading: noticeState.isWaiting,
                             colorScheme: colorScheme,
                             theme: theme,
                           ),
@@ -335,7 +374,8 @@ class _HomeNoticeCardState extends ConsumerState<_HomeNoticeCard> {
                               child: _NoticeCardContent(
                                 title: notice.title.trim().isNotEmpty
                                     ? notice.title
-                                    : '暂无公告',
+                                    : AppLocalizations.of(context)
+                                        .xboardNoNotice,
                                 content: _plainNoticeContent(notice.content),
                                 dateText: _formatNoticeDate(notice.createdAt),
                                 colorScheme: colorScheme,

@@ -29,9 +29,9 @@
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
 	<key>NSPhotoLibraryUsageDescription</key>
-	<string>用于选择图片并作为在线客服会话附件发送。</string>
+	<string>Select photos to send as attachments in customer support conversations.</string>
 	<key>NSCameraUsageDescription</key>
-	<string>用于扫描登录二维码及拍摄图片并作为在线客服会话附件发送。</string>
+	<string>Use the camera to scan sign-in QR codes or take photos to send as attachments in customer support conversations.</string>
 	<key>UIApplicationSupportsIndirectInputEvents</key>
 	<true/>
 	<key>UILaunchScreen</key>

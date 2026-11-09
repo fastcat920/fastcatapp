@@ -7,6 +7,9 @@ import io.flutter.embedding.engine.plugins.FlutterPlugin
 import io.flutter.plugin.common.MethodCall
 import io.flutter.plugin.common.MethodChannel
 import com.fastcat.app.RunState
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 
 
 data object ServicePlugin : FlutterPlugin, MethodChannel.MethodCallHandler {
@@ -38,7 +41,7 @@ data object ServicePlugin : FlutterPlugin, MethodChannel.MethodCallHandler {
         "init" -> {
             GlobalState.getCurrentAppPlugin()
                 ?.requestNotificationsPermission()
-            GlobalState.initServiceEngine()
+            GlobalState.initServiceEngine(reattachMain = true)
             result.success(true)
         }
 
@@ -49,10 +52,14 @@ data object ServicePlugin : FlutterPlugin, MethodChannel.MethodCallHandler {
         }
 
         "status" -> {
-            result.success(
-                GlobalState.runState.value == RunState.START &&
-                        GlobalState.getCurrentVPNPlugin()?.isActuallyRunning() == true
-            )
+            CoroutineScope(Dispatchers.Main).launch {
+                val plugin = GlobalState.getCurrentVPNPlugin()
+                // Refresh an old heartbeat before deciding the live tunnel
+                // disappeared. A resumed UI must not stop a healthy VPN.
+                val healthy = runCatching { plugin?.getStatus() == true }.getOrDefault(false)
+                result.success(healthy && plugin?.isActuallyRunning() == true)
+            }
+            Unit
         }
 
         "connectionState" -> {

@@ -26,6 +26,9 @@ import (
 
 const MTU = 1500
 
+// Bound queued outbound packets while packetFlow is under backpressure.
+const outboundQueueSize = 32
+
 type Bridge struct {
 	endpoint *channel.Endpoint
 	stack    tun.Stack
@@ -49,7 +52,7 @@ func New() (*Bridge, error) {
 
 func newWithHandler(handler tun.Handler) (*Bridge, error) {
 	ctx, cancel := context.WithCancel(context.Background())
-	b := &Bridge{endpoint: channel.New(256, MTU, ""), ctx: ctx, cancel: cancel}
+	b := &Bridge{endpoint: channel.New(outboundQueueSize, MTU, ""), ctx: ctx, cancel: cancel}
 	v4 := []netip.Prefix{netip.MustParsePrefix("198.18.0.1/30")}
 	v6 := []netip.Prefix{netip.MustParsePrefix("fdfe:dcba:9876::1/126")}
 	var err error

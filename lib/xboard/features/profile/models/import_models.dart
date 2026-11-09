@@ -1,21 +1,25 @@
+import 'package:fl_clash/common/app_localizations.dart';
 import 'package:fl_clash/models/models.dart';
+
 enum ImportStatus {
-  idle,        // 空闲状态
-  cleaning,    // 清理旧配置
+  idle, // 空闲状态
+  cleaning, // 清理旧配置
   downloading, // 下载配置
-  validating,  // 验证配置
-  adding,      // 添加配置
-  success,     // 成功完成
-  failed,      // 导入失败
+  validating, // 验证配置
+  adding, // 添加配置
+  success, // 成功完成
+  failed, // 导入失败
 }
+
 enum ImportErrorType {
-  networkError,     // 网络错误
-  downloadError,    // 下载失败
-  validationError,  // 配置验证失败
-  storageError,     // 存储错误
+  networkError, // 网络错误
+  downloadError, // 下载失败
+  validationError, // 配置验证失败
+  storageError, // 存储错误
   concurrentImport, // 并发导入（已有导入操作在进行中）
-  unknownError,     // 未知错误
+  unknownError, // 未知错误
 }
+
 class ImportResult {
   final bool isSuccess;
   final String? errorMessage;
@@ -52,6 +56,7 @@ class ImportResult {
     );
   }
 }
+
 class ImportState {
   final ImportStatus status;
   final String? message;
@@ -88,39 +93,41 @@ class ImportState {
       lastSuccessTime: lastSuccessTime ?? this.lastSuccessTime,
     );
   }
+
   String get statusText {
     switch (status) {
       case ImportStatus.idle:
-        return '准备导入';
+        return appLocalizations.xboardPreparingImport;
       case ImportStatus.cleaning:
-        return '清理旧配置';
+        return appLocalizations.xboardCleaningOldConfig;
       case ImportStatus.downloading:
-        return '下载配置文件';
+        return appLocalizations.xboardDownloadingConfig;
       case ImportStatus.validating:
-        return '验证配置格式';
+        return appLocalizations.xboardValidatingConfigFormat;
       case ImportStatus.adding:
-        return '添加到配置列表';
+        return appLocalizations.xboardAddingToConfigList;
       case ImportStatus.success:
-        return '导入成功';
+        return appLocalizations.xboardImportSuccess;
       case ImportStatus.failed:
-        return '导入失败';
+        return appLocalizations.xboardImportFailed;
     }
   }
+
   String? get errorTypeMessage {
     if (lastResult?.errorType == null) return null;
     switch (lastResult!.errorType!) {
       case ImportErrorType.networkError:
-        return '网络连接失败，请检查网络设置';
+        return appLocalizations.xboardNetworkConnectionFailed;
       case ImportErrorType.downloadError:
-        return '配置文件下载失败，请检查订阅链接';
+        return appLocalizations.xboardConfigDownloadFailed;
       case ImportErrorType.validationError:
-        return '配置文件格式错误，请联系服务提供商';
+        return appLocalizations.xboardConfigFormatError;
       case ImportErrorType.storageError:
-        return '保存配置失败，请检查存储空间';
+        return appLocalizations.xboardConfigSaveFailed;
       case ImportErrorType.concurrentImport:
         return null;
       case ImportErrorType.unknownError:
-        return '未知错误，请重试';
+        return appLocalizations.xboardUnknownErrorRetry;
     }
   }
-} 
+}

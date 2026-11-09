@@ -1,4 +1,8 @@
-import 'dart:convert';
+import 'notice_cache.dart';
+import 'notice_bootstrap.dart';
+import 'package:fl_clash/xboard/features/auth/providers/xboard_user_provider.dart';
+import 'package:fl_clash/xboard/core/content_locale.dart';
+import 'package:fl_clash/state.dart';
 
 import 'package:fl_clash/xboard/infrastructure/cache/content_cache_scope.dart';
 
@@ -20,6 +24,7 @@ const _unchangedPopup = Object();
 class NoticeState {
   final List<DomainNotice> notices;
   final bool isLoading;
+  final bool hasSnapshot;
   final String? error;
 
   /// 已关闭的公告 ID 集合（基于 notice.id，重启后持久保留）
@@ -34,11 +39,14 @@ class NoticeState {
   const NoticeState({
     this.notices = const [],
     this.isLoading = false,
+    this.hasSnapshot = false,
     this.error,
     this.dismissedIds = const {},
     this.popupShownIds = const {},
     this.popupNoticeId,
   });
+
+  bool get isWaiting => isLoading || (!hasSnapshot && error == null);
 
   /// 获取可见的公告列表（排除已关闭 + isVisible=false 的）
   List<DomainNotice> get visibleNotices {
@@ -61,6 +69,7 @@ class NoticeState {
   NoticeState copyWith({
     List<DomainNotice>? notices,
     bool? isLoading,
+    bool? hasSnapshot,
     String? error,
     Set<int>? dismissedIds,
     Set<int>? popupShownIds,
@@ -69,6 +78,7 @@ class NoticeState {
     return NoticeState(
       notices: notices ?? this.notices,
       isLoading: isLoading ?? this.isLoading,
+      hasSnapshot: hasSnapshot ?? this.hasSnapshot,
       error: error,
       dismissedIds: dismissedIds ?? this.dismissedIds,
       popupShownIds: popupShownIds ?? this.popupShownIds,
@@ -79,9 +89,41 @@ class NoticeState {
   }
 }
 
+NoticeBootstrap? _eligibleBootstrap(Ref ref) {
+  final initial = ref.read(initialNoticeBootstrapProvider);
+  final user = ref.read(xboardUserProvider);
+  if (initial == null ||
+      !user.isAuthenticated ||
+      user.email?.trim().toLowerCase() != initial.email ||
+      xboardContentLocale(globalState.config.appSetting.locale) !=
+          initial.locale) {
+    return null;
+  }
+  return initial;
+}
+
+NoticeState _initialNoticeState(Ref ref) {
+  final initial = _eligibleBootstrap(ref);
+  if (initial == null) return const NoticeState(isLoading: true);
+  final restored = NoticeState(
+      notices: initial.record.notices,
+      hasSnapshot: true,
+      dismissedIds: initial.dismissed,
+      popupShownIds: initial.shown);
+  return restored.copyWith(
+      popupNoticeId: restored.popupNotices.firstOrNull?.id);
+}
+
 /// 公告Provider
 class NoticeNotifier extends StateNotifier<NoticeState> {
-  NoticeNotifier(this._ref) : super(const NoticeState(isLoading: true)) {
+  NoticeNotifier(this._ref) : super(_initialNoticeState(_ref)) {
+    final initial = _eligibleBootstrap(_ref);
+    if (initial != null) {
+      _scope = initial.scope;
+      _legacyScope = initial.legacyScope;
+      _hydratedScope = initial.scope;
+      _lastFetchedAt = initial.record.savedAt;
+    }
     SchedulerBinding.instance.addPostFrameCallback((_) {
       Future<void>(() async {
         await fetchNotices();
@@ -89,25 +131,57 @@ class NoticeNotifier extends StateNotifier<NoticeState> {
     });
   }
 
+  void accountChanged(bool authenticated) {
+    _scope = null;
+    _legacyScope = null;
+    _hydratedScope = null;
+    _lastFetchedAt = null;
+    state = NoticeState(isLoading: authenticated);
+    // Account data is restored asynchronously on every platform. Retry when
+    // identity arrives rather than relying on a one-shot startup timer.
+    Future<void>(() async {
+      if (mounted) await fetchNotices();
+    });
+  }
+
   final Ref _ref;
   String? _scope;
+  String? _legacyScope;
+  String? _hydratedScope;
+
+  Future<String?> _currentScope() async {
+    final user = _ref.read(xboardUserProvider);
+    if (!user.isAuthenticated || user.email == null || user.email!.isEmpty) {
+      return null;
+    }
+    final sources = await noticeSourceIdentity();
+    return noticeCacheScope(
+        sources: sources,
+        email: user.email!,
+        locale: xboardContentLocale(globalState.config.appSetting.locale));
+  }
+
   Future<bool> _ensureScope() async {
-    final scope = await ContentCacheScope.current();
+    final scope = await _currentScope();
     if (!mounted) return false;
     if (scope != _scope) {
       _scope = scope;
+      _legacyScope = await ContentCacheScope.current();
+      _hydratedScope = null;
       _lastFetchedAt = null;
       state = const NoticeState(isLoading: true);
     }
+    _legacyScope ??= await ContentCacheScope.current();
     return scope != null;
   }
 
   Future<bool> _isCurrent(String? scope) async {
     if (!mounted || scope == null || scope != _scope) return false;
-    final current = await ContentCacheScope.current();
+    final current = await _currentScope();
     return mounted && scope == _scope && scope == current;
   }
 
+  String? get currentScope => _scope;
   DateTime? _lastFetchedAt;
   Future<void>? _fetchInFlight;
 
@@ -117,8 +191,15 @@ class NoticeNotifier extends StateNotifier<NoticeState> {
       final scope = _scope;
       final prefs = await SharedPreferences.getInstance();
       if (!await _isCurrent(scope)) return;
-      final ids = prefs.getStringList('$_kDismissedNoticeIdsKey:$scope') ?? [];
+      final ids = prefs.getStringList('$_kDismissedNoticeIdsKey:$scope') ??
+          prefs.getStringList('$_kDismissedNoticeIdsKey:$_legacyScope') ??
+          [];
       final idSet = ids.map((e) => int.tryParse(e)).whereType<int>().toSet();
+      if (prefs.getStringList('$_kDismissedNoticeIdsKey:$scope') == null &&
+          idSet.isNotEmpty) {
+        await prefs.setStringList('$_kDismissedNoticeIdsKey:$scope', ids);
+      }
+      if (!await _isCurrent(scope)) return;
       if (idSet.isNotEmpty) {
         state = state.copyWith(dismissedIds: idSet);
       }
@@ -132,10 +213,7 @@ class NoticeNotifier extends StateNotifier<NoticeState> {
       // A locale change can arrive while the previous-language request is
       // still running. Wait for it, then force a second request so the stale
       // response can never win the race or activate the five-minute cache.
-      if (forceRefresh) {
-        return _refreshAfter(inFlight);
-      }
-      return inFlight;
+      return _refreshAfterScopeCheck(inFlight);
     }
 
     final operation = _fetchNotices(forceRefresh: forceRefresh);
@@ -147,19 +225,22 @@ class NoticeNotifier extends StateNotifier<NoticeState> {
     });
   }
 
-  Future<void> _refreshAfter(Future<void> inFlight) async {
-    try {
-      await inFlight;
-    } catch (_) {
-      // The current-locale refresh must still run if the superseded request
-      // failed, otherwise a cached notice in the previous locale can remain.
+  Future<void> _refreshAfterScopeCheck(Future<void> operation) async {
+    final requestedScope = await _currentScope();
+    await operation;
+    if (!mounted) return;
+    if (requestedScope != _scope && requestedScope == await _currentScope()) {
+      await fetchNotices(forceRefresh: true);
     }
-    await fetchNotices(forceRefresh: true);
   }
 
   Future<void> _fetchNotices({required bool forceRefresh}) async {
     if (!await _ensureScope()) {
-      if (mounted) state = state.copyWith(isLoading: false);
+      if (mounted) {
+        state = state.copyWith(
+            isLoading: _ref.read(xboardUserProvider).isAuthenticated &&
+                !state.hasSnapshot);
+      }
       return;
     }
     final scope = _scope;
@@ -171,13 +252,13 @@ class NoticeNotifier extends StateNotifier<NoticeState> {
     if (!await _isCurrent(scope)) return;
     // 缓存命中：已有数据且未超过 5 分钟，且不是强制刷新
     if (!forceRefresh &&
-        state.notices.isNotEmpty &&
+        state.hasSnapshot &&
         _lastFetchedAt != null &&
         DateTime.now().difference(_lastFetchedAt!).inMinutes < 5) {
       return;
     }
 
-    state = state.copyWith(isLoading: true, error: null);
+    state = state.copyWith(isLoading: !state.hasSnapshot, error: null);
     debugPrint('[弹窗] fetchNotices 开始加载公告...');
 
     try {
@@ -194,9 +275,18 @@ class NoticeNotifier extends StateNotifier<NoticeState> {
       if (!await _isCurrent(scope)) return;
       final newState = state.copyWith(
         notices: notices,
+        hasSnapshot: true,
         isLoading: false,
       );
       final popupList = newState.popupNotices;
+      final popupId = popupList.firstOrNull?.id;
+      if (state.hasSnapshot &&
+          !state.isLoading &&
+          state.error == null &&
+          listEquals(state.notices, notices) &&
+          state.popupNoticeId == popupId) {
+        return;
+      }
       state = newState.copyWith(
         popupNoticeId: popupList.isNotEmpty ? popupList.first.id : null,
       );
@@ -210,7 +300,6 @@ class NoticeNotifier extends StateNotifier<NoticeState> {
       state = state.copyWith(
         isLoading: false,
         error: e.toString(),
-        popupNoticeId: null,
       );
     }
   }
@@ -218,20 +307,21 @@ class NoticeNotifier extends StateNotifier<NoticeState> {
   Future<void> _loadCachedNotices() async {
     try {
       final scope = _scope;
+      if (_hydratedScope == scope) return;
       final prefs = await SharedPreferences.getInstance();
       if (!await _isCurrent(scope)) return;
-      final raw = prefs.getString('$_kNoticeCacheKey:$scope');
+      _hydratedScope = scope;
+      final raw = prefs.getString('$_kNoticeCacheKey:$scope') ??
+          prefs.getString('$_kNoticeCacheKey:$_legacyScope');
       if (raw == null || raw.isEmpty) return;
-      final decoded = jsonDecode(raw);
-      if (decoded is! List) return;
-      final notices = decoded
-          .whereType<Map>()
-          .map((e) =>
-              DomainNotice.fromJson(e.map((k, v) => MapEntry(k.toString(), v))))
-          .toList();
-      if (notices.isNotEmpty && state.notices.isEmpty) {
-        state = state.copyWith(notices: notices);
-        debugPrint('[弹窗] _loadCachedNotices 加载缓存: ${notices.length} 条');
+      final cached = NoticeCacheRecord.decode(raw, DateTime.now());
+      _lastFetchedAt = cached.savedAt;
+      final notices = cached.notices;
+      if (!state.hasSnapshot) {
+        final restored = state.copyWith(
+            notices: notices, hasSnapshot: true, isLoading: false);
+        state = restored.copyWith(
+            popupNoticeId: restored.popupNotices.firstOrNull?.id);
       }
     } catch (_) {}
   }
@@ -241,8 +331,8 @@ class NoticeNotifier extends StateNotifier<NoticeState> {
       final scope = _scope;
       final prefs = await SharedPreferences.getInstance();
       if (!await _isCurrent(scope)) return;
-      final payload = notices.map((e) => e.toJson()).toList();
-      await prefs.setString('$_kNoticeCacheKey:$scope', jsonEncode(payload));
+      final record = NoticeCacheRecord(notices, DateTime.now());
+      await prefs.setString('$_kNoticeCacheKey:$scope', record.encode());
       // Bound stale account/language caches. Old unscoped content must not leak.
       final scopedKeys = prefs
           .getKeys()
@@ -267,8 +357,15 @@ class NoticeNotifier extends StateNotifier<NoticeState> {
       final scope = _scope;
       final prefs = await SharedPreferences.getInstance();
       if (!await _isCurrent(scope)) return;
-      final ids = prefs.getStringList('$_kPopupShownIdsKey:$scope') ?? [];
+      final ids = prefs.getStringList('$_kPopupShownIdsKey:$scope') ??
+          prefs.getStringList('$_kPopupShownIdsKey:$_legacyScope') ??
+          [];
       final idSet = ids.map((e) => int.tryParse(e)).whereType<int>().toSet();
+      if (prefs.getStringList('$_kPopupShownIdsKey:$scope') == null &&
+          idSet.isNotEmpty) {
+        await prefs.setStringList('$_kPopupShownIdsKey:$scope', ids);
+      }
+      if (!await _isCurrent(scope)) return;
       if (idSet.isNotEmpty) {
         state = state.copyWith(popupShownIds: idSet);
       }
@@ -279,9 +376,13 @@ class NoticeNotifier extends StateNotifier<NoticeState> {
   }
 
   /// 标记公告已弹窗（按 notice.id，持久化到 SharedPrefs）
-  Future<void> markPopupShown(int noticeId) async {
+  Future<void> markPopupShown(int noticeId, {String? expectedScope}) async {
+    if (expectedScope != null && expectedScope != _scope) return;
     final newIds = Set<int>.from(state.popupShownIds)..add(noticeId);
-    state = state.copyWith(popupShownIds: newIds, popupNoticeId: null);
+    state = state.copyWith(
+        popupShownIds: newIds,
+        popupNoticeId:
+            state.popupNoticeId == noticeId ? null : state.popupNoticeId);
     try {
       final scope = _scope;
       final prefs = await SharedPreferences.getInstance();
@@ -312,7 +413,13 @@ class NoticeNotifier extends StateNotifier<NoticeState> {
 /// 公告Provider实例
 final noticeProvider =
     StateNotifierProvider<NoticeNotifier, NoticeState>((ref) {
-  return NoticeNotifier(ref);
+  final notifier = NoticeNotifier(ref);
+  ref.listen(
+    xboardUserProvider.select(
+        (user) => (user.isAuthenticated, user.email?.trim().toLowerCase())),
+    (previous, next) => notifier.accountChanged(next.$1),
+  );
+  return notifier;
 });
 
 DomainNotice _mapNotice(NoticeModel notice) {

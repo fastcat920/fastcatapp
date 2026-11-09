@@ -10,6 +10,7 @@ import android.net.NetworkCapabilities
 import android.net.NetworkRequest
 import android.os.Build
 import android.os.IBinder
+import android.os.ParcelFileDescriptor
 import android.os.SystemClock
 import android.util.Log
 import androidx.core.content.getSystemService
@@ -29,6 +30,9 @@ import com.google.gson.Gson
 import io.flutter.embedding.engine.plugins.FlutterPlugin
 import io.flutter.plugin.common.MethodCall
 import io.flutter.plugin.common.MethodChannel
+import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.NonCancellable
+import kotlinx.coroutines.ensureActive
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.Dispatchers
@@ -45,7 +49,9 @@ import kotlinx.coroutines.withTimeoutOrNull
 import java.net.HttpURLConnection
 import java.net.InetSocketAddress
 import java.net.URL
+import java.net.Proxy
 import java.util.concurrent.ConcurrentHashMap
+import java.util.concurrent.atomic.AtomicLong
 import kotlin.concurrent.withLock
 
 enum class VpnConnectionHealth {
@@ -69,6 +75,9 @@ data object VpnPlugin : FlutterPlugin, MethodChannel.MethodCallHandler {
     private var lastStartForegroundParams: StartForegroundParams? = null
     private var timerJob: Job? = null
     private var heartbeatJob: Job? = null
+    private var startupJob: Job? = null
+    private val lifecycleMutex = Mutex()
+    private val session = AtomicLong()
     private var consecutiveHeartbeatFailures = 0
     private var lastHealthyHeartbeatAt = 0L
     private var lastTrafficTotal: Long? = null
@@ -124,6 +133,8 @@ data object VpnPlugin : FlutterPlugin, MethodChannel.MethodCallHandler {
     }
 
     override fun onDetachedFromEngine(flutterPluginBinding: FlutterPlugin.FlutterPluginBinding) {
+        session.incrementAndGet()
+        startupJob?.cancel()
         stopForegroundJob()
         stopHeartbeatJob()
         runCatching { unRegisterNetworkCallback() }
@@ -171,6 +182,11 @@ data object VpnPlugin : FlutterPlugin, MethodChannel.MethodCallHandler {
 
     fun requestGc() {
         flutterMethodChannel.invokeMethod("gc", null)
+    }
+
+    fun attachMain() {
+        // The UI engine can be recreated while this engine and TUN survive.
+        flutterMethodChannel.invokeMethod("attachMain", null)
     }
 
     val networks: MutableSet<Network> = ConcurrentHashMap.newKeySet()
@@ -295,6 +311,29 @@ data object VpnPlugin : FlutterPlugin, MethodChannel.MethodCallHandler {
         } else {
             vpnService?.isTunActive() == true
         }
+        val tunState = withContext(Dispatchers.IO) {
+            runCatching { Gson().fromJson(Core.getTunStatus(), Map::class.java)["state"] as? String }
+                .getOrNull()
+        }
+        if (tunState == "failed") {
+            connectionHealth = VpnConnectionHealth.RECOVERING
+            Log.e(TAG, "vpn_health event=forwarder outcome=failed")
+            if (VpnRecoveryStore.isDesiredRunning() && rebuildTun()) {
+                connectionHealth = VpnConnectionHealth.CONNECTED
+                consecutiveHeartbeatFailures = 0
+            } else if (VpnRecoveryStore.isDesiredRunning()) {
+                restartCoreForDataPlaneFailure("TCP forwarder recovery exhausted")
+            }
+            return
+        }
+        if (tunState == "recovering") {
+            connectionHealth = VpnConnectionHealth.RECOVERING
+            return
+        }
+        if (tunState != "ready") {
+            handleControlPlaneFailure(tunHealthy, false)
+            return
+        }
         val response = requestDartResult(
             method = "heartbeat",
             timeoutMillis = HEARTBEAT_RPC_TIMEOUT_MS,
@@ -317,7 +356,6 @@ data object VpnPlugin : FlutterPlugin, MethodChannel.MethodCallHandler {
         lastTrafficTotal = trafficTotal
         if (trafficProgressed) {
             markDataPlaneHealthy(now, "traffic")
-            return
         }
 
         if (options?.enable == false) {
@@ -330,8 +368,9 @@ data object VpnPlugin : FlutterPlugin, MethodChannel.MethodCallHandler {
         } else {
             MOBILE_IDLE_PROBE_AFTER_MS
         }
-        if (now - lastTrafficProgressAt < idleThreshold ||
-            now - lastDataPlaneProbeAt < DATA_PLANE_PROBE_MIN_INTERVAL_MS
+        if (now - lastDataPlaneProbeAt < 120_000L &&
+            (now - lastTrafficProgressAt < idleThreshold ||
+                now - lastDataPlaneProbeAt < DATA_PLANE_PROBE_MIN_INTERVAL_MS)
         ) {
             return
         }
@@ -436,32 +475,27 @@ data object VpnPlugin : FlutterPlugin, MethodChannel.MethodCallHandler {
     }
 
     private suspend fun rebuildTun(): Boolean {
-        val vpnService = fastCatService as? FastCatVpnService ?: return false
+        val service = fastCatService as? FastCatVpnService ?: return false
         val nextOptions = options ?: return false
+        val generation = session.get()
         if (!nextOptions.enable || !VpnRecoveryStore.isDesiredRunning()) return false
-
-        return withContext(Dispatchers.Main) {
-            runCatching {
-                GlobalState.runLock.withLock {
-                    GlobalState.runState.value = RunState.PENDING
-                    Core.stopTun()
-                    vpnService.markTunStopped()
-                    val fd = vpnService.start(nextOptions)
-                    Core.startTun(
-                        fd = fd,
-                        protect = this@VpnPlugin::protect,
-                        resolverProcess = this@VpnPlugin::resolverProcess,
-                    )
+        return lifecycleMutex.withCoroutineLock {
+            if (session.get() != generation) return@withCoroutineLock false
+            try {
+                withContext(Dispatchers.Main) { GlobalState.runState.value = RunState.PENDING }
+                withContext(Dispatchers.IO) { Core.stopTun() }
+                withContext(Dispatchers.Main) { service.markTunStopped() }
+                establishCore(service, nextOptions, generation)
+                withContext(Dispatchers.Main) {
+                    check(session.get() == generation && VpnRecoveryStore.isDesiredRunning())
                     GlobalState.runState.value = RunState.START
                     lastHealthyHeartbeatAt = SystemClock.elapsedRealtime()
                 }
                 true
-            }.getOrElse { error ->
-                Log.e(
-                    TAG,
-                    "vpn_health event=recovery level=tun outcome=failure " +
-                            "error=${error.javaClass.simpleName}",
-                )
+            } catch (error: CancellationException) {
+                throw error
+            } catch (error: Exception) {
+                Log.e(TAG, "vpn_health event=recovery level=tun outcome=failure error=${error.javaClass.simpleName}")
                 false
             }
         }
@@ -483,7 +517,7 @@ data object VpnPlugin : FlutterPlugin, MethodChannel.MethodCallHandler {
             var reachable = false
             for (probeUrl in DATA_PLANE_PROBE_URLS) {
                 val connection = runCatching {
-                    URL(probeUrl).openConnection() as HttpURLConnection
+                    URL(probeUrl).openConnection(Proxy.NO_PROXY) as HttpURLConnection
                 }.getOrNull() ?: continue
                 try {
                     connection.requestMethod = "GET"
@@ -545,11 +579,14 @@ data object VpnPlugin : FlutterPlugin, MethodChannel.MethodCallHandler {
 
 
     suspend fun getStatus(): Boolean? {
-        if (GlobalState.runState.value == RunState.START &&
-            SystemClock.elapsedRealtime() - lastHealthyHeartbeatAt >
-            HEARTBEAT_STALE_AFTER_MS
-        ) {
-            performHeartbeat()
+        if (GlobalState.runState.value == RunState.START) {
+            val forwarderFailed = withContext(Dispatchers.IO) {
+                runCatching { Gson().fromJson(Core.getTunStatus(), Map::class.java)["state"] == "failed" }
+                    .getOrDefault(true)
+            }
+            if (forwarderFailed || SystemClock.elapsedRealtime() - lastHealthyHeartbeatAt > HEARTBEAT_STALE_AFTER_MS) {
+                performHeartbeat()
+            }
         }
         if (!isActuallyRunning()) return false
         return requestDartResult(
@@ -559,31 +596,75 @@ data object VpnPlugin : FlutterPlugin, MethodChannel.MethodCallHandler {
     }
 
     private fun handleStartService() {
-        if (fastCatService == null) {
-            bindService()
-            return
+        if (fastCatService == null) { bindService(); return }
+        if (startupJob?.isActive == true || GlobalState.runState.value == RunState.START) return
+        val service = fastCatService ?: return
+        val nextOptions = options ?: return
+        val generation = session.incrementAndGet()
+        VpnRecoveryStore.persistRunning(nextOptions)
+        connectionHealth = VpnConnectionHealth.RECOVERING
+        GlobalState.runState.value = RunState.PENDING
+        startupJob = scope.launch(Dispatchers.Main) {
+            lifecycleMutex.withCoroutineLock {
+                try {
+                    ensureActive()
+                    check(session.get() == generation && VpnRecoveryStore.isDesiredRunning())
+                    withContext(Dispatchers.IO) { Core.stopTun() }
+                    establishCore(service, nextOptions, generation)
+                    ensureActive()
+                    check(session.get() == generation && VpnRecoveryStore.isDesiredRunning())
+                    GlobalState.runState.value = RunState.START
+                    connectionHealth = VpnConnectionHealth.CONNECTED
+                    lastHealthyHeartbeatAt = SystemClock.elapsedRealtime()
+                    startForegroundJob()
+                    startHeartbeatJob()
+                    Log.i(TAG, "vpn_lifecycle event=start outcome=ready")
+                } catch (error: CancellationException) {
+                    withContext(NonCancellable + Dispatchers.IO) { Core.stopTun() }
+                    throw error
+                } catch (error: Exception) {
+                    withContext(NonCancellable + Dispatchers.IO) { Core.stopTun() }
+                    if (session.get() == generation) {
+                        VpnRecoveryStore.clearDesiredRunning()
+                        GlobalState.runState.value = RunState.STOP
+                        connectionHealth = VpnConnectionHealth.DISCONNECTED
+                        (service as? FastCatVpnService)?.markTunStopped()
+                        service.stop()
+                        Log.e(TAG, "vpn_lifecycle event=start outcome=failed error=${error.javaClass.simpleName}")
+                    }
+                }
+            }
         }
-        GlobalState.runLock.withLock {
-            if (GlobalState.runState.value == RunState.START) return
-            val nextOptions = options ?: return
-            VpnRecoveryStore.persistRunning(nextOptions)
-            try {
-                val fd = fastCatService?.start(nextOptions)
-                Core.startTun(
-                    fd = fd ?: 0,
-                    protect = this::protect,
-                    resolverProcess = this::resolverProcess,
-                )
-                GlobalState.runState.value = RunState.START
-                connectionHealth = VpnConnectionHealth.CONNECTED
-                lastHealthyHeartbeatAt = SystemClock.elapsedRealtime()
-                startForegroundJob()
-                startHeartbeatJob()
-            } catch (error: Throwable) {
-                VpnRecoveryStore.clearDesiredRunning()
-                GlobalState.runState.value = RunState.STOP
-                connectionHealth = VpnConnectionHealth.DISCONNECTED
-                throw error
+    }
+
+    private suspend fun establishCore(
+        service: BaseServiceInterface,
+        nextOptions: VpnOptions,
+        generation: Long,
+    ) {
+        val awaiter = if (nextOptions.enable) {
+            VpnNetworkReady(checkNotNull(connectivity), nextOptions.ipv4Address.substringBefore('/'))
+        } else null
+        var fd: Int? = null
+        var handedToCore = false
+        try {
+            awaiter?.register()
+            withContext(Dispatchers.Main) { fd = service.start(nextOptions) }
+            awaiter?.await()
+            check(session.get() == generation && VpnRecoveryStore.isDesiredRunning())
+            kotlinx.coroutines.currentCoroutineContext().ensureActive()
+            // Go owns fd from entry, including failed initialization. It lends a
+            // duplicate to the driver, so cancellation never closes a recycled fd.
+            withContext(Dispatchers.IO) {
+                kotlinx.coroutines.currentCoroutineContext().ensureActive()
+                handedToCore = true
+                check(Core.startTun(fd ?: 0, this@VpnPlugin::protect, this@VpnPlugin::resolverProcess))
+            }
+            Log.i(TAG, "vpn_lifecycle event=network_ready outcome=success")
+        } finally {
+            awaiter?.close()
+            if (!handedToCore && fd != null && fd != 0) {
+                ParcelFileDescriptor.adoptFd(fd!!).close()
             }
         }
     }
@@ -615,19 +696,24 @@ data object VpnPlugin : FlutterPlugin, MethodChannel.MethodCallHandler {
     }
 
     fun handleStop() {
+        val generation = session.incrementAndGet()
+        startupJob?.cancel()
         VpnRecoveryStore.clearDesiredRunning()
         connectionHealth = VpnConnectionHealth.DISCONNECTED
-        GlobalState.runLock.withLock {
-            if (GlobalState.runState.value == RunState.STOP) return
-            GlobalState.runState.value = RunState.STOP
-            // 先停 TUN 释放 fd，让系统有机会清理 VPN 网络接口及其代理/DNS 设置
-            // 再停 VPN Service，避免部分 ROM 上 HTTP 代理残留
-            Core.stopTun()
-            (fastCatService as? FastCatVpnService)?.markTunStopped()
-            stopForegroundJob()
-            stopHeartbeatJob()
-            fastCatService?.stop()
-            GlobalState.handleTryDestroy()
+        GlobalState.runState.value = RunState.STOP
+        stopForegroundJob()
+        stopHeartbeatJob()
+        scope.launch {
+            lifecycleMutex.withCoroutineLock {
+                if (session.get() != generation) return@withCoroutineLock
+                withContext(Dispatchers.IO) { Core.stopTun() }
+                withContext(Dispatchers.Main) {
+                    if (session.get() != generation) return@withContext
+                    (fastCatService as? FastCatVpnService)?.markTunStopped()
+                    fastCatService?.stop()
+                    GlobalState.handleTryDestroy()
+                }
+            }
         }
     }
 

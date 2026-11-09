@@ -244,7 +244,7 @@ class _ForgotPasswordPageState extends ConsumerState<ForgotPasswordPage> {
             if (value == null || value.isEmpty) {
               return AppLocalizations.of(context).pleaseEnterVerificationCode;
             }
-            if (value.length < 4) {
+            if (!RegExp(r'^[0-9]{6}$').hasMatch(value)) {
               return AppLocalizations.of(context)
                   .pleaseEnterValidVerificationCode;
             }

@@ -18,6 +18,7 @@ import (
 	"github.com/metacubex/mihomo/hub"
 	"github.com/metacubex/mihomo/hub/route"
 	"github.com/metacubex/mihomo/listener"
+	LC "github.com/metacubex/mihomo/listener/config"
 	"github.com/metacubex/mihomo/log"
 	rp "github.com/metacubex/mihomo/rules/provider"
 	"github.com/metacubex/mihomo/tunnel"
@@ -118,12 +119,15 @@ func sideUpdateExternalProvider(p cp.Provider, bytes []byte) error {
 	}
 }
 
-func updateListeners() {
+func updateListeners() error {
 	if !isRunning {
-		return
+		if runtime.GOOS != "android" && runtime.GOOS != "ios" {
+			stopListeners()
+		}
+		return nil
 	}
 	if currentConfig == nil || currentConfig.General == nil {
-		return
+		return nil
 	}
 	listeners := currentConfig.Listeners
 	general := currentConfig.General
@@ -143,10 +147,27 @@ func updateListeners() {
 	listener.ReCreateTuic(general.TuicServer, tunnel.Tunnel)
 	if runtime.GOOS != "android" {
 		listener.ReCreateTun(general.Tun, tunnel.Tunnel)
+		if general.Tun.Enable && !listener.TunListenerReady() {
+			return errors.New("TUN_START_FAILED: TUN adapter was not created")
+		}
 	}
+	return nil
 }
 
 func stopListeners() {
+	if runtime.GOOS != "android" && runtime.GOOS != "ios" {
+		// Legacy ports and TUN are not members of tunnel.Listeners().
+		// Close them explicitly before acknowledging a desktop disconnect.
+		listener.ReCreateTun(LC.Tun{}, tunnel.Tunnel)
+		listener.ReCreateHTTP(0, tunnel.Tunnel)
+		listener.ReCreateSocks(0, tunnel.Tunnel)
+		listener.ReCreateRedir(0, tunnel.Tunnel)
+		listener.ReCreateTProxy(0, tunnel.Tunnel)
+		listener.ReCreateMixed(0, tunnel.Tunnel)
+		listener.ReCreateShadowSocks("", tunnel.Tunnel)
+		listener.ReCreateVmess("", tunnel.Tunnel)
+		listener.ReCreateTuic(LC.TuicServer{}, tunnel.Tunnel)
+	}
 	for _, inboundListener := range tunnel.Listeners() {
 		_ = inboundListener.Close()
 	}
@@ -271,8 +292,7 @@ func updateConfig(params *UpdateParams) error {
 		general.Tun.Stack = *params.Tun.Stack
 	}
 
-	updateListeners()
-	return nil
+	return updateListeners()
 }
 
 func setupConfig(params *SetupParams) error {
@@ -287,7 +307,9 @@ func setupConfig(params *SetupParams) error {
 	if err := checkGeoHome(constant.Path.HomeDir(), false); err != nil {
 		return err
 	}
+	sampleAppleMemoryStage("config.parse.before")
 	nextConfig, err := config.ParseRawConfig(params.Config)
+	sampleAppleMemoryStage("config.parse.after")
 	if err != nil {
 		// A rejected edit must never replace a working profile with an empty one.
 		return err
@@ -307,10 +329,24 @@ func commitSetupConfig(params *SetupParams, nextConfig *config.Config) error {
 		testURL = constant.DefaultTestURL
 	}
 	currentConfig = nextConfig
-	hub.ApplyConfig(currentConfig)
+	sampleAppleMemoryStage("config.apply.before")
+	hub.ApplyConfig(runtimeConfigForApply(currentConfig))
+	sampleAppleMemoryStage("config.apply.after")
 	patchSelectGroup(params.SelectedMap)
-	updateListeners()
-	return nil
+	return updateListeners()
+}
+
+// Loading an offline desktop profile must not install system routes before Connect.
+// Preserve the requested TUN flag for the next acknowledged start.
+func runtimeConfigForApply(requested *config.Config) *config.Config {
+	if isRunning || runtime.GOOS == "android" || runtime.GOOS == "ios" || requested.General == nil {
+		return requested
+	}
+	quiet := *requested
+	general := *requested.General
+	general.Tun.Enable = false
+	quiet.General = &general
+	return &quiet
 }
 
 func checkSetupDeadline(deadlineUnixMs int64) error {

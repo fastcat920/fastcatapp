@@ -61,3 +61,8 @@ remote_config:
       url: https://cat921.oss-cn-hongkong.aliyuncs.com/cat360.json
     - name: "source_2"
       url: https://sdfsf.cn-bj.ufileos.com/cat360.json
+
+# 协议链接：OSS 的同名 legal 字段优先；未配置或格式无效时使用此处兜底。
+legal:
+  privacy_policy_url: https://www.fastcat6.com/privacy
+  terms_of_service_url: https://www.fastcat6.com/terms

@@ -49,3 +49,6 @@ tvos/Frameworks/libclash.xcframework/**/libclash.a
 
 # Security: plaintext config should not be committed
 release_config_plaintext.json
+
+# Local Xcode release parameters (contains private keys)
+/ios/Flutter/ReleaseSecrets.xcconfig

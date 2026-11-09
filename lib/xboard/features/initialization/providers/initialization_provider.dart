@@ -1,3 +1,4 @@
+import 'package:fl_clash/common/app_localizations.dart';
 import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
@@ -106,7 +107,7 @@ class XBoardInitializationNotifier extends StateNotifier<InitializationState> {
       state = state.copyWith(
         status: InitializationStatus.checkingDomain,
         errorMessage: null,
-        currentStepDescription: '正在准备初始化...',
+        currentStepDescription: appLocalizations.xboardInitPreparing,
       );
       await _ensureConfigInitialized();
 
@@ -115,7 +116,8 @@ class XBoardInitializationNotifier extends StateNotifier<InitializationState> {
       // 重试时也重新拉取，确保能获取到最新配置
       _logger.info(
           '[Initialization] 当前面板URL数: ${XBoardConfig.allPanelUrls.length}');
-      state = state.copyWith(currentStepDescription: '正在获取配置...');
+      state = state.copyWith(
+          currentStepDescription: appLocalizations.xboardInitFetchingConfig);
 
       // 快照当前域名列表，用于变化检测
       final previousDomains = XBoardConfig.allPanelUrls.toSet();
@@ -142,7 +144,7 @@ class XBoardInitializationNotifier extends StateNotifier<InitializationState> {
       // Never rebuild configuration from unsigned endpoint-only legacy caches.
       // The manager already tried normal/emergency sources and signed snapshots.
       if (XBoardConfig.allPanelUrls.isEmpty) {
-        throw StateError('没有可用的 fastcat-config-v2 签名配置，请检查网络、OSS文件和签名公钥');
+        throw StateError(appLocalizations.xboardSignedConfigUnavailable);
       }
 
       // ========== 步骤 1: 加载缓存的成功网关 URL（冷启动优先） ==========
@@ -167,12 +169,12 @@ class XBoardInitializationNotifier extends StateNotifier<InitializationState> {
         preferCurrent: false,
       );
       if (verifiedGateway == null) {
-        const msg = '业务网关暂不可用，请稍后重试';
+        final msg = appLocalizations.xboardGatewayUnavailable;
         await _writeDiagnosticFile(msg);
         state = state.copyWith(
           status: InitializationStatus.failed,
           errorMessage: msg,
-          currentStepDescription: '网关连接失败',
+          currentStepDescription: appLocalizations.xboardGatewayUnavailable,
         );
         return;
       }
@@ -180,12 +182,12 @@ class XBoardInitializationNotifier extends StateNotifier<InitializationState> {
       // ========== 步骤 2: 选择可用域名（逐个尝试，不竞速） ==========
       final panelUrls = allGatewayUrls;
       if (panelUrls.isEmpty) {
-        const msg = '无法连接服务器，请检查网络后重试';
+        final msg = appLocalizations.xboardNetworkConnectionFailed;
         await _writeDiagnosticFile(msg);
         state = state.copyWith(
           status: InitializationStatus.failed,
           errorMessage: msg,
-          currentStepDescription: '初始化失败',
+          currentStepDescription: appLocalizations.xboardInitFailed,
         );
         return;
       }
@@ -194,7 +196,7 @@ class XBoardInitializationNotifier extends StateNotifier<InitializationState> {
       state = state.copyWith(
         status: InitializationStatus.checkingDomain,
         errorMessage: null,
-        currentStepDescription: '正在连接服务器...',
+        currentStepDescription: appLocalizations.xboardInitConnecting,
       );
 
       // 并发探测所有域名，第一个成功的立即返回
@@ -214,7 +216,7 @@ class XBoardInitializationNotifier extends StateNotifier<InitializationState> {
       state = state.copyWith(
         status: InitializationStatus.initializingSDK,
         currentDomain: usableDomain,
-        currentStepDescription: '正在初始化...',
+        currentStepDescription: appLocalizations.xboardInitInitializing,
       );
 
       // 等待 SDK 初始化完成
@@ -234,7 +236,7 @@ class XBoardInitializationNotifier extends StateNotifier<InitializationState> {
       state = state.copyWith(
         status: InitializationStatus.ready,
         lastChecked: DateTime.now(),
-        currentStepDescription: '初始化完成',
+        currentStepDescription: appLocalizations.xboardInitReady,
         errorMessage: null,
       );
     } catch (e, stackTrace) {
@@ -245,7 +247,7 @@ class XBoardInitializationNotifier extends StateNotifier<InitializationState> {
       state = state.copyWith(
         status: InitializationStatus.failed,
         errorMessage: errMsg,
-        currentStepDescription: '初始化失败',
+        currentStepDescription: appLocalizations.xboardInitFailed,
       );
 
       rethrow;

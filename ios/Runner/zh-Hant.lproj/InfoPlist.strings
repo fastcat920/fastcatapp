@@ -1,2 +1,4 @@
 "CFBundleDisplayName" = "快猫";
 "CFBundleName" = "快猫";
+"NSCameraUsageDescription" = "用於掃描登入 QR 碼，或拍攝照片並作為客服對話附件傳送。";
+"NSPhotoLibraryUsageDescription" = "用於選擇照片並作為客服對話附件傳送。";

@@ -1,3 +1,4 @@
+import 'package:fl_clash/xboard/features/latency/widgets/latency_indicator.dart';
 import 'dart:async';
 import 'package:fl_clash/enum/enum.dart';
 import 'package:fl_clash/models/models.dart';
@@ -102,7 +103,12 @@ class _NodeSelectorBarState extends ConsumerState<NodeSelectorBar> {
 
   @override
   Widget build(BuildContext context) {
-    final groups = ref.watch(groupsProvider);
+    final rawGroups = ref.watch(groupsProvider);
+    final viewGroups = ref.watch(currentGroupsStateProvider).value;
+    final groups = [
+      ...rawGroups.where((g) => !viewGroups.any((view) => view.name == g.name)),
+      ...viewGroups,
+    ];
     final selectedMap = ref.watch(selectedMapProvider);
     final mode =
         ref.watch(patchClashConfigProvider.select((state) => state.mode));
@@ -303,7 +309,7 @@ class _NodeSelectorBarState extends ConsumerState<NodeSelectorBar> {
               // The home page reserves 56px for this bar. Keep the vertical
               // padding within that budget so the icon and two-line label fit
               // on small Android layouts as well.
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
               child: Row(
                 children: [
                   Container(
@@ -568,33 +574,9 @@ class _DelayBadge extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final delay = ref.watch(getDelayProvider(proxyName: proxyName));
-    if (delay == null) return const SizedBox.shrink();
-
-    // delay == -1: 实际超时，显示明确状态；delay == 0: 尚未测试/测速中。
-    if (delay == 0) return const SizedBox.shrink();
-    final isTimeout = delay < 0;
-    final Color color = isTimeout
-        ? Theme.of(context).colorScheme.error
-        : delay < 500
-            ? XbUiStatusColor.success(context)
-            : XbUiStatusColor.pending(context);
-
-    return Container(
-      margin: const EdgeInsets.only(right: 6),
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-      decoration: BoxDecoration(
-        color: color.withValues(alpha: 0.12),
-        borderRadius: BorderRadius.circular(XbUiTokens.radiusCardCompact),
-        border: Border.all(color: color.withValues(alpha: 0.35)),
-      ),
-      child: Text(
-        isTimeout ? AppLocalizations.of(context).xboardTimeout : '${delay}ms',
-        style: TextStyle(
-          fontSize: 11,
-          fontWeight: XbFontWeight.semibold,
-          color: color,
-        ),
-      ),
+    return Padding(
+      padding: const EdgeInsets.only(right: 6),
+      child: LatencyIndicator(delayValue: delay),
     );
   }
 }

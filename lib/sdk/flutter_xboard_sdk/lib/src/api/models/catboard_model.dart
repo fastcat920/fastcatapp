@@ -1,3 +1,11 @@
+// Money on the wire is already in cents. Round instead of dropping a cent
+// when a server serializes 1172 as 1171.9999999999998.
+int _moneyValue(dynamic value) {
+  final amount = value is num ? value.toDouble() : double.tryParse('$value');
+  if (amount == null || !amount.isFinite) return 0;
+  return amount.round();
+}
+
 int _intValue(dynamic value, [int fallback = 0]) {
   if (value is num) return value.toInt();
   return int.tryParse(value?.toString() ?? '') ?? fallback;
@@ -145,7 +153,7 @@ class CatboardCoupon {
         expiresAt: parseCatboardDate(json['expires_at']),
         orderId: json['order_id'] == null ? null : _intValue(json['order_id']),
         lockedTradeNo: json['locked_trade_no']?.toString(),
-        calculatedDiscount: _intValue(json['calculated_discount']),
+        calculatedDiscount: _moneyValue(json['calculated_discount']),
         unavailableReason: json['unavailable_reason']?.toString(),
         template: CatboardCouponTemplate.fromJson(_map(json['template'])),
       );
@@ -180,9 +188,9 @@ class CatboardFlashSale {
         name: json['name']?.toString() ?? '',
         description: json['description']?.toString(),
         endsAt: parseCatboardDate(json['ends_at']),
-        originalAmount: _intValue(json['original_amount']),
-        finalAmount: _intValue(json['final_amount']),
-        discountAmount: _intValue(json['discount_amount']),
+        originalAmount: _moneyValue(json['original_amount']),
+        finalAmount: _moneyValue(json['final_amount']),
+        discountAmount: _moneyValue(json['discount_amount']),
         allowCoupon: _boolValue(json['allow_coupon'], true),
         allowMemberDiscount: _boolValue(json['allow_member_discount'], true),
       );
@@ -229,11 +237,11 @@ class CatboardPromotionOption {
         nameEn: json['name_en']?.toString(),
         description: json['description']?.toString(),
         descriptionEn: json['description_en']?.toString(),
-        activityDiscount: _intValue(json['activity_discount']),
-        couponDiscount: _intValue(json['coupon_discount']),
-        memberDiscount: _intValue(json['member_discount']),
-        discountAmount: _intValue(json['discount_amount']),
-        finalAmount: _intValue(json['final_amount']),
+        activityDiscount: _moneyValue(json['activity_discount']),
+        couponDiscount: _moneyValue(json['coupon_discount']),
+        memberDiscount: _moneyValue(json['member_discount']),
+        discountAmount: _moneyValue(json['discount_amount']),
+        finalAmount: _moneyValue(json['final_amount']),
         recommended: _boolValue(json['recommended']),
       );
 }
@@ -287,22 +295,22 @@ class CatboardOrderPreview {
     final flash = _map(json['flash_sale']);
     final selected = _map(json['selected_coupon']);
     final selectedPromotion = _map(json['selected_promotion']);
-    final finalAmount = _intValue(json['final_amount']);
-    final balanceAmount = _intValue(json['balance_amount']);
+    final finalAmount = _moneyValue(json['final_amount']);
+    final balanceAmount = _moneyValue(json['balance_amount']);
     final memberDiscount =
-        _intValue(json['member_discount'] ?? json['vip_discount']);
+        _moneyValue(json['member_discount'] ?? json['vip_discount']);
     return CatboardOrderPreview(
-      originalAmount: _intValue(json['original_amount']),
-      activityDiscount: _intValue(json['activity_discount']),
-      surplusAmount: _intValue(json['surplus_amount']),
-      refundAmount: _intValue(json['refund_amount']),
-      couponDiscount: _intValue(json['coupon_discount']),
+      originalAmount: _moneyValue(json['original_amount']),
+      activityDiscount: _moneyValue(json['activity_discount']),
+      surplusAmount: _moneyValue(json['surplus_amount']),
+      refundAmount: _moneyValue(json['refund_amount']),
+      couponDiscount: _moneyValue(json['coupon_discount']),
       memberDiscountRate: _intValue(json['member_discount_rate']),
       memberDiscount: memberDiscount,
       vipDiscount: memberDiscount,
       finalAmount: finalAmount,
       balanceAmount: balanceAmount,
-      payableAmount: _intValue(json['payable_amount']),
+      payableAmount: _moneyValue(json['payable_amount']),
       allowCoupon: _boolValue(json['allow_coupon'], true),
       allowMemberDiscount: _boolValue(json['allow_member_discount'], true),
       promotionExclusive: _boolValue(json['promotion_exclusive']),
@@ -354,13 +362,13 @@ class CatboardLedgerEntry {
       CatboardLedgerEntry(
         id: _intValue(json['id']),
         type: json['type']?.toString() ?? 'unknown',
-        amount: _intValue(json['amount'] ?? json['get_amount']),
+        amount: _moneyValue(json['amount'] ?? json['get_amount']),
         balanceBefore: json['balance_before'] == null
             ? null
-            : _intValue(json['balance_before']),
+            : _moneyValue(json['balance_before']),
         balanceAfter: json['balance_after'] == null
             ? null
-            : _intValue(json['balance_after']),
+            : _moneyValue(json['balance_after']),
         status: json['status']?.toString() ?? 'completed',
         tradeNo: json['trade_no']?.toString(),
         description: json['description']?.toString(),
@@ -447,7 +455,7 @@ class CatboardReferralProgram {
   factory CatboardReferralProgram.fromJson(Map<String, dynamic> json) =>
       CatboardReferralProgram(
         effectiveInvites: _intValue(json['effective_invites']),
-        referralRevenue: _intValue(json['referral_revenue']),
+        referralRevenue: _moneyValue(json['referral_revenue']),
         commissionRate: _intValue(json['commission_rate']),
         level: _map(json['level']).isEmpty ? null : _map(json['level']),
         levelExpiresAt: parseCatboardDate(json['level_expires_at']),

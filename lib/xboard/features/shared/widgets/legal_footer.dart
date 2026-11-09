@@ -1,3 +1,5 @@
+import 'package:fl_clash/xboard/config/models/legal_links.dart';
+import 'package:fl_clash/xboard/config/xboard_config.dart';
 import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:fl_clash/widgets/widgets.dart';
@@ -12,21 +14,35 @@ abstract final class FastCatLegalLinks {
     defaultValue: 'https://www.fastcat6.com/terms',
   );
 
-  static final Uri privacyPolicyUri = Uri.parse(_privacyPolicyUrl);
-  static final Uri termsOfServiceUri = Uri.parse(_termsOfServiceUrl);
+  static Future<LegalLinks>? _packagedLinks;
 
-  static Future<bool> openPrivacyPolicy() {
-    return launchUrl(
-      privacyPolicyUri,
-      mode: LaunchMode.externalApplication,
-    );
+  static Future<LegalLinks> _loadPackagedLinks() async {
+    final config = await ConfigFileLoader.loadExtendedConfig();
+    return LegalLinks.fromJson(config['legal'])
+        .fallbackTo(LegalLinks(
+          privacyPolicy: LegalLinks.validUrl(_privacyPolicyUrl),
+          termsOfService: LegalLinks.validUrl(_termsOfServiceUrl),
+        ))
+        .fallbackTo(LegalLinks(
+          privacyPolicy: Uri.parse('https://www.fastcat6.com/privacy'),
+          termsOfService: Uri.parse('https://www.fastcat6.com/terms'),
+        ));
   }
 
-  static Future<bool> openTermsOfService() {
-    return launchUrl(
-      termsOfServiceUri,
-      mode: LaunchMode.externalApplication,
-    );
+  static Future<LegalLinks> resolve() async {
+    final packaged = await (_packagedLinks ??= _loadPackagedLinks());
+    // Read on each tap so a later OSS refresh takes effect immediately.
+    return XBoardConfig.legalLinks.fallbackTo(packaged);
+  }
+
+  static Future<bool> openPrivacyPolicy() async {
+    return launchUrl((await resolve()).privacyPolicy!,
+        mode: LaunchMode.externalApplication);
+  }
+
+  static Future<bool> openTermsOfService() async {
+    return launchUrl((await resolve()).termsOfService!,
+        mode: LaunchMode.externalApplication);
   }
 }
 
