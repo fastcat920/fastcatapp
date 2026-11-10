@@ -34,6 +34,11 @@ private let kAppGroupId: String = {
 /// The bridging header PacketTunnel-Bridging-Header.h exposes
 /// the C API from libclash.a.
 class PacketTunnelProvider: NEPacketTunnelProvider {
+  private let latencyQueue: OperationQueue = {
+    let queue = OperationQueue()
+    queue.maxConcurrentOperationCount = 4
+    return queue
+  }()
   private let packetLock = NSLock()
   private var packetGeneration: UInt64 = 0
   private let packetInputQueue = DispatchQueue(label: "fastcat.packet.input")
@@ -127,7 +132,16 @@ class PacketTunnelProvider: NEPacketTunnelProvider {
     NSLog("[PacketTunnel] Config loaded: %d chars", config.count)
     cachedDnsServers = extractDnsServers(from: config)
 
-    let homeDir = appGroupContainerURL()?.path ?? NSTemporaryDirectory()
+    let homeURL = (appGroupContainerURL() ?? URL(fileURLWithPath: NSTemporaryDirectory()))
+      .appendingPathComponent("Library/Caches/FastCatCore", isDirectory: true)
+    do {
+      try TVRoutingAssets.prepare(home: homeURL)
+    } catch {
+      NSLog("[PacketTunnel] work directory unavailable code=%ld", (error as NSError).code)
+      completionHandler(error)
+      return
+    }
+    let homeDir = homeURL.path
     NSLog("[PacketTunnel] homeDir: %@", homeDir)
 
     // Initialise the mihomo core (synchronous C call via bridging header).
@@ -242,6 +256,16 @@ class PacketTunnelProvider: NEPacketTunnelProvider {
     }
     if method == "_updateConfig" {
       handleUpdateConfig(data ?? "", completionHandler: completionHandler)
+      return
+    }
+
+    if method == "asyncTestDelay" || method == "streamingProbe" {
+      latencyQueue.addOperation {
+        let pointer = ClashCore_invoke(method, data)
+        let response = pointer.map { Data(String(cString: $0).utf8) }
+        ClashCore_free(pointer)
+        completionHandler?(response)
+      }
       return
     }
 

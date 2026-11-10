@@ -1,3 +1,5 @@
+import 'package:fl_clash/common/common.dart' show system;
+import 'package:fl_clash/xboard/features/shared/widgets/tv_deferred_input.dart';
 import 'dart:async';
 
 import 'package:fl_clash/xboard/adapter/initialization/sdk_provider.dart';
@@ -178,25 +180,58 @@ class _AccountDeletionSheetState extends State<_AccountDeletionSheet> {
                   : 'A verification code will be sent to ${widget.email.trim().isEmpty ? "your current email" : widget.email.trim()}.',
             ),
             const SizedBox(height: 12),
-            TextField(
-              controller: _codeController,
-              keyboardType: TextInputType.number,
-              inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-              maxLength: 6,
-              onChanged: (_) => setState(() {}),
-              decoration: InputDecoration(
-                labelText: _zh ? '6 位邮箱验证码' : '6-digit email code',
-                prefixIcon: const Icon(Icons.mark_email_read_outlined),
-                suffixIcon: TextButton(
-                  onPressed: _sending || _countdown > 0 ? null : _sendCode,
-                  child: Text(
-                    _countdown > 0
-                        ? '${_countdown}s'
-                        : (_zh ? '发送验证码' : 'Send code'),
+            Builder(builder: (context) {
+              if (!system.isTV) {
+                return TextField(
+                  controller: _codeController,
+                  keyboardType: TextInputType.number,
+                  inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+                  maxLength: 6,
+                  onChanged: (_) => setState(() {}),
+                  decoration: InputDecoration(
+                    labelText: _zh ? '6 位邮箱验证码' : '6-digit email code',
+                    prefixIcon: const Icon(Icons.mark_email_read_outlined),
+                    suffixIcon: TextButton(
+                      onPressed: _sending || _countdown > 0 ? null : _sendCode,
+                      child: Text(
+                        _countdown > 0
+                            ? '${_countdown}s'
+                            : (_zh ? '发送验证码' : 'Send code'),
+                      ),
+                    ),
                   ),
-                ),
-              ),
-            ),
+                );
+              }
+              return TVDeferredInput(
+                  builder: (context, focus, readOnly, cursor, edit) =>
+                      TextField(
+                        focusNode: focus,
+                        readOnly: readOnly,
+                        showCursor: cursor,
+                        onTap: system.isTV ? edit : null,
+                        controller: _codeController,
+                        keyboardType: TextInputType.number,
+                        inputFormatters: [
+                          FilteringTextInputFormatter.digitsOnly
+                        ],
+                        maxLength: 6,
+                        onChanged: (_) => setState(() {}),
+                        decoration: InputDecoration(
+                          labelText: _zh ? '6 位邮箱验证码' : '6-digit email code',
+                          prefixIcon:
+                              const Icon(Icons.mark_email_read_outlined),
+                          suffixIcon: TextButton(
+                            onPressed:
+                                _sending || _countdown > 0 ? null : _sendCode,
+                            child: Text(
+                              _countdown > 0
+                                  ? '${_countdown}s'
+                                  : (_zh ? '发送验证码' : 'Send code'),
+                            ),
+                          ),
+                        ),
+                      ));
+            }),
             const SizedBox(height: 20),
             Row(
               children: [

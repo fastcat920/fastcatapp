@@ -12,6 +12,7 @@
 /// @param homeDir  Path to the home directory (writable, in App Group container).
 /// @param config   YAML configuration string.
 /// @return 0 on success, non-zero on error.
+extern int ClashCore_init_probe(const char *homeDir, const char *config);
 extern int ClashCore_init(const char *homeDir, const char *config);
 
 /// Shut down the mihomo core and release all resources.

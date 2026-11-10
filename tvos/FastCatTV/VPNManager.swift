@@ -34,11 +34,17 @@ class VPNManager: NSObject {
     return status == .connected || status == .connecting
   }
 
+  var connectedSince: Date? {
+    guard manager?.connection.status == .connected, isTrafficActive else { return nil }
+    return manager?.connection.connectedDate
+  }
+
   var isConnected: Bool {
     return isTrafficActive && isTunnelRunning
   }
 
   var statusString: String {
+    if manager?.connection.status == .connecting { return "connecting" }
     if isTrafficActive {
       switch manager?.connection.status {
       case .connected:     return "connected"
@@ -72,7 +78,8 @@ class VPNManager: NSObject {
         NSLog("[VPNManager] loadAllFromPreferences error: %@", error.localizedDescription)
         self?.lastError = "loadPreferences: \(error.localizedDescription)"
       }
-      if let existing = managers?.first {
+      let providerID = (Bundle.main.bundleIdentifier ?? "com.fastcat.app") + ".PacketTunnel"
+      if let existing = managers?.first(where: { ($0.protocolConfiguration as? NETunnelProviderProtocol)?.providerBundleIdentifier == providerID }) {
         NSLog("[VPNManager] loaded existing manager")
         // Migrate older builds away from always-on behavior. This prevents an
         // idle Packet Tunnel from being restarted before a user action.
@@ -279,14 +286,41 @@ class VPNManager: NSObject {
           NSLog("[VPNManager] connect: starting VPN tunnel (active mode)...")
           try mgr.connection.startVPNTunnel(options: options)
           self?.isTrafficActive = true
-          NSLog("[VPNManager] connect: startVPNTunnel called successfully")
-          completion(nil)
+          NSLog("[VPNManager] connect: waiting for provider readiness")
+          self?.waitForActiveTunnel(deadline: Date().addingTimeInterval(30), completion: completion)
         } catch {
           let err = "startVPNTunnel: \(error.localizedDescription)"
           NSLog("[VPNManager] connect %@", err)
           self?.lastError = err
           completion(err)
         }
+      }
+    }
+  }
+
+  private func waitForActiveTunnel(deadline: Date, completion: @escaping (String?) -> Void) {
+    guard Date() < deadline else {
+      lastError = message("VPN 核心未就绪，请重试", "VPN core did not become ready. Please try again.")
+      manager?.connection.stopVPNTunnel()
+      completion(lastError)
+      return
+    }
+    if manager?.connection.status == .connected {
+      sendClashMessage(method: "_getTrafficMode", data: nil) { [weak self] response in
+        guard let self else { return }
+        if response == "active" {
+          self.isTrafficActive = true
+          self.notifyStatusChange()
+          completion(nil)
+        } else {
+          DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+            self.waitForActiveTunnel(deadline: deadline, completion: completion)
+          }
+        }
+      }
+    } else {
+      DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) { [weak self] in
+        self?.waitForActiveTunnel(deadline: deadline, completion: completion)
       }
     }
   }
@@ -385,6 +419,20 @@ class VPNManager: NSObject {
     sendClashMessage(method: "getProxies", data: nil, completion: completion)
   }
 
+  func cancelStreaming(runID: String) {
+    let data = try? JSONSerialization.data(withJSONObject:["run-id":runID])
+    sendClashMessage(method:"cancelStreamingProbes",data:data.map{String(decoding:$0,as:UTF8.self)}) {_ in}
+  }
+  func streamingProbe(runID: String,node: String,url: String, method: String = "GET", body: String = "", headers: [String:String] = [:], timeout: Int = 8000, maxBodySize: Int = 262144) async -> [String:Any]? {
+    let value: [String:Any] = ["run-id":runID,"proxy-name":node,"url":url,"method":method,"body":body,"headers":headers,"timeout":timeout,"max-body-size":maxBodySize]
+    guard let data=try? JSONSerialization.data(withJSONObject:value) else {return nil}
+    let raw: String? = await withCheckedContinuation { c in
+      sendClashMessage(method:"streamingProbe",data:String(decoding:data,as:UTF8.self)) {c.resume(returning:$0)}
+    }
+    guard let raw,let bytes=raw.data(using:.utf8) else {return nil}
+    return try? JSONSerialization.jsonObject(with:bytes) as? [String:Any]
+  }
+
   /// Measure one proxy with the same Mihomo action used by the Android TV client.
   func testDelay(
     proxyName: String,
@@ -459,7 +507,7 @@ class VPNManager: NSObject {
       return
     }
     let status = manager?.connection.status ?? .invalid
-    guard status == .connected || status == .connecting else {
+    guard status == .connected else {
       NSLog("[VPNManager] sendClashMessage(%@): tunnel not running (status=%d)", method, status.rawValue)
       completion(nil)
       return
@@ -472,7 +520,7 @@ class VPNManager: NSObject {
       return
     }
     let reply = TVOnceReply(completion)
-    let timeout: Double = method == "_updateConfig" ? 30 : 10
+    let timeout: Double = method == "_updateConfig" ? 30 : (method == "streamingProbe" ? 20 : 10)
     DispatchQueue.global().asyncAfter(deadline: .now() + timeout) { reply.finish(nil) }
     do {
       try session.sendProviderMessage(encoded) { responseData in
@@ -493,6 +541,10 @@ class VPNManager: NSObject {
       notifyStatusChange()
       return
     }
+    if manager?.connection.status == .connecting {
+      notifyStatusChange()
+      return
+    }
     sendClashMessage(method: "_getTrafficMode", data: nil) { [weak self] response in
       guard let self else { return }
       if response == "active" || response == "idle" {
@@ -509,5 +561,69 @@ class VPNManager: NSObject {
       name: Self.statusDidChangeNotification,
       object: statusString
     )
+  }
+}
+
+/// A separate process-local core. It never creates a VPN configuration or routes.
+final class TVLatencyProbe {
+  static let shared = TVLatencyProbe()
+  private let queue: OperationQueue = {
+    let queue = OperationQueue()
+    queue.maxConcurrentOperationCount = 4
+    return queue
+  }()
+  private let lock = NSCondition()
+  private var config: String?
+  private var running = 0
+  private var cleanup: DispatchWorkItem?
+
+  func test(config: String, proxyName: String, testURL: String, completion: @escaping (Int?, Bool) -> Void) {
+    queue.addOperation {
+      self.lock.lock()
+      while self.running > 0 && self.config != config { self.lock.wait() }
+      self.cleanup?.cancel()
+      do {
+        let home = try FileManager.default.url(for: .cachesDirectory, in: .userDomainMask,
+          appropriateFor: nil, create: true).appendingPathComponent("FastCat/Latency", isDirectory: true)
+        try TVRoutingAssets.prepare(home: home)
+        let code = self.config == config ? 0 : ClashCore_init_probe(home.path, config)
+        guard code == 0 else {
+          self.lock.unlock()
+          NSLog("[TVLatencyProbe] initialization failed code=%d", code)
+          DispatchQueue.main.async { completion(nil, false) }
+          return
+        }
+      } catch {
+        self.lock.unlock()
+        NSLog("[TVLatencyProbe] cache unavailable code=%ld", (error as NSError).code)
+        DispatchQueue.main.async { completion(nil, false) }
+        return
+      }
+      self.config = config
+      self.running += 1
+      self.lock.unlock()
+      let payload: [String: Any] = ["proxy-name": proxyName,
+        "test-url": testURL, "timeout": 5000]
+      let data = try! JSONSerialization.data(withJSONObject: payload)
+      let pointer = ClashCore_invoke("asyncTestDelay", String(data: data, encoding: .utf8)!)
+      let response = pointer.map { Data(String(cString: $0).utf8) }
+      ClashCore_free(pointer)
+      let result = response.flatMap { try? JSONSerialization.jsonObject(with: $0) as? [String: Any] }
+      let value = result?["value"] as? Int
+      self.lock.lock()
+      self.running -= 1
+      self.lock.broadcast()
+      let cleanup = DispatchWorkItem {
+        self.lock.lock()
+        defer { self.lock.unlock() }
+        guard self.running == 0 else { return }
+        ClashCore_shutdown()
+        self.config = nil
+      }
+      self.cleanup = cleanup
+      DispatchQueue.global(qos: .utility).asyncAfter(deadline: .now() + 2, execute: cleanup)
+      self.lock.unlock()
+      DispatchQueue.main.async { completion(value, value != nil) }
+    }
   }
 }

@@ -123,10 +123,21 @@ enum TVSubscriptionNodes {
     return result.isEmpty ? nil : result
   }
 
+  static func testURL(from yaml: String, node: String, group: String?, fallback: String) -> String {
+    func valid(_ value: String?) -> String? {
+      guard let value, let url = URL(string: value), ["http", "https"].contains(url.scheme?.lowercased() ?? ""), url.host != nil else { return nil }
+      return value
+    }
+    let groups = parseGroups(from: yaml)
+    let selected = groups.first { $0.name == group } ?? groups.first { $0.proxies.contains(node) }
+    return valid(selected?.testURL) ?? valid(fallback) ?? "https://www.gstatic.com/generate_204"
+  }
+
   private struct RawGroup {
     var name = ""
     var type = ""
     var proxies: [String] = []
+    var testURL: String?
   }
 
   private static func parseGroups(from configuration: String) -> [RawGroup] {
@@ -172,6 +183,8 @@ enum TVSubscriptionNodes {
           type: "",
           proxies: []
         )
+      } else if trimmed.hasPrefix("url:") {
+        current?.testURL = yamlValue(after: "url:", in: trimmed)
       } else if trimmed.hasPrefix("type:") {
         current?.type = yamlValue(after: "type:", in: trimmed) ?? ""
       } else if trimmed.hasPrefix("proxies:") {
@@ -238,4 +251,10 @@ enum TVProxyRouting {
     }
     return verified
   }
+}
+
+/// Display only; keep raw latency for routing, history and subsequent refreshes.
+func tvDisplayedDelay(_ raw: Int?, discount: Int) -> Int? {
+  guard let raw, raw > 0 else { return raw }
+  return max(1, raw * (100 - min(90, max(0, discount))) / 100)
 }

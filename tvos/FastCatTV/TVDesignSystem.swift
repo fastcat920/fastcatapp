@@ -32,19 +32,18 @@ func tvText(_ chinese: String, _ english: String, language: String) -> String {
   TVLanguage.resolved(from: language) == .simplifiedChinese ? chinese : (TVSharedResources.strings[chinese] ?? english)
 }
 
-/// Uses the same 1280×720 logical design density as Android TV while keeping
-/// the native tvOS canvas. A 1920×1080 Apple TV viewport therefore renders the
-/// component system at 1.5× instead of leaving Android-sized controls floating
-/// in a much larger point canvas. The scale is derived from both axes, so other
-/// 16:9 resolutions retain the same proportions without bitmap stretching.
+/// Shared design dimensions are converted to native points exactly once.
+/// Font enlargement is separate; responsive decisions use design-space sizes.
 enum TVLayout {
-  static let interfaceScale: CGFloat = {
+  static var interfaceScale: CGFloat {
     let bounds = UIScreen.main.bounds
-    let widthScale = bounds.width / 1280
-    let heightScale = bounds.height / 720
-    return min(max(min(widthScale, heightScale), 1), 1.5)
-  }()
-  static let textScale: CGFloat = 1.3
+    return CGFloat(TVDesignMetrics.density(width: Double(bounds.width), height: Double(bounds.height)))
+  }
+  static func logicalSize(_ native: CGSize) -> CGSize {
+    CGSize(width: native.width / (interfaceScale * controlScale), height: native.height / (interfaceScale * controlScale))
+  }
+  static let controlScale: CGFloat = 1.3
+  static let textScale: CGFloat = 1.4
 
   static func value(_ designValue: CGFloat) -> CGFloat {
     let outputScale = max(UIScreen.main.scale, 1)
@@ -52,7 +51,7 @@ enum TVLayout {
   }
 
   static func interfaceValue(_ designValue: CGFloat) -> CGFloat {
-    value(designValue * interfaceScale)
+    value(designValue * interfaceScale * controlScale)
   }
 }
 
@@ -87,6 +86,10 @@ private enum TVSharedResources {
 }
 
 enum TVTheme {
+  static let modeKey = "fastcat.tv.theme-mode"
+  static func scheme(mode:String,legacyDark:Bool) -> ColorScheme? {
+    switch mode {case "system":return nil;case "light":return .light;case "dark":return .dark;default:return legacyDark ? .dark:.light}
+  }
   static let preferenceKey = "fastcat.tv.prefers-dark-theme"
   static let background = dynamicColor(
     light: hex(0xFAFBFD), dark: hex(0x121318)
@@ -146,12 +149,15 @@ enum TVTheme {
 }
 
 enum TVFont {
+  static func bold(_ size: CGFloat) -> Font {
+    .custom("Roboto-Medium", fixedSize: TVLayout.value(size * TVLayout.interfaceScale * TVLayout.textScale)).weight(.bold)
+  }
   static func regular(_ size: CGFloat) -> Font {
-    .custom("Roboto-Regular", fixedSize: tv(size * TVLayout.textScale))
+    .custom("Roboto-Regular", fixedSize: TVLayout.value(size * TVLayout.interfaceScale * TVLayout.textScale))
   }
 
   static func medium(_ size: CGFloat) -> Font {
-    .custom("Roboto-Medium", fixedSize: tv(size * TVLayout.textScale))
+    .custom("Roboto-Medium", fixedSize: TVLayout.value(size * TVLayout.interfaceScale * TVLayout.textScale))
   }
 }
 
@@ -166,6 +172,15 @@ enum TVAuthFont {
 }
 
 enum MaterialGlyph: String {
+  case brightnessSix = "\u{e10a}"
+  case route = "\u{f0561}"
+  case liveTV = "\u{e387}"
+  case infoOutlined = "\u{e33d}"
+  case logout = "\u{e3b3}"
+  case deleteForever = "\u{e1ba}"
+  case systemUpdateOutlined = "\u{f41a}"
+
+  case settingsOutlined = "\u{f36e}"
   case altRoute = "\u{e080}"
   case arrowBack = "\u{e092}"
   case campaignOutlined = "\u{ef27}"
@@ -372,5 +387,36 @@ struct TVDialog<Content: View, Actions: View>: View {
       .shadow(color: .black.opacity(0.20), radius: tv(20), y: tv(10))
     }
     .transition(.opacity.combined(with: .scale(scale: 0.98)))
+  }
+}
+
+struct TVLatencyIndicator: View {
+  let delay: Int?
+  var testing = false
+  @Environment(\.colorScheme) private var scheme
+  private var failed: Bool { (delay ?? 1) < 0 }
+  private var active: Int { failed ? 1 : ((delay ?? 0) >= 500 ? 2 : 3) }
+  private var color: Color { failed ? TVTheme.danger : (active == 2 ? TVTheme.warning : TVTheme.success) }
+  var body: some View {
+    Group {
+      if testing { ProgressView().tint(TVTheme.primary).scaleEffect(0.7) }
+      else if delay == nil || delay == 0 { Image(systemName: "bolt.fill").font(.system(size: tv(22))).foregroundStyle(TVTheme.primary) }
+      else {
+        Canvas { context, size in
+          let w = size.width * 0.21
+          for i in 0..<3 {
+            let h = size.height * (0.36 + Double(i) * 0.29)
+            let rect = CGRect(x: Double(i) * size.width * 0.33, y: size.height-h, width:w, height:h)
+            context.fill(Path(roundedRect:rect,cornerRadius:w*0.42),with:.color(i < active ? color : TVTheme.textPrimary.opacity(scheme == .dark ? 0.22 : 0.14)))
+          }
+          if failed {
+            var cross=Path();cross.move(to:CGPoint(x:size.width*0.53,y:size.height*0.52));cross.addLine(to:CGPoint(x:size.width*0.85,y:size.height*0.89));cross.move(to:CGPoint(x:size.width*0.85,y:size.height*0.52));cross.addLine(to:CGPoint(x:size.width*0.53,y:size.height*0.89))
+            context.stroke(cross,with:.color(TVTheme.surface),style:StrokeStyle(lineWidth:size.width*4.5/26,lineCap:.round))
+            context.stroke(cross,with:.color(color),style:StrokeStyle(lineWidth:size.width*2.3/26,lineCap:.round))
+          }
+        }.frame(width:tv(26*2/3),height:tv(22*2/3))
+      }
+    }.frame(width:tv(44),height:tv(44))
+    .accessibilityLabel(tvText(testing ? "测速中" : (failed ? "超时" : "测试延迟"), testing ? "Testing" : (failed ? "Timeout" : "Test latency"), language: UserDefaults.standard.string(forKey: TVLanguage.preferenceKey) ?? "system"))
   }
 }

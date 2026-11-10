@@ -8,6 +8,7 @@ import 'package:fl_clash/xboard/features/update_check/widgets/update_dialog.dart
 import 'package:fl_clash/xboard/features/shared/styles/styles.dart';
 import 'package:fl_clash/xboard/features/shared/widgets/legal_footer.dart';
 import 'package:flutter/material.dart';
+import 'package:fl_clash/widgets/tv_focusable.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 class FastCatAboutPage extends ConsumerStatefulWidget {
@@ -98,40 +99,48 @@ class _FastCatAboutPageState extends ConsumerState<FastCatAboutPage> {
                         clipBehavior: Clip.antiAlias,
                         child: Column(
                           children: [
-                            ListTile(
-                              leading: Stack(
-                                clipBehavior: Clip.none,
-                                children: [
-                                  const Icon(Icons.system_update_outlined),
-                                  if (update.hasUpdate)
-                                    Positioned(
-                                      right: -3,
-                                      top: -3,
-                                      child: Container(
-                                        key: const Key('about_update_badge'),
-                                        width: 8,
-                                        height: 8,
-                                        decoration: const BoxDecoration(
-                                          color: Colors.redAccent,
-                                          shape: BoxShape.circle,
+                            Builder(builder: (context) {
+                              final tile = ListTile(
+                                leading: Stack(
+                                  clipBehavior: Clip.none,
+                                  children: [
+                                    const Icon(Icons.system_update_outlined),
+                                    if (update.hasUpdate)
+                                      Positioned(
+                                        right: -3,
+                                        top: -3,
+                                        child: Container(
+                                          key: const Key('about_update_badge'),
+                                          width: 8,
+                                          height: 8,
+                                          decoration: const BoxDecoration(
+                                            color: Colors.redAccent,
+                                            shape: BoxShape.circle,
+                                          ),
                                         ),
                                       ),
-                                    ),
-                                ],
-                              ),
-                              title: Text(l10n.checkUpdate),
-                              trailing: update.isChecking
-                                  ? const SizedBox.square(
-                                      dimension: 20,
-                                      child: CircularProgressIndicator(
-                                        strokeWidth: 2,
-                                      ),
-                                    )
-                                  : const Icon(Icons.chevron_right),
-                              onTap: update.isChecking
-                                  ? null
-                                  : () => _checkUpdate(context, ref),
-                            ),
+                                  ],
+                                ),
+                                title: Text(l10n.checkUpdate),
+                                trailing: update.isChecking
+                                    ? const SizedBox.square(
+                                        dimension: 20,
+                                        child: CircularProgressIndicator(
+                                          strokeWidth: 2,
+                                        ),
+                                      )
+                                    : const Icon(Icons.chevron_right),
+                                onTap: update.isChecking
+                                    ? null
+                                    : () => _checkUpdate(context, ref),
+                              );
+                              if (!system.isTV) return tile;
+                              return TVFocusable(
+                                  onPressed: update.isChecking
+                                      ? null
+                                      : () => _checkUpdate(context, ref),
+                                  child: ExcludeFocus(child: tile));
+                            }),
                             if (showLogs) ...[
                               Divider(
                                 height: 1,

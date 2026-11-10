@@ -7,6 +7,8 @@ private enum TVAuthScreen { case login, register, forgotPassword }
 struct TVLoginView: View {
   @EnvironmentObject private var session: SessionStore
   @AppStorage(TVTheme.preferenceKey) private var prefersDarkTheme = true
+  @AppStorage(TVTheme.modeKey) private var themeMode = "legacy"
+  @Environment(\.colorScheme) private var colorScheme
   @AppStorage(TVLanguage.preferenceKey) private var language = TVLanguage.system.rawValue
   @AppStorage("fastcat.tv.remember-password") private var rememberPassword = false
 
@@ -110,9 +112,9 @@ struct TVLoginView: View {
       Spacer()
       TVToolbarButton(
         title: tvText("切换主题", "Switch Theme", language: language),
-        icon: prefersDarkTheme ? .lightModeOutlined : .darkModeOutlined,
+        icon: colorScheme == .dark ? .lightModeOutlined : .darkModeOutlined,
         focus: $themeButtonFocused,
-        action: { prefersDarkTheme.toggle() }
+        action: {prefersDarkTheme=colorScheme != .dark;themeMode=prefersDarkTheme ? "dark":"light"}
       )
       .onMoveCommand { direction in
         if direction == .left { languageButtonFocused = true }

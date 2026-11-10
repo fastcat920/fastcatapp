@@ -82,6 +82,48 @@ actor TVRemoteConfigManager {
   private var resolvedBaseURL: URL?
   private var resolvedConfig: [String: Any]?
 
+  func legalURL(terms: Bool) async -> String {
+    let field = terms ? "terms_of_service_url" : "privacy_policy_url"
+    func valid(_ value: Any?) -> String? {
+      guard let raw = value as? String, !raw.contains(where: { $0.isWhitespace }),
+        let url = URL(string: raw), ["http", "https"].contains(url.scheme?.lowercased() ?? ""),
+        url.host != nil, url.user == nil, url.password == nil else { return nil }
+      return raw
+    }
+    if let remote = try? await remoteConfig(), let legal = remote["legal"] as? [String: Any], let url = valid(legal[field]) { return url }
+    let yaml = Bundle.main.url(forResource: "config", withExtension: "yaml").flatMap { try? String(contentsOf: $0, encoding: .utf8) } ?? ""
+    var inside = false
+    for line in yaml.components(separatedBy: .newlines) {
+      if line.trimmingCharacters(in: .whitespaces) == "legal:" { inside = true; continue }
+      if !line.isEmpty && !line.hasPrefix(" ") && !line.hasPrefix("#") { inside = false }
+      if inside, line.trimmingCharacters(in: .whitespaces).hasPrefix(field + ":") {
+        let raw = line.split(separator: ":", maxSplits: 1).last.map(String.init)?.trimmingCharacters(in: .whitespaces).trimmingCharacters(in: CharacterSet(charactersIn: "\"'"))
+        if let url = valid(raw) { return url }
+      }
+    }
+    if let url = valid(Bundle.main.object(forInfoDictionaryKey: terms ? "FastCatTermsOfServiceURL" : "FastCatPrivacyPolicyURL")) { return url }
+    return terms ? "https://www.fastcat6.com/terms" : "https://www.fastcat6.com/privacy"
+  }
+
+  func delayDiscountPercent() async -> Int {
+    let yaml = Bundle.main.url(forResource: "config", withExtension: "yaml")
+      .flatMap { try? String(contentsOf: $0, encoding: .utf8) } ?? ""
+    var local = 0
+    var inLatency = false
+    for line in yaml.components(separatedBy: .newlines) {
+      if line.trimmingCharacters(in: .whitespaces) == "latency:" { inLatency = true; continue }
+      if !line.isEmpty && !line.hasPrefix(" ") && !line.hasPrefix("#") { inLatency = false }
+      if inLatency, line.trimmingCharacters(in: .whitespaces).hasPrefix("display_discount_percent:"),
+         let value = Int(line.split(separator: ":", maxSplits: 1)[1].trimmingCharacters(in: .whitespaces)) {
+        local = min(90, max(0, value))
+      }
+    }
+    guard let json = try? await remoteConfig(), let latency = json["latency"] as? [String: Any] else { return local }
+    let raw = latency["display_discount_percent"]
+    let value = (raw as? NSNumber)?.intValue ?? (raw as? String).flatMap { Int($0.trimmingCharacters(in: .whitespaces)) }
+    return value.map { min(90, max(0, $0)) } ?? local
+  }
+
   func apiBaseURL() async throws -> URL {
     if let json = try? await remoteConfig(), let url = apiBaseURL(from: json) {
       if let active = resolvedBaseURL, apiBaseURLs(from: json).contains(active) { return active }

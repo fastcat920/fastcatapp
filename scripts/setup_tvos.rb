@@ -24,9 +24,10 @@ tunnel = project.new_target(:app_extension, 'PacketTunnel', :tvos, '17.0')
 tunnel.product_reference.path = 'PacketTunnel.appex'
 tunnel.product_reference.name = 'PacketTunnel.appex'
 
-%w[FastCatTVApp.swift SessionStore.swift KeychainStore.swift TVBuildConfiguration.swift TVRemoteConfigManager.swift FastCatSubscriptionDecoder.swift TVDesignSystem.swift TVNodeSelection.swift TVProxyRouting.swift TVQRLoginCoordinator.swift GatewayClient.swift TVLoginView.swift TVHomeView.swift VPNManager.swift TVServiceConnectivity.swift].each do |name|
+%w[FastCatTVApp.swift SessionStore.swift KeychainStore.swift TVBuildConfiguration.swift TVRemoteConfigManager.swift FastCatSubscriptionDecoder.swift TVDesignSystem.swift TVNodeSelection.swift TVProxyRouting.swift TVQRLoginCoordinator.swift GatewayClient.swift TVLoginView.swift TVHomeView.swift VPNManager.swift TVServiceConnectivity.swift TVToolsView.swift TVToolsModels.swift].each do |name|
   app.source_build_phase.add_file_reference(app_group.new_file(name))
 end
+app.resources_build_phase.add_file_reference(app_group.new_file('Assets.xcassets'))
 app_group.new_file('Info.plist')
 app_group.new_file('FastCatTV.entitlements')
 
@@ -51,8 +52,16 @@ shared_protocol = main.new_file('Shared/TVCoreProtocol.swift')
 app.source_build_phase.add_file_reference(shared_protocol)
 tunnel.source_build_phase.add_file_reference(shared_protocol)
 
+routing_assets = main.new_file('Shared/TVRoutingAssets.swift')
+app.source_build_phase.add_file_reference(routing_assets)
+tunnel.source_build_phase.add_file_reference(routing_assets)
+%w[GeoIP.dat GeoSite.dat ASN.mmdb geoip.metadb].each do |name|
+  app.resources_build_phase.add_file_reference(main.new_file("../assets/data/#{name}"))
+end
+
 framework = framework_group.new_file('libclash.xcframework')
 tunnel.frameworks_build_phase.add_file_reference(framework)
+app.frameworks_build_phase.add_file_reference(framework)
 
 embed = app.new_copy_files_build_phase('Embed App Extensions')
 embed.dst_subfolder_spec = '13'
@@ -80,6 +89,9 @@ app.build_configurations.each do |config|
     'CODE_SIGN_ENTITLEMENTS' => 'FastCatTV/FastCatTV.entitlements',
     'PRODUCT_BUNDLE_IDENTIFIER' => '$(FASTCAT_TV_BUNDLE_IDENTIFIER)',
     'PRODUCT_NAME' => 'FastCat',
+    'SWIFT_OBJC_BRIDGING_HEADER' => 'PacketTunnel/PacketTunnel-Bridging-Header.h',
+    'FRAMEWORK_SEARCH_PATHS' => ['$(inherited)', '$(PROJECT_DIR)/Frameworks'],
+    'OTHER_LDFLAGS' => ['$(inherited)', '-lclash', '-lresolv'],
   )
   if config.name == 'Debug'
     config.build_settings['EXCLUDED_EXPLICIT_TARGET_DEPENDENCIES[sdk=appletvsimulator*]'] = 'PacketTunnel'

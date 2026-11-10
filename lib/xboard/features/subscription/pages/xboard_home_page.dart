@@ -1,4 +1,7 @@
 import 'dart:io';
+import 'package:fl_clash/xboard/features/settings/pages/fastcat_settings_page.dart';
+import 'package:fl_clash/xboard/features/about/pages/fastcat_about_page.dart';
+import 'package:fl_clash/xboard/features/update_check/providers/update_check_provider.dart';
 import 'dart:async';
 import 'package:flutter/services.dart';
 import 'package:fl_clash/common/common.dart';
@@ -607,8 +610,6 @@ class _XBoardHomePageState extends ConsumerState<XBoardHomePage>
   PreferredSizeWidget _buildTvAppBar(BuildContext context) {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
-    final isDark = theme.brightness == Brightness.dark;
-    final l10n = AppLocalizations.of(context);
     final radius = BorderRadius.circular(14);
 
     return AppBar(
@@ -624,7 +625,8 @@ class _XBoardHomePageState extends ConsumerState<XBoardHomePage>
           padding: const EdgeInsets.only(right: 25),
           child: TVFocusable(
             borderRadius: radius,
-            onPressed: _toggleTvTheme,
+            onPressed: () => Navigator.of(context).push(
+                MaterialPageRoute(builder: (_) => const FastCatSettingsPage())),
             child: ExcludeFocus(
               child: TextButton.icon(
                 style: XbUiButton.textChipPrimary(context).copyWith(
@@ -632,18 +634,23 @@ class _XBoardHomePageState extends ConsumerState<XBoardHomePage>
                     EdgeInsets.symmetric(horizontal: 18, vertical: 12),
                   ),
                 ),
-                onPressed: _toggleTvTheme,
+                onPressed: () => Navigator.of(context).push(MaterialPageRoute(
+                    builder: (_) => const FastCatSettingsPage())),
                 icon: Icon(
-                  isDark ? Icons.light_mode_outlined : Icons.dark_mode_outlined,
+                  Icons.settings_outlined,
                   size: 20,
                   color: colorScheme.primary,
                 ),
-                label: Text(
-                  l10n.switchTheme,
-                  style: TextStyle(
-                    color: colorScheme.primary,
-                    fontWeight: XbFontWeight.semibold,
-                  ),
+                label: Badge(
+                  isLabelVisible: ref.watch(updateCheckProvider).hasUpdate,
+                  child: Text(
+                      Localizations.localeOf(context).languageCode == 'zh'
+                          ? '工具设置'
+                          : 'Tools & settings',
+                      style: TextStyle(
+                        color: colorScheme.primary,
+                        fontWeight: XbFontWeight.semibold,
+                      )),
                 ),
               ),
             ),
@@ -651,15 +658,6 @@ class _XBoardHomePageState extends ConsumerState<XBoardHomePage>
         ),
       ],
     );
-  }
-
-  void _toggleTvTheme() {
-    final nextMode = Theme.of(context).brightness == Brightness.dark
-        ? ThemeMode.light
-        : ThemeMode.dark;
-    ref.read(themeSettingProvider.notifier).updateState(
-          (state) => state.copyWith(themeMode: nextMode),
-        );
   }
 
   Widget _buildTvHomeBody() {
@@ -768,18 +766,23 @@ class _XBoardHomePageState extends ConsumerState<XBoardHomePage>
         const Spacer(),
         SizedBox(
           height: versionLineHeight,
-          child: Center(
-            child: Text(
-              '${l10n.xboardCurrentVersion}${chinese ? '：' : ': '}V${globalState.packageInfo.version}',
-              key: const Key('tv-current-version'),
-              style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                    color: Theme.of(context)
-                        .colorScheme
-                        .onSurfaceVariant
-                        .withValues(alpha: 0.72),
-                  ),
-            ),
-          ),
+          child: TVFocusable(
+              onPressed: () => Navigator.of(context).push(
+                  MaterialPageRoute(builder: (_) => const FastCatAboutPage())),
+              child: Center(
+                child: Badge(
+                    isLabelVisible: ref.watch(updateCheckProvider).hasUpdate,
+                    child: Text(
+                      '${l10n.xboardCurrentVersion}${chinese ? '：' : ': '}V${globalState.packageInfo.version}',
+                      key: const Key('tv-current-version'),
+                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                            color: Theme.of(context)
+                                .colorScheme
+                                .onSurfaceVariant
+                                .withValues(alpha: 0.72),
+                          ),
+                    )),
+              )),
         ),
       ],
     );

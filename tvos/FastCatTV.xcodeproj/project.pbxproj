@@ -3,31 +3,34 @@
 	archiveVersion = 1;
 	classes = {
 	};
-	objectVersion = 46;
+	objectVersion = 54;
 	objects = {
 
 /* Begin PBXBuildFile section */
-        FA57CA710000000000000201 /* TVProxyRouting.swift in Sources */ = {isa = PBXBuildFile; fileRef = FA57CA710000000000000202; };
-        FA57CA710000000000000203 /* TVQRLoginCoordinator.swift in Sources */ = {isa = PBXBuildFile; fileRef = FA57CA710000000000000204; };
-        FA57CA710000000000000205 /* TVCoreProtocol.swift in App Sources */ = {isa = PBXBuildFile; fileRef = FA57CA710000000000000206; };
-        FA57CA710000000000000207 /* TVCoreProtocol.swift in Tunnel Sources */ = {isa = PBXBuildFile; fileRef = FA57CA710000000000000206; };
-        FA57CA710000000000000101 /* TVServiceConnectivity.swift in Sources */ = {isa = PBXBuildFile; fileRef = FA57CA710000000000000102 /* TVServiceConnectivity.swift */; };
-		FA57CA710000000000000001 /* tv_design_contract.json in Resources */ = {isa = PBXBuildFile; fileRef = FA57CA710000000000000002 /* tv_design_contract.json */; };
+		077868B6DF4E4056C1E7FECF /* ASN.mmdb in Resources */ = {isa = PBXBuildFile; fileRef = 148ADF3C7026BCDCF2FBB47E /* ASN.mmdb */; };
 		1BF82943385F910990125546 /* MaterialIcons-Regular.otf in Resources */ = {isa = PBXBuildFile; fileRef = 3D5F5DE22F87F724C42B159F /* MaterialIcons-Regular.otf */; };
 		1D392A56603115CF69107170 /* TVLoginView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0FA2C476CA0F2DF189D3F99B /* TVLoginView.swift */; };
+		1E52C916D77E4F03C59F4361 /* TVRoutingAssets.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1D4021B6B1079A80741AE231 /* TVRoutingAssets.swift */; };
 		1FB638B8D6F6C8FC6AE7969A /* TVBuildConfiguration.swift in Sources */ = {isa = PBXBuildFile; fileRef = C867A35A9B0F0CD4C4E71178 /* TVBuildConfiguration.swift */; };
+		233A4E3168CACAF75314CDD4 /* geoip.metadb in Resources */ = {isa = PBXBuildFile; fileRef = 4BA8246145D7DF6D8C196E55 /* geoip.metadb */; };
+		291B393B4DC008B58254AB4E /* libclash.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = F76E8A30FEDDD517749D983A /* libclash.xcframework */; };
 		3036E952A6DBDDB76FFA8EF9 /* GatewayClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = 673B4D0DDB3BA09AEE610BF3 /* GatewayClient.swift */; };
+		311DA4F647FBADE38A405DC4 /* GeoSite.dat in Resources */ = {isa = PBXBuildFile; fileRef = AFCBDA65252AD6B73DB5C8CF /* GeoSite.dat */; };
 		48B17E71BACEA1E1B1FED51C /* TVHomeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A63186297390A04B18EA6216 /* TVHomeView.swift */; };
 		496583C03E73960D7781E684 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1E7A9A66ABF181989DCF3666 /* Foundation.framework */; };
 		50F6447DC4C8281C639B0F34 /* TVRemoteConfigManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = F09EF338E6DE143C7FEF2A88 /* TVRemoteConfigManager.swift */; };
+		51C13616F475743764316FDE /* TVToolsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6ABA1B9B8971068F83D50513 /* TVToolsView.swift */; };
 		57B7B615DB4F2992662CDDC3 /* libclash.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = F76E8A30FEDDD517749D983A /* libclash.xcframework */; };
 		6B9BF897184B833130F259CD /* Roboto-Medium.ttf in Resources */ = {isa = PBXBuildFile; fileRef = A1D20EBB700C190400820749 /* Roboto-Medium.ttf */; };
+		7669AFCE519A6AF1C2A62DEC /* TVToolsModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5CEFE117D87A6506F4AF032D /* TVToolsModels.swift */; };
 		7933094A64CFF67AE68ABE3D /* SessionStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2088C4A7B602D5E2A074AF9F /* SessionStore.swift */; };
 		9C307498A48F40B79D7E79F7 /* Roboto-Regular.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 74FD3780B2F3DB7FEFA70D37 /* Roboto-Regular.ttf */; };
 		9D2766B2896491C9499D3D89 /* FastCatSubscriptionDecoder.swift in Sources */ = {isa = PBXBuildFile; fileRef = B8C36B3EA156B107E22B7D0A /* FastCatSubscriptionDecoder.swift */; };
 		9D8529D9821FE76870350742 /* icon.png in Resources */ = {isa = PBXBuildFile; fileRef = 5A65F00F5B551810E780C416 /* icon.png */; };
 		A1436BB9360AA8F0D654BBBE /* TVNodeSelection.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2AEDFEF13B94EC57AB3F4596 /* TVNodeSelection.swift */; };
-		A566E476704126DCFEF41CEE /* PacketTunnel.appex in Embed App Extensions */ = {isa = PBXBuildFile; fileRef = 3CDFA484377680DBA82DB466 /* PacketTunnel.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, CodeSignOnCopy, ); }; };
+		A566E476704126DCFEF41CEE /* PacketTunnel.appex in Embed App Extensions */ = {isa = PBXBuildFile; fileRef = 3CDFA484377680DBA82DB466 /* PacketTunnel.appex */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		B7BF89EF3C933342F086010C /* GeoIP.dat in Resources */ = {isa = PBXBuildFile; fileRef = 8EF1464779FBC011276D7FE4 /* GeoIP.dat */; };
+		B85CA122D81A4E5C47F98EFF /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 7B05B30212BB6B712961761A /* Assets.xcassets */; };
 		C72B77458FAFE8A30940E0BF /* config.yaml in Resources */ = {isa = PBXBuildFile; fileRef = 39B83D42B5CA71EC42095A3B /* config.yaml */; };
 		C8E5590F564A4B81051A2648 /* FastCatTVApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 54C7047B9199B36AC5EFFEE1 /* FastCatTVApp.swift */; };
 		CFD7DA2AAF8E2C0A81874129 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1E7A9A66ABF181989DCF3666 /* Foundation.framework */; };
@@ -35,6 +38,13 @@
 		DF28BEDE780E4D73FFDE0326 /* KeychainStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1D5CDEEB5ADE37C419C1A71 /* KeychainStore.swift */; };
 		E21E28C5EE8732CBB332AE63 /* PacketTunnelProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 91F0DE1405C694BE70C3DAF4 /* PacketTunnelProvider.swift */; };
 		E2250B070E4FB1D9E8AE2F83 /* TVDesignSystem.swift in Sources */ = {isa = PBXBuildFile; fileRef = FAA5885172778FFC76BACCAE /* TVDesignSystem.swift */; };
+		FA57CA710000000000000001 /* tv_design_contract.json in Resources */ = {isa = PBXBuildFile; fileRef = FA57CA710000000000000002 /* tv_design_contract.json */; };
+		FA57CA710000000000000101 /* TVServiceConnectivity.swift in Sources */ = {isa = PBXBuildFile; fileRef = FA57CA710000000000000102 /* TVServiceConnectivity.swift */; };
+		FA57CA710000000000000201 /* TVProxyRouting.swift in Sources */ = {isa = PBXBuildFile; fileRef = FA57CA710000000000000202 /* TVProxyRouting.swift */; };
+		FA57CA710000000000000203 /* TVQRLoginCoordinator.swift in Sources */ = {isa = PBXBuildFile; fileRef = FA57CA710000000000000204 /* TVQRLoginCoordinator.swift */; };
+		FA57CA710000000000000205 /* TVCoreProtocol.swift in Sources */ = {isa = PBXBuildFile; fileRef = FA57CA710000000000000206 /* TVCoreProtocol.swift */; };
+		FA57CA710000000000000207 /* TVCoreProtocol.swift in Sources */ = {isa = PBXBuildFile; fileRef = FA57CA710000000000000206 /* TVCoreProtocol.swift */; };
+		FF1D63BB54B1298CB992E273 /* TVRoutingAssets.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1D4021B6B1079A80741AE231 /* TVRoutingAssets.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -62,39 +72,47 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
-        FA57CA710000000000000202 /* TVProxyRouting.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TVProxyRouting.swift; sourceTree = "<group>"; };
-        FA57CA710000000000000204 /* TVQRLoginCoordinator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TVQRLoginCoordinator.swift; sourceTree = "<group>"; };
-        FA57CA710000000000000206 /* TVCoreProtocol.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Shared/TVCoreProtocol.swift; sourceTree = "<group>"; };
-        FA57CA710000000000000102 /* TVServiceConnectivity.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TVServiceConnectivity.swift; sourceTree = "<group>"; };
-		FA57CA710000000000000002 /* tv_design_contract.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = "../assets/config/tv_design_contract.json"; sourceTree = "<group>"; };
 		0674424692C256D4D855A944 /* PacketTunnel.entitlements */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.plist.entitlements; path = PacketTunnel.entitlements; sourceTree = "<group>"; };
 		0FA2C476CA0F2DF189D3F99B /* TVLoginView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = TVLoginView.swift; sourceTree = "<group>"; };
+		148ADF3C7026BCDCF2FBB47E /* ASN.mmdb */ = {isa = PBXFileReference; includeInIndex = 1; name = ASN.mmdb; path = ../assets/data/ASN.mmdb; sourceTree = "<group>"; };
+		1D4021B6B1079A80741AE231 /* TVRoutingAssets.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = TVRoutingAssets.swift; path = Shared/TVRoutingAssets.swift; sourceTree = "<group>"; };
 		1E7A9A66ABF181989DCF3666 /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = Platforms/AppleTVOS.platform/Developer/SDKs/AppleTVOS18.0.sdk/System/Library/Frameworks/Foundation.framework; sourceTree = DEVELOPER_DIR; };
 		2088C4A7B602D5E2A074AF9F /* SessionStore.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = SessionStore.swift; sourceTree = "<group>"; };
 		2AEDFEF13B94EC57AB3F4596 /* TVNodeSelection.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = TVNodeSelection.swift; sourceTree = "<group>"; };
-		39B83D42B5CA71EC42095A3B /* config.yaml */ = {isa = PBXFileReference; includeInIndex = 1; name = config.yaml; path = ../assets/config/config.yaml; sourceTree = "<group>"; };
-		3C5B5A29D6076D759BEE4355 /* FastCatTV.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = FastCatTV.app; sourceTree = BUILT_PRODUCTS_DIR; };
-		3CDFA484377680DBA82DB466 /* PacketTunnel.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; name = PacketTunnel.appex; path = PacketTunnel.appex; sourceTree = BUILT_PRODUCTS_DIR; };
-		3D5F5DE22F87F724C42B159F /* MaterialIcons-Regular.otf */ = {isa = PBXFileReference; includeInIndex = 1; name = "MaterialIcons-Regular.otf"; path = "Fonts/MaterialIcons-Regular.otf"; sourceTree = "<group>"; };
+		39B83D42B5CA71EC42095A3B /* config.yaml */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.yaml; name = config.yaml; path = ../assets/config/config.yaml; sourceTree = "<group>"; };
+		3C5B5A29D6076D759BEE4355 /* FastCat.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = FastCat.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		3CDFA484377680DBA82DB466 /* PacketTunnel.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = PacketTunnel.appex; sourceTree = BUILT_PRODUCTS_DIR; };
+		3D5F5DE22F87F724C42B159F /* MaterialIcons-Regular.otf */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = file; name = "MaterialIcons-Regular.otf"; path = "Fonts/MaterialIcons-Regular.otf"; sourceTree = "<group>"; };
+		4BA8246145D7DF6D8C196E55 /* geoip.metadb */ = {isa = PBXFileReference; includeInIndex = 1; name = geoip.metadb; path = ../assets/data/geoip.metadb; sourceTree = "<group>"; };
 		54C7047B9199B36AC5EFFEE1 /* FastCatTVApp.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = FastCatTVApp.swift; sourceTree = "<group>"; };
 		54FE6398AA2482D7866C55CD /* Info.plist */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		5A65F00F5B551810E780C416 /* icon.png */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = image.png; name = icon.png; path = ../assets/images/icon.png; sourceTree = "<group>"; };
+		5CEFE117D87A6506F4AF032D /* TVToolsModels.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = TVToolsModels.swift; path = FastCatTV/TVToolsModels.swift; sourceTree = "<group>"; };
 		673B4D0DDB3BA09AEE610BF3 /* GatewayClient.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = GatewayClient.swift; sourceTree = "<group>"; };
-		74FD3780B2F3DB7FEFA70D37 /* Roboto-Regular.ttf */ = {isa = PBXFileReference; includeInIndex = 1; name = "Roboto-Regular.ttf"; path = "Fonts/Roboto-Regular.ttf"; sourceTree = "<group>"; };
+		6ABA1B9B8971068F83D50513 /* TVToolsView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = TVToolsView.swift; path = FastCatTV/TVToolsView.swift; sourceTree = "<group>"; };
+		74FD3780B2F3DB7FEFA70D37 /* Roboto-Regular.ttf */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = file; name = "Roboto-Regular.ttf"; path = "Fonts/Roboto-Regular.ttf"; sourceTree = "<group>"; };
+		7B05B30212BB6B712961761A /* Assets.xcassets */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = folder.assetcatalog; name = Assets.xcassets; path = FastCatTV/Assets.xcassets; sourceTree = "<group>"; };
 		8A0C7A3613E7F0060730F353 /* Config.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; path = Config.xcconfig; sourceTree = "<group>"; };
-		FA57CA710000000000000208 /* Build.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Build.xcconfig; sourceTree = "<group>"; };
-		FA57CA710000000000000209 /* Version.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Version.xcconfig; sourceTree = "<group>"; };
+		8EF1464779FBC011276D7FE4 /* GeoIP.dat */ = {isa = PBXFileReference; includeInIndex = 1; name = GeoIP.dat; path = ../assets/data/GeoIP.dat; sourceTree = "<group>"; };
 		91F0DE1405C694BE70C3DAF4 /* PacketTunnelProvider.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = PacketTunnelProvider.swift; sourceTree = "<group>"; };
 		92517154B96297B79B9827EB /* VPNManager.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = VPNManager.swift; sourceTree = "<group>"; };
 		9A995D7BDF3A1E9C948E31F7 /* Info.plist */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		9BC59243490356AC8B97290C /* FastCatTV.entitlements */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.plist.entitlements; path = FastCatTV.entitlements; sourceTree = "<group>"; };
-		A1D20EBB700C190400820749 /* Roboto-Medium.ttf */ = {isa = PBXFileReference; includeInIndex = 1; name = "Roboto-Medium.ttf"; path = "Fonts/Roboto-Medium.ttf"; sourceTree = "<group>"; };
+		A1D20EBB700C190400820749 /* Roboto-Medium.ttf */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = file; name = "Roboto-Medium.ttf"; path = "Fonts/Roboto-Medium.ttf"; sourceTree = "<group>"; };
 		A63186297390A04B18EA6216 /* TVHomeView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = TVHomeView.swift; sourceTree = "<group>"; };
+		AFCBDA65252AD6B73DB5C8CF /* GeoSite.dat */ = {isa = PBXFileReference; includeInIndex = 1; name = GeoSite.dat; path = ../assets/data/GeoSite.dat; sourceTree = "<group>"; };
 		B1D5CDEEB5ADE37C419C1A71 /* KeychainStore.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = KeychainStore.swift; sourceTree = "<group>"; };
 		B8C36B3EA156B107E22B7D0A /* FastCatSubscriptionDecoder.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = FastCatSubscriptionDecoder.swift; sourceTree = "<group>"; };
 		C867A35A9B0F0CD4C4E71178 /* TVBuildConfiguration.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = TVBuildConfiguration.swift; sourceTree = "<group>"; };
 		F09EF338E6DE143C7FEF2A88 /* TVRemoteConfigManager.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = TVRemoteConfigManager.swift; sourceTree = "<group>"; };
-		F76E8A30FEDDD517749D983A /* libclash.xcframework */ = {isa = PBXFileReference; includeInIndex = 1; path = libclash.xcframework; sourceTree = "<group>"; };
+		F76E8A30FEDDD517749D983A /* libclash.xcframework */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = wrapper.xcframework; path = libclash.xcframework; sourceTree = "<group>"; };
+		FA57CA710000000000000002 /* tv_design_contract.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = ../assets/config/tv_design_contract.json; sourceTree = "<group>"; };
+		FA57CA710000000000000102 /* TVServiceConnectivity.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TVServiceConnectivity.swift; sourceTree = "<group>"; };
+		FA57CA710000000000000202 /* TVProxyRouting.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TVProxyRouting.swift; sourceTree = "<group>"; };
+		FA57CA710000000000000204 /* TVQRLoginCoordinator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TVQRLoginCoordinator.swift; sourceTree = "<group>"; };
+		FA57CA710000000000000206 /* TVCoreProtocol.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Shared/TVCoreProtocol.swift; sourceTree = "<group>"; };
+		FA57CA710000000000000208 /* Build.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Build.xcconfig; sourceTree = "<group>"; };
+		FA57CA710000000000000209 /* Version.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Version.xcconfig; sourceTree = "<group>"; };
 		FAA5885172778FFC76BACCAE /* TVDesignSystem.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = TVDesignSystem.swift; sourceTree = "<group>"; };
 		FE2A73C5347462A513CBA9B0 /* PacketTunnel-Bridging-Header.h */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; path = "PacketTunnel-Bridging-Header.h"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -105,6 +123,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				CFD7DA2AAF8E2C0A81874129 /* Foundation.framework in Frameworks */,
+				291B393B4DC008B58254AB4E /* libclash.xcframework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -131,12 +150,12 @@
 				B8C36B3EA156B107E22B7D0A /* FastCatSubscriptionDecoder.swift */,
 				FAA5885172778FFC76BACCAE /* TVDesignSystem.swift */,
 				2AEDFEF13B94EC57AB3F4596 /* TVNodeSelection.swift */,
-                FA57CA710000000000000202 /* TVProxyRouting.swift */,
-                FA57CA710000000000000204 /* TVQRLoginCoordinator.swift */,
+				FA57CA710000000000000202 /* TVProxyRouting.swift */,
+				FA57CA710000000000000204 /* TVQRLoginCoordinator.swift */,
 				673B4D0DDB3BA09AEE610BF3 /* GatewayClient.swift */,
 				0FA2C476CA0F2DF189D3F99B /* TVLoginView.swift */,
 				A63186297390A04B18EA6216 /* TVHomeView.swift */,
-                FA57CA710000000000000102 /* TVServiceConnectivity.swift */,
+				FA57CA710000000000000102 /* TVServiceConnectivity.swift */,
 				92517154B96297B79B9827EB /* VPNManager.swift */,
 				9A995D7BDF3A1E9C948E31F7 /* Info.plist */,
 				9BC59243490356AC8B97290C /* FastCatTV.entitlements */,
@@ -144,7 +163,6 @@
 				A1D20EBB700C190400820749 /* Roboto-Medium.ttf */,
 				3D5F5DE22F87F724C42B159F /* MaterialIcons-Regular.otf */,
 			);
-			name = FastCatTV;
 			path = FastCatTV;
 			sourceTree = "<group>";
 		};
@@ -167,7 +185,7 @@
 		B5A66217DAE4DB4EA92DB71E /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				3C5B5A29D6076D759BEE4355 /* FastCatTV.app */,
+				3C5B5A29D6076D759BEE4355 /* FastCat.app */,
 				3CDFA484377680DBA82DB466 /* PacketTunnel.appex */,
 			);
 			name = Products;
@@ -179,7 +197,7 @@
 				B5A66217DAE4DB4EA92DB71E /* Products */,
 				AAE54DBBFC8D097B1C359CCF /* Frameworks */,
 				5852889DFB169F57012096F3 /* FastCatTV */,
-                FA57CA710000000000000206 /* TVCoreProtocol.swift */,
+				FA57CA710000000000000206 /* TVCoreProtocol.swift */,
 				BFBDCB49D45BE4F8FD367296 /* PacketTunnel */,
 				C7C4F3D0F02A9E4183D34D11 /* Frameworks */,
 				39B83D42B5CA71EC42095A3B /* config.yaml */,
@@ -188,6 +206,14 @@
 				8A0C7A3613E7F0060730F353 /* Config.xcconfig */,
 				FA57CA710000000000000208 /* Build.xcconfig */,
 				FA57CA710000000000000209 /* Version.xcconfig */,
+				1D4021B6B1079A80741AE231 /* TVRoutingAssets.swift */,
+				8EF1464779FBC011276D7FE4 /* GeoIP.dat */,
+				AFCBDA65252AD6B73DB5C8CF /* GeoSite.dat */,
+				148ADF3C7026BCDCF2FBB47E /* ASN.mmdb */,
+				4BA8246145D7DF6D8C196E55 /* geoip.metadb */,
+				7B05B30212BB6B712961761A /* Assets.xcassets */,
+				6ABA1B9B8971068F83D50513 /* TVToolsView.swift */,
+				5CEFE117D87A6506F4AF032D /* TVToolsModels.swift */,
 			);
 			sourceTree = "<group>";
 		};
@@ -199,7 +225,6 @@
 				54FE6398AA2482D7866C55CD /* Info.plist */,
 				0674424692C256D4D855A944 /* PacketTunnel.entitlements */,
 			);
-			name = PacketTunnel;
 			path = PacketTunnel;
 			sourceTree = "<group>";
 		};
@@ -208,7 +233,6 @@
 			children = (
 				F76E8A30FEDDD517749D983A /* libclash.xcframework */,
 			);
-			name = Frameworks;
 			path = Frameworks;
 			sourceTree = "<group>";
 		};
@@ -248,7 +272,7 @@
 			);
 			name = FastCatTV;
 			productName = FastCatTV;
-			productReference = 3C5B5A29D6076D759BEE4355 /* FastCatTV.app */;
+			productReference = 3C5B5A29D6076D759BEE4355 /* FastCat.app */;
 			productType = "com.apple.product-type.application";
 		};
 /* End PBXNativeTarget section */
@@ -269,8 +293,6 @@
 				Base,
 			);
 			mainGroup = B9882050703090502CF47D06;
-			minimizedProjectReferenceProxies = 0;
-			preferredProjectObjectVersion = 77;
 			productRefGroup = B5A66217DAE4DB4EA92DB71E /* Products */;
 			projectDirPath = "";
 			projectRoot = "";
@@ -292,6 +314,11 @@
 				9C307498A48F40B79D7E79F7 /* Roboto-Regular.ttf in Resources */,
 				6B9BF897184B833130F259CD /* Roboto-Medium.ttf in Resources */,
 				1BF82943385F910990125546 /* MaterialIcons-Regular.otf in Resources */,
+				B7BF89EF3C933342F086010C /* GeoIP.dat in Resources */,
+				311DA4F647FBADE38A405DC4 /* GeoSite.dat in Resources */,
+				077868B6DF4E4056C1E7FECF /* ASN.mmdb in Resources */,
+				233A4E3168CACAF75314CDD4 /* geoip.metadb in Resources */,
+				B85CA122D81A4E5C47F98EFF /* Assets.xcassets in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -310,7 +337,8 @@
 			buildActionMask = 2147483647;
 			files = (
 				E21E28C5EE8732CBB332AE63 /* PacketTunnelProvider.swift in Sources */,
-                FA57CA710000000000000207 /* TVCoreProtocol.swift in Tunnel Sources */,
+				FA57CA710000000000000207 /* TVCoreProtocol.swift in Sources */,
+				FF1D63BB54B1298CB992E273 /* TVRoutingAssets.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -326,14 +354,17 @@
 				9D2766B2896491C9499D3D89 /* FastCatSubscriptionDecoder.swift in Sources */,
 				E2250B070E4FB1D9E8AE2F83 /* TVDesignSystem.swift in Sources */,
 				A1436BB9360AA8F0D654BBBE /* TVNodeSelection.swift in Sources */,
-                FA57CA710000000000000201 /* TVProxyRouting.swift in Sources */,
-                FA57CA710000000000000203 /* TVQRLoginCoordinator.swift in Sources */,
-                FA57CA710000000000000205 /* TVCoreProtocol.swift in App Sources */,
+				FA57CA710000000000000201 /* TVProxyRouting.swift in Sources */,
+				FA57CA710000000000000203 /* TVQRLoginCoordinator.swift in Sources */,
+				FA57CA710000000000000205 /* TVCoreProtocol.swift in Sources */,
 				3036E952A6DBDDB76FFA8EF9 /* GatewayClient.swift in Sources */,
 				1D392A56603115CF69107170 /* TVLoginView.swift in Sources */,
 				48B17E71BACEA1E1B1FED51C /* TVHomeView.swift in Sources */,
-                FA57CA710000000000000101 /* TVServiceConnectivity.swift in Sources */,
+				FA57CA710000000000000101 /* TVServiceConnectivity.swift in Sources */,
 				D9A0EF7C863B57A1DDBB6541 /* VPNManager.swift in Sources */,
+				1E52C916D77E4F03C59F4361 /* TVRoutingAssets.swift in Sources */,
+				51C13616F475743764316FDE /* TVToolsView.swift in Sources */,
+				7669AFCE519A6AF1C2A62DEC /* TVToolsModels.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -357,12 +388,26 @@
 				CODE_SIGN_ENTITLEMENTS = FastCatTV/FastCatTV.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = "$(FASTCAT_BUILD_NUMBER)";
+				DEVELOPMENT_TEAM = 995AQ265K2;
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(PROJECT_DIR)/Frameworks",
+				);
 				INFOPLIST_FILE = FastCatTV/Info.plist;
-				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
 				MARKETING_VERSION = "$(FASTCAT_APP_VERSION)";
+				OTHER_LDFLAGS = (
+					"$(inherited)",
+					"-lclash",
+					"-lresolv",
+				);
 				PRODUCT_BUNDLE_IDENTIFIER = "$(FASTCAT_TV_BUNDLE_IDENTIFIER)";
 				PRODUCT_NAME = FastCat;
 				SDKROOT = appletvos;
+				SWIFT_OBJC_BRIDGING_HEADER = "PacketTunnel/PacketTunnel-Bridging-Header.h";
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = 3;
 				TVOS_DEPLOYMENT_TARGET = 17.0;
@@ -495,14 +540,28 @@
 				CODE_SIGN_ENTITLEMENTS = FastCatTV/FastCatTV.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = "$(FASTCAT_BUILD_NUMBER)";
+				DEVELOPMENT_TEAM = 995AQ265K2;
 				"EXCLUDED_EXPLICIT_TARGET_DEPENDENCIES[sdk=appletvsimulator*]" = PacketTunnel;
 				"EXCLUDED_SOURCE_FILE_NAMES[sdk=appletvsimulator*]" = PacketTunnel.appex;
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(PROJECT_DIR)/Frameworks",
+				);
 				INFOPLIST_FILE = FastCatTV/Info.plist;
-				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
 				MARKETING_VERSION = "$(FASTCAT_APP_VERSION)";
+				OTHER_LDFLAGS = (
+					"$(inherited)",
+					"-lclash",
+					"-lresolv",
+				);
 				PRODUCT_BUNDLE_IDENTIFIER = "$(FASTCAT_TV_BUNDLE_IDENTIFIER)";
 				PRODUCT_NAME = FastCat;
 				SDKROOT = appletvos;
+				SWIFT_OBJC_BRIDGING_HEADER = "PacketTunnel/PacketTunnel-Bridging-Header.h";
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = 3;
 				TVOS_DEPLOYMENT_TARGET = 17.0;
@@ -516,12 +575,17 @@
 				CODE_SIGN_ENTITLEMENTS = PacketTunnel/PacketTunnel.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = "$(FASTCAT_BUILD_NUMBER)";
+				DEVELOPMENT_TEAM = 995AQ265K2;
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(inherited)",
 					"$(PROJECT_DIR)/Frameworks",
 				);
 				INFOPLIST_FILE = PacketTunnel/Info.plist;
-				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @executable_path/../../Frameworks";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
 				MARKETING_VERSION = "$(FASTCAT_APP_VERSION)";
 				OTHER_LDFLAGS = (
 					"$(inherited)",
@@ -546,12 +610,17 @@
 				CODE_SIGN_ENTITLEMENTS = PacketTunnel/PacketTunnel.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = "$(FASTCAT_BUILD_NUMBER)";
+				DEVELOPMENT_TEAM = 995AQ265K2;
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(inherited)",
 					"$(PROJECT_DIR)/Frameworks",
 				);
 				INFOPLIST_FILE = PacketTunnel/Info.plist;
-				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @executable_path/../../Frameworks";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
 				MARKETING_VERSION = "$(FASTCAT_APP_VERSION)";
 				OTHER_LDFLAGS = (
 					"$(inherited)",

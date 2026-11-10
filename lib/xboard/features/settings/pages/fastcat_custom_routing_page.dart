@@ -1,3 +1,5 @@
+import 'package:fl_clash/common/common.dart' show system;
+import 'package:fl_clash/xboard/features/shared/widgets/tv_deferred_input.dart';
 import 'package:fl_clash/xboard/features/settings/utils/account_routing_store.dart';
 import 'package:fl_clash/xboard/features/auth/providers/xboard_user_provider.dart';
 import 'package:fl_clash/mihomo/mihomo.dart';
@@ -225,15 +227,36 @@ class _FastCatCustomRoutingPageState
                 child: Padding(
                   padding: const EdgeInsets.all(12),
                   child: Column(children: [
-                    TextField(
-                      controller: _hostController,
-                      decoration: InputDecoration(
-                        labelText:
-                            chinese ? '域名、IP 或 CIDR' : 'Domain, IP or CIDR',
-                        hintText: 'youtube.com / 8.8.8.8 / 1.1.1.0/24',
-                      ),
-                      onSubmitted: (_) => _add(proxyTarget),
-                    ),
+                    Builder(builder: (context) {
+                      if (!system.isTV) {
+                        return TextField(
+                          controller: _hostController,
+                          decoration: InputDecoration(
+                            labelText:
+                                chinese ? '域名、IP 或 CIDR' : 'Domain, IP or CIDR',
+                            hintText: 'youtube.com / 8.8.8.8 / 1.1.1.0/24',
+                          ),
+                          onSubmitted: (_) => _add(proxyTarget),
+                        );
+                      }
+                      return TVDeferredInput(
+                          builder: (context, focus, readOnly, cursor, edit) =>
+                              TextField(
+                                focusNode: focus,
+                                readOnly: readOnly,
+                                showCursor: cursor,
+                                onTap: system.isTV ? edit : null,
+                                controller: _hostController,
+                                decoration: InputDecoration(
+                                  labelText: chinese
+                                      ? '域名、IP 或 CIDR'
+                                      : 'Domain, IP or CIDR',
+                                  hintText:
+                                      'youtube.com / 8.8.8.8 / 1.1.1.0/24',
+                                ),
+                                onSubmitted: (_) => _add(proxyTarget),
+                              ));
+                    }),
                     const SizedBox(height: 12),
                     Row(children: [
                       Expanded(

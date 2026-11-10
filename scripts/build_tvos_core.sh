@@ -2,8 +2,10 @@
 set -euo pipefail
 
 # Build the static mihomo bridge used by the tvOS Packet Tunnel extension.
-# tvOS has no Go GOOS value; build for Darwin and explicitly select the
-# shared Apple packetFlow bridge with the `ios` build tag.
+# tvOS shares the mobile signal-stack behavior of iOS. GOOS=ios selects
+# that runtime; Clang still targets tvOS for the actual Mach-O platform.
+# A darwin runtime with only -tags ios retains macOS signal handling and
+# aborts on physical Apple TV with "non-Go code disabled sigaltstack".
 cd "$(dirname "$0")/.."
 
 if [ "$(uname -s)" != "Darwin" ]; then
@@ -30,7 +32,7 @@ echo "→ Building tvOS mihomo core..."
   cd core
   env \
     CGO_ENABLED=1 \
-    GOOS=darwin \
+    GOOS=ios \
     GOARCH=arm64 \
     CC="$CLANG_PATH" \
     CGO_CFLAGS="-isysroot $SDK_PATH -target $APPLE_TARGET" \

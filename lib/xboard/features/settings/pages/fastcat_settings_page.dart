@@ -1,4 +1,8 @@
 import 'dart:io';
+import 'package:fl_clash/xboard/features/update_check/providers/update_check_provider.dart';
+import 'package:fl_clash/xboard/features/auth/providers/xboard_user_provider.dart';
+import 'package:fl_clash/xboard/features/invite/dialogs/logout_dialog.dart';
+import 'package:fl_clash/xboard/features/mine/widgets/account_deletion_sheet.dart';
 import 'package:fl_clash/widgets/tv_focusable.dart';
 
 import 'package:fl_clash/common/common.dart';
@@ -26,6 +30,68 @@ class FastCatSettingsPage extends ConsumerWidget {
     final appSetting = ref.watch(appSettingProvider);
     final theme = ref.watch(themeSettingProvider);
 
+    if (system.isTV && Platform.isAndroid) {
+      final hasUpdate = ref.watch(updateCheckProvider).hasUpdate;
+      final zh = Localizations.localeOf(context).languageCode == 'zh';
+      return Scaffold(
+        appBar: AppBar(title: Text(zh ? '工具设置' : 'Tools & settings')),
+        body: FocusTraversalGroup(
+            child: ListView(
+          padding: const EdgeInsets.fromLTRB(25, 16, 25, 24),
+          children: [
+            _navigationTile(context,
+                icon: Icons.language,
+                title: l10n.language,
+                onTap: () => _chooseLanguage(context, ref)),
+            _navigationTile(context,
+                icon: Icons.brightness_6,
+                title: l10n.theme,
+                onTap: () => _chooseTheme(context, ref, theme.themeMode)),
+            _navigationTile(context,
+                icon: Icons.power_settings_new,
+                title: l10n.xboardStartup,
+                onTap: () =>
+                    _open(context, const FastCatAutoStartSettingsPage())),
+            _navigationTile(context,
+                icon: Icons.route,
+                title: zh ? '自定义分流' : 'Custom routing',
+                onTap: () => _open(context, const FastCatCustomRoutingPage())),
+            _navigationTile(context,
+                icon: Icons.live_tv,
+                title: l10n.xboardStreamingCheck,
+                onTap: () => _open(context, const StreamingCheckPage())),
+            Badge(
+                isLabelVisible: hasUpdate,
+                child: _navigationTile(context,
+                    icon: Icons.info_outline,
+                    title: l10n.about,
+                    onTap: () => _open(context, const FastCatAboutPage()))),
+            const SizedBox(height: 20),
+            _navigationTile(context,
+                icon: Icons.logout,
+                title: l10n.xboardLogout,
+                onTap: () => showDialog<void>(
+                    context: context, builder: (_) => const LogoutDialog())),
+            _navigationTile(context,
+                icon: Icons.delete_forever,
+                title: zh ? '注销账号' : 'Delete account', onTap: () async {
+              final confirmed = await XbConfirmDialog.show(context,
+                  title: zh ? '确认进入注销流程？' : 'Start account deletion?',
+                  message: zh
+                      ? '注销账号会使所有设备退出登录，并立即停止套餐与订阅。'
+                      : 'Deleting your account signs out all devices and stops subscriptions immediately.',
+                  confirmLabel: zh ? '继续' : 'Continue',
+                  tone: XbDialogTone.danger,
+                  icon: Icons.delete_forever_outlined);
+              if (confirmed && context.mounted) {
+                await showAccountDeletionSheet(
+                    context, ref, ref.read(xboardUserProvider).email ?? '');
+              }
+            }),
+          ],
+        )),
+      );
+    }
     return Scaffold(
       backgroundColor: XbUiTokens.pageBackground(context),
       appBar: AppBar(

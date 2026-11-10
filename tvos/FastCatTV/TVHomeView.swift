@@ -26,11 +26,21 @@ struct TVHomeView: View {
   @State private var isConnecting = false
   @State private var isApplyingRouting = false
   @State private var routeMode: TVRouteMode = .rule
-  @AppStorage(TVTheme.preferenceKey) private var prefersDarkTheme = true
+  private var prefersDarkTheme: Bool {colorScheme == .dark}
+  @State private var didCheckAutoConnect = false
   @AppStorage(TVLanguage.preferenceKey) private var language = TVLanguage.system.rawValue
   @AppStorage("fastcat.tv.route-mode") private var savedRouteMode = TVRouteMode.rule.rawValue
   @AppStorage("fastcat.tv.selected-node") private var savedSelectedNode = ""
+  @State private var showTools = false
+  @State private var toolsStartAbout = false
+  @State private var hasTVUpdate = false
   @State private var errorMessage: String?
+  @State private var delayDiscountPercent = 0
+  @State private var didStartLatency = false
+  @State private var selectionLatencyTask: Task<Void, Never>?
+  @State private var preparingConnection = false
+  @State private var connectionPhase: String?
+  @State private var latencyDates: [String: Date] = [:]
   @State private var showLogoutConfirmation = false
   @State private var isLoggingOut = false
   @State private var logoutProtectedAtOpen = false
@@ -90,11 +100,16 @@ struct TVHomeView: View {
   private var homeCanvas: some View {
     TVDesignCanvas {
       GeometryReader { geometry in
-        let bodyHeight = max(0, geometry.size.height - tv(64))
-        let isShort = bodyHeight < tv(620)
+        let viewport = TVLayout.logicalSize(geometry.size)
+        let designSize = CGSize(
+          width: max(0, viewport.width - CGFloat(TVHomeFrame.horizontal * 2)),
+          height: CGFloat(TVHomeFrame.contentHeight(Double(viewport.height))))
+        let designBodyHeight = max(0, designSize.height - 64)
+        let bodyHeight = tv(designBodyHeight)
+        let isShort = designBodyHeight < 620
         let topInfoHeight: CGFloat = isShort ? tv(124) : tv(148)
-        let horizontalPadding: CGFloat = geometry.size.width >= tv(1400) ? tv(33) : tv(25)
-        let mainHeight = max(0, bodyHeight - tv(19) - topInfoHeight - tv(16) - tv(23))
+        let horizontalPadding: CGFloat = designSize.width >= 1400 ? tv(33) : tv(25)
+        let mainHeight = max(0, bodyHeight - tv(23) - topInfoHeight - tv(16) - tv(23))
 
         ZStack {
           TVTheme.background
@@ -103,6 +118,7 @@ struct TVHomeView: View {
             if showNodeSelector {
               TVNodeSelectorView(
                 nodes: nodes,
+                delayDiscountPercent: delayDiscountPercent,
                 selectedName: selectedNodeName,
                 routeMode: routeMode.rawValue,
                 isLoading: isLoadingNodes,
@@ -113,8 +129,12 @@ struct TVHomeView: View {
                 onClose: { showNodeSelector = false },
                 onRefresh: { Task { await refreshNodesFromToolbar() } },
                 onTest: { Task { await runLatencyTest() } },
+                onTestNode: { node in Task { await runLatencyTest(only: node.name) } },
                 onSelect: { selectNode($0) }
               )
+              .padding(.horizontal, horizontalPadding + tv(CGFloat(TVHomeFrame.horizontal)))
+              .padding(.top, tv(CGFloat(TVHomeFrame.top)))
+              .padding(.bottom, tv(CGFloat(TVHomeFrame.bottom) + 23))
             } else {
               VStack(spacing: tv(0)) {
                 header
@@ -125,9 +145,14 @@ struct TVHomeView: View {
                   mainDashboard(isShort: isShort).frame(height: mainHeight)
                 }
                 .padding(.horizontal, horizontalPadding)
-                .padding(.top, tv(19))
+                .padding(.top, tv(23))
                 .padding(.bottom, tv(23))
               }
+              .frame(width: tv(designSize.width), height: tv(designSize.height))
+              .padding(.init(top: tv(CGFloat(TVHomeFrame.top)),
+                             leading: tv(CGFloat(TVHomeFrame.horizontal)),
+                             bottom: tv(CGFloat(TVHomeFrame.bottom)),
+                             trailing: tv(CGFloat(TVHomeFrame.horizontal))))
             }
           }
           .disabled(isModalPresented)
@@ -168,13 +193,47 @@ struct TVHomeView: View {
       }
 #endif
       await loadHomeInfo(forceRefresh: true)
+      // Claim before awaiting system status. Language changes and view updates
+      // must not cause a second automatic connection attempt.
+      if !didCheckAutoConnect {
+        didCheckAutoConnect = true
+        let status: String = await withCheckedContinuation { continuation in
+          VPNManager.shared.refreshStatus {continuation.resume(returning:$0)}
+        }
+        if TVStartupPolicy.shouldConnect(
+          enabled:UserDefaults.standard.bool(forKey:TVStartupPolicy.preferenceKey),
+          status:status,active:scenePhase == .active,signedIn:session.isSignedIn,
+          cancelled:Task.isCancelled), !simulatorPreview {
+          await prepareAndConnect()
+        }
+      }
+      if !didStartLatency {
+        didStartLatency = true
+        await loadNodes(forceRefresh: false)
+        guard !Task.isCancelled, scenePhase == .active else { return }
+        let current = selectedNodeName ?? nodes.first?.name
+        if let current { await runLatencyTest(only: current) }
+        await runLatencyTest(excluding: Set(current.map { [$0] } ?? []))
+      }
     }
+    .fullScreenCover(isPresented: $showTools) {
+      TVToolsView(startAbout: toolsStartAbout, onLogout: {
+        showTools = false
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) { showLogoutConfirmation = true }
+      }, onRulesChanged: { try await applyCustomRouting() }).environmentObject(session)
+    }
+    .task {
+      hasTVUpdate = await TVRemoteConfigManager.shared.availableTVUpdate(language: TVLanguage.resolved(from: language)) != nil
+    }
+    .onReceive(NotificationCenter.default.publisher(for: .tvUpdateAvailability)) { event in hasTVUpdate = event.object as? Bool ?? false }
+    .onDisappear { selectionLatencyTask?.cancel() }
     .onReceive(NotificationCenter.default.publisher(for: VPNManager.statusDidChangeNotification)) { notification in
       syncVPNStatus(notification.object as? String)
     }
     .onChange(of: connected) { _, _ in updateConnectivityProxy() }
     .onChange(of: scenePhase) { _, phase in
       if phase == .active { syncVPNStatus() }
+      else { selectionLatencyTask?.cancel() }
     }
     .onChange(of: selectedNodeName) { _, _ in updateConnectivityProxy() }
     .onChange(of: selectedGroupName) { _, _ in updateConnectivityProxy() }
@@ -253,45 +312,23 @@ struct TVHomeView: View {
   private var header: some View {
     HStack(spacing: tv(9)) {
       TVBrandLogo()
-        .frame(width: tv(30), height: tv(30))
+        .frame(width: tv(34), height: tv(34))
         .clipShape(RoundedRectangle(cornerRadius: tv(8), style: .continuous))
 
       Text(tvText("快猫", "FastCat", language: language))
-        .font(TVFont.medium(16))
+        .font(TVFont.bold(18))
         .foregroundStyle(TVTheme.textPrimary)
-
-      if connectivity.state.showBadge {
-        TVFocusButton(cornerRadius: tv(14), action: { showConnectivityDetail = true }) { _ in
-          HStack(spacing: tv(5)) {
-            MaterialIcon(glyph: connectivity.state.cause == .noNetwork ? .wifiOff : .networkCheck,
-                         size: 14, color: TVTheme.warning)
-            Text(connectivity.state.title(language: language))
-              .font(TVFont.medium(11)).foregroundStyle(TVTheme.warning).lineLimit(1)
-          }
-          .padding(.horizontal, tv(10)).frame(height: tv(32))
-          .background(TVTheme.warning.opacity(0.10))
-          .clipShape(RoundedRectangle(cornerRadius: tv(14), style: .continuous))
-        }
-        .accessibilityLabel(connectivity.state.title(language: language))
-      }
 
       Spacer()
       TVToolbarButton(
-        title: tvText("隐私", "Privacy", language: language),
-        icon: .personOutline,
+        title: tvText("工具设置", "Tools & settings", language: language),
+        icon: .settingsOutlined,
         horizontalPadding: 18,
         cornerRadius: tv(14),
         height: 44,
-        action: { NotificationCenter.default.post(name: .tvShowPrivacyNotice, object: nil) }
+        action: { toolsStartAbout = false; showTools = true }
       )
-      TVToolbarButton(
-        title: tvText("切换主题", "Switch Theme", language: language),
-        icon: prefersDarkTheme ? .lightModeOutlined : .darkModeOutlined,
-        horizontalPadding: 18,
-        cornerRadius: tv(14),
-        height: 44,
-        action: { prefersDarkTheme.toggle() }
-      )
+      .overlay(alignment: .topTrailing) { if hasTVUpdate { Circle().fill(.red).frame(width: tv(8), height: tv(8)) } }
     }
   }
 
@@ -450,8 +487,11 @@ struct TVHomeView: View {
   private func connectButton(size: CGFloat) -> some View {
     let middleSize = size * 0.89
     let innerSize = size * 0.75
-    let iconSize = size * 0.34 * 0.75
-    let labelSize = min(max(size * 0.07, 9), 12)
+    // size is already in native points; helpers below convert design units.
+    // Normalize once to avoid scaling the power glyph twice.
+    let designSize = size / tv(1)
+    let iconSize = designSize * 0.34 * 0.75
+    let labelSize = min(max(designSize * 0.07, 9), 12)
     return TVFocusButton(cornerRadius: size / 2, focus: $connectButtonFocused, action: toggleConnection) { _ in
       ZStack {
         Circle().fill(connected ? TVTheme.primary.opacity(0.10) : .clear)
@@ -464,15 +504,23 @@ struct TVHomeView: View {
         if isConnecting {
           VStack(spacing: tv(5)) {
             ProgressView().scaleEffect(0.8).tint(connected ? TVTheme.onPrimary : TVTheme.primary)
-            Text(tvText("正在连接", "Connecting", language: language)).font(TVFont.regular(labelSize))
+            Text(connectionPhase ?? tvText("正在连接", "Connecting", language: language)).font(TVFont.regular(labelSize))
           }
           .foregroundStyle(connected ? TVTheme.onPrimary : TVTheme.primary)
         } else {
-          VStack(spacing: tv(4)) {
+          VStack(spacing: tv(min(max(designSize * 0.03, 2), 4))) {
             MaterialIcon(glyph: .powerSettingsNew, size: iconSize, color: connected ? TVTheme.onPrimary : (prefersDarkTheme ? TVTheme.primary : Color(red: 69/255, green: 90/255, blue: 100/255)))
-            Text(connected ? tvText("已连接", "Connected", language: language) : tvText("点击连接", "Tap to connect", language: language))
-              .font(TVFont.regular(labelSize))
-              .foregroundStyle(connected ? TVTheme.onPrimary : (prefersDarkTheme ? TVTheme.primary : Color(red: 69/255, green: 90/255, blue: 100/255)))
+            if connected {
+              TimelineView(.periodic(from: .now, by: 1)) { context in
+                Text(tvConnectionDuration(since: VPNManager.shared.connectedSince, now: context.date))
+                  .font(TVFont.regular(labelSize)).monospacedDigit()
+                  .foregroundStyle(TVTheme.onPrimary)
+              }
+            } else {
+              Text(tvText("点击连接", "Tap to connect", language: language))
+                .font(TVFont.regular(labelSize))
+                .foregroundStyle(prefersDarkTheme ? TVTheme.primary : Color(red: 69/255, green: 90/255, blue: 100/255))
+            }
           }
         }
       }
@@ -497,20 +545,25 @@ struct TVHomeView: View {
     let accountHeight: CGFloat = isShort ? tv(70) : tv(82)
     return VStack(spacing: tv(0)) {
       modeCard.frame(height: modeHeight)
-      Spacer(minLength: tv(10))
+      Spacer(minLength: 0)
       routeCard.frame(height: nodeHeight)
-      Spacer(minLength: tv(10))
+      Spacer(minLength: 0)
       accountCard.frame(height: accountHeight)
-      Spacer(minLength: tv(10))
+      Spacer(minLength: 0)
       TVFocusButton(cornerRadius: TVTheme.compactRadius, action: {
-        NotificationCenter.default.post(name: .tvRefreshRemoteConfiguration, object: nil)
+        toolsStartAbout = true
+        showTools = true
       }) { _ in
+        HStack(spacing: tv(6)) {
         Text(tvText("当前版本：V\(appVersion)", "Current version: V\(appVersion)", language: language))
           .font(TVFont.regular(12))
           .foregroundStyle(TVTheme.textSecondary.opacity(0.72))
-          .frame(maxWidth: .infinity, minHeight: tv(20), maxHeight: tv(20))
+          .padding(.horizontal, tv(8))
+          .padding(.vertical, tv(3))
+        if hasTVUpdate { Circle().fill(.red).frame(width: tv(8), height: tv(8)) }
+        }
       }
-      .accessibilityHint(tvText("刷新配置并检查更新", "Refresh configuration and check for updates", language: language))
+      .accessibilityHint(tvText("打开关于", "Open About", language: language))
     }
     .frame(maxHeight: .infinity)
   }
@@ -558,11 +611,7 @@ struct TVHomeView: View {
           Text(routeDisplayName).font(TVFont.medium(14)).foregroundStyle(TVTheme.primary).lineLimit(1)
         }
         Spacer()
-        if let delay = selectedNodeDelay {
-          Text("\(delay)ms")
-            .font(TVFont.medium(11))
-            .foregroundStyle(delay < 500 ? TVTheme.success : TVTheme.warning)
-        }
+        TVLatencyIndicator(delay: tvDisplayedDelay(nodes.first(where: { $0.name == selectedNodeName })?.delayMS, discount: delayDiscountPercent), testing: selectedNodeName.map { testingNodeNames.contains($0) } ?? false)
         if isLoadingNodes {
           ProgressView().scaleEffect(0.8)
         } else {
@@ -1068,7 +1117,7 @@ struct TVHomeView: View {
   private var selectedNodeDelay: Int? {
     guard let selectedNodeName else { return nil }
     guard let delay = nodes.first(where: { $0.name == selectedNodeName })?.delayMS, delay > 0 else { return nil }
-    return delay
+    return tvDisplayedDelay(delay, discount: delayDiscountPercent)
   }
 
   private var subscriptionBlockReason: String? {
@@ -1257,6 +1306,7 @@ struct TVHomeView: View {
       homeInfoError = "登录状态已失效，请重新登录"
       return
     }
+    delayDiscountPercent = await TVRemoteConfigManager.shared.delayDiscountPercent()
     isLoadingHomeInfo = true
     homeInfoError = nil
     defer { isLoadingHomeInfo = false }
@@ -1350,6 +1400,7 @@ struct TVHomeView: View {
     guard connected else {
       selectedNodeName = node.name
       savedSelectedNode = node.name
+      scheduleSelectedLatency(node.name)
       return
     }
     isApplyingRouting = true
@@ -1363,10 +1414,23 @@ struct TVHomeView: View {
           change: { await changeProxy(groupName: $0, proxyName: $1) })
         guard session.token == owner else { return }
         useSnapshot(snapshot)
+        scheduleSelectedLatency(node.name)
       } catch {
         guard session.token == owner else { return }
         errorMessage = tvText("线路切换未确认，请重试", "Node change was not confirmed. Please try again.", language: language)
       }
+    }
+  }
+
+  private func scheduleSelectedLatency(_ name: String, force: Bool = false) {
+    selectionLatencyTask?.cancel()
+    selectionLatencyTask = Task { @MainActor in
+      while isTestingNodes && !Task.isCancelled {
+        try? await Task.sleep(for: .milliseconds(100))
+      }
+      guard !Task.isCancelled, scenePhase == .active, selectedNodeName == name else { return }
+      if !force, let last = latencyDates[name], Date().timeIntervalSince(last) < 5 { return }
+      await runLatencyTest(only: name)
     }
   }
 
@@ -1379,8 +1443,12 @@ struct TVHomeView: View {
   }
 
   @MainActor
-  private func runLatencyTest() async {
+  private func runLatencyTest(only nodeName: String? = nil, excluding: Set<String> = []) async {
+    guard !Task.isCancelled, scenePhase == .active else { return }
+    let owner = session.token
     guard !isTestingNodes, !isRefreshingNodes, !nodes.isEmpty else { return }
+    isTestingNodes = true
+    defer { testingNodeNames.removeAll(); isTestingNodes = false }
 
     if isDebugPreviewSession {
       isTestingNodes = true
@@ -1394,42 +1462,61 @@ struct TVHomeView: View {
       return
     }
 
-    if !VPNManager.shared.isTunnelRunning {
-      if cachedSubscription == nil { await loadNodes(forceRefresh: false) }
-      guard let cachedSubscription else {
-        nodeLoadError = tvText("订阅中没有可用线路", "No available nodes in this subscription", language: language)
-        return
-      }
-      let runtimeConfig: String
-      do { runtimeConfig = try applyingRouteMode(to: cachedSubscription) }
-      catch {
-        nodeLoadError = tvText("构建配置无效，请重新安装客户端", "Invalid build configuration. Please reinstall the client.", language: language)
-        return
-      }
-      let failure = await ensureTunnelRunning(config: runtimeConfig)
-      guard failure == nil else {
-        nodeLoadError = failure
-        return
-      }
+    if cachedSubscription == nil { await loadNodes(forceRefresh: false) }
+    guard let source = cachedSubscription else {
+      nodeLoadError = tvText("订阅中没有可用线路", "No available nodes in this subscription", language: language)
+      return
+    }
+    let probeConfig: String
+    do { probeConfig = try applyingRouteMode(to: source) }
+    catch {
+      nodeLoadError = error.localizedDescription
+      return
     }
 
+    delayDiscountPercent = await TVRemoteConfigManager.shared.delayDiscountPercent()
     isTestingNodes = true
-    let testedNames = nodes.map(\.name)
+    nodeLoadError = nil
+    let testedNames = nodes.map(\.name).filter { !excluding.contains($0) && (nodeName == nil || $0 == nodeName) }
     testingNodeNames = Set(testedNames)
     let startedAt = ContinuousClock.now
 
-    await withTaskGroup(of: (String, Int).self) { group in
-      for nodeName in testedNames {
+    let useRunningTunnel = VPNManager.shared.isConnected
+    let clientTestURL = "https://www.gstatic.com/generate_204"
+    // Bound both IPC and core work; queued requests must not expire before
+    // the provider has started measuring them.
+    for start in stride(from: 0, to: testedNames.count, by: 4) {
+      guard !Task.isCancelled, scenePhase == .active, session.token == owner else { break }
+      let batch = testedNames[start..<min(start + 4, testedNames.count)]
+      await withTaskGroup(of: (String, Int?, Bool).self) { group in
+      for nodeName in batch {
         group.addTask {
-          let value = await testDelay(proxyName: nodeName) ?? -1
-          return (nodeName, value)
+          if useRunningTunnel {
+            let targetURL = TVSubscriptionNodes.testURL(from: source, node: nodeName, group: selectedGroupName, fallback: clientTestURL)
+            let value = await testDelay(proxyName: nodeName, testURL: targetURL)
+            return (nodeName, value, value != nil)
+          }
+          let value = await withCheckedContinuation { continuation in
+            TVLatencyProbe.shared.test(config: probeConfig, proxyName: nodeName, testURL: TVSubscriptionNodes.testURL(from: source, node: nodeName, group: selectedGroupName, fallback: clientTestURL)) {
+              value, valid in
+              continuation.resume(returning: (value, valid))
+            }
+          }
+          return (nodeName, value.0, value.1)
         }
       }
-      for await (nodeName, value) in group {
-        nodes = nodes.map { node in
-          node.name == nodeName ? TVProxyNode(node.name, type: node.type, delayMS: value) : node
+      for await (nodeName, value, valid) in group {
+        guard !Task.isCancelled, scenePhase == .active, session.token == owner else { continue }
+        if valid {
+          latencyDates[nodeName] = Date()
+          nodes = nodes.map { node in
+            node.name == nodeName ? TVProxyNode(node.name, type: node.type, delayMS: value) : node
+          }
+        } else {
+          nodeLoadError = tvText("测速核心未能就绪，请重试或更新客户端", "Latency core could not become ready. Please retry or update the app.", language: language)
         }
         testingNodeNames.remove(nodeName)
+      }
       }
     }
 
@@ -1480,7 +1567,7 @@ struct TVHomeView: View {
   private func syncVPNStatus(_ deliveredStatus: String? = nil) {
     if let deliveredStatus {
       connected = deliveredStatus == "connected"
-      isConnecting = deliveredStatus == "connecting" || deliveredStatus == "disconnecting"
+      isConnecting = preparingConnection || deliveredStatus == "connecting" || deliveredStatus == "disconnecting"
       updateConnectivityProxy()
       if connected { Task { await refreshLiveNodes() } }
       return
@@ -1488,7 +1575,7 @@ struct TVHomeView: View {
     VPNManager.shared.refreshStatus { status in
       Task { @MainActor in
         connected = status == "connected"
-        isConnecting = status == "connecting" || status == "disconnecting"
+        isConnecting = preparingConnection || status == "connecting" || status == "disconnecting"
         updateConnectivityProxy()
         if connected { await refreshLiveNodes() }
       }
@@ -1520,16 +1607,27 @@ struct TVHomeView: View {
 
   @MainActor
   private func prepareAndConnect() async {
-    guard !isConnecting, !isApplyingRouting else { return }
+    guard !preparingConnection, !isConnecting, !isApplyingRouting else { return }
+    preparingConnection = true
     isConnecting = true
-    defer { isConnecting = false }
+    defer { preparingConnection = false; isConnecting = false; connectionPhase = nil }
 
     guard let token = session.token else {
       errorMessage = "登录状态已失效，请重新登录"
       return
     }
-    if subscriptionSummary == nil {
-      await loadHomeInfo(forceRefresh: true)
+    let currentStatus: String = await withCheckedContinuation { continuation in
+      VPNManager.shared.refreshStatus {continuation.resume(returning:$0)}
+    }
+    guard !Task.isCancelled, session.token == token else {return}
+    if currentStatus == "connected" {syncVPNStatus(currentStatus);return}
+    guard currentStatus == "disconnected" else {syncVPNStatus(currentStatus);return}
+    connectionPhase = tvText("检查订阅", "Checking plan", language: language)
+    await refreshSubscriptionSummary()
+    guard session.token == token else { return }
+    guard subscriptionSummary != nil else {
+      errorMessage = homeInfoError ?? tvText("无法确认订阅状态，请检查网络后重试", "Could not verify your plan. Check the network and retry.", language: language)
+      return
     }
     if let reason = subscriptionBlockReason {
       subscriptionBlockMessage = reason
@@ -1549,12 +1647,14 @@ struct TVHomeView: View {
         cachedSubscription = downloaded
       }
       let config = try applyingRouteMode(to: downloaded)
+      connectionPhase = tvText("核心回连", "Starting core", language: language)
       if let failure = await connectVPN(config: config) {
         errorMessage = failure
         connected = false
         return
       }
       connected = true
+      connectionPhase = tvText("确认线路", "Checking node", language: language)
       if let failure = await applySelectedNodeIfNeeded(retries: 6) {
         VPNManager.shared.disconnect { _ in }
         connected = false
@@ -1563,6 +1663,7 @@ struct TVHomeView: View {
         errorMessage = nil
       }
       await refreshLiveNodes(retries: 3)
+      if connected, let name = selectedNodeName { scheduleSelectedLatency(name, force: true) }
     } catch {
       if handleExpiredSession(error) { return }
       connected = false
@@ -1723,9 +1824,9 @@ struct TVHomeView: View {
     }
   }
 
-  private func testDelay(proxyName: String) async -> Int? {
+  private func testDelay(proxyName: String, testURL: String) async -> Int? {
     await withCheckedContinuation { continuation in
-      VPNManager.shared.testDelay(proxyName: proxyName) { continuation.resume(returning: $0) }
+      VPNManager.shared.testDelay(proxyName: proxyName, testURL: testURL) { continuation.resume(returning: $0) }
     }
   }
 
@@ -1755,8 +1856,19 @@ struct TVHomeView: View {
     return true
   }
 
+  @MainActor
+  private func applyCustomRouting() async throws {
+    guard connected, let source = cachedSubscription else { return }
+    let config = try applyingRouteMode(to: source)
+    let failure: String? = await withCheckedContinuation { c in VPNManager.shared.sendConfigUpdate(config) { c.resume(returning: $0) } }
+    if let failure { throw GatewayClient.GatewayError.server(failure) }
+    if let failure = await applySelectedNodeIfNeeded(retries: 3) { throw GatewayClient.GatewayError.server(failure) }
+  }
+
   private func applyingRouteMode(to source: String) throws -> String {
-    let config = try TVBuildConfiguration.load().runtimeConfiguration(source)
+    let group = TVSubscriptionNodes.preferredGroupName(from: source, mode: "rule") ?? ""
+    let scoped = try TVUserRouteStore.runtime(source, scope: session.email ?? session.token ?? "", group: group)
+    let config = try TVBuildConfiguration.load().runtimeConfiguration(scoped)
     let replacement = "mode: \(routeMode.rawValue)"
     guard let expression = try? NSRegularExpression(pattern: "(?m)^mode\\s*:\\s*.*$") else { return config }
     let range = NSRange(config.startIndex..<config.endIndex, in: config)

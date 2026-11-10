@@ -369,7 +369,13 @@ struct GatewayClient {
       config,
       configuration: buildConfiguration
     )
-    try await TVSubscriptionCache.shared.write(envelope: config, token: token)
+    do {
+      try await TVSubscriptionCache.shared.write(envelope: config, token: token)
+    } catch {
+      // The verified network result remains usable when local storage is full
+      // or unavailable. Never include the envelope, token or URL in this log.
+      NSLog("[FastCatTV] Subscription cache write unavailable (code=%ld)", (error as NSError).code)
+    }
     return plaintext
   }
 
@@ -394,6 +400,16 @@ struct GatewayClient {
       body: AnyEncodable([String: String]()), authorization: token,
       requireAcknowledgement: true
     )
+  }
+
+  func sendDeletionCode(token: String) async throws {
+    let result: Bool = try await sendRequest(path: "/user/account/sendDeleteVerify", method: "POST", body: AnyEncodable([String:String]()), authorization: token)
+    guard result else { throw GatewayError.invalidResponse }
+  }
+  func deleteAccount(token: String, code: String) async throws {
+    guard code.range(of: "^[0-9]{6}$", options: .regularExpression) != nil else { throw GatewayError.invalidResponse }
+    let result: Bool = try await sendRequest(path: "/user/account/delete", method: "POST", body: AnyEncodable(["email_code":code,"confirm":"DELETE"]), authorization:token)
+    guard result else {throw GatewayError.invalidResponse}
   }
 
   func heartbeat(token: String) async throws -> String? {
@@ -633,13 +649,15 @@ private actor TVSubscriptionCache {
   }
 
   private func cacheRoot() throws -> URL {
-    let support = try fileManager.url(
-      for: .applicationSupportDirectory,
+    // tvOS local subscription data is disposable and may be evicted by the
+    // system. Use its writable cache directory, not Application Support.
+    let caches = try fileManager.url(
+      for: .cachesDirectory,
       in: .userDomainMask,
       appropriateFor: nil,
       create: true
     )
-    return support.appendingPathComponent("FastCat/Subscriptions", isDirectory: true)
+    return caches.appendingPathComponent("FastCat/Subscriptions", isDirectory: true)
   }
 
   private struct CachePaths {

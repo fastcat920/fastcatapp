@@ -4,6 +4,7 @@ import SwiftUI
 struct FastCatTVApp: App {
   @StateObject private var session = SessionStore()
   @AppStorage(TVTheme.preferenceKey) private var prefersDarkTheme = true
+  @AppStorage(TVTheme.modeKey) private var themeMode = "legacy"
   @AppStorage(TVLanguage.preferenceKey) private var language = TVLanguage.system.rawValue
   @AppStorage("fastcat.apple.privacy-disclosure") private var privacyVersion = ""
   @State private var showPrivacy = false
@@ -22,7 +23,7 @@ struct FastCatTVApp: App {
       }
         .onReceive(NotificationCenter.default.publisher(for: .tvShowPrivacyNotice)) { _ in showPrivacy = true }
         .environmentObject(session)
-        .preferredColorScheme(prefersDarkTheme ? .dark : .light)
+        .preferredColorScheme(TVTheme.scheme(mode:themeMode,legacyDark:prefersDarkTheme))
         .environment(\.locale, TVLanguage.resolved(from: language).locale)
     }
   }
@@ -40,12 +41,7 @@ private struct TVPrivacyNotice: View {
   @State private var showTerms = false
   @State private var declined = false
 
-  private var policyURL: String {
-    let key = showTerms ? "FastCatTermsOfServiceURL" : "FastCatPrivacyPolicyURL"
-    let raw = Bundle.main.object(forInfoDictionaryKey: key) as? String ?? ""
-    if let url = URL(string: raw), url.scheme == "https", url.host != nil { return raw }
-    return showTerms ? "https://www.fastcat6.com/terms" : "https://www.fastcat6.com/privacy"
-  }
+  @State private var policyURL = "https://www.fastcat6.com/privacy"
 
   var body: some View {
     TVDesignCanvas {
@@ -65,30 +61,34 @@ private struct TVPrivacyNotice: View {
               TVQRCodeView(payload: policyURL).padding(tv(12)).background(.white).frame(width: tv(200), height: tv(200))
               Text(tvText("用手机扫描二维码阅读完整内容", "Scan with your phone to read the full document", language: language)).font(TVFont.regular(13))
                 .multilineTextAlignment(.center).frame(width: tv(220))
-              TVFocusButton(cornerRadius: TVTheme.compactRadius, action: { showTerms.toggle() }) { _ in
-                Text(tvText(showTerms ? "查看隐私政策" : "查看服务条款", showTerms ? "Privacy Policy" : "Terms of Service", language: language))
-                  .font(TVFont.regular(15)).padding(tv(12))
-              }
+
             }
           }
           if declined { Text(tvText("可以退出应用；继续前不会进入登录或连接界面。", "You may leave the app. Sign-in and connection screens remain unavailable until you continue.", language: language)).font(TVFont.regular(14)) }
           HStack(spacing: tv(20)) {
-            TVFocusButton(cornerRadius: TVTheme.compactRadius, autofocus: true, action: onContinue) { _ in
-              Text(tvText(reviewing ? "返回" : "我已了解，继续", reviewing ? "Back" : "I understand — Continue", language: language))
-                .font(TVFont.medium(16)).padding(tv(16)).background(TVTheme.primary).foregroundStyle(.white)
+            TVFocusButton(cornerRadius: TVTheme.compactRadius, action: { showTerms = false }) { _ in
+              Text(tvText("阅读隐私政策", "Read Privacy Policy", language: language)).font(TVFont.regular(16)).padding(tv(16))
             }
+            TVFocusButton(cornerRadius: TVTheme.compactRadius, action: { showTerms = true }) { _ in
+              Text(tvText("阅读服务条款", "Read Terms of Service", language: language)).font(TVFont.regular(16)).padding(tv(16))
+            }
+          }
+          HStack(spacing: tv(20)) {
             if !reviewing {
               TVFocusButton(cornerRadius: TVTheme.compactRadius, action: { declined = true }) { _ in
-                Text(tvText("暂不使用", "Not now", language: language)).font(TVFont.regular(16)).padding(tv(16))
+                Text(tvText("暂不使用", "Not now", language: language)).font(TVFont.regular(16)).foregroundStyle(TVTheme.danger).padding(tv(16))
               }
             }
-            TVFocusButton(cornerRadius: TVTheme.compactRadius, action: {
-              language = TVLanguage.resolved(from: language) == .simplifiedChinese ? "en" : "zh-CN"
-            }) { _ in Text("中文 / English").font(TVFont.regular(16)).padding(tv(16)) }
+            TVFocusButton(cornerRadius: TVTheme.compactRadius, autofocus: true, action: onContinue) { _ in
+              Text(tvText(reviewing ? "返回" : "同意并继续", reviewing ? "Back" : "Agree and Continue", language: language))
+                .font(TVFont.medium(16)).padding(tv(16)).background(TVTheme.primary).foregroundStyle(TVTheme.onPrimary)
+            }
           }
+
         }.padding(tv(44)).foregroundStyle(TVTheme.textPrimary)
       }
     }
+    .task(id: showTerms) { policyURL = await TVRemoteConfigManager.shared.legalURL(terms: showTerms) }
     .onExitCommand { if reviewing { onContinue() } else { declined = true } }
   }
 }
@@ -195,6 +195,7 @@ private struct RootView: View {
     availableUpdate = await TVRemoteConfigManager.shared.availableTVUpdate(
       language: TVLanguage.resolved(from: language)
     )
+    NotificationCenter.default.post(name: .tvUpdateAvailability, object: availableUpdate != nil)
   }
 
   private var appVersion: String {

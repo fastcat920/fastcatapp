@@ -3,7 +3,6 @@ import 'package:fl_clash/providers/config.dart';
 import 'package:fl_clash/state.dart';
 import 'package:fl_clash/xboard/features/auth/utils/customer_service_helper.dart';
 import 'package:fl_clash/xboard/features/invite/providers/referral_program_provider.dart';
-import 'package:fl_clash/xboard/features/subscription/utils/home_layout.dart';
 import 'package:fl_clash/xboard/widgets/navigation/desktop_navigation_rail.dart';
 import 'package:fl_clash/xboard/widgets/navigation/mobile_navigation_bar.dart';
 import 'package:flutter/material.dart';
@@ -129,8 +128,7 @@ class _AdaptiveShellLayoutState extends ConsumerState<AdaptiveShellLayout> {
         _getCurrentIndex(context, useSideNavigation, logCapture);
     // Keep mobile navigation available even when its home announcement card
     // is compacted. Only TV uses the menu-free compact home layout.
-    final hideRootNavigation =
-        currentIndex == 0 && system.isTV && shouldUseCompactHomeLayout(context);
+    final hideRootNavigation = system.isTV;
 
     if (useSideNavigation) {
       // 横向窗口/TV：侧边栏 + 内容区（无外层 Scaffold）

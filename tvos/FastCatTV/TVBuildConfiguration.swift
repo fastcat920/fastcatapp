@@ -37,13 +37,23 @@ struct TVBuildConfiguration {
       "currentKeyId": currentSubscriptionKeyID,
       "keys": subscriptionKeys.mapValues { $0.base64EncodedString() },
     ]
-    let json = try JSONSerialization.data(withJSONObject: value, options: [.sortedKeys])
+    let json = try JSONSerialization.data(withJSONObject: value, options: [.sortedKeys, .withoutEscapingSlashes])
     // Reject a remote attempt to supply the client-only control field. Do not
     // retain a second ambiguous YAML key or silently trust downloaded key data.
     guard !yaml.components(separatedBy: .newlines).contains(where: {
       $0.hasPrefix("fastcat-provider-cache:") || $0.hasPrefix("\"fastcat-provider-cache\":") || $0.hasPrefix("'fastcat-provider-cache':")
     }) else { throw ConfigurationError.invalidRuntimeConfiguration }
-    return yaml + "\nfastcat-provider-cache: " + String(decoding: json, as: UTF8.self) + "\n"
+    // Match Flutter's default patch configuration: report the second HTTP
+    // request when available, rather than charging the initial handshake.
+    let expression = try NSRegularExpression(pattern: "(?m)^unified-delay[ \t]*:[^\r\n]*$")
+    let range = NSRange(yaml.startIndex..<yaml.endIndex, in: yaml)
+    let normalized: String
+    if expression.firstMatch(in: yaml, range: range) != nil {
+      normalized = expression.stringByReplacingMatches(in: yaml, range: range, withTemplate: "unified-delay: true")
+    } else {
+      normalized = "unified-delay: true\n" + yaml
+    }
+    return normalized + "\nfastcat-provider-cache: " + String(decoding: json, as: UTF8.self) + "\n"
   }
 
   static func load(bundle: Bundle = .main) throws -> TVBuildConfiguration {

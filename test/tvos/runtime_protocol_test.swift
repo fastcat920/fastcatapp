@@ -12,6 +12,25 @@ struct TVRuntimeProtocolTests {
   }
 
   static func main() async throws {
+    for (width, height, scale) in [(1280.0, 720.0, 1.0), (1920.0, 1080.0, 1.5), (3840.0, 2160.0, 3.0)] {
+      let density = TVDesignMetrics.density(width: width, height: height)
+      precondition(density == scale)
+      precondition(TVDesignMetrics.logical(width, density: density) == 1280)
+      precondition(TVDesignMetrics.logical(height, density: density) - 64 == 656)
+      precondition(64 * density / height == 64.0 / 720.0)
+    }
+
+    // At 720p the calibrated frame must keep the normal cards, and remove
+    // exactly the added outer inset from the elastic dashboard, not resize text.
+    precondition(TVHomeFrame.contentHeight(720) == 712)
+    precondition(TVHomeFrame.contentHeight(720) - 64 >= 620)
+    precondition(TVHomeFrame.contentHeight(4) == 0)
+    precondition(TVHomeFrame.horizontal + 25 == 33)
+    let now = Date(timeIntervalSince1970: 500000)
+    precondition(tvConnectionDuration(since: nil, now: now) == "00:00:00")
+    precondition(tvConnectionDuration(since: now.addingTimeInterval(-3661), now: now) == "01:01:01")
+    precondition(tvConnectionDuration(since: now.addingTimeInterval(5), now: now) == "00:00:00")
+    precondition(tvConnectionDuration(since: now.addingTimeInterval(-400000), now: now) == "99:59:59")
     precondition(TVCoreProtocol.isAcknowledged(String(decoding: TVCoreProtocol.acknowledgement(), as: UTF8.self)))
     for response: String? in [nil, "", "ok", "invalid character 'm'", "{}", "null", "{\"ok\":false}", "{\"ok\":1}"] {
       precondition(!TVCoreProtocol.isAcknowledged(response))
@@ -58,14 +77,41 @@ struct TVRuntimeProtocolTests {
     } catch TVRoutingFailure.notConfirmed { }
     precondition(events == ["global", "rule"])
 
+    precondition(tvDisplayedDelay(100, discount: 30) == 70)
+    precondition(tvDisplayedDelay(-1, discount: 30) == -1)
+    precondition(tvDisplayedDelay(1, discount: 90) == 1)
+    precondition(tvDisplayedDelay(nil, discount: 30) == nil)
+    let testProfile = "proxy-groups:\n  - name: test-group\n    type: select\n    url: https://group.invalid/check\n    proxies: [node-a]\n"
+    precondition(TVSubscriptionNodes.testURL(from: testProfile, node: "node-a", group: "test-group", fallback: "https://client.invalid/check") == "https://group.invalid/check")
+    precondition(TVSubscriptionNodes.testURL(from: "", node: "node-a", group: nil, fallback: "https://client.invalid/check") == "https://client.invalid/check")
+    precondition(TVSubscriptionNodes.testURL(from: "", node: "node-a", group: nil, fallback: "file:///private") == "https://www.gstatic.com/generate_204")
     var build = TVBuildConfiguration(xorKey: "", remoteConfigPublicKey: "", subscriptionFlag: "",
-      subscriptionKeys: ["test": Data(repeating: 1, count: 32)], requireSubscriptionEncryption: true, fallbackAPIBaseURL: nil)
+      subscriptionKeys: ["test": Data(repeating: 255, count: 32)], requireSubscriptionEncryption: true, fallbackAPIBaseURL: nil)
     build.currentSubscriptionKeyID = "test"
     let original = "mode: rule\nproxies: []"
     let runtime = try build.runtimeConfiguration(original)
+    precondition(runtime.contains("unified-delay: true"))
+    let overridden = try build.runtimeConfiguration("unified-delay: false\nproxies: []")
+    precondition(!overridden.contains("unified-delay: false"))
+    precondition(overridden.components(separatedBy: "unified-delay:").count == 2)
     precondition(runtime.contains("fastcat-provider-cache: {"))
     precondition(runtime.contains("\"currentKeyId\":\"test\""))
+    precondition(!runtime.contains("\\/"), "JSON slash escaping is incompatible with the core YAML parser")
     precondition(!original.contains("fastcat-provider-cache"))
+    let scratch = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
+    defer { try? FileManager.default.removeItem(at: scratch) }
+    let bundle = scratch.appendingPathComponent("Test.app")
+    let homeDir = scratch.appendingPathComponent("Caches/Core")
+    try FileManager.default.createDirectory(at: bundle, withIntermediateDirectories: true)
+    for name in ["GeoIP.dat", "GeoSite.dat", "ASN.mmdb", "geoip.metadb"] {
+      try Data([1, 2, 3]).write(to: bundle.appendingPathComponent(name))
+    }
+    try TVRoutingAssets.prepare(home: homeDir, bundleURL: bundle)
+    // A purged or interrupted cache must be recreated from the app bundle.
+    try Data().write(to: homeDir.appendingPathComponent("GeoSite.dat"))
+    try TVRoutingAssets.prepare(home: homeDir, bundleURL: bundle.appendingPathComponent("PlugIns/PacketTunnel.appex"))
+    let restored = try Data(contentsOf: homeDir.appendingPathComponent("GeoSite.dat"))
+    precondition(restored == Data([1, 2, 3]))
     do { _ = try build.runtimeConfiguration(runtime); fatalError("Duplicate private config must fail") }
     catch { }
 

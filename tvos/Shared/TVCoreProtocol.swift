@@ -31,3 +31,32 @@ final class TVOnceReply {
     action?(value)
   }
 }
+
+/// Same HH:mm:ss and 99:59:59 cap as Flutter's getTimeText.
+func tvConnectionDuration(since start: Date?, now: Date) -> String {
+  guard let start else { return "00:00:00" }
+  let seconds = Int(min(359999, max(0, now.timeIntervalSince(start))))
+  return String(format: "%02d:%02d:%02d", seconds / 3600, seconds / 60 % 60, seconds % 60)
+}
+
+/// One conversion between the 1280x720 TV design space and native points.
+/// Typography's accessibility/display multiplier is deliberately not part of it.
+enum TVDesignMetrics {
+  static func density(width: Double, height: Double) -> Double {
+    max(0.85, min(width / 1280, height / 720))
+  }
+  static func logical(_ native: Double, density: Double) -> Double {
+    native / max(density, 0.01)
+  }
+}
+
+/// Home-only frame calibration from the Android TV reference photographs.
+/// These are explicit page margins, not assumed OS safe-area measurements.
+enum TVHomeFrame {
+  static let top: Double = 0
+  static let horizontal: Double = 8
+  static let bottom: Double = 8
+  static func contentHeight(_ height: Double) -> Double {
+    max(0, height - top - bottom)
+  }
+}

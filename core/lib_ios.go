@@ -53,6 +53,7 @@ func initIOSCore(homeDir *C.char, configYaml *C.char, probe bool) C.int {
 	var cacheOptions struct {
 		ProviderCache *resource.CacheEncryption `yaml:"fastcat-provider-cache"`
 		SelectedMap   map[string]string         `yaml:"fastcat-selected-map"`
+		AddedRules    []string                  `yaml:"fastcat-added-rules"`
 	}
 	if err := yaml.Unmarshal([]byte(configStr), &cacheOptions); err != nil {
 		return 2
@@ -96,6 +97,8 @@ func initIOSCore(homeDir *C.char, configYaml *C.char, probe bool) C.int {
 	}
 
 	sampleAppleMemoryStage("init.yaml_parsed")
+
+	rawCfg.Rule = append(cacheOptions.AddedRules, rawCfg.Rule...)
 
 	// Force iOS-specific config overrides on the parsed config object.
 	patchConfigForIOS(rawCfg)

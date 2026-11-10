@@ -22,6 +22,7 @@ struct RemoteConfigTests {
     let plain = try JSONSerialization.data(withJSONObject: [
       "config_version": version, "domains": ["https://api.invalid"],
       "gateway_urls": ["https://gateway.invalid"],
+      "legal": ["privacy_policy_url": "https://legal.invalid/privacy", "terms_of_service_url": "https://legal.invalid/terms"],
     ])
     let key = Array(xorKey.utf8)
     let payload = Data(plain.enumerated().map { $0.element ^ key[$0.offset % key.count] }).base64EncodedString()
@@ -77,6 +78,10 @@ struct RemoteConfigTests {
     precondition(requestCount == 2, "Refresh must be coalesced")
     let selected = try await version(parallel)
     precondition(selected == "2")
+    let privacy = await parallel.legalURL(terms: false)
+    let terms = await parallel.legalURL(terms: true)
+    precondition(privacy == "https://legal.invalid/privacy")
+    precondition(terms == "https://legal.invalid/terms")
     let rawCache = defaults.data(forKey: TVRemoteConfigManager.cacheKey)!
     let records = try JSONDecoder().decode([String: TVRemoteSelection].self, from: rawCache)
     precondition(records["current"]?.raw == two)

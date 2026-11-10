@@ -2,6 +2,7 @@ import SwiftUI
 
 struct TVNodeSelectorView: View {
   let nodes: [TVProxyNode]
+  var delayDiscountPercent: Int = 0
   let selectedName: String?
   let routeMode: String
   let isLoading: Bool
@@ -12,6 +13,7 @@ struct TVNodeSelectorView: View {
   let onClose: () -> Void
   let onRefresh: () -> Void
   let onTest: () -> Void
+  var onTestNode: (TVProxyNode) -> Void = { _ in }
   let onSelect: (TVProxyNode) -> Void
   @AppStorage(TVLanguage.preferenceKey) private var language = TVLanguage.system.rawValue
 
@@ -45,7 +47,7 @@ struct TVNodeSelectorView: View {
             action: onTest
           )
         }
-        .frame(height: tv(56))
+        .frame(height: tv(64))
 
         if isLoading {
           Spacer()
@@ -75,9 +77,8 @@ struct TVNodeSelectorView: View {
             LazyVGrid(columns: columns, spacing: tv(8)) {
               ForEach(Array(nodes.enumerated()), id: \.element.id) { offset, node in
                 let selected = selectedName == node.name
-                TVFocusButton(cornerRadius: tv(16), autofocus: selected || (selectedName == nil && offset == 0), action: {
-                  onSelect(node)
-                }) { _ in
+                HStack(spacing: tv(4)) {
+                  TVFocusButton(cornerRadius: tv(12), autofocus: selected || (selectedName == nil && offset == 0), action: { onSelect(node) }) { _ in
                   HStack(spacing: tv(9)) {
                     MaterialIcon(glyph: selected ? .checkCircle : .circleOutlined, size: 21, color: selected ? TVTheme.primary : TVTheme.outline)
                     Text(nodeCountryFlag(node.name)).font(.system(size: tv(20)))
@@ -89,36 +90,26 @@ struct TVNodeSelectorView: View {
                       }
                     }
                     Spacer()
-                    if testingNodeNames.contains(node.name) {
-                      ProgressView()
-                        .scaleEffect(0.8)
-                        .tint(TVTheme.primary)
-                        .frame(width: tv(64), height: tv(42))
-                    } else if let delay = node.delayMS, delay < 0 {
-                      Text(tvText("超时", "Timeout", language: language))
-                        .font(TVFont.medium(11))
-                        .foregroundStyle(TVTheme.danger)
-                        .frame(width: tv(64), height: tv(42))
-                    } else if let delay = node.delayMS, delay > 0 {
-                      Text("\(delay)ms")
-                        .font(TVFont.medium(11))
-                        .foregroundStyle(delay < 500 ? TVTheme.success : TVTheme.warning)
-                        .frame(width: tv(64), height: tv(42))
-                    } else {
-                      Text("--").font(TVFont.medium(11)).foregroundStyle(TVTheme.outline).frame(width: tv(64), height: tv(42))
-                    }
+                  }.padding(.horizontal, tv(14))
+                   .frame(maxWidth: .infinity, minHeight: tv(58), maxHeight: tv(58), alignment: .leading)
+                   .contentShape(Rectangle())
                   }
-                  .padding(.horizontal, tv(14))
+                    TVFocusButton(cornerRadius: tv(12), action: { onTestNode(node) }) { _ in
+                      TVLatencyIndicator(delay: tvDisplayedDelay(node.delayMS, discount: delayDiscountPercent), testing: testingNodeNames.contains(node.name))
+                        .frame(width: tv(56), height: tv(58))
+                    }.disabled(isTesting || isLoading || isRefreshing)
+
+                  }
+                  .padding(tv(4))
                   .frame(maxWidth: .infinity, minHeight: tv(66), maxHeight: tv(66))
                   .background(selected ? TVTheme.primary.opacity(0.08) : TVTheme.surface)
                   .clipShape(RoundedRectangle(cornerRadius: tv(16), style: .continuous))
-                  .overlay { RoundedRectangle(cornerRadius: tv(16), style: .continuous).strokeBorder(selected ? TVTheme.primary.opacity(0.65) : TVTheme.stroke, lineWidth: selected ? tv(1.4) : tv(1)) }
-                }
+                  .overlay { RoundedRectangle(cornerRadius: tv(16), style: .continuous).strokeBorder(TVTheme.stroke, lineWidth: tv(1)) }
               }
             }
-            .padding(.bottom, tv(24))
+            .padding(.bottom, tv(4))
           }
-          .padding(.horizontal, tv(16))
+
         }
       }
     }
