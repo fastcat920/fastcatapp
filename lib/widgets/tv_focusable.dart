@@ -1,6 +1,7 @@
 import 'package:fl_clash/common/common.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter/rendering.dart';
 
 /// A wrapper widget that adds D-pad focusable behavior for Android TV.
 ///
@@ -127,6 +128,27 @@ class _TVFocusableState extends State<TVFocusable> {
       onKeyEvent: _handleKeyEvent,
       onFocusChange: (focused) {
         setState(() => _isFocused = focused);
+        if (focused) {
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            if (!mounted || !_focusNode.hasFocus) return;
+            final target = context.findRenderObject();
+            final scroll = Scrollable.maybeOf(context);
+            if (target == null || scroll == null) return;
+            final viewport = RenderAbstractViewport.maybeOf(target);
+            if (viewport == null) return;
+            final top = viewport.getOffsetToReveal(target, 0).offset;
+            final bottom = viewport.getOffsetToReveal(target, 1).offset;
+            final position = scroll.position.pixels;
+            if (top >= position && bottom <= position) return;
+            Scrollable.ensureVisible(context,
+                alignmentPolicy: top < position
+                    ? ScrollPositionAlignmentPolicy.keepVisibleAtStart
+                    : ScrollPositionAlignmentPolicy.keepVisibleAtEnd,
+                duration: MediaQuery.disableAnimationsOf(context)
+                    ? Duration.zero
+                    : const Duration(milliseconds: 120));
+          });
+        }
       },
       child: GestureDetector(
         onTap: widget.onPressed,

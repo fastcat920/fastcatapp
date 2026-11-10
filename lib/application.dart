@@ -1,3 +1,4 @@
+import 'package:fl_clash/services/android_tv_theme.dart';
 import 'package:fl_clash/xboard/features/notice/providers/notice_popup_policy.dart';
 import 'package:flutter/services.dart';
 import 'package:fl_clash/plugins/service.dart';
@@ -128,6 +129,21 @@ class ApplicationState extends ConsumerState<Application>
             : SystemMouseCursors.click;
       });
 
+  int _tvThemeGeneration = 0;
+  Future<void> _syncTvSystemTheme() async {
+    if (!system.isTV || !Platform.isAndroid) return;
+    final generation = ++_tvThemeGeneration;
+    final native = await AndroidTvTheme.readSystemBrightness();
+    if (!mounted || generation != _tvThemeGeneration) return;
+    globalState.appController.updateBrightness(native ??
+        WidgetsBinding.instance.platformDispatcher.platformBrightness);
+  }
+
+  @override
+  void didChangePlatformBrightness() {
+    unawaited(_syncTvSystemTheme());
+  }
+
   @override
   void initState() {
     super.initState();
@@ -144,6 +160,13 @@ class ApplicationState extends ConsumerState<Application>
     CustomerServiceHelper.ensureAndroidBackHandlerRegistered();
     _autoUpdateProfilesTask();
     globalState.appController = AppController(context, ref);
+    if (system.isTV && Platform.isAndroid) {
+      unawaited(_syncTvSystemTheme());
+      ref.listenManual(themeSettingProvider.select((value) => value.themeMode),
+          (_, next) {
+        if (next == ThemeMode.system) unawaited(_syncTvSystemTheme());
+      });
+    }
     unawaited(
       XBoardDeviceHeartbeatService.markActive(reason: 'app_start'),
     );
@@ -466,6 +489,7 @@ class ApplicationState extends ConsumerState<Application>
       return;
     }
     if (state == AppLifecycleState.resumed) {
+      unawaited(_syncTvSystemTheme());
       unawaited(_syncIosVpnStatus());
       final backgroundedAt = globalState.appBackgroundedAt;
       globalState.appBackgroundedAt = null;
@@ -944,7 +968,9 @@ class ApplicationState extends ConsumerState<Application>
                 }
                 return const Locale.fromSubtags(languageCode: 'en');
               },
-              themeMode: themeProps.themeMode,
+              themeMode: AndroidTvTheme.materialMode(
+                  themeProps.themeMode, effectiveBrightness,
+                  isTV: system.isTV && Platform.isAndroid),
               theme: ThemeData(
                 useMaterial3: true,
                 fontFamilyFallback: appFontFamilyFallback,

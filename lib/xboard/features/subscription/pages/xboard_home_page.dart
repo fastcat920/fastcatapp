@@ -1,3 +1,6 @@
+import 'package:fl_clash/xboard/features/mine/pages/account_info_page.dart';
+import 'package:fl_clash/xboard/features/subscription/widgets/tv_subscription_info_card.dart';
+import 'package:fl_clash/widgets/tv_version_link.dart';
 import 'dart:io';
 import 'package:fl_clash/xboard/features/settings/pages/fastcat_settings_page.dart';
 import 'package:fl_clash/xboard/features/about/pages/fastcat_about_page.dart';
@@ -12,7 +15,6 @@ import 'package:fl_clash/services/core_switch_status.dart';
 import 'package:fl_clash/xboard/features/auth/providers/xboard_user_provider.dart';
 import 'package:fl_clash/xboard/features/auth/models/session_termination.dart';
 import 'package:fl_clash/xboard/features/settings/widgets/fastcat_tun_toggle.dart';
-import 'package:fl_clash/xboard/features/invite/dialogs/logout_dialog.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -559,7 +561,7 @@ class _XBoardHomePageState extends ConsumerState<XBoardHomePage>
                               ),
                             ),
                             SizedBox(height: adaptiveBottomGap / 2),
-                            // ── 节点选择器保持在下方；TV 在右侧保留退出入口 ──
+                            // ── 节点选择器保持在下方；TV 在右侧保留账号入口 ──
                             const SizedBox(height: sectionGap),
                             SizedBox(
                               height: nodeSelectorHeight,
@@ -578,7 +580,7 @@ class _XBoardHomePageState extends ConsumerState<XBoardHomePage>
                                           SizedBox(
                                             width: 144,
                                             child:
-                                                _buildTvLogoutButton(context),
+                                                _buildTvAccountButton(context),
                                           ),
                                         ],
                                       )
@@ -766,23 +768,13 @@ class _XBoardHomePageState extends ConsumerState<XBoardHomePage>
         const Spacer(),
         SizedBox(
           height: versionLineHeight,
-          child: TVFocusable(
-              onPressed: () => Navigator.of(context).push(
-                  MaterialPageRoute(builder: (_) => const FastCatAboutPage())),
-              child: Center(
-                child: Badge(
-                    isLabelVisible: ref.watch(updateCheckProvider).hasUpdate,
-                    child: Text(
-                      '${l10n.xboardCurrentVersion}${chinese ? '：' : ': '}V${globalState.packageInfo.version}',
-                      key: const Key('tv-current-version'),
-                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                            color: Theme.of(context)
-                                .colorScheme
-                                .onSurfaceVariant
-                                .withValues(alpha: 0.72),
-                          ),
-                    )),
-              )),
+          child: TVVersionLink(
+            label:
+                '${l10n.xboardCurrentVersion}${chinese ? '：' : ': '}V${globalState.packageInfo.version}',
+            hasUpdate: ref.watch(updateCheckProvider).hasUpdate,
+            onPressed: () => Navigator.of(context).push(
+                MaterialPageRoute(builder: (_) => const FastCatAboutPage())),
+          ),
         ),
       ],
     );
@@ -865,17 +857,15 @@ class _XBoardHomePageState extends ConsumerState<XBoardHomePage>
         final colorScheme = theme.colorScheme;
         final l10n = AppLocalizations.of(context);
         final radius = BorderRadius.circular(XbUiTokens.radiusCard);
-        void showLogoutDialog() => showDialog<void>(
-              context: context,
-              builder: (_) => const LogoutDialog(),
-            );
+        void openAccount() => Navigator.of(context).push(
+            MaterialPageRoute<void>(builder: (_) => const AccountInfoPage()));
 
         return Semantics(
           button: true,
-          label: '${l10n.xboardAccountInfo}，$email，${l10n.xboardLogout}',
+          label: '${l10n.xboardAccountInfo}，$email',
           child: TVFocusable(
             borderRadius: radius,
-            onPressed: showLogoutDialog,
+            onPressed: openAccount,
             child: ExcludeFocus(
               child: Container(
                 decoration: _tvCardDecoration(context),
@@ -919,24 +909,8 @@ class _XBoardHomePageState extends ConsumerState<XBoardHomePage>
                         ],
                       ),
                     ),
-                    Container(
-                      width: 1,
-                      height: 32,
-                      color: XbUiTokens.cardBorder(context),
-                    ),
-                    const SizedBox(width: 16),
-                    Icon(
-                      Icons.logout_outlined,
-                      size: 18,
-                      color: colorScheme.onSurfaceVariant,
-                    ),
-                    const SizedBox(width: 8),
-                    Text(
-                      l10n.xboardLogout,
-                      style: theme.textTheme.bodyMedium?.copyWith(
-                        color: colorScheme.onSurfaceVariant,
-                      ),
-                    ),
+                    Icon(Icons.chevron_right,
+                        color: colorScheme.onSurfaceVariant),
                   ],
                 ),
               ),
@@ -964,18 +938,16 @@ class _XBoardHomePageState extends ConsumerState<XBoardHomePage>
     );
   }
 
-  Widget _buildTvLogoutButton(BuildContext context) {
+  Widget _buildTvAccountButton(BuildContext context) {
     final l10n = AppLocalizations.of(context);
     final colorScheme = Theme.of(context).colorScheme;
     final radius = BorderRadius.circular(14);
-    void showLogoutDialog() => showDialog<void>(
-          context: context,
-          builder: (_) => const LogoutDialog(),
-        );
+    void openAccount() => Navigator.of(context)
+        .push(MaterialPageRoute<void>(builder: (_) => const AccountInfoPage()));
 
     return TVFocusable(
       borderRadius: radius,
-      onPressed: showLogoutDialog,
+      onPressed: openAccount,
       child: ExcludeFocus(
         child: OutlinedButton.icon(
           style: XbUiButton.outlinedNeutral(context).copyWith(
@@ -985,9 +957,9 @@ class _XBoardHomePageState extends ConsumerState<XBoardHomePage>
               RoundedRectangleBorder(borderRadius: radius),
             ),
           ),
-          onPressed: showLogoutDialog,
-          icon: const Icon(Icons.logout_outlined, size: 18),
-          label: Text(l10n.xboardLogout),
+          onPressed: openAccount,
+          icon: const Icon(Icons.person_outline, size: 18),
+          label: Text(l10n.xboardAccountInfo),
         ),
       ),
     );
@@ -1078,6 +1050,9 @@ class _XBoardHomePageState extends ConsumerState<XBoardHomePage>
   }
 
   Widget _buildUsageSection() {
+    if (system.isTV) {
+      return TVSubscriptionInfoCard(isSyncing: _isRefreshingTvSubscription);
+    }
     return Consumer(
       builder: (context, ref, child) {
         final isDesktop =

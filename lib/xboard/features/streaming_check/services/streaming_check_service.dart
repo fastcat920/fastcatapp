@@ -36,6 +36,21 @@ class StreamingCheckService {
 
   Future<void> cancel() async => run?.cancel();
 
+  static const mediaTargetIds = <String>{
+    'netflix',
+    'disney',
+    'youtube',
+    'prime_video',
+    'max',
+    'apple_tv',
+    'bbc_iplayer',
+    'dazn',
+    'crunchyroll',
+    'tiktok',
+  };
+  static final mediaTargets = List<StreamingTarget>.unmodifiable(
+      targets.where((target) => mediaTargetIds.contains(target.id)));
+
   static const targets = <StreamingTarget>[
     StreamingTarget(
       id: 'netflix',

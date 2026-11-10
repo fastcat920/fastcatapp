@@ -1,3 +1,4 @@
+import 'package:fl_clash/widgets/tv_split_focus_row.dart';
 import 'package:fl_clash/xboard/features/latency/widgets/latency_indicator.dart';
 import 'dart:async';
 
@@ -291,6 +292,91 @@ class _FastCatNodesPageState extends ConsumerState<FastCatNodesPage> {
                     final node = nodes[index];
                     final selected = node.name == group.selected;
                     final primary = Theme.of(context).colorScheme.primary;
+                    if (system.isTV) {
+                      return Padding(
+                          padding: const EdgeInsets.only(bottom: 8),
+                          child: Material(
+                            color: selected
+                                ? primary.withValues(alpha: 0.08)
+                                : XbUiCardStyle.background(context),
+                            shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(16),
+                                side: BorderSide(
+                                    color: XbUiTokens.cardBorder(context))),
+                            clipBehavior: Clip.antiAlias,
+                            child: TVSplitFocusRow(
+                              focusNode:
+                                  selected ? _selectedNodeFocusNode : null,
+                              autofocus: selected,
+                              onSelect: _selecting
+                                  ? null
+                                  : selected
+                                      ? () {}
+                                      : () =>
+                                          _selectNode(group.name, node.name),
+                              onAction: _testing ||
+                                      _updating ||
+                                      _testingNodes.contains(node.name)
+                                  ? null
+                                  : () => _runSingleNodeLatencyTest(
+                                      group.name, node.name),
+                              content: Padding(
+                                  padding: const EdgeInsets.symmetric(
+                                      horizontal: 10),
+                                  child: Row(children: [
+                                    Icon(
+                                        selected
+                                            ? Icons.check_circle
+                                            : Icons.circle_outlined,
+                                        size: 21,
+                                        color: selected
+                                            ? primary
+                                            : Theme.of(context)
+                                                .colorScheme
+                                                .outline),
+                                    const SizedBox(width: 9),
+                                    EmojiText(
+                                        NodeCountryResolver.resolveFlag(
+                                            node.name),
+                                        style: const TextStyle(fontSize: 20)),
+                                    const SizedBox(width: 9),
+                                    Expanded(
+                                        child: Column(
+                                            mainAxisAlignment:
+                                                MainAxisAlignment.center,
+                                            crossAxisAlignment:
+                                                CrossAxisAlignment.start,
+                                            children: [
+                                          Text(node.name,
+                                              maxLines: 1,
+                                              overflow: TextOverflow.ellipsis,
+                                              style: Theme.of(context)
+                                                  .textTheme
+                                                  .bodyMedium
+                                                  ?.copyWith(
+                                                      fontWeight: selected
+                                                          ? XbFontWeight
+                                                              .semibold
+                                                          : null)),
+                                          const SizedBox(height: 5),
+                                          Row(children: [
+                                            _SmallTag(label: node.type),
+                                            if (selected) ...[
+                                              const SizedBox(width: 6),
+                                              _SmallTag(
+                                                  label: l10n.xboardCurrentNode,
+                                                  color: primary)
+                                            ]
+                                          ]),
+                                        ])),
+                                  ])),
+                              action: _DelayBadge(
+                                  node: node,
+                                  testing: _testingNodes.contains(node.name),
+                                  onTap: null),
+                            ),
+                          ));
+                    }
                     return Padding(
                       padding: const EdgeInsets.only(bottom: 8),
                       child: Material(

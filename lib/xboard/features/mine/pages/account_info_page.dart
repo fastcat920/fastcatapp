@@ -1,3 +1,7 @@
+import 'package:fl_clash/common/common.dart';
+import 'package:fl_clash/widgets/tv_back_button.dart';
+import 'package:fl_clash/widgets/tv_focusable.dart';
+import 'package:fl_clash/xboard/features/subscription/widgets/tv_subscription_info_card.dart';
 import 'package:fl_clash/l10n/l10n.dart';
 import 'package:fl_clash/xboard/features/auth/auth.dart';
 import 'package:fl_clash/xboard/features/invite/dialogs/logout_dialog.dart';
@@ -98,6 +102,70 @@ class _AccountInfoPageState extends ConsumerState<AccountInfoPage> {
     }
   }
 
+  Widget _buildTvAccount(String email) {
+    final l10n = AppLocalizations.of(context);
+    final theme = Theme.of(context);
+    final dark = theme.brightness == Brightness.dark;
+    void logout() => showDialog<void>(
+        context: context, builder: (_) => const LogoutDialog());
+    return Scaffold(
+      backgroundColor: XbUiTokens.pageBackground(context),
+      appBar: AppBar(
+          leadingWidth: 68,
+          leading: const TVBackButton(),
+          title: Text(l10n.xboardAccountInfo)),
+      body: SingleChildScrollView(
+          padding: const EdgeInsets.fromLTRB(25, 16, 25, 24),
+          child: Center(
+              child: ConstrainedBox(
+                  constraints: const BoxConstraints(maxWidth: 760),
+                  child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        _buildCard(
+                            child: ListTile(
+                                leading: Icon(Icons.email_outlined,
+                                    color: theme.colorScheme.primary),
+                                title: Text(l10n.xboardEmail),
+                                subtitle: Text(email.isEmpty
+                                    ? l10n.xboardEmailUnavailable
+                                    : email))),
+                        const SizedBox(height: 12),
+                        _buildCard(
+                            child: const Padding(
+                                padding: EdgeInsets.all(12),
+                                child: TVSubscriptionInfoCard())),
+                        const SizedBox(height: 24),
+                        _buildCard(
+                            child: Padding(
+                                padding: const EdgeInsets.all(16),
+                                child: TVFocusable(
+                                    onPressed: logout,
+                                    child: FilledButton.icon(
+                                        onPressed: logout,
+                                        icon: const Icon(Icons.logout_outlined),
+                                        label: Text(l10n.xboardLogout),
+                                        style: FilledButton.styleFrom(
+                                            backgroundColor: dark
+                                                ? theme.colorScheme
+                                                    .surfaceContainerHighest
+                                                : const Color(0xFFE8EDF3),
+                                            foregroundColor: dark
+                                                ? theme.colorScheme.onSurface
+                                                : const Color(0xFF344054),
+                                            padding: const EdgeInsets.symmetric(
+                                                vertical: 14),
+                                            shape: RoundedRectangleBorder(
+                                                borderRadius:
+                                                    BorderRadius.circular(
+                                                        14))))))),
+                        const SizedBox(height: 28),
+                        _DangerZone(
+                            onDelete: () => _showAccountDeletionFlow(email)),
+                      ])))),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
@@ -108,6 +176,19 @@ class _AccountInfoPageState extends ConsumerState<AccountInfoPage> {
     final email =
         userInfo?.email ?? userState.email ?? subscriptionInfo?.email ?? '';
     final isDark = theme.brightness == Brightness.dark;
+    if (system.isTV) {
+      final tvEmail = [
+            userState.email,
+            userInfo?.email,
+            subscriptionInfo?.email
+          ]
+              .whereType<String>()
+              .map((value) => value.trim())
+              .where((value) => value.isNotEmpty)
+              .firstOrNull ??
+          '';
+      return _buildTvAccount(tvEmail);
+    }
 
     return Scaffold(
       backgroundColor: isDark ? null : XbUiTokens.pageBackgroundLight,
@@ -249,15 +330,17 @@ class _DangerZone extends StatelessWidget {
     final chinese = Localizations.localeOf(context).languageCode == 'zh';
     final error = theme.colorScheme.error;
     return Center(
-      child: TextButton.icon(
-        onPressed: onDelete,
-        icon: const Icon(Icons.delete_forever_outlined, size: 18),
-        label: Text(chinese ? '注销账号' : 'Delete account'),
-        style: TextButton.styleFrom(
-          foregroundColor: error,
-          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-        ),
-      ),
+      child: TVFocusable(
+          onPressed: onDelete,
+          child: TextButton.icon(
+            onPressed: onDelete,
+            icon: const Icon(Icons.delete_forever_outlined, size: 18),
+            label: Text(chinese ? '注销账号' : 'Delete account'),
+            style: TextButton.styleFrom(
+              foregroundColor: error,
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+            ),
+          )),
     );
   }
 }

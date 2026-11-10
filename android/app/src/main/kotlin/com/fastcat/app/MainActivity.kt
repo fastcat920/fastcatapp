@@ -4,6 +4,8 @@ import android.annotation.SuppressLint
 import android.os.Build
 import android.os.Bundle
 import android.content.Context
+import android.app.UiModeManager
+import android.content.res.Configuration
 import android.view.inputmethod.InputMethodManager
 import android.window.OnBackInvokedCallback
 import android.window.OnBackInvokedDispatcher
@@ -27,6 +29,26 @@ class MainActivity : FlutterActivity() {
 
     override fun configureFlutterEngine(flutterEngine: FlutterEngine) {
         super.configureFlutterEngine(flutterEngine)
+        MethodChannel(flutterEngine.dartExecutor.binaryMessenger, "fastcat/tv_theme")
+            .setMethodCallHandler { call, result ->
+                if (call.method != "systemBrightness") {
+                    result.notImplemented()
+                } else if (!DeviceCapabilities.isTelevision(this)) {
+                    result.success(null)
+                } else {
+                    val mode = (getSystemService(Context.UI_MODE_SERVICE) as? UiModeManager)?.nightMode
+                    val configured = applicationContext.resources.configuration.uiMode and Configuration.UI_MODE_NIGHT_MASK
+                    result.success(when (mode) {
+                        UiModeManager.MODE_NIGHT_YES -> "dark"
+                        UiModeManager.MODE_NIGHT_NO -> "light"
+                        else -> when (configured) {
+                            Configuration.UI_MODE_NIGHT_YES -> "dark"
+                            Configuration.UI_MODE_NIGHT_NO -> "light"
+                            else -> null
+                        }
+                    })
+                }
+            }
         SupportPushService.createChannel(this)
         MethodChannel(flutterEngine.dartExecutor.binaryMessenger, "fastcat/support_push").setMethodCallHandler { call, result ->
             when (call.method) {

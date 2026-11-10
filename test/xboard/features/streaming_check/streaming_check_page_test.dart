@@ -1,3 +1,5 @@
+import 'package:fl_clash/common/common.dart';
+import 'package:fl_clash/widgets/tv_focusable.dart';
 import 'dart:async';
 
 import 'package:fl_clash/l10n/l10n.dart';
@@ -240,4 +242,58 @@ void main() {
       expect(tester.takeException(), isNull);
     });
   }
+  testWidgets(
+      'TV tests media only and traverses both actions to the last row and back',
+      (tester) async {
+    system.setTVForTesting(true);
+    addTearDown(() => system.setTVForTesting(false));
+    // Two result columns, enough vertical overflow to require focus scrolling.
+    await tester.binding.setSurfaceSize(const Size(1200, 600));
+    addTearDown(() => tester.binding.setSurfaceSize(null));
+    SharedPreferences.setMockInitialValues({
+      'streaming_check_mode_v1': 'custom',
+      'streaming_custom_targets_v1': ['chatgpt'],
+    });
+    await openAndStart(tester);
+    expect(find.text('完整'), findsNothing);
+    expect(find.text('自定义'), findsNothing);
+    expect(find.text(AppLocalizations.current.xboardStreamingCopyReport),
+        findsNothing);
+    checker.gate.complete();
+    await tester.pumpAndSettle();
+    expect(checker.requests, 1 + StreamingCheckService.mediaTargets.length);
+    expect(find.text('ChatGPT'), findsNothing);
+    expect(find.text('10/10'), findsWidgets);
+    FocusNode node(String label) => tester
+        .widgetList<TVFocusable>(find.byType(TVFocusable))
+        .map((widget) => widget.focusNode)
+        .whereType<FocusNode>()
+        .firstWhere((node) => node.debugLabel == label);
+    node('stream-start').requestFocus();
+    await tester.pumpAndSettle();
+    await tester.sendKeyEvent(LogicalKeyboardKey.arrowDown);
+    await tester.pumpAndSettle();
+    expect(node('stream-result-netflix').hasFocus, isTrue);
+    await tester.sendKeyEvent(LogicalKeyboardKey.arrowRight);
+    await tester.pumpAndSettle();
+    expect(node('stream-visit-netflix').hasFocus, isTrue);
+    for (var i = 0; i < 4; i++) {
+      await tester.sendKeyEvent(LogicalKeyboardKey.arrowDown);
+      await tester.pumpAndSettle();
+    }
+    expect(node('stream-visit-crunchyroll').hasFocus, isTrue);
+    await tester.sendKeyEvent(LogicalKeyboardKey.arrowRight);
+    await tester.pumpAndSettle();
+    expect(node('stream-result-tiktok').hasFocus, isTrue);
+    expect(tester.getRect(find.text('TikTok')).center.dy, lessThan(600));
+    for (var i = 0; i < 5; i++) {
+      await tester.sendKeyEvent(LogicalKeyboardKey.arrowUp);
+      await tester.pumpAndSettle();
+    }
+    expect(node('stream-start').hasFocus, isTrue);
+    final start = find.text(AppLocalizations.current.xboardStreamingRetest);
+    expect(tester.getRect(start).center.dy, greaterThan(56));
+    expect(tester.getRect(start).center.dy, lessThan(600));
+    expect(tester.takeException(), isNull);
+  });
 }

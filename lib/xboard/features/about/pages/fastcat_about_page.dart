@@ -1,3 +1,4 @@
+import 'package:fl_clash/widgets/tv_back_button.dart';
 import 'package:fl_clash/common/common.dart';
 import 'package:fl_clash/l10n/l10n.dart';
 import 'package:fl_clash/providers/providers.dart';
@@ -39,6 +40,8 @@ class _FastCatAboutPageState extends ConsumerState<FastCatAboutPage> {
     return Scaffold(
       backgroundColor: XbUiTokens.pageBackground(context),
       appBar: AppBar(
+        leadingWidth: system.isTV ? 68 : null,
+        leading: system.isTV ? const TVBackButton() : null,
         title: Text(l10n.about),
         backgroundColor: XbUiTokens.pageBackground(context),
         surfaceTintColor: Colors.transparent,
@@ -146,16 +149,25 @@ class _FastCatAboutPageState extends ConsumerState<FastCatAboutPage> {
                                 height: 1,
                                 color: XbUiTokens.cardBorder(context),
                               ),
-                              ListTile(
-                                leading: const Icon(Icons.article_outlined),
-                                title: Text(l10n.logs),
-                                trailing: const Icon(Icons.chevron_right),
-                                onTap: () => Navigator.of(context).push(
-                                  MaterialPageRoute<void>(
-                                    builder: (_) => const FastCatLogsPage(),
+                              Builder(builder: (context) {
+                                final tile = ListTile(
+                                  leading: const Icon(Icons.article_outlined),
+                                  title: Text(l10n.logs),
+                                  trailing: const Icon(Icons.chevron_right),
+                                  onTap: () => Navigator.of(context).push(
+                                    MaterialPageRoute<void>(
+                                      builder: (_) => const FastCatLogsPage(),
+                                    ),
                                   ),
-                                ),
-                              ),
+                                );
+                                if (!system.isTV) return tile;
+                                return TVFocusable(
+                                    onPressed: () => Navigator.of(context).push(
+                                        MaterialPageRoute<void>(
+                                            builder: (_) =>
+                                                const FastCatLogsPage())),
+                                    child: ExcludeFocus(child: tile));
+                              }),
                             ],
                           ],
                         ),

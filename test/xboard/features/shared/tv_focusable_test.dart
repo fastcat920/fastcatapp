@@ -1,3 +1,4 @@
+import 'package:fl_clash/widgets/tv_split_focus_row.dart';
 import 'package:fl_clash/common/common.dart';
 import 'package:fl_clash/widgets/widgets.dart';
 import 'package:flutter/material.dart';
@@ -197,5 +198,42 @@ void main() {
 
     await tester.sendKeyEvent(LogicalKeyboardKey.select);
     expect(presses, 1);
+  });
+  testWidgets('split card gives selection and latency separate remote actions',
+      (tester) async {
+    final selection = FocusNode(), action = FocusNode();
+    addTearDown(selection.dispose);
+    addTearDown(action.dispose);
+    var selects = 0, tests = 0;
+    await tester.pumpWidget(MaterialApp(
+        home: Scaffold(
+            body: Center(
+      child: SizedBox(
+          width: 500,
+          height: 66,
+          child: TVSplitFocusRow(
+            focusNode: selection,
+            actionFocusNode: action,
+            autofocus: true,
+            onSelect: () => selects++,
+            onAction: () => tests++,
+            content: const Center(child: Text('Node')),
+            action: const Icon(Icons.bolt),
+          )),
+    ))));
+    await tester.pumpAndSettle();
+    await tester.sendKeyEvent(LogicalKeyboardKey.select);
+    expect(selects, 1);
+    expect(tests, 0);
+    await tester.sendKeyEvent(LogicalKeyboardKey.arrowRight);
+    await tester.pumpAndSettle();
+    expect(action.hasFocus, isTrue);
+    await tester.sendKeyEvent(LogicalKeyboardKey.select);
+    expect(selects, 1);
+    expect(tests, 1);
+    await tester.sendKeyEvent(LogicalKeyboardKey.arrowLeft);
+    await tester.pumpAndSettle();
+    expect(selection.hasFocus, isTrue);
+    expect(tester.takeException(), isNull);
   });
 }

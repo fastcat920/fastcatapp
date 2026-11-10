@@ -1,8 +1,6 @@
+import 'package:fl_clash/widgets/tv_back_button.dart';
 import 'dart:io';
 import 'package:fl_clash/xboard/features/update_check/providers/update_check_provider.dart';
-import 'package:fl_clash/xboard/features/auth/providers/xboard_user_provider.dart';
-import 'package:fl_clash/xboard/features/invite/dialogs/logout_dialog.dart';
-import 'package:fl_clash/xboard/features/mine/widgets/account_deletion_sheet.dart';
 import 'package:fl_clash/widgets/tv_focusable.dart';
 
 import 'package:fl_clash/common/common.dart';
@@ -34,61 +32,55 @@ class FastCatSettingsPage extends ConsumerWidget {
       final hasUpdate = ref.watch(updateCheckProvider).hasUpdate;
       final zh = Localizations.localeOf(context).languageCode == 'zh';
       return Scaffold(
-        appBar: AppBar(title: Text(zh ? '工具设置' : 'Tools & settings')),
+        appBar: AppBar(
+            leadingWidth: system.isTV ? 68 : null,
+            leading: system.isTV ? const TVBackButton() : null,
+            title: Text(zh ? '工具设置' : 'Tools & settings')),
         body: FocusTraversalGroup(
-            child: ListView(
+            child: SingleChildScrollView(
           padding: const EdgeInsets.fromLTRB(25, 16, 25, 24),
-          children: [
-            _navigationTile(context,
-                icon: Icons.language,
-                title: l10n.language,
-                onTap: () => _chooseLanguage(context, ref)),
-            _navigationTile(context,
-                icon: Icons.brightness_6,
-                title: l10n.theme,
-                onTap: () => _chooseTheme(context, ref, theme.themeMode)),
-            _navigationTile(context,
-                icon: Icons.power_settings_new,
-                title: l10n.xboardStartup,
-                onTap: () =>
-                    _open(context, const FastCatAutoStartSettingsPage())),
-            _navigationTile(context,
-                icon: Icons.route,
-                title: zh ? '自定义分流' : 'Custom routing',
-                onTap: () => _open(context, const FastCatCustomRoutingPage())),
-            _navigationTile(context,
-                icon: Icons.live_tv,
-                title: l10n.xboardStreamingCheck,
-                onTap: () => _open(context, const StreamingCheckPage())),
-            Badge(
-                isLabelVisible: hasUpdate,
-                child: _navigationTile(context,
-                    icon: Icons.info_outline,
-                    title: l10n.about,
-                    onTap: () => _open(context, const FastCatAboutPage()))),
-            const SizedBox(height: 20),
-            _navigationTile(context,
-                icon: Icons.logout,
-                title: l10n.xboardLogout,
-                onTap: () => showDialog<void>(
-                    context: context, builder: (_) => const LogoutDialog())),
-            _navigationTile(context,
-                icon: Icons.delete_forever,
-                title: zh ? '注销账号' : 'Delete account', onTap: () async {
-              final confirmed = await XbConfirmDialog.show(context,
-                  title: zh ? '确认进入注销流程？' : 'Start account deletion?',
-                  message: zh
-                      ? '注销账号会使所有设备退出登录，并立即停止套餐与订阅。'
-                      : 'Deleting your account signs out all devices and stops subscriptions immediately.',
-                  confirmLabel: zh ? '继续' : 'Continue',
-                  tone: XbDialogTone.danger,
-                  icon: Icons.delete_forever_outlined);
-              if (confirmed && context.mounted) {
-                await showAccountDeletionSheet(
-                    context, ref, ref.read(xboardUserProvider).email ?? '');
-              }
-            }),
-          ],
+          child:
+              Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
+            _header(context, l10n.application),
+            _SettingsCard(children: [
+              _navigationTile(context,
+                  icon: Icons.language_outlined,
+                  title: l10n.language,
+                  subtitle: _languageLabel(appSetting.locale, l10n),
+                  onTap: () => _chooseLanguage(context, ref)),
+              _navigationTile(context,
+                  icon: Icons.brightness_6_outlined,
+                  title: l10n.theme,
+                  subtitle: _themeLabel(theme.themeMode, l10n),
+                  onTap: () => _chooseTheme(context, ref, theme.themeMode)),
+              _navigationTile(context,
+                  icon: Icons.power_settings_new_outlined,
+                  title: l10n.xboardStartup,
+                  subtitle: l10n.xboardStartupDescription,
+                  onTap: () =>
+                      _open(context, const FastCatAutoStartSettingsPage())),
+            ]),
+            _header(context, l10n.network),
+            _SettingsCard(children: [
+              _navigationTile(context,
+                  icon: Icons.route_outlined,
+                  title: zh ? '自定义分流' : 'Custom routing',
+                  onTap: () =>
+                      _open(context, const FastCatCustomRoutingPage())),
+              _navigationTile(context,
+                  icon: Icons.live_tv_outlined,
+                  title: zh ? '流媒体检测' : 'Streaming check',
+                  onTap: () => _open(context, const StreamingCheckPage())),
+            ]),
+            _header(context, l10n.other),
+            _SettingsCard(children: [
+              _navigationTile(context,
+                  icon: Icons.info_outline,
+                  title: l10n.about,
+                  badge: hasUpdate,
+                  onTap: () => _open(context, const FastCatAboutPage())),
+            ]),
+          ]),
         )),
       );
     }
@@ -251,6 +243,7 @@ class FastCatSettingsPage extends ConsumerWidget {
     required IconData icon,
     required String title,
     String? subtitle,
+    bool badge = false,
     required VoidCallback onTap,
   }) =>
       TVFocusable(
@@ -258,7 +251,8 @@ class FastCatSettingsPage extends ConsumerWidget {
           onPressed: onTap,
           child: XbPointerCursor(
             child: ListTile(
-              leading: _SettingsIcon(icon: icon),
+              leading: Badge(
+                  isLabelVisible: badge, child: _SettingsIcon(icon: icon)),
               title: Text(title),
               subtitle: subtitle == null ? null : Text(subtitle),
               trailing: Icon(Icons.chevron_right,

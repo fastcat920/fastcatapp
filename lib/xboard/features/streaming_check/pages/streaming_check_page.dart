@@ -1,10 +1,13 @@
+import 'package:fl_clash/widgets/tv_back_button.dart';
+import 'package:fl_clash/common/common.dart';
+import 'package:fl_clash/widgets/tv_focusable.dart';
+import 'package:fl_clash/widgets/tv_split_focus_row.dart';
 import 'dart:async';
 import 'dart:io';
 
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-import 'package:fl_clash/common/sensitive_masker.dart';
 import 'package:fl_clash/l10n/l10n.dart';
 import 'package:fl_clash/providers/providers.dart';
 import 'package:fl_clash/state.dart';
@@ -52,6 +55,7 @@ class _StreamingCheckPageState extends ConsumerState<StreamingCheckPage> {
   }
 
   Future<void> _loadSelection() async {
+    if (system.isTV) return;
     final prefs = await SharedPreferences.getInstance();
     if (!mounted || _selectionChanged) return;
     final saved = prefs.getStringList('streaming_custom_targets_v1');
@@ -76,6 +80,12 @@ class _StreamingCheckPageState extends ConsumerState<StreamingCheckPage> {
 
   @override
   void dispose() {
+    _startFocus.dispose();
+    _stopFocus.dispose();
+    for (final node in [..._resultFocus.values, ..._visitFocus.values]) {
+      node.dispose();
+    }
+
     _runGeneration++;
     _activeRun?.cancel();
     _networkSubscription?.cancel();
@@ -104,12 +114,15 @@ class _StreamingCheckPageState extends ConsumerState<StreamingCheckPage> {
   Set<String> _customTargetIds =
       StreamingCheckService.targets.map((target) => target.id).toSet();
 
-  List<StreamingTarget> get _activeTargets => switch (_mode) {
-        _StreamingCheckMode.full => StreamingCheckService.targets,
-        _StreamingCheckMode.custom => StreamingCheckService.targets
-            .where((target) => _customTargetIds.contains(target.id))
-            .toList(growable: false),
-      };
+  List<StreamingTarget> get _activeTargets {
+    if (system.isTV) return StreamingCheckService.mediaTargets;
+    return switch (_mode) {
+      _StreamingCheckMode.full => StreamingCheckService.targets,
+      _StreamingCheckMode.custom => StreamingCheckService.targets
+          .where((target) => _customTargetIds.contains(target.id))
+          .toList(growable: false),
+    };
+  }
 
   Future<void> _start({bool forceRefresh = false}) async {
     if (_running || ref.read(runTimeProvider) == null) return;
@@ -505,6 +518,215 @@ class _StreamingCheckPageState extends ConsumerState<StreamingCheckPage> {
     };
   }
 
+  final _startFocus = FocusNode(debugLabel: 'stream-start');
+  final _stopFocus = FocusNode(debugLabel: 'stream-stop');
+  final Map<String, FocusNode> _resultFocus = {}, _visitFocus = {};
+  FocusNode _resultNode(String id, bool visit) =>
+      (visit ? _visitFocus : _resultFocus).putIfAbsent(
+          id,
+          () => FocusNode(
+              debugLabel: 'stream-${visit ? 'visit' : 'result'}-$id'));
+  KeyEventResult _resultKey(
+      KeyEvent event, int index, int columns, bool visit) {
+    if (event is! KeyDownEvent && event is! KeyRepeatEvent) {
+      return KeyEventResult.ignored;
+    }
+    final key = event.logicalKey;
+    int? next;
+    if (key == LogicalKeyboardKey.arrowUp) {
+      if (index < columns) {
+        _startFocus.requestFocus();
+        return KeyEventResult.handled;
+      }
+      next = index - columns;
+    } else if (key == LogicalKeyboardKey.arrowDown) {
+      next = index + columns;
+      if (next >= _results.length) {
+        if (index < (_results.length - 1) &&
+            index ~/ columns != (_results.length - 1) ~/ columns) {
+          next = _results.length - 1;
+        } else {
+          return KeyEventResult.handled;
+        }
+      }
+    } else if (key == LogicalKeyboardKey.arrowRight) {
+      if (!visit) {
+        _resultNode(_results[index].target.id, true).requestFocus();
+        return KeyEventResult.handled;
+      }
+      if (index + 1 < _results.length &&
+          (index + 1) ~/ columns == index ~/ columns) {
+        next = index + 1;
+        visit = false;
+      } else {
+        return KeyEventResult.handled;
+      }
+    } else if (key == LogicalKeyboardKey.arrowLeft) {
+      if (visit) {
+        _resultNode(_results[index].target.id, false).requestFocus();
+        return KeyEventResult.handled;
+      }
+      if (index > 0 && (index - 1) ~/ columns == index ~/ columns) {
+        next = index - 1;
+        visit = true;
+      } else {
+        return KeyEventResult.handled;
+      }
+    }
+    if (next == null) return KeyEventResult.ignored;
+    _resultNode(_results[next].target.id, visit).requestFocus();
+    return KeyEventResult.handled;
+  }
+
+  Widget _contentList({required List<Widget> children}) {
+    const padding = EdgeInsets.symmetric(horizontal: 20, vertical: 20);
+    if (system.isTV) {
+      // Keep the toolbar mounted when results scroll off screen, so D-pad Up
+      // can return to it instead of skipping straight to the AppBar.
+      return SingleChildScrollView(
+          padding: padding,
+          child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: children));
+    }
+    return ListView(padding: padding, children: children);
+  }
+
+  Widget _tvActions(AppLocalizations l10n, bool connected) {
+    final start = !connected || _running
+        ? null
+        : () => _start(forceRefresh: _results.isNotEmpty);
+    KeyEventResult key(KeyEvent event, bool stop) {
+      if (event is! KeyDownEvent && event is! KeyRepeatEvent) {
+        return KeyEventResult.ignored;
+      }
+      if (event.logicalKey == LogicalKeyboardKey.arrowDown &&
+          _results.isNotEmpty) {
+        _resultNode(_results.first.target.id, false).requestFocus();
+        return KeyEventResult.handled;
+      }
+      if (event.logicalKey == LogicalKeyboardKey.arrowLeft && stop) {
+        _startFocus.requestFocus();
+        return KeyEventResult.handled;
+      }
+      if (event.logicalKey == LogicalKeyboardKey.arrowRight &&
+          !stop &&
+          _running) {
+        _stopFocus.requestFocus();
+        return KeyEventResult.handled;
+      }
+      return KeyEventResult.ignored;
+    }
+
+    return Wrap(spacing: 12, children: [
+      TVFocusable(
+          focusNode: _startFocus,
+          focusableWhenDisabled: true,
+          onKeyEvent: (_, event) => key(event, false),
+          onPressed: start,
+          child: FilledButton.icon(
+              onPressed: start,
+              style: XbUiButton.filledPrimary(context, busy: _running),
+              icon: _running
+                  ? const SizedBox.square(
+                      dimension: 18,
+                      child: CircularProgressIndicator(strokeWidth: 2))
+                  : const Icon(Icons.play_arrow),
+              label: Text(_running
+                  ? l10n.xboardStreamingChecking
+                  : _results.isEmpty
+                      ? l10n.xboardStreamingStart
+                      : l10n.xboardStreamingRetest))),
+      if (_running)
+        TVFocusable(
+            focusNode: _stopFocus,
+            onPressed: _stop,
+            onKeyEvent: (_, event) => key(event, true),
+            child: OutlinedButton.icon(
+                onPressed: _stop,
+                icon: const Icon(Icons.stop_circle_outlined),
+                label: Text(_isChinese ? '停止' : 'Stop'))),
+    ]);
+  }
+
+  Widget _tvResult(StreamingTestResult result, int index, int columns,
+      AppLocalizations l10n) {
+    final theme = Theme.of(context);
+    final healthy = result.status == StreamingTestStatus.accessible;
+    final warning = [
+      StreamingTestStatus.partiallyAccessible,
+      StreamingTestStatus.verificationRequired,
+      StreamingTestStatus.uncertain,
+      StreamingTestStatus.timeout
+    ].contains(result.status);
+    final statusColor = healthy
+        ? XbUiStatusColor.success(context)
+        : warning
+            ? XbUiStatusColor.pending(context)
+            : XbUiStatusColor.error(context);
+    final brand = StreamingPlatformBrand.forId(result.target.id);
+    final brandColor = brand.colorFor(theme.brightness);
+    void visit() {
+      launchUrl(Uri.parse(result.target.url),
+          mode: LaunchMode.externalApplication);
+    }
+
+    return SizedBox(
+        height: 110,
+        child: Material(
+            color: XbUiCardStyle.background(context),
+            shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(16),
+                side: BorderSide(color: XbUiTokens.cardBorder(context))),
+            clipBehavior: Clip.antiAlias,
+            child: TVSplitFocusRow(
+              focusNode: _resultNode(result.target.id, false),
+              actionFocusNode: _resultNode(result.target.id, true),
+              onSelect: () {},
+              onAction: visit,
+              actionWidth: 90,
+              onKeyEvent: (_, event) =>
+                  _resultKey(event, index, columns, false),
+              actionOnKeyEvent: (_, event) =>
+                  _resultKey(event, index, columns, true),
+              content: Padding(
+                  padding: const EdgeInsets.all(8),
+                  child: Row(children: [
+                    Container(
+                        width: 36,
+                        height: 36,
+                        decoration: BoxDecoration(
+                            color: brandColor.withValues(alpha: 0.12),
+                            borderRadius: BorderRadius.circular(10)),
+                        child: _StreamingBrandLogo(
+                            brand: brand, color: brandColor)),
+                    const SizedBox(width: 10),
+                    Expanded(
+                        child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                          Text(result.target.name,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: theme.textTheme.labelLarge),
+                          const SizedBox(height: 6),
+                          Text(
+                              '${_statusText(l10n, result.status)} · ${result.region ?? '-'}',
+                              maxLines: 2,
+                              overflow: TextOverflow.ellipsis,
+                              style: theme.textTheme.bodySmall
+                                  ?.copyWith(color: statusColor)),
+                        ])),
+                  ])),
+              action: TextButton.icon(
+                  onPressed: visit,
+                  style: XbUiButton.textChipPrimary(context),
+                  icon: const Icon(Icons.open_in_new, size: 14),
+                  label: Text(l10n.xboardStreamingVisit)),
+            )));
+  }
+
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
@@ -526,15 +748,18 @@ class _StreamingCheckPageState extends ConsumerState<StreamingCheckPage> {
     return Scaffold(
       backgroundColor: XbUiTokens.pageBackground(context),
       appBar: AppBar(
-        title: Text(l10n.xboardStreamingCheck),
+        leadingWidth: system.isTV ? 68 : null,
+        leading: system.isTV ? const TVBackButton() : null,
+        title: Text(system.isTV
+            ? (_isChinese ? '流媒体检测' : 'Streaming check')
+            : l10n.xboardStreamingCheck),
         backgroundColor: XbUiTokens.pageBackground(context),
         surfaceTintColor: Colors.transparent,
       ),
       body: Center(
         child: ConstrainedBox(
           constraints: const BoxConstraints(maxWidth: 1040),
-          child: ListView(
-            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
+          child: _contentList(
             children: [
               _Panel(
                 child: Padding(
@@ -546,78 +771,84 @@ class _StreamingCheckPageState extends ConsumerState<StreamingCheckPage> {
                         connected: connected,
                         nodeName: _nodeName,
                       ),
-                      const SizedBox(height: 14),
-                      SegmentedButton<_StreamingCheckMode>(
-                        segments: [
-                          ButtonSegment(
-                            value: _StreamingCheckMode.full,
-                            label: Text(_isChinese ? '完整' : 'Full'),
-                          ),
-                          ButtonSegment(
-                            value: _StreamingCheckMode.custom,
-                            label: Text(_isChinese ? '自定义' : 'Custom'),
-                          ),
-                        ],
-                        selected: {_mode},
-                        onSelectionChanged: _running
-                            ? null
-                            : (value) => _selectMode(value.first),
-                      ),
-                      const SizedBox(height: 14),
-                      Wrap(
-                        spacing: 12,
-                        runSpacing: 8,
-                        children: [
-                          FilledButton.icon(
-                            onPressed: !connected || _running
-                                ? null
-                                : () => _start(
-                                      forceRefresh: _results.isNotEmpty,
-                                    ),
-                            style: XbUiButton.filledPrimary(
-                              context,
-                              busy: _running,
+                      if (!system.isTV) ...[
+                        const SizedBox(height: 14),
+                        SegmentedButton<_StreamingCheckMode>(
+                          segments: [
+                            ButtonSegment(
+                              value: _StreamingCheckMode.full,
+                              label: Text(_isChinese ? '完整' : 'Full'),
                             ),
-                            icon: _running
-                                ? SizedBox.square(
-                                    dimension: 18,
-                                    child: CircularProgressIndicator(
-                                      strokeWidth: 2,
-                                      color: Theme.of(context)
-                                          .colorScheme
-                                          .onPrimary,
-                                    ),
-                                  )
-                                : const Icon(Icons.play_arrow),
-                            label: Text(
-                              _running
-                                  ? l10n.xboardStreamingChecking
-                                  : _results.isEmpty
-                                      ? l10n.xboardStreamingStart
-                                      : l10n.xboardStreamingRetest,
+                            ButtonSegment(
+                              value: _StreamingCheckMode.custom,
+                              label: Text(_isChinese ? '自定义' : 'Custom'),
                             ),
-                          ),
-                          if (_running)
+                          ],
+                          selected: {_mode},
+                          onSelectionChanged: _running
+                              ? null
+                              : (value) => _selectMode(value.first),
+                        ),
+                        const SizedBox(height: 14),
+                      ],
+                      if (system.isTV)
+                        _tvActions(l10n, connected)
+                      else
+                        Wrap(
+                          spacing: 12,
+                          runSpacing: 8,
+                          children: [
+                            FilledButton.icon(
+                              onPressed: !connected || _running
+                                  ? null
+                                  : () => _start(
+                                        forceRefresh: _results.isNotEmpty,
+                                      ),
+                              style: XbUiButton.filledPrimary(
+                                context,
+                                busy: _running,
+                              ),
+                              icon: _running
+                                  ? SizedBox.square(
+                                      dimension: 18,
+                                      child: CircularProgressIndicator(
+                                        strokeWidth: 2,
+                                        color: Theme.of(context)
+                                            .colorScheme
+                                            .onPrimary,
+                                      ),
+                                    )
+                                  : const Icon(Icons.play_arrow),
+                              label: Text(
+                                _running
+                                    ? l10n.xboardStreamingChecking
+                                    : _results.isEmpty
+                                        ? l10n.xboardStreamingStart
+                                        : l10n.xboardStreamingRetest,
+                              ),
+                            ),
+                            if (_running)
+                              OutlinedButton.icon(
+                                onPressed: _stop,
+                                icon: const Icon(Icons.stop_circle_outlined),
+                                label: Text(_isChinese ? '停止' : 'Stop'),
+                              ),
                             OutlinedButton.icon(
-                              onPressed: _stop,
-                              icon: const Icon(Icons.stop_circle_outlined),
-                              label: Text(_isChinese ? '停止' : 'Stop'),
+                              onPressed:
+                                  _running || _copying || _results.isEmpty
+                                      ? null
+                                      : _copyReport,
+                              icon: _copying
+                                  ? const SizedBox.square(
+                                      dimension: 18,
+                                      child: CircularProgressIndicator(
+                                          strokeWidth: 2),
+                                    )
+                                  : const Icon(Icons.copy_outlined),
+                              label: Text(l10n.xboardStreamingCopyReport),
                             ),
-                          OutlinedButton.icon(
-                            onPressed: _running || _copying || _results.isEmpty
-                                ? null
-                                : _copyReport,
-                            icon: _copying
-                                ? const SizedBox.square(
-                                    dimension: 18,
-                                    child: CircularProgressIndicator(
-                                        strokeWidth: 2),
-                                  )
-                                : const Icon(Icons.copy_outlined),
-                            label: Text(l10n.xboardStreamingCopyReport),
-                          ),
-                        ],
-                      ),
+                          ],
+                        ),
                     ],
                   ),
                 ),
@@ -669,10 +900,13 @@ class _StreamingCheckPageState extends ConsumerState<StreamingCheckPage> {
                         for (final result in _results)
                           SizedBox(
                             width: width,
-                            child: _ResultCard(
-                              result: result,
-                              statusText: _statusText(l10n, result.status),
-                            ),
+                            child: system.isTV
+                                ? _tvResult(result, _results.indexOf(result),
+                                    columns, l10n)
+                                : _ResultCard(
+                                    result: result,
+                                    statusText:
+                                        _statusText(l10n, result.status)),
                           ),
                       ],
                     );
