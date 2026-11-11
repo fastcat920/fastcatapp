@@ -3,6 +3,25 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/rendering.dart';
 
+/// Outer card corners belong only to the first/last row of a menu group.
+class TVFocusGroupRow extends InheritedWidget {
+  const TVFocusGroupRow(
+      {super.key,
+      required this.index,
+      required this.count,
+      required super.child});
+  final int index, count;
+  BorderRadius get radius => BorderRadius.vertical(
+        top: index == 0 ? const Radius.circular(20) : Radius.zero,
+        bottom: index == count - 1 ? const Radius.circular(20) : Radius.zero,
+      );
+  static BorderRadius? of(BuildContext context) =>
+      context.dependOnInheritedWidgetOfExactType<TVFocusGroupRow>()?.radius;
+  @override
+  bool updateShouldNotify(TVFocusGroupRow oldWidget) =>
+      index != oldWidget.index || count != oldWidget.count;
+}
+
 /// A wrapper widget that adds D-pad focusable behavior for Android TV.
 ///
 /// On non-TV platforms, this widget is transparent — it just renders [child].
@@ -120,7 +139,9 @@ class _TVFocusableState extends State<TVFocusable> {
     final Decoration decoration = shape != null
         ? ShapeDecoration(shape: shape.copyWith(side: side))
         : BoxDecoration(
-            borderRadius: widget.borderRadius ?? BorderRadius.circular(12),
+            borderRadius: TVFocusGroupRow.of(context) ??
+                widget.borderRadius ??
+                BorderRadius.circular(12),
             border: Border.fromBorderSide(side),
           );
 

@@ -9,6 +9,41 @@ void main() {
   setUp(() => system.setTVForTesting(true));
   tearDown(() => system.setTVForTesting(false));
 
+  testWidgets(
+      'grouped focus ring matches first middle last and single row corners',
+      (tester) async {
+    final nodes = List.generate(4, (_) => FocusNode());
+    addTearDown(() {
+      for (final node in nodes) {
+        node.dispose();
+      }
+    });
+    await tester.pumpWidget(MaterialApp(
+        home: Scaffold(
+            body: Column(children: [
+      for (var i = 0; i < 4; i++)
+        TVFocusGroupRow(
+            index: i == 3 ? 0 : i,
+            count: i == 3 ? 1 : 3,
+            child: TVFocusable(
+                focusNode: nodes[i],
+                onPressed: () {},
+                child: const SizedBox(width: 400, height: 48))),
+    ]))));
+    for (var i = 0; i < 4; i++) {
+      nodes[i].requestFocus();
+      await tester.pumpAndSettle();
+      final decorations =
+          tester.widgetList<AnimatedContainer>(find.byType(AnimatedContainer));
+      final decoration =
+          decorations.elementAt(i).foregroundDecoration! as BoxDecoration;
+      final radius = decoration.borderRadius! as BorderRadius;
+      expect(radius.topLeft.x, i == 0 || i == 3 ? 20 : 0);
+      expect(radius.bottomRight.x, i == 2 || i == 3 ? 20 : 0);
+      expect((decoration.border! as Border).top.width, 2);
+    }
+  });
+
   test('non-TV buttons remain the original native widget', () {
     system.setTVForTesting(false);
     final button = FilledButton(onPressed: () {}, child: const Text('Pay'));

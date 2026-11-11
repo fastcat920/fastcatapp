@@ -48,25 +48,28 @@ class FastCatAutoStartSettingsPage extends ConsumerWidget {
                 clipBehavior: system.isTV ? Clip.none : Clip.antiAlias,
                 child: Column(
                   children: [
-                    _focusSwitch(SwitchListTile(
-                      secondary: const _StartupIcon(Icons.power_outlined),
-                      title: Text(l10n.autoLaunch),
-                      subtitle: Text(
-                        supportsBootLaunch
-                            ? l10n.autoLaunchDesc
-                            : (_isChinese(context)
-                                ? '当前平台暂不支持开机启动'
-                                : 'Not supported on this platform'),
-                      ),
-                      value: supportsBootLaunch && appSetting.autoLaunch,
-                      onChanged: supportsBootLaunch
-                          ? (value) =>
-                              ref.read(appSettingProvider.notifier).updateState(
+                    _focusSwitch(
+                        SwitchListTile(
+                          secondary: const _StartupIcon(Icons.power_outlined),
+                          title: Text(l10n.autoLaunch),
+                          subtitle: Text(
+                            supportsBootLaunch
+                                ? l10n.autoLaunchDesc
+                                : (_isChinese(context)
+                                    ? '当前平台暂不支持开机启动'
+                                    : 'Not supported on this platform'),
+                          ),
+                          value: supportsBootLaunch && appSetting.autoLaunch,
+                          onChanged: supportsBootLaunch
+                              ? (value) => ref
+                                  .read(appSettingProvider.notifier)
+                                  .updateState(
                                     (state) =>
                                         state.copyWith(autoLaunch: value),
                                   )
-                          : null,
-                    )),
+                              : null,
+                        ),
+                        index: 0),
                     Divider(
                       height: 1,
                       indent: 68,
@@ -75,16 +78,19 @@ class FastCatAutoStartSettingsPage extends ConsumerWidget {
                           .outlineVariant
                           .withValues(alpha: 0.55),
                     ),
-                    _focusSwitch(SwitchListTile(
-                      secondary: const _StartupIcon(Icons.play_circle_outline),
-                      title: Text(l10n.autoRun),
-                      subtitle: Text(l10n.xboardAutoRunDescription),
-                      value: appSetting.autoRun,
-                      onChanged: (value) =>
-                          ref.read(appSettingProvider.notifier).updateState(
-                                (state) => state.copyWith(autoRun: value),
-                              ),
-                    )),
+                    _focusSwitch(
+                        SwitchListTile(
+                          secondary:
+                              const _StartupIcon(Icons.play_circle_outline),
+                          title: Text(l10n.autoRun),
+                          subtitle: Text(l10n.xboardAutoRunDescription),
+                          value: appSetting.autoRun,
+                          onChanged: (value) =>
+                              ref.read(appSettingProvider.notifier).updateState(
+                                    (state) => state.copyWith(autoRun: value),
+                                  ),
+                        ),
+                        index: 1),
                   ],
                 ),
               ),
@@ -95,14 +101,18 @@ class FastCatAutoStartSettingsPage extends ConsumerWidget {
     );
   }
 
-  Widget _focusSwitch(SwitchListTile tile) {
+  Widget _focusSwitch(SwitchListTile tile, {required int index}) {
     if (!system.isTV) return tile;
-    return TVFocusable(
-      borderRadius: BorderRadius.circular(20),
-      onPressed:
-          tile.onChanged == null ? null : () => tile.onChanged!(!tile.value),
-      child: tile,
-    );
+    return TVFocusGroupRow(
+        index: index,
+        count: 2,
+        child: TVFocusable(
+          borderRadius: BorderRadius.circular(20),
+          onPressed: tile.onChanged == null
+              ? null
+              : () => tile.onChanged!(!tile.value),
+          child: tile,
+        ));
   }
 
   static bool _isChinese(BuildContext context) =>

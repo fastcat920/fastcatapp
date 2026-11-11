@@ -144,12 +144,15 @@ class _FastCatAboutPageState extends ConsumerState<FastCatAboutPage> {
                                     : () => _checkUpdate(context, ref),
                               );
                               if (!system.isTV) return tile;
-                              return TVFocusable(
-                                  borderRadius: BorderRadius.circular(20),
-                                  onPressed: update.isChecking
-                                      ? null
-                                      : () => _checkUpdate(context, ref),
-                                  child: ExcludeFocus(child: tile));
+                              return TVFocusGroupRow(
+                                  index: 0,
+                                  count: showLogs ? 2 : 1,
+                                  child: TVFocusable(
+                                      borderRadius: BorderRadius.circular(20),
+                                      onPressed: update.isChecking
+                                          ? null
+                                          : () => _checkUpdate(context, ref),
+                                      child: ExcludeFocus(child: tile)));
                             }),
                             if (showLogs) ...[
                               Divider(
@@ -168,13 +171,16 @@ class _FastCatAboutPageState extends ConsumerState<FastCatAboutPage> {
                                   ),
                                 );
                                 if (!system.isTV) return tile;
-                                return TVFocusable(
-                                    borderRadius: BorderRadius.circular(20),
-                                    onPressed: () => Navigator.of(context).push(
-                                        MaterialPageRoute<void>(
-                                            builder: (_) =>
-                                                const FastCatLogsPage())),
-                                    child: ExcludeFocus(child: tile));
+                                return TVFocusGroupRow(
+                                    index: 1,
+                                    count: 2,
+                                    child: TVFocusable(
+                                        borderRadius: BorderRadius.circular(20),
+                                        onPressed: () => Navigator.of(context)
+                                            .push(MaterialPageRoute<void>(
+                                                builder: (_) =>
+                                                    const FastCatLogsPage())),
+                                        child: ExcludeFocus(child: tile)));
                               }),
                             ],
                           ],

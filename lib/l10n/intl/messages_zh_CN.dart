@@ -2284,7 +2284,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "xboardStartProxy": MessageLookupByLibrary.simpleMessage("启动代理"),
     "xboardStartup": MessageLookupByLibrary.simpleMessage("自启动"),
     "xboardStartupDescription": MessageLookupByLibrary.simpleMessage(
-      "开启启动与自动连接代理",
+      "开机启动与自动连接代理",
     ),
     "xboardStop": MessageLookupByLibrary.simpleMessage("停止"),
     "xboardStopProxy": MessageLookupByLibrary.simpleMessage("停止代理"),

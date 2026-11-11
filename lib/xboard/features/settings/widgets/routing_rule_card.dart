@@ -86,7 +86,7 @@ class RoutingRuleCard extends StatelessWidget {
                 onDown),
           ]);
           final header = Row(children: [
-            Expanded(
+            Flexible(
                 child: Text(destination,
                     style: style,
                     maxLines: inline ? 1 : 2,

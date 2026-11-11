@@ -22,14 +22,16 @@ class TVSubscriptionInfoCard extends ConsumerWidget {
               ? 0
               : subscription.expiredAt!.millisecondsSinceEpoch ~/ 1000);
     }
-    return SubscriptionUsageCard(
-        subscriptionInfo: subscription,
-        userInfo: ref.watch(userInfoProvider),
-        profileSubscriptionInfo: profile,
-        showActions: false,
-        usePlainBackground: true,
-        prefixUsedTraffic: true,
-        fixedHeight: 148,
-        isSyncing: isSyncing);
+    return SizedBox(
+        height: 148,
+        child: SubscriptionUsageCard(
+            subscriptionInfo: subscription,
+            userInfo: ref.watch(userInfoProvider),
+            profileSubscriptionInfo: profile,
+            showActions: false,
+            usePlainBackground: true,
+            prefixUsedTraffic: true,
+            fixedHeight: 148,
+            isSyncing: isSyncing));
   }
 }

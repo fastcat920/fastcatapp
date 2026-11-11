@@ -32,6 +32,8 @@ void main() {
         final tag = find.text(
             direct ? (chinese ? '直连' : 'Direct') : (chinese ? '代理' : 'Proxy'));
         expect(destination, findsOneWidget);
+        expect(tester.getRect(find.byKey(const Key('routing-mode-label'))).left,
+            closeTo(tester.getRect(destination).right + 12, 0.1));
         expect(tag, findsOneWidget);
         expect(find.textContaining('DOMAIN-SUFFIX'), findsNothing);
         expect(find.text('快猫'), findsNothing);

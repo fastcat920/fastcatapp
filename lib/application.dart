@@ -135,8 +135,11 @@ class ApplicationState extends ConsumerState<Application>
     final generation = ++_tvThemeGeneration;
     final native = await AndroidTvTheme.readSystemBrightness();
     if (!mounted || generation != _tvThemeGeneration) return;
-    globalState.appController.updateBrightness(native ??
-        WidgetsBinding.instance.platformDispatcher.platformBrightness);
+    // Do not let the generic brightness observer overwrite this TV snapshot.
+    // A transient bridge failure must also preserve a previously known value.
+    if (native != null) {
+      ref.read(androidTvSystemBrightnessProvider.notifier).state = native;
+    }
   }
 
   @override
@@ -867,7 +870,13 @@ class ApplicationState extends ConsumerState<Application>
             final locale =
                 ref.watch(appSettingProvider.select((state) => state.locale));
             final themeProps = ref.watch(themeSettingProvider);
-            final appBrightness = ref.watch(appBrightnessProvider);
+            final flutterBrightness = ref.watch(appBrightnessProvider);
+            final tvBrightness = ref.watch(androidTvSystemBrightnessProvider);
+            final appBrightness = AndroidTvTheme.resolveSystemBrightness(
+              isTV: system.isTV && Platform.isAndroid,
+              native: tvBrightness,
+              flutter: flutterBrightness,
+            );
             final effectiveBrightness = _effectiveBrightness(
               themeProps.themeMode,
               appBrightness,

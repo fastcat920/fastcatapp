@@ -1,8 +1,14 @@
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 /// Keep the saved preference as "system"; resolve the native TV snapshot only
 /// at the application boundary. Mobile and desktop retain Flutter's behavior.
+// Separate native TV appearance from Flutter engine brightness events. Some
+// TV firmware reports light to the engine while the system UI is dark.
+final androidTvSystemBrightnessProvider =
+    StateProvider<Brightness?>((ref) => null);
+
 abstract final class AndroidTvTheme {
   static const channel = MethodChannel('fastcat/tv_theme');
   static Future<Brightness?> readSystemBrightness() async {
@@ -18,6 +24,12 @@ abstract final class AndroidTvTheme {
       return null;
     }
   }
+
+  static Brightness? resolveSystemBrightness(
+          {required bool isTV,
+          required Brightness? native,
+          required Brightness? flutter}) =>
+      isTV ? native ?? flutter : flutter;
 
   static ThemeMode materialMode(ThemeMode selected, Brightness brightness,
       {required bool isTV}) {

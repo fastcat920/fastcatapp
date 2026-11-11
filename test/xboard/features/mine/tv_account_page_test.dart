@@ -94,10 +94,13 @@ void main() {
           findsNothing);
       final auth = container.read(xboardUserProvider.notifier) as _Auth;
       final refresh = find.byKey(const Key('tv-account-plan-refresh'));
+      final planHeight = tester.getSize(refresh).height;
+      expect(planHeight, 148);
       await tester.tap(refresh);
       await tester.tap(refresh);
       await tester.pump();
       expect(auth.refreshes, 1);
+      expect(tester.getSize(refresh).height, planHeight);
       expect(auth.importRequested, isFalse);
       expect(
           tester
@@ -108,6 +111,7 @@ void main() {
           subscription.copyWith(downloadedBytes: 123456);
       auth.refreshGate.complete();
       await tester.pumpAndSettle();
+      expect(tester.getSize(refresh).height, planHeight);
       final updated = tester
           .widget<SubscriptionUsageCard>(find.byType(SubscriptionUsageCard));
       expect(updated.isSyncing, isFalse);

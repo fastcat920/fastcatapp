@@ -338,7 +338,8 @@ class _SettingsCard extends StatelessWidget {
       child: Column(
         children: [
           for (var index = 0; index < children.length; index++) ...[
-            children[index],
+            TVFocusGroupRow(
+                index: index, count: children.length, child: children[index]),
             if (index != children.length - 1)
               Divider(
                 height: 1,
