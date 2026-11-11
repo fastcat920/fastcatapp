@@ -1,3 +1,7 @@
+import 'package:fl_clash/widgets/tv_focusable.dart';
+import 'package:fl_clash/widgets/tv_back_button.dart';
+import 'package:fl_clash/common/common.dart' show system;
+import 'package:fl_clash/xboard/features/shared/widgets/tv_page_frame.dart';
 import 'dart:io';
 
 import 'package:fl_clash/l10n/l10n.dart';
@@ -19,15 +23,21 @@ class FastCatAutoStartSettingsPage extends ConsumerWidget {
     return Scaffold(
       backgroundColor: XbUiTokens.pageBackground(context),
       appBar: AppBar(
+        leadingWidth: system.isTV ? 68 : null,
+        leading: system.isTV ? const TVBackButton() : null,
         title: Text(l10n.xboardStartup),
         backgroundColor: XbUiTokens.pageBackground(context),
         surfaceTintColor: Colors.transparent,
       ),
-      body: Center(
+      body: TVPageFrame(
+          child: Center(
         child: ConstrainedBox(
-          constraints: const BoxConstraints(maxWidth: 760),
+          constraints:
+              BoxConstraints(maxWidth: system.isTV ? double.infinity : 760),
           child: ListView(
-            padding: const EdgeInsets.fromLTRB(16, 26, 16, 32),
+            padding: system.isTV
+                ? EdgeInsets.zero
+                : const EdgeInsets.fromLTRB(16, 26, 16, 32),
             children: [
               Card(
                 margin: EdgeInsets.zero,
@@ -35,10 +45,10 @@ class FastCatAutoStartSettingsPage extends ConsumerWidget {
                 shadowColor: XbUiCardStyle.shadowColor(context),
                 color: XbUiCardStyle.background(context),
                 shape: XbUiCardStyle.shape(context),
-                clipBehavior: Clip.antiAlias,
+                clipBehavior: system.isTV ? Clip.none : Clip.antiAlias,
                 child: Column(
                   children: [
-                    SwitchListTile(
+                    _focusSwitch(SwitchListTile(
                       secondary: const _StartupIcon(Icons.power_outlined),
                       title: Text(l10n.autoLaunch),
                       subtitle: Text(
@@ -56,7 +66,7 @@ class FastCatAutoStartSettingsPage extends ConsumerWidget {
                                         state.copyWith(autoLaunch: value),
                                   )
                           : null,
-                    ),
+                    )),
                     Divider(
                       height: 1,
                       indent: 68,
@@ -65,7 +75,7 @@ class FastCatAutoStartSettingsPage extends ConsumerWidget {
                           .outlineVariant
                           .withValues(alpha: 0.55),
                     ),
-                    SwitchListTile(
+                    _focusSwitch(SwitchListTile(
                       secondary: const _StartupIcon(Icons.play_circle_outline),
                       title: Text(l10n.autoRun),
                       subtitle: Text(l10n.xboardAutoRunDescription),
@@ -74,14 +84,24 @@ class FastCatAutoStartSettingsPage extends ConsumerWidget {
                           ref.read(appSettingProvider.notifier).updateState(
                                 (state) => state.copyWith(autoRun: value),
                               ),
-                    ),
+                    )),
                   ],
                 ),
               ),
             ],
           ),
         ),
-      ),
+      )),
+    );
+  }
+
+  Widget _focusSwitch(SwitchListTile tile) {
+    if (!system.isTV) return tile;
+    return TVFocusable(
+      borderRadius: BorderRadius.circular(20),
+      onPressed:
+          tile.onChanged == null ? null : () => tile.onChanged!(!tile.value),
+      child: tile,
     );
   }
 

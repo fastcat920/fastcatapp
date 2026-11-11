@@ -1,3 +1,5 @@
+import 'package:fl_clash/common/common.dart' show system;
+import 'package:fl_clash/widgets/tv_focusable.dart';
 import 'package:fl_clash/common/fixed.dart';
 import 'package:fl_clash/enum/enum.dart';
 import 'package:fl_clash/l10n/l10n.dart';
@@ -37,6 +39,49 @@ class _Logs extends Logs {
 }
 
 void main() {
+  testWidgets(
+      'TV logs keep toolbar and passive records in remote focus navigation',
+      (tester) async {
+    system.setTVForTesting(true);
+    addTearDown(() => system.setTVForTesting(false));
+    await tester.binding.setSurfaceSize(const Size(1000, 700));
+    addTearDown(() => tester.binding.setSurfaceSize(null));
+    SharedPreferences.setMockInitialValues({});
+    await tester.pumpWidget(ProviderScope(
+      overrides: [logsProvider.overrideWith(_Logs.new)],
+      child: MaterialApp(
+        locale: const Locale('en'),
+        localizationsDelegates: const [
+          AppLocalizations.delegate,
+          GlobalMaterialLocalizations.delegate,
+          GlobalWidgetsLocalizations.delegate,
+          GlobalCupertinoLocalizations.delegate
+        ],
+        supportedLocales: AppLocalizations.delegate.supportedLocales,
+        home: const FastCatLogsPage(),
+      ),
+    ));
+    await tester.pumpAndSettle();
+    final copy = find.ancestor(
+        of: find.byIcon(Icons.content_copy_outlined),
+        matching: find.byType(TVFocusable));
+    expect(copy, findsOneWidget);
+    final row = find.ancestor(
+        of: find.text('debug marker'), matching: find.byType(TVFocusable));
+    expect(row, findsOneWidget);
+    final focus = tester
+        .widget<Focus>(
+            find.descendant(of: row, matching: find.byType(Focus)).first)
+        .focusNode!;
+    focus.requestFocus();
+    await tester.pumpAndSettle();
+    expect(focus.hasFocus, isTrue);
+    await tester.sendKeyEvent(LogicalKeyboardKey.select);
+    expect(find.text('debug marker'), findsOneWidget);
+    expect(tester.getRect(find.byType(Card)).left, 25);
+    expect(tester.takeException(), isNull);
+  });
+
   testWidgets(
       'all levels displayed; copy includes all cached logs despite search',
       (tester) async {

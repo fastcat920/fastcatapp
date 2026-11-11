@@ -1,3 +1,4 @@
+import 'package:fl_clash/xboard/features/shared/widgets/tv_page_frame.dart';
 import 'package:fl_clash/widgets/tv_split_focus_row.dart';
 import 'package:fl_clash/xboard/features/latency/widgets/latency_indicator.dart';
 import 'dart:async';
@@ -149,7 +150,7 @@ class _FastCatNodesPageState extends ConsumerState<FastCatNodesPage> {
           const SizedBox(width: 12),
         ],
       ),
-      body: _buildPageBody(group, mode),
+      body: TVPageFrame(child: _buildPageBody(group, mode)),
     );
   }
 
@@ -177,7 +178,9 @@ class _FastCatNodesPageState extends ConsumerState<FastCatNodesPage> {
               return Center(
                 child: ConstrainedBox(
                   constraints: BoxConstraints(
-                    maxWidth: useFullLandscapeWidth ? double.infinity : 760,
+                    maxWidth: system.isTV || useFullLandscapeWidth
+                        ? double.infinity
+                        : 760,
                   ),
                   child: _buildNodes(group, mode),
                 ),
@@ -197,7 +200,9 @@ class _FastCatNodesPageState extends ConsumerState<FastCatNodesPage> {
     final l10n = AppLocalizations.of(context);
     final primary = Theme.of(context).colorScheme.primary;
     return Card(
-      margin: const EdgeInsets.fromLTRB(16, 4, 16, 10),
+      margin: system.isTV
+          ? const EdgeInsets.only(bottom: 10)
+          : const EdgeInsets.fromLTRB(16, 4, 16, 10),
       elevation: XbUiCardStyle.elevation(context),
       shadowColor: XbUiCardStyle.shadowColor(context),
       color: XbUiCardStyle.background(context),
@@ -280,7 +285,9 @@ class _FastCatNodesPageState extends ConsumerState<FastCatNodesPage> {
           slivers: [
             SliverToBoxAdapter(child: _buildOverview(context, mode)),
             SliverPadding(
-              padding: const EdgeInsets.fromLTRB(16, 0, 16, 24),
+              padding: system.isTV
+                  ? EdgeInsets.zero
+                  : const EdgeInsets.fromLTRB(16, 0, 16, 24),
               sliver: SliverGrid(
                 gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
                   crossAxisCount: columns,

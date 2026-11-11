@@ -1,3 +1,8 @@
+import 'package:fl_clash/widgets/tv_focusable.dart';
+import 'package:fl_clash/xboard/features/shared/widgets/tv_deferred_input.dart';
+import 'package:fl_clash/common/common.dart' show system;
+import 'package:fl_clash/widgets/tv_back_button.dart';
+import 'package:fl_clash/xboard/features/shared/widgets/tv_page_frame.dart';
 import 'package:fl_clash/common/sensitive_masker.dart';
 import 'package:fl_clash/common/diagnostic_log_buffer.dart';
 import 'package:fl_clash/state.dart';
@@ -33,50 +38,72 @@ class _FastCatLogsPageState extends ConsumerState<FastCatLogsPage> {
     return Scaffold(
       backgroundColor: XbUiTokens.pageBackground(context),
       appBar: AppBar(
+        leadingWidth: system.isTV ? 68 : null,
+        leading: system.isTV ? const TVBackButton() : null,
         title: Text(l10n.logs),
         backgroundColor: XbUiTokens.pageBackground(context),
         surfaceTintColor: Colors.transparent,
         actions: [
-          IconButton(
+          _tvAction(IconButton(
             tooltip: _hideLogsLabel(context),
             onPressed: _hideLogs,
             icon: const Icon(Icons.visibility_off_outlined),
-          ),
-          IconButton(
+          )),
+          _tvAction(IconButton(
             tooltip: l10n.copyLogs,
             onPressed: () => _copy(context),
             icon: const Icon(Icons.content_copy_outlined),
-          ),
-          IconButton(
+          )),
+          _tvAction(IconButton(
             tooltip: l10n.clearLogs,
             onPressed: () => ref.read(logsProvider.notifier).clear(),
             icon: const Icon(Icons.delete_sweep_outlined),
-          ),
+          )),
           const SizedBox(width: 12),
         ],
       ),
-      body: Center(
+      body: TVPageFrame(
+          child: Center(
         child: ConstrainedBox(
-          constraints: const BoxConstraints(maxWidth: 900),
+          constraints:
+              BoxConstraints(maxWidth: system.isTV ? double.infinity : 900),
           child: Column(
             children: [
               Padding(
-                padding: const EdgeInsets.fromLTRB(16, 12, 16, 10),
-                child: SearchBar(
-                  elevation: const WidgetStatePropertyAll(0),
-                  backgroundColor: WidgetStatePropertyAll(
-                    XbUiCardStyle.background(context),
-                  ),
-                  side: WidgetStatePropertyAll(
-                    BorderSide(color: XbUiTokens.cardBorder(context)),
-                  ),
-                  leading: const Icon(Icons.search),
-                  hintText: l10n.search,
-                  onChanged: (value) => setState(() => _query = value),
-                ),
+                padding: system.isTV
+                    ? const EdgeInsets.only(bottom: 10)
+                    : const EdgeInsets.fromLTRB(16, 12, 16, 10),
+                child: system.isTV
+                    ? TVDeferredInput(
+                        builder: (context, focus, readOnly, cursor, edit) =>
+                            TextField(
+                          focusNode: focus,
+                          readOnly: readOnly,
+                          showCursor: cursor,
+                          onTap: edit,
+                          decoration: InputDecoration(
+                              labelText: l10n.search,
+                              prefixIcon: const Icon(Icons.search)),
+                          onChanged: (value) => setState(() => _query = value),
+                        ),
+                      )
+                    : SearchBar(
+                        elevation: const WidgetStatePropertyAll(0),
+                        backgroundColor: WidgetStatePropertyAll(
+                          XbUiCardStyle.background(context),
+                        ),
+                        side: WidgetStatePropertyAll(
+                          BorderSide(color: XbUiTokens.cardBorder(context)),
+                        ),
+                        leading: const Icon(Icons.search),
+                        hintText: l10n.search,
+                        onChanged: (value) => setState(() => _query = value),
+                      ),
               ),
               Padding(
-                padding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
+                padding: system.isTV
+                    ? const EdgeInsets.only(bottom: 8)
+                    : const EdgeInsets.fromLTRB(16, 0, 16, 8),
                 child: Text(
                   chinese
                       ? '已保留 ${buffer.length} 条 · 已淘汰 ${buffer.evictedRecords} 条 · 重复合并 ${buffer.mergedOccurrences} 次'
@@ -88,12 +115,14 @@ class _FastCatLogsPageState extends ConsumerState<FastCatLogsPage> {
                 child: logs.isEmpty
                     ? Center(child: Text(l10n.logsDesc))
                     : Card(
-                        margin: const EdgeInsets.fromLTRB(16, 0, 16, 24),
+                        margin: system.isTV
+                            ? EdgeInsets.zero
+                            : const EdgeInsets.fromLTRB(16, 0, 16, 24),
                         elevation: XbUiCardStyle.elevation(context),
                         shadowColor: XbUiCardStyle.shadowColor(context),
                         color: XbUiCardStyle.background(context),
                         shape: XbUiCardStyle.shape(context),
-                        clipBehavior: Clip.antiAlias,
+                        clipBehavior: system.isTV ? Clip.none : Clip.antiAlias,
                         child: ListView.separated(
                           padding: const EdgeInsets.symmetric(vertical: 6),
                           itemCount: logs.length,
@@ -101,22 +130,36 @@ class _FastCatLogsPageState extends ConsumerState<FastCatLogsPage> {
                             height: 1,
                             color: XbUiTokens.cardBorder(context),
                           ),
-                          itemBuilder: (context, index) => _LogTile(
+                          itemBuilder: (context, index) => _tvLog(_LogTile(
                             log: logs[index],
                             payload: _localizedPayload(
                               context,
                               logs[index].payload,
                             ),
-                          ),
+                          )),
                         ),
                       ),
               ),
             ],
           ),
         ),
-      ),
+      )),
     );
   }
+
+  Widget _tvLog(Widget tile) => !system.isTV
+      ? tile
+      : TVFocusable(
+          focusableWhenDisabled: true,
+          child: tile,
+        );
+
+  Widget _tvAction(IconButton button) => !system.isTV
+      ? button
+      : TVFocusable(
+          onPressed: button.onPressed,
+          child: button,
+        );
 
   String _hideLogsLabel(BuildContext context) =>
       Localizations.localeOf(context).languageCode == 'zh'

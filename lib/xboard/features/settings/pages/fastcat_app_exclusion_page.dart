@@ -420,6 +420,10 @@ class _ExclusionCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => Card(
+        shape: XbUiCardStyle.shape(context),
+        color: XbUiCardStyle.background(context),
+        elevation: XbUiCardStyle.elevation(context),
+        shadowColor: XbUiCardStyle.shadowColor(context),
         margin: const EdgeInsets.only(bottom: 8),
         clipBehavior: Clip.antiAlias,
         child: child,

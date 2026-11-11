@@ -83,16 +83,9 @@ class XbUiCardStyle {
     BuildContext context, {
     double radius = XbUiTokens.radiusCard,
   }) {
-    final theme = Theme.of(context);
-    final isDark = theme.brightness == Brightness.dark;
     return RoundedRectangleBorder(
       borderRadius: BorderRadius.circular(radius),
-      side: isDark
-          ? BorderSide(
-              color: theme.colorScheme.outline.withValues(alpha: 0.14),
-              width: 1,
-            )
-          : const BorderSide(color: XbUiTokens.cardBorderLight, width: 1),
+      side: BorderSide(color: XbUiTokens.cardBorder(context), width: 1),
     );
   }
 }

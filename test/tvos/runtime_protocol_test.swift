@@ -178,6 +178,21 @@ struct TVRuntimeProtocolTests {
     precondition(
       TVSubscriptionNodes.testURL(from: "", node: "node-a", group: nil, fallback: "file:///private")
         == "https://www.gstatic.com/generate_204")
+    // Both legal YAML sequence indentations and flow maps must resolve a
+    // proxy-rule target; an empty target prevents VPN startup with local rules.
+    let groupFixtures = [
+      "proxy-groups:\n- name: Route\n  type: select\n  proxies:\n  - node-a\nrules:\n- MATCH,Route",
+      "proxy-groups:\n  - type: select\n    name: Route\n    proxies: [node-a]",
+      "proxy-groups:\n  - {name: Route, type: select, proxies: [node-a], url: 'https://test.invalid/check'}",
+      "proxy-groups: [{name: Route, type: select, proxies: [node-a]}]",
+      "{\"proxy-groups\":[{\"name\":\"Route\",\"type\":\"select\",\"proxies\":[\"node-a\"]}]}"
+    ]
+    for fixture in groupFixtures {
+      precondition(TVSubscriptionNodes.preferredGroupName(from: fixture, mode: "rule") == "Route")
+      precondition(TVSubscriptionNodes.parse(from: fixture).map(\.name) == ["node-a"])
+    }
+    let commaFixture = "proxy-groups:\n- {name: Route, type: select, proxies: ['node,a', node-b]}"
+    precondition(TVSubscriptionNodes.parse(from: commaFixture).map(\.name) == ["node,a", "node-b"])
     var build = TVBuildConfiguration(
       xorKey: "", remoteConfigPublicKey: "", subscriptionFlag: "",
       subscriptionKeys: ["test": Data(repeating: 255, count: 32)],

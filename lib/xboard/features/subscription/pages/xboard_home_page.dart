@@ -1,3 +1,4 @@
+import 'package:fl_clash/xboard/features/shared/widgets/tv_page_frame.dart';
 import 'package:fl_clash/xboard/features/mine/pages/account_info_page.dart';
 import 'package:fl_clash/xboard/features/subscription/widgets/tv_subscription_info_card.dart';
 import 'package:fl_clash/widgets/tv_version_link.dart';
@@ -55,7 +56,7 @@ class _XBoardHomePageState extends ConsumerState<XBoardHomePage>
   bool _deferredStartupTasksReady = false;
   bool _isTokenExpiredDialogVisible = false;
   bool _isCheckingWebsite = false;
-  bool _isRefreshingTvSubscription = false;
+  bool _isRefreshingSubscriptionInfo = false;
   Timer? _noticeStartupTimer;
   Timer? _latencyStartupTimer;
   Timer? _latencyBatchTimer;
@@ -669,7 +670,8 @@ class _XBoardHomePageState extends ConsumerState<XBoardHomePage>
         builder: (context, constraints) {
           final isShort = constraints.maxHeight < 620;
           final topInfoHeight = isShort ? 124.0 : 148.0;
-          final horizontalPadding = constraints.maxWidth >= 1400 ? 33.0 : 25.0;
+          final horizontalPadding =
+              TVPageFrame.horizontalInset(constraints.maxWidth);
           final connectButtonSize = isShort ? 150.0 : 188.0;
 
           return Padding(
@@ -789,21 +791,28 @@ class _XBoardHomePageState extends ConsumerState<XBoardHomePage>
     }
     return TVFocusable(
       borderRadius: radius,
-      onPressed: _refreshTvSubscriptionInfo,
+      onPressed: _refreshHomeSubscriptionInfo,
       child: ExcludeFocus(child: _buildUsageSection()),
     );
   }
 
-  Future<void> _refreshTvSubscriptionInfo() async {
-    if (_isRefreshingTvSubscription) return;
-    setState(() => _isRefreshingTvSubscription = true);
+  Future<void> _refreshHomeSubscriptionInfo() async {
+    if (_isRefreshingSubscriptionInfo) return;
+    setState(() => _isRefreshingSubscriptionInfo = true);
     try {
       await ref.read(xboardUserProvider.notifier).refreshSubscriptionInfo(
             importProfile: false,
-            source: 'TV 首页套餐卡片',
+            source: '首页套餐卡片',
           );
+    } catch (_) {
+      if (mounted) {
+        XBoardNotification.showError(
+            Localizations.localeOf(context).languageCode == 'zh'
+                ? '套餐信息刷新失败，请稍后重试'
+                : 'Could not refresh plan information. Please try again.');
+      }
     } finally {
-      if (mounted) setState(() => _isRefreshingTvSubscription = false);
+      if (mounted) setState(() => _isRefreshingSubscriptionInfo = false);
     }
   }
 
@@ -1043,7 +1052,15 @@ class _XBoardHomePageState extends ConsumerState<XBoardHomePage>
         return compact
             ? const _HomeNoticeCard(compact: true)
             : isRunning
-                ? _buildUsageSection()
+                ? Material(
+                    type: MaterialType.transparency,
+                    child: InkWell(
+                      borderRadius:
+                          BorderRadius.circular(XbUiTokens.radiusCard),
+                      onTap: _refreshHomeSubscriptionInfo,
+                      child: _buildUsageSection(),
+                    ),
+                  )
                 : const _HomeNoticeCard();
       },
     );
@@ -1051,7 +1068,7 @@ class _XBoardHomePageState extends ConsumerState<XBoardHomePage>
 
   Widget _buildUsageSection() {
     if (system.isTV) {
-      return TVSubscriptionInfoCard(isSyncing: _isRefreshingTvSubscription);
+      return TVSubscriptionInfoCard(isSyncing: _isRefreshingSubscriptionInfo);
     }
     return Consumer(
       builder: (context, ref, child) {
@@ -1089,7 +1106,7 @@ class _XBoardHomePageState extends ConsumerState<XBoardHomePage>
           usePlainBackground: true,
           prefixUsedTraffic: true,
           fixedHeight: isDesktop ? 136 : 148,
-          isSyncing: system.isTV && _isRefreshingTvSubscription,
+          isSyncing: _isRefreshingSubscriptionInfo,
         );
       },
     );

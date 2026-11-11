@@ -1777,42 +1777,42 @@ struct TVHomeView: View {
       return true
     }
 
-    // A restored tunnel supplies live nodes without populating the subscription.
-    // loadNodes(false) returns early for a nonempty list, so hydrate the probe
-    // configuration explicitly rather than treating that list as ready config.
+    let useRunningTunnel = VPNManager.shared.isConnected
+    // Running-tunnel probes need only a node and URL. A verified cached
+    // subscription may refine the URL, but is never an IPC prerequisite.
+    var source = cachedSubscription ?? ""
     if cachedSubscription == nil, let owner {
       do {
-        var source = try await GatewayClient.cachedSubscription(token: owner)
-        if source == nil {
+        var stored = try await GatewayClient.cachedSubscription(token: owner)
+        if stored == nil, !useRunningTunnel {
           let client = try await GatewayClient.configured()
-          source = try await client.downloadSubscription(token: owner)
+          stored = try await client.downloadSubscription(token: owner)
         }
         guard !Task.isCancelled, session.token == owner else { return false }
-        cachedSubscription = source
+        if let stored { cachedSubscription = stored; source = stored }
       } catch {
-        NSLog("[TVLatency] probe deferred: subscription configuration unavailable")
+        if !useRunningTunnel {
+          NSLog("[TVLatency] probe deferred: subscription configuration unavailable")
+          return false
+        }
+      }
+    }
+    let probeConfig: String
+    if useRunningTunnel {
+      probeConfig = "" // Existing tunnel configuration remains untouched.
+    } else {
+      guard !source.isEmpty else { return false }
+      do {
+        // Deliberately exclude applyingRouteMode / TVUserRouteStore: a named
+        // proxy delay test does not depend on user traffic routing rules.
+        probeConfig = try TVBuildConfiguration.load().runtimeConfiguration(source)
+      } catch {
+        NSLog("[TVLatency] probe deferred: isolated probe configuration invalid")
+        nodeLoadError = error.localizedDescription
         return false
       }
     }
-    guard let source = cachedSubscription else {
-      nodeLoadError = tvText(
-        "订阅中没有可用线路", "No available nodes in this subscription", language: language)
-      return false
-    }
-    let probeConfig: String
-    do { probeConfig = try applyingRouteMode(to: source) } catch {
-      let reason: String
-      if let configurationError = error as? TVBuildConfiguration.ConfigurationError {
-        switch configurationError {
-        case .missing: reason = "missing-build-setting"
-        case .invalidRuntimeConfiguration: reason = "reserved-runtime-field"
-        }
-      } else if error is TVToolsError { reason = "custom-routing-rule" }
-      else { reason = "other" }
-      NSLog("[TVLatency] probe deferred: routing configuration invalid reason=%@", reason)
-      nodeLoadError = error.localizedDescription
-      return false
-    }
+    NSLog("[TVLatency] probe path=%@", useRunningTunnel ? "running-tunnel" : "isolated-core")
 
     delayDiscountPercent = await TVRemoteConfigManager.shared.delayDiscountPercent()
     isTestingNodes = true
@@ -1825,9 +1825,9 @@ struct TVHomeView: View {
     let startedAt = ContinuousClock.now
     var receivedValidResult = false
 
-    let useRunningTunnel = VPNManager.shared.isConnected
     let testGroupName = selectedGroupName
     let clientTestURL = "https://www.gstatic.com/generate_204"
+    let probeSource = source
     // Bound both IPC and core work; queued requests must not expire before
     // the provider has started measuring them.
     for start in stride(from: 0, to: testedNames.count, by: 4) {
@@ -1838,7 +1838,7 @@ struct TVHomeView: View {
           group.addTask {
             if useRunningTunnel {
               let targetURL = TVSubscriptionNodes.testURL(
-                from: source, node: nodeName, group: testGroupName, fallback: clientTestURL)
+                from: probeSource, node: nodeName, group: testGroupName, fallback: clientTestURL)
               let value = await testDelay(proxyName: nodeName, testURL: targetURL)
               return (nodeName, value, value != nil)
             }
@@ -1846,7 +1846,7 @@ struct TVHomeView: View {
               TVLatencyProbe.shared.test(
                 config: probeConfig, proxyName: nodeName,
                 testURL: TVSubscriptionNodes.testURL(
-                  from: source, node: nodeName, group: testGroupName, fallback: clientTestURL)
+                  from: probeSource, node: nodeName, group: testGroupName, fallback: clientTestURL)
               ) {
                 value, valid in
                 continuation.resume(returning: (value, valid))
@@ -1859,6 +1859,7 @@ struct TVHomeView: View {
           guard !Task.isCancelled, scenePhase == .active, session.token == owner else { continue }
           if valid {
             receivedValidResult = true
+            NSLog("[TVLatency] probe response received success=%d", (value ?? -1) > 0)
             latencyDates[nodeName] = Date()
             nodes = nodes.map { node in
               node.name == nodeName ? TVProxyNode(node.name, type: node.type, delayMS: value) : node
@@ -1970,6 +1971,7 @@ struct TVHomeView: View {
   @MainActor
   private func prepareAndConnect() async {
     guard !preparingConnection, !isConnecting, !isApplyingRouting else { return }
+    NSLog("[TVConnect] preparation started")
     preparingConnection = true
     isConnecting = true
     defer {
@@ -1990,6 +1992,7 @@ struct TVHomeView: View {
       syncVPNStatus(currentStatus)
       return
     }
+    NSLog("[TVConnect] current status=%@", currentStatus)
     guard currentStatus == "disconnected" else {
       syncVPNStatus(currentStatus)
       return
@@ -2022,7 +2025,9 @@ struct TVHomeView: View {
         downloaded = try await client.downloadSubscription(token: token)
         cachedSubscription = downloaded
       }
+      NSLog("[TVConnect] generating runtime configuration")
       let config = try applyingRouteMode(to: downloaded)
+      NSLog("[TVConnect] runtime configuration ready")
       connectionPhase = tvText("核心回连", "Starting core", language: language)
       if let failure = await connectVPN(config: config) {
         errorMessage = failure
@@ -2041,6 +2046,7 @@ struct TVHomeView: View {
       await refreshLiveNodes(retries: 3)
       if connected, let name = selectedNodeName { scheduleSelectedLatency(name, force: true) }
     } catch {
+      NSLog("[TVConnect] preparation failed type=%@ code=%ld", String(describing: type(of: error)), (error as NSError).code)
       if handleExpiredSession(error) { return }
       connected = false
       errorMessage = error.localizedDescription

@@ -53,6 +53,7 @@ struct TVUserRoute: Codable, Identifiable {
   func coreRule(group: String) throws -> String {
     let target = proxy ? group : "DIRECT"
     guard !target.isEmpty, !target.contains(where: { ",\r\n".contains($0) }) else {
+      NSLog("[TVRouting] rule target rejected empty=%d", target.isEmpty)
       throw TVToolsError.invalidRule
     }
     return "\(kind),\(destination),\(target)" + (kind.hasPrefix("IP-CIDR") ? ",no-resolve" : "")
@@ -79,8 +80,13 @@ enum TVUserRouteStore {
         $0.hasPrefix("fastcat-added-rules:") || $0.hasPrefix("\"fastcat-added-rules\":")
           || $0.hasPrefix("'fastcat-added-rules':")
       })
-    else { throw TVToolsError.invalidRule }
-    let rules = try load(scope: scope).map { try $0.coreRule(group: group) }
+    else {
+      NSLog("[TVRouting] subscription contains reserved added-rules field")
+      throw TVToolsError.invalidRule
+    }
+    let storedRules = load(scope: scope)
+    NSLog("[TVRouting] building rules count=%ld group-present=%d", storedRules.count, !group.isEmpty)
+    let rules = try storedRules.map { try $0.coreRule(group: group) }
     guard !rules.isEmpty else { return source }
     let data = try JSONSerialization.data(withJSONObject: rules, options: [.withoutEscapingSlashes])
     return source + "\nfastcat-added-rules: " + String(decoding: data, as: UTF8.self) + "\n"

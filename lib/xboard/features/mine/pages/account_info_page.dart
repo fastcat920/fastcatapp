@@ -1,3 +1,4 @@
+import 'package:fl_clash/xboard/features/shared/widgets/tv_page_frame.dart';
 import 'package:fl_clash/common/common.dart';
 import 'package:fl_clash/widgets/tv_back_button.dart';
 import 'package:fl_clash/widgets/tv_focusable.dart';
@@ -73,15 +74,11 @@ class _AccountInfoPageState extends ConsumerState<AccountInfoPage> {
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
     return Card(
+      margin: system.isTV ? EdgeInsets.zero : null,
       elevation: isDark ? 0 : 1,
       shadowColor: isDark ? null : Colors.black.withValues(alpha: 0.08),
       color: isDark ? null : Colors.white,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(20),
-        side: isDark
-            ? BorderSide.none
-            : const BorderSide(color: XbUiTokens.cardBorderLight, width: 1),
-      ),
+      shape: XbUiCardStyle.shape(context),
       child: child,
     );
   }
@@ -127,60 +124,66 @@ class _AccountInfoPageState extends ConsumerState<AccountInfoPage> {
           leadingWidth: 68,
           leading: const TVBackButton(),
           title: Text(l10n.xboardAccountInfo)),
-      body: SingleChildScrollView(
-          padding: const EdgeInsets.fromLTRB(25, 16, 25, 24),
-          child: Center(
-              child: ConstrainedBox(
-                  constraints: const BoxConstraints(maxWidth: 760),
-                  child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.stretch,
-                      children: [
-                        _buildCard(
-                            child: ListTile(
-                                leading: Icon(Icons.email_outlined,
-                                    color: theme.colorScheme.primary),
-                                title: Text(l10n.xboardEmail),
-                                subtitle: Text(email.isEmpty
-                                    ? l10n.xboardEmailUnavailable
-                                    : email))),
-                        const SizedBox(height: 12),
-                        Padding(
-                            padding: const EdgeInsets.symmetric(horizontal: 4),
-                            child: TVFocusable(
-                                key: const Key('tv-account-plan-refresh'),
-                                borderRadius: BorderRadius.circular(20),
-                                onPressed: _refreshTvPlan,
-                                child: ExcludeFocus(
-                                    child: TVSubscriptionInfoCard(
-                                        isSyncing: _refreshingTvPlan)))),
-                        const SizedBox(height: 24),
-                        _buildCard(
-                            child: Padding(
-                                padding: const EdgeInsets.all(16),
+      body: TVPageFrame(
+          child: SingleChildScrollView(
+              padding: EdgeInsets.zero,
+              child: Center(
+                  child: ConstrainedBox(
+                      constraints:
+                          const BoxConstraints(maxWidth: double.infinity),
+                      child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.stretch,
+                          children: [
+                            _buildCard(
+                                child: ListTile(
+                                    leading: Icon(Icons.email_outlined,
+                                        color: theme.colorScheme.primary),
+                                    title: Text(l10n.xboardEmail),
+                                    subtitle: Text(email.isEmpty
+                                        ? l10n.xboardEmailUnavailable
+                                        : email))),
+                            const SizedBox(height: 12),
+                            Padding(
+                                padding: EdgeInsets.zero,
                                 child: TVFocusable(
-                                    onPressed: logout,
-                                    child: FilledButton.icon(
+                                    key: const Key('tv-account-plan-refresh'),
+                                    borderRadius: BorderRadius.circular(20),
+                                    onPressed: _refreshTvPlan,
+                                    child: ExcludeFocus(
+                                        child: TVSubscriptionInfoCard(
+                                            isSyncing: _refreshingTvPlan)))),
+                            const SizedBox(height: 24),
+                            _buildCard(
+                                child: Padding(
+                                    padding: const EdgeInsets.all(16),
+                                    child: TVFocusable(
                                         onPressed: logout,
-                                        icon: const Icon(Icons.logout_outlined),
-                                        label: Text(l10n.xboardLogout),
-                                        style: FilledButton.styleFrom(
-                                            backgroundColor: dark
-                                                ? theme.colorScheme
-                                                    .surfaceContainerHighest
-                                                : const Color(0xFFE8EDF3),
-                                            foregroundColor: dark
-                                                ? theme.colorScheme.onSurface
-                                                : const Color(0xFF344054),
-                                            padding: const EdgeInsets.symmetric(
-                                                vertical: 14),
-                                            shape: RoundedRectangleBorder(
-                                                borderRadius:
-                                                    BorderRadius.circular(
-                                                        14))))))),
-                        const SizedBox(height: 28),
-                        _DangerZone(
-                            onDelete: () => _showAccountDeletionFlow(email)),
-                      ])))),
+                                        child: FilledButton.icon(
+                                            onPressed: logout,
+                                            icon: const Icon(
+                                                Icons.logout_outlined),
+                                            label: Text(l10n.xboardLogout),
+                                            style: FilledButton.styleFrom(
+                                                backgroundColor: dark
+                                                    ? theme.colorScheme
+                                                        .surfaceContainerHighest
+                                                    : const Color(0xFFE8EDF3),
+                                                foregroundColor: dark
+                                                    ? theme
+                                                        .colorScheme.onSurface
+                                                    : const Color(0xFF344054),
+                                                padding:
+                                                    const EdgeInsets.symmetric(
+                                                        vertical: 14),
+                                                shape: RoundedRectangleBorder(
+                                                    borderRadius:
+                                                        BorderRadius.circular(
+                                                            14))))))),
+                            const SizedBox(height: 28),
+                            _DangerZone(
+                                onDelete: () =>
+                                    _showAccountDeletionFlow(email)),
+                          ]))))),
     );
   }
 

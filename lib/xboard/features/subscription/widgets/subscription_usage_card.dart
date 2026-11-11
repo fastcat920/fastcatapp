@@ -116,7 +116,7 @@ class SubscriptionUsageCard extends ConsumerWidget {
             ? theme.colorScheme.surfaceContainerHighest.withValues(alpha: 0.15)
             : Colors.white,
         borderRadius: BorderRadius.circular(20),
-        border: isDark ? null : Border.all(color: const Color(0xFFEEF0F4)),
+        border: Border.all(color: XbUiTokens.cardBorder(context)),
         boxShadow: isDark
             ? null
             : [
@@ -162,7 +162,7 @@ class SubscriptionUsageCard extends ConsumerWidget {
             ? theme.colorScheme.surfaceContainerHighest.withValues(alpha: 0.15)
             : Colors.white,
         borderRadius: BorderRadius.circular(20),
-        border: isDark ? null : Border.all(color: const Color(0xFFEEF0F4)),
+        border: Border.all(color: XbUiTokens.cardBorder(context)),
         boxShadow: isDark
             ? null
             : [
@@ -254,7 +254,7 @@ class SubscriptionUsageCard extends ConsumerWidget {
                 ],
               )
             : null,
-        border: isDark ? null : Border.all(color: const Color(0xFFEEF0F4)),
+        border: Border.all(color: XbUiTokens.cardBorder(context)),
         boxShadow: isDark
             ? null
             : [
@@ -618,9 +618,7 @@ class SubscriptionUsageCard extends ConsumerWidget {
         color: isDark ? theme.colorScheme.surfaceContainerLow : Colors.white,
         borderRadius: BorderRadius.circular(20),
         border: Border.all(
-          color: isDark
-              ? theme.colorScheme.outline.withValues(alpha: 0.18)
-              : const Color(0xFFEEF0F4),
+          color: XbUiTokens.cardBorder(context),
         ),
         boxShadow: isDark
             ? null
@@ -846,9 +844,7 @@ class SubscriptionUsageCard extends ConsumerWidget {
               ),
         border: usePlainBackground
             ? Border.all(
-                color: isDark
-                    ? theme.colorScheme.outline.withValues(alpha: 0.18)
-                    : const Color(0xFFEEF0F4),
+                color: XbUiTokens.cardBorder(context),
               )
             : null,
         boxShadow: usePlainBackground

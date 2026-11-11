@@ -1,3 +1,4 @@
+import 'package:fl_clash/xboard/features/shared/widgets/tv_page_frame.dart';
 import 'package:fl_clash/widgets/tv_back_button.dart';
 import 'package:fl_clash/common/common.dart';
 import 'package:fl_clash/l10n/l10n.dart';
@@ -46,15 +47,19 @@ class _FastCatAboutPageState extends ConsumerState<FastCatAboutPage> {
         backgroundColor: XbUiTokens.pageBackground(context),
         surfaceTintColor: Colors.transparent,
       ),
-      body: SafeArea(
+      body: TVPageFrame(
+          child: SafeArea(
         top: false,
         child: Center(
           child: ConstrainedBox(
-            constraints: const BoxConstraints(maxWidth: 680),
+            constraints:
+                BoxConstraints(maxWidth: system.isTV ? double.infinity : 680),
             child: CustomScrollView(
               slivers: [
                 SliverPadding(
-                  padding: const EdgeInsets.fromLTRB(20, 20, 20, 0),
+                  padding: system.isTV
+                      ? EdgeInsets.zero
+                      : const EdgeInsets.fromLTRB(20, 20, 20, 0),
                   sliver: SliverList.list(
                     children: [
                       Center(
@@ -95,11 +100,12 @@ class _FastCatAboutPageState extends ConsumerState<FastCatAboutPage> {
                       ),
                       const SizedBox(height: 24),
                       Card(
+                        margin: system.isTV ? EdgeInsets.zero : null,
                         elevation: XbUiCardStyle.elevation(context),
                         shadowColor: XbUiCardStyle.shadowColor(context),
                         color: XbUiCardStyle.background(context),
                         shape: XbUiCardStyle.shape(context),
-                        clipBehavior: Clip.antiAlias,
+                        clipBehavior: system.isTV ? Clip.none : Clip.antiAlias,
                         child: Column(
                           children: [
                             Builder(builder: (context) {
@@ -139,8 +145,7 @@ class _FastCatAboutPageState extends ConsumerState<FastCatAboutPage> {
                               );
                               if (!system.isTV) return tile;
                               return TVFocusable(
-                                  focusInset: 4,
-                                  borderRadius: BorderRadius.circular(14),
+                                  borderRadius: BorderRadius.circular(20),
                                   onPressed: update.isChecking
                                       ? null
                                       : () => _checkUpdate(context, ref),
@@ -164,8 +169,7 @@ class _FastCatAboutPageState extends ConsumerState<FastCatAboutPage> {
                                 );
                                 if (!system.isTV) return tile;
                                 return TVFocusable(
-                                    focusInset: 4,
-                                    borderRadius: BorderRadius.circular(14),
+                                    borderRadius: BorderRadius.circular(20),
                                     onPressed: () => Navigator.of(context).push(
                                         MaterialPageRoute<void>(
                                             builder: (_) =>
@@ -193,7 +197,7 @@ class _FastCatAboutPageState extends ConsumerState<FastCatAboutPage> {
             ),
           ),
         ),
-      ),
+      )),
     );
   }
 

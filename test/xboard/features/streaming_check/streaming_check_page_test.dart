@@ -243,7 +243,7 @@ void main() {
     });
   }
   testWidgets(
-      'TV tests media only and traverses both actions to the last row and back',
+      'TV compact results have no visit action and traverse all cards and toolbar',
       (tester) async {
     system.setTVForTesting(true);
     addTearDown(() => system.setTVForTesting(false));
@@ -256,7 +256,7 @@ void main() {
     });
     await openAndStart(tester);
     expect(tester.getTopLeft(find.byType(Card).first).dy,
-        closeTo(tester.getBottomLeft(find.byType(AppBar)).dy + 20, 0.1));
+        closeTo(tester.getBottomLeft(find.byType(AppBar)).dy + 19, 0.1));
     expect(find.text('完整'), findsNothing);
     expect(find.text('自定义'), findsNothing);
     expect(find.text(AppLocalizations.current.xboardStreamingCopyReport),
@@ -276,14 +276,26 @@ void main() {
     await tester.sendKeyEvent(LogicalKeyboardKey.arrowDown);
     await tester.pumpAndSettle();
     expect(node('stream-result-netflix').hasFocus, isTrue);
+    expect(
+        find.text(AppLocalizations.current.xboardStreamingVisit), findsNothing);
+    final first = find.byWidgetPredicate((widget) =>
+        widget is TVFocusable &&
+        widget.focusNode?.debugLabel == 'stream-result-netflix');
+    expect(tester.getSize(first).height, lessThanOrEqualTo(80));
+    final name = tester.getRect(find.text('Netflix'));
+    final status = tester.getRect(
+        find.descendant(of: first, matching: find.textContaining(' · ')).first);
+    expect(status.left, greaterThan(name.left));
+    expect(status.right, closeTo(tester.getRect(first).right - 13, 1));
+    expect(status.center.dy, closeTo(name.center.dy, 1));
     await tester.sendKeyEvent(LogicalKeyboardKey.arrowRight);
     await tester.pumpAndSettle();
-    expect(node('stream-visit-netflix').hasFocus, isTrue);
+    expect(node('stream-result-disney').hasFocus, isTrue);
     for (var i = 0; i < 4; i++) {
       await tester.sendKeyEvent(LogicalKeyboardKey.arrowDown);
       await tester.pumpAndSettle();
     }
-    expect(node('stream-visit-crunchyroll').hasFocus, isTrue);
+    expect(node('stream-result-tiktok').hasFocus, isTrue);
     await tester.sendKeyEvent(LogicalKeyboardKey.arrowRight);
     await tester.pumpAndSettle();
     expect(node('stream-result-tiktok').hasFocus, isTrue);

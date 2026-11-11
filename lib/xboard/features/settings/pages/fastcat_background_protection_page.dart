@@ -181,30 +181,34 @@ class _FastCatBackgroundProtectionPageState
                     style: Theme.of(context).textTheme.bodySmall)),
           const SizedBox(height: 16),
           Card(
+              shape: XbUiCardStyle.shape(context),
+              color: XbUiCardStyle.background(context),
+              elevation: XbUiCardStyle.elevation(context),
+              shadowColor: XbUiCardStyle.shadowColor(context),
               child: Column(children: [
-            _tile(
-                Icons.notifications_outlined,
-                zh ? '连接通知' : 'Connection notification',
-                notificationText,
-                'notifications'),
-            _tile(
-                Icons.battery_saver_outlined,
-                zh ? '电池优化' : 'Battery optimization',
-                check(
-                    'batteryExempt',
-                    zh
-                        ? '标准电池优化已豁免，仍需检查厂商后台管理。'
-                        : 'Not optimized; check vendor background settings too.',
-                    zh
-                        ? '仍受电池优化限制，找到 $brandName 并允许后台运行'
-                        : 'Optimized; find $brandName and allow background activity. This does not verify vendor restrictions.'),
-                'battery'),
-            _tile(
-                Icons.settings_applications_outlined,
-                zh ? '应用启动与后台运行' : 'App launch and background activity',
-                '${zh ? '需手动确认' : 'Verify manually.'}\n$guide',
-                'startup'),
-          ])),
+                _tile(
+                    Icons.notifications_outlined,
+                    zh ? '连接通知' : 'Connection notification',
+                    notificationText,
+                    'notifications'),
+                _tile(
+                    Icons.battery_saver_outlined,
+                    zh ? '电池优化' : 'Battery optimization',
+                    check(
+                        'batteryExempt',
+                        zh
+                            ? '标准电池优化已豁免，仍需检查厂商后台管理。'
+                            : 'Not optimized; check vendor background settings too.',
+                        zh
+                            ? '仍受电池优化限制，找到 $brandName 并允许后台运行'
+                            : 'Optimized; find $brandName and allow background activity. This does not verify vendor restrictions.'),
+                    'battery'),
+                _tile(
+                    Icons.settings_applications_outlined,
+                    zh ? '应用启动与后台运行' : 'App launch and background activity',
+                    '${zh ? '需手动确认' : 'Verify manually.'}\n$guide',
+                    'startup'),
+              ])),
           if (status?['backgroundRestricted'] == true)
             Padding(
                 padding: const EdgeInsets.only(top: 12),

@@ -1,3 +1,7 @@
+import 'package:fl_clash/widgets/tv_back_button.dart';
+import 'package:fl_clash/widgets/tv_focusable.dart';
+import '../widgets/routing_rule_card.dart';
+import 'package:fl_clash/xboard/features/shared/widgets/tv_page_frame.dart';
 import 'package:fl_clash/common/common.dart' show system;
 import 'package:fl_clash/xboard/features/shared/widgets/tv_deferred_input.dart';
 import 'package:fl_clash/xboard/features/settings/utils/account_routing_store.dart';
@@ -206,15 +210,21 @@ class _FastCatCustomRoutingPageState
     return Scaffold(
       backgroundColor: XbUiTokens.pageBackground(context),
       appBar: AppBar(
+        leadingWidth: system.isTV ? 68 : null,
+        leading: system.isTV ? const TVBackButton() : null,
         title: Text(chinese ? '自定义分流' : 'Custom routing'),
         backgroundColor: XbUiTokens.pageBackground(context),
         surfaceTintColor: Colors.transparent,
       ),
-      body: Center(
+      body: TVPageFrame(
+          child: Center(
         child: ConstrainedBox(
-          constraints: const BoxConstraints(maxWidth: 760),
+          constraints:
+              BoxConstraints(maxWidth: system.isTV ? double.infinity : 760),
           child: ListView(
-            padding: const EdgeInsets.fromLTRB(16, 8, 16, 32),
+            padding: system.isTV
+                ? EdgeInsets.zero
+                : const EdgeInsets.fromLTRB(16, 8, 16, 32),
             children: [
               Text(
                 chinese
@@ -224,6 +234,11 @@ class _FastCatCustomRoutingPageState
               ),
               const SizedBox(height: 12),
               Card(
+                shape: XbUiCardStyle.shape(context),
+                color: XbUiCardStyle.background(context),
+                elevation: XbUiCardStyle.elevation(context),
+                shadowColor: XbUiCardStyle.shadowColor(context),
+                margin: system.isTV ? EdgeInsets.zero : null,
                 child: Padding(
                   padding: const EdgeInsets.all(12),
                   child: Column(children: [
@@ -260,28 +275,48 @@ class _FastCatCustomRoutingPageState
                     const SizedBox(height: 12),
                     Row(children: [
                       Expanded(
-                        child: SegmentedButton<bool>(
-                          segments: [
-                            ButtonSegment(
-                              value: false,
-                              icon: Text(!_useProxy ? '☑' : '☐',
-                                  style: const TextStyle(fontSize: 18)),
-                              label: Text(chinese ? '直连' : 'Direct',
-                                  softWrap: false),
-                            ),
-                            ButtonSegment(
-                              value: true,
-                              enabled: proxyTarget != null,
-                              icon: Text(_useProxy ? '☑' : '☐',
-                                  style: const TextStyle(fontSize: 18)),
-                              label: Text(chinese ? '代理' : 'Proxy',
-                                  softWrap: false),
-                            ),
-                          ],
-                          selected: {_useProxy},
-                          onSelectionChanged: (value) =>
-                              setState(() => _useProxy = value.first),
-                        ),
+                        child: system.isTV
+                            ? Row(children: [
+                                for (final proxy in [false, true]) ...[
+                                  if (proxy) const SizedBox(width: 8),
+                                  Expanded(
+                                      child: OutlinedButton.icon(
+                                    onPressed: _isApplying ||
+                                            (proxy && proxyTarget == null)
+                                        ? null
+                                        : () =>
+                                            setState(() => _useProxy = proxy),
+                                    icon: Icon(_useProxy == proxy
+                                        ? Icons.radio_button_checked
+                                        : Icons.radio_button_unchecked),
+                                    label: Text(proxy
+                                        ? (chinese ? '代理' : 'Proxy')
+                                        : (chinese ? '直连' : 'Direct')),
+                                  ).withTvFocus()),
+                                ],
+                              ])
+                            : SegmentedButton<bool>(
+                                segments: [
+                                  ButtonSegment(
+                                    value: false,
+                                    icon: Text(!_useProxy ? '☑' : '☐',
+                                        style: const TextStyle(fontSize: 18)),
+                                    label: Text(chinese ? '直连' : 'Direct',
+                                        softWrap: false),
+                                  ),
+                                  ButtonSegment(
+                                    value: true,
+                                    enabled: proxyTarget != null,
+                                    icon: Text(_useProxy ? '☑' : '☐',
+                                        style: const TextStyle(fontSize: 18)),
+                                    label: Text(chinese ? '代理' : 'Proxy',
+                                        softWrap: false),
+                                  ),
+                                ],
+                                selected: {_useProxy},
+                                onSelectionChanged: (value) =>
+                                    setState(() => _useProxy = value.first),
+                              ),
                       ),
                       const SizedBox(width: 12),
                       FilledButton.icon(
@@ -292,43 +327,26 @@ class _FastCatCustomRoutingPageState
                         label: Text(_editingIndex != null
                             ? (chinese ? '保存' : 'Save')
                             : (chinese ? '添加' : 'Add')),
-                      ),
+                      ).withTvFocus(),
                     ]),
                   ]),
                 ),
               ),
               const SizedBox(height: 12),
-              ..._rules.asMap().entries.map((entry) => Card(
-                    child: ListTile(
-                      title: Text(entry.value.value),
-                      subtitle: Wrap(
-                        children: [
-                          IconButton(
-                              tooltip: chinese ? '编辑' : 'Edit',
-                              icon: const Icon(Icons.edit_outlined),
-                              onPressed:
-                                  _isApplying ? null : () => _edit(entry.key)),
-                          IconButton(
-                              tooltip: chinese ? '上移' : 'Move up',
-                              icon: const Icon(Icons.arrow_upward),
-                              onPressed: _isApplying || entry.key == 0
-                                  ? null
-                                  : () => _move(entry.key, entry.key - 1)),
-                          IconButton(
-                              tooltip: chinese ? '下移' : 'Move down',
-                              icon: const Icon(Icons.arrow_downward),
-                              onPressed:
-                                  _isApplying || entry.key == _rules.length - 1
-                                      ? null
-                                      : () => _move(entry.key, entry.key + 1)),
-                          IconButton(
-                              tooltip: chinese ? '删除' : 'Delete',
-                              icon: const Icon(Icons.delete_outline),
-                              onPressed: _isApplying
-                                  ? null
-                                  : () => _removeAt(entry.key)),
-                        ],
-                      ),
+              ..._rules.asMap().entries.map((entry) => Padding(
+                    key: ValueKey(entry.value.value),
+                    padding: const EdgeInsets.only(bottom: 12),
+                    child: RoutingRuleCard(
+                      value: entry.value.value,
+                      chinese: chinese,
+                      onEdit: _isApplying ? null : () => _edit(entry.key),
+                      onDelete: _isApplying ? null : () => _removeAt(entry.key),
+                      onUp: _isApplying || entry.key == 0
+                          ? null
+                          : () => _move(entry.key, entry.key - 1),
+                      onDown: _isApplying || entry.key == _rules.length - 1
+                          ? null
+                          : () => _move(entry.key, entry.key + 1),
                     ),
                   )),
               if (_rules.isEmpty)
@@ -340,7 +358,7 @@ class _FastCatCustomRoutingPageState
             ],
           ),
         ),
-      ),
+      )),
     );
   }
 }

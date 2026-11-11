@@ -1,3 +1,4 @@
+import 'package:fl_clash/xboard/features/shared/widgets/tv_page_frame.dart';
 import 'package:fl_clash/widgets/tv_back_button.dart';
 import 'dart:io';
 import 'package:fl_clash/xboard/features/update_check/providers/update_check_provider.dart';
@@ -36,9 +37,10 @@ class FastCatSettingsPage extends ConsumerWidget {
             leadingWidth: system.isTV ? 68 : null,
             leading: system.isTV ? const TVBackButton() : null,
             title: Text(zh ? '工具设置' : 'Tools & settings')),
-        body: FocusTraversalGroup(
-            child: SingleChildScrollView(
-          padding: const EdgeInsets.fromLTRB(25, 16, 25, 24),
+        body: TVPageFrame(
+            child: FocusTraversalGroup(
+                child: SingleChildScrollView(
+          padding: EdgeInsets.zero,
           child:
               Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
             _header(context, l10n.application),
@@ -81,7 +83,7 @@ class FastCatSettingsPage extends ConsumerWidget {
                   onTap: () => _open(context, const FastCatAboutPage())),
             ]),
           ]),
-        )),
+        ))),
       );
     }
     return Scaffold(
@@ -247,8 +249,7 @@ class FastCatSettingsPage extends ConsumerWidget {
     required VoidCallback onTap,
   }) =>
       TVFocusable(
-          focusInset: 4,
-          borderRadius: BorderRadius.circular(14),
+          borderRadius: BorderRadius.circular(20),
           onPressed: onTap,
           child: XbPointerCursor(
             child: ListTile(
@@ -333,7 +334,7 @@ class _SettingsCard extends StatelessWidget {
       shadowColor: XbUiCardStyle.shadowColor(context),
       color: XbUiCardStyle.background(context),
       shape: XbUiCardStyle.shape(context),
-      clipBehavior: Clip.antiAlias,
+      clipBehavior: system.isTV ? Clip.none : Clip.antiAlias,
       child: Column(
         children: [
           for (var index = 0; index < children.length; index++) ...[

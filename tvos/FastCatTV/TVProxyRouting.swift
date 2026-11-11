@@ -140,66 +140,102 @@ enum TVSubscriptionNodes {
     var testURL: String?
   }
 
-  private static func parseGroups(from configuration: String) -> [RawGroup] {
-    var insideGroups = false
-    var current: RawGroup?
-    var collectingProxies = false
-    var proxiesIndent = 0
-    var result: [RawGroup] = []
-
-    func finish(_ group: RawGroup?, into result: inout [RawGroup]) {
-      guard let group, !group.name.isEmpty else { return }
-      result.append(group)
+  /// Split YAML flow values without splitting quoted commas or nested lists.
+  private static func flowParts(_ value: String) -> [String] {
+    var result: [String] = [], part = "", quote: Character?, depth = 0
+    var escaped = false
+    for character in value {
+      if let active = quote {
+        part.append(character)
+        if escaped { escaped = false }
+        else if character == "\\" && active == "\"" { escaped = true }
+        else if character == active { quote = nil }
+      } else if character == "\"" || character == "'" {
+        quote = character; part.append(character)
+      } else if character == "[" || character == "{" {
+        depth += 1; part.append(character)
+      } else if character == "]" || character == "}" {
+        depth -= 1; part.append(character)
+      } else if character == "," && depth == 0 {
+        result.append(part.trimmingCharacters(in: .whitespaces)); part = ""
+      } else { part.append(character) }
     }
+    if !part.isEmpty { result.append(part.trimmingCharacters(in: .whitespaces)) }
+    return result
+  }
 
+  private static func parseGroups(from configuration: String) -> [RawGroup] {
+    if let data = configuration.data(using: .utf8),
+       let object = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
+       let groups = object["proxy-groups"] as? [[String: Any]] {
+      return groups.compactMap { item in
+        guard let name = item["name"] as? String, !name.isEmpty else { return nil }
+        return RawGroup(name: name, type: item["type"] as? String ?? "",
+          proxies: item["proxies"] as? [String] ?? [], testURL: item["url"] as? String)
+      }
+    }
+    var insideGroups = false, collectingProxies = false
+    var current: RawGroup?, groupIndent: Int?, proxiesIndent = 0
+    var result: [RawGroup] = []
+    func finish() {
+      if let current, !current.name.isEmpty { result.append(current) }
+      current = nil
+    }
+    func field(_ text: String, indent: Int) {
+      guard let colon = text.firstIndex(of: ":") else { return }
+      let key = unquote(String(text[..<colon]).trimmingCharacters(in: .whitespaces))
+      let raw = String(text[text.index(after: colon)...]).trimmingCharacters(in: .whitespaces)
+      switch key {
+      case "name": current?.name = unquote(raw)
+      case "type": current?.type = unquote(raw)
+      case "url": current?.testURL = unquote(raw)
+      case "proxies":
+        if raw.hasPrefix("["), raw.hasSuffix("]") {
+          current?.proxies = flowParts(String(raw.dropFirst().dropLast())).map(unquote)
+        } else { collectingProxies = true; proxiesIndent = indent }
+      default: break
+      }
+    }
+    func flowGroup(_ raw: String) {
+      finish(); current = RawGroup()
+      for part in flowParts(String(raw.dropFirst().dropLast())) { field(part, indent: 0) }
+      finish()
+    }
     for line in configuration.components(separatedBy: .newlines) {
       let trimmed = line.trimmingCharacters(in: .whitespaces)
+        .trimmingCharacters(in: CharacterSet(charactersIn: "\u{FEFF}"))
+      if trimmed.isEmpty || trimmed.hasPrefix("#") { continue }
       let indent = indentation(of: line)
-      if indent == 0, trimmed == "proxy-groups:" {
+      if !insideGroups {
+        guard indent == 0, let colon = trimmed.firstIndex(of: ":"),
+          unquote(String(trimmed[..<colon])) == "proxy-groups" else { continue }
         insideGroups = true
+        let tail = String(trimmed[trimmed.index(after: colon)...]).trimmingCharacters(in: .whitespaces)
+        if tail.hasPrefix("["), tail.hasSuffix("]") {
+          for item in flowParts(String(tail.dropFirst().dropLast())) where item.hasPrefix("{") && item.hasSuffix("}") { flowGroup(item) }
+          return result
+        }
         continue
       }
-      if insideGroups, indent == 0, !trimmed.isEmpty, !trimmed.hasPrefix("#") {
-        finish(current, into: &result)
-        insideGroups = false
-        current = nil
-        break
-      }
-      guard insideGroups, !trimmed.isEmpty, !trimmed.hasPrefix("#") else { continue }
-
+      let sequence = trimmed.hasPrefix("- ") || trimmed == "-"
+      // YAML permits unindented sequences directly under a root mapping key.
+      if indent == 0 && !sequence { break }
       if collectingProxies {
-        if indent > proxiesIndent, trimmed.hasPrefix("- ") {
-          let value = unquote(String(trimmed.dropFirst(2)).trimmingCharacters(in: .whitespaces))
-          if !value.isEmpty { current?.proxies.append(value) }
+        if sequence, indent >= proxiesIndent, indent > (groupIndent ?? -1) {
+          let name = unquote(String(trimmed.dropFirst()).trimmingCharacters(in: .whitespaces))
+          if !name.isEmpty { current?.proxies.append(name) }
           continue
         }
         collectingProxies = false
       }
-
-      if trimmed.hasPrefix("- name:") {
-        finish(current, into: &result)
-        current = RawGroup(
-          name: yamlValue(after: "name:", in: String(trimmed.dropFirst(2))) ?? "",
-          type: "",
-          proxies: []
-        )
-      } else if trimmed.hasPrefix("url:") {
-        current?.testURL = yamlValue(after: "url:", in: trimmed)
-      } else if trimmed.hasPrefix("type:") {
-        current?.type = yamlValue(after: "type:", in: trimmed) ?? ""
-      } else if trimmed.hasPrefix("proxies:") {
-        let value = yamlValue(after: "proxies:", in: trimmed) ?? ""
-        if value.hasPrefix("["), value.hasSuffix("]") {
-          current?.proxies = value.dropFirst().dropLast().split(separator: ",").map {
-            unquote(String($0).trimmingCharacters(in: .whitespaces))
-          }.filter { !$0.isEmpty }
-        } else {
-          collectingProxies = true
-          proxiesIndent = indent
-        }
-      }
+      if sequence, groupIndent == nil || indent == groupIndent {
+        finish(); groupIndent = indent
+        let entry = String(trimmed.dropFirst()).trimmingCharacters(in: .whitespaces)
+        if entry.hasPrefix("{"), entry.hasSuffix("}") { flowGroup(entry) }
+        else { current = RawGroup(); field(entry, indent: indent + 2) }
+      } else if current != nil { field(trimmed, indent: indent) }
     }
-    if insideGroups { finish(current, into: &result) }
+    finish()
     return result
   }
 }
