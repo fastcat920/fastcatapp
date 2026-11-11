@@ -21,6 +21,7 @@ class AccountInfoPage extends ConsumerStatefulWidget {
 }
 
 class _AccountInfoPageState extends ConsumerState<AccountInfoPage> {
+  bool _refreshingTvPlan = false;
   bool _updatingExpire = false;
   bool _updatingTraffic = false;
 
@@ -102,6 +103,18 @@ class _AccountInfoPageState extends ConsumerState<AccountInfoPage> {
     }
   }
 
+  Future<void> _refreshTvPlan() async {
+    if (_refreshingTvPlan) return;
+    setState(() => _refreshingTvPlan = true);
+    try {
+      await ref
+          .read(xboardUserProvider.notifier)
+          .refreshSubscriptionInfo(importProfile: false, source: 'TV 账号套餐卡片');
+    } finally {
+      if (mounted) setState(() => _refreshingTvPlan = false);
+    }
+  }
+
   Widget _buildTvAccount(String email) {
     final l10n = AppLocalizations.of(context);
     final theme = Theme.of(context);
@@ -131,10 +144,15 @@ class _AccountInfoPageState extends ConsumerState<AccountInfoPage> {
                                     ? l10n.xboardEmailUnavailable
                                     : email))),
                         const SizedBox(height: 12),
-                        _buildCard(
-                            child: const Padding(
-                                padding: EdgeInsets.all(12),
-                                child: TVSubscriptionInfoCard())),
+                        Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 4),
+                            child: TVFocusable(
+                                key: const Key('tv-account-plan-refresh'),
+                                borderRadius: BorderRadius.circular(20),
+                                onPressed: _refreshTvPlan,
+                                child: ExcludeFocus(
+                                    child: TVSubscriptionInfoCard(
+                                        isSyncing: _refreshingTvPlan)))),
                         const SizedBox(height: 24),
                         _buildCard(
                             child: Padding(

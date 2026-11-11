@@ -27,6 +27,9 @@ class TVFocusable extends StatefulWidget {
   final bool focusableWhenDisabled;
   final FocusNode? focusNode;
   final BorderRadius? borderRadius;
+
+  /// Paint the ring inside a clipped group card without changing row layout.
+  final double focusInset;
   final Color? focusBorderColor;
   final FocusOnKeyEventCallback? onKeyEvent;
 
@@ -38,6 +41,7 @@ class TVFocusable extends StatefulWidget {
     this.focusableWhenDisabled = false,
     this.focusNode,
     this.borderRadius,
+    this.focusInset = 0,
     this.focusBorderColor,
     this.onKeyEvent,
   });
@@ -152,13 +156,30 @@ class _TVFocusableState extends State<TVFocusable> {
       },
       child: GestureDetector(
         onTap: widget.onPressed,
-        child: AnimatedContainer(
-          duration: MediaQuery.disableAnimationsOf(context)
-              ? Duration.zero
-              : const Duration(milliseconds: 150),
-          foregroundDecoration: decoration,
-          child: _adaptMaterialButton(widget.child),
-        ),
+        child: widget.focusInset == 0
+            ? AnimatedContainer(
+                duration: MediaQuery.disableAnimationsOf(context)
+                    ? Duration.zero
+                    : const Duration(milliseconds: 150),
+                foregroundDecoration: decoration,
+                child: _adaptMaterialButton(widget.child),
+              )
+            : Stack(fit: StackFit.passthrough, children: [
+                _adaptMaterialButton(widget.child),
+                Positioned.fill(
+                    left: widget.focusInset,
+                    top: widget.focusInset,
+                    right: widget.focusInset,
+                    bottom: widget.focusInset,
+                    child: IgnorePointer(
+                        child: AnimatedContainer(
+                      key: const Key('tv-inset-focus-ring'),
+                      duration: MediaQuery.disableAnimationsOf(context)
+                          ? Duration.zero
+                          : const Duration(milliseconds: 150),
+                      decoration: decoration,
+                    ))),
+              ]),
       ),
     );
   }

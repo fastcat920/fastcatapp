@@ -54,9 +54,34 @@ enum TVDesignMetrics {
 /// These are explicit page margins, not assumed OS safe-area measurements.
 enum TVHomeFrame {
   static let top: Double = 0
-  static let horizontal: Double = 8
-  static let bottom: Double = 8
+  static let horizontal: Double = 0
+  static let bottom: Double = 0
   static func contentHeight(_ height: Double) -> Double {
     max(0, height - top - bottom)
+  }
+}
+
+/// Shared minimum gutters for full-screen TV pages, in design units.
+enum TVPageSpacing {
+  static func horizontal(logicalWidth:Double)->Double {logicalWidth>=1400 ? 33:25}
+  static let contentTop:Double = 19
+  static let bottom:Double = 23
+}
+enum TVThemePreference {
+  /// UIKit: 0 removes the application override; 1/2 force light/dark.
+  static func windowStyle(mode:String,legacyDark:Bool)->Int {
+    if mode == "system" { return 0 }
+    return isDark(mode:mode,legacyDark:legacyDark,systemDark:false) ? 2:1
+  }
+  static func isDark(mode:String,legacyDark:Bool,systemDark:Bool)->Bool {
+    switch mode {case "system":return systemDark;case "light":return false;case "dark":return true;default:return legacyDark}
+  }
+}
+
+/// UIKit raw style: unspecified is not a valid light-theme decision.
+enum TVSystemAppearancePolicy {
+  static func resolve(rawStyle:Int,active:Bool,windowReady:Bool)->Bool? {
+    guard active,windowReady else {return nil}
+    switch rawStyle {case 1:return false;case 2:return true;default:return nil}
   }
 }

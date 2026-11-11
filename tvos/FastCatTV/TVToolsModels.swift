@@ -106,6 +106,20 @@ enum TVStreamingTargets {
     ("Grok", "https://grok.com/"),
     ("Google AI Studio", "https://aistudio.google.com/welcome"),
   ]
+  static let mediaNames = [
+    "Netflix", "Disney+", "YouTube Premium", "Prime Video", "Max", "Apple TV+", "BBC iPlayer",
+    "DAZN", "Crunchyroll", "TikTok",
+  ]
+  static var media: [(String, String)] {
+    mediaNames.compactMap { name in all.first { $0.0 == name } }
+  }
+  static func isFullyAccessible(_ result: String) -> Bool {
+    result == "可用" || result.hasPrefix("可用 ·") || result == "Accessible"
+      || result.hasPrefix("Accessible ·")
+  }
+  static func isAccessible(_ result: String) -> Bool {
+    isFullyAccessible(result) || result == "仅原创内容" || result == "Originals only"
+  }
   static func summary(_ raw: [String: Any]?, chinese: Bool, name: String = "") -> String {
     func label(_ a: String, _ b: String) -> String { chinese ? a : b }
     guard let raw, raw["ok"] as? Bool == true else { return label("检测失败或超时", "Error or timeout") }
@@ -284,4 +298,92 @@ enum TVStartupPolicy {
     monitor.start(queue: DispatchQueue(label: "fastcat.tv.streaming.network"))
   }
   deinit { monitor.cancel() }
+}
+
+/// Deterministic two-column D-pad paths, independent of SwiftUI's geometry.
+enum TVToolsNavigation {
+  static func next(from id: String, direction: String, rows: [[String]]) -> String? {
+    let rows = rows.filter { !$0.isEmpty }
+    if id == "back" { return direction == "down" ? rows.first?.first : nil }
+    guard let row = rows.firstIndex(where: { $0.contains(id) }),
+      let column = rows[row].firstIndex(of: id)
+    else { return nil }
+    switch direction {
+    case "up": return row == 0 ? "back" : rows[row - 1][min(column, rows[row - 1].count - 1)]
+    case "down":
+      return row + 1 < rows.count ? rows[row + 1][min(column, rows[row + 1].count - 1)] : nil
+    case "left": return column > 0 ? rows[row][column - 1] : nil
+    case "right": return column + 1 < rows[row].count ? rows[row][column + 1] : nil
+    default: return nil
+    }
+  }
+}
+enum TVStreamingNavigation {
+  static func next(from id: String, direction: String, names: [String], canStop: Bool) -> String? {
+    let actions = canStop ? ["start", "stop"] : ["start"]
+    let results = stride(from: 0, to: names.count, by: 2).map { index in
+      Array(names[index..<min(index + 2, names.count)]).map { "result:" + $0 }
+    }
+    return TVToolsNavigation.next(from: id, direction: direction, rows: [actions] + results)
+  }
+}
+
+struct TVStreamingCache {
+  let account: String
+  let node: String
+  let network: Int
+  let language: String
+  let created: Date
+  let region: String?
+  let results: [String: String]
+  func matches(account: String, node: String, network: Int, language: String, now: Date = Date())
+    -> Bool
+  {
+    self.account == account && self.node == node && self.network == network
+      && self.language == language && now.timeIntervalSince(created) >= 0
+      && now.timeIntervalSince(created) < 600
+  }
+}
+
+enum TVLogSanitizer {
+  static func message(_ text: String) -> String {
+    if text.range(
+      of: "(?i)password|passwd|token|authorization|subscribe|secret|private.?key|api.?key|uuid",
+      options: .regularExpression) != nil
+    {
+      return "[Sensitive log omitted]"
+    }
+    var result = String(text.prefix(2000))
+    for pattern in [
+      "(?i)(?:https?|ss|vmess|vless|trojan)://[^\\s]+",
+      "\\b(?:[0-9]{1,3}\\.){3}[0-9]{1,3}(?::[0-9]+)?\\b",
+      "(?i)\\b(?:[0-9a-f]{0,4}:){2,}[0-9a-f:]+\\b",
+      "[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}", "[A-Za-z0-9+/=_-]{40,}",
+    ] {
+      result = result.replacingOccurrences(
+        of: pattern, with: "[redacted]", options: .regularExpression)
+    }
+    return result
+  }
+  static func lines(_ raw: String) -> [String] {
+    guard let bytes = raw.data(using: .utf8),
+      let entries = try? JSONSerialization.jsonObject(with: bytes) as? [[String: Any]]
+    else { return [] }
+    return entries.suffix(200).compactMap { entry in
+      guard entry["type"] as? String == "log", let data = entry["data"] as? [String: Any],
+        let value = (data["Payload"] ?? data["payload"]) as? String
+      else { return nil }
+      return message(value)
+    }
+  }
+}
+
+enum TVRuleActions {
+  static func identifiers(ruleID:String)->[String] {["edit","delete","up","down"].map {"rule."+ruleID+"."+$0}}
+}
+enum TVInitialLatencyPolicy {
+  static func target(selected:String?,names:[String])->String? {
+    if let selected,names.contains(selected) {return selected}
+    return names.first
+  }
 }

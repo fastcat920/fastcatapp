@@ -21,6 +21,7 @@
 		50F6447DC4C8281C639B0F34 /* TVRemoteConfigManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = F09EF338E6DE143C7FEF2A88 /* TVRemoteConfigManager.swift */; };
 		51C13616F475743764316FDE /* TVToolsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6ABA1B9B8971068F83D50513 /* TVToolsView.swift */; };
 		57B7B615DB4F2992662CDDC3 /* libclash.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = F76E8A30FEDDD517749D983A /* libclash.xcframework */; };
+		694D0E2111CA713ED60F335C /* SimpleIcons.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 36ECFFBC979CBE99D34CB74D /* SimpleIcons.ttf */; };
 		6B9BF897184B833130F259CD /* Roboto-Medium.ttf in Resources */ = {isa = PBXBuildFile; fileRef = A1D20EBB700C190400820749 /* Roboto-Medium.ttf */; };
 		7669AFCE519A6AF1C2A62DEC /* TVToolsModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5CEFE117D87A6506F4AF032D /* TVToolsModels.swift */; };
 		7933094A64CFF67AE68ABE3D /* SessionStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2088C4A7B602D5E2A074AF9F /* SessionStore.swift */; };
@@ -79,6 +80,7 @@
 		1E7A9A66ABF181989DCF3666 /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = Platforms/AppleTVOS.platform/Developer/SDKs/AppleTVOS18.0.sdk/System/Library/Frameworks/Foundation.framework; sourceTree = DEVELOPER_DIR; };
 		2088C4A7B602D5E2A074AF9F /* SessionStore.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = SessionStore.swift; sourceTree = "<group>"; };
 		2AEDFEF13B94EC57AB3F4596 /* TVNodeSelection.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = TVNodeSelection.swift; sourceTree = "<group>"; };
+		36ECFFBC979CBE99D34CB74D /* SimpleIcons.ttf */ = {isa = PBXFileReference; includeInIndex = 1; name = SimpleIcons.ttf; path = Fonts/SimpleIcons.ttf; sourceTree = "<group>"; };
 		39B83D42B5CA71EC42095A3B /* config.yaml */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.yaml; name = config.yaml; path = ../assets/config/config.yaml; sourceTree = "<group>"; };
 		3C5B5A29D6076D759BEE4355 /* FastCat.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = FastCat.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		3CDFA484377680DBA82DB466 /* PacketTunnel.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = PacketTunnel.appex; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -162,6 +164,7 @@
 				74FD3780B2F3DB7FEFA70D37 /* Roboto-Regular.ttf */,
 				A1D20EBB700C190400820749 /* Roboto-Medium.ttf */,
 				3D5F5DE22F87F724C42B159F /* MaterialIcons-Regular.otf */,
+				36ECFFBC979CBE99D34CB74D /* SimpleIcons.ttf */,
 			);
 			path = FastCatTV;
 			sourceTree = "<group>";
@@ -319,6 +322,7 @@
 				077868B6DF4E4056C1E7FECF /* ASN.mmdb in Resources */,
 				233A4E3168CACAF75314CDD4 /* geoip.metadb in Resources */,
 				B85CA122D81A4E5C47F98EFF /* Assets.xcassets in Resources */,
+				694D0E2111CA713ED60F335C /* SimpleIcons.ttf in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

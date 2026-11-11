@@ -85,11 +85,46 @@ private enum TVSharedResources {
   }
 }
 
+/// A single window-level owner. Automatic explicitly removes the override;
+/// a nil SwiftUI presentation preference can retain a modal's previous style.
+struct TVWindowAppearance: UIViewRepresentable {
+  let mode: String
+  let legacyDark: Bool
+
+  func makeUIView(context: Context) -> AppearanceView { AppearanceView() }
+  func updateUIView(_ view: AppearanceView, context: Context) {
+    view.style = UIUserInterfaceStyle(rawValue:
+      TVThemePreference.windowStyle(mode: mode, legacyDark: legacyDark)) ?? .unspecified
+    view.apply()
+  }
+
+  final class AppearanceView: UIView {
+    var style: UIUserInterfaceStyle = .unspecified
+    override func didMoveToWindow() {
+      super.didMoveToWindow()
+      apply()
+    }
+    func apply() {
+      guard let window else { return }
+      // Presentations and their child hosts inherit from the window as well.
+      // Never derive the requested style from already overridden traits.
+      func clearPresentationOverrides(_ controller: UIViewController) {
+        if controller.overrideUserInterfaceStyle != .unspecified {
+          controller.overrideUserInterfaceStyle = .unspecified
+        }
+        for child in controller.children { clearPresentationOverrides(child) }
+        if let presented = controller.presentedViewController { clearPresentationOverrides(presented) }
+      }
+      if let root = window.rootViewController { clearPresentationOverrides(root) }
+      window.overrideUserInterfaceStyle = style
+      NSLog("[TVAppearance] window override=%ld effective=%ld", style.rawValue,
+            window.traitCollection.userInterfaceStyle.rawValue)
+    }
+  }
+}
+
 enum TVTheme {
   static let modeKey = "fastcat.tv.theme-mode"
-  static func scheme(mode:String,legacyDark:Bool) -> ColorScheme? {
-    switch mode {case "system":return nil;case "light":return .light;case "dark":return .dark;default:return legacyDark ? .dark:.light}
-  }
   static let preferenceKey = "fastcat.tv.prefers-dark-theme"
   static let background = dynamicColor(
     light: hex(0xFAFBFD), dark: hex(0x121318)
@@ -172,6 +207,8 @@ enum TVAuthFont {
 }
 
 enum MaterialGlyph: String {
+  case articleOutlined = "\u{ee93}"
+  case close = "\u{e16a}"
   case brightnessSix = "\u{e10a}"
   case route = "\u{f0561}"
   case liveTV = "\u{e387}"
@@ -271,8 +308,8 @@ struct TVFocusButton<Label: View>: View {
       .buttonStyle(TVBareButtonStyle())
       .focused(focusBinding)
       .overlay {
-        RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
-          .strokeBorder(visuallyFocused ? TVTheme.focusRing : .clear, lineWidth: TVTheme.focusWidth)
+        RoundedRectangle(cornerRadius:cornerRadius,style:.continuous)
+          .strokeBorder(visuallyFocused ? TVTheme.focusRing:.clear,lineWidth:TVTheme.focusWidth)
           .allowsHitTesting(false)
       }
       .animation(.easeOut(duration: 0.15), value: visuallyFocused)

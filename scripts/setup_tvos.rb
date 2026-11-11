@@ -39,7 +39,7 @@ shared_design = main.new_file('../assets/config/tv_design_contract.json')
 app.resources_build_phase.add_file_reference(shared_design)
 brand_icon = main.new_file('../assets/images/icon.png')
 app.resources_build_phase.add_file_reference(brand_icon)
-%w[Roboto-Regular.ttf Roboto-Medium.ttf MaterialIcons-Regular.otf].each do |name|
+%w[Roboto-Regular.ttf Roboto-Medium.ttf MaterialIcons-Regular.otf SimpleIcons.ttf].each do |name|
   font = app_group.new_file("Fonts/#{name}")
   app.resources_build_phase.add_file_reference(font)
 end

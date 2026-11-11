@@ -419,6 +419,13 @@ class VPNManager: NSObject {
     sendClashMessage(method: "getProxies", data: nil, completion: completion)
   }
 
+  func logCommand(_ method:String) async -> String? {
+    guard ["startLog","stopLog","drainLogs"].contains(method),isTunnelRunning else {return nil}
+    return await withCheckedContinuation { continuation in
+      sendClashMessage(method:method,data:nil) {continuation.resume(returning:$0)}
+    }
+  }
+
   func cancelStreaming(runID: String) {
     let data = try? JSONSerialization.data(withJSONObject:["run-id":runID])
     sendClashMessage(method:"cancelStreamingProbes",data:data.map{String(decoding:$0,as:UTF8.self)}) {_ in}

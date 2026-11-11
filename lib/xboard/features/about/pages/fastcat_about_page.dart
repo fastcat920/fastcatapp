@@ -139,6 +139,8 @@ class _FastCatAboutPageState extends ConsumerState<FastCatAboutPage> {
                               );
                               if (!system.isTV) return tile;
                               return TVFocusable(
+                                  focusInset: 4,
+                                  borderRadius: BorderRadius.circular(14),
                                   onPressed: update.isChecking
                                       ? null
                                       : () => _checkUpdate(context, ref),
@@ -162,6 +164,8 @@ class _FastCatAboutPageState extends ConsumerState<FastCatAboutPage> {
                                 );
                                 if (!system.isTV) return tile;
                                 return TVFocusable(
+                                    focusInset: 4,
+                                    borderRadius: BorderRadius.circular(14),
                                     onPressed: () => Navigator.of(context).push(
                                         MaterialPageRoute<void>(
                                             builder: (_) =>

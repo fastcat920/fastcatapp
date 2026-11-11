@@ -236,4 +236,33 @@ void main() {
     expect(selection.hasFocus, isTrue);
     expect(tester.takeException(), isNull);
   });
+  testWidgets('grouped card focus ring is inset without changing row size',
+      (tester) async {
+    final focus = FocusNode();
+    addTearDown(focus.dispose);
+    await tester.pumpWidget(MaterialApp(
+        home: Scaffold(
+            body: Center(
+                child: SizedBox(
+      width: 300,
+      height: 56,
+      child: Material(
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+          clipBehavior: Clip.antiAlias,
+          child: TVFocusable(
+              focusNode: focus,
+              autofocus: true,
+              focusInset: 4,
+              borderRadius: BorderRadius.circular(14),
+              onPressed: () {},
+              child: const SizedBox.expand(child: Text('Menu')))),
+    )))));
+    await tester.pumpAndSettle();
+    final outer = tester.getRect(find.byType(TVFocusable));
+    final inner = tester.getRect(find.byKey(const Key('tv-inset-focus-ring')));
+    expect(outer.size, const Size(300, 56));
+    expect(inner, outer.deflate(4));
+    expect(tester.takeException(), isNull);
+  });
 }

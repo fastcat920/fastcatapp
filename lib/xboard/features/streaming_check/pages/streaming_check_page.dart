@@ -756,7 +756,8 @@ class _StreamingCheckPageState extends ConsumerState<StreamingCheckPage> {
         backgroundColor: XbUiTokens.pageBackground(context),
         surfaceTintColor: Colors.transparent,
       ),
-      body: Center(
+      body: Align(
+        alignment: system.isTV ? Alignment.topCenter : Alignment.center,
         child: ConstrainedBox(
           constraints: const BoxConstraints(maxWidth: 1040),
           child: _contentList(

@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:fl_clash/widgets/tv_focusable.dart';
 import 'package:fl_clash/common/common.dart';
 import 'package:fl_clash/providers/providers.dart';
@@ -14,6 +15,17 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 class _Auth extends XBoardUserAuthNotifier {
+  int refreshes = 0;
+  bool? importRequested;
+  final refreshGate = Completer<void>();
+  @override
+  Future<void> refreshSubscriptionInfo(
+      {bool importProfile = true, String source = '手动刷新'}) async {
+    refreshes++;
+    importRequested = importProfile;
+    await refreshGate.future;
+  }
+
   @override
   UserAuthState build() =>
       const UserAuthState(email: 'test@example.com', isInitialized: true);
@@ -74,7 +86,32 @@ void main() {
       expect(find.text(AppLocalizations.current.xboardLogout), findsOneWidget);
       expect(find.text(locale.languageCode == 'zh' ? '注销账号' : 'Delete account'),
           findsOneWidget);
-      expect(find.byType(TVFocusable), findsNWidgets(3));
+      expect(find.byType(TVFocusable), findsNWidgets(4));
+      expect(
+          find.ancestor(
+              of: find.byType(TVSubscriptionInfoCard),
+              matching: find.byType(Card)),
+          findsNothing);
+      final auth = container.read(xboardUserProvider.notifier) as _Auth;
+      final refresh = find.byKey(const Key('tv-account-plan-refresh'));
+      await tester.tap(refresh);
+      await tester.tap(refresh);
+      await tester.pump();
+      expect(auth.refreshes, 1);
+      expect(auth.importRequested, isFalse);
+      expect(
+          tester
+              .widget<SubscriptionUsageCard>(find.byType(SubscriptionUsageCard))
+              .isSyncing,
+          isTrue);
+      container.read(subscriptionInfoProvider.notifier).state =
+          subscription.copyWith(downloadedBytes: 123456);
+      auth.refreshGate.complete();
+      await tester.pumpAndSettle();
+      final updated = tester
+          .widget<SubscriptionUsageCard>(find.byType(SubscriptionUsageCard));
+      expect(updated.isSyncing, isFalse);
+      expect(updated.subscriptionInfo?.downloadedBytes, 123456);
       expect(tester.takeException(), isNull);
     });
   }

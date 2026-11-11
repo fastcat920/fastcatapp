@@ -255,6 +255,8 @@ void main() {
       'streaming_custom_targets_v1': ['chatgpt'],
     });
     await openAndStart(tester);
+    expect(tester.getTopLeft(find.byType(Card).first).dy,
+        closeTo(tester.getBottomLeft(find.byType(AppBar)).dy + 20, 0.1));
     expect(find.text('完整'), findsNothing);
     expect(find.text('自定义'), findsNothing);
     expect(find.text(AppLocalizations.current.xboardStreamingCopyReport),

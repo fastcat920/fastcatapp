@@ -46,6 +46,130 @@ import Foundation
     precondition(
       !TVStartupPolicy.shouldConnect(
         enabled: true, status: "disconnected", active: true, signedIn: true, cancelled: true))
+    precondition(TVStreamingTargets.isAccessible("Originals only"))
+    precondition(!TVStreamingTargets.isFullyAccessible("Originals only"))
+    precondition(TVStreamingTargets.isFullyAccessible("Accessible · GB"))
+    let names = TVStreamingTargets.media.map(\.0)
+    precondition(names.count == 10 && Set(names).count == 10)
+    precondition(
+      !names.contains("ChatGPT") && !names.contains("Claude") && !names.contains("Gemini"))
+    precondition(
+      TVStreamingNavigation.next(from: "start", direction: "down", names: names, canStop: false)
+        == "result:Netflix")
+    precondition(
+      TVStreamingNavigation.next(
+        from: "result:Netflix", direction: "right", names: names, canStop: false)
+        == "result:Disney+")
+    precondition(
+      TVStreamingNavigation.next(
+        from: "result:Disney+", direction: "left", names: names, canStop: false) == "result:Netflix"
+    )
+    precondition(
+      TVStreamingNavigation.next(
+        from: "visit:Netflix", direction: "right", names: names, canStop: false) == nil)
+    var focus = "result:Netflix"
+    for _ in 0..<4 {
+      focus = TVStreamingNavigation.next(
+        from: focus, direction: "down", names: names, canStop: false)!
+    }
+    precondition(focus == "result:Crunchyroll")
+    focus = TVStreamingNavigation.next(
+      from: focus, direction: "right", names: names, canStop: false)!
+    precondition(focus == "result:TikTok")
+    precondition(
+      TVStreamingNavigation.next(from: focus, direction: "down", names: names, canStop: false)
+        == nil)
+    for _ in 0..<5 {
+      focus = TVStreamingNavigation.next(
+        from: focus, direction: "up", names: names, canStop: false)!
+    }
+    precondition(focus == "start")
+    precondition(
+      TVStreamingNavigation.next(from: "start", direction: "up", names: names, canStop: false)
+        == "back")
+    precondition(
+      TVStreamingNavigation.next(from: "start", direction: "right", names: names, canStop: true)
+        == "stop")
+    precondition(
+      TVStreamingNavigation.next(from: "stop", direction: "left", names: names, canStop: true)
+        == "start")
+    let account = [["account.plan"], ["account.logout"], ["account.delete"]]
+    precondition(
+      TVToolsNavigation.next(from: "back", direction: "down", rows: account) == "account.plan")
+    precondition(
+      TVToolsNavigation.next(from: "account.plan", direction: "down", rows: account)
+        == "account.logout")
+    precondition(
+      TVToolsNavigation.next(from: "account.logout", direction: "down", rows: account)
+        == "account.delete")
+    precondition(
+      TVToolsNavigation.next(from: "account.plan", direction: "up", rows: account) == "back")
+    let startup = [["startup.auto"]]
+    precondition(
+      TVToolsNavigation.next(from: "startup.auto", direction: "up", rows: startup) == "back")
+    precondition(
+      TVToolsNavigation.next(from: "back", direction: "down", rows: startup) == "startup.auto")
+    let routing = [["routing.input"], ["routing.direct", "routing.proxy"], ["routing.save"]]
+    precondition(
+      TVToolsNavigation.next(from: "routing.input", direction: "up", rows: routing) == "back")
+    precondition(
+      TVToolsNavigation.next(from: "routing.proxy", direction: "up", rows: routing)
+        == "routing.input")
+    let about = [["row:Check for updates"], ["about.privacy", "about.terms"]]
+    precondition(
+      TVToolsNavigation.next(from: "row:Check for updates", direction: "up", rows: about) == "back")
+    precondition(
+      TVToolsNavigation.next(from: "back", direction: "down", rows: about)
+        == "row:Check for updates")
+    precondition(
+      TVToolsNavigation.next(from: "about.terms", direction: "up", rows: about)
+        == "row:Check for updates")
+    precondition(TVToolsNavigation.next(from: "logo", direction: "up", rows: about) == nil)
+    precondition(TVToolsNavigation.next(from: "back", direction: "down", rows: []) == nil)
+    let ruleActions = TVRuleActions.identifiers(ruleID: "test-id")
+    precondition(
+      ruleActions == [
+        "rule.test-id.edit", "rule.test-id.delete", "rule.test-id.up", "rule.test-id.down",
+      ])
+    precondition(
+      TVToolsNavigation.next(from: ruleActions[1], direction: "right", rows: [ruleActions])
+        == ruleActions[2])
+    precondition(
+      TVToolsNavigation.next(from: ruleActions[2], direction: "right", rows: [ruleActions])
+        == ruleActions[3])
+    precondition(
+      TVToolsNavigation.next(from: ruleActions[3], direction: "left", rows: [ruleActions])
+        == ruleActions[2])
+    precondition(TVInitialLatencyPolicy.target(selected: "JP", names: ["HK", "JP", "TW"]) == "JP")
+    precondition(TVInitialLatencyPolicy.target(selected: "missing", names: ["HK", "JP"]) == "HK")
+    precondition(TVInitialLatencyPolicy.target(selected: nil, names: ["HK", "JP"]) == "HK")
+    precondition(TVInitialLatencyPolicy.target(selected: "JP", names: []) == nil)
+    let date = Date(timeIntervalSince1970: 10000)
+    let cache = TVStreamingCache(
+      account: "a", node: "JP", network: 1, language: "en", created: date, region: "JP",
+      results: ["Netflix": "Accessible"])
+    precondition(
+      cache.matches(
+        account: "a", node: "JP", network: 1, language: "en", now: date.addingTimeInterval(599)))
+    precondition(
+      !cache.matches(
+        account: "a", node: "JP", network: 1, language: "en", now: date.addingTimeInterval(600)))
+    precondition(!cache.matches(account: "b", node: "JP", network: 1, language: "en", now: date))
+    precondition(!cache.matches(account: "a", node: "HK", network: 1, language: "en", now: date))
+    precondition(!cache.matches(account: "a", node: "JP", network: 2, language: "en", now: date))
+    precondition(!cache.matches(account: "a", node: "JP", network: 1, language: "zh-CN", now: date))
+    precondition(
+      !cache.matches(
+        account: "a", node: "JP", network: 1, language: "en", now: date.addingTimeInterval(-1)))
+    precondition(TVLogSanitizer.message("token=example") == "[Sensitive log omitted]")
+    let masked = TVLogSanitizer.message(
+      "connect https://example.com/path from 192.0.2.1:443 user@example.com")
+    precondition(
+      !masked.contains("example.com") && !masked.contains("192.0.2.1") && !masked.contains("user@"))
+    let parsed = TVLogSanitizer.lines(
+      "[{\"type\":\"log\",\"data\":{\"Payload\":\"dial 192.0.2.1\"}}]")
+    precondition(parsed.count == 1 && !parsed[0].contains("192.0.2.1"))
+    precondition(TVLogSanitizer.lines("not json").isEmpty)
     print("TV tools validation passed")
   }
 }

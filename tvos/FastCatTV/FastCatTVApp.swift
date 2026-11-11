@@ -23,7 +23,10 @@ struct FastCatTVApp: App {
       }
         .onReceive(NotificationCenter.default.publisher(for: .tvShowPrivacyNotice)) { _ in showPrivacy = true }
         .environmentObject(session)
-        .preferredColorScheme(TVTheme.scheme(mode:themeMode,legacyDark:prefersDarkTheme))
+        .background {
+          TVWindowAppearance(mode: themeMode, legacyDark: prefersDarkTheme)
+            .frame(width: 0, height: 0).allowsHitTesting(false)
+        }
         .environment(\.locale, TVLanguage.resolved(from: language).locale)
     }
   }

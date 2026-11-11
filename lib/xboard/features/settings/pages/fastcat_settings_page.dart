@@ -247,6 +247,7 @@ class FastCatSettingsPage extends ConsumerWidget {
     required VoidCallback onTap,
   }) =>
       TVFocusable(
+          focusInset: 4,
           borderRadius: BorderRadius.circular(14),
           onPressed: onTap,
           child: XbPointerCursor(
