@@ -4,6 +4,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 class CachedUpdateInfo {
   const CachedUpdateInfo({
+    this.build,
     required this.platform,
     required this.currentVersion,
     required this.latestVersion,
@@ -13,6 +14,7 @@ class CachedUpdateInfo {
     required this.checkedAt,
   });
 
+  final int? build;
   final String platform;
   final String currentVersion;
   final String latestVersion;
@@ -22,6 +24,7 @@ class CachedUpdateInfo {
   final DateTime checkedAt;
 
   Map<String, dynamic> toJson() => {
+        'build': build,
         'platform': platform,
         'currentVersion': currentVersion,
         'latestVersion': latestVersion,
@@ -33,6 +36,7 @@ class CachedUpdateInfo {
 
   factory CachedUpdateInfo.fromJson(Map<String, dynamic> json) {
     return CachedUpdateInfo(
+      build: int.tryParse('${json['build'] ?? ''}'),
       platform: json['platform']?.toString() ?? '',
       currentVersion: json['currentVersion']?.toString() ?? '',
       latestVersion: json['latestVersion']?.toString() ?? '',

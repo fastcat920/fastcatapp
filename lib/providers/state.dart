@@ -3,8 +3,7 @@ import 'package:fl_clash/enum/enum.dart';
 import 'package:fl_clash/models/models.dart';
 import 'package:fl_clash/state.dart';
 import 'package:fl_clash/xboard/config/xboard_config.dart';
-import 'package:fl_clash/xboard/features/auth/utils/crisp_url_helper.dart';
-import 'package:fl_clash/xboard/features/latency/providers/latency_display_config_provider.dart';
+import 'package:fl_clash/xboard/features/auth/utils/support_url_helper.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
@@ -168,7 +167,7 @@ CoreState coreState(Ref ref) {
     currentProfileName: currentProfile?.label ?? currentProfile?.id ?? "",
     bypassDomain: mergeCustomerServiceBypassDomains(
       bypassDomain,
-      XBoardConfig.crispProxyUrl,
+      XBoardConfig.fastCatSupportBaseUrl,
     ),
   );
 }
@@ -215,7 +214,7 @@ ProxyState proxyState(Ref ref) {
     systemProxy: vm2.a,
     bassDomain: mergeCustomerServiceBypassDomains(
       vm2.b,
-      XBoardConfig.crispProxyUrl,
+      XBoardConfig.fastCatSupportBaseUrl,
     ),
     port: mixedPort,
   );
@@ -484,8 +483,7 @@ int? getDelay(
       },
     ),
   );
-  final discount = ref.watch(delayDiscountPercentProvider).valueOrNull ?? 0;
-  return applyDelayDisplayDiscount(delay, discount);
+  return delay;
 }
 
 @riverpod

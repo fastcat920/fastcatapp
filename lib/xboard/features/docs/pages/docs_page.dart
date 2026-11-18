@@ -115,8 +115,14 @@ class _DocsPageState extends ConsumerState<DocsPage>
       body: isDesktop
           ? _buildDesktopBody(theme, asyncArticles, language)
           : RefreshIndicator(
-              onRefresh: () async =>
-                  ref.invalidate(knowledgeArticlesProvider(language)),
+              onRefresh: () async {
+                ref.invalidate(knowledgeArticlesProvider(language));
+                try {
+                  await ref.read(knowledgeArticlesProvider(language).future);
+                } catch (_) {
+                  // The provider exposes the failure through the existing UI.
+                }
+              },
               child: _buildBody(theme, false, asyncArticles, language),
             ),
     );
@@ -279,24 +285,30 @@ class _DocsPageState extends ConsumerState<DocsPage>
       data: (result) {
         final articles = result;
         if (articles.isEmpty) {
-          return Center(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Icon(
-                  Icons.article_outlined,
-                  size: 56,
-                  color: theme.colorScheme.onSurfaceVariant,
+          return ListView(
+            physics: const AlwaysScrollableScrollPhysics(),
+            children: [
+              Padding(
+                padding: const EdgeInsets.symmetric(vertical: 72),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(
+                      Icons.article_outlined,
+                      size: 56,
+                      color: theme.colorScheme.onSurfaceVariant,
+                    ),
+                    const SizedBox(height: 16),
+                    Text(
+                      AppLocalizations.of(context).xboardNoDocuments,
+                      style: theme.textTheme.titleMedium?.copyWith(
+                        color: theme.colorScheme.onSurfaceVariant,
+                      ),
+                    ),
+                  ],
                 ),
-                const SizedBox(height: 16),
-                Text(
-                  AppLocalizations.of(context).xboardNoDocuments,
-                  style: theme.textTheme.titleMedium?.copyWith(
-                    color: theme.colorScheme.onSurfaceVariant,
-                  ),
-                ),
-              ],
-            ),
+              )
+            ],
           );
         }
         final grouped = _groupArticles(articles);
@@ -1399,7 +1411,10 @@ p{margin:8px 0}
             // Let vertical reading win the arena before the standard edge-back
             // recognizer, while leaving horizontal edge drags to Cupertino.
             gestureRecognizers: Platform.isIOS
-                ? {Factory<OneSequenceGestureRecognizer>(() => VerticalDragGestureRecognizer())}
+                ? {
+                    Factory<OneSequenceGestureRecognizer>(
+                        () => VerticalDragGestureRecognizer())
+                  }
                 : const {},
           ),
           if (_webViewLoading)

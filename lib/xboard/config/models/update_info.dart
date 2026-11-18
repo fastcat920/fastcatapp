@@ -1,8 +1,11 @@
-// 更新配置模型，同时兼容旧版 latest 和新版 platforms 结构。
+import 'package:fl_clash/xboard/features/update_check/models/update_artifact.dart';
+// Per-platform update configuration. Legacy schemas are not consumed.
 
 /// 单平台更新信息
 class UpdatePlatformInfo {
   final String version;
+  final int? build, minSupportedBuild;
+  final Map<String, UpdateArtifact> artifacts;
   final String url;
   final bool force;
   final bool enabled;
@@ -13,6 +16,9 @@ class UpdatePlatformInfo {
 
   const UpdatePlatformInfo({
     required this.version,
+    this.build,
+    this.minSupportedBuild,
+    this.artifacts = const {},
     required this.url,
     this.force = false,
     this.enabled = true,
@@ -24,9 +30,16 @@ class UpdatePlatformInfo {
 
   factory UpdatePlatformInfo.fromJson(Map<String, dynamic> json) {
     return UpdatePlatformInfo(
-      version: _stringValue(json['latest_version']).isNotEmpty
-          ? _stringValue(json['latest_version'])
-          : _stringValue(json['version']),
+      version: _stringValue(json['latest_version']),
+      build: int.tryParse('${json['build'] ?? ''}'),
+      minSupportedBuild: int.tryParse('${json['min_supported_build'] ?? ''}'),
+      artifacts: {
+        if (json['artifacts'] is Map)
+          for (final entry in (json['artifacts'] as Map).entries)
+            if (entry.value is Map)
+              entry.key.toString(): UpdateArtifact.fromJson(
+                  Map<String, dynamic>.from(entry.value)),
+      },
       url: _stringValue(json['url']),
       force: json['force'] == true,
       enabled: json['enabled'] is bool ? json['enabled'] as bool : true,
@@ -39,13 +52,11 @@ class UpdatePlatformInfo {
     );
   }
 
-  Map<String, dynamic> toLegacyJson() => {
-        'version': version,
-        'url': url,
-        'force': force,
-      };
-
   Map<String, dynamic> toPlatformJson() => {
+        if (build != null) 'build': build,
+        if (minSupportedBuild != null) 'min_supported_build': minSupportedBuild,
+        if (artifacts.isNotEmpty)
+          'artifacts': artifacts.map((k, v) => MapEntry(k, v.toJson())),
         'enabled': enabled,
         'source': source,
         'latest_version': version,
@@ -56,6 +67,28 @@ class UpdatePlatformInfo {
         if (changelog.isNotEmpty) 'changelog': changelog,
         if (appId != null) 'app_id': appId,
       };
+
+  UpdateArtifact? artifactFor(List<String> architectureKeys) {
+    for (final key in architectureKeys) {
+      if (artifacts.containsKey(key)) {
+        return artifacts[key];
+      }
+    }
+    return null;
+  }
+
+  String get storeUrl {
+    final id = appId?.trim().replaceFirst(RegExp(r'^id'), '') ?? '';
+    if (RegExp(r'^\d+$').hasMatch(id)) {
+      return 'https://apps.apple.com/app/id$id';
+    }
+    final uri = Uri.tryParse(url);
+    return uri?.scheme == 'https' &&
+            uri?.host == 'apps.apple.com' &&
+            uri!.userInfo.isEmpty
+        ? url
+        : '';
+  }
 
   String localizedChangelog(String languageCode) {
     if (changelog.isEmpty) return '';
@@ -86,70 +119,52 @@ class UpdatePlatformInfo {
       'UpdatePlatformInfo(version: $version, enabled: $enabled, force: $force)';
 }
 
-/// 完整更新配置（对应 release_config_plaintext.json 的 update 对象）
+/// Each platform owns its version, minimum version, installer and release notes.
 class UpdateRichConfig {
-  /// 最低支持版本，低于此版本强制更新
-  final String? minVersion;
-
-  /// 旧客户端使用的全局更新说明。
-  final String? changelog;
-
-  /// 旧版各平台配置。
-  final Map<String, UpdatePlatformInfo> latest;
-
-  /// 新版按平台独立配置。
   final Map<String, UpdatePlatformInfo> platforms;
-
   final int schemaVersion;
-
-  const UpdateRichConfig({
-    this.minVersion,
-    this.changelog,
-    this.latest = const {},
-    this.platforms = const {},
-    this.schemaVersion = 1,
-  });
-
-  factory UpdateRichConfig.fromJson(Map<String, dynamic> json) {
-    return UpdateRichConfig(
-      minVersion: _nullableString(json['min_version']),
-      changelog: _nullableString(json['changelog']),
-      latest: _platformMap(json['latest']),
-      platforms: _platformMap(json['platforms']),
-      schemaVersion: _intValue(json['schema_version'], fallback: 1),
+  const UpdateRichConfig({this.platforms = const {}, this.schemaVersion = 2});
+  factory UpdateRichConfig.fromJson(Map<String, dynamic> json) =>
+      UpdateRichConfig(
+        platforms: _platformMap(json['platforms']),
+        schemaVersion: _intValue(json['schema_version'], fallback: 2),
+      );
+  UpdatePlatformInfo? platformInfo(String platform) {
+    final key = platform == 'android_tv' ? 'android' : platform;
+    final info = platforms[key];
+    if (info == null) return null;
+    if (key != 'android') return info;
+    // Phone and TV share release information and architecture-specific APKs.
+    return UpdatePlatformInfo(
+      version: info.version,
+      build: info.build,
+      minSupportedBuild: info.minSupportedBuild,
+      artifacts: {
+        for (final key in ['arm64', 'arm'])
+          if (info.artifacts[key] != null) key: info.artifacts[key]!,
+      },
+      url: '',
+      force: info.force,
+      enabled: info.enabled,
+      source: info.source,
+      minSupportedVersion: info.minSupportedVersion,
+      appId: info.appId,
+      changelog: info.changelog,
     );
   }
 
-  /// 新版显式配置优先；只有该平台未出现在 platforms 时才回退旧版。
-  /// 因此 enabled=false 不会被旧版 latest 意外重新启用。
-  UpdatePlatformInfo? platformInfo(String platform) {
-    if (platforms.containsKey(platform)) return platforms[platform];
-    return latest[platform];
-  }
-
-  String localizedChangelog(String platform, String languageCode) {
-    final platformText =
-        platformInfo(platform)?.localizedChangelog(languageCode);
-    if (platformText != null && platformText.isNotEmpty) return platformText;
-    return changelog?.trim() ?? '';
-  }
-
-  bool get isEmpty => latest.isEmpty && platforms.isEmpty;
+  String localizedChangelog(String platform, String languageCode) =>
+      platformInfo(platform)?.localizedChangelog(languageCode) ?? '';
+  bool get isEmpty => platforms.isEmpty;
   bool get isNotEmpty => !isEmpty;
-
   Map<String, dynamic> toJson() => {
-        if (schemaVersion > 1) 'schema_version': schemaVersion,
-        if (minVersion != null) 'min_version': minVersion,
-        if (changelog != null) 'changelog': changelog,
-        if (latest.isNotEmpty)
-          'latest': latest.map((k, v) => MapEntry(k, v.toLegacyJson())),
-        if (platforms.isNotEmpty)
-          'platforms': platforms.map((k, v) => MapEntry(k, v.toPlatformJson())),
+        'schema_version': schemaVersion,
+        'platforms': platforms
+            .map((key, value) => MapEntry(key, value.toPlatformJson())),
       };
-
   @override
   String toString() =>
-      'UpdateRichConfig(platforms: ${(platforms.keys.followedBy(latest.keys)).toSet().join(', ')}, minVersion: $minVersion)';
+      'UpdateRichConfig(platforms: ${platforms.keys.join(", ")})';
 }
 
 Map<String, UpdatePlatformInfo> _platformMap(Object? value) {

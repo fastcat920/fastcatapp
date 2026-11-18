@@ -1,3 +1,4 @@
+import '../models/update_artifact.dart';
 import 'dart:async';
 
 import 'package:fl_clash/xboard/config/xboard_config.dart';
@@ -7,6 +8,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../models/update_check_state.dart';
 import '../services/update_cache_service.dart';
 import '../services/update_service.dart';
+import '../services/update_install_service.dart';
 
 final _logger = FileLogger('update_check_provider.dart');
 
@@ -49,17 +51,20 @@ class UpdateCheckNotifier extends StateNotifier<UpdateCheckState> {
 
   /// 在 OSS 返回前恢复上一次确认过的更新，只用于红点提示。
   Future<void> restoreCachedUpdate() async {
+    try {
+      await UpdateInstallService.reconcileAndClean();
+    } catch (_) {}
     final cached = await _cacheService.load();
     if (cached == null || !mounted) return;
 
     final currentVersion = await _updateService.getCurrentVersion();
+    final currentBuild = await _updateService.getCurrentBuild();
+    if (!mounted) return;
     final currentPlatform = _updateService.getPlatformName();
     final isUsable = cached.platform == currentPlatform &&
         cached.latestVersion.isNotEmpty &&
-        _updateService.isNewerVersion(
-          currentVersion,
-          cached.latestVersion,
-        );
+        _updateService.hasNewRelease(
+            currentVersion, cached.latestVersion, currentBuild, cached.build);
     if (!isUsable) {
       await _cacheService.clear();
       await _cacheService.clearPromptedOptionalVersion();
@@ -70,6 +75,8 @@ class UpdateCheckNotifier extends StateNotifier<UpdateCheckState> {
       hasUpdate: true,
       currentVersion: currentVersion,
       latestVersion: cached.latestVersion,
+      build: cached.build,
+      trusted: false,
       updateUrl: cached.updateUrl,
       releaseNotes: cached.releaseNotes,
       // 缓存只恢复红点，强制更新必须由最新 OSS 配置重新确认。
@@ -150,6 +157,9 @@ class UpdateCheckNotifier extends StateNotifier<UpdateCheckState> {
 
       state = state.copyWith(
         isChecking: false,
+        artifact: updateInfo['artifact'] as UpdateArtifact?,
+        build: updateInfo['build'] as int?,
+        trusted: updateInfo['trusted'] == true,
         hasUpdate: hasUpdate,
         latestVersion: latestVersion,
         updateUrl: updateUrl,
@@ -161,6 +171,7 @@ class UpdateCheckNotifier extends StateNotifier<UpdateCheckState> {
       if (hasUpdate) {
         await _cacheService.save(
           CachedUpdateInfo(
+            build: updateInfo['build'] as int?,
             platform: _updateService.getPlatformName(),
             currentVersion: currentVersion,
             latestVersion: latestVersion,

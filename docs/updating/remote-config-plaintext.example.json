@@ -1,0 +1,142 @@
+{
+  "template_notice": "Example only. Updates are disabled; replace artifact URL, SHA-256, size and App Store IDs before signing and publishing.",
+  "config_version": 1,
+  "panel_type": "xboard",
+  "api_prefix": "/api/v1",
+  "domains": [
+    "https://panel.example.com"
+  ],
+  "contact": {
+    "fastcat_support": {
+      "enabled": false,
+      "base_url": "https://support.example.com",
+      "app_key": "replace-with-public-platform-key"
+    }
+  },
+  "legal": {
+    "privacy_policy_url": "https://www.example.com/privacy",
+    "terms_of_service_url": "https://www.example.com/terms"
+  },
+  "update": {
+    "schema_version": 2,
+    "platforms": {
+      "android": {
+        "enabled": false,
+        "source": "direct",
+        "latest_version": "3.6.3",
+        "build": 9,
+        "force": false,
+        "min_supported_version": "3.6.2",
+        "changelog": {
+          "zh_CN": "android 客户端更新说明",
+          "en_US": "android release notes"
+        },
+        "artifacts": {
+          "arm64": {
+            "url": "https://downloads.example.com/FastCat-android-arm64.apk",
+            "package_type": "apk",
+            "sha256": "",
+            "size": 0,
+            "mirrors": []
+          }
+        }
+      },
+      "ios": {
+        "enabled": false,
+        "source": "app_store",
+        "latest_version": "3.6.3",
+        "build": 9,
+        "force": false,
+        "min_supported_version": "3.6.2",
+        "changelog": {
+          "zh_CN": "ios 客户端更新说明",
+          "en_US": "ios release notes"
+        },
+        "app_id": ""
+      },
+      "tvos": {
+        "enabled": false,
+        "source": "app_store",
+        "latest_version": "3.6.3",
+        "build": 9,
+        "force": false,
+        "min_supported_version": "3.6.2",
+        "changelog": {
+          "zh_CN": "tvos 客户端更新说明",
+          "en_US": "tvos release notes"
+        },
+        "app_id": ""
+      },
+      "windows": {
+        "enabled": false,
+        "source": "direct",
+        "latest_version": "3.6.3",
+        "build": 9,
+        "force": false,
+        "min_supported_version": "3.6.2",
+        "changelog": {
+          "zh_CN": "windows 客户端更新说明",
+          "en_US": "windows release notes"
+        },
+        "artifacts": {
+          "universal": {
+            "url": "https://downloads.example.com/FastCat-windows-universal.exe",
+            "package_type": "exe",
+            "sha256": "",
+            "size": 0,
+            "mirrors": []
+          }
+        }
+      },
+      "macos": {
+        "enabled": false,
+        "source": "direct",
+        "latest_version": "3.6.3",
+        "build": 9,
+        "force": false,
+        "min_supported_version": "3.6.2",
+        "changelog": {
+          "zh_CN": "macos 客户端更新说明",
+          "en_US": "macos release notes"
+        },
+        "artifacts": {
+          "universal": {
+            "url": "https://downloads.example.com/FastCat-macos-universal.dmg",
+            "package_type": "dmg",
+            "sha256": "",
+            "size": 0,
+            "mirrors": []
+          }
+        }
+      },
+      "linux": {
+        "enabled": false,
+        "source": "direct",
+        "latest_version": "3.6.3",
+        "build": 9,
+        "force": false,
+        "min_supported_version": "3.6.2",
+        "changelog": {
+          "zh_CN": "linux 客户端更新说明",
+          "en_US": "linux release notes"
+        },
+        "artifacts": {
+          "x64_deb": {
+            "url": "https://downloads.example.com/FastCat-linux-x64_deb.deb",
+            "package_type": "deb",
+            "sha256": "",
+            "size": 0,
+            "mirrors": []
+          },
+          "x64_rpm": {
+            "url": "https://downloads.example.com/FastCat-linux-x64_rpm.rpm",
+            "package_type": "rpm",
+            "sha256": "",
+            "size": 0,
+            "mirrors": []
+          }
+        }
+      }
+    }
+  }
+}

@@ -52,3 +52,7 @@ release_config_plaintext.json
 
 # Local Xcode release parameters (contains private keys)
 /ios/Flutter/ReleaseSecrets.xcconfig
+
+# Local SDK resolution and Xcode's default generated workspace
+/packages/fastcat_support/pubspec.lock
+/tvos/FastCatTV.xcodeproj/project.xcworkspace/

@@ -257,6 +257,7 @@ class _ForgotPasswordPageState extends ConsumerState<ForgotPasswordPage> {
           labelText: AppLocalizations.of(context).newPassword,
           hintText: AppLocalizations.of(context).pleaseEnterNewPassword,
           prefixIcon: Icons.lock_outlined,
+          keyboardType: TextInputType.visiblePassword,
           obscureText: _obscurePassword,
           enabled: !_isLoading,
           suffixIcon: IconButton(
@@ -287,6 +288,7 @@ class _ForgotPasswordPageState extends ConsumerState<ForgotPasswordPage> {
           labelText: AppLocalizations.of(context).confirmNewPassword,
           hintText: AppLocalizations.of(context).pleaseConfirmNewPassword,
           prefixIcon: Icons.lock_outlined,
+          keyboardType: TextInputType.visiblePassword,
           obscureText: _obscureConfirmPassword,
           enabled: !_isLoading,
           suffixIcon: IconButton(

@@ -47,20 +47,14 @@ class XBoardConfigAccessor {
   WebSocketService? _webSocketService;
 
   // 远程配置 contact 字段
-  String _crispWebsiteId = '';
-  String _crispProxyUrl = '';
   bool _fastCatSupportEnabled = false;
   bool _fastCatSupportConfigured = false;
   String _fastCatSupportBaseUrl = '';
   String _fastCatSupportAppKey = '';
-  String _salesmartlyToken = '';
   List<String> _websiteUrls = [];
   String _telegramGroupUrl = '';
   LegalLinks legalLinks = const LegalLinks();
   String _inviteDomain = '';
-
-  // 远程配置 ticket 字段
-  String _imgbbApiKey = '';
 
   // API 路径前缀（远程配置可覆盖，默认 /api/v1）
   String _apiPrefix = '/api/v1';
@@ -71,32 +65,6 @@ class XBoardConfigAccessor {
   // 设备网关地址列表（远程配置 gateway_urls/gateway_url，OSS 可远程切换）
   List<String> _gatewayUrls = [];
 
-  // 远程配置 features 字段
-  bool _trafficDetailsEnabled = true;
-  bool _knowledgeBaseEnabled = true;
-  bool _giftCardEnabled = true;
-  bool _joinGroupEnabled = true;
-  bool _ordersEnabled = true;
-  bool _devicesEnabled = true;
-  bool _ticketsEnabled = true;
-  bool _balanceEnabled = true;
-
-  // 延迟显示折扣百分比：远程配置优先，本地 config.yaml 兜底。
-  final int _localDelayDiscountPercent;
-  int _delayDiscountPercent;
-
-  /// 应用本地 features 配置作为默认值
-  void _applyLocalFeatures(Map<String, bool> f) {
-    _trafficDetailsEnabled = f['traffic_details_enabled'] ?? true;
-    _knowledgeBaseEnabled = f['knowledge_base_enabled'] ?? true;
-    _giftCardEnabled = f['gift_card_enabled'] ?? true;
-    _joinGroupEnabled = f['join_group_enabled'] ?? true;
-    _ordersEnabled = f['orders_enabled'] ?? true;
-    _devicesEnabled = f['devices_enabled'] ?? true;
-    _ticketsEnabled = f['tickets_enabled'] ?? true;
-    _balanceEnabled = f['balance_enabled'] ?? true;
-  }
-
   // 事件流
   final StreamController<ParsedConfiguration> _configStreamController =
       StreamController<ParsedConfiguration>.broadcast();
@@ -104,21 +72,14 @@ class XBoardConfigAccessor {
       StreamController<ConfigAccessorState>.broadcast();
 
   XBoardConfigAccessor({
-    Map<String, bool> localFeatures = const {},
     required RemoteConfigManager remoteManager,
     required ConfigurationParser parser,
     required String currentProvider,
     String apiPrefix = '/api/v1',
-    int localDelayDiscountPercent = 0,
   })  : _remoteManager = remoteManager,
         _parser = parser,
         _currentProvider = currentProvider,
-        _apiPrefix = apiPrefix,
-        _localDelayDiscountPercent =
-            localDelayDiscountPercent.clamp(0, 90).toInt(),
-        _delayDiscountPercent = localDelayDiscountPercent.clamp(0, 90).toInt() {
-    _applyLocalFeatures(localFeatures);
-  }
+        _apiPrefix = apiPrefix;
 
   // ========== 状态属性 ==========
 
@@ -374,12 +335,6 @@ class XBoardConfigAccessor {
         preferEncrypt: preferEncrypt);
   }
 
-  /// 获取 Crisp 客服 Website ID（来自远程配置 contact.crisp_website_id）
-  String get crispWebsiteId => _crispWebsiteId;
-
-  /// 获取 Crisp 反向代理地址（来自远程配置 contact.crisp_proxy_url）
-  String get crispProxyUrl => _crispProxyUrl;
-
   bool get fastCatSupportEnabled => _fastCatSupportEnabled;
 
   bool get fastCatSupportConfigured => _fastCatSupportConfigured;
@@ -387,12 +342,6 @@ class XBoardConfigAccessor {
   String get fastCatSupportBaseUrl => _fastCatSupportBaseUrl;
 
   String get fastCatSupportAppKey => _fastCatSupportAppKey;
-
-  /// 获取 Salesmartly 客服配置（来自远程配置 contact.salesmartly_token）
-  /// 支持两种格式：
-  /// - 新版：完整 JS URL，如 https://assets.salesmartly.com/js/project_XXXXX_XXXXX_XXXXXXXXXX.js
-  /// - 旧版：Widget Token 字符串
-  String get salesmartlyToken => _salesmartlyToken;
 
   /// 获取官方网站 URL 列表（来自远程配置 contact.website，支持 string 或 array）
   List<String> get websiteUrls => _websiteUrls;
@@ -403,36 +352,6 @@ class XBoardConfigAccessor {
   /// 获取邀请链接自定义域名（来自远程配置 contact.invite_domain）
   /// 为空字符串表示使用面板域名
   String get inviteDomain => _inviteDomain;
-
-  /// 获取 ImgBB API Key（来自远程配置 ticket.imgbb_api_key）
-  String get imgbbApiKey => _imgbbApiKey;
-
-  /// 是否显示流量明细（来自远程配置 features.traffic_details_enabled，默认 true）
-  bool get trafficDetailsEnabled => _trafficDetailsEnabled;
-
-  /// 是否显示文档中心（来自远程配置 features.knowledge_base_enabled，默认 true）
-  bool get knowledgeBaseEnabled => _knowledgeBaseEnabled;
-
-  /// 是否显示礼品卡兑换（来自远程配置 features.gift_card_enabled，默认 true）
-  bool get giftCardEnabled => _giftCardEnabled;
-
-  /// 是否显示加入群组（来自远程配置 features.join_group_enabled，默认 true）
-  bool get joinGroupEnabled => _joinGroupEnabled;
-
-  /// 订单记录菜单开关
-  bool get ordersEnabled => _ordersEnabled;
-
-  /// 设备管理菜单开关
-  bool get devicesEnabled => _devicesEnabled;
-
-  /// 我的工单菜单开关
-  bool get ticketsEnabled => _ticketsEnabled;
-
-  /// 余额充值菜单开关
-  bool get balanceEnabled => _balanceEnabled;
-
-  /// 延迟显示折扣百分比；0 表示显示真实延迟。
-  int get delayDiscountPercent => _delayDiscountPercent;
 
   // ========== 统计信息 ==========
 
@@ -445,7 +364,6 @@ class XBoardConfigAccessor {
         'webSockets': 0,
         'updates': 0,
         'subscriptionUrls': 0,
-        'delayDiscountPercent': _delayDiscountPercent,
       };
     }
 
@@ -455,7 +373,6 @@ class XBoardConfigAccessor {
       'webSockets': _currentConfig!.webSockets.length,
       'updates': _currentConfig!.updateConfig?.isNotEmpty == true ? 1 : 0,
       'subscriptionUrls': _currentConfig!.subscription?.urls.length ?? 0,
-      'delayDiscountPercent': _delayDiscountPercent,
       'subscriptionEncryptUrls':
           _currentConfig!.subscription?.encryptUrls.length ?? 0,
       'currentProvider': _currentProvider,
@@ -494,8 +411,6 @@ class XBoardConfigAccessor {
 
       // 提取 contact 字段
       final contact = configData['contact'] as Map<String, dynamic>? ?? {};
-      _crispWebsiteId = contact['crisp_website_id'] as String? ?? '';
-      _crispProxyUrl = contact['crisp_proxy_url'] as String? ?? '';
       final rawFastCatSupport = contact['fastcat_support'];
       _fastCatSupportConfigured = rawFastCatSupport is Map;
       final fastCatSupport = rawFastCatSupport is Map
@@ -510,7 +425,6 @@ class XBoardConfigAccessor {
       _fastCatSupportEnabled = fastCatSupport['enabled'] != false &&
           _fastCatSupportBaseUrl.isNotEmpty &&
           _fastCatSupportAppKey.isNotEmpty;
-      _salesmartlyToken = contact['salesmartly_token'] as String? ?? '';
       final rawWebsite = contact['website'];
       if (rawWebsite is String) {
         _websiteUrls = rawWebsite.isNotEmpty ? [rawWebsite] : [];
@@ -528,10 +442,6 @@ class XBoardConfigAccessor {
           (contact['telegram_group'] as String?)?.isNotEmpty == true
               ? contact['telegram_group'] as String
               : contact['telegram'] as String? ?? '';
-
-      // 提取 ticket 字段
-      final ticket = configData['ticket'] as Map<String, dynamic>? ?? {};
-      _imgbbApiKey = ticket['imgbb_api_key'] as String? ?? '';
 
       // 提取 api_prefix（可选，默认 /api/v1）
       final rawApiPrefix = configData['api_prefix'] as String?;
@@ -561,44 +471,6 @@ class XBoardConfigAccessor {
         final rawGatewayUrl = configData['gateway_url'] as String?;
         if (rawGatewayUrl != null && rawGatewayUrl.trim().isNotEmpty) {
           _gatewayUrls = [rawGatewayUrl.trim()];
-        }
-      }
-
-      // 提取 features 字段（远程有的覆盖，没有的保留本地配置值）
-      final remoteFeatures = configData['features'] as Map<String, dynamic>?;
-      if (remoteFeatures != null) {
-        _trafficDetailsEnabled =
-            remoteFeatures['traffic_details_enabled'] as bool? ??
-                _trafficDetailsEnabled;
-        _knowledgeBaseEnabled =
-            remoteFeatures['knowledge_base_enabled'] as bool? ??
-                _knowledgeBaseEnabled;
-        _giftCardEnabled =
-            remoteFeatures['gift_card_enabled'] as bool? ?? _giftCardEnabled;
-        _joinGroupEnabled =
-            remoteFeatures['join_group_enabled'] as bool? ?? _joinGroupEnabled;
-        _ordersEnabled =
-            remoteFeatures['orders_enabled'] as bool? ?? _ordersEnabled;
-        _devicesEnabled =
-            remoteFeatures['devices_enabled'] as bool? ?? _devicesEnabled;
-        _ticketsEnabled =
-            remoteFeatures['tickets_enabled'] as bool? ?? _ticketsEnabled;
-        _balanceEnabled =
-            remoteFeatures['balance_enabled'] as bool? ?? _balanceEnabled;
-      }
-
-      // 每次加载先恢复本地兜底，确保远程删除字段后不会沿用旧值。
-      _delayDiscountPercent = _localDelayDiscountPercent;
-      final latency = configData['latency'];
-      if (latency is Map) {
-        final rawDiscount = latency['display_discount_percent'];
-        final parsedDiscount = switch (rawDiscount) {
-          num value => value.toInt(),
-          String value => int.tryParse(value.trim()),
-          _ => null,
-        };
-        if (parsedDiscount != null) {
-          _delayDiscountPercent = parsedDiscount.clamp(0, 90).toInt();
         }
       }
 

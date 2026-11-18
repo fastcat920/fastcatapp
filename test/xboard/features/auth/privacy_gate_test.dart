@@ -6,7 +6,7 @@ import 'package:fl_clash/xboard/features/shared/widgets/privacy_gate.dart';
 void main() {
   for (final language in ['zh-CN', 'en']) {
     for (final width in [320.0, 800.0]) {
-      testWidgets('privacy buttons share rows at $width in $language',
+      testWidgets('privacy actions are centered with agreement above decline at $width in $language',
           (tester) async {
         tester.view.physicalSize = Size(width, 700);
         tester.view.devicePixelRatio = 1;
@@ -26,9 +26,8 @@ void main() {
         expect(tester.getCenter(privacy).dy, tester.getCenter(terms).dy);
         expect(
             tester.getCenter(privacy).dx, lessThan(tester.getCenter(terms).dx));
-        expect(tester.getCenter(decline).dy, tester.getCenter(proceed).dy);
-        expect(tester.getCenter(decline).dx,
-            lessThan(tester.getCenter(proceed).dx));
+        expect(tester.getCenter(proceed).dy, lessThan(tester.getCenter(decline).dy));
+        expect(tester.getCenter(decline).dx, closeTo(tester.getCenter(proceed).dx, 1));
         final button = tester.widget<TextButton>(
             find.widgetWithText(TextButton, zh ? '暂不使用' : 'Not now'));
         expect(button.style!.foregroundColor!.resolve({}),

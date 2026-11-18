@@ -613,7 +613,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                       ),
                     )
                   else ...[
-                    // 客服按钮固定显示（远程 Crisp 优先，本地 Crisp 兜底）
+                    // 客服按钮固定显示，仅对接 FastCat Support
                     TextButton.icon(
                       style: XbUiButton.textChipPrimary(context),
                       icon: const Icon(Icons.support_agent_outlined, size: 18),
@@ -812,6 +812,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                                           _login();
                                         }
                                       },
+                                      keyboardType: TextInputType.visiblePassword,
                                       obscureText: !_isPasswordVisible,
                                       autovalidateMode: _hasAttemptedLogin
                                           ? AutovalidateMode.onUserInteraction

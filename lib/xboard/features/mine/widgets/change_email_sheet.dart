@@ -230,6 +230,10 @@ class _ChangeEmailSheetState extends State<_ChangeEmailSheet> {
           const SizedBox(height: 10),
           TextField(
             controller: _passwordController,
+            keyboardType: TextInputType.visiblePassword,
+            enableIMEPersonalizedLearning: false,
+            smartDashesType: SmartDashesType.disabled,
+            smartQuotesType: SmartQuotesType.disabled,
             obscureText: _obscurePassword,
             enableSuggestions: false,
             autocorrect: false,

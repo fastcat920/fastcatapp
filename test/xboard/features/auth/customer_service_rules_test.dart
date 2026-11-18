@@ -1,4 +1,4 @@
-import 'package:fl_clash/xboard/features/auth/utils/crisp_url_helper.dart';
+import 'package:fl_clash/xboard/features/auth/utils/support_url_helper.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {

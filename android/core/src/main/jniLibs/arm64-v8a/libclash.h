@@ -129,6 +129,7 @@ extern void invokeAction(char* paramsChar, long long port);
 extern char* getConfig(char* s);
 extern void startListener(void);
 extern void stopListener(void);
+extern char* getAndroidTunStatus(void);
 extern void quickStart(char* initParamsChar, char* paramsChar, char* stateParamsChar, long long port);
 extern GoUint8 startTUN(int fd, void* callback);
 extern char* getRunTime(void);

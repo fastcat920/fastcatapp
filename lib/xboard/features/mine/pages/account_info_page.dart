@@ -45,27 +45,37 @@ class _AccountInfoPageState extends ConsumerState<AccountInfoPage> {
     required bool remindExpire,
     required bool value,
   }) async {
-    if (remindExpire) {
-      setState(() => _updatingExpire = true);
-    } else {
-      setState(() => _updatingTraffic = true);
-    }
-
-    final success =
-        await ref.read(xboardUserProvider.notifier).updateReminderSettings(
-              remindExpire: remindExpire ? value : null,
-              remindTraffic: remindExpire ? null : value,
-            );
-
-    if (!mounted) return;
-    if (!success) {
-      XBoardNotification.showError('更新通知设置失败');
-    }
-
+    if (remindExpire ? _updatingExpire : _updatingTraffic) return;
     setState(() {
-      _updatingExpire = false;
-      _updatingTraffic = false;
+      if (remindExpire) {
+        _updatingExpire = true;
+      } else {
+        _updatingTraffic = true;
+      }
     });
+    try {
+      final success =
+          await ref.read(xboardUserProvider.notifier).updateReminderSettings(
+                remindExpire: remindExpire ? value : null,
+                remindTraffic: remindExpire ? null : value,
+              );
+      if (mounted && !success) {
+        XBoardNotification.showError(
+            Localizations.localeOf(context).languageCode == 'zh'
+                ? '更新通知设置失败'
+                : 'Could not update notification settings');
+      }
+    } finally {
+      if (mounted) {
+        setState(() {
+          if (remindExpire) {
+            _updatingExpire = false;
+          } else {
+            _updatingTraffic = false;
+          }
+        });
+      }
+    }
   }
 
   Widget _buildCard({

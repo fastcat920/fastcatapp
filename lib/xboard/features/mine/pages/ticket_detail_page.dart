@@ -1,5 +1,4 @@
 import 'package:fl_clash/xboard/features/mine/utils/ticket_presentation.dart';
-import 'dart:io';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_markdown/flutter_markdown.dart';
@@ -7,15 +6,12 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_xboard_sdk/flutter_xboard_sdk.dart';
 import 'package:fl_clash/xboard/adapter/state/ticket_state.dart';
 import 'package:fl_clash/xboard/adapter/initialization/sdk_provider.dart';
-import 'package:fl_clash/xboard/config/xboard_config.dart';
 import 'package:fl_clash/xboard/features/shared/widgets/tv_deferred_input.dart';
 import 'package:fl_clash/xboard/features/shared/widgets/xb_dialog.dart';
 import 'package:fl_clash/xboard/features/shared/widgets/xb_error_state.dart';
 import 'package:fl_clash/xboard/features/shared/styles/styles.dart';
-import 'package:fl_clash/xboard/features/mine/services/imgbb_service.dart';
 import 'package:fl_clash/xboard/utils/backend_message_mapper.dart';
 import 'package:fl_clash/xboard/utils/xboard_notification.dart';
-import 'package:image_picker/image_picker.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:fl_clash/l10n/l10n.dart';
 
@@ -459,50 +455,10 @@ class _ReplyBar extends StatefulWidget {
 }
 
 class _ReplyBarState extends State<_ReplyBar> {
-  bool _isUploadingImage = false;
-
-  Future<void> _pickAndUploadImage() async {
-    final l10n = AppLocalizations.of(context);
-    final apiKey = XBoardConfig.imgbbApiKey;
-    if (apiKey.isEmpty) {
-      XBoardNotification.showError(l10n.xboardImageUploadUnavailable);
-      return;
-    }
-
-    final picker = ImagePicker();
-    final picked = await picker.pickImage(
-      source: ImageSource.gallery,
-      imageQuality: 85,
-      maxWidth: 1920,
-    );
-    if (picked == null || !mounted) return;
-
-    setState(() => _isUploadingImage = true);
-    try {
-      final url = await ImgBBService(apiKey).uploadImage(File(picked.path));
-      if (!mounted) return;
-      // 在当前光标位置（或末尾）插入 Markdown 图片语法
-      final text = widget.controller.text;
-      final insertText = text.isEmpty ? '![image]($url)' : '\n![image]($url)';
-      widget.controller.text = text + insertText;
-      widget.controller.selection = TextSelection.collapsed(
-        offset: widget.controller.text.length,
-      );
-    } catch (e) {
-      if (mounted) {
-        XBoardNotification.showError(
-            '${l10n.xboardOperationFailed}: ${BackendMessageMapper.mapError(e)}');
-      }
-    } finally {
-      if (mounted) setState(() => _isUploadingImage = false);
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final l10n = AppLocalizations.of(context);
-    final hasImgbb = XBoardConfig.imgbbApiKey.isNotEmpty;
     return SafeArea(
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
@@ -514,27 +470,6 @@ class _ReplyBarState extends State<_ReplyBar> {
         ),
         child: Row(
           children: [
-            // 图片上传按钮（仅 imgbbApiKey 已配置时显示）
-            if (hasImgbb)
-              _isUploadingImage
-                  ? const Padding(
-                      padding: EdgeInsets.symmetric(horizontal: 4),
-                      child: SizedBox(
-                        width: 20,
-                        height: 20,
-                        child: CircularProgressIndicator(strokeWidth: 2),
-                      ),
-                    )
-                  : IconButton(
-                      icon: const Icon(Icons.image_outlined),
-                      tooltip: l10n.xboardUploadImage,
-                      onPressed: widget.isClosing || widget.isReplying
-                          ? null
-                          : _pickAndUploadImage,
-                      style: IconButton.styleFrom(
-                        foregroundColor: theme.colorScheme.onSurfaceVariant,
-                      ),
-                    ),
             // 输入框
             Expanded(
               child: TVDeferredInput(
@@ -572,8 +507,7 @@ class _ReplyBarState extends State<_ReplyBar> {
                 tooltip: l10n.onlineSupportSend,
                 onPressed: value.text.trim().isEmpty ||
                         widget.isReplying ||
-                        widget.isClosing ||
-                        _isUploadingImage
+                        widget.isClosing
                     ? null
                     : widget.onSend,
                 style: XbUiButton.filledIconPrimary(context,

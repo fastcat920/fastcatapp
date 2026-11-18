@@ -22,6 +22,11 @@ ArchitecturesInstallIn64BitMode={{ARCH}}
 RestartIfNeededByRun=no
 
 [Code]
+function IsInAppUpdate: Boolean;
+begin
+  Result := ExpandConstant('{param:FASTCATUPDATE|0}') = '1';
+end;
+
 function GetUserDefaultUILanguage(): Integer;
   external 'GetUserDefaultUILanguage@kernel32.dll stdcall';
 
@@ -167,4 +172,5 @@ Name: "{autoprograms}\\{code:LocalizedAppDisplayName}"; Filename: "{app}\\{{EXEC
 Name: "{autodesktop}\\{code:LocalizedAppDisplayName}"; Filename: "{app}\\{{EXECUTABLE_NAME}}"; IconFilename: "{app}\\{{EXECUTABLE_NAME}}"; IconIndex: 0; Tasks: desktopicon
 [Run]
 Filename: "{tmp}\vc_redist.x64.exe"; Parameters: "/install /quiet /norestart"; StatusMsg: "正在安装 Visual C++ 运行库..."; Flags: waituntilterminated
-Filename: "{app}\\{{EXECUTABLE_NAME}}"; Description: "{code:LocalizedLaunchApp}"; Flags: {% if PRIVILEGES_REQUIRED == 'admin' %}runascurrentuser{% endif %} nowait postinstall skipifsilent
+Filename: "{app}\\{{EXECUTABLE_NAME}}"; Description: "{code:LocalizedLaunchApp}"; Flags: {% if PRIVILEGES_REQUIRED == 'admin' %}runascurrentuser{% endif %} nowait postinstall skipifsilent; Check: not IsInAppUpdate
+Filename: "{app}\\{{EXECUTABLE_NAME}}"; Flags: nowait runasoriginaluser; Check: IsInAppUpdate

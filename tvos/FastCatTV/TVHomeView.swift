@@ -28,6 +28,9 @@ struct TVHomeView: View {
   @State private var routeMode: TVRouteMode = .rule
   private var prefersDarkTheme: Bool { colorScheme == .dark }
   @State private var didCheckAutoConnect = false
+  @State private var autoConnectTask: Task<Void, Never>?
+  @State private var autoConnectGeneration=UUID()
+  @State private var autoConnectBackgrounded = false
   @AppStorage(TVLanguage.preferenceKey) private var language = TVLanguage.system.rawValue
   @AppStorage("fastcat.tv.route-mode") private var savedRouteMode = TVRouteMode.rule.rawValue
   @AppStorage("fastcat.tv.selected-node") private var savedSelectedNode = ""
@@ -36,7 +39,6 @@ struct TVHomeView: View {
   @State private var toolsStartAccount = false
   @State private var hasTVUpdate = false
   @State private var errorMessage: String?
-  @State private var delayDiscountPercent = 0
   @State private var initialLatencyFinished=false
   @State private var initialHomeReady=false
   @State private var initialLatencyTask:Task<Void,Never>?
@@ -125,7 +127,6 @@ struct TVHomeView: View {
             if showNodeSelector {
               TVNodeSelectorView(
                 nodes: nodes,
-                delayDiscountPercent: delayDiscountPercent,
                 selectedName: selectedNodeName,
                 routeMode: routeMode.rawValue,
                 isLoading: isLoadingNodes,
@@ -187,7 +188,7 @@ struct TVHomeView: View {
   private var homeWithLifecycle: some View {
     homeCanvas
       .onAppear {
-        if initialHomeReady {scheduleInitialLatency()}
+        if initialHomeReady {scheduleAutoConnect();scheduleInitialLatency()}
         guard !hasAssignedInitialHomeFocus else { return }
         hasAssignedInitialHomeFocus = true
         focusModalButton { connectButtonFocused = true }
@@ -201,6 +202,7 @@ struct TVHomeView: View {
         selectedNodeName = savedSelectedNode.isEmpty ? nil : savedSelectedNode
         syncVPNStatus()
         initialHomeReady = true
+        scheduleAutoConnect()
         scheduleInitialLatency()
       }
       .task(id: language) {
@@ -211,21 +213,7 @@ struct TVHomeView: View {
           }
         #endif
         await loadHomeInfo(forceRefresh: true)
-        // Claim before awaiting system status. Language changes and view updates
-        // must not cause a second automatic connection attempt.
-        if !didCheckAutoConnect {
-          didCheckAutoConnect = true
-          let status: String = await withCheckedContinuation { continuation in
-            VPNManager.shared.refreshStatus { continuation.resume(returning: $0) }
-          }
-          if TVStartupPolicy.shouldConnect(
-            enabled: UserDefaults.standard.bool(forKey: TVStartupPolicy.preferenceKey),
-            status: status, active: scenePhase == .active, signedIn: session.isSignedIn,
-            cancelled: Task.isCancelled), !simulatorPreview
-          {
-            await prepareAndConnect()
-          }
-        }
+
       }
       .fullScreenCover(isPresented: $showTools) {
         TVToolsView(
@@ -255,8 +243,14 @@ struct TVHomeView: View {
     }
       .onChange(of: connected) { _, _ in updateConnectivityProxy() }
       .onChange(of: scenePhase) { _, phase in
-        if phase == .active {syncVPNStatus();scheduleInitialLatency()}
-        else {selectionLatencyTask?.cancel();initialLatencyTask?.cancel()}
+        if phase == .active {
+          if autoConnectBackgrounded {didCheckAutoConnect=false;autoConnectBackgrounded=false}
+          syncVPNStatus();scheduleAutoConnect();scheduleInitialLatency()
+        }
+        else {
+          if phase == .background {autoConnectBackgrounded=true}
+          autoConnectTask?.cancel();selectionLatencyTask?.cancel();initialLatencyTask?.cancel()
+        }
       }
       .onChange(of: selectedNodeName) { _,_ in updateConnectivityProxy();scheduleInitialLatency() }
       .onChange(of:nodes.map(\.name)) { _,names in if !names.isEmpty {scheduleInitialLatency()} }
@@ -611,10 +605,15 @@ struct TVHomeView: View {
                   ? TVTheme.primary : Color(red: 69 / 255, green: 90 / 255, blue: 100 / 255)))
             if connected {
               TimelineView(.periodic(from: .now, by: 1)) { context in
-                Text(
-                  tvConnectionDuration(since: VPNManager.shared.connectedSince, now: context.date)
-                )
-                .font(TVFont.regular(labelSize)).monospacedDigit()
+                let days = tvConnectionDays(since: VPNManager.shared.connectedSince, now: context.date)
+                VStack(spacing: tv(8)) {
+                  Text(tvConnectionDuration(since: VPNManager.shared.connectedSince, now: context.date))
+                    .monospacedDigit()
+                  if days > 0 {
+                    Text(tvText("\(days) 天", days == 1 ? "1 day" : "\(days) days", language: language))
+                  }
+                }
+                .font(TVFont.regular(labelSize))
                 .foregroundStyle(TVTheme.onPrimary)
               }
             } else {
@@ -743,9 +742,7 @@ struct TVHomeView: View {
         }
         Spacer()
         TVLatencyIndicator(
-          delay: tvDisplayedDelay(
-            nodes.first(where: { $0.name == selectedNodeName })?.delayMS,
-            discount: delayDiscountPercent),
+          delay: nodes.first(where: { $0.name == selectedNodeName })?.delayMS,
           testing: selectedNodeName.map { testingNodeNames.contains($0) } ?? false)
         if isLoadingNodes {
           ProgressView().scaleEffect(0.8)
@@ -1325,7 +1322,7 @@ struct TVHomeView: View {
     guard let delay = nodes.first(where: { $0.name == selectedNodeName })?.delayMS, delay > 0 else {
       return nil
     }
-    return tvDisplayedDelay(delay, discount: delayDiscountPercent)
+    return delay
   }
 
   private var subscriptionBlockReason: String? {
@@ -1561,7 +1558,6 @@ struct TVHomeView: View {
       homeInfoError = "登录状态已失效，请重新登录"
       return
     }
-    delayDiscountPercent = await TVRemoteConfigManager.shared.delayDiscountPercent()
     isLoadingHomeInfo = true
     homeInfoError = nil
     defer { isLoadingHomeInfo = false }
@@ -1627,6 +1623,8 @@ struct TVHomeView: View {
   }
 
   private func toggleConnection() {
+    didCheckAutoConnect = true
+    autoConnectTask?.cancel()
     guard !isConnecting, !isApplyingRouting, !isRefreshingNodes else { return }
     errorMessage = nil
     if simulatorPreview {
@@ -1684,6 +1682,33 @@ struct TVHomeView: View {
     }
   }
 
+  @MainActor private func scheduleAutoConnect() {
+    guard initialHomeReady, !didCheckAutoConnect, scenePhase == .active,
+      autoConnectTask == nil || autoConnectTask!.isCancelled,
+      UserDefaults.standard.bool(forKey: TVStartupPolicy.preferenceKey), !simulatorPreview else {return}
+    let owner=session.token
+    let generation=UUID();autoConnectGeneration=generation
+    autoConnectTask=Task { @MainActor in
+      defer {if autoConnectGeneration==generation {autoConnectTask=nil}}
+      while !Task.isCancelled && scenePhase == .active && session.token == owner {
+        guard session.isSignedIn else {return}
+        let status:String=await withCheckedContinuation {continuation in
+          VPNManager.shared.refreshStatus {continuation.resume(returning:$0)}
+        }
+        guard !Task.isCancelled, scenePhase == .active, session.token == owner,
+          !didCheckAutoConnect, UserDefaults.standard.bool(forKey:TVStartupPolicy.preferenceKey) else {return}
+        if status == "connected" {didCheckAutoConnect=true;syncVPNStatus(status);return}
+        if status == "disconnected" && !isConnecting && !preparingConnection && !isApplyingRouting && !isTestingNodes {
+          didCheckAutoConnect=true
+          NSLog("[TVAutoConnect] starting once after readiness")
+          await prepareAndConnect()
+          return
+        }
+        do {try await Task.sleep(for:.milliseconds(500))} catch {return}
+      }
+    }
+  }
+
   @MainActor private func scheduleInitialLatency() {
     guard initialHomeReady,!initialLatencyFinished,scenePhase == .active,
       initialLatencyTask==nil || initialLatencyTask!.isCancelled else {return}
@@ -1699,7 +1724,7 @@ struct TVHomeView: View {
           do { try await Task.sleep(for: .seconds(attempt * 2)) } catch { return }
         }
         while isTestingNodes || isRefreshingNodes || isLoadingNodes || isConnecting
-          || preparingConnection || isApplyingRouting {
+          || preparingConnection || isApplyingRouting || autoConnectTask != nil {
           guard !Task.isCancelled, scenePhase == .active, session.token == owner else { return }
           do { try await Task.sleep(for: .milliseconds(120)) } catch { return }
         }
@@ -1814,7 +1839,6 @@ struct TVHomeView: View {
     }
     NSLog("[TVLatency] probe path=%@", useRunningTunnel ? "running-tunnel" : "isolated-core")
 
-    delayDiscountPercent = await TVRemoteConfigManager.shared.delayDiscountPercent()
     isTestingNodes = true
     nodeLoadError = nil
     let testedNames = nodes.map(\.name).filter {

@@ -115,7 +115,7 @@ class ParsedConfiguration {
   @override
   String toString() {
     return 'ParsedConfiguration(panels: $panels, proxies: ${proxies.length}, '
-           'ws: ${webSockets.length}, update: ${updateConfig?.minVersion ?? 'none'}, '
+           'ws: ${webSockets.length}, update: ${updateConfig?.platforms.length ?? 0}, '
            'subscription: ${subscription != null ? subscription!.urls.length : 0})';
   }
 }

@@ -1,7 +1,34 @@
 import 'strings.dart';
 import 'dart:convert';
+import 'dart:collection';
 import 'package:flutter/material.dart';
 import 'package:flutter_markdown_plus/flutter_markdown_plus.dart';
+
+/// Conversation-owned, bounded cache; discarded on account change or chat disposal.
+class SupportMessageBodyCache {
+  final _parsed = LinkedHashMap<String, dynamic>();
+  dynamic parse(String body) {
+    if (_parsed.containsKey(body)) {
+      final value = _parsed.remove(body);
+      _parsed[body] = value;
+      return value;
+    }
+    dynamic value;
+    try { value = jsonDecode(body); } catch (_) {
+      final match = RegExp(r'^```(?:spec|json-render)\s*\n([\s\S]*?)\n```$').firstMatch(body);
+      if (match != null) {
+        try { value = {'type':'json_render', 'spec':jsonDecode(match[1]!)}; } catch (_) {}
+      }
+    }
+    // Large single messages should not occupy the shared cache.
+    if (body.length <= 20000) {
+      _parsed[body] = value;
+      if (_parsed.length > 128) _parsed.remove(_parsed.keys.first);
+    }
+    return value;
+  }
+  void clear() => _parsed.clear();
+}
 
 /// Shared Markdown and bounded structured-message view. Links are host controlled.
 class FastCatMessageBody extends StatefulWidget {
@@ -10,12 +37,14 @@ class FastCatMessageBody extends StatefulWidget {
   final Locale? locale;
   final ValueChanged<String>? onMessage;
   final ValueChanged<Uri>? onOpenLink;
+  final SupportMessageBodyCache? cache;
   const FastCatMessageBody(
       {super.key,
       required this.body,
       this.plain = false,
       this.locale,
       this.onMessage,
+      this.cache,
       this.onOpenLink});
   @override
   State<FastCatMessageBody> createState() => _FastCatMessageBodyState();
@@ -23,12 +52,18 @@ class FastCatMessageBody extends StatefulWidget {
 
 class _FastCatMessageBodyState extends State<FastCatMessageBody> {
   final values = <String, String>{};
+  final _localCache = SupportMessageBodyCache();
+  final _markdownWidgets = <String, Widget>{};
   String _t(String zh, String en) =>
       supportText(context, zh, en, widget.locale);
   @override
   void didUpdateWidget(covariant FastCatMessageBody oldWidget) {
     super.didUpdateWidget(oldWidget);
-    if (oldWidget.body != widget.body) values.clear();
+    if (oldWidget.body != widget.body) {
+      values.clear();
+      _markdownWidgets.clear();
+      _localCache.clear();
+    }
   }
 
   Uri? safeUrl(dynamic raw) {
@@ -49,7 +84,9 @@ class _FastCatMessageBodyState extends State<FastCatMessageBody> {
     }
   }
 
-  Widget markdown(String text) => MarkdownBody(
+  Widget markdown(String text) {
+    if (_markdownWidgets.length >= 16 && !_markdownWidgets.containsKey(text)) _markdownWidgets.clear();
+    return _markdownWidgets.putIfAbsent(text, () => MarkdownBody(
       data: text.length > 20000 ? text.substring(0, 20000) : text,
       selectable: true,
       onTapLink: (text, href, title) {
@@ -58,27 +95,32 @@ class _FastCatMessageBodyState extends State<FastCatMessageBody> {
       imageBuilder: (uri, title, alt) {
         if (!['http', 'https'].contains(uri.scheme))
           return Text(alt ?? _t('图片不可用', 'Image unavailable'));
-        return Image.network(uri.toString(),
-            height: 180,
-            fit: BoxFit.contain,
-            errorBuilder: (c, e, s) =>
-                Text(alt ?? _t('图片加载失败', 'Image failed to load')));
-      });
+        return _thumbnail(uri, height: 180);
+      }));
+  }
+
+  Widget _thumbnail(Uri uri, {double? width, double? height, BoxFit fit = BoxFit.contain}) {
+    final scale = MediaQuery.devicePixelRatioOf(context);
+    return GestureDetector(
+      onTap: () => showDialog<void>(context: context, useRootNavigator: false,
+        builder: (context) => Dialog(backgroundColor: Colors.black87,
+          child: SizedBox(width: MediaQuery.sizeOf(context).width,
+            height: MediaQuery.sizeOf(context).height * .8,
+            child: Stack(fit: StackFit.expand, children: [
+              InteractiveViewer(child: Image.network(uri.toString(), fit: BoxFit.contain,
+                errorBuilder: (c,e,s) => Text(_t('图片加载失败', 'Image failed to load')))),
+              Positioned(top: 0, right: 0, child: IconButton(
+                onPressed: () => Navigator.pop(context), icon: const Icon(Icons.close, color: Colors.white))),
+            ])))),
+      child: Image.network(uri.toString(), width: width, height: height, fit: fit,
+        cacheWidth: width == null ? null : (width * scale).ceil(),
+        cacheHeight: width == null && height != null ? (height * scale).ceil() : null,
+        errorBuilder: (c,e,s) => Text(_t('图片加载失败', 'Image failed to load'))));
+  }
   @override
   Widget build(BuildContext context) {
     if (widget.plain) return Text(widget.body);
-    dynamic data;
-    try {
-      data = jsonDecode(widget.body);
-    } catch (_) {
-      final match = RegExp(r'^```(?:spec|json-render)\s*\n([\s\S]*?)\n```$')
-          .firstMatch(widget.body);
-      if (match != null) {
-        try {
-          data = {'type': 'json_render', 'spec': jsonDecode(match[1]!)};
-        } catch (_) {}
-      }
-    }
+    final data = (widget.cache ?? _localCache).parse(widget.body);
     if (data is Map && data['type'] == 'rich_text') {
       final images = data['images'] is List
           ? (data['images'] as List).take(9)
@@ -96,12 +138,11 @@ class _FastCatMessageBodyState extends State<FastCatMessageBody> {
                       ? i['url']
                       : null);
               return u != null && ['http', 'https'].contains(u.scheme)
-                  ? Image.network(u.toString(),
+                  ? _thumbnail(u,
                       width: 120,
                       height: 120,
                       fit: BoxFit.contain,
-                      errorBuilder: (c, e, s) =>
-                          Text(_t('图片加载失败', 'Image failed to load')))
+                      )
                   : const SizedBox.shrink();
             }).toList()),
         if (file is Map && safeUrl(file['url']) != null)
@@ -183,10 +224,7 @@ class _FastCatMessageBodyState extends State<FastCatMessageBody> {
             case 'Image':
               final u = safeUrl(p['url'] ?? p['src']);
               return u != null && ['http', 'https'].contains(u.scheme)
-                  ? Image.network(u.toString(),
-                      height: 180,
-                      errorBuilder: (c, e, s) =>
-                          Text(_t('图片加载失败', 'Image failed to load')))
+                  ? _thumbnail(u, height: 180)
                   : const SizedBox.shrink();
             case 'Button':
               final event = e['on'] is Map ? e['on']['press'] : null;

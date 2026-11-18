@@ -300,46 +300,7 @@ class ConfigFileLoader {
     }
   }
 
-  /// 从 config.yaml 读取 features 配置作为本地兜底值
-  static Future<Map<String, bool>> loadFeatures() async {
-    try {
-      final yamlString = await rootBundle.loadString(configPath);
-      final yamlDoc = loadYaml(yamlString);
-      final configMap = _yamlToMap(yamlDoc);
-      final features = configMap['features'];
-      if (features is Map) {
-        return {
-          for (final e in features.entries)
-            e.key.toString(): e.value is bool ? e.value as bool : true,
-        };
-      }
-    } catch (e) {
-      _logger.warning('读取 features 配置失败: $e');
-    }
-    return {};
-  }
 
-  /// 从 config.yaml 读取节点延迟显示折扣，作为远程配置缺失时的本地兜底。
-  static Future<int> loadDelayDiscountPercent() async {
-    try {
-      final yamlString = await rootBundle.loadString(configPath);
-      final yamlDoc = loadYaml(yamlString);
-      final configMap = _yamlToMap(yamlDoc);
-      final latency = configMap['latency'];
-      if (latency is Map) {
-        final raw = latency['display_discount_percent'];
-        final parsed = switch (raw) {
-          num value => value.toInt(),
-          String value => int.tryParse(value.trim()),
-          _ => null,
-        };
-        return (parsed ?? 0).clamp(0, 90).toInt();
-      }
-    } catch (e) {
-      _logger.warning('读取 latency.display_discount_percent 失败: $e');
-    }
-    return 0;
-  }
 }
 
 /// 配置辅助函数
@@ -442,18 +403,6 @@ extension ConfigFileLoaderHelper on ConfigFileLoader {
   static Future<String> getFallbackWebsiteUrl() async {
     final contact = await getContactFallbackConfig();
     return contact['website'] as String? ?? '';
-  }
-
-  /// 获取本地兜底 Crisp Website ID
-  static Future<String> getFallbackCrispWebsiteId() async {
-    final contact = await getContactFallbackConfig();
-    return contact['crisp_website_id'] as String? ?? '';
-  }
-
-  /// 获取本地兜底 Crisp 反向代理地址
-  static Future<String> getFallbackCrispProxyUrl() async {
-    final contact = await getContactFallbackConfig();
-    return contact['crisp_proxy_url'] as String? ?? '';
   }
 
   /// 获取本地 FastCat Support 兜底配置。

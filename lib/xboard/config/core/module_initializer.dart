@@ -3,7 +3,6 @@ import 'config_settings.dart';
 import '../fetchers/remote_config_manager.dart';
 import '../parsers/configuration_parser.dart';
 import '../internal/xboard_config_accessor.dart';
-import '../utils/config_file_loader.dart';
 import '../../core/core.dart';
 
 // 初始化文件级日志器
@@ -101,11 +100,6 @@ class ModuleInitializer {
       return ConfigurationParser();
     });
 
-    // 加载本地 features 配置作为兜底默认值
-    final localFeatures = await ConfigFileLoader.loadFeatures();
-    final localDelayDiscountPercent =
-        await ConfigFileLoader.loadDelayDiscountPercent();
-
     // 注册配置访问器
     ServiceLocator.registerLazySingleton<XBoardConfigAccessor>(() {
       return XBoardConfigAccessor(
@@ -113,8 +107,6 @@ class ModuleInitializer {
         parser: ServiceLocator.get<ConfigurationParser>(),
         currentProvider: config.currentProvider,
         apiPrefix: config.apiPrefix,
-        localFeatures: localFeatures,
-        localDelayDiscountPercent: localDelayDiscountPercent,
       );
     });
 

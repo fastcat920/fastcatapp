@@ -13,6 +13,13 @@ abstract interface class FastCatSessionStore {
   Future<void> delete(String key);
 }
 
+/// Short-lived HS256 proof signed by the host BACKEND, never by the app.
+class FastCatIdentityProof {
+  final String deviceId;
+  final String token;
+  const FastCatIdentityProof({required this.deviceId, required this.token});
+}
+
 class FastCatException implements Exception {
   final int status;
   final String message;
@@ -64,6 +71,12 @@ class FastCatClient {
 
   String? _pushDeviceId;
   bool _pushChatVisible = false;
+  bool notificationSoundEnabled = true;
+
+  Future<void> setNotificationSoundEnabled(bool enabled) async {
+    notificationSoundEnabled = enabled;
+    await store?.write('$_storeKey:notification-sound', enabled ? 'on' : 'off');
+  }
 
   /// Host supplies its APNs/FCM token after starting/restoring the session.
   Future<Map<String, dynamic>> registerPushDevice(
@@ -89,8 +102,15 @@ class FastCatClient {
     return result;
   }
 
-  Future<Map<String, dynamic>> pushStatus() =>
-      _json('/push/status', query: {'id': conversationId!});
+  Future<Map<String, dynamic>> pushStatus() async {
+    final id = conversationId;
+    final result = await _json('/push/status', query: {'id': id!});
+    if (conversationId == id && !_closed) {
+      _applyUnreadSnapshot(result);
+      _publishUnread();
+    }
+    return result;
+  }
 
   /// Used automatically by FastCatChat; custom chat UIs should heartbeat every 30s.
   Future<void> setPushChatVisible(bool visible) async {
@@ -134,7 +154,11 @@ class FastCatClient {
   final _unreadSequences = <int>{};
   final _seenNotificationSequences = <int>{};
   bool _notificationBaseline = false;
-  int get unreadCount => _unreadSequences.length;
+  int? _serverUnreadCount;
+  int _serverUnreadLastSeq = 0;
+  int get unreadCount => (_serverUnreadCount ?? 0) + _unreadSequences
+      .where((seq) => seq > _readCursor &&
+          (_serverUnreadCount == null || seq > _serverUnreadLastSeq)).length;
   Stream<int> get unreadCountStream => _unreadEvents.stream;
 
   /// New remote messages after initial history; host may play its own sound.
@@ -145,15 +169,35 @@ class FastCatClient {
     if (!_closed) _unreadEvents.add(unreadCount);
   }
 
+  void _applyUnreadSnapshot(Map<String, dynamic> snapshot) {
+    final count = snapshot['unreadCount'];
+    final read = snapshot['ownReadSeq'];
+    final last = snapshot['unreadLastSeq'];
+    if (count is! int || read is! int || last is! int ||
+        count < 0 || read < _readCursor || last < _serverUnreadLastSeq) return;
+    _serverUnreadCount = count;
+    _serverUnreadLastSeq = last;
+    if (read > _readCursor) {
+      _readCursor = read;
+      if (!_readEvents.isClosed) _readEvents.add(read);
+    }
+  }
+
   void _observePage(Map<String, dynamic> page) {
+    final receipts = page['receipts'];
+    if (receipts is Map) {
+      _applyUnreadSnapshot(Map<String, dynamic>.from(receipts));
+    }
     for (final value in page['messages'] as List? ?? const []) {
       final message = Map<String, dynamic>.from(value as Map);
       final seq = message['seq'];
       if (seq is! int ||
-          message['role'] == 'visitor' ||
-          message['source'] == 'system') continue;
+          message['role'] != 'agent' ||
+          message['source'] == 'system' ||
+          message['source'] == 'welcome') continue;
       if (seq > _readCursor) _unreadSequences.add(seq);
       if (_seenNotificationSequences.add(seq) &&
+          seq > _readCursor &&
           _notificationBaseline &&
           !_closed) _messageEvents.add(message);
     }
@@ -191,11 +235,14 @@ class FastCatClient {
   String? get conversationId => _session?['id'] as String?;
   bool get hasSession => _session != null;
 
+  final Future<FastCatIdentityProof> Function()? identityProvider;
+
   FastCatClient(
       {required this.baseUrl,
       required this.appKey,
       this.store,
       this.sessionScope,
+      this.identityProvider,
       http.Client? client})
       : _http = client ?? http.Client() {
     if ((!['https'].contains(baseUrl.scheme) &&
@@ -270,6 +317,11 @@ class FastCatClient {
             ['auto', 'zh-CN', 'en'].contains(w['language'])) &&
         (w['theme'] == null ||
             ['auto', 'light', 'dark'].contains(w['theme'])) &&
+        ['themeColorLight', 'themeColorDark'].every((key) =>
+            w[key] == null ||
+            w[key] == '' ||
+            (w[key] is String &&
+                RegExp(r'^#[0-9a-fA-F]{6}$').hasMatch(w[key]))) &&
         (w['showHandoffButton'] == null || w['showHandoffButton'] is bool) &&
         ['welcomeMessage', 'welcomeMessageZh', 'welcomeMessageEn']
             .every((key) => w[key] == null || w[key] is String);
@@ -322,12 +374,21 @@ class FastCatClient {
   Future<void> start(
       {required String email,
       String? name,
-      Map<String, dynamic> profile = const {}}) async {
+      Map<String, dynamic> profile = const {},
+      String? deviceId,
+      String? identityToken}) async {
     if (hasSession)
       throw StateError(
           'A session already exists; reset explicitly to start a new conversation');
-    final result = await _json('/start',
-        method: 'POST', body: {'email': email, 'profile': profile});
+    final proof = identityToken == null ? await identityProvider?.call() : null;
+    deviceId ??= proof?.deviceId;
+    identityToken ??= proof?.token;
+    final result = await _json('/start', method: 'POST', body: {
+      'email': email,
+      'profile': profile,
+      if (deviceId != null) 'deviceId': deviceId,
+      if (identityToken != null) 'identityToken': identityToken
+    });
     _session = {'id': result['id'], 'token': result['token'], 'appKey': appKey};
     await store?.write(_storeKey, jsonEncode(_session));
   }
@@ -344,6 +405,8 @@ class FastCatClient {
   }
 
   Future<bool> restore() async {
+    notificationSoundEnabled =
+        await store?.read('$_storeKey:notification-sound') != 'off';
     final value = await store?.read(_storeKey);
     if (value == null) return false;
     final decoded = jsonDecode(value) as Map<String, dynamic>;
@@ -368,8 +431,19 @@ class FastCatClient {
     }
   }
 
+  /// Revoke server credentials as well as local state (e.g. account logout).
+  Future<void> revokeSession() async {
+    _requireSession();
+    await _json('/session',
+        method: 'POST', body: {'id': conversationId, 'action': 'revoke'});
+    await reset();
+  }
+
   Future<void> reset() async {
-    for (final stop in _watchStops.toList()) { stop(); }
+    _closeSharedFeed();
+    for (final stop in _watchStops.toList()) {
+      stop();
+    }
     await unregisterPushDevice();
     await endAssistance();
     _session = null;
@@ -377,6 +451,8 @@ class FastCatClient {
     _unreadSequences.clear();
     _seenNotificationSequences.clear();
     _notificationBaseline = false;
+    _serverUnreadCount = null;
+    _serverUnreadLastSeq = 0;
     _publishUnread();
     if (!_readEvents.isClosed) _readEvents.add(0);
     await store?.delete(_storeKey);
@@ -412,7 +488,14 @@ class FastCatClient {
       'readSeq': readSeq
     });
     if (conversationId == current && readSeq > _readCursor) {
+      if (_serverUnreadCount != null) {
+        final cleared = _unreadSequences.where((seq) =>
+            seq > _readCursor && seq <= readSeq && seq <= _serverUnreadLastSeq).length;
+        _serverUnreadCount = readSeq >= _serverUnreadLastSeq
+            ? 0 : max(0, _serverUnreadCount! - cleared);
+      }
       _readCursor = readSeq;
+      _applyUnreadSnapshot(value);
       _publishUnread();
       if (!_readEvents.isClosed) _readEvents.add(readSeq);
     }
@@ -456,9 +539,73 @@ class FastCatClient {
   }
 
   final Set<void Function()> _watchStops = {};
+  final _sharedWatchers = <StreamController<Map<String, dynamic>>, void Function(Object)?>{};
+  final _sharedMessages = <String, Map<String, dynamic>>{};
+  StreamSubscription<Map<String, dynamic>>? _sharedTransport;
+  Map<String, dynamic>? _sharedPage;
+  int _sharedGeneration = 0;
+
+  void _closeSharedFeed() {
+    _sharedGeneration++;
+    final transport = _sharedTransport;
+    _sharedTransport = null;
+    final watchers = _sharedWatchers.keys.toList();
+    _sharedWatchers.clear();
+    _sharedMessages.clear();
+    _sharedPage = null;
+    unawaited(transport?.cancel());
+    for (final watcher in watchers) { unawaited(watcher.close()); }
+  }
+
+  /// App-level delivery and chat views share one transport. Late views receive
+  /// the accumulated history without opening a second SSE connection.
+  Stream<Map<String, dynamic>> watch({
+    Duration interval = const Duration(seconds: 2), int after = 0,
+    void Function(Object)? onError,
+  }) {
+    _requireSession();
+    if (after != 0) return _watchTransport(interval: interval, after: after, onError: onError);
+    late StreamController<Map<String, dynamic>> output;
+    final generation = _sharedGeneration;
+    output = StreamController<Map<String, dynamic>>(
+      onListen: () {
+        if (_closed || generation != _sharedGeneration) { output.close(); return; }
+        _sharedWatchers[output] = onError;
+        if (_sharedPage != null) {
+          output.add({..._sharedPage!, 'messages': _sharedMessages.values.toList()});
+        }
+        if (_sharedTransport != null) return;
+        _sharedTransport = _watchTransport(interval: interval, onError: (error) {
+          for (final callback in _sharedWatchers.values.toList()) { callback?.call(error); }
+        }).listen((page) {
+          if (generation != _sharedGeneration) return;
+          for (final value in page['messages'] as List? ?? const []) {
+            final message = Map<String, dynamic>.from(value as Map);
+            _sharedMessages[message['id'] as String] = message;
+          }
+          _sharedPage = page;
+          for (final watcher in _sharedWatchers.keys.toList()) { watcher.add(page); }
+        }, onError: (Object error) {
+          for (final watcher in _sharedWatchers.keys.toList()) { watcher.addError(error); }
+        }, onDone: () {
+          if (generation == _sharedGeneration) _closeSharedFeed();
+        });
+      },
+      onCancel: () {
+        _sharedWatchers.remove(output);
+        if (generation == _sharedGeneration && _sharedWatchers.isEmpty) _closeSharedFeed();
+      });
+    return output.stream;
+  }
+  final Set<Future<void> Function()> _watchRefresh = {};
+
+  /// Reconcile immediately after foregrounding or waking from sleep.
+  Future<void> refreshMessages() async {
+    await Future.wait(_watchRefresh.toList().map((refresh) => refresh()));
+  }
 
   /// SSE invalidates the durable cursor feed; polling only runs while SSE is down.
-  Stream<Map<String, dynamic>> watch(
+  Stream<Map<String, dynamic>> _watchTransport(
       {Duration interval = const Duration(seconds: 2),
       int after = 0,
       void Function(Object)? onError}) {
@@ -590,6 +737,7 @@ class FastCatClient {
       if (abort != null && !abort!.isCompleted) abort!.complete();
       events?.cancel();
       _watchStops.remove(stop);
+      _watchRefresh.remove(sync);
       _watchers--;
       if (!_closed && _watchers == 0)
         _setConnection(FastCatConnectionStatus.idle);
@@ -599,6 +747,7 @@ class FastCatClient {
         onListen: () {
           _watchers++;
           _watchStops.add(stop);
+          _watchRefresh.add(sync);
           if (!valid()) {
             stop();
             return;
@@ -615,7 +764,10 @@ class FastCatClient {
 
   void close() {
     if (_closed) return;
-    for (final stop in _watchStops.toList()) { stop(); }
+    _closeSharedFeed();
+    for (final stop in _watchStops.toList()) {
+      stop();
+    }
     unawaited(setPushChatVisible(false).catchError((Object _) {}));
     final ending = endAssistance();
     _closed = true;

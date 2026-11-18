@@ -48,6 +48,8 @@ android {
         versionName = flutter.versionName
     }
 
+    buildFeatures { buildConfig = true }
+
     packagingOptions {
         jniLibs {
             // Compress large native cores inside directly distributed APKs.

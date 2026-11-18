@@ -56,7 +56,12 @@ class ReleasePolicyTest(unittest.TestCase):
 
     def test_platform_builds_are_independent_and_linux_is_explicit(self):
         source = (ROOT / ".github/workflows/build-client.yml").read_text()
-        self.assertNotRegex(source, r"(?m)^    needs:")
+        self.assertEqual(source.count("    needs:"), 1)
+        self.assertIn("needs: [windows, windows_arm64]", source)
+        self.assertIn("name: FastCat-windows-universal", source)
+        self.assertIn("name: windows-payload-x64", source)
+        self.assertIn("name: windows-payload-arm64", source)
+        self.assertNotIn("build_windows_arm64:", source)
         self.assertNotIn("matrix.", source)
         self.assertNotIn("  helper_windows_checks:", source)
         for job in ("android", "windows", "windows_arm64", "ios", "tvos", "linux_amd64", "linux_arm64", "macos"):

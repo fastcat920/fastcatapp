@@ -2,7 +2,6 @@ import SwiftUI
 
 struct TVNodeSelectorView: View {
   let nodes: [TVProxyNode]
-  var delayDiscountPercent: Int = 0
   let selectedName: String?
   let routeMode: String
   let isLoading: Bool
@@ -95,7 +94,7 @@ struct TVNodeSelectorView: View {
                    .contentShape(Rectangle())
                   }
                     TVFocusButton(cornerRadius: tv(12), action: { onTestNode(node) }) { _ in
-                      TVLatencyIndicator(delay: tvDisplayedDelay(node.delayMS, discount: delayDiscountPercent), testing: testingNodeNames.contains(node.name))
+                      TVLatencyIndicator(delay: node.delayMS, testing: testingNodeNames.contains(node.name))
                         .frame(width: tv(56), height: tv(58))
                     }.disabled(isTesting || isLoading || isRefreshing)
 

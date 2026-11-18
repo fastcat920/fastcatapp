@@ -25,7 +25,7 @@ import 'models/models.dart';
 import 'security/profile_vault.dart';
 import 'security/profile_yaml_parser.dart';
 import 'xboard/config/xboard_config.dart';
-import 'xboard/features/auth/utils/crisp_url_helper.dart';
+import 'xboard/features/auth/utils/support_url_helper.dart';
 
 typedef UpdateTasks = List<FutureOr Function()>;
 
@@ -536,10 +536,9 @@ class GlobalState {
         rules = [...overrideData.runningRule, ...rules];
       }
     }
-    // Keep all customer-service origins direct, including an optional Crisp
-    // reverse-proxy host supplied by remote configuration.
+    // Keep the configured FastCat Support host direct before user rules.
     rawConfig["rule"] = [
-      ...customerServiceDirectRules(XBoardConfig.crispProxyUrl),
+      ...customerServiceDirectRules(XBoardConfig.fastCatSupportBaseUrl),
       ...rules,
     ];
 

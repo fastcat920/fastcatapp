@@ -452,8 +452,16 @@ class InviteNotifier extends Notifier<InviteState> {
         ));
       }
 
-      await _refreshAfterCommissionMutation();
-      if (!_isCurrent(epoch)) return false;
+      // The transfer has already committed. A display refresh must never
+      // turn it into a failed transaction and encourage another transfer.
+      try {
+        await _refreshAfterCommissionMutation();
+        if (!_isCurrent(epoch)) return false;
+      } catch (e) {
+        if (!_isCurrent(epoch)) return false;
+        _logger.warning('划转已成功，刷新佣金信息失败: $e');
+        state = state.copyWith(isLoading: false, errorMessage: null);
+      }
       _logger.info('划转成功');
       return true;
     } catch (e) {

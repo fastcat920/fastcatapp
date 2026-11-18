@@ -242,13 +242,13 @@ class _FastCatAboutPageState extends ConsumerState<FastCatAboutPage> {
     if (state.hasUpdate) {
       final dialogFuture = showDialog<void>(
         context: context,
+        barrierDismissible: false,
         builder: (_) => UpdateDialog(state: state),
       );
       final latestVersion = state.latestVersion?.trim() ?? '';
       if (!state.forceUpdate && latestVersion.isNotEmpty) {
-        await ref
-            .read(updateCacheServiceProvider)
-            .markOptionalVersionPrompted(latestVersion);
+        await ref.read(updateCacheServiceProvider).markOptionalVersionPrompted(
+            state.build == null ? latestVersion : state.releaseIdentity);
       }
       await dialogFuture;
       return;

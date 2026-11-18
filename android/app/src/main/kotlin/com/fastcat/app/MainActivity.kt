@@ -49,9 +49,39 @@ class MainActivity : FlutterActivity() {
                     })
                 }
             }
+        MethodChannel(flutterEngine.dartExecutor.binaryMessenger, "fastcat/update")
+            .setMethodCallHandler { call, result ->
+                when (call.method) {
+                    "getBuild" -> result.success(BuildConfig.VERSION_CODE)
+                    "install" -> UpdateInstaller(this).install(call.argument<String>("path"), call.argument<String>("sha256"), result)
+                    else -> result.notImplemented()
+                }
+            }
         SupportPushService.createChannel(this)
         MethodChannel(flutterEngine.dartExecutor.binaryMessenger, "fastcat/support_push").setMethodCallHandler { call, result ->
             when (call.method) {
+                "status" -> {
+                    val manager = getSystemService(android.app.NotificationManager::class.java)
+                    val permission = Build.VERSION.SDK_INT < 33 || checkSelfPermission(android.Manifest.permission.POST_NOTIFICATIONS) == android.content.pm.PackageManager.PERMISSION_GRANTED
+                    val channel = if (Build.VERSION.SDK_INT >= 26) manager.getNotificationChannel("fastcat_support") else null
+                    var googleServices = true
+                    try { packageManager.getPackageInfo("com.google.android.gms", 0) }
+                    catch (_: android.content.pm.PackageManager.NameNotFoundException) { googleServices = false }
+                    result.success(mapOf("permission" to permission, "enabled" to manager.areNotificationsEnabled(), "channelEnabled" to (channel == null || channel.importance != android.app.NotificationManager.IMPORTANCE_NONE), "googleServices" to googleServices))
+                }
+                "badge" -> {
+                    SupportPushService.updateBadge(this, (call.arguments as? Number)?.toInt() ?: 0)
+                    // Android launchers own numeric badges; clear our posted
+                    // notifications when authoritative unread count reaches 0.
+                    if ((call.arguments as? Number)?.toInt() == 0) {
+                        val manager = getSystemService(android.app.NotificationManager::class.java)
+                        if (Build.VERSION.SDK_INT >= 23) {
+                            manager.activeNotifications.filter { it.tag?.startsWith("support:") == true || it.tag?.startsWith("fastcat-support") == true }
+                                .forEach { manager.cancel(it.tag, it.id) }
+                        }
+                    }
+                    result.success(null)
+                }
                 "notification" -> {
                     val extras = intent?.extras
                     if (extras?.getString("type") == "support.reply") {
@@ -65,7 +95,7 @@ class MainActivity : FlutterActivity() {
                     if (conversation == null || message == null) {
                         result.error("ARGUMENT", "Missing reply identity", null)
                     } else {
-                        SupportPushService.showReply(this, conversation, message)
+                        SupportPushService.showReply(this, conversation, message, call.argument<Number>("unreadCount")?.toInt())
                         result.success(null)
                     }
                 }

@@ -1,6 +1,8 @@
 import 'package:fl_clash/common/cached_cupertino_page.dart';
 import 'package:fl_clash/xboard/features/auth/widgets/customer_service_viewport.dart';
 import 'package:fl_clash/xboard/features/auth/services/support_push_service.dart';
+import 'package:fl_clash/xboard/features/auth/services/desktop_support_notifications.dart';
+import 'package:fl_clash/xboard/widgets/navigation/mobile_navigation_bar.dart';
 import 'package:http/io_client.dart';
 import 'package:fl_clash/xboard/features/auth/services/support_proxy_repairs.dart';
 import 'package:fl_clash/xboard/features/auth/services/support_connection_repairs.dart';
@@ -11,49 +13,26 @@ import 'package:fastcat_support/fastcat_support.dart' as fc;
 import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
-import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:url_launcher/url_launcher.dart';
-import 'package:desktop_webview_window/desktop_webview_window.dart';
-import 'package:fl_clash/common/common.dart' show system, appLocalizations;
+import 'package:fl_clash/common/common.dart' show system;
 import 'package:fl_clash/l10n/l10n.dart';
-import 'package:fl_clash/common/color.dart';
-import 'package:fl_clash/common/path.dart';
 import 'package:fl_clash/providers/providers.dart';
 import 'package:fl_clash/state.dart';
-import 'package:fl_clash/xboard/adapter/initialization/sdk_provider.dart';
-import 'package:fl_clash/xboard/config/gateway_config.dart';
 import 'package:fl_clash/xboard/config/xboard_config.dart';
 import 'package:fl_clash/xboard/features/auth/auth.dart';
 import 'package:fl_clash/xboard/domain/domain.dart';
-import 'package:fl_clash/xboard/features/auth/pages/crisp_chat_page.dart';
-import 'package:fl_clash/xboard/features/auth/pages/salesmartly_chat_page.dart';
 import 'package:flutter/foundation.dart';
-import 'package:webview_flutter/webview_flutter.dart';
-import 'package:fl_clash/xboard/features/auth/pages/windows_chat_page.dart';
-import 'package:fl_clash/xboard/features/auth/utils/crisp_url_helper.dart';
 import 'package:fl_clash/xboard/core/core.dart';
 import 'package:fl_clash/xboard/utils/xboard_notification.dart';
-import 'package:flutter_inappwebview/flutter_inappwebview.dart' as iaw;
 import 'package:flutter/services.dart';
-import 'package:flutter_xboard_sdk/flutter_xboard_sdk.dart';
 import 'package:go_router/go_router.dart';
 import 'package:tgo_widget/tgo_widget.dart';
 import 'package:fl_clash/xboard/config/utils/config_file_loader.dart'
     as local_config;
 
 const _logger = FileLogger('customer_service_helper.dart');
-const _deviceGatewayApiPrefix = gatewayApiPrefix;
-const _desktopCustomerServiceWindowWidth = 800;
-const _desktopCustomerServiceWindowHeight = 600;
-const _crispProxyProbeTimeout = Duration(seconds: 4);
-const _crispWebViewPrewarmTimeout = Duration(seconds: 8);
-const _crispWebViewPrewarmTtl = Duration(seconds: 60);
-const _crispProxyProbePreviewBytes = 4096;
-const _crispProxyUsableCacheTtl = Duration(minutes: 10);
-const _crispUserDataResolveTimeout = Duration(milliseconds: 1800);
-const _customerServiceHiddenTtl = Duration(minutes: 20);
+const _customerServiceHiddenTtl = Duration(minutes: 10);
 const _desktopRootMenuWidth = 96.0;
 const _mobileRootMenuHeight = 68.0;
 
@@ -103,27 +82,27 @@ class CustomerServiceSessionState {
       );
 }
 
-/// 统一客服入口：按业务约定仅使用 Crisp（远程优先，本地兜底）
-///
-/// Android/iOS/macOS/Linux → 内嵌 WebView（webview_flutter）
-/// Windows → 内嵌 WebView2 侧边面板（flutter_inappwebview）
+/// Unified FastCat Support entry for Flutter clients.
 class CustomerServiceHelper {
   static final _unreadEvents = StreamController<int>.broadcast();
   static int supportUnreadCount = 0;
   static Stream<int> get supportUnreadCountStream => _unreadEvents.stream;
   static fc.FastCatSupport? _support;
+  static Future<void> Function(BuildContext)? _openSupportView;
+  static bool _initializingSupport = false;
   static SupportPushService? _pushService;
   static StreamSubscription<int>? _supportUnread;
   static StreamSubscription<Map<String, dynamic>>? _supportIncoming;
+  static StreamSubscription<Map<String, dynamic>>? _supportMessageFeed;
   static fc.SupportNotificationSound? _supportTone;
+  static DesktopSupportNotifications? _desktopNotifications;
   static StreamSubscription<fc.FastCatConnectionStatus>? _supportMonitor;
   static int _actualSupportUnread = 0;
   static AppLifecycleListener? _badgeLifecycle;
   static void _refreshSupportBadge() {
     // Desktop windows may be inactive while their conversation stays visible.
     // Only hiding the support view should expose its unread badge.
-    final visibleCount =
-        isEmbeddedCustomerServiceVisible ? 0 : _actualSupportUnread;
+    final visibleCount = _actualSupportUnread;
     if (supportUnreadCount == visibleCount) return;
     supportUnreadCount = visibleCount;
     _unreadEvents.add(visibleCount);
@@ -131,8 +110,17 @@ class CustomerServiceHelper {
 
   static void _publishUnread(int count) {
     _actualSupportUnread = count;
-    _badgeLifecycle ??=
-        AppLifecycleListener(onStateChange: (_) => _refreshSupportBadge());
+    _desktopNotifications?.unread(count);
+    if (Platform.isIOS || Platform.isAndroid) {
+      unawaited(const MethodChannel('fastcat/support_push')
+          .invokeMethod<void>('badge', count)
+          .catchError((Object _) {}));
+    }
+    _badgeLifecycle ??= AppLifecycleListener(
+        onStateChange: (_) => _refreshSupportBadge(),
+        onResume: () {
+          unawaited(_support?.client.refreshMessages());
+        });
     _refreshSupportBadge();
   }
 
@@ -153,11 +141,18 @@ class CustomerServiceHelper {
   }
 
   static void _releaseSupport() {
+    unawaited(_desktopNotifications?.close().catchError((Object error) {
+      _logger.debug('Desktop notification cleanup failed: ${error.runtimeType}');
+    }));
+    _desktopNotifications = null;
+    _openSupportView = null;
     _pushService?.close();
     _pushService = null;
     SupportAssistanceService.instance.clear();
     unawaited(_supportIncoming?.cancel());
     _supportIncoming = null;
+    unawaited(_supportMessageFeed?.cancel());
+    _supportMessageFeed = null;
     _supportTone?.dispose();
     _supportTone = null;
     unawaited(_supportUnread?.cancel());
@@ -177,24 +172,6 @@ class CustomerServiceHelper {
       MethodChannel('fastcat/customer_service_back');
 
   static bool _androidBackHandlerRegistered = false;
-  static Future<String>? _webview2DataFolderFuture;
-  static Future<bool>? _desktopWebviewAvailableFuture;
-  static Future<String>? _fallbackCrispWebsiteIdFuture;
-  static Future<String>? _fallbackCrispProxyUrlFuture;
-  static _PendingCrispProxyProbe? _usableCrispProxyProbe;
-  static _CrispProxyCacheEntry? _usableCrispProxyCache;
-  static Webview? _desktopCustomerServiceWebview;
-  static Future<Webview?>? _desktopCustomerServiceOpening;
-  static _CrispIPData? _cachedIPData;
-  static DateTime? _cachedIPDataTime;
-  static const _ipDataCacheTtl = Duration(minutes: 5);
-  static _PrewarmedCrispWebView? _prewarmedSystemWebView;
-  static Future<void>? _systemWebViewPrewarmFuture;
-  static iaw.HeadlessInAppWebView? _prewarmedHeadlessWin;
-  static Brightness? _desktopCustomerServiceBrightness;
-  static String? _desktopCustomerServiceAccent;
-  static String? _desktopCustomerServiceLocaleTag;
-  static String? _desktopCustomerServiceLoadingText;
   static OverlayEntry? _embeddedCustomerServiceEntry;
   static CachedCupertinoPage? _iosCustomerServicePage;
   static ValueNotifier<CustomerServiceSessionState>?
@@ -204,11 +181,36 @@ class CustomerServiceHelper {
   static DateTime? _embeddedCustomerServiceHiddenAt;
   static _FastCatSupportConfig? _fastCatSupportConfig;
 
-  /// FastCat Support 有本地兜底配置，Crisp 保留为故障回退渠道。
-  static bool get isAvailable =>
-      XBoardConfig.fastCatSupportEnabled ||
-      XBoardConfig.crispWebsiteId.isNotEmpty ||
-      _fastCatSupportConfig != null;
+  /// FastCat Support is the sole support platform; no WebView fallback.
+  static bool get isAvailable => XBoardConfig.fastCatSupportConfigured
+      ? XBoardConfig.fastCatSupportEnabled
+      : _fastCatSupportConfig != null;
+
+  static void prewarm() {
+    unawaited(() async {
+      if (_initializingSupport || _support != null) return;
+      final context = globalState.navigatorKey.currentContext;
+      if (context == null || !context.mounted) return;
+      _initializingSupport = true;
+      try {
+        await _openFastCatSupport(context, showView: false);
+      } finally {
+        _initializingSupport = false;
+      }
+    }());
+  }
+
+  static void syncDesktopTheme(Brightness brightness, {Color? accentColor}) =>
+      syncDesktopWindowState(brightness, accentColor: accentColor);
+
+  static void syncDesktopWindowState(Brightness brightness,
+      {Color? accentColor, String? localeTag, String? loadingText}) {
+    final session = _embeddedCustomerServiceState;
+    if (session != null) {
+      session.value =
+          session.value.copyWith(brightness: brightness, localeTag: localeTag);
+    }
+  }
 
   static bool get isEmbeddedCustomerServiceVisible {
     return _embeddedCustomerServiceState?.value.isVisible ?? false;
@@ -231,712 +233,14 @@ class CustomerServiceHelper {
     return true;
   }
 
-  static bool get _isDesktopPlatform =>
-      Platform.isWindows || Platform.isMacOS || Platform.isLinux;
-
-  static int get _desktopCustomerServiceTitleBarHeight =>
-      Platform.isWindows || Platform.isLinux ? 0 : 40;
-
-  static bool _isDarkMode(BuildContext context) {
-    return Theme.of(context).brightness == Brightness.dark;
-  }
-
-  static String _customerServiceBackground(bool isDarkMode) {
-    return isDarkMode ? '#101010' : '#f5f5f5';
-  }
-
-  static String _customerServiceForeground(bool isDarkMode) {
-    return isDarkMode ? '#f3f4f6' : '#999999';
-  }
-
-  static String _customerServiceAccent(bool isDarkMode, {Color? accentColor}) {
-    return accentColor?.hex ?? (isDarkMode ? '#60a5fa' : '#2563eb');
-  }
-
-  static String crispLocaleFromTag(String? localeTag) {
-    final normalized =
-        (localeTag ?? '').trim().replaceAll('_', '-').toLowerCase();
-    if (normalized.isEmpty) return 'en';
-    final language = normalized.split('-').first;
-    return switch (language) {
-      'zh' => 'zh',
-      'ja' => 'ja',
-      'ko' => 'ko',
-      'en' => 'en',
-      _ => language,
-    };
-  }
-
-  static Uri localizedCrispUri(Uri uri, String? localeTag) {
-    final tag = (localeTag == null || localeTag.trim().isEmpty)
-        ? 'en'
-        : localeTag.trim();
-    return uri.replace(
-      queryParameters: {
-        ...uri.queryParameters,
-        'locale': crispLocaleFromTag(tag),
-        'lang': tag,
-      },
-    );
-  }
-
-  static Brightness _customerServiceBrightness(bool isDarkMode) {
-    return isDarkMode ? Brightness.dark : Brightness.light;
-  }
-
-  static void syncDesktopTheme(Brightness brightness, {Color? accentColor}) {
-    syncDesktopWindowState(
-      brightness,
-      accentColor: accentColor,
-    );
-  }
-
-  static void syncDesktopWindowState(
-    Brightness brightness, {
-    Color? accentColor,
-    String? localeTag,
-    String? loadingText,
-  }) {
-    if (!_isDesktopPlatform) return;
-    final accent = _customerServiceAccent(
-      brightness == Brightness.dark,
-      accentColor: accentColor,
-    );
-    final normalizedLocaleTag = localeTag?.trim();
-    final normalizedLoadingText = loadingText?.trim();
-    if (_desktopCustomerServiceBrightness == brightness &&
-        _desktopCustomerServiceAccent == accent &&
-        _desktopCustomerServiceLocaleTag == normalizedLocaleTag &&
-        _desktopCustomerServiceLoadingText == normalizedLoadingText) {
-      return;
-    }
-    _desktopCustomerServiceBrightness = brightness;
-    _desktopCustomerServiceAccent = accent;
-    _desktopCustomerServiceLocaleTag = normalizedLocaleTag;
-    _desktopCustomerServiceLoadingText = normalizedLoadingText;
-    final webview = _desktopCustomerServiceWebview;
-    if (webview == null) return;
-    unawaited(
-      _applyDesktopCustomerServiceWindowState(
-        webview,
-        isDarkMode: brightness == Brightness.dark,
-        accent: accent,
-        localeTag: normalizedLocaleTag,
-        loadingText: normalizedLoadingText,
-      ),
-    );
-  }
-
-  static Future<void> _applyDesktopCustomerServiceWindowState(
-    Webview webview, {
-    required bool isDarkMode,
-    String? accent,
-    String? localeTag,
-    String? loadingText,
-  }) async {
-    final brightness = _customerServiceBrightness(isDarkMode);
-    final effectiveAccent = accent ??
-        _desktopCustomerServiceAccent ??
-        _customerServiceAccent(isDarkMode);
-    final effectiveLocaleTag = localeTag ?? _desktopCustomerServiceLocaleTag;
-    final effectiveLoadingText =
-        loadingText ?? _desktopCustomerServiceLoadingText;
-    _desktopCustomerServiceBrightness = brightness;
-    _desktopCustomerServiceAccent = effectiveAccent;
-    _desktopCustomerServiceLocaleTag = effectiveLocaleTag;
-    _desktopCustomerServiceLoadingText = effectiveLoadingText;
-    try {
-      webview.setBrightness(brightness);
-    } catch (e) {
-      _logger.debug('[CustomerService] 更新客服窗口系统主题失败: $e');
-    }
-    try {
-      await webview.evaluateJavaScript(
-        _buildApplyCustomerServiceThemeScript(
-          isDarkMode,
-          accent: effectiveAccent,
-          localeTag: effectiveLocaleTag,
-          loadingText: effectiveLoadingText,
-        ),
-      );
-    } catch (e) {
-      _logger.debug('[CustomerService] 更新客服窗口页面主题失败: $e');
-    }
-  }
-
-  static String _buildApplyCustomerServiceThemeScript(
-    bool isDarkMode, {
-    required String accent,
-    String? localeTag,
-    String? loadingText,
-  }) {
-    final payload = jsonEncode({
-      'isDark': isDarkMode,
-      'background': _customerServiceBackground(isDarkMode),
-      'foreground': _customerServiceForeground(isDarkMode),
-      'accent': accent,
-      'localeTag': localeTag,
-      'crispLocale': crispLocaleFromTag(localeTag),
-      'loadingText': loadingText,
-    });
-    return '''
-(function(){
-  try {
-    var theme = $payload;
-    if (theme.localeTag) {
-      window.__fastcatCustomerServiceLocale = theme.localeTag;
-      window.__fastcatCustomerServiceCrispLocale = theme.crispLocale || theme.localeTag;
-      document.documentElement.lang = theme.localeTag;
-      try {
-        Object.defineProperty(navigator, 'language', { get: function(){ return theme.localeTag; }, configurable: true });
-        Object.defineProperty(navigator, 'languages', { get: function(){ return [theme.localeTag]; }, configurable: true });
-      } catch (_) {}
-      try {
-        window.\$crisp = window.\$crisp || [];
-        window.\$crisp.push(["config", "locale", [window.__fastcatCustomerServiceCrispLocale]]);
-      } catch (_) {}
-    }
-    if (theme.loadingText) {
-      window.__fastcatCustomerServiceLoadingText = theme.loadingText;
-    }
-    if (typeof window.__fastcatApplyCustomerServiceTheme === 'function') {
-      window.__fastcatApplyCustomerServiceTheme(theme);
-      return 'applied';
-    }
-    document.documentElement.style.background = theme.background;
-    document.documentElement.style.colorScheme = theme.isDark ? 'dark' : 'light';
-    if (document.body) {
-      document.body.style.background = theme.background;
-      document.body.style.color = theme.foreground;
-    }
-    var style = document.getElementById('fastcat-customer-service-theme');
-    if (!style) {
-      style = document.createElement('style');
-      style.id = 'fastcat-customer-service-theme';
-      (document.head || document.documentElement).appendChild(style);
-    }
-    style.textContent = 'html,body,#page,.site-wrapper,.chat-common,.crisp-client,[class*="crisp"]{background:' + theme.background + '!important;color:' + theme.foreground + '!important;color-scheme:' + (theme.isDark ? 'dark' : 'light') + '!important;}';
-    return 'applied';
-  } catch (_) {
-    return 'failed';
-  }
-})();''';
-  }
-
-  static Future<Webview?> _reuseDesktopCustomerServiceWindow({
-    required bool isDarkMode,
-  }) async {
-    final webview = _desktopCustomerServiceWebview;
-    if (webview != null) {
-      final activated = await _activateDesktopCustomerServiceWindow(
-        webview,
-        isDarkMode: isDarkMode,
-      );
-      if (activated) return webview;
-      _clearDesktopCustomerServiceWindow(webview);
-    }
-
-    final opening = _desktopCustomerServiceOpening;
-    if (opening != null) {
-      final openingWebview = await opening;
-      if (openingWebview != null) {
-        final activated = await _activateDesktopCustomerServiceWindow(
-          openingWebview,
-          isDarkMode: isDarkMode,
-        );
-        if (activated) return openingWebview;
-        _clearDesktopCustomerServiceWindow(openingWebview);
-      }
-    }
-    return null;
-  }
-
-  static Future<bool> _activateDesktopCustomerServiceWindow(
-    Webview webview, {
-    required bool isDarkMode,
-  }) async {
-    try {
-      await webview.setWebviewWindowVisibility(true);
-      await _applyDesktopCustomerServiceWindowState(
-        webview,
-        isDarkMode: isDarkMode,
-      );
-      return true;
-    } catch (e) {
-      _logger.debug('[CustomerService] 激活已有客服窗口失败: $e');
-      return false;
-    }
-  }
-
-  static void _trackDesktopCustomerServiceWindow(Webview webview) {
-    _desktopCustomerServiceWebview = webview;
-    unawaited(
-      webview.onClose.whenComplete(() {
-        _clearDesktopCustomerServiceWindow(webview);
-      }),
-    );
-  }
-
-  static void _clearDesktopCustomerServiceWindow(Webview? webview) {
-    if (webview == null || identical(_desktopCustomerServiceWebview, webview)) {
-      _desktopCustomerServiceWebview = null;
-      _desktopCustomerServiceBrightness = null;
-      _desktopCustomerServiceAccent = null;
-      _desktopCustomerServiceLocaleTag = null;
-      _desktopCustomerServiceLoadingText = null;
-    }
-  }
-
-  /// 预热客服启动所需的轻量资源，减少首次点击后的等待。
-  static void prewarm() {
-    if (XBoardConfig.crispWebsiteId.trim().isEmpty) {
-      unawaited(_fallbackCrispWebsiteId());
-    }
-    if (XBoardConfig.crispProxyUrl.trim().isEmpty) {
-      unawaited(_fallbackCrispProxyUrl());
-    }
-    unawaited(_prewarmCrispRouteAndSystemWebView());
-    if (_isDesktopPlatform) {
-      unawaited(_isDesktopWebviewAvailable());
-      if (Platform.isWindows) {
-        unawaited(_webview2DataFolder());
-        unawaited(_prewarmWindowsWebView());
-      }
-    }
-  }
-
-  static Future<void> _prewarmCrispRouteAndSystemWebView() async {
-    await _prewarmCrispRoute();
-    if (Platform.isAndroid || Platform.isIOS || Platform.isMacOS) {
-      await _prewarmSystemWebView();
-    }
-  }
-
-  static Future<void> _prewarmCrispRoute() async {
-    try {
-      final websiteId = await _resolveCrispWebsiteId();
-      if (websiteId.isEmpty) return;
-      await _resolveUsableCrispProxyUrl(websiteId);
-    } catch (e) {
-      _logger.debug('[Crisp] 预热客服线路失败: $e');
-    }
-  }
-
-  /// 预热 Windows WebView2：在后台用 HeadlessInAppWebView 加载 embed 页面，
-  /// 预热 WebView2 runtime + DNS/TLS。
-  static Future<void> _prewarmWindowsWebView() async {
-    if (_prewarmedHeadlessWin != null) return;
-    try {
-      final websiteId = await _resolveCrispWebsiteId();
-      if (websiteId.isEmpty) return;
-      await _resolveUsableCrispProxyUrl(websiteId);
-
-      final headless = iaw.HeadlessInAppWebView(
-        initialData: iaw.InAppWebViewInitialData(
-          data: _buildPrewarmedBootstrapHtml(websiteId: websiteId),
-          mimeType: 'text/html',
-          encoding: 'utf-8',
-          baseUrl: iaw.WebUri('https://go.crisp.chat/chat/embed/'),
-        ),
-        initialSettings: iaw.InAppWebViewSettings(
-          javaScriptEnabled: true,
-        ),
-        onWebViewCreated: (_) {},
-      );
-      await headless.run();
-      _prewarmedHeadlessWin = headless;
-      _logger.info('[Crisp] Windows headless WebView pre-warmed');
-    } catch (e) {
-      _logger.debug('[Crisp] Windows WebView prewarm failed: \$e');
-    }
-  }
-
-  static String _buildPrewarmedBootstrapHtml({
-    required String websiteId,
-  }) {
-    final background = '#101010';
-    final foreground = '#f3f4f6';
-    return '''<!DOCTYPE html>
-<html>
-<head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,viewport-fit=cover">
-  <meta name="color-scheme" content="dark">
-  <link rel="dns-prefetch" href="https://client.crisp.chat">
-  <link rel="preconnect" href="https://client.crisp.chat" crossorigin>
-  <style>
-    html,body{width:100%;height:100%;margin:0;background:$background;color:$foreground;overflow:hidden}
-    .crisp-client,.crisp-client *{background:$background!important}
-    [class*="crisp"]{background:$background!important}
-  </style>
-</head>
-<body></body>
-</html>''';
-  }
-
-  /// 预热系统 WebView：Android/iOS/macOS 预先加载已择优的 Crisp 页面。
-  /// 首次打开时直接复用该 controller，避免 WebKit、DNS、TLS 和客服资源冷启动。
-  static Future<void> _prewarmSystemWebView() {
-    if (!Platform.isAndroid && !Platform.isIOS && !Platform.isMacOS) {
-      return Future.value();
-    }
-    return _systemWebViewPrewarmFuture ??= () async {
-      try {
-        final websiteId = await _resolveCrispWebsiteId();
-        if (websiteId.isEmpty) return;
-        final proxyUrl = await _resolveUsableCrispProxyUrl(websiteId);
-        final localeTag = _currentCustomerServiceLocaleTag();
-        final networkSignature = await _customerServiceNetworkSignature();
-        final warmed = _prewarmedSystemWebView;
-        if (warmed != null &&
-            warmed.websiteId == websiteId &&
-            warmed.matchesEnvironment(
-              localeTag: localeTag,
-              networkSignature: networkSignature,
-              now: DateTime.now(),
-            ) &&
-            normalizeCrispProxyUrl(warmed.proxyUrl) ==
-                normalizeCrispProxyUrl(proxyUrl)) {
-          return;
-        }
-        _prewarmedSystemWebView = null;
-        final uri = localizedCrispUri(
-          crispEmbedUri(websiteId: websiteId, proxyUrl: proxyUrl),
-          localeTag,
-        );
-        final ua = Platform.isAndroid || Platform.isIOS
-            ? 'Mozilla/5.0 (Linux; Android 14; Pixel 8) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0.0.0 Mobile Safari/537.36'
-            : 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.0 Safari/605.1.15';
-        final loaded = Completer<bool>();
-        var mainFrameFailed = false;
-        final controller = WebViewController()
-          ..setUserAgent(ua)
-          ..setJavaScriptMode(JavaScriptMode.unrestricted)
-          ..setNavigationDelegate(
-            NavigationDelegate(
-              onPageFinished: (_) {
-                if (!loaded.isCompleted) loaded.complete(!mainFrameFailed);
-              },
-              onWebResourceError: (error) {
-                if (error.isForMainFrame != false) {
-                  mainFrameFailed = true;
-                  if (!loaded.isCompleted) loaded.complete(false);
-                }
-              },
-            ),
-          );
-        await controller.loadRequest(uri);
-        final loadedSuccessfully = await loaded.future.timeout(
-          _crispWebViewPrewarmTimeout,
-          onTimeout: () => false,
-        );
-        if (!loadedSuccessfully) {
-          _logger.debug('[Crisp] System WebView prewarm discarded');
-          return;
-        }
-        final crispReady = await _waitForPrewarmedCrispReady(controller);
-        if (!crispReady) {
-          _logger.debug('[Crisp] System WebView prewarm not ready');
-          return;
-        }
-        _prewarmedSystemWebView = _PrewarmedCrispWebView(
-          controller: controller,
-          websiteId: websiteId,
-          proxyUrl: proxyUrl,
-          localeTag: localeTag,
-          networkSignature: networkSignature,
-          createdAt: DateTime.now(),
-        );
-        _logger.info('[Crisp] System WebView pre-warmed: ${uri.host}');
-      } catch (e) {
-        _logger.debug('[Crisp] System WebView prewarm failed: $e');
-      } finally {
-        _systemWebViewPrewarmFuture = null;
-      }
-    }();
-  }
-
-  static Future<bool> _waitForPrewarmedCrispReady(
-    WebViewController controller,
-  ) async {
-    final deadline = DateTime.now().add(const Duration(seconds: 5));
-    while (DateTime.now().isBefore(deadline)) {
-      try {
-        final result = await controller.runJavaScriptReturningResult('''
-(function(){
-  try {
-    if (navigator.onLine === false) return false;
-    var text = ((document.body && document.body.innerText) || '').toLowerCase();
-    var disconnected = text.indexOf('network interrupted') >= 0
-      || text.indexOf('reconnecting') >= 0
-      || text.indexOf('网络中断') >= 0
-      || text.indexOf('重新连接') >= 0;
-    if (disconnected) return false;
-    return !!document.querySelector('textarea,input,[contenteditable="true"],iframe[src*="crisp"]');
-  } catch (_) { return false; }
-})();''');
-        if (result is bool ? result : result.toString().contains('true')) {
-          return true;
-        }
-      } catch (_) {}
-      await Future.delayed(const Duration(milliseconds: 200));
-    }
-    return false;
-  }
-
-  /// 消费已经加载目标客服页面的 controller。
-  /// 返回 null 表示需要新建 controller。
-  static WebViewController? consumePrewarmedSystemWebView({
-    required String websiteId,
-    String? proxyUrl,
-    required String localeTag,
-  }) {
-    final warmed = _prewarmedSystemWebView;
-    if (warmed == null) return null;
-    if (warmed.websiteId != websiteId ||
-        !warmed.matchesLocale(localeTag) ||
-        warmed.isExpired(DateTime.now()) ||
-        normalizeCrispProxyUrl(warmed.proxyUrl) !=
-            normalizeCrispProxyUrl(proxyUrl)) {
-      _prewarmedSystemWebView = null;
-      unawaited(_prewarmSystemWebView());
-      return null;
-    }
-    _prewarmedSystemWebView = null;
-    return warmed.controller;
-  }
-
-  static String _currentCustomerServiceLocaleTag() {
-    final configured = globalState.config.appSetting.locale?.trim();
-    if (configured != null && configured.isNotEmpty) return configured;
-    return WidgetsBinding.instance.platformDispatcher.locale.toLanguageTag();
-  }
-
-  static Future<String> _customerServiceNetworkSignature() async {
-    try {
-      final results = await Connectivity().checkConnectivity();
-      final names = results.map((item) => item.name).toList()..sort();
-      return '${names.join(',')}|vpn=${globalState.isStart}';
-    } catch (_) {
-      return 'unknown|vpn=${globalState.isStart}';
-    }
-  }
-
-  static Future<void> _discardStalePrewarmedSystemWebView(
-    String localeTag,
-  ) async {
-    final warmed = _prewarmedSystemWebView;
-    if (warmed == null) return;
-    final signature = await _customerServiceNetworkSignature();
-    if (!warmed.matchesEnvironment(
-      localeTag: localeTag,
-      networkSignature: signature,
-      now: DateTime.now(),
-    )) {
-      _prewarmedSystemWebView = null;
-    }
-  }
-
-  /// 获取 WebView2 用户数据目录（可写路径）
-  static Future<String> _webview2DataFolder() async {
-    return _webview2DataFolderFuture ??= () async {
-      final dir = await appPath.homeDirPath;
-      return '$dir/webview2_data';
-    }();
-  }
-
-  /// 检查桌面端 WebView2 是否可用
-  static Future<bool> _isDesktopWebviewAvailable() async {
-    if (!Platform.isWindows) return true;
-    return _desktopWebviewAvailableFuture ??= () async {
-      try {
-        return await WebviewWindow.isWebviewAvailable();
-      } catch (_) {
-        return false;
-      }
-    }();
-  }
-
-  static Future<String> _fallbackCrispWebsiteId() {
-    return _fallbackCrispWebsiteIdFuture ??= () async {
-      try {
-        return (await ConfigFileLoaderHelper.getFallbackCrispWebsiteId())
-            .trim();
-      } catch (e) {
-        _logger.debug('[Crisp] 读取本地客服配置失败: $e');
-        return '';
-      }
-    }();
-  }
-
-  static Future<String> _fallbackCrispProxyUrl() {
-    return _fallbackCrispProxyUrlFuture ??= () async {
-      try {
-        return normalizeCrispProxyUrl(
-          await ConfigFileLoaderHelper.getFallbackCrispProxyUrl(),
-        );
-      } catch (e) {
-        _logger.debug('[Crisp] 读取本地客服代理配置失败: $e');
-        return '';
-      }
-    }();
-  }
-
-  static Future<String> _resolveCrispWebsiteId() async {
-    final remoteCrispId = XBoardConfig.crispWebsiteId.trim();
-    if (remoteCrispId.isNotEmpty) return remoteCrispId;
-    return _fallbackCrispWebsiteId();
-  }
-
-  static Future<String> _resolveCrispProxyUrl() async {
-    final remoteProxyUrl = normalizeCrispProxyUrl(XBoardConfig.crispProxyUrl);
-    if (remoteProxyUrl.isNotEmpty) return remoteProxyUrl;
-    return _fallbackCrispProxyUrl();
-  }
-
-  static Future<String> _resolveUsableCrispProxyUrl(String websiteId) async {
-    final proxyUrl = await _resolveCrispProxyUrl();
-    if (!isCrispProxyConfigured(proxyUrl)) return '';
-    final now = DateTime.now();
-    final cached = _usableCrispProxyCache;
-    if (cached != null && cached.matches(websiteId, proxyUrl, now)) {
-      return cached.usableProxyUrl;
-    }
-
-    final pending = _usableCrispProxyProbe;
-    if (pending != null &&
-        pending.websiteId == websiteId &&
-        pending.proxyUrl == proxyUrl) {
-      return pending.future;
-    }
-
-    final future = () async {
-      final proxyEmbedUri = crispEmbedUri(
-        websiteId: websiteId,
-        proxyUrl: proxyUrl,
-      );
-      final officialEmbedUri = officialCrispEmbedUri(websiteId);
-      final results = await Future.wait([
-        _probeCrispRoute(proxyEmbedUri),
-        _probeCrispRoute(officialEmbedUri),
-      ]);
-      final proxyResult = results[0];
-      final officialResult = results[1];
-      final useProxy = proxyResult.usable &&
-          (!officialResult.usable ||
-              proxyResult.elapsed <= officialResult.elapsed);
-      final usableProxyUrl = useProxy ? proxyUrl : '';
-      _usableCrispProxyCache = _CrispProxyCacheEntry(
-        websiteId: websiteId,
-        proxyUrl: proxyUrl,
-        usableProxyUrl: usableProxyUrl,
-        createdAt: DateTime.now(),
-      );
-      _logger.info(
-        '[Crisp] 线路并行预检完成: '
-        'proxy=${proxyResult.usable}/${proxyResult.elapsed.inMilliseconds}ms, '
-        'official=${officialResult.usable}/${officialResult.elapsed.inMilliseconds}ms, '
-        'selected=${useProxy ? 'proxy' : 'official'}',
-      );
-      return usableProxyUrl;
-    }();
-
-    _usableCrispProxyProbe = _PendingCrispProxyProbe(
-      websiteId: websiteId,
-      proxyUrl: proxyUrl,
-      future: future,
-    );
-    try {
-      return await future;
-    } finally {
-      if (identical(_usableCrispProxyProbe?.future, future)) {
-        _usableCrispProxyProbe = null;
-      }
-    }
-  }
-
-  static Future<_CrispRouteProbeResult> _probeCrispRoute(Uri uri) async {
-    final stopwatch = Stopwatch()..start();
-    final client = HttpClient()
-      ..connectionTimeout = _crispProxyProbeTimeout
-      ..findProxy = (_) => 'DIRECT';
-    try {
-      final request = await client.getUrl(uri).timeout(_crispProxyProbeTimeout);
-      request
-        ..followRedirects = true
-        ..maxRedirects = 3;
-      request.headers.set(HttpHeaders.acceptHeader, 'text/html,*/*');
-      request.headers.set(
-        HttpHeaders.userAgentHeader,
-        'Fastcat-Crisp-Proxy-Probe',
-      );
-      final response = await request.close().timeout(_crispProxyProbeTimeout);
-      final statusCode = response.statusCode;
-      final preview = await _readCrispProxyProbePreview(response);
-      if (statusCode < 200 || statusCode >= 400) {
-        _logger.warning('[Crisp] 线路预检 HTTP $statusCode: $uri');
-        return _CrispRouteProbeResult(false, stopwatch.elapsed);
-      }
-      if (_looksLikeCrispProxyErrorPage(preview)) {
-        _logger.warning('[Crisp] 线路预检命中错误页: $uri');
-        return _CrispRouteProbeResult(false, stopwatch.elapsed);
-      }
-      return _CrispRouteProbeResult(true, stopwatch.elapsed);
-    } catch (e) {
-      _logger.warning('[Crisp] 线路预检异常 (${uri.host}): $e');
-      return _CrispRouteProbeResult(false, stopwatch.elapsed);
-    } finally {
-      stopwatch.stop();
-      client.close(force: true);
-    }
-  }
-
-  static Future<String> _readCrispProxyProbePreview(
-    HttpClientResponse response,
-  ) async {
-    final bytes = <int>[];
-    try {
-      await for (final chunk in response.timeout(_crispProxyProbeTimeout)) {
-        final remaining = _crispProxyProbePreviewBytes - bytes.length;
-        if (remaining <= 0) break;
-        bytes.addAll(chunk.length > remaining ? chunk.take(remaining) : chunk);
-        if (bytes.length >= _crispProxyProbePreviewBytes) break;
-      }
-    } catch (_) {}
-    return utf8.decode(bytes, allowMalformed: true);
-  }
-
-  static bool _looksLikeCrispProxyErrorPage(String preview) {
-    final lower = preview.toLowerCase();
-    return lower.contains('404 not found') ||
-        lower.contains('502 bad gateway') ||
-        lower.contains('503 service temporarily unavailable') ||
-        lower.contains('504 gateway') ||
-        lower.contains('upstream') && lower.contains('nginx');
-  }
-
-  /// 从预热缓存读取代理 URL，不发起网络探测。
-  /// 预热阶段 (_prewarmCrispRoute) 已做过探测并缓存结果。
-  static String _getCachedCrispProxyUrl(String websiteId) {
-    final cached = _usableCrispProxyCache;
-    if (cached != null && cached.websiteId == websiteId) {
-      return cached.usableProxyUrl;
-    }
-    return ''; // 缓存未命中：跳过代理，CrispChatPage 内部有 fallback 逻辑
-  }
-
   static String _embeddedCustomerServiceSessionSignature({
     required String channel,
     required String websiteId,
-    String? crispProxyUrl,
-    String? userScript,
   }) {
     return [
       Platform.operatingSystem,
       channel,
       websiteId.trim(),
-      normalizeCrispProxyUrl(crispProxyUrl),
-      userScript.hashCode.toString(),
     ].join('|');
   }
 
@@ -989,7 +293,7 @@ class CustomerServiceHelper {
     final hiddenAt = _embeddedCustomerServiceHiddenAt;
     if (hiddenAt != null &&
         DateTime.now().difference(hiddenAt) >= _customerServiceHiddenTtl) {
-      _closeEmbeddedCustomerService();
+      _closeEmbeddedCustomerService(preserveMessaging: true);
       return false;
     }
 
@@ -1014,9 +318,8 @@ class CustomerServiceHelper {
     ) builder,
   }) async {
     if (_showExistingEmbeddedCustomerService(context, signature)) return;
-    _closeEmbeddedCustomerService();
+    _closeEmbeddedCustomerService(preserveMessaging: true);
 
-    final overlay = Overlay.of(context, rootOverlay: true);
     final session = ValueNotifier<CustomerServiceSessionState>(
       _embeddedCustomerServiceStateFor(
         context,
@@ -1025,11 +328,21 @@ class CustomerServiceHelper {
       ),
     );
     if (Platform.isIOS) {
+      final path = _currentRoutePath(context) ?? '/';
+      final router = GoRouter.of(context);
       final page = CachedCupertinoPage(
         child: ValueListenableBuilder<CustomerServiceSessionState>(
           valueListenable: session,
-          builder: (_, current, child) => TickerMode(enabled: current.isVisible, child: child!),
-          child: builder(_hideEmbeddedCustomerService, session),
+          builder: (_, current, child) =>
+              TickerMode(enabled: current.isVisible, child: child!),
+          child: _IosCustomerServiceFrame(
+            initialPath: path,
+            onDestination: (index) {
+              FocusManager.instance.primaryFocus?.unfocus();
+              _hideEmbeddedCustomerService();
+              router.go(const ['/', '/plans', '/invite', '/mine'][index]);
+            },
+            child: builder(_hideEmbeddedCustomerService, session)),
         ),
         onHidden: _markEmbeddedCustomerServiceHidden,
       );
@@ -1043,6 +356,7 @@ class CustomerServiceHelper {
       return;
     }
     final showRootMenu = _shouldKeepRootMenuVisible(context);
+    final overlay = Overlay.of(context, rootOverlay: true);
     final initialRoutePath = _currentRoutePath(context);
     late final OverlayEntry entry;
 
@@ -1071,7 +385,8 @@ class CustomerServiceHelper {
               type: MaterialType.transparency,
               child: Navigator(
                 onGenerateRoute: (_) => MaterialPageRoute<void>(
-                  builder: (_) => builder(_hideEmbeddedCustomerService, session),
+                  builder: (_) =>
+                      builder(_hideEmbeddedCustomerService, session),
                 ),
               ),
             ),
@@ -1131,13 +446,13 @@ class CustomerServiceHelper {
       final hiddenAt = _embeddedCustomerServiceHiddenAt;
       if (hiddenAt == null) return;
       if (DateTime.now().difference(hiddenAt) >= _customerServiceHiddenTtl) {
-        _closeEmbeddedCustomerService();
+        _closeEmbeddedCustomerService(preserveMessaging: true);
       }
     });
   }
 
-  static void _closeEmbeddedCustomerService() {
-    _releaseSupport();
+  static void _closeEmbeddedCustomerService({bool preserveMessaging = false}) {
+    if (!preserveMessaging) _releaseSupport();
     _embeddedCustomerServiceCloseTimer?.cancel();
     _embeddedCustomerServiceCloseTimer = null;
     _embeddedCustomerServiceHiddenAt = null;
@@ -1151,43 +466,24 @@ class CustomerServiceHelper {
     _embeddedCustomerServiceEntry = null;
   }
 
-  /// 打开客服页面
   static Future<void> open(BuildContext context) async {
-    if (await _openFastCatSupport(context)) return;
+    final config = await _resolveFastCatSupportConfig();
     if (!context.mounted) return;
-
-    final crispId = await _resolveCrispWebsiteId();
-    if (crispId.isEmpty) {
-      if (context.mounted) {
-        XBoardNotification.showError(
-          AppLocalizations.of(context).xboardCustomerServiceNotConfigured,
-        );
-      }
+    if (config == null) {
+      XBoardNotification.showError(
+          AppLocalizations.of(context).xboardCustomerServiceNotConfigured);
       return;
     }
-    if (!context.mounted) return;
-    final localeTag = Localizations.localeOf(context).toLanguageTag();
-    await _discardStalePrewarmedSystemWebView(localeTag);
-    if (!context.mounted) return;
-    // 点击时直接用预热缓存，不阻塞导航发起 HTTP 探测
-    final crispProxyUrl = _getCachedCrispProxyUrl(crispId);
-    final userScript = _buildCrispUserScript(context);
-    await _openCrisp(
-      context,
-      crispId,
-      userScript: userScript,
-      crispProxyUrl: crispProxyUrl,
-      // IP 归属地数据延后注入，不阻塞页面打开
-      deferredUserScript: () async {
-        if (!context.mounted) return null;
-        final ipData = await _resolveCrispIPDataForInitialInjection(context);
-        if (!context.mounted || ipData == null) return null;
-        return _buildCrispUserScript(context, ipData: ipData);
-      },
-    );
+    if (await _openFastCatSupport(context) || !context.mounted) return;
+    XBoardNotification.showError(
+        Localizations.localeOf(context).languageCode == 'zh'
+            ? '客服暂时无法打开，请稍后重试。'
+            : 'Support could not be opened. Please try again later.');
   }
 
-  static Future<bool> _openFastCatSupport(BuildContext context) async {
+  static Future<bool> _openFastCatSupport(BuildContext context,
+      {bool showView = true}) async {
+    fc.FastCatSupport? pendingSupport;
     try {
       final config = await _resolveFastCatSupportConfig();
       if (config == null || !context.mounted) return false;
@@ -1197,6 +493,10 @@ class CustomerServiceHelper {
         websiteId: '${config.baseUrl}|${config.appKey}',
       );
       if (_showExistingEmbeddedCustomerService(context, signature)) return true;
+      if (showView && _support != null && _openSupportView != null) {
+        await _openSupportView!(context);
+        return true;
+      }
       final visitor = _buildFastCatSupportVisitor(context);
       final deviceIdentity =
           await XBoardDeviceIdentityService.buildLoginPayload();
@@ -1309,6 +609,7 @@ class CustomerServiceHelper {
                 profile: {'custom': visitor.customAttributes},
               ),
       );
+      pendingSupport = support;
       if (visitor?.platformOpenId != null) {
         support.client.repairHandlers.addAll(supportProxyRepairs(
           accountId: visitor!.platformOpenId!,
@@ -1321,7 +622,7 @@ class CustomerServiceHelper {
           bypass: () => diagnosticContainer.read(proxyStateProvider).bassDomain,
         ));
       }
-      if (Platform.isMacOS || Platform.isWindows || Platform.isLinux) {
+      {
         if (!await support.client.restore()) {
           final email = visitor?.email;
           if (email == null || email.isEmpty) {
@@ -1338,44 +639,47 @@ class CustomerServiceHelper {
         return true;
       }
       final supportLocaleTag = Localizations.localeOf(context).toLanguageTag();
-      await _openEmbeddedCustomerService(context,
-          signature: signature,
-          builder: (hide, session) => Scaffold(
-                appBar: AppBar(
-                    title:
-                        Text(AppLocalizations.of(context).onlineSupportTitle),
-                    leading: BackButton(onPressed: hide)),
-                body: ValueListenableBuilder<CustomerServiceSessionState>(
-                  valueListenable: session,
-                  builder: (context, state, child) =>
-                      TickerMode(enabled: state.isVisible, child: child!),
-                  child: fc.FastCatSupportView(
-                    support: support,
-                    showHeader: true,
-                    pickAttachment: () async {
-                      final file = await app_picker.picker.pickerFile();
-                      if (file == null) return null;
-                      if (file.size > 8 * 1024 * 1024) {
-                        throw StateError('Attachment exceeds 8 MB');
-                      }
-                      final bytes = file.bytes ??
-                          (file.path == null
-                              ? null
-                              : await File(file.path!).readAsBytes());
-                      if (bytes == null) {
-                        throw StateError('Cannot read attachment');
-                      }
-                      return fc.FastCatAttachment(
-                          filename: file.name, bytes: bytes);
-                    },
-                    onAttachment: (filename, bytes) async {
-                      await app_picker.picker.saveFile(
-                          filename.replaceAll('\\', '/').split('/').last,
-                          bytes);
-                    },
-                  ),
-                ),
-              ));
+      Future<void> openView(BuildContext viewContext) async =>
+          _openEmbeddedCustomerService(viewContext,
+              signature: signature,
+              builder: (hide, session) => Scaffold(
+                    appBar: AppBar(
+                        title: Text(
+                            AppLocalizations.of(context).onlineSupportTitle),
+                        leading: BackButton(onPressed: hide)),
+                    body: ValueListenableBuilder<CustomerServiceSessionState>(
+                      valueListenable: session,
+                      builder: (context, state, child) =>
+                          TickerMode(enabled: state.isVisible, child: child!),
+                      child: fc.FastCatSupportView(
+                        support: support,
+                        showHeader: true,
+                        pickAttachment: () async {
+                          final file = await app_picker.picker.pickerFile();
+                          if (file == null) return null;
+                          if (file.size > 8 * 1024 * 1024) {
+                            throw StateError('Attachment exceeds 8 MB');
+                          }
+                          final bytes = file.bytes ??
+                              (file.path == null
+                                  ? null
+                                  : await File(file.path!).readAsBytes());
+                          if (bytes == null) {
+                            throw StateError('Cannot read attachment');
+                          }
+                          return fc.FastCatAttachment(
+                              filename: file.name, bytes: bytes);
+                        },
+                        onAttachment: (filename, bytes) async {
+                          await app_picker.picker.saveFile(
+                              filename.replaceAll('\\', '/').split('/').last,
+                              bytes);
+                        },
+                      ),
+                    ),
+                  ));
+      _openSupportView = openView;
+      if (showView) await openView(context);
       _support = support;
       _pushService = SupportPushService();
       unawaited(_pushService!.attach(
@@ -1385,27 +689,63 @@ class CustomerServiceHelper {
           () =>
               isEmbeddedCustomerServiceVisible &&
               WidgetsBinding.instance.lifecycleState ==
-                  AppLifecycleState.resumed, onNotification: () async {
-        if (context.mounted && _support == support) {
-          _showExistingEmbeddedCustomerService(context, signature);
+                  AppLifecycleState.resumed,
+          onUnread: _publishUnread, onNotification: () async {
+        final activeContext =
+            globalState.navigatorKey.currentState?.overlay?.context;
+        if (activeContext != null &&
+            activeContext.mounted &&
+            _support == support) {
+          if (!_showExistingEmbeddedCustomerService(activeContext, signature)) {
+            await _openSupportView?.call(activeContext);
+          }
         }
       }));
       _supportTone = fc.SupportNotificationSound();
+      if (DesktopSupportNotifications.supported) {
+        _desktopNotifications = DesktopSupportNotifications(
+          chatVisible: () => isEmbeddedCustomerServiceVisible,
+          soundEnabled: () => support.client.notificationSoundEnabled,
+          playSound: () async { await _supportTone?.play(); },
+          openConversation: () async {
+            final activeContext = globalState.navigatorKey.currentState?.overlay?.context;
+            if (_support != support || activeContext == null || !activeContext.mounted) return;
+            if (!_showExistingEmbeddedCustomerService(activeContext, signature)) {
+              await _openSupportView?.call(activeContext);
+            }
+          });
+      }
       _supportIncoming = support.client.incomingMessageStream.listen((message) {
+        if (DesktopSupportNotifications.supported) {
+          _desktopNotifications?.incoming(message);
+          return;
+        }
         final foreground = WidgetsBinding.instance.lifecycleState == null ||
             WidgetsBinding.instance.lifecycleState == AppLifecycleState.resumed;
         if (!foreground) {
-          final conversation = support.client.conversationId;
-          final messageId = message['id']?.toString();
-          if (conversation != null && messageId != null) {
-            unawaited(SupportPushService.notifyReply(conversation, messageId));
+          if (Platform.isAndroid &&
+              support.client.conversationId != null && message['id'] is String) {
+            unawaited(SupportPushService.notifyReply(
+                support.client.conversationId!, message['id'] as String,
+                unreadCount: support.client.unreadCount));
           }
-        } else if (!isEmbeddedCustomerServiceVisible) {
+        } else if (!isEmbeddedCustomerServiceVisible &&
+            support.client.notificationSoundEnabled) {
           unawaited(_supportTone?.play());
         }
       });
       _supportUnread = support.client.unreadCountStream.listen(_publishUnread);
       _publishUnread(support.client.unreadCount);
+      // The application owns message delivery; mounting the chat is optional.
+      // Subscribe to sound/unread events first so startup synchronization cannot
+      // race their listeners. The client deduplicates messages across watchers.
+      _supportMessageFeed = support.client.watch(onError: (error) {
+        _logger.warning(
+            '[FastCatSupport] 应用消息连接异常: ${error.runtimeType}');
+      }).listen((_) {}, onError: (Object error) {
+        _logger.warning(
+            '[FastCatSupport] 应用消息连接已停止: ${error.runtimeType}');
+      });
       var reconnecting = false;
       _supportMonitor = support.client.connectionStatusStream.listen((status) {
         if (status == fc.FastCatConnectionStatus.reconnecting &&
@@ -1421,9 +761,15 @@ class CustomerServiceHelper {
       return true;
     } catch (error, stackTrace) {
       _logger.warning(
-        '[FastCatSupport] 打开失败，回退 Crisp: $error',
+        '[FastCatSupport] 打开失败: $error',
         stackTrace,
       );
+      if (pendingSupport != null) {
+        if (_support == null || identical(_support, pendingSupport)) {
+          _closeEmbeddedCustomerService();
+        }
+        pendingSupport.close();
+      }
       try {
         await TgoWidget.dispose();
       } catch (_) {}
@@ -1476,9 +822,9 @@ class CustomerServiceHelper {
     );
     if (email.isEmpty && openId.isEmpty) return null;
 
-    final crispData = _buildCrispUserData(context);
+    final supportData = _buildSupportUserData(context);
     final attributes = <String, String?>{};
-    for (final entry in crispData['sessionData'] as List<List<String>>) {
+    for (final entry in supportData['sessionData'] as List<List<String>>) {
       if (entry.length == 2 && entry[0].isNotEmpty && entry[1].isNotEmpty) {
         attributes[entry[0]] = entry[1];
       }
@@ -1494,546 +840,9 @@ class CustomerServiceHelper {
     );
   }
 
-  // ignore: unused_element
-  static void _openSalesmartly(BuildContext context, String scriptUrl) {
-    if (Platform.isWindows || Platform.isMacOS || Platform.isLinux) {
-      // Salesmartly 仍保留旧桌面兜底实现，当前客服主链路已统一为 Crisp 内嵌页。
-      _openSalesmartlyInDesktopWebview(
-        scriptUrl,
-        isDarkMode: _isDarkMode(context),
-      );
-      return;
-    } else if (SalesmarylyChatPage.isSupported) {
-      // Android/iOS：内嵌 WebView 全屏
-      final signature = _embeddedCustomerServiceSessionSignature(
-        channel: 'salesmartly',
-        websiteId: scriptUrl,
-      );
-      unawaited(
-        _openEmbeddedCustomerService(
-          context,
-          signature: signature,
-          builder: (hide, session) => SalesmarylyChatPage(
-            scriptUrl: scriptUrl,
-            onBackPressed: hide,
-            sessionListenable: session,
-          ),
-        ),
-      );
-    } else {
-      // 其他平台：外部浏览器
-      _openSalesmartlyInBrowser(scriptUrl, isDarkMode: _isDarkMode(context));
-    }
-  }
-
-  /// Windows/Linux：用 desktop_webview_window 打开独立 WebView 窗口
-  ///
-  /// 方案：导航到 www.salesmartly.com/robots.txt（轻量 HTTPS 页面），
-  /// 通过 addScriptToExecuteOnDocumentCreated 在页面加载后
-  /// 用 document.write 重写页面并注入 SDK，使用 ssq.push API 打开聊天窗口。
-  static Future<void> _openSalesmartlyInDesktopWebview(
-    String scriptUrl, {
-    required bool isDarkMode,
-  }) async {
-    final existing = await _reuseDesktopCustomerServiceWindow(
-      isDarkMode: isDarkMode,
-    );
-    if (existing != null) return;
-
-    final future = _createSalesmartlyDesktopWebview(
-      scriptUrl,
-      isDarkMode: isDarkMode,
-    );
-    _desktopCustomerServiceOpening = future;
-    try {
-      final webview = await future;
-      if (webview != null) {
-        _trackDesktopCustomerServiceWindow(webview);
-      }
-    } finally {
-      if (identical(_desktopCustomerServiceOpening, future)) {
-        _desktopCustomerServiceOpening = null;
-      }
-    }
-  }
-
-  static Future<Webview?> _createSalesmartlyDesktopWebview(
-    String scriptUrl, {
-    required bool isDarkMode,
-  }) async {
-    try {
-      final available = await _isDesktopWebviewAvailable();
-      if (!available) {
-        _logger.warning('[SalesSmartly] WebView2 不可用，回退浏览器');
-        _openSalesmartlyInBrowser(scriptUrl, isDarkMode: isDarkMode);
-        return null;
-      }
-
-      final dataFolder = Platform.isWindows ? await _webview2DataFolder() : '';
-      final webview = await WebviewWindow.create(
-        configuration: CreateConfiguration(
-          title: appLocalizations.xboardOnlineSupport,
-          windowWidth: _desktopCustomerServiceWindowWidth,
-          windowHeight: _desktopCustomerServiceWindowHeight,
-          titleBarHeight: _desktopCustomerServiceTitleBarHeight,
-          userDataFolderWindows: dataFolder,
-          resizable: false,
-          showTitleBarActions: false,
-          brightness: _customerServiceBrightness(isDarkMode),
-        ),
-      );
-      await _applyDesktopCustomerServiceWindowState(
-        webview,
-        isDarkMode: isDarkMode,
-      );
-
-      final bg = _customerServiceBackground(isDarkMode);
-      final fg = _customerServiceForeground(isDarkMode);
-      final loadingHtml =
-          '''<html><head><meta charset=utf-8><meta name=viewport content="width=device-width,initial-scale=1"><title>${htmlEscape.convert(appLocalizations.xboardOnlineSupport)}</title><style>*{margin:0;padding:0}html,body{width:100%;height:100%;background:$bg;overflow:hidden}#loading{display:flex;align-items:center;justify-content:center;height:100%;color:$fg;font-family:-apple-system,sans-serif;font-size:14px}</style></head><body><div id=loading>${htmlEscape.convert(appLocalizations.onlineSupportConnecting)}</div><script src='${htmlEscape.convert(scriptUrl)}' id=ss_chat></script><script>(function w(){if(window.ssq&&typeof window.ssq==="function"){ssq.push("chatOpen");ssq.push("onReady",function(){ssq.push("chatOpen");var e=document.getElementById("loading");if(e)e.style.display="none";});}else{setTimeout(w,300);}})();setTimeout(function(){var e=document.getElementById("loading");if(e&&e.style.display!=="none")e.textContent=${jsonEncode(appLocalizations.xboardCustomerServiceLoadTimeout)};},20000);new MutationObserver(function(){var fs=document.querySelectorAll("iframe");for(var i=0;i<fs.length;i++){var s=fs[i].src||"";if(s.indexOf("salesmartly")!==-1||s.indexOf("ssm")!==-1){fs[i].style.cssText="position:fixed!important;top:0!important;left:0!important;width:100vw!important;height:100vh!important;max-width:none!important;max-height:none!important;border:none!important;border-radius:0!important;z-index:99999!important;";var p=fs[i].parentElement;if(p){p.style.cssText="position:fixed!important;top:0!important;left:0!important;width:100vw!important;height:100vh!important;z-index:99999!important;";}var e=document.getElementById("loading");if(e)e.style.display="none";}}}).observe(document.documentElement,{childList:true,subtree:true,attributes:true});</script></body></html>''';
-      // 注入脚本：在 DOMContentLoaded 后用 document.write 重写页面，注入 SDK
-      // 使用 ssq.push API（官方文档推荐）
-      final injectJs = '''
-if(window===window.top){
-  document.addEventListener('DOMContentLoaded',function(){
-    document.open();
-    document.write(${jsonEncode(loadingHtml)});
-    document.close();
-  });
-}''';
-
-      webview.addScriptToExecuteOnDocumentCreated(injectJs);
-      // 导航到 salesmartly 官网轻量页面（robots.txt），确保真实 HTTPS origin
-      await webview.launch('https://www.salesmartly.com/robots.txt');
-
-      _logger.info('[SalesSmartly] 已启动 WebView2，注入客服 SDK');
-      return webview;
-    } catch (e) {
-      _logger.error('[SalesSmartly] WebView2 启动失败，回退浏览器', e);
-      _openSalesmartlyInBrowser(scriptUrl, isDarkMode: isDarkMode);
-      return null;
-    }
-  }
-
-  /// 生成包含 SalesSmartly SDK 的 HTML
-  static String _buildSalesmartlyHtml(
-    String scriptUrl, {
-    required bool isDarkMode,
-  }) {
-    final bg = _customerServiceBackground(isDarkMode);
-    final fg = _customerServiceForeground(isDarkMode);
-    return '''<!DOCTYPE html>
-<html>
-<head>
-  <meta charset="utf-8">
-  <title>${htmlEscape.convert(appLocalizations.xboardOnlineSupport)}</title>
-  <style>
-    * { margin: 0; padding: 0; }
-    html, body { width: 100%; height: 100%; background: $bg; }
-    #loading {
-      display: flex; align-items: center; justify-content: center;
-      height: 100%; color: $fg; font-family: -apple-system, sans-serif; font-size: 16px;
-    }
-  </style>
-</head>
-<body>
-  <div id="loading">${htmlEscape.convert(appLocalizations.onlineSupportConnecting)}</div>
-  <script src="${htmlEscape.convert(scriptUrl)}" id="ss_chat"></script>
-  <script>
-    (function check(){
-      if(window.ssq && typeof window.ssq==='function'){
-        window.ssq('onReady',function(){
-          window.ssq('chatOpen');
-          document.getElementById('loading').style.display='none';
-        });
-        setTimeout(function(){window.ssq('chatOpen');},5000);
-      } else {
-        setTimeout(check,100);
-      }
-    })();
-  </script>
-</body>
-</html>''';
-  }
-
-  /// Android 等平台：用本地 HTTP 服务器 + Chrome Custom Tab 打开客服
-  ///
-  /// SDK 在 Android WebView 中无法渲染，必须在完整浏览器环境中运行。
-  /// 启动 localhost HTTP 服务器提供 HTML 页面，然后用 inAppBrowserView
-  /// （Chrome Custom Tab）打开，视觉上仍在 app 内。
-  static Future<void> _openSalesmartlyInBrowser(
-    String scriptUrl, {
-    required bool isDarkMode,
-  }) async {
-    HttpServer? server;
-    try {
-      final html = _buildSalesmartlyHtml(scriptUrl, isDarkMode: isDarkMode);
-
-      // 启动本地 HTTP 服务器
-      server = await HttpServer.bind(InternetAddress.loopbackIPv4, 0);
-      final port = server.port;
-
-      server.listen((request) {
-        request.response
-          ..statusCode = HttpStatus.ok
-          ..headers.contentType = ContentType.html
-          ..headers.set('Cache-Control', 'no-cache')
-          ..write(html);
-        request.response.close();
-      });
-
-      // Chrome Custom Tab 打开（看起来像在 app 内）
-      await launchUrl(
-        Uri.parse('http://localhost:$port'),
-        mode: LaunchMode.inAppBrowserView,
-      );
-
-      // 延迟关闭服务器，给浏览器足够时间加载页面
-      Future.delayed(const Duration(seconds: 30), () {
-        server?.close();
-      });
-    } catch (e) {
-      _logger.error('[SalesSmartly] 浏览器打开失败', e);
-      server?.close();
-      launchUrl(
-        Uri.parse('https://www.salesmartly.com'),
-        mode: LaunchMode.externalApplication,
-      );
-    }
-  }
-
-  static _CrispIPData? _getCachedIPData() {
-    final cached = _cachedIPData;
-    final cachedTime = _cachedIPDataTime;
-    if (cached != null &&
-        cachedTime != null &&
-        DateTime.now().difference(cachedTime) < _ipDataCacheTtl) {
-      return cached;
-    }
-    return null;
-  }
-
-  static Future<_CrispIPData?> _resolveCrispIPDataForInitialInjection(
+  static Map<String, Object?> _buildSupportUserData(
     BuildContext context,
-  ) async {
-    final cached = _getCachedIPData();
-    if (cached != null) return cached;
-    try {
-      final result = await _resolveCrispIPData(
-        context,
-      ).timeout(_crispUserDataResolveTimeout, onTimeout: () => null);
-      if (result != null) {
-        _cachedIPData = result;
-        _cachedIPDataTime = DateTime.now();
-      }
-      return result;
-    } catch (_) {
-      return null;
-    }
-  }
-
-  static Future<_CrispIPData?> _resolveCrispIPData(BuildContext context) async {
-    try {
-      final container = ProviderScope.containerOf(context, listen: false);
-      final sdk = await container.read(xboardSdkProvider.future);
-      final token = await sdk.getToken();
-      if (token == null || token.isEmpty || !token.contains('dg_')) {
-        return null;
-      }
-      final headers = <String, String>{'Authorization': token};
-
-      Future<_CrispIPData?> request(HttpService http) async {
-        try {
-          await http.postRequest(
-            '/user/devices/heartbeat',
-            <String, dynamic>{},
-            headers: headers,
-          );
-        } catch (_) {}
-
-        final response = await http.getRequest(
-          '/user/devices',
-          headers: headers,
-        );
-        return _extractCrispIPData(response);
-      }
-
-      try {
-        final data = await request(sdk.httpService);
-        if (data != null) return data;
-      } catch (_) {}
-
-      for (final endpoint in _resolveDeviceGatewayEndpoints()) {
-        try {
-          final http = await HttpService.create(
-            endpoint.baseUrl,
-            httpConfig: HttpConfig.development(),
-            apiPrefix: endpoint.apiPrefix,
-          );
-          final data = await request(http);
-          if (data != null) return data;
-        } catch (_) {}
-      }
-    } catch (_) {}
-    return null;
-  }
-
-  static _CrispIPData? _extractCrispIPData(Map<String, dynamic> response) {
-    final data = _mapOf(response['data']);
-    final rawDevices = data?['devices'];
-    if (rawDevices is! List) return null;
-
-    final devices = rawDevices
-        .map(_mapOf)
-        .whereType<Map<String, dynamic>>()
-        .toList(growable: false);
-    for (final device in devices) {
-      if (device['is_current'] == true) {
-        final data = _ipDataFromDevice(device);
-        if (data != null) return data;
-      }
-    }
-    for (final device in devices) {
-      if (device['status']?.toString() == 'active') {
-        final data = _ipDataFromDevice(device);
-        if (data != null) return data;
-      }
-    }
-    for (final device in devices) {
-      final data = _ipDataFromDevice(device);
-      if (data != null) return data;
-    }
-    return null;
-  }
-
-  static _CrispIPData? _ipDataFromDevice(Map<String, dynamic> device) {
-    final ip = _firstString(device, const [
-      'last_ip',
-      'ip',
-      'last_login_ip',
-      'login_ip',
-    ]);
-    final region = _firstString(device, const [
-      'last_ip_region',
-      'ip_region',
-      'ip_location',
-      'location',
-      'region',
-    ]);
-    final isp = _firstString(device, const [
-      'last_ip_isp',
-      'ip_isp',
-      'isp',
-      'operator',
-    ]);
-    if (ip.isEmpty && region.isEmpty && isp.isEmpty) return null;
-    return _CrispIPData(ip: ip, region: region, isp: isp);
-  }
-
-  static List<_DeviceGatewayEndpoint> _resolveDeviceGatewayEndpoints() {
-    final endpoints = <_DeviceGatewayEndpoint>[];
-    final seen = <String>{};
-
-    void addEndpoint(String baseUrl, String apiPrefix) {
-      final base = baseUrl.trim().replaceAll(RegExp(r'/$'), '');
-      final prefix = _normalizeApiPrefix(apiPrefix);
-      if (base.isEmpty || prefix.isEmpty) return;
-      final key = '$base|$prefix';
-      if (seen.add(key)) {
-        endpoints.add(_DeviceGatewayEndpoint(base, prefix));
-      }
-    }
-
-    void addFromBaseUrl(String url, {String? apiPrefix}) {
-      final uri = Uri.tryParse(url.trim());
-      if (uri == null || !uri.hasScheme || uri.host.isEmpty) return;
-      final origin = _originFromUri(uri);
-      final pathPrefix =
-          uri.path.isNotEmpty && uri.path != '/' ? uri.path : null;
-      addEndpoint(origin, apiPrefix ?? pathPrefix ?? _configuredApiPrefix());
-    }
-
-    final runtime = GatewayRuntimeService.instance;
-    runtime.syncFromCurrentConfig();
-
-    final active = runtime.activeConfig;
-    if (active != null) {
-      addEndpoint(active.baseUrl, active.apiPrefix);
-    }
-    for (final candidate in runtime.candidates) {
-      addEndpoint(candidate.baseUrl, candidate.apiPrefix);
-    }
-
-    addFromBaseUrl(
-      XBoardSDK.instance.httpService.baseUrl,
-      apiPrefix: XBoardSDK.instance.httpService.apiPrefix,
-    );
-    return endpoints;
-  }
-
-  static String _configuredApiPrefix() {
-    try {
-      if (XBoardConfig.isInitialized) {
-        return XBoardConfig.provider.getApiPrefix();
-      }
-    } catch (_) {}
-    return _deviceGatewayApiPrefix;
-  }
-
-  static String _normalizeApiPrefix(String value) {
-    var prefix = value.trim();
-    if (prefix.isEmpty || prefix == '/') return _deviceGatewayApiPrefix;
-    if (!prefix.startsWith('/')) prefix = '/$prefix';
-    return prefix.replaceAll(RegExp(r'/$'), '');
-  }
-
-  static String _originFromUri(Uri uri) {
-    return uri.replace(path: '', query: '', fragment: '').toString();
-  }
-
-  static Map<String, dynamic>? _mapOf(Object? value) {
-    if (value is Map<String, dynamic>) return value;
-    if (value is Map) {
-      return value.map((key, value) => MapEntry(key.toString(), value));
-    }
-    return null;
-  }
-
-  static String _firstString(Map<String, dynamic> map, List<String> keys) {
-    for (final key in keys) {
-      final value = map[key]?.toString().trim();
-      if (value != null && value.isNotEmpty) return value;
-    }
-    return '';
-  }
-
-  static Future<void> _openCrisp(
-    BuildContext context,
-    String websiteId, {
-    String? userScript,
-    String? crispProxyUrl,
-    _CrispIPData? ipData,
-    Future<String?> Function()? deferredUserScript,
-  }) async {
-    final effectiveUserScript =
-        userScript ?? _buildCrispUserScript(context, ipData: ipData);
-    if (Platform.isWindows) {
-      // Dispose pre-warmed headless WebView (no longer needed)
-      _prewarmedHeadlessWin?.dispose();
-      _prewarmedHeadlessWin = null;
-      if (!context.mounted) return;
-      final signature = _embeddedCustomerServiceSessionSignature(
-        channel: 'crisp-windows',
-        websiteId: websiteId,
-        crispProxyUrl: crispProxyUrl,
-        userScript: effectiveUserScript,
-      );
-      await _openEmbeddedCustomerService(
-        context,
-        signature: signature,
-        builder: (hide, session) => WindowsChatPage(
-          crispWebsiteId: websiteId,
-          crispProxyUrl: crispProxyUrl,
-          userScript: effectiveUserScript,
-          deferredUserScript: deferredUserScript,
-          onBackPressed: hide,
-          sessionListenable: session,
-        ),
-      );
-      return;
-    }
-    if (CrispChatPage.isSupported) {
-      if (!context.mounted) return;
-      final signature = _embeddedCustomerServiceSessionSignature(
-        channel: 'crisp-system-webview',
-        websiteId: websiteId,
-        crispProxyUrl: crispProxyUrl,
-        userScript: effectiveUserScript,
-      );
-      await _openEmbeddedCustomerService(
-        context,
-        signature: signature,
-        builder: (hide, session) => CrispChatPage(
-          websiteId: websiteId,
-          localeTag: Localizations.localeOf(context).toLanguageTag(),
-          crispProxyUrl: crispProxyUrl,
-          userScript: effectiveUserScript,
-          deferredUserScript: deferredUserScript,
-          onBackPressed: hide,
-          sessionListenable: session,
-        ),
-      );
-      return;
-    }
-    await launchUrl(
-      localizedCrispUri(
-        crispEmbedUri(websiteId: websiteId, proxyUrl: crispProxyUrl),
-        context.mounted
-            ? Localizations.localeOf(context).toLanguageTag()
-            : null,
-      ),
-      mode: LaunchMode.externalApplication,
-    );
-  }
-
-  static String _buildCrispUserScript(
-    BuildContext context, {
-    _CrispIPData? ipData,
-  }) {
-    final data = _buildCrispUserData(context, ipData: ipData);
-    final email = (data['email'] as String?)?.trim();
-    final nickname = (data['nickname'] as String?)?.trim();
-    final sessionData = (data['sessionData'] as List<List<String>>).where((
-      entry,
-    ) {
-      return entry.length == 2 && entry[0].trim().isNotEmpty;
-    }).toList();
-    final emailJson = jsonEncode(email ?? '');
-    final nicknameJson = jsonEncode(nickname ?? '');
-    final sessionDataJson = jsonEncode(sessionData);
-
-    return '''
-(function applyCrispUserData(){
-  try {
-    window.\$crisp = window.\$crisp || [];
-    var email = $emailJson;
-    var nickname = $nicknameJson;
-    var sessionData = $sessionDataJson;
-
-    function apply() {
-      try { window.\$crisp.push(["safe", true]); } catch(_) {}
-      if (email) {
-        try { window.\$crisp.push(["set","user:email",[email]]); } catch(_) {}
-      }
-      if (nickname) {
-        try { window.\$crisp.push(["set","user:nickname",[nickname]]); } catch(_) {}
-      }
-      if (sessionData && sessionData.length > 0) {
-        try { window.\$crisp.push(["set","session:data",[sessionData]]); } catch(_) {}
-      }
-    }
-
-    apply();
-    if (window.__kuaimaoCrispApplyTimer) {
-      clearInterval(window.__kuaimaoCrispApplyTimer);
-    }
-    var retry = 0;
-    window.__kuaimaoCrispApplyTimer = setInterval(function(){
-      retry++;
-      apply();
-      if (retry >= 10) {
-        clearInterval(window.__kuaimaoCrispApplyTimer);
-        window.__kuaimaoCrispApplyTimer = null;
-      }
-    }, 300);
-  } catch(e) {}
-})();''';
-  }
-
-  static Map<String, Object?> _buildCrispUserData(
-    BuildContext context, {
-    _CrispIPData? ipData,
-  }) {
+  ) {
     final container = ProviderScope.containerOf(context, listen: false);
     final userState = container.read(xboardUserProvider);
     final userInfo = container.read(userInfoProvider);
@@ -2053,9 +862,9 @@ if(window===window.top){
     final expiredAt = subscriptionInfo?.expiredAt;
     final planName = subscriptionInfo?.planName ?? '';
     final resetDaysLeft = _resolveResetDaysLeft(subscriptionInfo);
-    final userIP = _firstNonEmpty(userInfo?.ip, ipData?.ip);
-    final userIPRegion = _firstNonEmpty(userInfo?.ipRegion, ipData?.region);
-    final userIPISP = _firstNonEmpty(userInfo?.ipIsp, ipData?.isp);
+    final userIP = userInfo?.ip ?? '';
+    final userIPRegion = userInfo?.ipRegion ?? '';
+    final userIPISP = userInfo?.ipIsp ?? '';
     final walletBalanceInCents = userInfo?.balanceInCents;
     final commissionBalanceInCents = userInfo?.commissionBalanceInCents;
 
@@ -2287,96 +1096,29 @@ class _EmbeddedCustomerServiceFrameState
   }
 }
 
-class _CrispProxyCacheEntry {
-  const _CrispProxyCacheEntry({
-    required this.websiteId,
-    required this.proxyUrl,
-    required this.usableProxyUrl,
-    required this.createdAt,
-  });
+class _IosCustomerServiceFrame extends StatelessWidget {
+  const _IosCustomerServiceFrame({required this.initialPath,
+    required this.onDestination, required this.child});
+  final String initialPath;
+  final ValueChanged<int> onDestination;
+  final Widget child;
 
-  final String websiteId;
-  final String proxyUrl;
-  final String usableProxyUrl;
-  final DateTime createdAt;
-
-  bool matches(String websiteId, String proxyUrl, DateTime now) {
-    return this.websiteId == websiteId &&
-        this.proxyUrl == proxyUrl &&
-        now.difference(createdAt) < _crispProxyUsableCacheTtl;
+  @override
+  Widget build(BuildContext context) {
+    final bottom = _mobileRootMenuHeight + MediaQuery.paddingOf(context).bottom;
+    final router = GoRouter.of(context);
+    return Scaffold(resizeToAvoidBottomInset: false,
+      body: CustomerServiceViewport(consumed: EdgeInsets.only(bottom: bottom), child: child),
+      bottomNavigationBar: ListenableBuilder(listenable: router.routerDelegate,
+        builder: (context, _) {
+          final path = router.routerDelegate.currentConfiguration.uri.path;
+          final current = path.isEmpty ? initialPath : path;
+          final selected = current.startsWith('/plans') ? 1 :
+              current.startsWith('/invite') ? 2 : current.startsWith('/mine') ? 3 : 0;
+          return MobileNavigationBar(selectedIndex: selected,
+            onDestinationSelected: onDestination);
+        }));
   }
-}
-
-class _CrispRouteProbeResult {
-  const _CrispRouteProbeResult(this.usable, this.elapsed);
-
-  final bool usable;
-  final Duration elapsed;
-}
-
-class _PrewarmedCrispWebView {
-  const _PrewarmedCrispWebView({
-    required this.controller,
-    required this.websiteId,
-    required this.proxyUrl,
-    required this.localeTag,
-    required this.networkSignature,
-    required this.createdAt,
-  });
-
-  final WebViewController controller;
-  final String websiteId;
-  final String proxyUrl;
-  final String localeTag;
-  final String networkSignature;
-  final DateTime createdAt;
-
-  bool matchesLocale(String value) =>
-      CustomerServiceHelper.crispLocaleFromTag(localeTag) ==
-      CustomerServiceHelper.crispLocaleFromTag(value);
-
-  bool isExpired(DateTime now) =>
-      now.difference(createdAt) >= _crispWebViewPrewarmTtl;
-
-  bool matchesEnvironment({
-    required String localeTag,
-    required String networkSignature,
-    required DateTime now,
-  }) =>
-      matchesLocale(localeTag) &&
-      this.networkSignature == networkSignature &&
-      !isExpired(now);
-}
-
-class _PendingCrispProxyProbe {
-  const _PendingCrispProxyProbe({
-    required this.websiteId,
-    required this.proxyUrl,
-    required this.future,
-  });
-
-  final String websiteId;
-  final String proxyUrl;
-  final Future<String> future;
-}
-
-class _CrispIPData {
-  const _CrispIPData({
-    required this.ip,
-    required this.region,
-    required this.isp,
-  });
-
-  final String ip;
-  final String region;
-  final String isp;
-}
-
-class _DeviceGatewayEndpoint {
-  const _DeviceGatewayEndpoint(this.baseUrl, this.apiPrefix);
-
-  final String baseUrl;
-  final String apiPrefix;
 }
 
 /// Keep the current process usable when platform credential storage is unavailable.

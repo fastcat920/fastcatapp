@@ -1,0 +1,15 @@
+name: local_notifier
+version: 0.1.6+fastcat.1
+publish_to: none
+description: Windows desktop notifications with silent and replacement fixes.
+environment:
+  sdk: '>=3.1.0 <4.0.0'
+dependencies:
+  flutter:
+    sdk: flutter
+  uuid: ^4.0.0
+flutter:
+  plugin:
+    platforms:
+      windows:
+        pluginClass: LocalNotifierPlugin

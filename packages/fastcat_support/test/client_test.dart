@@ -70,6 +70,27 @@ Future<void> eventually(bool Function() condition) async {
 }
 
 void main() {
+  test('app and late chat subscribers share one connection and replay history', () async {
+    final transport = SSEClient()..seq = 1;
+    final client = FastCatClient(baseUrl: Uri.parse('https://support.example.com'), appKey: 'sdk', client: transport);
+    await client.start(email: 'user@example.com');
+    final appPages = <Map<String,dynamic>>[];
+    final app = client.watch().listen(appPages.add);
+    await eventually(() => transport.streams.length == 1 && appPages.isNotEmpty);
+    final history = await client.watch().first;
+    expect((history['messages'] as List).single['id'], 'm1');
+    expect(transport.requests.where((r) => r.url.path.endsWith('/events')).length, 1);
+    final chatPages = <Map<String,dynamic>>[];
+    final chat = client.watch().listen(chatPages.add);
+    transport.seq = 2;
+    transport.streams.first.add(utf8.encode('data: update\n\n'));
+    await eventually(() => appPages.any((p) => p['nextCursor'] == 2) && chatPages.any((p) => p['nextCursor'] == 2));
+    await chat.cancel();
+    expect(transport.streams.first.isClosed, false);
+    await app.cancel();
+    await eventually(() => transport.streams.first.isClosed);
+    client.close();
+  });
   test(
       'SSE idles without polling, parses fragmented updates, reconnects and cleans up',
       () async {
@@ -419,6 +440,35 @@ void main() {
     expect(reads, [7]);
     await a.cancel();
     await b.cancel();
+    client.close();
+  });
+  test(
+      'identity provider is forwarded only on start and revoke clears stored credentials',
+      () async {
+    final store = MemoryStore();
+    final bodies = <String, Map<String, dynamic>>{};
+    final client = FastCatClient(
+        baseUrl: Uri.parse('https://identity.example.test'),
+        appKey: 'public-key',
+        store: store,
+        identityProvider: () async => const FastCatIdentityProof(
+            deviceId: 'installation_0001', token: 'signed-proof'),
+        client: MockClient((req) async {
+          bodies[req.url.path] = jsonDecode(req.body) as Map<String, dynamic>;
+          return http.Response(
+              req.url.path.endsWith('/start')
+                  ? '{"id":"conversation","token":"visitor-secret"}'
+                  : '{"ok":true}',
+              200);
+        }));
+    await client.start(email: 'user@example.test');
+    expect(bodies['/api/widget/start']!['deviceId'], 'installation_0001');
+    expect(bodies['/api/widget/start']!['identityToken'], 'signed-proof');
+    expect(client.hasSession, true);
+    await client.revokeSession();
+    expect(bodies['/api/widget/session']!['action'], 'revoke');
+    expect(client.hasSession, false);
+    expect(store.values, isEmpty);
     client.close();
   });
 }

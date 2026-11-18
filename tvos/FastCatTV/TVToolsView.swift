@@ -1058,6 +1058,8 @@ struct TVToolsView: View {
         TVUserRouteStore.save([], scope: scope)
         VPNManager.shared.disconnect { _ in }
         await GatewayClient.clearCachedSubscriptions()
+        KeychainStore.delete(key: "saved-login-email")
+        KeychainStore.delete(key: "saved-login-password")
         session.signOut()
         dismiss()
       } catch { message = error.localizedDescription }

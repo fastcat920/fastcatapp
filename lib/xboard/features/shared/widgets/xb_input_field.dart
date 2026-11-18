@@ -42,6 +42,9 @@ class XBInputField extends StatelessWidget {
     final colorScheme = Theme.of(context).colorScheme;
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final isTv = system.isTV;
+    final credential = obscureText ||
+        keyboardType == TextInputType.visiblePassword ||
+        keyboardType == TextInputType.emailAddress;
     final radius = BorderRadius.circular(
       isTv ? AuthTvLayout.controlRadius : 14,
     );
@@ -57,6 +60,11 @@ class XBInputField extends StatelessWidget {
           controller: controller,
           obscureText: obscureText,
           keyboardType: keyboardType,
+          autocorrect: !credential,
+          enableSuggestions: !credential,
+          enableIMEPersonalizedLearning: !credential,
+          smartDashesType: credential ? SmartDashesType.disabled : SmartDashesType.enabled,
+          smartQuotesType: credential ? SmartQuotesType.disabled : SmartQuotesType.enabled,
           textInputAction: textInputAction,
           validator: validator,
           autovalidateMode: autovalidateMode,

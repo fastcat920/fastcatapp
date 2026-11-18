@@ -82,11 +82,14 @@ struct TVRuntimeProtocolTests {
     }
     precondition(appearance == true)
     let now = Date(timeIntervalSince1970: 500000)
+    precondition(tvConnectionDays(since: now.addingTimeInterval(-86400), now: now) == 1)
+    precondition(tvConnectionDays(since: now.addingTimeInterval(-1000 * 86400), now: now) == 99)
+    precondition(tvConnectionDuration(since: now.addingTimeInterval(-1000 * 86400), now: now) == "00:00:00")
     precondition(tvConnectionDuration(since: nil, now: now) == "00:00:00")
     precondition(tvConnectionDuration(since: now.addingTimeInterval(-3661), now: now) == "01:01:01")
     precondition(tvConnectionDuration(since: now.addingTimeInterval(5), now: now) == "00:00:00")
     precondition(
-      tvConnectionDuration(since: now.addingTimeInterval(-400000), now: now) == "99:59:59")
+      tvConnectionDuration(since: now.addingTimeInterval(-400000), now: now) == "15:06:40")
     precondition(
       TVCoreProtocol.isAcknowledged(
         String(decoding: TVCoreProtocol.acknowledgement(), as: UTF8.self)))
@@ -161,10 +164,6 @@ struct TVRuntimeProtocolTests {
     } catch TVRoutingFailure.notConfirmed {}
     precondition(events == ["global", "rule"])
 
-    precondition(tvDisplayedDelay(100, discount: 30) == 70)
-    precondition(tvDisplayedDelay(-1, discount: 30) == -1)
-    precondition(tvDisplayedDelay(1, discount: 90) == 1)
-    precondition(tvDisplayedDelay(nil, discount: 30) == nil)
     let testProfile =
       "proxy-groups:\n  - name: test-group\n    type: select\n    url: https://group.invalid/check\n    proxies: [node-a]\n"
     precondition(

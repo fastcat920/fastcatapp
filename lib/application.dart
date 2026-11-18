@@ -607,14 +607,7 @@ class ApplicationState extends ConsumerState<Application>
   String? _currentUpdateConfigSignature() {
     final config = XBoardConfig.updateConfig;
     if (config == null || config.isEmpty) return null;
-    final platform = switch (Platform.operatingSystem) {
-      'android' => 'android',
-      'ios' => 'ios',
-      'windows' => 'windows',
-      'macos' => 'macos',
-      'linux' => 'linux',
-      _ => 'unknown',
-    };
+    final platform = ref.read(updateServiceProvider).getPlatformName();
     final info = config.platformInfo(platform);
     if (info == null || (info.enabled && info.version.trim().isEmpty)) {
       return null;
@@ -622,6 +615,9 @@ class ApplicationState extends ConsumerState<Application>
     return [
       platform,
       info.version.trim(),
+      info.build,
+      info.minSupportedBuild,
+      info.artifacts.map((key, value) => MapEntry(key, value.toJson())).toString(),
       info.resolvedUrl,
       info.force,
       info.enabled,
@@ -630,8 +626,6 @@ class ApplicationState extends ConsumerState<Application>
       info.changelog.entries
           .map((entry) => '${entry.key}:${entry.value}')
           .join(','),
-      config.minVersion?.trim() ?? '',
-      config.changelog?.trim() ?? '',
     ].join('|');
   }
 
@@ -738,10 +732,11 @@ class ApplicationState extends ConsumerState<Application>
   Future<bool> _showAutomaticUpdateDialog(UpdateCheckState updateState) async {
     final cacheService = ref.read(updateCacheServiceProvider);
     final latestVersion = updateState.latestVersion?.trim() ?? '';
+    final promptIdentity = updateState.build == null ? latestVersion : updateState.releaseIdentity;
     if (!updateState.forceUpdate) {
       final lastPromptedVersion =
           await cacheService.getPromptedOptionalVersion();
-      if (latestVersion.isNotEmpty && lastPromptedVersion == latestVersion) {
+      if (latestVersion.isNotEmpty && lastPromptedVersion == promptIdentity) {
         debugPrint(
           '[Application] 普通更新 V$latestVersion 已提示过，仅保留红点',
         );
@@ -759,13 +754,13 @@ class ApplicationState extends ConsumerState<Application>
     final previousFocus = TvFocusRestoration.capture();
     final dialogFuture = showDialog<void>(
       context: currentContext,
-      barrierDismissible: !updateState.forceUpdate,
+      barrierDismissible: false,
       builder: (context) => UpdateDialog(state: updateState),
     );
 
     // 路由成功入栈后才记录，避免上下文不可用时误标记为已提示。
     if (!updateState.forceUpdate && latestVersion.isNotEmpty) {
-      await cacheService.markOptionalVersionPrompted(latestVersion);
+      await cacheService.markOptionalVersionPrompted(promptIdentity);
     }
     unawaited(dialogFuture.whenComplete(() {
       final restoreContext = globalState.navigatorKey.currentContext;

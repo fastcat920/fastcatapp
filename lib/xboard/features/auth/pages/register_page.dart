@@ -325,6 +325,7 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
                             hintText: appLocalizations
                                 .pleaseEnterAtLeast8CharsPassword,
                             prefixIcon: Icons.lock_outlined,
+                            keyboardType: TextInputType.visiblePassword,
                             obscureText: !_isPasswordVisible,
                             suffixIcon: IconButton(
                               icon: Icon(
@@ -354,6 +355,7 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
                             labelText: appLocalizations.confirmNewPassword,
                             hintText: appLocalizations.pleaseReEnterPassword,
                             prefixIcon: Icons.lock_outlined,
+                            keyboardType: TextInputType.visiblePassword,
                             obscureText: !_isConfirmPasswordVisible,
                             suffixIcon: IconButton(
                               icon: Icon(

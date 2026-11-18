@@ -7,6 +7,35 @@ import UserNotifications
 @objc class AppDelegate: FlutterAppDelegate {
   private var supportNotification: [String: String]?
   private var supportPushToken: String?
+  private var pushWaiters: [FlutterResult] = []
+  private var pushRequestID = 0
+  private var visibleSupportConversation: String?
+
+  private func finishPushRegistration(_ value: Any?) {
+    let waiters = pushWaiters
+    pushWaiters.removeAll()
+    waiters.forEach { $0(value) }
+  }
+
+  override func application(_ application: UIApplication, didFailToRegisterForRemoteNotificationsWithError error: Error) {
+    NSLog("[SupportPush] APNs registration failed: %@", error.localizedDescription)
+    finishPushRegistration(FlutterError(code: "APNS_REGISTRATION", message: error.localizedDescription, details: nil))
+    super.application(application, didFailToRegisterForRemoteNotificationsWithError: error)
+  }
+
+  override func userNotificationCenter(_ center: UNUserNotificationCenter,
+      willPresent notification: UNNotification,
+      withCompletionHandler completionHandler: @escaping (UNNotificationPresentationOptions) -> Void) {
+    let info = notification.request.content.userInfo
+    if info["type"] as? String == "support.reply" {
+      // willPresent is the foreground path. Realtime chat owns the one
+      // in-app sound; showing/sounding APNs here would duplicate that alert.
+      // Background and lock-screen notifications are presented by iOS itself.
+      completionHandler([.badge])
+      return
+    }
+    completionHandler([.banner, .sound, .badge])
+  }
   
   override func userNotificationCenter(_ center: UNUserNotificationCenter,
       didReceive response: UNNotificationResponse,
@@ -22,6 +51,8 @@ import UserNotifications
 
   override func application(_ application: UIApplication, didRegisterForRemoteNotificationsWithDeviceToken deviceToken: Data) {
     supportPushToken = deviceToken.map { String(format: "%02x", $0) }.joined()
+    NSLog("[SupportPush] APNs token received")
+    finishPushRegistration(supportPushToken)
     super.application(application, didRegisterForRemoteNotificationsWithDeviceToken: deviceToken)
   }
 
@@ -48,7 +79,41 @@ import UserNotifications
     }
 
     let pushChannel = FlutterMethodChannel(name: "fastcat/support_push", binaryMessenger: controller.binaryMessenger)
+    UNUserNotificationCenter.current().delegate = self
     pushChannel.setMethodCallHandler { [weak self] call, result in
+      if call.method == "badge" {
+        let count = max(0, call.arguments as? Int ?? 0)
+        UIApplication.shared.applicationIconBadgeNumber = count
+        result(nil)
+        return
+      }
+      if call.method == "visibility" {
+        let args = call.arguments as? [String: Any]
+        self?.visibleSupportConversation = args?["visible"] as? Bool == true
+            ? args?["conversationId"] as? String : nil
+        result(nil)
+        return
+      }
+      if call.method == "environment" {
+        // Store/TestFlight builds have no embedded development profile.
+        guard let url = Bundle.main.url(forResource: "embedded", withExtension: "mobileprovision") else {
+          result("production")
+          return
+        }
+        guard let bytes = try? Data(contentsOf: url),
+          let text = String(data: bytes, encoding: .isoLatin1),
+          let start = text.range(of: "<?xml"),
+          let end = text.range(of: "</plist>", range: start.lowerBound..<text.endIndex),
+          let xml = String(text[start.lowerBound..<end.upperBound]).data(using: .utf8),
+          let profile = (try? PropertyListSerialization.propertyList(from: xml, format: nil)) as? [String: Any],
+          let entitlements = profile["Entitlements"] as? [String: Any],
+          let value = entitlements["aps-environment"] as? String else {
+          result(nil)
+          return
+        }
+        result(value == "development" ? "sandbox" : value == "production" ? "production" : nil)
+        return
+      }
       if call.method == "notification" {
         result(self?.supportNotification)
         self?.supportNotification = nil
@@ -57,8 +122,18 @@ import UserNotifications
       guard call.method == "token" else { result(FlutterMethodNotImplemented); return }
       UNUserNotificationCenter.current().requestAuthorization(options: [.alert, .sound, .badge]) { granted, _ in
         DispatchQueue.main.async {
-          if granted { UIApplication.shared.registerForRemoteNotifications() }
-          result(granted ? self?.supportPushToken : nil)
+          guard let self = self else { result(nil); return }
+          guard granted else { result(nil); return }
+          if let token = self.supportPushToken { result(token); return }
+          self.pushWaiters.append(result)
+          guard self.pushWaiters.count == 1 else { return }
+          self.pushRequestID += 1
+          let requestID = self.pushRequestID
+          UIApplication.shared.registerForRemoteNotifications()
+          DispatchQueue.main.asyncAfter(deadline: .now() + 15) { [weak self] in
+            guard let self = self, self.pushRequestID == requestID else { return }
+            self.finishPushRegistration(FlutterError(code: "APNS_TIMEOUT", message: "APNs registration timed out", details: nil))
+          }
         }
       }
     }

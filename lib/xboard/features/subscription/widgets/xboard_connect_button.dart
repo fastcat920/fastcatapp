@@ -1,3 +1,6 @@
+import 'dart:async';
+import 'dart:io';
+import 'package:fl_clash/plugins/service.dart';
 import 'package:fl_clash/common/common.dart';
 import 'package:fl_clash/l10n/l10n.dart';
 import 'package:fl_clash/providers/providers.dart';
@@ -33,7 +36,11 @@ class XBoardConnectButton extends ConsumerStatefulWidget {
 }
 
 class _XBoardConnectButtonState extends ConsumerState<XBoardConnectButton>
-    with SingleTickerProviderStateMixin {
+    with SingleTickerProviderStateMixin, WidgetsBindingObserver {
+  Timer? _autoConnectTimer;
+  bool _autoConnectConsumed = false;
+  bool _wasBackgrounded = false;
+  int _autoConnectGeneration = 0;
   late AnimationController _controller;
   late Animation<double> _animation;
   bool isStart = false;
@@ -61,6 +68,8 @@ class _XBoardConnectButtonState extends ConsumerState<XBoardConnectButton>
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
+    WidgetsBinding.instance.addPostFrameCallback((_) => _scheduleAutoConnect());
     _tvFocusNode = FocusNode(debugLabel: 'home-connect');
     TvFocusRestoration.registerDefault(_tvFocusNode);
     isStart = globalState.appState.runTime != null;
@@ -96,6 +105,9 @@ class _XBoardConnectButtonState extends ConsumerState<XBoardConnectButton>
 
   @override
   void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    _autoConnectGeneration++;
+    _autoConnectTimer?.cancel();
     TvFocusRestoration.unregisterDefault(_tvFocusNode);
     _tvFocusNode.dispose();
     globalState.isCoreSwitchingNotifier.removeListener(_handleCoreSwitching);
@@ -107,11 +119,91 @@ class _XBoardConnectButtonState extends ConsumerState<XBoardConnectButton>
     super.dispose();
   }
 
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (!Platform.isIOS) return;
+    if (state == AppLifecycleState.paused ||
+        state == AppLifecycleState.hidden) {
+      _wasBackgrounded = true;
+      _autoConnectGeneration++;
+      _autoConnectTimer?.cancel();
+    } else if (state == AppLifecycleState.resumed) {
+      if (_wasBackgrounded) {
+        _autoConnectConsumed = false;
+        _wasBackgrounded = false;
+      }
+      _scheduleAutoConnect();
+    }
+  }
+
+  void _scheduleAutoConnect() {
+    _autoConnectTimer?.cancel();
+    if (!mounted ||
+        !Platform.isIOS ||
+        _autoConnectConsumed ||
+        !ref.read(appSettingProvider).autoRun) {
+      return;
+    }
+    _autoConnectTimer = Timer(
+        const Duration(milliseconds: 500), () => unawaited(_tryAutoConnect()));
+  }
+
+  Future<void> _tryAutoConnect() async {
+    if (!mounted ||
+        _autoConnectConsumed ||
+        WidgetsBinding.instance.lifecycleState != AppLifecycleState.resumed) {
+      return;
+    }
+    if (!ref.read(appSettingProvider).autoRun) return;
+    if (!ref.read(xboardUserProvider).isAuthenticated ||
+        ref.read(currentProfileIdProvider) == null ||
+        !globalState.coreStatusReadyNotifier.value ||
+        _isBusy) {
+      _scheduleAutoConnect();
+      return;
+    }
+    final generation = _autoConnectGeneration;
+    try {
+      final snapshot = await service!.restoreIosVpnState();
+      if (!mounted ||
+          generation != _autoConnectGeneration ||
+          _autoConnectConsumed ||
+          WidgetsBinding.instance.lifecycleState != AppLifecycleState.resumed ||
+          !ref.read(appSettingProvider).autoRun) {
+        return;
+      }
+      final status = snapshot['status'];
+      if (status == 'connected') {
+        _autoConnectConsumed = true;
+        await globalState.appController.restoreIosConnection();
+        return;
+      }
+      if (status != 'disconnected') {
+        _scheduleAutoConnect();
+        return;
+      }
+      if (_isBusy) {
+        _scheduleAutoConnect();
+        return;
+      }
+      _autoConnectConsumed = true;
+      debugPrint('[IOSAutoConnect] starting once after readiness');
+      await handleSwitchStart();
+    } catch (_) {
+      // Status-read failures are not permission to start or stop a tunnel.
+      if (!_autoConnectConsumed && generation == _autoConnectGeneration) {
+        _scheduleAutoConnect();
+      }
+    }
+  }
+
   void _handleCoreSwitching() {
     if (mounted) setState(() {});
   }
 
   Future<void> handleSwitchStart() async {
+    _autoConnectConsumed = true;
+    _autoConnectTimer?.cancel();
     if (_isBusy || globalState.appController.isCoreSwitching) {
       return;
     }
@@ -385,7 +477,8 @@ class _XBoardConnectButtonState extends ConsumerState<XBoardConnectButton>
             final text = _showProgress
                 ? _busyLabel(context)
                 : utils.getTimeText(runTime);
-            return _LeftScrollingText(
+            return _ConnectionTimerLabel(
+              runTime: _showProgress ? null : runTime,
               text: text,
               style:
                   Theme.of(context).textTheme.titleMedium?.toSoftBold.copyWith(
@@ -555,7 +648,10 @@ class _XBoardConnectButtonState extends ConsumerState<XBoardConnectButton>
                                                         ? utils.getTimeText(
                                                             runTime)
                                                         : l10n.tapToConnect;
-                                                    return _LeftScrollingText(
+                                                    return _ConnectionTimerLabel(
+                                                      runTime: isStart
+                                                          ? runTime
+                                                          : null,
                                                       text: label,
                                                       style: Theme.of(context)
                                                           .textTheme
@@ -700,5 +796,26 @@ class _LeftScrollingTextState extends State<_LeftScrollingText> {
     _animationGeneration++;
     _scrollController.dispose();
     super.dispose();
+  }
+}
+
+class _ConnectionTimerLabel extends StatelessWidget {
+  const _ConnectionTimerLabel(
+      {required this.runTime, required this.text, this.style});
+  final int? runTime;
+  final String text;
+  final TextStyle? style;
+  @override
+  Widget build(BuildContext context) {
+    final days = ((runTime ?? 0) ~/ Duration.millisecondsPerDay).clamp(0, 99);
+    final chinese = Localizations.localeOf(context).languageCode == 'zh';
+    return Column(mainAxisSize: MainAxisSize.min, children: [
+      _LeftScrollingText(text: text, style: style),
+      if (days > 0) ...[
+        const SizedBox(height: 8),
+        Text(chinese ? '$days 天' : '$days ${days == 1 ? "day" : "days"}',
+            style: style),
+      ],
+    ]);
   }
 }

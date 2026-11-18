@@ -288,9 +288,3 @@ enum TVProxyRouting {
     return verified
   }
 }
-
-/// Display only; keep raw latency for routing, history and subsequent refreshes.
-func tvDisplayedDelay(_ raw: Int?, discount: Int) -> Int? {
-  guard let raw, raw > 0 else { return raw }
-  return max(1, raw * (100 - min(90, max(0, discount))) / 100)
-}

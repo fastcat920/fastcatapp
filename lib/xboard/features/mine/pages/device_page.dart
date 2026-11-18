@@ -60,8 +60,8 @@ class _DeviceManagementPageState extends ConsumerState<DeviceManagementPage>
     super.dispose();
   }
 
-  Future<void> _refreshPage() async {
-    if (_isRefreshing) return;
+  Future<void> _refreshPage({bool afterMutation = false}) async {
+    if (_isRefreshing || (_isReleasingOfflineDevices && !afterMutation)) return;
     _isRefreshing = true;
     setState(() {
       _future = _loadPageData();
@@ -212,12 +212,17 @@ class _DeviceManagementPageState extends ConsumerState<DeviceManagementPage>
   }
 
   Future<void> _releaseOfflineDevices(_DevicePageData data) async {
-    if (_isReleasingOfflineDevices || _removingDeviceId != null) return;
+    if (_isRefreshing ||
+        _isReleasingOfflineDevices ||
+        _removingDeviceId != null) {
+      return;
+    }
     final epoch = ref.read(sessionEpochProvider);
     final targets = data.offlineActiveDevices;
     if (targets.isEmpty) return;
 
     final l10n = AppLocalizations.of(context);
+    final chinese = Localizations.localeOf(context).languageCode == 'zh';
     final confirmed = await XbConfirmDialog.show(
       context,
       title: l10n.xboardReleaseOfflineDevices,
@@ -230,6 +235,7 @@ class _DeviceManagementPageState extends ConsumerState<DeviceManagementPage>
     if (!confirmed || !_isCurrent(epoch)) return;
 
     setState(() => _isReleasingOfflineDevices = true);
+    var released = 0;
     try {
       final sdk = await ref.read(xboardSdkProvider.future);
       for (final device in targets) {
@@ -241,24 +247,34 @@ class _DeviceManagementPageState extends ConsumerState<DeviceManagementPage>
             headers: headers,
           ),
         );
+        released++;
       }
 
       if (!mounted || !_isCurrent(epoch)) return;
       XBoardNotification.showSuccess(
         AppLocalizations.of(context).xboardDeviceRemoved,
       );
-      await _refreshPage();
     } catch (e) {
       if (_isCurrent(epoch)) {
         XBoardNotification.showError(
-          BackendMessageMapper.mapError(
-            e,
-            context: BackendMessageContext.generic,
-          ),
+          released == 0
+              ? BackendMessageMapper.mapError(
+                  e,
+                  context: BackendMessageContext.generic,
+                )
+              : (chinese
+                  ? '已释放 $released/${targets.length} 台设备，其余设备的结果未确认，请核对刷新后的列表'
+                  : 'Released $released/${targets.length} devices. The remaining results are unconfirmed. Check the refreshed list.'),
         );
       }
     } finally {
-      if (mounted) setState(() => _isReleasingOfflineDevices = false);
+      try {
+        if (_isCurrent(epoch)) await _refreshPage(afterMutation: true);
+      } catch (_) {
+        // FutureBuilder displays the refresh failure and provides retry.
+      } finally {
+        if (mounted) setState(() => _isReleasingOfflineDevices = false);
+      }
     }
   }
 
@@ -443,10 +459,11 @@ class _DeviceManagementPageState extends ConsumerState<DeviceManagementPage>
               Align(
                 alignment: Alignment.centerLeft,
                 child: FilledButton.icon(
-                  onPressed:
-                      _isReleasingOfflineDevices || _removingDeviceId != null
-                          ? null
-                          : () => _releaseOfflineDevices(data),
+                  onPressed: _isRefreshing ||
+                          _isReleasingOfflineDevices ||
+                          _removingDeviceId != null
+                      ? null
+                      : () => _releaseOfflineDevices(data),
                   style: XbUiButton.filledDanger(
                     context,
                     busy: _isReleasingOfflineDevices,

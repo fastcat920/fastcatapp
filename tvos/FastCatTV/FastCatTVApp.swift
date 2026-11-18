@@ -102,6 +102,7 @@ private struct RootView: View {
   @EnvironmentObject private var session: SessionStore
   @Environment(\.openURL) private var openURL
   @AppStorage(TVLanguage.preferenceKey) private var language = TVLanguage.system.rawValue
+  @State private var updateStoreMessage: String?
   @State private var availableUpdate: TVUpdateInfo?
   @State private var refreshingConfig = false
   @State private var configRequestRunning = false
@@ -148,6 +149,7 @@ private struct RootView: View {
 #endif
       connectivity.start()
       await session.maintainSession()
+      await checkForUpdates()
     }
     .onDisappear { connectivity.stop() }
     .onReceive(NotificationCenter.default.publisher(for: GatewayClient.serviceRequestFailed)) { _ in
@@ -181,7 +183,7 @@ private struct RootView: View {
     defer { refreshingConfig = false; configRequestRunning = false }
     do {
       let online = try await TVRemoteConfigManager.shared.refresh()
-      await checkForUpdates()
+      await checkForUpdates(presentAgain: true)
       connectivity.requestCheck()
       if availableUpdate == nil {
         refreshMessage = online
@@ -194,11 +196,19 @@ private struct RootView: View {
   }
 
   @MainActor
-  private func checkForUpdates() async {
-    availableUpdate = await TVRemoteConfigManager.shared.availableTVUpdate(
+  private func checkForUpdates(presentAgain: Bool = false) async {
+    let update = await TVRemoteConfigManager.shared.availableTVUpdate(
       language: TVLanguage.resolved(from: language)
     )
-    NotificationCenter.default.post(name: .tvUpdateAvailability, object: availableUpdate != nil)
+    NotificationCenter.default.post(name: .tvUpdateAvailability, object: update != nil)
+    guard let update else { availableUpdate = nil; return }
+    let key = "fastcat.tv.lastPromptedOptionalUpdate"
+    if availableUpdate?.releaseIdentity == update.releaseIdentity || update.force || presentAgain ||
+        UserDefaults.standard.string(forKey: key) != update.releaseIdentity {
+      if availableUpdate?.releaseIdentity != update.releaseIdentity { updateStoreMessage = nil }
+      availableUpdate = update
+      if !update.force { UserDefaults.standard.set(update.releaseIdentity, forKey: key) }
+    }
   }
 
   private var appVersion: String {
@@ -215,6 +225,9 @@ private struct RootView: View {
       VStack(alignment: .leading, spacing: tv(12)) {
         Text(tvText("当前版本：V\(appVersion)", "Current version: V\(appVersion)", language: language))
           .foregroundStyle(TVTheme.textPrimary)
+        if let updateStoreMessage {
+          Text(updateStoreMessage).foregroundStyle(TVTheme.textSecondary)
+        }
         if !update.releaseNotes.isEmpty {
           Text(tvText("更新内容", "What's new", language: language))
             .font(TVFont.medium(14))
@@ -228,7 +241,7 @@ private struct RootView: View {
           TVFocusButton(cornerRadius: TVTheme.compactRadius, action: {
             availableUpdate = nil
           }) { _ in
-            Text(tvText("稍后更新", "Later", language: language))
+            Text(tvText("取消", "Cancel", language: language))
               .font(TVFont.regular(14))
               .padding(.horizontal, tv(18))
               .frame(height: tv(48))
@@ -241,11 +254,14 @@ private struct RootView: View {
           autofocus: true,
           focus: $updateActionFocused,
           action: {
-            openURL(update.updateURL)
-            if !update.force { availableUpdate = nil }
+            openURL(update.updateURL) { accepted in
+              updateStoreMessage = accepted
+                ? tvText("请在 App Store 完成更新，安装后重新打开客户端。", "Update in the App Store, then open the app again.", language: language)
+                : tvText("无法打开 App Store，请检查商店地址或网络后重试。", "Could not open the App Store. Check the store link or connection and retry.", language: language)
+            }
           }
         ) { _ in
-          Text(tvText("立即更新", "Update now", language: language))
+          Text(tvText("更新", "Update", language: language))
             .font(TVFont.regular(14))
             .foregroundStyle(.white)
             .padding(.horizontal, tv(18))

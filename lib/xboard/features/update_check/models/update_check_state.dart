@@ -1,4 +1,9 @@
+import 'update_artifact.dart';
+
 class UpdateCheckState {
+  final UpdateArtifact? artifact;
+  final int? build;
+  final bool trusted;
   final bool isChecking;
   final bool hasUpdate;
   final String? currentVersion;
@@ -8,6 +13,9 @@ class UpdateCheckState {
   final bool forceUpdate;
   final String? error;
   const UpdateCheckState({
+    this.artifact,
+    this.build,
+    this.trusted = false,
     this.isChecking = false,
     this.hasUpdate = false,
     this.currentVersion,
@@ -17,7 +25,12 @@ class UpdateCheckState {
     this.forceUpdate = false,
     this.error,
   });
+  static const _unset = Object();
+  String get releaseIdentity => '${latestVersion ?? ""}+${build ?? ""}';
   UpdateCheckState copyWith({
+    Object? artifact = _unset,
+    Object? build = _unset,
+    bool? trusted,
     bool? isChecking,
     bool? hasUpdate,
     String? currentVersion,
@@ -28,6 +41,11 @@ class UpdateCheckState {
     String? error,
   }) {
     return UpdateCheckState(
+      artifact: identical(artifact, _unset)
+          ? this.artifact
+          : artifact as UpdateArtifact?,
+      build: identical(build, _unset) ? this.build : build as int?,
+      trusted: trusted ?? this.trusted,
       isChecking: isChecking ?? this.isChecking,
       hasUpdate: hasUpdate ?? this.hasUpdate,
       currentVersion: currentVersion ?? this.currentVersion,

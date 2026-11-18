@@ -660,14 +660,6 @@ class XBoardConfig {
       .map((e) => e.url)
       .toList();
 
-  /// 获取 Crisp 客服 Website ID（来自远程配置 contact.crisp_website_id）
-  /// 为空字符串表示未配置，UI 层应据此决定是否显示客服入口
-  static String get crispWebsiteId => _instance?.crispWebsiteId ?? '';
-
-  /// 获取 Crisp 反向代理地址（来自远程配置 contact.crisp_proxy_url）
-  /// 为空字符串表示直接使用官方 Crisp 域名
-  static String get crispProxyUrl => _instance?.crispProxyUrl ?? '';
-
   /// FastCat Support 客服平台配置（远程 contact.fastcat_support）。
   static bool get fastCatSupportEnabled =>
       _instance?.fastCatSupportEnabled ?? false;
@@ -681,18 +673,8 @@ class XBoardConfig {
   static String get fastCatSupportAppKey =>
       _instance?.fastCatSupportAppKey ?? '';
 
-  /// 获取 Salesmartly 客服配置（来自远程配置 contact.salesmartly_token）
-  /// 支持两种格式：
-  /// - 新版：完整 JS URL，如 https://assets.salesmartly.com/js/project_XXXXX_XXXXX_XXXXXXXXXX.js
-  /// - 旧版：Widget Token 字符串
-  /// 为空字符串表示未配置
-  static String get salesmartlyToken => _instance?.salesmartlyToken ?? '';
-
-  /// 是否有任何客服渠道已配置（Salesmartly 或 Crisp）
-  static bool get hasCustomerService =>
-      fastCatSupportEnabled ||
-      salesmartlyToken.isNotEmpty ||
-      crispWebsiteId.isNotEmpty;
+  /// Only the current FastCat Support integration is available.
+  static bool get hasCustomerService => fastCatSupportEnabled;
 
   /// 获取邀请链接自定义域名（来自远程配置 contact.invite_domain）
   /// 为空字符串表示使用面板域名拼接邀请链接
@@ -709,39 +691,15 @@ class XBoardConfig {
 
   static String get telegramGroupUrl => _instance?.telegramGroupUrl ?? '';
 
-  /// 获取 ImgBB API Key（来自远程配置 ticket.imgbb_api_key）
-  /// 为空字符串表示未配置，工单图片上传功能将被禁用
-  /// 前往 https://imgbb.com 注册并获取 API Key
-  static String get imgbbApiKey => _instance?.imgbbApiKey ?? '';
-
-  /// 是否显示流量明细（来自远程配置 features.traffic_details_enabled，默认 true）
-  static bool get isTrafficDetailsEnabled =>
-      _instance?.trafficDetailsEnabled ?? true;
-
-  /// 是否显示文档中心（来自远程配置 features.knowledge_base_enabled，默认 true）
-  static bool get isKnowledgeBaseEnabled =>
-      _instance?.knowledgeBaseEnabled ?? true;
-
-  /// 是否显示礼品卡兑换（来自远程配置 features.gift_card_enabled，默认 true）
-  static bool get isGiftCardEnabled => _instance?.giftCardEnabled ?? true;
-
-  /// 是否显示加入群组（来自远程配置 features.join_group_enabled，默认 true）
-  static bool get isJoinGroupEnabled => _instance?.joinGroupEnabled ?? true;
-
-  /// 是否显示订单记录（来自远程配置 features.orders_enabled，默认 true）
-  static bool get isOrdersEnabled => _instance?.ordersEnabled ?? true;
-
-  /// 是否显示设备管理（来自远程配置 features.devices_enabled，默认 true）
-  static bool get isDevicesEnabled => _instance?.devicesEnabled ?? true;
-
-  /// 是否显示我的工单（来自远程配置 features.tickets_enabled，默认 true）
-  static bool get isTicketsEnabled => _instance?.ticketsEnabled ?? true;
-
-  /// 是否显示余额充值（来自远程配置 features.balance_enabled，默认 true）
-  static bool get isBalanceEnabled => _instance?.balanceEnabled ?? true;
-
-  /// 节点延迟显示折扣百分比（0–90）；仅影响 UI，不影响内核选路。
-  static int get delayDiscountPercent => _instance?.delayDiscountPercent ?? 0;
+  // Menu availability is fixed product policy, independent of OSS/local YAML.
+  static bool get isTrafficDetailsEnabled => true;
+  static bool get isKnowledgeBaseEnabled => true;
+  static bool get isGiftCardEnabled => true;
+  static bool get isJoinGroupEnabled => false;
+  static bool get isOrdersEnabled => true;
+  static bool get isDevicesEnabled => true;
+  static bool get isTicketsEnabled => false;
+  static bool get isBalanceEnabled => true;
 
   /// 刷新配置
   static Future<void> refresh() async {

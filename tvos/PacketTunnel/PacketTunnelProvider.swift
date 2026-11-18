@@ -1,6 +1,7 @@
 import NetworkExtension
 import Foundation
 import Darwin
+import Network
 
 // App Group identifier — must match Runner's entitlements.
 // Dynamically derived from the extension's bundle ID at runtime.
@@ -34,6 +35,48 @@ private let kAppGroupId: String = {
 /// The bridging header PacketTunnel-Bridging-Header.h exposes
 /// the C API from libclash.a.
 class PacketTunnelProvider: NEPacketTunnelProvider {
+  private let upstreamQueue = DispatchQueue(label: "fastcat.upstream-path")
+  private var upstreamMonitor: NWPathMonitor?
+  private var upstreamGeneration = UUID()
+  private var upstreamIndex: UInt32 = 0
+
+  private func watchUnderlyingPath(completion: @escaping (Error?) -> Void) {
+    upstreamQueue.async {
+      self.upstreamMonitor?.cancel()
+      let generation=UUID();self.upstreamGeneration=generation
+      let monitor=NWPathMonitor();self.upstreamMonitor=monitor
+      var firstReply: ((Error?) -> Void)? = completion
+      monitor.pathUpdateHandler = { [weak self] path in
+        guard let self, self.upstreamGeneration==generation else {return}
+        let interface = path.status == .satisfied ? path.availableInterfaces.first(where: {
+          ($0.type == .wifi || $0.type == .cellular || $0.type == .wiredEthernet)
+            && path.usesInterfaceType($0.type)
+        }) : nil
+        let index=interface.map {UInt32($0.index)} ?? 0
+        if index != self.upstreamIndex {
+          self.upstreamIndex=index
+          ClashCore_set_upstream_interface(index)
+          NSLog("[PacketTunnelUpstream] physical-path ready=%d index=%u",index != 0,index)
+        }
+        if index != 0, let reply=firstReply {
+          firstReply=nil
+          DispatchQueue.global(qos:.userInitiated).async {reply(nil)}
+        }
+      }
+      // Install the fail-closed socket policy before loading any provider/DNS.
+      self.upstreamIndex=0
+      ClashCore_set_upstream_interface(0)
+      monitor.start(queue:self.upstreamQueue)
+      self.upstreamQueue.asyncAfter(deadline:.now()+8) {
+        guard self.upstreamGeneration==generation, let reply=firstReply else {return}
+        firstReply=nil
+        self.upstreamMonitor?.cancel()
+        DispatchQueue.global().async {reply(self.makeError("Underlying network is unavailable"))}
+      }
+    }
+  }
+
+
   private let latencyQueue: OperationQueue = {
     let queue = OperationQueue()
     queue.maxConcurrentOperationCount = 4
@@ -119,6 +162,14 @@ class PacketTunnelProvider: NEPacketTunnelProvider {
     options: [String: NSObject]?,
     completionHandler: @escaping (Error?) -> Void
   ) {
+    watchUnderlyingPath { [weak self] error in
+      guard let self else {return}
+      if let error {completionHandler(error);return}
+      self.startTunnelOnReadyPath(options:options,completionHandler:completionHandler)
+    }
+  }
+
+  private func startTunnelOnReadyPath(options: [String: NSObject]?, completionHandler: @escaping (Error?) -> Void) {
     NSLog("[PacketTunnel] startTunnel called")
     // The main app supplies the decoded profile only for this tunnel start.
     // Do not restore YAML from the shared container or VPN preferences: those
@@ -219,6 +270,11 @@ class PacketTunnelProvider: NEPacketTunnelProvider {
     with reason: NEProviderStopReason,
     completionHandler: @escaping () -> Void
   ) {
+    upstreamQueue.sync {
+      upstreamGeneration=UUID()
+      upstreamMonitor?.cancel();upstreamMonitor=nil;upstreamIndex=0
+      ClashCore_set_upstream_interface(0)
+    }
     stopPacketForwarding()
     isTrafficEnabled = false
     ClashCore_shutdown()
@@ -362,7 +418,7 @@ class PacketTunnelProvider: NEPacketTunnelProvider {
     let dnsServers = ["198.18.0.2"]
 
     // NetworkExtension owns routes; the userspace stack owns TCP/UDP and DNS.
-    // Provider-originated upstream sockets use the underlying network.
+    // Provider-originated sockets explicitly bind to the physical path.
     let ipv4 = NEIPv4Settings(
       addresses: ["198.18.0.1"],
       subnetMasks: ["255.255.255.252"]

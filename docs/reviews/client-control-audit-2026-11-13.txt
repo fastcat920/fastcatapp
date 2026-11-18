@@ -1,0 +1,732 @@
+最终状态：原始439处回调位置静态核对已完成；补查项与结论见文末。实际运行验收未完成。
+此前“剩余339/375”等为历史进度，不再有效。
+
+客户端逐控件检查记录（2026-11-13）
+范围：当前工作区，保留用户未提交修改；本次未修改产品代码。
+方法：页面与交互入口枚举、重点处理逻辑追踪、现有功能测试。
+状态：持续检查记录，不是全量验收通过报告。下方自动枚举的控件位置仅代表已纳入范围，不能代表逐项人工检查完成。
+验证：flutter test test/xboard/features，共 361 项通过。此前 invite/mine 的 38 项也通过，包含在上述范围内，不重复计数。
+运行限制：未进行登录后全页面人工操作，未操作实际交易、设备移除或注销；tvOS 未启动运行验证。
+
+已确认问题（源码证据）
+1. 高：邀请佣金划转成功后刷新失败，整次操作返回 false，弹窗提示划转失败，可能诱导重复划转。
+   invite/providers/invite_provider.dart:435-469；455 行刷新位于同一 try 内。提现已单独保护刷新失败，划转没有。
+   建议：区分交易成功与展示刷新失败，成功后禁止重复提交并提示稍后刷新。
+2. 中：手机流量明细空状态没有任何刷新出口。subscription/pages/subscription_page.dart:197；空态为 Center，刷新按钮只在桌面或 TV，RefreshIndicator 只包裹非空列表。
+   建议：空态仍保留可下拉列表和刷新按钮。
+3. 中：独立余额明细页无刷新入口，空状态无法重新查询。mine/pages/balance_records_page.dart:14-20、100-121。
+   建议：页面增加刷新；分页失败时保留数据但展示失败与重试，当前 _error 只在 _items 为空时展示。
+4. 中：设备批量释放逐个请求，部分成功后某个失败进入 catch，不刷新列表；页面继续显示已移除设备，用户无法知道完成了多少。
+   mine/pages/device_page.dart:234-259。建议 finally 刷新，并显示成功/失败数量。
+5. 中：加入群组未等待或检查 launchUrl 的返回值。mine/pages/mine_page.dart:539、550。
+   建议：无法打开时提示并提供复制链接或浏览器入口。
+6. 中：工单空状态提示创建，但没有创建按钮或创建流程；手机空态也没有下拉刷新。
+   mine/pages/ticket_page.dart:91、底部 _EmptyView；features 内未发现 createTicket 调用。
+   建议：若只展示提现工单，明确文案；若支持通用工单，补创建入口。不要把产品意图当成已确定缺陷。
+7. 低：工单列表相对时间固定中文，英文界面仍显示“刚刚/分钟前”等。
+   mine/pages/ticket_page.dart:_formatDate。建议使用现有本地化文案。
+8. 优化：优惠券“去使用”仅跳 /plans，不携带 coupon.id。mine/pages/coupon_wallet_page.dart:295-300。
+   建议：筛选适用套餐并在购买页预选该券；当前并非完全无法使用，只是上下文丢失。
+9. 优化：tvOS 日志行、流媒体结果卡片确认键为空动作。TVToolsView.swift:364、600 附近。
+   可聚焦结果可能用于遥控滚动，不应直接定为功能错误。建议日志提供全文详情；结果明确静态展示或提供说明。
+10. 优化：tvOS 与 Flutter TV 的账号套餐卡片点击动作是刷新，缺少明确动作标识。
+    TVToolsView.swift:251；mine/pages/account_info_page.dart:151。建议添加刷新图标和最近刷新时间。
+
+已核对的重点控件组（静态；均未声明真机通过）
+首页：连接/断开、自动连接、订阅阻断、购买/流量恢复/刷新、路由模式、节点列表、节点选择、全部/单节点测速、更新节点、公告详情与关闭、官网、工具设置、账号、VPN/TUN 开关。
+套餐：购买入口、内嵌购买返回、周期、优惠券选择/清除、促销选择、预览、下单；订单支付方式、付款、取消、状态检查、外部支付返回、支付后同步；充值金额、提交、自动续费、余额记录；优惠券四种筛选与锁定订单查看。
+邀请：刷新、邀请码生成/复制、邀请链接复制、三个数据标签、记录翻页、提现金额/方式/账号/提交/取消、划转金额/提交/取消。
+我的：账号入口、订单/设备/流量/充值/文档/礼品卡/群组/客服/工具入口；提醒开关、修改邮箱/密码、退出/强制退出、注销验证码/确认；设备单项删除/当前设备移除/批量释放/扫码；工单详情回复/关闭。
+设置：语言、主题、启动、DNS IPv6/覆盖/模式/各服务器编辑/重置/应用重连、自定义分流新增/编辑/取消/删除/排序、Android 应用排除搜索/系统应用/保存/放弃/继续编辑、连接保护系统设置入口/刷新。
+诊断：两标签、域名输入、开始、复制报告、一键修复、服务刷新；流媒体检测开始/停止/重测/自选目标/结果/复制；日志搜索/复制/清空/隐藏；关于版本/检查更新/日志/法律文档；更新下载/重试/安装/商店/取消。
+认证：邮箱/密码/显示密码/记住密码、登录方式、二维码刷新、扫码授权/取消、相机权限设置/重试、注册输入/验证码/协议、重置密码两步骤/返回。
+tvOS：首次隐私说明/条款二维码/暂不使用/继续；账号登录/扫码/刷新/注册/重置、语言/主题；首页连接/路由/节点/公告/账号/工具/服务状态；节点刷新/测速/单选/返回；账号刷新/退出/注销；分流编辑/保存/取消/删除/排序；流媒体开始/停止/结果；日志暂停/继续/清空；版本更新与商店失败反馈。
+
+平台差异：tvOS 不提供四菜单的全部商业页面，未发现完整套餐购买、邀请、订单和设备管理页。需确认产品边界；若由手机办理，应提供二维码交接及到期/无套餐/耗尽后的恢复路径。
+
+尚未完成：以下逐行入口清单的每一项处理链全部人工复核、所有非按钮交互与动态内容穷举，以及各平台实际操作。自动枚举会包含包装控件、重复入口和内部非交互节点，不能用数量作为验收覆盖率。
+
+页面文件清单（34 个 Flutter 页面文件）
+lib/xboard/features/about/pages/fastcat_about_page.dart
+lib/xboard/features/auth/pages/forgot_password_page.dart
+lib/xboard/features/auth/pages/login_page.dart
+lib/xboard/features/auth/pages/qr_login_scanner_page.dart
+lib/xboard/features/auth/pages/register_page.dart
+lib/xboard/features/diagnostics/pages/diagnostics_center_page.dart
+lib/xboard/features/diagnostics/pages/net_check_page.dart
+lib/xboard/features/docs/pages/docs_page.dart
+lib/xboard/features/invite/pages/invite_page.dart
+lib/xboard/features/logs/pages/fastcat_logs_page.dart
+lib/xboard/features/mine/pages/account_info_page.dart
+lib/xboard/features/mine/pages/balance_records_page.dart
+lib/xboard/features/mine/pages/coupon_wallet_page.dart
+lib/xboard/features/mine/pages/device_page.dart
+lib/xboard/features/mine/pages/gift_card_page.dart
+lib/xboard/features/mine/pages/mine_page.dart
+lib/xboard/features/mine/pages/order_page.dart
+lib/xboard/features/mine/pages/ticket_detail_page.dart
+lib/xboard/features/mine/pages/ticket_page.dart
+lib/xboard/features/nodes/pages/fastcat_nodes_page.dart
+lib/xboard/features/payment/pages/order_detail_page.dart
+lib/xboard/features/payment/pages/payment_webview_page.dart
+lib/xboard/features/payment/pages/plan_purchase_page.dart
+lib/xboard/features/payment/pages/plans.dart
+lib/xboard/features/payment/pages/recharge_page.dart
+lib/xboard/features/settings/pages/fastcat_app_exclusion_page.dart
+lib/xboard/features/settings/pages/fastcat_auto_start_settings_page.dart
+lib/xboard/features/settings/pages/fastcat_background_protection_page.dart
+lib/xboard/features/settings/pages/fastcat_custom_routing_page.dart
+lib/xboard/features/settings/pages/fastcat_dns_settings_page.dart
+lib/xboard/features/settings/pages/fastcat_settings_page.dart
+lib/xboard/features/streaming_check/pages/streaming_check_page.dart
+lib/xboard/features/subscription/pages/subscription_page.dart
+lib/xboard/features/subscription/pages/xboard_home_page.dart
+
+交互入口位置索引（待逐项关闭）
+[已静态核对；运行待验] lib/xboard/features/about/pages/fastcat_about_page.dart:68 onTap: _onLogoTap,
+[已静态核对；运行待验] lib/xboard/features/about/pages/fastcat_about_page.dart:142 onTap: update.isChecking
+[已静态核对；运行待验] lib/xboard/features/about/pages/fastcat_about_page.dart:152 onPressed: update.isChecking
+[已静态核对；运行待验] lib/xboard/features/about/pages/fastcat_about_page.dart:167 onTap: () => Navigator.of(context).push(
+[已静态核对；运行待验] lib/xboard/features/about/pages/fastcat_about_page.dart:179 onPressed: () => Navigator.of(context)
+[已静态核对；运行待验] lib/xboard/features/auth/pages/forgot_password_page.dart:177 onPressed: _isLoading ? null : _sendVerificationCode,
+[已静态核对；运行待验] lib/xboard/features/auth/pages/forgot_password_page.dart:183 onPressed: null,
+[已静态核对；运行待验] lib/xboard/features/auth/pages/forgot_password_page.dart:195 onPressed: _sendVerificationCode,
+[已静态核对；运行待验] lib/xboard/features/auth/pages/forgot_password_page.dart:268 onPressed: () {
+[已静态核对；运行待验] lib/xboard/features/auth/pages/forgot_password_page.dart:298 onPressed: () {
+[已静态核对；运行待验] lib/xboard/features/auth/pages/forgot_password_page.dart:319 onPressed: _isLoading ? null : _resetPassword,
+[已静态核对；运行待验] lib/xboard/features/auth/pages/forgot_password_page.dart:325 onPressed: null,
+[已静态核对；运行待验] lib/xboard/features/auth/pages/forgot_password_page.dart:337 onPressed: _resetPassword,
+[已静态核对；运行待验] lib/xboard/features/auth/pages/forgot_password_page.dart:363 onPressed: _isLoading ? null : _goBackToSendCode,
+[已静态核对；运行待验] lib/xboard/features/auth/pages/forgot_password_page.dart:368 onPressed: _isLoading ? null : _goBackToSendCode,
+[已静态核对；运行待验] lib/xboard/features/auth/pages/forgot_password_page.dart:401 onPressed: () {
+[已静态核对；运行待验] lib/xboard/features/auth/pages/forgot_password_page.dart:409 onPressed: () {
+[已静态核对；运行待验] lib/xboard/features/auth/pages/forgot_password_page.dart:491 onPressed: () => context.pop(),
+[已静态核对；运行待验] lib/xboard/features/auth/pages/forgot_password_page.dart:498 onPressed: () => context.pop(),
+[已静态核对；运行待验] lib/xboard/features/auth/pages/login_page.dart:262 onPressed: onPressed,
+[已静态核对；运行待验] lib/xboard/features/auth/pages/login_page.dart:271 onPressed: onPressed,
+[已静态核对；运行待验] lib/xboard/features/auth/pages/login_page.dart:294 onPressed: _chooseTvLanguage,
+[已静态核对；运行待验] lib/xboard/features/auth/pages/login_page.dart:308 onPressed: _toggleTvTheme,
+[已静态核对；运行待验] lib/xboard/features/auth/pages/login_page.dart:585 onPressed: _isCheckingWebsite
+[已静态核对；运行待验] lib/xboard/features/auth/pages/login_page.dart:621 onPressed: () => CustomerServiceHelper.open(context),
+[已静态核对；运行待验] lib/xboard/features/auth/pages/login_page.dart:693 onPressed: () => _setLoginMethod(!_showQrLogin),
+[已静态核对；运行待验] lib/xboard/features/auth/pages/login_page.dart:825 onPressed: () {
+[已静态核对；运行待验] lib/xboard/features/auth/pages/login_page.dart:862 onPressed: () {
+[已静态核对；运行待验] lib/xboard/features/auth/pages/login_page.dart:869 onTap: () {
+[已静态核对；运行待验] lib/xboard/features/auth/pages/login_page.dart:886 onChanged: (value) {
+[已静态核对；运行待验] lib/xboard/features/auth/pages/login_page.dart:963 onPressed: () {
+[已静态核对；运行待验] lib/xboard/features/auth/pages/login_page.dart:998 onPressed:
+[已静态核对；运行待验] lib/xboard/features/auth/pages/login_page.dart:1006 onPressed:
+[已静态核对；运行待验] lib/xboard/features/auth/pages/login_page.dart:1105 onPressed: isIniting
+[已静态核对；运行待验] lib/xboard/features/auth/pages/login_page.dart:1118 onPressed: isIniting
+[已静态核对；运行待验] lib/xboard/features/auth/pages/login_page.dart:1139 onPressed: isIniting
+[已静态核对；运行待验] lib/xboard/features/auth/pages/login_page.dart:1152 onPressed: isIniting
+[已静态核对；运行待验] lib/xboard/features/auth/pages/login_page.dart:1212 onPressed: () => Navigator.of(context).push(
+[已静态核对；运行待验] lib/xboard/features/auth/pages/login_page.dart:1219 onTap: () => Navigator.of(context).push(
+[已静态核对；运行待验] lib/xboard/features/auth/pages/qr_login_scanner_page.dart:118 onPressed: () => Navigator.pop(context, false),
+[已静态核对；运行待验] lib/xboard/features/auth/pages/qr_login_scanner_page.dart:121 onPressed: () => Navigator.pop(context, true),
+[已静态核对；运行待验] lib/xboard/features/auth/pages/qr_login_scanner_page.dart:190 onPressed: error.errorCode ==
+[已静态核对；运行待验] lib/xboard/features/auth/pages/register_page.dart:192 onPressed: () {
+[已静态核对；运行待验] lib/xboard/features/auth/pages/register_page.dart:242 onPressed: () => context.pop(),
+[已静态核对；运行待验] lib/xboard/features/auth/pages/register_page.dart:244 onPressed: () => context.pop(),
+[已静态核对；运行待验] lib/xboard/features/auth/pages/register_page.dart:335 onPressed: () {
+[已静态核对；运行待验] lib/xboard/features/auth/pages/register_page.dart:364 onPressed: () {
+[已静态核对；运行待验] lib/xboard/features/auth/pages/register_page.dart:402 onPressed: _sendEmailCode,
+[已静态核对；运行待验] lib/xboard/features/auth/pages/register_page.dart:435 onChanged: (value) {
+[已静态核对；运行待验] lib/xboard/features/auth/pages/register_page.dart:444 onPressed: _isRegistering || !_hasAcceptedLegalTerms
+[已静态核对；运行待验] lib/xboard/features/auth/pages/register_page.dart:452 onPressed: null,
+[已静态核对；运行待验] lib/xboard/features/auth/pages/register_page.dart:467 onPressed: _hasAcceptedLegalTerms
+[已静态核对；运行待验] lib/xboard/features/auth/pages/register_page.dart:512 onPressed: () => context.pop(),
+[已静态核对；运行待验] lib/xboard/features/auth/pages/register_page.dart:519 onPressed: () => context.pop(),
+[已静态核对；运行待验] lib/xboard/features/auth/utils/customer_service_helper.dart:603 leading: BackButton(onPressed: hide)),
+[已静态核对；运行待验] lib/xboard/features/auth/widgets/qr_login_card.dart:258 onPressed: canInteract ? _refresh : null,
+[已静态核对；运行待验] lib/xboard/features/auth/widgets/qr_login_card.dart:314 onPressed: _refresh,
+[已静态核对；运行待验] lib/xboard/features/diagnostics/pages/net_check_page.dart:926 onSubmitted: (_) => _start(),
+[已静态核对；运行待验] lib/xboard/features/diagnostics/pages/net_check_page.dart:940 onPressed: !connected || _running ? null : _start,
+[已静态核对；运行待验] lib/xboard/features/diagnostics/pages/net_check_page.dart:961 onPressed: !connected ||
+[已静态核对；运行待验] lib/xboard/features/docs/pages/docs_page.dart:103 onPressed: () =>
+[已静态核对；运行待验] lib/xboard/features/docs/pages/docs_page.dart:257 onTap: () => _showArticleDetail(article, language),
+[已静态核对；运行待验] lib/xboard/features/docs/pages/docs_page.dart:1094 onPressed: _isClosing ? null : _closeDetailPage,
+[已静态核对；运行待验] lib/xboard/features/docs/pages/docs_page.dart:1106 onPressed: _isRefreshingDetail ? null : _refreshDetail,
+[已静态核对；运行待验] lib/xboard/features/invite/dialogs/logout_dialog.dart:50 onPressed: _isLoggingOut ? null : () => Navigator.of(context).pop(),
+[已静态核对；运行待验] lib/xboard/features/invite/dialogs/logout_dialog.dart:53 onPressed: _isLoggingOut ? null : () => Navigator.of(context).pop(),
+[已静态核对；运行待验] lib/xboard/features/invite/dialogs/logout_dialog.dart:62 onPressed: _isLoggingOut
+[已静态核对；运行待验] lib/xboard/features/invite/dialogs/logout_dialog.dart:81 onPressed: _isLoggingOut
+[已静态核对；运行待验] lib/xboard/features/invite/dialogs/logout_dialog.dart:144 onPressed: () => Navigator.of(context).pop(false),
+[已静态核对；运行待验] lib/xboard/features/invite/dialogs/logout_dialog.dart:147 onPressed: () => Navigator.of(context).pop(false),
+[已静态核对；运行待验] lib/xboard/features/invite/dialogs/logout_dialog.dart:156 onPressed: () => Navigator.of(context).pop(true),
+[已静态核对；运行待验] lib/xboard/features/invite/dialogs/logout_dialog.dart:159 onPressed: () => Navigator.of(context).pop(true),
+[已静态核对；运行待验] lib/xboard/features/invite/dialogs/theme_dialog.dart:33 onChanged: (value) => _updateThemeMode(context, ref, value),
+[已静态核对；运行待验] lib/xboard/features/invite/dialogs/theme_dialog.dart:41 onChanged: (value) => _updateThemeMode(context, ref, value),
+[已静态核对；运行待验] lib/xboard/features/invite/dialogs/theme_dialog.dart:49 onChanged: (value) => _updateThemeMode(context, ref, value),
+[已静态核对；运行待验] lib/xboard/features/invite/dialogs/theme_dialog.dart:55 onPressed: () => Navigator.of(context).pop(),
+[已静态核对；运行待验] lib/xboard/features/invite/dialogs/theme_dialog.dart:112 onChanged: onChanged,
+[已静态核对；运行待验] lib/xboard/features/invite/dialogs/transfer_dialog.dart:111 onTap: beginEditing,
+[已静态核对；运行待验] lib/xboard/features/invite/dialogs/transfer_dialog.dart:163 onPressed: () => Navigator.of(context).pop(),
+[已静态核对；运行待验] lib/xboard/features/invite/dialogs/transfer_dialog.dart:168 onPressed: () => _performTransfer(maxAmount),
+[已静态核对；运行待验] lib/xboard/features/invite/dialogs/withdraw_dialog.dart:125 onTap: beginEditing,
+[已静态核对；运行待验] lib/xboard/features/invite/dialogs/withdraw_dialog.dart:199 onChanged: (String? newValue) {
+[已静态核对；运行待验] lib/xboard/features/invite/dialogs/withdraw_dialog.dart:215 onTap: beginEditing,
+[已静态核对；运行待验] lib/xboard/features/invite/dialogs/withdraw_dialog.dart:265 onPressed: () => Navigator.of(context).pop(),
+[已静态核对；运行待验] lib/xboard/features/invite/dialogs/withdraw_dialog.dart:270 onPressed: _performWithdraw,
+[已静态核对；运行待验] lib/xboard/features/invite/pages/invite_page.dart:173 onPressed: _isRefreshing ? null : _doRefresh,
+[已静态核对；运行待验] lib/xboard/features/invite/widgets/invite_sections.dart:130 onPressed: () => showDialog(
+[已静态核对；运行待验] lib/xboard/features/invite/widgets/invite_sections.dart:147 onPressed: () => showDialog(
+[已静态核对；运行待验] lib/xboard/features/invite/widgets/invite_sections.dart:158 onPressed: () => Navigator.of(context).push(
+[已静态核对；运行待验] lib/xboard/features/invite/widgets/invite_sections.dart:172 onPressed: () => showDialog(
+[已静态核对；运行待验] lib/xboard/features/invite/widgets/invite_sections.dart:204 onPressed: onPressed,
+[已静态核对；运行待验] lib/xboard/features/invite/widgets/invite_sections.dart:602 onPressed: state.isGenerating
+[已静态核对；运行待验] lib/xboard/features/invite/widgets/invite_sections.dart:746 onPressed: () {
+[已静态核对；运行待验] lib/xboard/features/invite/widgets/invite_sections.dart:764 onPressed: () {
+[已静态核对；运行待验] lib/xboard/features/invite/widgets/invite_sections.dart:1141 onPressed:
+[已静态核对；运行待验] lib/xboard/features/invite/widgets/invite_sections.dart:1161 onPressed: !loading && page < totalPages
+[已静态核对；运行待验] lib/xboard/features/invite/widgets/invite_sections.dart:1408 onPressed: () => ref
+[已静态核对；运行待验] lib/xboard/features/latency/widgets/latency_indicator.dart:60 onTap: testing ? null : onTap,
+[已静态核对；运行待验] lib/xboard/features/logs/pages/fastcat_logs_page.dart:49 onPressed: _hideLogs,
+[已静态核对；运行待验] lib/xboard/features/logs/pages/fastcat_logs_page.dart:54 onPressed: () => _copy(context),
+[已静态核对；运行待验] lib/xboard/features/logs/pages/fastcat_logs_page.dart:59 onPressed: () => ref.read(logsProvider.notifier).clear(),
+[已静态核对；运行待验] lib/xboard/features/logs/pages/fastcat_logs_page.dart:83 onTap: edit,
+[已静态核对；运行待验] lib/xboard/features/logs/pages/fastcat_logs_page.dart:87 onChanged: (value) => setState(() => _query = value),
+[已静态核对；运行待验] lib/xboard/features/logs/pages/fastcat_logs_page.dart:100 onChanged: (value) => setState(() => _query = value),
+[已静态核对；运行待验] lib/xboard/features/logs/pages/fastcat_logs_page.dart:160 onPressed: button.onPressed,
+[已静态核对；运行待验] lib/xboard/features/mine/pages/account_info_page.dart:151 onPressed: _refreshTvPlan,
+[已静态核对；运行待验] lib/xboard/features/mine/pages/account_info_page.dart:160 onPressed: logout,
+[已静态核对；运行待验] lib/xboard/features/mine/pages/account_info_page.dart:162 onPressed: logout,
+[已静态核对；运行待验] lib/xboard/features/mine/pages/account_info_page.dart:242 onChanged: _updatingExpire
+[已静态核对；运行待验] lib/xboard/features/mine/pages/account_info_page.dart:262 onChanged: _updatingTraffic
+[已静态核对；运行待验] lib/xboard/features/mine/pages/account_info_page.dart:287 onTap: () => showChangeEmailSheet(context, ref, email),
+[已静态核对；运行待验] lib/xboard/features/mine/pages/account_info_page.dart:302 onTap: () => showChangePasswordSheet(context, ref),
+[已静态核对；运行待验] lib/xboard/features/mine/pages/account_info_page.dart:312 onPressed: () => showDialog(
+[已静态核对；运行待验] lib/xboard/features/mine/pages/account_info_page.dart:355 onPressed: onDelete,
+[已静态核对；运行待验] lib/xboard/features/mine/pages/account_info_page.dart:357 onPressed: onDelete,
+[已静态核对；运行待验] lib/xboard/features/mine/pages/balance_records_page.dart:209 onPressed:
+[已静态核对；运行待验] lib/xboard/features/mine/pages/balance_records_page.dart:228 onPressed: !_loading && _page < totalPages
+[已静态核对；运行待验] lib/xboard/features/mine/pages/coupon_wallet_page.dart:89 onPressed: _refreshing || wallet.isLoading ? null : _load,
+[已静态核对；运行待验] lib/xboard/features/mine/pages/coupon_wallet_page.dart:203 onSelected: (_) => setState(() => _filter = value),
+[已静态核对；运行待验] lib/xboard/features/mine/pages/coupon_wallet_page.dart:298 onPressed: () => context.go('/plans'),
+[已静态核对；运行待验] lib/xboard/features/mine/pages/coupon_wallet_page.dart:305 onPressed:
+[已静态核对；运行待验] lib/xboard/features/mine/pages/device_page.dart:273 onPressed: _isRefreshing ? null : _refreshPage,
+[已静态核对；运行待验] lib/xboard/features/mine/pages/device_page.dart:295 onPressed: () => Navigator.of(context).push(
+[已静态核对；运行待验] lib/xboard/features/mine/pages/device_page.dart:446 onPressed:
+[已静态核对；运行待验] lib/xboard/features/mine/pages/device_page.dart:605 onPressed:
+[已静态核对；运行待验] lib/xboard/features/mine/pages/gift_card_page.dart:365 onTap: beginEditing,
+[已静态核对；运行待验] lib/xboard/features/mine/pages/gift_card_page.dart:382 onPressed: isSubmitting ? null : onRedeem,
+[已静态核对；运行待验] lib/xboard/features/mine/pages/mine_page.dart:101 onPressed: _doRefresh,
+[已静态核对；运行待验] lib/xboard/features/mine/pages/mine_page.dart:137 onPressed: _isOpeningCustomerService
+[已静态核对；运行待验] lib/xboard/features/mine/pages/mine_page.dart:240 onTap: () => context.push('/mine/account'),
+[已静态核对；运行待验] lib/xboard/features/mine/pages/mine_page.dart:367 onTap: () => Navigator.of(context).push(
+[已静态核对；运行待验] lib/xboard/features/mine/pages/mine_page.dart:384 onTap: () => Navigator.of(context).push(
+[已静态核对；运行待验] lib/xboard/features/mine/pages/mine_page.dart:446 onTap: () => Navigator.of(context).push(
+[已静态核对；运行待验] lib/xboard/features/mine/pages/mine_page.dart:458 onTap: () => context.go('/mine/devices'),
+[已静态核对；运行待验] lib/xboard/features/mine/pages/mine_page.dart:468 onTap: () => context.go('/mine/subscription'),
+[已静态核对；运行待验] lib/xboard/features/mine/pages/mine_page.dart:483 onTap: () async {
+[已静态核对；运行待验] lib/xboard/features/mine/pages/mine_page.dart:500 onTap: () => Navigator.of(context).push(
+[已静态核对；运行待验] lib/xboard/features/mine/pages/mine_page.dart:512 onTap: () => Navigator.of(context).push(
+[已静态核对；运行待验] lib/xboard/features/mine/pages/mine_page.dart:524 onTap: () => _openTelegramGroup(context),
+[已静态核对；运行待验] lib/xboard/features/mine/pages/mine_page.dart:643 onTap: onTap,
+[已静态核对；运行待验] lib/xboard/features/mine/pages/order_page.dart:201 onPressed: _doRefresh,
+[已静态核对；运行待验] lib/xboard/features/mine/pages/order_page.dart:236 onTap: order.tradeNo == null || order.tradeNo!.isEmpty
+[已静态核对；运行待验] lib/xboard/features/mine/pages/order_page.dart:331 onTap: onTap,
+[已静态核对；运行待验] lib/xboard/features/mine/pages/ticket_detail_page.dart:151 onPressed:
+[已静态核对；运行待验] lib/xboard/features/mine/pages/ticket_detail_page.dart:483 onTap: beginEditing,
+[已静态核对；运行待验] lib/xboard/features/mine/pages/ticket_detail_page.dart:508 onPressed: value.text.trim().isEmpty ||
+[已静态核对；运行待验] lib/xboard/features/mine/pages/ticket_page.dart:78 onPressed: _doRefresh,
+[已静态核对；运行待验] lib/xboard/features/mine/pages/ticket_page.dart:98 onTap: () => Navigator.of(context)
+[已静态核对；运行待验] lib/xboard/features/mine/pages/ticket_page.dart:138 onTap: onTap,
+[已静态核对；运行待验] lib/xboard/features/mine/widgets/account_deletion_sheet.dart:190 onChanged: (_) => setState(() {}),
+[已静态核对；运行待验] lib/xboard/features/mine/widgets/account_deletion_sheet.dart:195 onPressed: _sending || _countdown > 0 ? null : _sendCode,
+[已静态核对；运行待验] lib/xboard/features/mine/widgets/account_deletion_sheet.dart:211 onTap: system.isTV ? edit : null,
+[已静态核对；运行待验] lib/xboard/features/mine/widgets/account_deletion_sheet.dart:218 onChanged: (_) => setState(() {}),
+[已静态核对；运行待验] lib/xboard/features/mine/widgets/account_deletion_sheet.dart:224 onPressed:
+[已静态核对；运行待验] lib/xboard/features/mine/widgets/account_deletion_sheet.dart:240 onPressed:
+[已静态核对；运行待验] lib/xboard/features/mine/widgets/account_deletion_sheet.dart:248 onPressed: _submitting || !_canSubmit ? null : _submit,
+[已静态核对；运行待验] lib/xboard/features/mine/widgets/change_email_sheet.dart:206 onPressed: _submitting ? null : () => Navigator.pop(context),
+[已静态核对；运行待验] lib/xboard/features/mine/widgets/change_email_sheet.dart:241 onPressed: () =>
+[已静态核对；运行待验] lib/xboard/features/mine/widgets/change_email_sheet.dart:271 onPressed: _sending || _countdown > 0 || _submitting
+[已静态核对；运行待验] lib/xboard/features/mine/widgets/change_email_sheet.dart:292 onPressed: _submitting ? null : _submit,
+[已静态核对；运行待验] lib/xboard/features/mine/widgets/change_password_sheet.dart:161 onPressed: () => Navigator.of(context).pop(),
+[已静态核对；运行待验] lib/xboard/features/mine/widgets/change_password_sheet.dart:180 onPressed: () => setState(() => _oldObscure = !_oldObscure),
+[已静态核对；运行待验] lib/xboard/features/mine/widgets/change_password_sheet.dart:200 onPressed: () => setState(() => _newObscure = !_newObscure),
+[已静态核对；运行待验] lib/xboard/features/mine/widgets/change_password_sheet.dart:219 onPressed: () =>
+[已静态核对；运行待验] lib/xboard/features/mine/widgets/change_password_sheet.dart:228 onPressed: _isSubmitting ? null : _submit,
+[已静态核对；运行待验] lib/xboard/features/nodes/pages/fastcat_nodes_page.dart:84 onPressed: onPressed,
+[已静态核对；运行待验] lib/xboard/features/nodes/pages/fastcat_nodes_page.dart:98 onPressed: () => Navigator.of(context).maybePop(),
+[已静态核对；运行待验] lib/xboard/features/nodes/pages/fastcat_nodes_page.dart:101 onPressed: () => Navigator.of(context).maybePop(),
+[已静态核对；运行待验] lib/xboard/features/nodes/pages/fastcat_nodes_page.dart:122 onPressed: _updating || _testing ? null : _runUpdate,
+[已静态核对；运行待验] lib/xboard/features/nodes/pages/fastcat_nodes_page.dart:125 onPressed: _updating || _testing ? null : _runUpdate,
+[已静态核对；运行待验] lib/xboard/features/nodes/pages/fastcat_nodes_page.dart:137 onPressed: _testing || _updating ? null : _runLatencyTest,
+[已静态核对；运行待验] lib/xboard/features/nodes/pages/fastcat_nodes_page.dart:140 onPressed: _testing || _updating ? null : _runLatencyTest,
+[已静态核对；运行待验] lib/xboard/features/nodes/pages/fastcat_nodes_page.dart:380 action: _DelayBadge(
+[已静态核对；运行待验] lib/xboard/features/nodes/pages/fastcat_nodes_page.dart:383 onTap: null),
+[已静态核对；运行待验] lib/xboard/features/nodes/pages/fastcat_nodes_page.dart:409 onPressed: _selecting
+[已静态核对；运行待验] lib/xboard/features/nodes/pages/fastcat_nodes_page.dart:425 onTap: _selecting
+[已静态核对；运行待验] lib/xboard/features/nodes/pages/fastcat_nodes_page.dart:496 onTap: system.isTV ||
+[已静态核对；运行待验] lib/xboard/features/nodes/pages/fastcat_nodes_page.dart:737 onTap: testing ? null : onTap,
+[已静态核对；运行待验] lib/xboard/features/nodes/pages/fastcat_nodes_page.dart:765 onTap: onTap,
+[已静态核对；运行待验] lib/xboard/features/payment/pages/payment_webview_page.dart:703 onPressed: _isClosing ? null : _handleCancel,
+[已静态核对；运行待验] lib/xboard/features/payment/pages/plan_purchase_page.dart:382 onPressed: paymentState.isLoading ||
+[已静态核对；运行待验] lib/xboard/features/payment/pages/plan_purchase_page.dart:455 onPressed: _isRefreshing ? null : _refreshPage,
+[已静态核对；运行待验] lib/xboard/features/payment/pages/plan_purchase_page.dart:598 onTap: () => _showCouponPicker(context),
+[已静态核对；运行待验] lib/xboard/features/payment/pages/plan_purchase_page.dart:641 onTap: () => Navigator.pop(sheetContext, -1),
+[已静态核对；运行待验] lib/xboard/features/payment/pages/plan_purchase_page.dart:722 onTap: () => _showPromotionPicker(context, preview),
+[已静态核对；运行待验] lib/xboard/features/payment/pages/plan_purchase_page.dart:806 onTap: () => Navigator.pop(context, option),
+[已静态核对；运行待验] lib/xboard/features/payment/pages/plan_purchase_page.dart:989 onTap: enabled ? () => Navigator.pop(context, coupon.id) : null,
+[已静态核对；运行待验] lib/xboard/features/payment/pages/plan_purchase_page.dart:1158 onTap: onTap,
+[已静态核对；运行待验] lib/xboard/features/payment/pages/plans.dart:388 onPressed: () => _navigateToPurchase(plan),
+[已静态核对；运行待验] lib/xboard/features/payment/pages/plans.dart:487 onPressed: _backToPlans,
+[已静态核对；运行待验] lib/xboard/features/payment/pages/plans.dart:513 onPressed: _isRefreshingPlans ? null : _refreshPlans,
+[已静态核对；运行待验] lib/xboard/features/payment/pages/recharge_page.dart:434 onChanged: canChangeAutoRenewal
+[已静态核对；运行待验] lib/xboard/features/payment/pages/recharge_page.dart:472 onChanged: (index) => setState(() => _walletSection = index),
+[已静态核对；运行待验] lib/xboard/features/payment/pages/recharge_page.dart:507 onTap: () {
+[已静态核对；运行待验] lib/xboard/features/payment/pages/recharge_page.dart:608 onTap: beginEditing,
+[已静态核对；运行待验] lib/xboard/features/payment/pages/recharge_page.dart:634 onChanged: (_) {
+[已静态核对；运行待验] lib/xboard/features/payment/pages/recharge_page.dart:644 onPressed: _isProcessing ? null : _handleRecharge,
+[已静态核对；运行待验] lib/xboard/features/payment/pages/recharge_page.dart:710 onPressed: _isRefreshingPage ? null : _refreshPage,
+[已静态核对；运行待验] lib/xboard/features/payment/pages/recharge_page.dart:755 onTap: () => onChanged(0),
+[已静态核对；运行待验] lib/xboard/features/payment/pages/recharge_page.dart:761 onTap: () => onChanged(1),
+[已静态核对；运行待验] lib/xboard/features/payment/pages/recharge_page.dart:797 onTap: onTap,
+[已静态核对；运行待验] lib/xboard/features/payment/widgets/coupon_entry_button.dart:90 onPressed: () async {
+[已静态核对；运行待验] lib/xboard/features/payment/widgets/order_detail_content.dart:139 onSelected: onMethodSelected,
+[已静态核对；运行待验] lib/xboard/features/payment/widgets/order_detail_content.dart:211 onSelected: onSelected,
+[已静态核对；运行待验] lib/xboard/features/payment/widgets/order_detail_content.dart:363 onTap: () async {
+[已静态核对；运行待验] lib/xboard/features/payment/widgets/order_detail_content.dart:651 onTap: () => onSelected(methods[i]),
+[已静态核对；运行待验] lib/xboard/features/payment/widgets/order_detail_content.dart:681 onPressed: onTap,
+[已静态核对；运行待验] lib/xboard/features/payment/widgets/order_detail_content.dart:688 onTap: onTap,
+[已静态核对；运行待验] lib/xboard/features/payment/widgets/order_detail_content.dart:842 onPressed: isSubmitting ? null : onPay,
+[已静态核对；运行待验] lib/xboard/features/payment/widgets/order_detail_content.dart:866 onPressed: isCanceling ? null : onCancel,
+[已静态核对；运行待验] lib/xboard/features/payment/widgets/order_detail_content.dart:892 onPressed: isChecking ? null : onCheck,
+[已静态核对；运行待验] lib/xboard/features/payment/widgets/period_selector.dart:74 onTap: () => onPeriodSelected(period['period']),
+[已静态核对；运行待验] lib/xboard/features/payment/widgets/period_selector.dart:155 onTap: onTap,
+[已静态核对；运行待验] lib/xboard/features/settings/pages/fastcat_app_exclusion_page.dart:100 onPressed: () => Navigator.pop(dialogContext),
+[已静态核对；运行待验] lib/xboard/features/settings/pages/fastcat_app_exclusion_page.dart:105 onPressed: () => Navigator.pop(dialogContext, false),
+[已静态核对；运行待验] lib/xboard/features/settings/pages/fastcat_app_exclusion_page.dart:109 onPressed: () => Navigator.pop(dialogContext, true),
+[已静态核对；运行待验] lib/xboard/features/settings/pages/fastcat_app_exclusion_page.dart:153 onPressed: () => Navigator.pop(dialogContext, false),
+[已静态核对；运行待验] lib/xboard/features/settings/pages/fastcat_app_exclusion_page.dart:157 onPressed: () => Navigator.pop(dialogContext, true),
+[已静态核对；运行待验] lib/xboard/features/settings/pages/fastcat_app_exclusion_page.dart:253 onPressed: _loading || _saving ? null : _save,
+[已静态核对；运行待验] lib/xboard/features/settings/pages/fastcat_app_exclusion_page.dart:281 onChanged: (value) =>
+[已静态核对；运行待验] lib/xboard/features/settings/pages/fastcat_app_exclusion_page.dart:296 onChanged: (value) =>
+[已静态核对；运行待验] lib/xboard/features/settings/pages/fastcat_app_exclusion_page.dart:305 onChanged: (_) => setState(() {}),
+[已静态核对；运行待验] lib/xboard/features/settings/pages/fastcat_app_exclusion_page.dart:343 onChanged: (value) => setState(() {
+[已静态核对；运行待验] lib/xboard/features/settings/pages/fastcat_auto_start_settings_page.dart:63 onChanged: supportsBootLaunch
+[已静态核对；运行待验] lib/xboard/features/settings/pages/fastcat_auto_start_settings_page.dart:88 onChanged: (value) =>
+[已静态核对；运行待验] lib/xboard/features/settings/pages/fastcat_auto_start_settings_page.dart:111 onPressed: tile.onChanged == null
+[已静态核对；运行待验] lib/xboard/features/settings/pages/fastcat_background_protection_page.dart:230 onPressed: _refreshing ? null : () => _refresh(notify: true),
+[已静态核对；运行待验] lib/xboard/features/settings/pages/fastcat_background_protection_page.dart:287 onTap: _opening ? null : () => _open(target),
+[已静态核对；运行待验] lib/xboard/features/settings/pages/fastcat_custom_routing_page.dart:254 onSubmitted: (_) => _add(proxyTarget),
+[已静态核对；运行待验] lib/xboard/features/settings/pages/fastcat_custom_routing_page.dart:263 onTap: system.isTV ? edit : null,
+[已静态核对；运行待验] lib/xboard/features/settings/pages/fastcat_custom_routing_page.dart:272 onSubmitted: (_) => _add(proxyTarget),
+[已静态核对；运行待验] lib/xboard/features/settings/pages/fastcat_custom_routing_page.dart:284 onPressed: _isApplying ||
+[已静态核对；运行待验] lib/xboard/features/settings/pages/fastcat_custom_routing_page.dart:323 onPressed: _isApplying ? null : () => _add(proxyTarget),
+[已静态核对；运行待验] lib/xboard/features/settings/pages/fastcat_dns_settings_page.dart:100 onPressed: () => _confirmReset(context, ref),
+[已静态核对；运行待验] lib/xboard/features/settings/pages/fastcat_dns_settings_page.dart:113 onPressed: _applying ? null : _applyNow,
+[已静态核对；运行待验] lib/xboard/features/settings/pages/fastcat_dns_settings_page.dart:139 onChanged: (value) => ref
+[已静态核对；运行待验] lib/xboard/features/settings/pages/fastcat_dns_settings_page.dart:149 onChanged: (value) {
+[已静态核对；运行待验] lib/xboard/features/settings/pages/fastcat_dns_settings_page.dart:166 onChanged: overrideDns
+[已静态核对；运行待验] lib/xboard/features/settings/pages/fastcat_dns_settings_page.dart:181 onTap: overrideDns
+[已静态核对；运行待验] lib/xboard/features/settings/pages/fastcat_dns_settings_page.dart:198 onChanged: (values) => _update(
+[已静态核对；运行待验] lib/xboard/features/settings/pages/fastcat_dns_settings_page.dart:209 onChanged: (values) => _update(
+[已静态核对；运行待验] lib/xboard/features/settings/pages/fastcat_dns_settings_page.dart:222 onChanged: (values) => _update(
+[已静态核对；运行待验] lib/xboard/features/settings/pages/fastcat_dns_settings_page.dart:234 onChanged: (values) => _update(
+[已静态核对；运行待验] lib/xboard/features/settings/pages/fastcat_dns_settings_page.dart:298 onPressed: () => Navigator.pop(dialogContext, false),
+[已静态核对；运行待验] lib/xboard/features/settings/pages/fastcat_dns_settings_page.dart:302 onPressed: () => Navigator.pop(dialogContext, true),
+[已静态核对；运行待验] lib/xboard/features/settings/pages/fastcat_dns_settings_page.dart:377 onTap: enabled
+[已静态核对；运行待验] lib/xboard/features/settings/pages/fastcat_dns_settings_page.dart:383 onChanged: onChanged,
+[已静态核对；运行待验] lib/xboard/features/settings/pages/fastcat_dns_settings_page.dart:414 onChanged: (_) {
+[已静态核对；运行待验] lib/xboard/features/settings/pages/fastcat_dns_settings_page.dart:437 onPressed: () => Navigator.pop(dialogContext),
+[已静态核对；运行待验] lib/xboard/features/settings/pages/fastcat_dns_settings_page.dart:441 onPressed: () {
+[已静态核对；运行待验] lib/xboard/features/settings/pages/fastcat_dns_settings_page.dart:466 if (result != null) onChanged(result);
+[已静态核对；运行待验] lib/xboard/features/settings/pages/fastcat_settings_page.dart:52 onTap: () => _chooseLanguage(context, ref)),
+[已静态核对；运行待验] lib/xboard/features/settings/pages/fastcat_settings_page.dart:57 onTap: () => _chooseTheme(context, ref, theme.themeMode)),
+[已静态核对；运行待验] lib/xboard/features/settings/pages/fastcat_settings_page.dart:62 onTap: () =>
+[已静态核对；运行待验] lib/xboard/features/settings/pages/fastcat_settings_page.dart:70 onTap: () =>
+[已静态核对；运行待验] lib/xboard/features/settings/pages/fastcat_settings_page.dart:75 onTap: () => _open(context, const StreamingCheckPage())),
+[已静态核对；运行待验] lib/xboard/features/settings/pages/fastcat_settings_page.dart:83 onTap: () => _open(context, const FastCatAboutPage())),
+[已静态核对；运行待验] lib/xboard/features/settings/pages/fastcat_settings_page.dart:116 onTap: () => _chooseLanguage(context, ref),
+[已静态核对；运行待验] lib/xboard/features/settings/pages/fastcat_settings_page.dart:123 onTap: () =>
+[已静态核对；运行待验] lib/xboard/features/settings/pages/fastcat_settings_page.dart:131 onTap: () => _open(
+[已静态核对；运行待验] lib/xboard/features/settings/pages/fastcat_settings_page.dart:147 onTap: () => _open(
+[已静态核对；运行待验] lib/xboard/features/settings/pages/fastcat_settings_page.dart:160 onTap: () =>
+[已静态核对；运行待验] lib/xboard/features/settings/pages/fastcat_settings_page.dart:176 onTap: () =>
+[已静态核对；运行待验] lib/xboard/features/settings/pages/fastcat_settings_page.dart:191 onTap: () =>
+[已静态核对；运行待验] lib/xboard/features/settings/pages/fastcat_settings_page.dart:198 onTap: () =>
+[已静态核对；运行待验] lib/xboard/features/settings/pages/fastcat_settings_page.dart:205 onTap: () => _open(context, const StreamingCheckPage()),
+[已静态核对；运行待验] lib/xboard/features/settings/pages/fastcat_settings_page.dart:216 onTap: () => _open(context, const FastCatAboutPage()),
+[已静态核对；运行待验] lib/xboard/features/settings/pages/fastcat_settings_page.dart:253 onPressed: onTap,
+[已静态核对；运行待验] lib/xboard/features/settings/pages/fastcat_settings_page.dart:262 onTap: onTap,
+[已静态核对；运行待验] lib/xboard/features/settings/widgets/fastcat_tun_toggle.dart:20 onChanged: (value) {
+[已静态核对；运行待验] lib/xboard/features/settings/widgets/routing_rule_card.dart:27 onPressed: callback,
+[已静态核对；运行待验] lib/xboard/features/settings/widgets/routing_rule_card.dart:32 onPressed: callback,
+[已静态核对；运行待验] lib/xboard/features/shared/widgets/connection_health_dialog.dart:247 onPressed: _isRepairing
+[已静态核对；运行待验] lib/xboard/features/shared/widgets/connection_health_dialog.dart:268 onPressed: () async {
+[已静态核对；运行待验] lib/xboard/features/shared/widgets/connection_health_dialog.dart:281 onPressed: _isRefreshing
+[已静态核对；运行待验] lib/xboard/features/shared/widgets/language_selector.dart:24 onSelected: (String languageCode) {
+[已静态核对；运行待验] lib/xboard/features/shared/widgets/legal_footer.dart:72 onPressed: FastCatLegalLinks.openPrivacyPolicy,
+[已静态核对；运行待验] lib/xboard/features/shared/widgets/legal_footer.dart:77 onPressed: FastCatLegalLinks.openPrivacyPolicy,
+[已静态核对；运行待验] lib/xboard/features/shared/widgets/legal_footer.dart:90 onPressed: FastCatLegalLinks.openTermsOfService,
+[已静态核对；运行待验] lib/xboard/features/shared/widgets/legal_footer.dart:95 onPressed: FastCatLegalLinks.openTermsOfService,
+[已静态核对；运行待验] lib/xboard/features/shared/widgets/legal_footer.dart:146 onPressed: () => onChanged(!value),
+[已静态核对；运行待验] lib/xboard/features/shared/widgets/legal_footer.dart:154 onChanged: (checked) => onChanged(checked ?? false),
+[已静态核对；运行待验] lib/xboard/features/shared/widgets/legal_footer.dart:163 onPressed: FastCatLegalLinks.openPrivacyPolicy,
+[已静态核对；运行待验] lib/xboard/features/shared/widgets/legal_footer.dart:168 onPressed: FastCatLegalLinks.openPrivacyPolicy,
+[已静态核对；运行待验] lib/xboard/features/shared/widgets/legal_footer.dart:178 onPressed: FastCatLegalLinks.openTermsOfService,
+[已静态核对；运行待验] lib/xboard/features/shared/widgets/legal_footer.dart:183 onPressed: FastCatLegalLinks.openTermsOfService,
+[已静态核对；运行待验] lib/xboard/features/shared/widgets/node_recovery_actions.dart:47 onPressed: reload,
+[已静态核对；运行待验] lib/xboard/features/shared/widgets/node_recovery_actions.dart:49 onPressed: reload,
+[已静态核对；运行待验] lib/xboard/features/shared/widgets/node_recovery_actions.dart:62 onPressed: switchNode,
+[已静态核对；运行待验] lib/xboard/features/shared/widgets/node_recovery_actions.dart:64 onPressed: switchNode,
+[已静态核对；运行待验] lib/xboard/features/shared/widgets/node_selector_bar.dart:293 onPressed: () => _handleOpenProxiesView(context, group.name),
+[已静态核对；运行待验] lib/xboard/features/shared/widgets/node_selector_bar.dart:300 onTap: () => _handleOpenProxiesView(context, group.name),
+[已静态核对；运行待验] lib/xboard/features/shared/widgets/notice_banner.dart:174 onTap: () => _showNoticeDialog(),
+[已静态核对；运行待验] lib/xboard/features/shared/widgets/notice_banner.dart:209 onPressed: () {
+[已静态核对；运行待验] lib/xboard/features/shared/widgets/notice_banner.dart:308 onPressed: dismiss,
+[已静态核对；运行待验] lib/xboard/features/shared/widgets/notice_banner.dart:310 onPressed: dismiss,
+[已静态核对；运行待验] lib/xboard/features/shared/widgets/privacy_gate.dart:120 onPressed: () => _open(FastCatLegalLinks.openPrivacyPolicy),
+[已静态核对；运行待验] lib/xboard/features/shared/widgets/privacy_gate.dart:124 onPressed: () => _open(FastCatLegalLinks.openTermsOfService),
+[已静态核对；运行待验] lib/xboard/features/shared/widgets/privacy_gate.dart:138 onPressed:
+[已静态核对；运行待验] lib/xboard/features/shared/widgets/privacy_gate.dart:143 onPressed: _saving ? null : _continue,
+[已静态核对；运行待验] lib/xboard/features/shared/widgets/tun_introduction_dialog.dart:140 onPressed: () => Navigator.of(context).pop(false),
+[已静态核对；运行待验] lib/xboard/features/shared/widgets/tun_introduction_dialog.dart:154 onPressed: () => Navigator.of(context).pop(true),
+[已静态核对；运行待验] lib/xboard/features/shared/widgets/tv_deferred_input.dart:219 onTap: _beginEditing,
+[已静态核对；运行待验] lib/xboard/features/shared/widgets/xb_card.dart:58 onTap: onTap,
+[已静态核对；运行待验] lib/xboard/features/shared/widgets/xb_dialog.dart:80 onPressed: () => Navigator.of(context).pop(false),
+[已静态核对；运行待验] lib/xboard/features/shared/widgets/xb_dialog.dart:82 onPressed: () => Navigator.of(context).pop(false),
+[已静态核对；运行待验] lib/xboard/features/shared/widgets/xb_dialog.dart:89 onPressed: () => Navigator.of(context).pop(true),
+[已静态核对；运行待验] lib/xboard/features/shared/widgets/xb_dialog.dart:91 onPressed: () => Navigator.of(context).pop(true),
+[已静态核对；运行待验] lib/xboard/features/shared/widgets/xb_dialog.dart:169 onPressed: select,
+[已静态核对；运行待验] lib/xboard/features/shared/widgets/xb_dialog.dart:178 onTap: select,
+[已静态核对；运行待验] lib/xboard/features/shared/widgets/xb_error_state.dart:78 onPressed: onRetry,
+[已静态核对；运行待验] lib/xboard/features/shared/widgets/xb_error_state.dart:83 onPressed: onRetry,
+[已静态核对；运行待验] lib/xboard/features/shared/widgets/xb_input_field.dart:56 onTap: beginEditing,
+[已静态核对；运行待验] lib/xboard/features/shared/widgets/xb_input_field.dart:63 onChanged: onChanged,
+[已静态核对；运行待验] lib/xboard/features/shared/widgets/xboard_outbound_mode.dart:60 onTap: () => _handleModeChange(ref, Mode.rule),
+[已静态核对；运行待验] lib/xboard/features/shared/widgets/xboard_outbound_mode.dart:68 onTap: () => _handleModeChange(ref, Mode.global),
+[已静态核对；运行待验] lib/xboard/features/shared/widgets/xboard_outbound_mode.dart:131 onPressed: onTap,
+[已静态核对；运行待验] lib/xboard/features/shared/widgets/xboard_outbound_mode.dart:139 onTap: onTap,
+[已静态核对；运行待验] lib/xboard/features/streaming_check/pages/streaming_check_page.dart:280 onChanged: (checked) => setDialogState(() {
+[已静态核对；运行待验] lib/xboard/features/streaming_check/pages/streaming_check_page.dart:301 onChanged: (checked) => setDialogState(() {
+[已静态核对；运行待验] lib/xboard/features/streaming_check/pages/streaming_check_page.dart:314 onPressed: () => Navigator.pop(dialogContext),
+[已静态核对；运行待验] lib/xboard/features/streaming_check/pages/streaming_check_page.dart:318 onPressed: selected.isEmpty
+[已静态核对；运行待验] lib/xboard/features/streaming_check/pages/streaming_check_page.dart:612 onPressed: start,
+[已静态核对；运行待验] lib/xboard/features/streaming_check/pages/streaming_check_page.dart:614 onPressed: start,
+[已静态核对；运行待验] lib/xboard/features/streaming_check/pages/streaming_check_page.dart:629 onPressed: _stop,
+[已静态核对；运行待验] lib/xboard/features/streaming_check/pages/streaming_check_page.dart:632 onPressed: _stop,
+[已静态核对；运行待验] lib/xboard/features/streaming_check/pages/streaming_check_page.dart:772 onPressed: !connected || _running
+[已静态核对；运行待验] lib/xboard/features/streaming_check/pages/streaming_check_page.dart:802 onPressed: _stop,
+[已静态核对；运行待验] lib/xboard/features/streaming_check/pages/streaming_check_page.dart:807 onPressed:
+[已静态核对；运行待验] lib/xboard/features/streaming_check/pages/streaming_check_page.dart:1213 onPressed: () => launchUrl(
+[已静态核对；运行待验] lib/xboard/features/subscription/pages/subscription_page.dart:176 onPressed: _doRefresh,
+[已静态核对；运行待验] lib/xboard/features/subscription/pages/xboard_home_page.dart:302 onPressed: _isCheckingWebsite
+[已静态核对；运行待验] lib/xboard/features/subscription/pages/xboard_home_page.dart:315 onPressed: () => _showVpnSheet(context),
+[已静态核对；运行待验] lib/xboard/features/subscription/pages/xboard_home_page.dart:371 onPressed: _isCheckingWebsite
+[已静态核对；运行待验] lib/xboard/features/subscription/pages/xboard_home_page.dart:631 onPressed: () => Navigator.of(context).push(
+[已静态核对；运行待验] lib/xboard/features/subscription/pages/xboard_home_page.dart:640 onPressed: () => Navigator.of(context).push(MaterialPageRoute(
+[已静态核对；运行待验] lib/xboard/features/subscription/pages/xboard_home_page.dart:777 onPressed: () => Navigator.of(context).push(
+[已静态核对；运行待验] lib/xboard/features/subscription/pages/xboard_home_page.dart:794 onPressed: _refreshHomeSubscriptionInfo,
+[已静态核对；运行待验] lib/xboard/features/subscription/pages/xboard_home_page.dart:877 onPressed: openAccount,
+[已静态核对；运行待验] lib/xboard/features/subscription/pages/xboard_home_page.dart:959 onPressed: openAccount,
+[已静态核对；运行待验] lib/xboard/features/subscription/pages/xboard_home_page.dart:969 onPressed: openAccount,
+[已静态核对；运行待验] lib/xboard/features/subscription/pages/xboard_home_page.dart:1001 onChanged: () {
+[已静态核对；运行待验] lib/xboard/features/subscription/pages/xboard_home_page.dart:1060 onTap: _refreshHomeSubscriptionInfo,
+[已静态核对；运行待验] lib/xboard/features/subscription/services/reset_traffic_order_flow.dart:232 onPressed:
+[已静态核对；运行待验] lib/xboard/features/subscription/services/reset_traffic_order_flow.dart:245 onPressed: _isCreating ? null : _confirm,
+[已静态核对；运行待验] lib/xboard/features/subscription/services/traffic_recovery_service.dart:330 onPressed:
+[已静态核对；运行待验] lib/xboard/features/subscription/services/traffic_recovery_service.dart:343 onPressed:
+[已静态核对；运行待验] lib/xboard/features/subscription/widgets/home_panels.dart:40 onPressed: _isProcessing ? null : _handleRelogin,
+[已静态核对；运行待验] lib/xboard/features/subscription/widgets/home_panels.dart:288 onTap: notice == null ? null : openCurrentNotice,
+[已静态核对；运行待验] lib/xboard/features/subscription/widgets/home_panels.dart:338 onTap: notices.isEmpty ? null : openCurrentNotice,
+[已静态核对；运行待验] lib/xboard/features/subscription/widgets/home_panels.dart:409 onPressed: notices.isEmpty ? null : openCurrentNotice,
+[已静态核对；运行待验] lib/xboard/features/subscription/widgets/subscription_status_dialog.dart:294 onPressed: _isRefreshing
+[已静态核对；运行待验] lib/xboard/features/subscription/widgets/subscription_status_dialog.dart:331 onPressed:
+[已静态核对；运行待验] lib/xboard/features/subscription/widgets/subscription_status_dialog.dart:351 onPressed: _isRefreshing
+[已静态核对；运行待验] lib/xboard/features/subscription/widgets/subscription_status_dialog.dart:377 onPressed: _isRefreshing
+[已静态核对；运行待验] lib/xboard/features/subscription/widgets/subscription_usage_card.dart:357 onPressed: busyAction != null
+[已静态核对；运行待验] lib/xboard/features/subscription/widgets/subscription_usage_card.dart:726 onPressed: busyAction != null
+[已静态核对；运行待验] lib/xboard/features/subscription/widgets/subscription_usage_card.dart:752 onPressed: busyAction != null
+[已静态核对；运行待验] lib/xboard/features/subscription/widgets/subscription_usage_card.dart:972 onPressed: busyAction != null
+[已静态核对；运行待验] lib/xboard/features/subscription/widgets/subscription_usage_card.dart:1015 onPressed: busyAction != null
+[已静态核对；运行待验] lib/xboard/features/subscription/widgets/subscription_usage_card.dart:1348 onPressed: () => Navigator.of(context).pop(false),
+[已静态核对；运行待验] lib/xboard/features/subscription/widgets/subscription_usage_card.dart:1356 onPressed: () => Navigator.of(context).pop(true),
+[已静态核对；运行待验] lib/xboard/features/subscription/widgets/xboard_connect_button.dart:454 onPressed: _isBusy ? null : handleSwitchStart,
+[已静态核对；运行待验] lib/xboard/features/subscription/widgets/xboard_connect_button.dart:531 onPressed: _isBusy ? null : handleSwitchStart,
+[已静态核对；运行待验] lib/xboard/features/subscription/widgets/xboard_connect_button.dart:535 onTap: _isBusy ? null : handleSwitchStart,
+[已静态核对；运行待验] lib/xboard/features/update_check/widgets/update_dialog.dart:199 onPressed: () {
+[已静态核对；运行待验] lib/xboard/features/update_check/widgets/update_dialog.dart:210 onPressed: busy ? null : _update,
+[已静态核对；运行待验] lib/xboard/features/update_check/widgets/update_dialog.dart:212 onPressed: busy ? null : _update,
+[已静态核对；运行待验] tvos/FastCatTV/FastCatTVApp.swift:72 TVFocusButton(cornerRadius: TVTheme.compactRadius, action: { showTerms = false }) { _ in
+[已静态核对；运行待验] tvos/FastCatTV/FastCatTVApp.swift:75 TVFocusButton(cornerRadius: TVTheme.compactRadius, action: { showTerms = true }) { _ in
+[已静态核对；运行待验] tvos/FastCatTV/FastCatTVApp.swift:81 TVFocusButton(cornerRadius: TVTheme.compactRadius, action: { declined = true }) { _ in
+[已静态核对；运行待验] tvos/FastCatTV/FastCatTVApp.swift:85 TVFocusButton(cornerRadius: TVTheme.compactRadius, autofocus: true, action: onContinue) { _ in
+[已静态核对；运行待验] tvos/FastCatTV/FastCatTVApp.swift:130 TVFocusButton(cornerRadius: TVTheme.compactRadius, autofocus: true, action: {
+[已静态核对；运行待验] tvos/FastCatTV/FastCatTVApp.swift:241 TVFocusButton(cornerRadius: TVTheme.compactRadius, action: {
+[已静态核对；运行待验] tvos/FastCatTV/FastCatTVApp.swift:256 action: {
+[已静态核对；运行待验] tvos/FastCatTV/TVDesignSystem.swift:281 let action: () -> Void
+[已静态核对；运行待验] tvos/FastCatTV/TVDesignSystem.swift:293 action: @escaping () -> Void,
+[已静态核对；运行待验] tvos/FastCatTV/TVDesignSystem.swift:307 Button(action: action) { label(visuallyFocused) }
+[已静态核对；运行待验] tvos/FastCatTV/TVDesignSystem.swift:359 let action: () -> Void
+[已静态核对；运行待验] tvos/FastCatTV/TVDesignSystem.swift:362 TVFocusButton(cornerRadius: cornerRadius, focus: focus, action: action) { _ in
+[已静态核对；运行待验] tvos/FastCatTV/TVHomeView.swift:345 private func focusModalButton(_ action: @escaping () -> Void) {
+[已静态核对；运行待验] tvos/FastCatTV/TVHomeView.swift:367 action: {
+[已静态核对；运行待验] tvos/FastCatTV/TVHomeView.swift:393 action: {
+[已静态核对；运行待验] tvos/FastCatTV/TVHomeView.swift:509 action: {
+[已静态核对；运行待验] tvos/FastCatTV/TVHomeView.swift:571 cornerRadius: size / 2, focus: $connectButtonFocused, action: toggleConnection
+[已静态核对；运行待验] tvos/FastCatTV/TVHomeView.swift:659 action: {
+[已静态核对；运行待验] tvos/FastCatTV/TVHomeView.swift:688 TVFocusButton(cornerRadius: tv(16), action: { changeRouteMode(to: mode) }) { _ in
+[已静态核对；运行待验] tvos/FastCatTV/TVHomeView.swift:724 cornerRadius: TVTheme.cardRadius, focus: $routeCardFocused, action: presentNodeSelector
+[已静态核对；运行待验] tvos/FastCatTV/TVHomeView.swift:764 action: {
+[已静态核对；运行待验] tvos/FastCatTV/TVHomeView.swift:854 action: {
+[已静态核对；运行待验] tvos/FastCatTV/TVHomeView.swift:887 action: {
+[已静态核对；运行待验] tvos/FastCatTV/TVHomeView.swift:967 action: {
+[已静态核对；运行待验] tvos/FastCatTV/TVHomeView.swift:980 action: {
+[已静态核对；运行待验] tvos/FastCatTV/TVHomeView.swift:1104 action: @escaping () -> Void
+[已静态核对；运行待验] tvos/FastCatTV/TVHomeView.swift:1107 cornerRadius: TVTheme.compactRadius, autofocus: autofocus, focus: focus, action: action
+[已静态核对；运行待验] tvos/FastCatTV/TVLoginView.swift:106 action: { showLanguagePicker = true }
+[已静态核对；运行待验] tvos/FastCatTV/TVLoginView.swift:117 action: {prefersDarkTheme=colorScheme != .dark;themeMode=prefersDarkTheme ? "dark":"light"}
+[已静态核对；运行待验] tvos/FastCatTV/TVLoginView.swift:157 TVFocusButton(cornerRadius: TVTheme.controlRadius, autofocus: true, focus: $loginMethodFocused, action: {
+[已静态核对；运行待验] tvos/FastCatTV/TVLoginView.swift:230 TVFocusButton(cornerRadius: TVTheme.controlRadius, focus: $qrFocused, action: {
+[已静态核对；运行待验] tvos/FastCatTV/TVLoginView.swift:289 TVFocusButton(cornerRadius: tv(8), action: { rememberPassword.toggle() }) { _ in
+[已静态核对；运行待验] tvos/FastCatTV/TVLoginView.swift:304 primaryButton(title: tvText("登录", "Sign In", language: language), loadingTitle: tvText("正在登录…", "Signing in…", language: language), action: loginWithAccount)
+[已静态核对；运行待验] tvos/FastCatTV/TVLoginView.swift:320 TVFocusButton(cornerRadius: TVTheme.controlRadius, autofocus: true, action: { open(.login) }) { _ in
+[已静态核对；运行待验] tvos/FastCatTV/TVLoginView.swift:342 TVFocusButton(cornerRadius: TVTheme.controlRadius, action: sendVerificationCode) { _ in
+[已静态核对；运行待验] tvos/FastCatTV/TVLoginView.swift:366 action: { submitCredentialScreen(isReset: isReset) }
+[已静态核对；运行待验] tvos/FastCatTV/TVLoginView.swift:410 private func primaryButton(title: String, loadingTitle: String, action: @escaping () -> Void) -> some View {
+[已静态核对；运行待验] tvos/FastCatTV/TVLoginView.swift:411 TVFocusButton(cornerRadius: TVTheme.controlRadius, action: action) { _ in
+[已静态核对；运行待验] tvos/FastCatTV/TVLoginView.swift:425 private func textAction(_ title: String, action: @escaping () -> Void) -> some View {
+[已静态核对；运行待验] tvos/FastCatTV/TVLoginView.swift:426 TVFocusButton(cornerRadius: tv(7), action: action) { focused in
+[已静态核对；运行待验] tvos/FastCatTV/TVLoginView.swift:440 TVFocusButton(cornerRadius: TVTheme.controlRadius, focus: languageFocusBinding(for: item), action: {
+[已静态核对；运行待验] tvos/FastCatTV/TVNodeSelection.swift:26 TVFocusButton(cornerRadius: tv(12), action: onClose) { _ in
+[已静态核对；运行待验] tvos/FastCatTV/TVNodeSelection.swift:39 action: onRefresh
+[已静态核对；运行待验] tvos/FastCatTV/TVNodeSelection.swift:46 action: onTest
+[已静态核对；运行待验] tvos/FastCatTV/TVNodeSelection.swift:80 TVFocusButton(cornerRadius: tv(12), autofocus: selected || (selectedName == nil && offset == 0), action: { onSelect(node) }) { _ in
+[已静态核对；运行待验] tvos/FastCatTV/TVNodeSelection.swift:96 TVFocusButton(cornerRadius: tv(12), action: { onTestNode(node) }) { _ in
+[已静态核对；运行待验] tvos/FastCatTV/TVNodeSelection.swift:115 .onExitCommand(perform: onClose)
+[已静态核对；运行待验] tvos/FastCatTV/TVNodeSelection.swift:165 action: @escaping () -> Void
+[已静态核对；运行待验] tvos/FastCatTV/TVNodeSelection.swift:167 TVFocusButton(cornerRadius: tv(10), action: action) { _ in
+[已静态核对；运行待验] tvos/FastCatTV/TVToolsView.swift:79 id: "back", requested: $streamFocus, onMove: moveStreaming, action: back
+[已静态核对；运行待验] tvos/FastCatTV/TVToolsView.swift:87 id: "back", requested: $controlFocus, onMove: moveControl, action: back
+[已静态核对；运行待验] tvos/FastCatTV/TVToolsView.swift:145 .onExitCommand(perform: back)
+[已静态核对；运行待验] tvos/FastCatTV/TVToolsView.swift:249 action: {
+[已静态核对；运行待验] tvos/FastCatTV/TVToolsView.swift:265 action: {
+[已静态核对；运行待验] tvos/FastCatTV/TVToolsView.swift:361 id: "logs.line.\(index)", requested: $controlFocus, onMove: moveControl, action: {}
+[已静态核对；运行待验] tvos/FastCatTV/TVToolsView.swift:500 action: { if !busy && VPNManager.shared.isConnected { startStreaming() } }
+[已静态核对；运行待验] tvos/FastCatTV/TVToolsView.swift:518 action: { stopStreaming(showMessage: true) }
+[已静态核对；运行待验] tvos/FastCatTV/TVToolsView.swift:603 action: {}
+[已静态核对；运行待验] tvos/FastCatTV/TVToolsView.swift:788 action: @escaping () -> Void
+[已静态核对；运行待验] tvos/FastCatTV/TVToolsView.swift:793 action: {
+[已静态核对；运行待验] tvos/FastCatTV/TVToolsView.swift:826 focusableWhenDisabled: Bool = false, action: @escaping () -> Void
+[已静态核对；运行待验] tvos/FastCatTV/TVToolsView.swift:836 id: controlID, requested: $controlFocus, onMove: moveControl, action: activate
+[已静态核对；运行待验] tvos/FastCatTV/TVToolsView.swift:839 TVFocusButton(action: activate) { _ in content }.disabled(disabled && !focusableWhenDisabled)
+[已静态核对；运行待验] tvos/FastCatTV/TVToolsView.swift:843 _ title: String, selected: Bool, controlID: String? = nil, action: @escaping () -> Void
+[已静态核对；运行待验] tvos/FastCatTV/TVToolsView.swift:853 TVDirectedButton(id: controlID, requested: $controlFocus, onMove: moveControl, action: action)
+[已静态核对；运行待验] tvos/FastCatTV/TVToolsView.swift:856 TVFocusButton(action: action) { _ in content }
+[已静态核对；运行待验] tvos/FastCatTV/TVToolsView.swift:861 action: @escaping () -> Void
+[已静态核对；运行待验] tvos/FastCatTV/TVToolsView.swift:883 action: action
+[已静态核对；运行待验] tvos/FastCatTV/TVToolsView.swift:886 TVFocusButton(cornerRadius: tv(20), action: action) { _ in content }
+[已静态核对；运行待验] tvos/FastCatTV/TVToolsView.swift:1313 let action: () -> Void
+[已静态核对；运行待验] tvos/FastCatTV/TVToolsView.swift:1319 action: action,
+
+
+第二轮逐控件复核（继续检查）
+本轮没有修改产品代码；沿用上一轮 361 项测试结果，未把旧结果描述为重新运行。
+
+新增已确认问题
+11. 高：订单付款与取消没有互斥。
+    order_detail_content.dart:842 仅用 isSubmitting 禁用付款；866 仅用 isCanceling 禁用取消。
+    order_detail_page.dart:335 付款只检查 _isSubmitting/_isPaymentCompleted；475 取消没有检查付款状态。
+    场景：付款请求尚未返回时，用户仍可取消订单，导致取消与支付请求并发；最终结果取决于服务端，客户端可能显示冲突反馈。
+    建议：付款、取消共用订单操作锁；确认取消后再次校验页面存活和订单状态；不把服务端是否重复扣费当作已证实结论。
+12. 中：内嵌支付网页加载失败没有可见错误和重试。
+    payment_webview_page.dart:551-559 主文档错误仅记日志和结束加载；717-741 仅网页与加载层，没有错误页/重试按钮。
+    场景：网络错误后用户可能只看到空白或系统错误页，只能关闭后重新发起。
+    建议：显示加载失败、重新加载、返回订单并查询支付状态。iOS 使用外部浏览器，不属于这个内嵌页问题。
+13. 中：内嵌支付无法唤起微信/支付宝等应用时静默失败。
+    payment_webview_page.dart:642-653，canLaunchUrl 为 false 时无提示；launchUrl 返回值也未检查，异常只记日志。
+    建议：提示无法打开支付应用并提供返回订单、更换方式或复制链接。
+14. 中：手机文档中心为空时，下拉刷新不可用。
+    docs_page.dart:119-124 外层有 RefreshIndicator，但 _buildBody 的空分支为 Center，未提供可滚动子节点；只有非空分支提供 ListView。
+    建议：空态保留 AlwaysScrollableScrollPhysics 的列表或明确刷新按钮。
+15. 低：隐私政策和服务条款打开失败无提示。
+    shared/widgets/legal_footer.dart:38-46 返回 launchUrl 结果，但按钮直接绑定方法，无人处理 false 或异常。
+    建议：统一外链打开反馈；TV 没有外部浏览器时给二维码交接。独立 tvOS 法律页已采用二维码，不能把这个问题泛化到 tvOS。
+
+本轮逐项结果（静态检查完成，实际操作仍待验证）
+B01 购买周期卡片：点击回调传回 period；布局按宽度分列。未发现该回调断链。
+B02 购买页提交：预览加载/失败时禁用提交；有金额未准备好提示。未发现空预览仍可下单。
+B03 优惠券入口：进入 /plans/coupons，返回后刷新；减少动画设置会停摇动。未发现入口断链。
+B04 订单号码复制：复制当前订单号并在页面仍存在时提示成功。
+B05 支付方式选择：回调更新所选 ID，提交时重新解析可用支付方式。继续保留真实网关验证项。
+B06 立即付款：检查提交忙状态和已完成状态，但与取消不互斥（问题11）。
+B07 取消订单：有确认，但与付款不互斥；确认等待期间离开页面还缺少 mounted 检查（问题11同组）。
+B08 查询支付状态：更新缓存并给出状态，不凭跳转域名判断完成。未发现域名跳转误报成功。
+B09 内嵌支付关闭：停止轮询并回到订单；Linux 先隐藏原生网页再返回。
+B10 内嵌支付加载：有延迟加载提示，失败恢复缺失（问题12）。
+B11 内嵌支付外部应用跳转：失败无用户反馈（问题13）。
+B12 iOS 支付交接：外部浏览器打开结果被检查，失败抛给订单页；不与 B11 混淆。
+B13 支付自动查询：有单次查询锁、渐进间隔和五分钟上限；页面销毁时停止。
+B14 支付自动查询超时：内部停止但没有超时回调。建议明确显示停止自动查询并提供手动查单；属于体验优化，未确认所有页面状态提示是否及时重建。
+B15 更新按钮：忙状态禁用；支持下载失败信息、校验、安装权限提示和继续安装。
+B16 更新取消：非强制更新可取消，下载忙时取消下载；强制更新不展示取消且拦截返回。
+B17 更新商店打开：失败有提示，成功提示商店完成。未发现静默失败。
+B18 安装处理：不同系统显示对应操作说明；失败有提示。实际安装仍待验证。
+B19 法律链接：配置含打包回退，但打开结果未反馈（问题15）。
+B20 注册协议开关：回调切换；默认勾选属于产品交互建议，不作法律合规结论。
+B21 文档分类：可展开收起；文章项跳转携带文章与语言。
+B22 文档列表刷新：会失效缓存；手机空态没有有效刷新手势（问题14）。
+B23 文档详情返回：有关闭锁；Linux 隐藏网页后返回，避免残留。
+B24 文档详情刷新：有重复刷新锁，清理旧网页状态并重新请求，错误交给错误页。
+B25 文档详情失败重试：调用同一刷新路径；未发现空回调。
+B26 tvOS 工具页返回：子页按层级返回，账号/关于直接进入时可退出工具页。
+B27 tvOS 语言选择：持久化后关闭选项并刷新更新信息；取消回到工具页。
+B28 tvOS 主题选择：持久化自动/浅色/深色并关闭；兼容 legacy 值。
+B29 tvOS 分流输入：输入弹窗取消不覆盖目标；确定后写入目标并恢复焦点请求。
+B30 tvOS 工具焦点：保留上次选择；删除控件后会重新选取有效控件；方向键由 controlRows 管理。
+B31 tvOS 工具离开：停止流媒体与日志任务；切后台停止任务，回前台日志页重启记录。
+B32 tvOS 测速提前返回：已查到 defer 清理忙状态及测试节点集合；排除卡死疑点，不列为问题。
+
+关闭范围说明：以上是本轮有证据的控件组结果，不代表 439 个回调位置均复核完毕；包装控件与重复布局不能重复计作用户控件数量。
+
+
+第三轮逐控件复核
+新增确认：
+16. 中：通知开关的并发忙状态错误。account_info_page.dart:44-73。到期提醒和流量提醒可以分别发出请求，但任一请求完成后会将 _updatingExpire 和 _updatingTraffic 同时设为 false。第二个请求尚未完成时，其开关已恢复可点，允许重复/相反请求并发。建议仅清理本次开关状态，或统一串行保存。
+17. 中：修改密码提交中仍能关闭弹窗；服务端操作继续，但结果提示被 mounted 条件跳过。change_password_sheet.dart:165-171 关闭按钮不检查 _isSubmitting；成功/失败反馈在 mounted 分支。建议提交中锁关闭和返回，或将结果通知交给页面外的任务管理。不能把关闭弹窗理解成请求已取消。
+18. 中：tvOS 注销账号后仍保留记住的邮箱密码。TVToolsView.swift:1049-1065 注销成功只调用 session.signOut；SessionStore.swift:32-37 仅清 auth-token/account-email；TVLoginView.swift:632-633 会恢复 saved-login-email/password。全目录检索仅发现登录时取消记住密码才删除这两个键。注销后返回登录会重新填入已注销账号。建议注销时专门清理记住的凭据，普通退出是否保留由原产品行为决定。
+19. 优化：Flutter 自定义分流进入编辑后没有显式取消编辑按钮；用户要放弃当前编辑只能覆盖输入或离开重进。fastcat_custom_routing_page.dart:323-332 仅添加/保存，编辑态没有对应取消；独立 tvOS 已有取消编辑。建议补齐跨端行为。
+20. 优化：注册与重置验证码发送缺少可见重发冷却。Flutter 注册发送完成后立即恢复按钮；tvOS 同样只在发送中禁用。与修改邮箱/注销的 60 秒冷却不一致。建议统一重发倒计时、保留服务端限流错误提示。不推断后端没有限流。
+
+本轮逐控件核对结果（静态完成，运行待验）：
+C01 首页节点栏点击/遥控确认：携带当前代理组进入节点页；TV 包装器会排除子控件焦点，未发现父子同时触发的证据。
+C02 首页节点空态重新加载：忙时禁用，有导入结果提示；导入服务 forceRefresh 失败会发出错误提示，排除“所有节点刷新失败都无反馈”的泛化判断。
+C03 首页节点空态切换：订阅无效先展示恢复弹窗，否则进入节点页。
+C04 节点栏启动加载：15 秒启动宽限、60 秒导入后宽限，计时器销毁时取消；未发现该分支永久等待。
+C05 节点页更新/批量测速：两操作互相禁用；finally 恢复忙状态。
+C06 节点选择：成功返回，失败保留页面并提示；选择中禁止重复选择。
+C07 已选节点：非 TV 禁用再次选择；TV 保留焦点但空动作，用于保持遥控位置，不列为缺失功能。
+C08 节点单项测速：同节点有测试集合防重；TV 非拆分节点布局单独测速行为需运行确认。
+C09 账号邮箱：只读展示；缺失有兜底文案。
+C10 到期提醒：更新接口有身份代次检查；并发忙状态有问题16。
+C11 流量提醒：同 C10；失败文案固定中文，英文界面需补本地化。
+C12 修改邮箱当前邮箱：只读，不能误改。
+C13 修改邮箱新邮箱：空值/格式/与当前相同校验；当前密码必填。
+C14 修改邮箱密码显示切换：只改变显示状态。
+C15 修改邮箱验证码：数字输入、6 位限制；发送期间禁用，有60秒重发计时，销毁时取消计时。
+C16 修改邮箱确认：验证码校验；成功后要求退出并清记住的凭据；仍需实际验证服务端会话失效后的页面返回。
+C17 修改邮箱关闭：提交时禁用关闭图标，但底部弹窗默认可拖动/点击外部关闭。建议与提交中关闭策略统一，列为待运行验证，不声称请求被取消。
+C18 修改密码三个显示开关：分别控制旧/新/确认密码。
+C19 修改密码确认：非空、一致、最少8位校验；身份代次检查；本地记住密码保存失败不会掩盖服务端成功。
+C20 修改密码关闭：问题17。
+C21 注销前确认：有不可逆提示和继续动作。
+C22 注销验证码：6位数字、发送反馈、60秒冷却。
+C23 注销确认：未满足6位时禁用；成功后清理凭据；底部弹窗手势关闭策略仍待运行验证。
+C24 TV 账号套餐卡片刷新：有本地刷新锁，避免连续请求。
+C25 分流规则编辑/删除/上移/下移：回调均已绑定，边界禁用；热更新失败会尝试恢复旧配置并给提示。
+C26 Flutter 分流取消编辑：问题19。
+C27 新周期确认/取消：提交中禁用并通过 PopScope 拦截返回，防止结果未知时重提。
+C28 新周期超时：进入结果不确定状态，按钮改为查状态而不是重新提交；全局锁 finally 清理。
+C29 付费流量重置：用户确认后才创建订单；TV 不允许权限消失后退化成付费重置。
+C30 tvOS 注销：服务器成功后清缓存与会话，但记住凭据未清（问题18）。
+
+本轮未重新运行测试，未改产品代码。上述结果不能替代 TV 遥控焦点、系统权限、服务端交易的实际验证。
+
+
+第四轮逐控件复核：邀请记录与登录
+新增确认问题：
+21. 中：邀请页刷新不刷新当前邀请用户/佣金记录。invite_page.dart:57-65 仅调用 inviteProvider.refresh 与 referralProgramProvider.refresh；invite_sections.dart:504-548 的两个列表用本地 State 请求数据，只在 initState 或分页时查询，key 仅随 sessionEpoch 改变。父页刷新重建不会重跑 initState。场景：停留在佣金记录标签下拉刷新，概览更新但记录仍旧。建议父页刷新显式通知活动子列表刷新。
+22. 中：邀请用户、佣金记录翻页失败静默保留旧页。invite_sections.dart:833-861、944-987；_error 仅在 _items 为空时展示。有数据后翻页失败不会显示失败原因或重试动作。与余额明细的同类问题合并修复，不作三个独立架构问题。
+23. 中：官网打开结果被误判成功。config/utils/website_url_resolver.dart:82-83 在 await launchUrl 后无条件 return true，未检查返回 false。登录/首页因此不会显示打开失败。建议检查返回值，失败继续候选或明确提示。
+24. 中：登录/首页官网按钮异步返回时无条件 setState。login_page.dart:509，xboard_home_page.dart:1041。探测期间若页面被登录跳转、退出等流程销毁，回来会调用已销毁状态。建议 try/finally 清 busy，但先检查 mounted；异常也应恢复 busy。
+25. 优化：短屏登录隐藏 AppBar 后官网和客服入口一并消失。LoginResponsiveScaffold 对非桌面、非 TV 且高度小于640时隐藏 AppBar；登录页客服/官网按钮只定义在 AppBar。建议短屏把这两个动作移入可滚动内容或菜单，避免横屏/小窗口用户失去求助入口。属于布局策略造成的功能可达性取舍，不称为所有手机都缺入口。
+26. 低：复制邀请码/邀请链接未等待 Clipboard.setData 完成即提示成功。invite_sections.dart:746-767。建议成功后再提示并处理失败；这不证明正常系统上复制失败。
+
+本轮逐控件结果（静态已核对，运行待验）
+D01 邀请页刷新：防重复刷新、有 finally 复位；子列表刷新未覆盖（问题21）。
+D02 邀请三个标签：TabController 切换内容；监听器 dispose 移除。
+D03 邀请用户上一页：第一页禁用，请求中禁用。
+D04 邀请用户下一页：末页禁用，请求中禁用；失败反馈问题22。
+D05 邀请用户首次失败重试：调用 _load；成功为空时有空状态。
+D06 佣金记录上一页：页码边界/忙状态禁用。
+D07 佣金记录下一页：同 D06；失败反馈问题22。
+D08 佣金首次失败重试：调用 _load；有身份 epoch 检查。
+D09 生成邀请码：Provider 和按钮双层防重复；成功刷新邀请码数据，有数量上限错误提示。
+D10 复制邀请码：复制原始码，反馈时序问题26。
+D11 复制链接：优先邀请域名、站点网址，再回退面板 URL；反馈时序问题26。URL 为空时退化成纯邀请码但按钮仍称链接，建议区分文案或禁用链接复制。
+D12 邀请统计说明：tap Tooltip 有说明文字，属于非按钮交互；键盘/读屏可达性仍待运行确认。
+D13 提现入口：服务端配置启用后才展示；请求配置失败按禁用处理。
+D14 工单记录入口：与提现入口一起受 isWithdrawEnabled 控制；是否仅用于提现记录需产品确认，未断言通用客服工单必需。
+D15 划转入口：无提现能力时仍保留划转；资金结果问题1沿用。
+D16 余额记录上一页：第一页禁用；数据请求中禁用。
+D17 余额记录下一页：末页禁用；失败反馈问题3沿用。
+D18 登录邮箱：空值与 @ 基础校验；请求使用 trim 后邮箱。
+D19 登录密码：非空且8位校验；需确认是否存在历史短密码账号，未将潜在兼容性定为已确认问题。
+D20 登录密码显示：只切显示，不修改密码文本。
+D21 记住密码：勾选、文字点击、遥控确认均更新同一值；成功后按选项保存密码或仅邮箱。
+D22 登录提交/键盘完成：初始化/登录忙时禁用；成功依认证状态跳转。
+D23 初始化失败重试：调用初始化刷新，不是空回调。
+D24 登录方式切换：桌面/TV 显示，隐藏的账号表单排除焦点；二维码隐藏后停止计时与轮询。
+D25 二维码刷新：5秒刷新冷却；过期可立即刷新，销毁时取消计时。
+D26 二维码授权结果：校验当前 challenge、页面存活和到期状态；失败标记过期，避免继续使用已消费二维码。
+D27 注册/忘记密码入口：正常跳页并返回后初始化；登录请求中仍可进入，是否需统一忙状态列为优化，不推断必然串账号。
+D28 登录版本入口：打开关于；短屏页脚隐藏导致版本入口可达性差异，保留布局验证。
+D29 TV 登录语言：有系统/简中/英语选择，持久化；主题按钮切明暗，完整设置页可选自动。
+D30 官网入口：问题23/24；短屏可达性问题25。
+D31 客服打开：未配置有明确提示，打开失败有提示；返回先隐藏客服会话，非直接退出应用。内部 SDK 控件及附件全流程仍属于待检查范围，未把入口核对算作整个客服界面验收。
+
+覆盖计数只表示索引回调位置的静态核对状态，不代表独立控件数，也不代表所有非按钮交互已穷举。本轮未修改产品代码，未重复运行上一轮已通过的测试。
+
+
+最终静态复核收口（覆盖本次原始439处索引；此前阶段性剩余数量已失效）
+所有原始索引位置已逐项展开核对；声明、包装器和转发回调按公共组件追踪，不冒充独立功能。另补查未纳入原索引的 onSelectionChanged/onFieldSubmitted/onPageChanged、缩放与下拉指针事件、节点拆分焦点操作，以及 packages/fastcat_support 内部控件。
+这项结论仅表示源码入口与处理链的静态核对完成，不表示全部平台、远程内容和服务端状态都已经实际运行验收。
+
+收口补充问题：
+27. 中：DNS 应用过程中顶部重置仍可操作。fastcat_dns_settings_page.dart:100 未检查 _applying；AbsorbPointer 只包 body。重连等待期间可重置 provider，_applyNow 结束按最新 _fingerprint 记为已应用，存在核心与页面设置不一致的竞态。建议重置、返回、所有设置编辑与应用共用忙状态，使用本次应用快照记录已应用值。
+28. 中：客服消息外链没有绑定宿主动作。customer_service_helper.dart:606-632 创建 FastCatSupportView 未传 onOpenLink；support.dart:238、chat.dart:710 转发可空回调；message_body.dart:48 仅可空调用。普通 HTTP/HTTPS/mailto 链接及结构化消息URL按钮点击无动作。建议绑定带失败反馈的宿主打开方法。
+29. 中：客服“联系人工”按钮在当前接入下不可见。宿主 FastCatSupportView(showHeader:true)，support.dart 转发至 FastCatChat；chat.dart:810 仅 !widget.showHeader && _showHandoff 才展示人工按钮。建议人工转接开关独立于页头开关。此项是客户端主动转人工入口缺失，不证明后台无法人工接管。
+30. 中：客服附件图片下载失败后一直显示加载。chat.dart:520-535 FutureBuilder 仅区分 hasData，否则 spinner；没有 hasError 分支，失败 Future 还保留在 _attachmentCache。建议失败态提供重试，重试移除对应缓存。
+31. 低：tvOS 日志默认关闭且未发现界面开启入口。TVToolsView 的 logsEnabled 仅从 AppStorage 读取；关于页入口受该开关限制，目录内未发现设置 true 的界面动作。Flutter 关于页有连续点Logo开启，独立 tvOS 未提供对应流程。建议补遥控可达的诊断入口或明确仅限外部调试开关。
+32. 优化：通用外链反馈不一致，除了已列官网/法律/群组，工单消息、文档HTML、流媒体“访问”等也没有统一检查 launchUrl 返回值。合并成统一外链处理改进，不重复计算为多项重大问题。
+33. 优化：首次隐私说明的法律链接打开失败有提示，排除此前“所有法律入口都静默失败”的泛化。问题15只针对普通 FastCatLegalFooter/FastCatLegalAgreement，独立 tvOS 用二维码，不适用。
+
+剩余控件组收口矩阵（同一布局的按钮与TV包装器合并描述，原始索引逐行仍保留）：
+E01 关于：Logo五次开启日志、检查更新、防重复、更新弹窗、日志入口、法律链接；除已有问题外未发现断链。
+E02 注册：返回、密码显示、确认密码显示、验证码、邀请码必填弹窗、协议、提交、立即登录；结果/校验均有处理，验证码冷却问题20。
+E03 找回密码：发码、重置、两处密码显示、重发/返回上步、返回登录；回调完整。提交中返回策略建议统一，实际请求是否继续需运行验证。
+E04 手机扫码：授权/取消、权限设置、重试、双指缩放；有处理锁、相机重启与回前台恢复。
+E05 退出：普通确认/取消、离线强制二次确认/取消、错误提示；有认证结果检查。TVFocusable 排除子节点，未证实双重触发。
+E06 主题旧弹窗：自动/浅色/深色/取消；选择持久化并关闭。与设置中同功能弹窗建议复用。
+E07 提现：金额、方式、账号、提交/取消；分整数解析、有提交锁。划转金额使用 double，建议与提现统一金额精度及有限数校验，不推断后端必然接受非法金额。
+E08 日志：搜索、复制、清空、隐藏；复制按完整 buffer 导出而非当前筛选结果，建议文案说明或提供“复制筛选结果”。
+E09 优惠券：四筛选、刷新、去使用、查看锁定订单；取消锁定订单返回刷新。问题8沿用。
+E10 设备：刷新、扫码、单项移除、当前设备移除、批量离线释放、历史折叠；身份 epoch 保护存在。问题4沿用。
+E11 礼品卡：输入、兑换、下拉刷新、记录重试；空码提示、提交忙状态存在。服务端真实兑换未执行。
+E12 我的：账号、客服、套餐操作、工具、版本、订单/设备/流量/充值/文档/礼品卡/群组；远程开关及面板限制已核对，隐藏不等于丢失实现。
+E13 订单列表：刷新、有效单号进入详情、滚动分页、返回详情后更新；分页失败无可见提示与问题22同类。
+E14 工单：列表进入详情、重试、回复、关闭确认、Markdown链接；回复/关闭互斥存在。空态问题6及本地化问题7沿用。
+E15 节点：返回、更新、全量/单项测速、切换、拆分焦点选择/测速；已核对回调、边界与忙状态。隐藏DIRECT/REJECT为产品过滤，不报缺失。
+E16 套餐：购买/返回/刷新、周期选择、优惠券可用/不可用/不用、促销选择/取消、提交；异步预览有 requestId 防止旧价格覆盖。
+E17 充值：金额快捷选项/手输、充值/余额明细切换、自动续费、刷新、提交；金额以分计算、支付后刷新。真实资金流程未执行。
+E18 应用排除：开关、系统应用、搜索、逐项选择、保存、放弃、继续编辑、重连确认/取消；保存回滚存在，失败回滚文案应在恢复失败时准确说明。
+E19 启动：桌面开机启动、打开应用自动连接；不支持平台开机启动禁用。建议“自动运行”更名。
+E20 连接保护：各系统设置入口和返回后刷新；有超时、权限不可用与手动查找提示，不把打开设置当成已授权。
+E21 自定义分流：输入、直连/代理、添加/保存、编辑/删除/排序；重复目标校验、失败回滚存在，取消编辑问题19。
+E22 DNS：IPv6流量、覆盖、DNS IPv6、解析模式、四组服务器、保存/取消、重置确认/取消、立即应用；地址校验/去重存在，应用/重置竞态问题27。
+E23 设置入口：普通端和TV差异逐个核对；语言/主题选择取消不修改，选择后持久化。
+E24 诊断：域名输入/键盘提交、开始、复制、服务状态刷新、一键修复、两标签；未连接时禁用网络检测，有运行代次防旧结果覆盖。
+E25 公告：横幅详情、关闭、知道了、内容链接、轮播页码；外链失败部分有提示；未发现详情内手动切换其它公告入口，建议用户可前后翻阅，标为精简/可达性建议。
+E26 隐私说明：法律链接、暂不使用、同意继续；保存失败留在门禁页并提示，避免提前挂载自动连接。
+E27 公共控件：确认/取消、单选、错误重试、输入转发、卡片点击、TV延迟输入；参数转发完整，TV编辑/退出按键及键盘关闭有会话清理。
+E28 代理模式/TUN：规则/全局回调进入控制器，模式同步失败有提示；TUN开关持久化并延迟收起弹窗，实际权限/核心结果待验。
+E29 流媒体：全量/自选、全选/单选、确定/取消、开始/重测/停止、复制、访问；断连/节点/网络变化会失效结果，访问失败反馈问题32。
+E30 首页：官网、TUN、工具、版本、套餐刷新、账号、公告、连接/断开、订阅恢复；刷新失败反馈需结合 Provider 吞异常行为验证，不能仅以页面有 catch 判通过。
+E31 流量恢复：新周期确认/取消/查状态/重试、付费流量重置确认/取消；提交中锁返回，未知结果不直接重复提交。
+E32 tvOS 根界面：首次隐私、条款二维码、暂不使用/继续、配置刷新确定、强制/可选更新、商店反馈。
+E33 tvOS 登录：语言/主题、扫码/账号切换、二维码刷新、记住密码、注册/重置/返回、邮箱验证码、提交；回调完整；验证码冷却和注销凭据问题沿用。
+E34 tvOS 首页：工具、公告/公告链接二维码/返回、套餐刷新、连接、路由、线路、账号、版本、退出/强退、服务检查、订阅阻断/新周期各状态；离线与忙状态有门禁。
+E35 tvOS 节点：返回/遥控退出、刷新/批量测速、选线/单项测速；空态仍保留刷新工具栏，排除“空节点无法重试”。
+E36 tvOS 工具：语言/主题选项及取消、自动连接、账号刷新/退出/注销、分流输入确定/取消/保存/编辑/删除/排序、流媒体开始/停止、日志暂停/继续/清空、法律二维码、检查更新；焦点恢复与页面退出任务清理已读。
+E37 客服：入口/返回/恢复会话、邮箱开始/重试、文字发送/失败重试、附件选择/保存、图片预览缩放/关闭、表情选择/取消、声音、人工转接、结构化消息按钮/输入/选择、授权范围/允许/拒绝/撤销/管理、诊断报告重传与修复同意/拒绝；问题28-30。
+E38 致命初始化错误页：复制详情入口；缺少面向普通用户的重试/重新启动引导，固定英文与直接展示堆栈建议改进；属于四菜单外异常页面。
+
+验证收口：
+- 先前根项目功能测试361项通过（本轮未重复运行）。
+- 本轮新增客服组件测试53项全部通过。
+- 本轮 scripts/test_tvos_runtime.sh：运行协议/路由与回滚、扫码状态、工具模型三个验证程序均通过。
+- 上述均非实机逐页验收，不覆盖实际付款、注销、系统权限授予、VPN断开完成及第三方远程内容。

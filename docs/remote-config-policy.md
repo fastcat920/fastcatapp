@@ -71,23 +71,24 @@ file). Existing update-hint caches remain advisory when offline.
 
 ## Rollback and publishing
 
-Maintain two separate publishing paths:
+The current clients consume one publishing format only: signed `fastcat-config-v2`.
 
-1. Keep existing legacy XOR+Base64 files and URLs for already-installed old clients.
-   Do not replace them with v2. The old `encrypt_config.py` utility still produces only
-   the legacy format; it is not a publishing tool for the new v2-only clients.
-2. Generate signed v2 files using the backend signing facility and publish them to new
-   URLs. Configure those URLs in new builds' shared `remote_config.sources` (or Flutter
-   OSS_URL overrides). Ensure emergency sources also serve v2; a legacy emergency URL
-   will be rejected, not silently accepted. This code change does not invent new URLs.
+1. Edit the plaintext JSON using `docs/updating/remote-config-plaintext.example.json`.
+2. Use the backend signing facility to XOR+Base64 encode and Ed25519 sign it, then
+   synchronize the signed envelope to every configured OSS mirror. No legacy
+   unsigned format or parallel legacy publishing path is required.
 3. Inject the matching Base64-encoded 32-byte Ed25519 public key as
    `REMOTE_CONFIG_PUBLIC_KEY`; keep the private key only in the backend/publisher.
-   Shared CI checks and Flutter packaging helpers reject missing verification keys.
-4. Verify online loading and offline v2 cache restoration before releasing. Upgrading
-   clients with only unsigned caches must get a valid signed configuration online once.
+4. Verify online loading and offline signed cache restoration before release.
 
-The backend must continue publishing the legacy file independently for old versions.
-No backend deployment, OSS replacement or old-client format removal is performed here.
+The old `encrypt_config.py` utility produces an unsigned legacy format and is not
+suitable for publishing these clients' configurations. This document does not
+publish or replace any live OSS file.
+
+Current business configuration no longer uses `features`, `ticket`, latency display
+discounts, Crisp or Salesmartly. FastCat Support is the only integrated support
+platform. Update settings are independent under `update.platforms`, including `tvos`; Android phones and Android TV share `android`; old `update.latest` and global release notes/minimum
+versions are not consumed.
 
 To revert business settings, publish the old desired content with a **new, higher**
 `config_version`, then sign/encrypt it again and synchronize the same file to mirrors.

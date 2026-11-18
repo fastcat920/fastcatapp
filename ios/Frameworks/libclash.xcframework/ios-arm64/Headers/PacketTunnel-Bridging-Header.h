@@ -38,3 +38,6 @@ extern int ClashCore_read_packet(unsigned long long generation, uint8_t *data, i
 extern int ClashCore_get_mixed_port(void);
 
 #endif /* PacketTunnel_Bridging_Header_h */
+
+/// Bind provider-originated Internet sockets to the current physical path.
+extern void ClashCore_set_upstream_interface(unsigned int index);

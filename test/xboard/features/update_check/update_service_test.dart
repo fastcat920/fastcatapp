@@ -1,9 +1,61 @@
 import 'package:fl_clash/xboard/config/models/update_info.dart';
 import 'package:fl_clash/xboard/features/update_check/services/update_service.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'dart:ffi';
+import 'package:fl_clash/xboard/features/update_check/models/update_artifact.dart';
+import 'package:fl_clash/xboard/features/update_check/models/update_check_state.dart';
 
 void main() {
   final service = UpdateService();
+
+  test('same version build updates never downgrade a newer release', () {
+    expect(service.hasNewRelease('v3.6.2', '3.6.2', 8, 9), true);
+    expect(service.hasNewRelease('3.6.2', '3.6.2', 9, 9), false);
+    expect(service.hasNewRelease('3.6.3', '3.6.2', 1, 99), false);
+  });
+  test('selects only matching architecture and validates platform type', () {
+    final info = UpdatePlatformInfo.fromJson({
+      'latest_version': '3.6.3',
+      'build': 9,
+      'artifacts': {
+        'arm64': {
+          'url': 'https://example.com/app.apk',
+          'sha256': 'a' * 64,
+          'package_type': 'apk',
+          'size': 100
+        }
+      },
+    });
+    final artifact =
+        info.artifactFor(UpdateArtifact.architectureKeys(Abi.androidArm64));
+    expect(artifact?.isValid, true);
+    expect(artifact?.supportsPlatform('android'), true);
+    expect(artifact?.supportsPlatform('windows'), false);
+    expect(info.artifactFor(UpdateArtifact.architectureKeys(Abi.windowsX64)),
+        null);
+    expect(UpdatePlatformInfo.fromJson(info.toPlatformJson()).build, 9);
+  });
+  test('store link rejects external hosts and credentials', () {
+    expect(
+        UpdatePlatformInfo.fromJson({'url': 'https://example.com/install.ipa'})
+            .storeUrl,
+        '');
+    expect(
+        UpdatePlatformInfo.fromJson(
+            {'url': 'https://user@apps.apple.com/app/id123'}).storeUrl,
+        '');
+    expect(
+        UpdatePlatformInfo.fromJson(
+            {'url': 'https://example.com', 'app_id': '123'}).storeUrl,
+        'https://apps.apple.com/app/id123');
+  });
+  test('checking state retains the artifact but a new result can clear it', () {
+    const artifact =
+        UpdateArtifact(url: 'https://example.com', sha256: '', type: 'apk');
+    const state = UpdateCheckState(artifact: artifact);
+    expect(state.copyWith(isChecking: true).artifact, artifact);
+    expect(state.copyWith(artifact: null).artifact, null);
+  });
 
   test('compares semantic versions without treating build numbers as releases',
       () {
@@ -71,7 +123,7 @@ void main() {
     expect(ios?.minSupportedVersion, '3.5.8');
   });
 
-  test('falls back to legacy entries for platforms absent from new schema', () {
+  test('ignores legacy entries and global release notes', () {
     final config = UpdateRichConfig.fromJson({
       'min_version': '3.5.8',
       'changelog': 'legacy notes',
@@ -91,8 +143,70 @@ void main() {
       },
     });
 
-    expect(config.platformInfo('linux')?.version, '3.5.9');
-    expect(config.localizedChangelog('linux', 'en'), 'legacy notes');
+    expect(config.platformInfo('linux'), isNull);
+    expect(config.localizedChangelog('linux', 'en'), '');
+    expect(config.toJson().containsKey('latest'), false);
+    expect(config.localizedChangelog('android', 'en'), '');
+  });
+
+  test('Android phone and TV share architecture-specific installers', () {
+    final config = UpdateRichConfig.fromJson({
+      'platforms': {
+        'android': {
+          'latest_version': '3.6.3',
+          'artifacts': {
+            'arm64': {
+              'url': 'https://example.com/v8.apk',
+              'package_type': 'apk',
+              'sha256': 'a' * 64
+            },
+            'arm': {
+              'url': 'https://example.com/v7.apk',
+              'package_type': 'apk',
+              'sha256': 'b' * 64
+            },
+          },
+          'changelog': {'en_US': 'Phone changes'}
+        },
+        'android_tv': {
+          'latest_version': '3.6.3',
+          'changelog': {'en_US': 'TV changes'}
+        },
+      }
+    });
+    final phone = config.platformInfo('android')!;
+    final tv = config.platformInfo('android_tv')!;
+    expect(phone.artifacts.keys, ['arm64', 'arm']);
+    expect(tv.artifacts['arm64']?.url, phone.artifacts['arm64']?.url);
+    expect(tv.artifactFor(UpdateArtifact.architectureKeys(Abi.androidArm))?.url,
+        'https://example.com/v7.apk');
+    expect(config.localizedChangelog('android', 'en'), 'Phone changes');
+    expect(config.localizedChangelog('android_tv', 'en'), 'Phone changes');
+  });
+
+  test('every client owns its release notes without cross-platform fallback',
+      () {
+    final config = UpdateRichConfig.fromJson({
+      'platforms': {
+        for (final platform in [
+          'android',
+          'ios',
+          'tvos',
+          'windows',
+          'macos',
+          'linux'
+        ])
+          platform: {
+            'latest_version': '3.6.3',
+            'changelog': {'zh_CN': '$platform 更新', 'en_US': '$platform release'}
+          },
+      }
+    });
+    for (final platform in config.platforms.keys) {
+      expect(config.localizedChangelog(platform, 'en'), '$platform release');
+      expect(config.localizedChangelog(platform, 'zh'), '$platform 更新');
+    }
+    expect(config.localizedChangelog('unknown', 'en'), '');
   });
 
   test('selects bilingual platform changelog from the active language', () {

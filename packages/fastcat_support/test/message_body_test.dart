@@ -5,6 +5,18 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:fastcat_support/fastcat_support.dart';
 
 void main() {
+  test('conversation parsing cache reuses content, evicts old entries and clears on disposal', () {
+    final cache = SupportMessageBodyCache();
+    const body = '{"type":"rich_text","content":"original"}';
+    final original = cache.parse(body);
+    expect(identical(original, cache.parse(body)), true);
+    expect(cache.parse('{"type":"rich_text","content":"updated"}')['content'], 'updated');
+    for (var i=0;i<128;i++) { cache.parse('{"content":"$i"}'); }
+    expect(identical(original, cache.parse(body)), false);
+    final latest = cache.parse(body);
+    cache.clear();
+    expect(identical(latest, cache.parse(body)), false);
+  });
   testWidgets(
       'Markdown uses the bounded renderer while visitor text stays plain',
       (tester) async {

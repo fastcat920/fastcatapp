@@ -50,6 +50,7 @@ class _FastCatDnsSettingsPageState
     }
     if (!mounted) return;
     setState(() => _applying = true);
+    final applyingFingerprint = _fingerprint;
     try {
       await globalState.appController.savePreferences();
       if (wasConnected) {
@@ -60,7 +61,7 @@ class _FastCatDnsSettingsPageState
           throw StateError('Could not reconnect');
         }
       }
-      _savedFingerprint = _fingerprint;
+      _savedFingerprint = applyingFingerprint;
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(SnackBar(
             content: Text(chinese
@@ -89,171 +90,176 @@ class _FastCatDnsSettingsPageState
     final dns =
         ref.watch(patchClashConfigProvider.select((state) => state.dns));
 
-    return Scaffold(
-      backgroundColor: XbUiTokens.pageBackground(context),
-      appBar: AppBar(
-        title: const Text('DNS'),
+    return PopScope(
+      canPop: !_applying,
+      child: Scaffold(
         backgroundColor: XbUiTokens.pageBackground(context),
-        surfaceTintColor: Colors.transparent,
-        actions: [
-          TextButton.icon(
-            onPressed: () => _confirmReset(context, ref),
-            icon: const Icon(Icons.restart_alt_outlined),
-            label: Text(_isChinese(context) ? '重置' : 'Reset'),
-          ),
-          const SizedBox(width: 8),
-        ],
-      ),
-      bottomNavigationBar: _savedFingerprint == _fingerprint
-          ? null
-          : SafeArea(
-              child: Padding(
-                  padding: const EdgeInsets.all(16),
-                  child: FilledButton.icon(
-                    onPressed: _applying ? null : _applyNow,
-                    icon: Icon(_applying ? Icons.hourglass_top : Icons.check),
-                    label: Text(_isChinese(context)
-                        ? '设置待生效 · 立即应用'
-                        : 'Pending changes · Apply now'),
-                  )),
+        appBar: AppBar(
+          title: const Text('DNS'),
+          backgroundColor: XbUiTokens.pageBackground(context),
+          surfaceTintColor: Colors.transparent,
+          actions: [
+            TextButton.icon(
+              onPressed: _applying ? null : () => _confirmReset(context, ref),
+              icon: const Icon(Icons.restart_alt_outlined),
+              label: Text(_isChinese(context) ? '重置' : 'Reset'),
             ),
-      body: AbsorbPointer(
-          absorbing: _applying,
-          child: Center(
-            child: ConstrainedBox(
-              constraints: const BoxConstraints(maxWidth: 760),
-              child: ListView(
-                padding: const EdgeInsets.fromLTRB(16, 8, 16, 32),
-                children: [
-                  _section(context, l10n.options),
-                  _DnsCard(
-                    children: [
-                      SwitchListTile(
-                        secondary: const _DnsIcon(Icons.public_outlined),
-                        title: Text(
-                            _isChinese(context) ? 'IPv6 流量' : 'IPv6 traffic'),
-                        subtitle: Text(_isChinese(context)
-                            ? '允许 VPN/TUN 接收并转发 IPv6 流量'
-                            : 'Allow VPN/TUN to receive and forward IPv6 traffic'),
-                        value: vpnSetting.ipv6,
-                        onChanged: (value) => ref
-                            .read(vpnSettingProvider.notifier)
-                            .updateState(
-                                (state) => state.copyWith(ipv6: value)),
-                      ),
-                      SwitchListTile(
-                        secondary: const _DnsIcon(Icons.layers_outlined),
-                        title: Text(l10n.overrideDns),
-                        subtitle: Text(l10n.overrideDnsDesc),
-                        value: overrideDns,
-                        onChanged: (value) {
-                          if (value && !dns.enable) {
-                            _update(
-                              ref,
-                              (state) => state.copyWith.dns(enable: true),
-                            );
-                          }
-                          ref.read(overrideDnsProvider.notifier).value = value;
-                        },
-                      ),
-                      SwitchListTile(
-                        secondary: const _DnsIcon(Icons.language_outlined),
-                        title: const Text('DNS IPv6'),
-                        subtitle: Text(_isChinese(context)
-                            ? '允许 DNS 返回 IPv6（AAAA）解析结果'
-                            : 'Allow DNS to return IPv6 (AAAA) records'),
-                        value: dns.ipv6,
-                        onChanged: overrideDns
-                            ? (value) => _update(
-                                  ref,
-                                  (state) => state.copyWith.dns(ipv6: value),
-                                )
-                            : null,
-                      ),
-                      XbPointerCursor(
-                        enabled: overrideDns,
-                        child: ListTile(
-                          leading: const _DnsIcon(Icons.route_outlined),
-                          title: Text(l10n.dnsMode),
-                          subtitle: Text(_modeLabel(dns.enhancedMode)),
-                          trailing: const Icon(Icons.chevron_right),
-                          enabled: overrideDns,
-                          onTap: overrideDns
-                              ? () =>
-                                  _chooseMode(context, ref, dns.enhancedMode)
+            const SizedBox(width: 8),
+          ],
+        ),
+        bottomNavigationBar: _savedFingerprint == _fingerprint
+            ? null
+            : SafeArea(
+                child: Padding(
+                    padding: const EdgeInsets.all(16),
+                    child: FilledButton.icon(
+                      onPressed: _applying ? null : _applyNow,
+                      icon: Icon(_applying ? Icons.hourglass_top : Icons.check),
+                      label: Text(_isChinese(context)
+                          ? '设置待生效 · 立即应用'
+                          : 'Pending changes · Apply now'),
+                    )),
+              ),
+        body: AbsorbPointer(
+            absorbing: _applying,
+            child: Center(
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(maxWidth: 760),
+                child: ListView(
+                  padding: const EdgeInsets.fromLTRB(16, 8, 16, 32),
+                  children: [
+                    _section(context, l10n.options),
+                    _DnsCard(
+                      children: [
+                        SwitchListTile(
+                          secondary: const _DnsIcon(Icons.public_outlined),
+                          title: Text(
+                              _isChinese(context) ? 'IPv6 流量' : 'IPv6 traffic'),
+                          subtitle: Text(_isChinese(context)
+                              ? '允许 VPN/TUN 接收并转发 IPv6 流量'
+                              : 'Allow VPN/TUN to receive and forward IPv6 traffic'),
+                          value: vpnSetting.ipv6,
+                          onChanged: (value) => ref
+                              .read(vpnSettingProvider.notifier)
+                              .updateState(
+                                  (state) => state.copyWith(ipv6: value)),
+                        ),
+                        SwitchListTile(
+                          secondary: const _DnsIcon(Icons.layers_outlined),
+                          title: Text(l10n.overrideDns),
+                          subtitle: Text(l10n.overrideDnsDesc),
+                          value: overrideDns,
+                          onChanged: (value) {
+                            if (value && !dns.enable) {
+                              _update(
+                                ref,
+                                (state) => state.copyWith.dns(enable: true),
+                              );
+                            }
+                            ref.read(overrideDnsProvider.notifier).value =
+                                value;
+                          },
+                        ),
+                        SwitchListTile(
+                          secondary: const _DnsIcon(Icons.language_outlined),
+                          title: const Text('DNS IPv6'),
+                          subtitle: Text(_isChinese(context)
+                              ? '允许 DNS 返回 IPv6（AAAA）解析结果'
+                              : 'Allow DNS to return IPv6 (AAAA) records'),
+                          value: dns.ipv6,
+                          onChanged: overrideDns
+                              ? (value) => _update(
+                                    ref,
+                                    (state) => state.copyWith.dns(ipv6: value),
+                                  )
                               : null,
                         ),
-                      ),
-                    ],
-                  ),
-                  _section(context, _isChinese(context) ? '服务器' : 'Servers'),
-                  _DnsCard(
-                    children: [
-                      _serverTile(
-                        context,
-                        title: l10n.nameserver,
-                        subtitle: l10n.nameserverDesc,
-                        values: dns.nameserver,
-                        enabled: overrideDns,
-                        onChanged: (values) => _update(
-                          ref,
-                          (state) => state.copyWith.dns(nameserver: values),
-                        ),
-                      ),
-                      _serverTile(
-                        context,
-                        title: l10n.proxyNameserver,
-                        subtitle: l10n.proxyNameserverDesc,
-                        values: dns.proxyServerNameserver,
-                        enabled: overrideDns,
-                        onChanged: (values) => _update(
-                          ref,
-                          (state) =>
-                              state.copyWith.dns(proxyServerNameserver: values),
-                        ),
-                      ),
-                      _serverTile(
-                        context,
-                        title: l10n.defaultNameserver,
-                        subtitle: l10n.defaultNameserverDesc,
-                        values: dns.defaultNameserver,
-                        enabled: overrideDns,
-                        ipOnly: true,
-                        onChanged: (values) => _update(
-                          ref,
-                          (state) =>
-                              state.copyWith.dns(defaultNameserver: values),
-                        ),
-                      ),
-                      _serverTile(
-                        context,
-                        title: l10n.fallback,
-                        subtitle: l10n.fallbackDesc,
-                        values: dns.fallback,
-                        enabled: overrideDns,
-                        onChanged: (values) => _update(
-                          ref,
-                          (state) => state.copyWith.dns(fallback: values),
-                        ),
-                      ),
-                    ],
-                  ),
-                  Padding(
-                    padding: const EdgeInsets.fromLTRB(4, 14, 4, 0),
-                    child: Text(
-                      _isChinese(context)
-                          ? '每行填写一个 DNS 地址，支持普通 DNS、DoH、DoT 和 DoQ。地址会先校验，修改将在下次重新连接时完整生效。'
-                          : 'Enter one DNS address per line. Plain DNS, DoH, DoT and DoQ are supported. Addresses are validated before saving and fully apply after reconnecting.',
-                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                            color:
-                                Theme.of(context).colorScheme.onSurfaceVariant,
+                        XbPointerCursor(
+                          enabled: overrideDns,
+                          child: ListTile(
+                            leading: const _DnsIcon(Icons.route_outlined),
+                            title: Text(l10n.dnsMode),
+                            subtitle: Text(_modeLabel(dns.enhancedMode)),
+                            trailing: const Icon(Icons.chevron_right),
+                            enabled: overrideDns,
+                            onTap: overrideDns
+                                ? () =>
+                                    _chooseMode(context, ref, dns.enhancedMode)
+                                : null,
                           ),
+                        ),
+                      ],
                     ),
-                  ),
-                ],
+                    _section(context, _isChinese(context) ? '服务器' : 'Servers'),
+                    _DnsCard(
+                      children: [
+                        _serverTile(
+                          context,
+                          title: l10n.nameserver,
+                          subtitle: l10n.nameserverDesc,
+                          values: dns.nameserver,
+                          enabled: overrideDns,
+                          onChanged: (values) => _update(
+                            ref,
+                            (state) => state.copyWith.dns(nameserver: values),
+                          ),
+                        ),
+                        _serverTile(
+                          context,
+                          title: l10n.proxyNameserver,
+                          subtitle: l10n.proxyNameserverDesc,
+                          values: dns.proxyServerNameserver,
+                          enabled: overrideDns,
+                          onChanged: (values) => _update(
+                            ref,
+                            (state) => state.copyWith
+                                .dns(proxyServerNameserver: values),
+                          ),
+                        ),
+                        _serverTile(
+                          context,
+                          title: l10n.defaultNameserver,
+                          subtitle: l10n.defaultNameserverDesc,
+                          values: dns.defaultNameserver,
+                          enabled: overrideDns,
+                          ipOnly: true,
+                          onChanged: (values) => _update(
+                            ref,
+                            (state) =>
+                                state.copyWith.dns(defaultNameserver: values),
+                          ),
+                        ),
+                        _serverTile(
+                          context,
+                          title: l10n.fallback,
+                          subtitle: l10n.fallbackDesc,
+                          values: dns.fallback,
+                          enabled: overrideDns,
+                          onChanged: (values) => _update(
+                            ref,
+                            (state) => state.copyWith.dns(fallback: values),
+                          ),
+                        ),
+                      ],
+                    ),
+                    Padding(
+                      padding: const EdgeInsets.fromLTRB(4, 14, 4, 0),
+                      child: Text(
+                        _isChinese(context)
+                            ? '每行填写一个 DNS 地址，支持普通 DNS、DoH、DoT 和 DoQ。地址会先校验，修改将在下次重新连接时完整生效。'
+                            : 'Enter one DNS address per line. Plain DNS, DoH, DoT and DoQ are supported. Addresses are validated before saving and fully apply after reconnecting.',
+                        style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                              color: Theme.of(context)
+                                  .colorScheme
+                                  .onSurfaceVariant,
+                            ),
+                      ),
+                    ),
+                  ],
+                ),
               ),
-            ),
-          )),
+            )),
+      ),
     );
   }
 

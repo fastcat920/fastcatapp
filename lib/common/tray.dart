@@ -13,6 +13,15 @@ import 'constant.dart';
 import 'window.dart';
 
 class Tray {
+  TrayState? _latestState;
+  int _supportUnread = 0;
+
+  Future<void> updateSupportUnread(int count) async {
+    if (_supportUnread == count) return;
+    _supportUnread = count;
+    final state = _latestState;
+    if (state != null) await update(trayState: state);
+  }
   Traffic? _lastTitleTraffic;
   int _updateSerial = 0;
   String? _latestLocale;
@@ -38,7 +47,7 @@ class Tray {
     );
     if (!Platform.isLinux) {
       await trayManager.setToolTip(
-        localizedAppName,
+        _supportUnread > 0 ? '$localizedAppName · 客服未读 $_supportUnread' : localizedAppName,
       );
     }
   }
@@ -47,6 +56,7 @@ class Tray {
     required TrayState trayState,
     bool focus = false,
   }) async {
+    _latestState = trayState;
     if (Platform.isAndroid || Platform.isIOS) {
       return;
     }
@@ -71,6 +81,10 @@ class Tray {
       },
     );
     menuItems.add(showMenuItem);
+    if (_supportUnread > 0) {
+      menuItems.add(MenuItem(label: '● 客服未读 $_supportUnread',
+        onClick: (_) => window?.show()));
+    }
     final startMenuItem = MenuItem.checkbox(
       label: trayState.isStart ? l10n.trayDisconnect : l10n.trayStartConnection,
       onClick: (_) async {

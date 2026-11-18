@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'dart:ui' as ui;
 import 'package:flutter/services.dart';
 import 'dart:async';
+import 'dart:typed_data';
 import 'package:fastcat_support/fastcat_support.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -78,7 +79,105 @@ class ControlledSendClient extends FakeClient {
   }
 }
 
+class DelayedImageClient extends FakeClient {
+  final image = Completer<Uint8List>();
+  @override
+  Future<Uint8List> downloadAttachment(String id) => image.future;
+}
+
+class DelayedReceiptClient extends FakeClient {
+  final gate = Completer<Map<String,dynamic>>();
+  final targets = <int>[];
+  @override
+  Future<Map<String,dynamic>> acknowledge({required int deliveredSeq, required int readSeq}) {
+    targets.add(readSeq);
+    return gate.future;
+  }
+}
+
 void main() {
+  testWidgets('near-bottom scrolling coalesces pending receipts and sends newest position', (tester) async {
+    final c = DelayedReceiptClient();
+    await tester.pumpWidget(MaterialApp(home: FastCatChat(client:c)));
+    await tester.pumpAndSettle();
+    c.pages.add({'messages':[{'id':'one','seq':1,'role':'agent','body':List.filled(80,'scroll text').join('\n')}],'nextCursor':1});
+    await tester.pumpAndSettle();
+    final controller = tester.widget<ListView>(find.byType(ListView)).controller!;
+    expect(c.targets, [1]);
+    for(var i=0;i<6;i++) {
+      controller.jumpTo(controller.position.maxScrollExtent - (i.isEven ? 12 : 24));
+      await tester.pump();
+    }
+    expect(c.targets, [1]);
+    c.pages.add({'messages':[{'id':'two','seq':2,'role':'agent','body':'new reply'}],'nextCursor':2});
+    await tester.pumpAndSettle();
+    expect(c.targets, [1]);
+    c.gate.complete({'ok':true});
+    await tester.pumpAndSettle();
+    expect(c.targets, [1,2]);
+    await tester.pumpWidget(const SizedBox());
+    await c.pages.close(); await c.reads.close(); c.close();
+  });
+
+  testWidgets('empty unchanged synchronization does not rebuild message widgets', (tester) async {
+    final c = FakeClient();
+    await tester.pumpWidget(MaterialApp(home: FastCatChat(client:c)));
+    await tester.pumpAndSettle();
+    c.pages.add({'messages':[{'id':'one','seq':1,'role':'agent','body':'stable content'}],'nextCursor':1});
+    await tester.pumpAndSettle();
+    final before = tester.widget(find.byType(FastCatMessageBody).first);
+    c.pages.add({'messages':[], 'nextCursor':1});
+    await tester.pumpAndSettle();
+    expect(identical(before, tester.widget(find.byType(FastCatMessageBody).first)), true);
+    await tester.pumpWidget(const SizedBox());
+    await c.pages.close(); await c.reads.close(); c.close();
+  });
+  testWidgets('latest stays visible after delayed image layout and message growth', (tester) async {
+    final bytes = await tester.runAsync(() async {
+      final recorder = ui.PictureRecorder();
+      ui.Canvas(recorder).drawColor(const ui.Color(0xff146355), ui.BlendMode.src);
+      final image = await recorder.endRecording().toImage(120, 900);
+      final data = await image.toByteData(format: ui.ImageByteFormat.png);
+      image.dispose();
+      return data!.buffer.asUint8List();
+    });
+    final c = DelayedImageClient();
+    await tester.pumpWidget(MaterialApp(home: FastCatChat(client: c)));
+    await tester.pumpAndSettle();
+    c.pages.add({'messages': [{'id':'one','seq':1,'role':'agent',
+      'body':List.filled(70, '历史消息').join('\n')}], 'nextCursor':1});
+    await tester.pumpAndSettle();
+    c.pages.add({'messages': [{'id':'picture','seq':2,'role':'agent','body':'',
+      'attachment':{'id':'image','mime':'image/png','filename':'image.png'}}], 'nextCursor':2});
+    await tester.pump();
+    await tester.pump();
+    c.image.complete(bytes!);
+    await tester.pump(); // Start the resized image codec after the FutureBuilder.
+    await tester.runAsync(() => Future<void>.delayed(const Duration(milliseconds: 60)));
+    await tester.pumpAndSettle();
+    expect(tester.widgetList<Image>(find.byType(Image)).any((image) =>
+      image.image is ResizeImage && (image.image as ResizeImage).width != null), true);
+    final thumbnail = find.byType(Image).last;
+    final visibleImage = tester.getRect(thumbnail).intersect(tester.getRect(find.byType(ListView)));
+    await tester.tapAt(visibleImage.center);
+    await tester.pumpAndSettle();
+    final fullImage = tester.widget<Image>(find.descendant(
+      of: find.byType(InteractiveViewer), matching: find.byType(Image)));
+    expect(fullImage.image, isA<MemoryImage>());
+    Navigator.of(tester.element(find.byType(InteractiveViewer))).pop();
+    await tester.pumpAndSettle();
+    final controller = tester.widget<ListView>(find.byType(ListView)).controller!;
+    expect(controller.position.extentAfter, lessThanOrEqualTo(1));
+    c.pages.add({'messages': [{'id':'picture','seq':2,'role':'agent',
+      'body':List.filled(50, '更新后的长消息').join('\n'),
+      'attachment':{'id':'image','mime':'image/png','filename':'image.png'}}], 'nextCursor':2});
+    await tester.pumpAndSettle();
+    expect(controller.position.extentAfter, lessThanOrEqualTo(1));
+    await tester.pumpWidget(const SizedBox());
+    await c.pages.close();
+    await c.reads.close();
+    c.close();
+  });
   testWidgets('date separators follow local bubble times across midnight',
       (tester) async {
     final c = FakeClient();
@@ -641,7 +740,7 @@ void main() {
     await c.reads.close();
     c.close();
   });
-  testWidgets('incoming replies show latest even after manual scrolling',
+  testWidgets('incoming replies preserve manual history reading position',
       (tester) async {
     final c = FakeClient();
     await tester.pumpWidget(MaterialApp(home: FastCatChat(client: c)));
@@ -674,8 +773,8 @@ void main() {
       'nextCursor': 3
     });
     await tester.pumpAndSettle();
-    expect(controller.offset, greaterThan(offset));
-    expect(controller.offset, closeTo(controller.position.maxScrollExtent, .1));
+    expect(controller.offset, closeTo(offset, .1));
+    expect(controller.position.extentAfter, greaterThan(90));
     await tester.pumpWidget(const SizedBox());
     await c.pages.close();
     await c.reads.close();
@@ -701,7 +800,8 @@ void main() {
     });
     await tester.pumpAndSettle();
     final widget = tester.widget<Image>(find.byType(Image));
-    expect((widget.image as MemoryImage).bytes, bytes.buffer.asUint8List());
+    final provider = widget.image is ResizeImage ? (widget.image as ResizeImage).imageProvider : widget.image;
+    expect((provider as MemoryImage).bytes, bytes.buffer.asUint8List());
     await tester.pumpWidget(const SizedBox());
     await c.pages.close();
     await c.reads.close();

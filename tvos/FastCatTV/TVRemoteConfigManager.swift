@@ -7,6 +7,8 @@ extension Notification.Name {
 
 struct TVUpdateInfo: Equatable, Sendable {
   let latestVersion: String
+  let build: Int?
+  var releaseIdentity: String { "\(latestVersion)+\(build.map(String.init) ?? "")" }
   let updateURL: URL
   let releaseNotes: String
   let force: Bool
@@ -105,25 +107,6 @@ actor TVRemoteConfigManager {
     return terms ? "https://www.fastcat6.com/terms" : "https://www.fastcat6.com/privacy"
   }
 
-  func delayDiscountPercent() async -> Int {
-    let yaml = Bundle.main.url(forResource: "config", withExtension: "yaml")
-      .flatMap { try? String(contentsOf: $0, encoding: .utf8) } ?? ""
-    var local = 0
-    var inLatency = false
-    for line in yaml.components(separatedBy: .newlines) {
-      if line.trimmingCharacters(in: .whitespaces) == "latency:" { inLatency = true; continue }
-      if !line.isEmpty && !line.hasPrefix(" ") && !line.hasPrefix("#") { inLatency = false }
-      if inLatency, line.trimmingCharacters(in: .whitespaces).hasPrefix("display_discount_percent:"),
-         let value = Int(line.split(separator: ":", maxSplits: 1)[1].trimmingCharacters(in: .whitespaces)) {
-        local = min(90, max(0, value))
-      }
-    }
-    guard let json = try? await remoteConfig(), let latency = json["latency"] as? [String: Any] else { return local }
-    let raw = latency["display_discount_percent"]
-    let value = (raw as? NSNumber)?.intValue ?? (raw as? String).flatMap { Int($0.trimmingCharacters(in: .whitespaces)) }
-    return value.map { min(90, max(0, $0)) } ?? local
-  }
-
   func apiBaseURL() async throws -> URL {
     if let json = try? await remoteConfig(), let url = apiBaseURL(from: json) {
       if let active = resolvedBaseURL, apiBaseURLs(from: json).contains(active) { return active }
@@ -166,45 +149,41 @@ actor TVRemoteConfigManager {
     guard let json = try? await remoteConfig(),
           let update = json["update"] as? [String: Any] else { return nil }
 
-    let legacy = (update["latest"] as? [String: Any])?["tvos"] as? [String: Any]
-    let modernPlatforms = update["platforms"] as? [String: Any]
-    let hasModernTVOS = modernPlatforms?.keys.contains("tvos") == true
-    let modern = modernPlatforms?["tvos"] as? [String: Any]
-    let selected = hasModernTVOS ? modern : legacy
-
-    guard let platform = selected else { return nil }
-    if hasModernTVOS, platform["enabled"] as? Bool == false { return nil }
-
-    let latest = cleanString(platform["latest_version"] ?? platform["version"])
+    guard let platforms = update["platforms"] as? [String: Any],
+          let platform = platforms["tvos"] as? [String: Any],
+          platform["enabled"] as? Bool != false else { return nil }
+    let latest = cleanString(platform["latest_version"])
     let current = cleanString(Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString"))
-    guard !latest.isEmpty, isNewerVersion(current: current, latest: latest) else { return nil }
+    let currentBuild = Int(cleanString(Bundle.main.object(forInfoDictionaryKey: "CFBundleVersion"))) ?? 0
+    let latestBuild = (platform["build"] as? NSNumber)?.intValue ?? Int(cleanString(platform["build"])) ?? 0
+    let sameVersion = !isNewerVersion(current: current, latest: latest) && !isNewerVersion(current: latest, latest: current)
+    guard !latest.isEmpty, isNewerVersion(current: current, latest: latest) || (sameVersion && latestBuild > currentBuild) else { return nil }
 
     let rawURL = cleanString(platform["url"])
     let appID = cleanString(platform["app_id"])
     let updateURL: URL?
-    if !rawURL.isEmpty {
-      updateURL = URL(string: rawURL)
-    } else if !appID.isEmpty {
-      let normalizedID = appID.hasPrefix("id") ? appID : "id\(appID)"
-      updateURL = URL(string: "https://apps.apple.com/app/\(normalizedID)")
+    let normalizedID = appID.hasPrefix("id") ? String(appID.dropFirst(2)) : appID
+    if !normalizedID.isEmpty, normalizedID.allSatisfy({ $0.isASCII && $0.isNumber }) {
+      updateURL = URL(string: "https://apps.apple.com/app/id\(normalizedID)")
     } else {
-      updateURL = nil
+      updateURL = URL(string: rawURL)
     }
-    guard let updateURL,
-          ["https", "http"].contains(updateURL.scheme?.lowercased() ?? "") else { return nil }
+    guard let updateURL, updateURL.scheme?.lowercased() == "https",
+          updateURL.host?.lowercased() == "apps.apple.com",
+          updateURL.user == nil, updateURL.password == nil else { return nil }
 
     let platformMin = cleanString(platform["min_supported_version"])
-    let legacyMin = cleanString(update["min_version"])
-    let minimum = platformMin.isEmpty ? legacyMin : platformMin
+    let minimum = platformMin
     let belowMinimum = !minimum.isEmpty && isNewerVersion(current: current, latest: minimum)
-    let force = remoteConfirmed && ((platform["force"] as? Bool == true) || belowMinimum)
+    let minBuild = (platform["min_supported_build"] as? NSNumber)?.intValue ?? Int(cleanString(platform["min_supported_build"])) ?? 0
+    let force = remoteConfirmed && ((platform["force"] as? Bool == true) || belowMinimum || (sameVersion && currentBuild < minBuild))
 
     return TVUpdateInfo(
       latestVersion: latest,
+      build: latestBuild > 0 ? latestBuild : nil,
       updateURL: updateURL,
       releaseNotes: localizedChangelog(
         platform["changelog"],
-        fallback: update["changelog"],
         language: language
       ),
       force: force
@@ -406,7 +385,6 @@ actor TVRemoteConfigManager {
 
   private func localizedChangelog(
     _ value: Any?,
-    fallback: Any?,
     language: TVLanguage
   ) -> String {
     if let map = value as? [String: Any] {
@@ -424,7 +402,7 @@ actor TVRemoteConfigManager {
       let text = cleanString(value)
       if !text.isEmpty { return text }
     }
-    return cleanString(fallback)
+    return ""
   }
 
   private func isNewerVersion(current: String, latest: String) -> Bool {

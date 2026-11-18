@@ -36,7 +36,55 @@ class _Plans extends XBoardSubscriptionNotifier {
   List<DomainPlan> build() => [];
 }
 
+class _Reminders extends _Auth {
+  final expiry = Completer<bool>();
+  final traffic = Completer<bool>();
+  @override
+  Future<bool> updateReminderSettings(
+          {bool? remindExpire, bool? remindTraffic}) =>
+      remindExpire != null ? expiry.future : traffic.future;
+}
+
 void main() {
+  testWidgets('each reminder stays busy until its own request completes',
+      (tester) async {
+    system.setTVForTesting(false);
+    final container = ProviderContainer(overrides: [
+      xboardUserProvider.overrideWith(_Reminders.new),
+    ]);
+    addTearDown(container.dispose);
+    await tester.pumpWidget(UncontrolledProviderScope(
+      container: container,
+      child: MaterialApp(
+        locale: const Locale('en'),
+        supportedLocales: AppLocalizations.delegate.supportedLocales,
+        localizationsDelegates: const [
+          AppLocalizations.delegate,
+          GlobalMaterialLocalizations.delegate,
+          GlobalWidgetsLocalizations.delegate,
+          GlobalCupertinoLocalizations.delegate,
+        ],
+        home: const AccountInfoPage(),
+      ),
+    ));
+    await tester.pumpAndSettle();
+    List<SwitchListTile> switches() =>
+        tester.widgetList<SwitchListTile>(find.byType(SwitchListTile)).toList();
+    switches()[0].onChanged!(false);
+    switches()[1].onChanged!(false);
+    await tester.pump();
+    expect(switches().every((tile) => tile.onChanged == null), isTrue);
+    final auth = container.read(xboardUserProvider.notifier) as _Reminders;
+    auth.expiry.complete(true);
+    await tester.pump();
+    expect(switches()[0].onChanged, isNotNull);
+    expect(switches()[1].onChanged, isNull);
+    auth.traffic.complete(true);
+    await tester.pumpAndSettle();
+    expect(switches().every((tile) => tile.onChanged != null), isTrue);
+    expect(tester.takeException(), isNull);
+  });
+
   for (final locale in [const Locale('en'), const Locale('zh', 'CN')]) {
     testWidgets(
         'TV account shows only email, read-only plan and account actions: $locale',

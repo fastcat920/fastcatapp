@@ -400,8 +400,8 @@ class ConfigurationParser {
         },
       };
 
-      // 保留其他字段（announcement、contact、features 等）供将来使用
-      for (final key in ['announcement', 'maintenance', 'update', 'contact', 'features', 'latency', 'config_version', 'gateway_urls', 'gateway_url', 'ticket', 'subscription', 'api_prefix', 'legal']) {
+      // 保留当前支持的远程字段（announcement、contact 等）
+      for (final key in ['announcement', 'maintenance', 'update', 'contact', 'config_version', 'gateway_urls', 'gateway_url', 'subscription', 'api_prefix', 'legal']) {
         if (remoteResult.containsKey(key)) {
           normalized[key] = remoteResult[key];
         }

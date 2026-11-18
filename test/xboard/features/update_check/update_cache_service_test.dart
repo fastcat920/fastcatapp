@@ -127,6 +127,8 @@ void main() {
 }
 
 class _FakeUpdateService extends UpdateService {
+  @override
+  Future<int> getCurrentBuild() async => 1;
   _FakeUpdateService(this.version);
 
   final String version;

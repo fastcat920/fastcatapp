@@ -131,18 +131,22 @@ class _PrivacyGateState extends State<PrivacyGate> with WidgetsBindingObserver {
               Text(copy('你可以关闭应用；在继续之前不会进入登录或连接界面。',
                   'You may close the app. Sign-in and connection screens remain unavailable until you continue.')),
             const SizedBox(height: 16),
-            _buttonPair(
-              TextButton(
-                  style: TextButton.styleFrom(
-                      foregroundColor: const Color(0xFFB3261E)),
-                  onPressed:
-                      _saving ? null : () => setState(() => _declined = true),
-                  child: Text(copy('暂不使用', 'Not now'),
-                      textAlign: TextAlign.center)),
-              FilledButton(
-                  onPressed: _saving ? null : _continue,
-                  child: Text(copy('同意并继续', 'Agree and Continue'),
-                      textAlign: TextAlign.center)),
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                FilledButton(
+                    onPressed: _saving ? null : _continue,
+                    child: Text(copy('同意并继续', 'Agree and Continue'),
+                        textAlign: TextAlign.center)),
+                const SizedBox(height: 12),
+                TextButton(
+                    style: TextButton.styleFrom(
+                        foregroundColor: const Color(0xFFB3261E)),
+                    onPressed:
+                        _saving ? null : () => setState(() => _declined = true),
+                    child: Text(copy('暂不使用', 'Not now'),
+                        textAlign: TextAlign.center)),
+              ],
             ),
           ]),
         ))),

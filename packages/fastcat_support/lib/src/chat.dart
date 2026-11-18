@@ -1,4 +1,5 @@
 import 'message_date.dart';
+import 'package:collection/collection.dart';
 import 'package:flutter/rendering.dart' show ScrollDirection;
 import 'assistance.dart';
 import 'package:flutter/services.dart';
@@ -48,7 +49,29 @@ class _FastCatChatState extends State<FastCatChat> with WidgetsBindingObserver {
   bool _emojiOpen = false;
   final _text = TextEditingController();
   final _scroll = ScrollController();
+  static const _deepEquals = DeepCollectionEquality();
+  bool _ackInFlight = false;
+  int _ackGeneration = 0;
+  bool _followLatest = true, _latestScrollScheduled = false;
+
+  void _scheduleLatest() {
+    if (_latestScrollScheduled || !_followLatest || !_hostVisible) return;
+    _latestScrollScheduled = true;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _latestScrollScheduled = false;
+      if (!mounted || !_followLatest || !_hostVisible || !_scroll.hasClients ||
+          !_scroll.position.hasContentDimensions) return;
+      final position = _scroll.position;
+      if ((position.maxScrollExtent - position.pixels).abs() > 1) {
+        _scroll.jumpTo(position.maxScrollExtent);
+      }
+      _ack();
+    });
+    WidgetsBinding.instance.ensureVisualUpdate();
+  }
   final _messages = <Map<String, dynamic>>[];
+  final _bodyCache = SupportMessageBodyCache();
+  double? _lastContentExtent, _lastViewportExtent;
   DateTime _assistanceOpenedAt = DateTime.now();
   void _observeAssistance(Map<String, dynamic> state) {
     if (!mounted) return;
@@ -90,8 +113,10 @@ class _FastCatChatState extends State<FastCatChat> with WidgetsBindingObserver {
   Timer? _pushHeartbeat;
   void _pushPresence() {
     unawaited(widget.client
-        .setPushChatVisible(_hostVisible && (WidgetsBinding.instance.lifecycleState == null ||
-            WidgetsBinding.instance.lifecycleState == AppLifecycleState.resumed))
+        .setPushChatVisible(_hostVisible &&
+            (WidgetsBinding.instance.lifecycleState == null ||
+                WidgetsBinding.instance.lifecycleState ==
+                    AppLifecycleState.resumed))
         .catchError((Object _) {}));
   }
 
@@ -110,7 +135,9 @@ class _FastCatChatState extends State<FastCatChat> with WidgetsBindingObserver {
               : _assigned
                   ? _t('人工客服接待中', 'Staff connected')
                   : _t('等待客服接待', 'Waiting for support');
-  Color _primary = defaultSupportColor;
+  Map<String, dynamic> _colorConfiguration = {};
+  Color get _primary => supportColor(_colorConfiguration,
+      brightness: Theme.of(context).brightness);
   String? _themeMode, _language, _welcomeZh, _welcomeEn;
   bool _showHandoff = true, _sound = true;
   final _avatarBytes = <String, Uint8List>{};
@@ -124,7 +151,7 @@ class _FastCatChatState extends State<FastCatChat> with WidgetsBindingObserver {
     final revision = ++_appearanceRevision;
     void apply(Map<String, dynamic> config) {
       final firstPaint = !_appearanceReady;
-      _primary = supportColor(config);
+      _colorConfiguration = config;
       final appearance = config['widget'] as Map? ?? const {};
       _themeMode = appearance['theme'] as String?;
       _language = appearance['language'] as String?;
@@ -165,6 +192,7 @@ class _FastCatChatState extends State<FastCatChat> with WidgetsBindingObserver {
   FastCatConnectionStatus _connection = FastCatConnectionStatus.idle;
   bool _sending = false, _closed = false;
   int _lastSeq = 0, _ackSeq = 0, _peerReadSeq = 0;
+  final _peerRead = ValueNotifier<int>(0);
   FastCatAttachment? _pendingFile;
   @override
   void initState() {
@@ -209,7 +237,8 @@ class _FastCatChatState extends State<FastCatChat> with WidgetsBindingObserver {
   }
 
   void _toggleSound() {
-    setState(() => _sound = !_sound);
+    setState(() => _sound = !widget.client.notificationSoundEnabled);
+    unawaited(widget.client.setNotificationSoundEnabled(_sound));
     if (_sound) _tone.play();
   }
 
@@ -239,8 +268,9 @@ class _FastCatChatState extends State<FastCatChat> with WidgetsBindingObserver {
     _soundSubscription = widget.client.incomingMessageStream.listen((message) {
       if (mounted &&
           _hostVisible &&
-          _sound &&
-          WidgetsBinding.instance.lifecycleState != AppLifecycleState.paused)
+          widget.client.notificationSoundEnabled &&
+          (WidgetsBinding.instance.lifecycleState == null ||
+              WidgetsBinding.instance.lifecycleState == AppLifecycleState.resumed))
         _tone.play();
     });
     _connection = widget.client.connectionStatus;
@@ -252,14 +282,34 @@ class _FastCatChatState extends State<FastCatChat> with WidgetsBindingObserver {
       if (mounted) setState(() => _error = e.toString());
     }).listen((page) {
       if (!mounted) return;
+      final automation = page['automation'] as Map?;
+      final receipts = page['receipts'] as Map?;
+      final peerRead = receipts?['readSeq'];
+      if (peerRead is int && peerRead > _peerReadSeq) {
+        _peerReadSeq = peerRead;
+        _peerRead.value = peerRead;
+      }
+      final unchanged = !_openingScrollPending && _pendingId == null && _error == null &&
+          _closed == ((page['conversation'] as Map?)?['status'] == 'closed') &&
+          _peerReadSeq == (receipts?['readSeq'] as int? ?? _peerReadSeq) &&
+          _serviceMode == (automation?['mode'] as String? ?? '') &&
+          _assigned == ((page['conversation'] as Map?)?['assigned'] == true) &&
+          _typing == (automation?['typing'] == true) &&
+          _aiDraft == (automation?['draft'] as String? ?? '') &&
+          _aiAvatar == (automation?['aiAvatar'] as String? ?? _aiAvatar) &&
+          (page['messages'] as List).isEmpty;
+      if (unchanged) {
+        _lastSeq = page['nextCursor'] as int? ?? _lastSeq;
+        _ack(); // Retry failed receipts without rebuilding the message list.
+        return;
+      }
       var incoming = false;
+      var contentChanged = false;
       final previousDraft = _aiDraft;
       final wasTyping = _typing;
       void applyPage() {
         if (_pendingId == null) _error = null;
         _closed = (page['conversation'] as Map?)?['status'] == 'closed';
-        _peerReadSeq =
-            (page['receipts'] as Map?)?['readSeq'] as int? ?? _peerReadSeq;
         final automation = page['automation'] as Map?;
         _statusReady = true;
         _serviceMode = automation?['mode'] as String? ?? '';
@@ -288,6 +338,10 @@ class _FastCatChatState extends State<FastCatChat> with WidgetsBindingObserver {
             if (message['role'] != 'visitor') incoming = true;
             _messages.add(message);
           } else {
+            if (_messages[index]['body'] != message['body'] ||
+                !_deepEquals.equals(_messages[index]['attachment'], message['attachment'])) {
+              contentChanged = true;
+            }
             _messages[index] = message;
           }
           if (message['client_id'] != null &&
@@ -299,6 +353,7 @@ class _FastCatChatState extends State<FastCatChat> with WidgetsBindingObserver {
         }
         _lastSeq = page['nextCursor'] as int? ?? _lastSeq;
       }
+
       final visible = _hostVisible &&
           WidgetsBinding.instance.lifecycleState != AppLifecycleState.paused;
       if (visible) {
@@ -307,16 +362,20 @@ class _FastCatChatState extends State<FastCatChat> with WidgetsBindingObserver {
         applyPage();
       }
       final shouldShowLatest = incoming ||
+          (_followLatest && contentChanged) ||
           (_typing && (!wasTyping || previousDraft != _aiDraft)) ||
           _scrollAfterSend ||
           (_openingScrollPending && page['hasMore'] != true);
       if (page['hasMore'] != true) _openingScrollPending = false;
       _scrollAfterSend = false;
       if (!visible) return;
+      // New replies do not steal the user's position while reading history.
+      if (shouldShowLatest && (_followLatest || _scrollAfterSend)) {
+        _followLatest = true;
+        _scheduleLatest();
+      }
       WidgetsBinding.instance.addPostFrameCallback((_) {
         if (!mounted) return;
-        if (shouldShowLatest && _scroll.hasClients)
-          _scroll.jumpTo(_scroll.position.maxScrollExtent);
         _ack();
       });
     }, onError: (Object e) {
@@ -329,10 +388,14 @@ class _FastCatChatState extends State<FastCatChat> with WidgetsBindingObserver {
     super.didChangeDependencies();
     _hostVisible = TickerMode.of(context);
     _pushPresence();
-    if (_hostVisible) WidgetsBinding.instance.addPostFrameCallback((_) { if (mounted) _ack(); });
+    if (_hostVisible)
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) _ack();
+      });
   }
 
   void _ack() {
+    if (_ackInFlight) return;
     if (!_hostVisible) return;
     if (!_appearanceReady) return;
     if (_scroll.hasClients &&
@@ -343,12 +406,22 @@ class _FastCatChatState extends State<FastCatChat> with WidgetsBindingObserver {
     if (ModalRoute.of(context)?.isCurrent == false) return;
     if (_lastSeq <= _ackSeq) return;
     final target = _lastSeq;
+    final generation = _ackGeneration;
+    var succeeded = false;
+    _ackInFlight = true;
     widget.client
         .acknowledge(deliveredSeq: _lastSeq, readSeq: _lastSeq)
         .then((value) {
-      if (mounted) _ackSeq = target;
+      if (mounted && generation == _ackGeneration) {
+        if (target > _ackSeq) _ackSeq = target;
+        succeeded = true;
+      }
       return value;
-    }).catchError((Object e) => <String, dynamic>{});
+    }).catchError((Object e) => <String, dynamic>{}).whenComplete(() {
+      if (!mounted || generation != _ackGeneration) return;
+      _ackInFlight = false;
+      if (succeeded) _ack();
+    });
   }
 
   @override
@@ -364,6 +437,8 @@ class _FastCatChatState extends State<FastCatChat> with WidgetsBindingObserver {
   void didUpdateWidget(covariant FastCatChat old) {
     super.didUpdateWidget(old);
     if (old.client != widget.client) {
+      _ackGeneration++;
+      _ackInFlight = false;
       unawaited(old.client.setPushChatVisible(false).catchError((Object _) {}));
       _pushPresence();
       _statusReady = false;
@@ -372,15 +447,18 @@ class _FastCatChatState extends State<FastCatChat> with WidgetsBindingObserver {
       _aiAvatar = "";
       _appearanceReady = false;
       _appearanceError = null;
-      _primary = defaultSupportColor;
+      _colorConfiguration = {};
       _themeMode = _language = _welcomeZh = _welcomeEn = null;
       _peerReadSeq = 0;
+      _peerRead.value = 0;
       _loadAppearance();
       _subscription?.cancel();
       _connectionSubscription?.cancel();
       _typing = false;
       _aiDraft = "";
       _messages.clear();
+      _bodyCache.clear();
+      _lastContentExtent = _lastViewportExtent = null;
       _assistanceOpenedAt = DateTime.now();
       _attachmentPreviews.clear();
       _attachmentCache.clear();
@@ -401,31 +479,36 @@ class _FastCatChatState extends State<FastCatChat> with WidgetsBindingObserver {
               ? const Locale('zh', 'CN')
               : null);
   String _t(String zh, String en) => supportText(context, zh, en, _locale);
+  ThemeData? _cachedThemeHost, _cachedTheme;
+  String? _cachedThemeMode;
+  Color? _cachedThemePrimary;
   ThemeData _effectiveTheme(BuildContext context) {
     final host = Theme.of(context);
+    final primary = _primary;
+    if (identical(host, _cachedThemeHost) && _themeMode == _cachedThemeMode &&
+        primary == _cachedThemePrimary && _cachedTheme != null) return _cachedTheme!;
     final base = _themeMode == 'dark'
         ? ThemeData.dark()
         : _themeMode == 'light'
             ? ThemeData.light()
             : host;
     final dark = base.brightness == Brightness.dark;
-    return supportTheme(
+    _cachedThemeHost = host;
+    _cachedThemeMode = _themeMode;
+    _cachedThemePrimary = primary;
+    return _cachedTheme = supportTheme(
         base.copyWith(
             colorScheme: base.colorScheme.copyWith(
                 surface: dark ? const Color(0xff191a20) : Colors.white),
             dividerColor:
                 dark ? const Color(0xff2b2d37) : const Color(0xffe9ecf2)),
-        _primary);
+        primary);
   }
 
   void _showLatest() {
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (mounted &&
-          !_userNavigated &&
-          _scroll.hasClients &&
-          _scroll.position.hasContentDimensions)
-        _scroll.jumpTo(_scroll.position.maxScrollExtent);
-    });
+    if (_userNavigated) return;
+    _followLatest = true;
+    _scheduleLatest();
   }
 
   Future<void> _send() async {
@@ -506,6 +589,11 @@ class _FastCatChatState extends State<FastCatChat> with WidgetsBindingObserver {
                         icon: const Icon(Icons.close, color: Colors.white)))
               ]))));
 
+  Widget _localPreview(Uint8List bytes) => GestureDetector(
+    onTap: () => _openImage(bytes),
+    child: Image.memory(bytes, width: 200, fit: BoxFit.contain,
+      cacheWidth: (200 * MediaQuery.devicePixelRatioOf(context)).ceil()));
+
   Widget _attachment(Map a) {
     final id = a['id'] as String;
     Future<Uint8List> bytes() => _attachmentCache.putIfAbsent(
@@ -526,6 +614,7 @@ class _FastCatChatState extends State<FastCatChat> with WidgetsBindingObserver {
                             child: GestureDetector(
                                 onTap: () => _openImage(snapshot.data!),
                                 child: Image.memory(snapshot.data!,
+                                    cacheWidth: (200 * MediaQuery.devicePixelRatioOf(context)).ceil(),
                                     frameBuilder:
                                         (context, child, frame, sync) {
                                   // Media loading must not move the conversation.
@@ -557,7 +646,19 @@ class _FastCatChatState extends State<FastCatChat> with WidgetsBindingObserver {
             ]));
   }
 
-  Widget _message(Map m) {
+  Widget _receiptMarker(dynamic seq, Color color) => ValueListenableBuilder<int>(
+    valueListenable: _peerRead,
+    builder: (context, cursor, child) {
+      final read = seq is int && seq <= cursor;
+      return Semantics(
+        label: read ? _t('已读', 'Read') : _t('已发送', 'Sent'),
+        child: Padding(padding: const EdgeInsets.only(left: 3, right: 4),
+          child: Text(read ? '  ✓✓' : '  ✓', style: TextStyle(
+            fontSize: 11, letterSpacing: read ? -1.5 : 0,
+            color: color.withValues(alpha: .7)))));
+    });
+
+  Widget _message(Map m, {bool last = false}) {
     final own = m['role'] == 'visitor', pending = m['pending'] == true;
     final isImage = m['localBytes'] != null ||
         (m['attachment'] as Map?)?['mime']?.toString().startsWith('image/') ==
@@ -574,7 +675,6 @@ class _FastCatChatState extends State<FastCatChat> with WidgetsBindingObserver {
     final time = created == null
         ? ''
         : '${created.hour.toString().padLeft(2, '0')}:${created.minute.toString().padLeft(2, '0')}';
-    final read = m['seq'] is int && m['seq'] <= _peerReadSeq;
     Widget avatar = CircleAvatar(
         radius: 14,
         backgroundColor: Color.alphaBlend(_primary.withValues(alpha: .12),
@@ -586,6 +686,7 @@ class _FastCatChatState extends State<FastCatChat> with WidgetsBindingObserver {
       try {
         avatar = ClipOval(
             child: Image.memory(
+                cacheWidth: (28 * MediaQuery.devicePixelRatioOf(context)).ceil(),
                 _avatarBytes.putIfAbsent(
                     image, () => base64Decode(image.split(',').last)),
                 gaplessPlayback: true,
@@ -598,6 +699,7 @@ class _FastCatChatState extends State<FastCatChat> with WidgetsBindingObserver {
       final url = widget.client.baseUrl.resolve(image).toString();
       avatar = ClipOval(
           child: Image.network(url,
+              cacheWidth: (28 * MediaQuery.devicePixelRatioOf(context)).ceil(),
               width: 28, height: 28, fit: BoxFit.cover, gaplessPlayback: true));
     }
     final metadata = pending
@@ -618,18 +720,10 @@ class _FastCatChatState extends State<FastCatChat> with WidgetsBindingObserver {
                 style:
                     TextStyle(fontSize: 10, color: fg.withValues(alpha: .65))),
             if (own)
-              Semantics(
-                  label: read ? _t('已读', 'Read') : _t('已发送', 'Sent'),
-                  child: Padding(
-                      padding: const EdgeInsets.only(left: 3, right: 4),
-                      child: Text(read ? '  ✓✓' : '  ✓',
-                          style: TextStyle(
-                              fontSize: 11,
-                              letterSpacing: read ? -1.5 : 0,
-                              color: fg.withValues(alpha: .7)))))
+              _receiptMarker(m['seq'], fg)
           ]);
     return Padding(
-        padding: const EdgeInsets.only(bottom: 20),
+        padding: EdgeInsets.only(bottom: last ? 0 : 20),
         child: Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             mainAxisAlignment:
@@ -686,14 +780,13 @@ class _FastCatChatState extends State<FastCatChat> with WidgetsBindingObserver {
                                             runSpacing: 4,
                                             children: [
                                               m['localBytes'] != null
-                                                  ? Image.memory(m['localBytes'] as Uint8List,
-                                                      width: 200,
-                                                      fit: BoxFit.contain)
+                                                  ? _localPreview(m['localBytes'] as Uint8List)
                                                   : m['attachment'] != null
                                                       ? _attachment(
                                                           m['attachment']
                                                               as Map)
                                                       : FastCatMessageBody(
+                                                          cache: _bodyCache,
                                                           body: m['source'] ==
                                                                   'welcome'
                                                               ? ((_t('zh', 'en') == 'en'
@@ -730,6 +823,8 @@ class _FastCatChatState extends State<FastCatChat> with WidgetsBindingObserver {
     _soundSubscription?.cancel();
     _tone.dispose();
     _scroll.dispose();
+    _bodyCache.clear();
+    _peerRead.dispose();
     _inputFocus.dispose();
     _text.dispose();
     super.dispose();
@@ -791,7 +886,10 @@ class _FastCatChatState extends State<FastCatChat> with WidgetsBindingObserver {
                                                 : Colors.white,
                                             onPressed: _toggleSound,
                                             icon: WebIcon(
-                                                _sound ? 'bell' : 'muted',
+                                                widget.client
+                                                        .notificationSoundEnabled
+                                                    ? 'bell'
+                                                    : 'muted',
                                                 size: 18))
                                       ]))))))
                   : null,
@@ -836,15 +934,31 @@ class _FastCatChatState extends State<FastCatChat> with WidgetsBindingObserver {
                           if (notification.depth == 0 &&
                               notification.direction != ScrollDirection.idle) {
                             _userNavigated = true;
+                            _followLatest = false;
                             _openingScrollPending = false;
                             _scrollAfterSend = false;
+                          } else if (notification.depth == 0 &&
+                              notification.metrics.extentAfter <= 1) {
+                            _followLatest = true;
+                            _userNavigated = false;
                           }
                           return false;
                         },
-                        child: ListView.builder(
+                        child: NotificationListener<ScrollMetricsNotification>(
+                          onNotification: (notification) {
+                            if (notification.depth == 0) {
+                              final metrics = notification.metrics;
+                              final changed = _lastContentExtent != metrics.maxScrollExtent ||
+                                  _lastViewportExtent != metrics.viewportDimension;
+                              _lastContentExtent = metrics.maxScrollExtent;
+                              _lastViewportExtent = metrics.viewportDimension;
+                              if (changed && metrics.extentAfter > 1) _scheduleLatest();
+                            }
+                            return false;
+                          },
+                          child: ListView.builder(
                             controller: _scroll,
-                            padding: const EdgeInsets.symmetric(
-                                horizontal: 16, vertical: 18),
+                            padding: const EdgeInsets.fromLTRB(16, 18, 16, 8),
                             itemCount: _messages.length +
                                 (_typing ? 1 : 0) +
                                 (_pendingId != null ? 1 : 0),
@@ -872,7 +986,10 @@ class _FastCatChatState extends State<FastCatChat> with WidgetsBindingObserver {
                                         english:
                                             _t('中文', 'English') == 'English')
                                   else
-                                    _message(m)
+                                    _message(m,
+                                        last: i == _messages.length - 1 &&
+                                            !_typing &&
+                                            _pendingId == null)
                                 ]);
                               }
                               if (_typing && i == _messages.length)
@@ -883,7 +1000,7 @@ class _FastCatChatState extends State<FastCatChat> with WidgetsBindingObserver {
                                   'body': _aiDraft.isEmpty
                                       ? _t('正在思考…', 'Thinking…')
                                       : _aiDraft
-                                });
+                                }, last: _pendingId == null);
                               return _message({
                                 'role': 'visitor',
                                 'body': _pendingFile?.filename ??
@@ -895,8 +1012,8 @@ class _FastCatChatState extends State<FastCatChat> with WidgetsBindingObserver {
                                         .hasMatch(_pendingFile!.filename))
                                   'localBytes': _pendingFile!.bytes,
                                 'pending': true
-                              });
-                            }))),
+                              }, last: true);
+                            })))),
                 if (_error != null)
                   Padding(
                       padding: const EdgeInsets.all(8),

@@ -24,6 +24,12 @@ class _InviteApi extends Fake implements InviteApi {
   final pending = Completer<bool>();
   final amounts = <double>[];
   @override
+  Future<bool> transferCommissionToBalance(double amount) {
+    amounts.add(amount);
+    return pending.future;
+  }
+
+  @override
   Future<bool> withdrawCommission(
       {required double amount,
       required String method,
@@ -78,6 +84,22 @@ void main() {
     expect(api.amounts, hasLength(1));
     api.pending.complete(true);
     // Balance/history failure must not invite a repeat withdrawal.
+    expect(await request, isTrue);
+    expect(container.read(inviteProvider).isLoading, isFalse);
+    expect(container.read(inviteProvider).errorMessage, isNull);
+  });
+
+  test('committed transfer remains successful when refresh fails', () async {
+    final api = _InviteApi();
+    final container = containerFor(api);
+    addTearDown(container.dispose);
+    final notifier = container.read(inviteProvider.notifier);
+    final request = notifier.transferCommission(25);
+    await Future<void>.delayed(Duration.zero);
+    expect(api.amounts, [25]);
+    expect(await notifier.transferCommission(25), isFalse);
+    expect(api.amounts, hasLength(1));
+    api.pending.complete(true);
     expect(await request, isTrue);
     expect(container.read(inviteProvider).isLoading, isFalse);
     expect(container.read(inviteProvider).errorMessage, isNull);

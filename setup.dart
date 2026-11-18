@@ -1949,8 +1949,7 @@ end tell
         await File(join(Build.outDir, target.name, 'fastcatHelperService.exe'))
             .copy(join(releaseDir, 'fastcatHelperService.exe'));
         // Windows release artifacts are produced by Inno Setup in CI. Keep the
-        // architecture-specific EXE installers only; do not also build a
-        // portable ZIP containing the same payload.
+        // native payloads here; CI combines x64/ARM64 into one installer.
         return;
       case Target.linux:
         _applyDartConstant();
