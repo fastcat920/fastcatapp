@@ -2196,6 +2196,7 @@ class MessageLookup extends MessageLookupByLibrary {
     ),
     "xboardRunDiagnosis": MessageLookupByLibrary.simpleMessage("运行自检"),
     "xboardRunningTime": m57,
+    "xboardScan": MessageLookupByLibrary.simpleMessage("扫码"),
     "xboardSecureEncryption": MessageLookupByLibrary.simpleMessage("安全加密"),
     "xboardSelectPaymentMethod": MessageLookupByLibrary.simpleMessage("选择支付方式"),
     "xboardSelectPaymentPeriod": MessageLookupByLibrary.simpleMessage("选择购买周期"),

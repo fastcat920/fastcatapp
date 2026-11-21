@@ -1448,6 +1448,7 @@
   "xboardReloadNodes": "重新加载",
   "xboardGotIt": "知道了",
   "xboardQrLogin": "扫码登录",
+  "xboardScan": "扫码",
   "xboardAccountLogin": "账号登录",
   "xboardQrLoginDescription": "使用已登录快猫的手机扫描并确认",
   "xboardQrGenerating": "正在生成二维码…",

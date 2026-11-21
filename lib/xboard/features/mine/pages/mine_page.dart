@@ -17,6 +17,7 @@ import 'package:fl_clash/xboard/features/settings/pages/fastcat_settings_page.da
 import 'package:fl_clash/xboard/adapter/initialization/sdk_provider.dart';
 import 'package:fl_clash/xboard/features/subscription/widgets/subscription_usage_card.dart';
 import 'package:fl_clash/xboard/features/shared/styles/styles.dart';
+import 'package:fl_clash/xboard/features/shared/widgets/xb_menu_trailing.dart';
 import 'package:fl_clash/xboard/utils/xboard_notification.dart';
 import 'order_page.dart';
 import 'gift_card_page.dart';
@@ -455,6 +456,10 @@ class _MinePageState extends ConsumerState<MinePage>
               label: appLocalizations.xboardDeviceManagement,
               iconColor: theme.colorScheme.primary,
               iconBgColor: theme.colorScheme.primary.withValues(alpha: 0.1),
+              trailingText:
+                  !system.isTV && (Platform.isIOS || Platform.isAndroid)
+                      ? appLocalizations.xboardScan
+                      : null,
               onTap: () => context.go('/mine/devices'),
             ),
             _divider(),
@@ -618,27 +623,9 @@ class _MinePageState extends ConsumerState<MinePage>
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
               ),
-        trailing: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            if (trailingText != null) ...[
-              Text(
-                trailingText,
-                style: theme.textTheme.bodySmall?.copyWith(
-                  color: theme.colorScheme.onSurfaceVariant,
-                ),
-              ),
-              const SizedBox(width: 4),
-            ],
-            if (iconColor == null || iconBgColor != null)
-              Icon(
-                Icons.chevron_right,
-                size: 20,
-                color: isDark
-                    ? theme.colorScheme.onSurfaceVariant
-                    : XbUiTokens.chevronLight,
-              ),
-          ],
+        trailing: XbMenuTrailing(
+          value: trailingText,
+          showChevron: iconColor == null || iconBgColor != null,
         ),
         onTap: onTap,
         contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 2),

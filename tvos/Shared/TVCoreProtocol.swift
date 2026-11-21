@@ -32,11 +32,12 @@ final class TVOnceReply {
   }
 }
 
-/// Same HH:mm:ss and 99:59:59 cap as Flutter's getTimeText.
+/// Cumulative hours, capped at 999:59:59 like Flutter's connection timer.
 func tvConnectionDuration(since start: Date?, now: Date) -> String {
   guard let start else { return "00:00:00" }
-  let seconds = Int(min(99 * 86400, max(0, now.timeIntervalSince(start))))
-  return String(format: "%02d:%02d:%02d", seconds / 3600 % 24, seconds / 60 % 60, seconds % 60)
+  let maxSeconds: TimeInterval = 1000 * 3600 - 1
+  let seconds = Int(min(maxSeconds, max(0, now.timeIntervalSince(start))))
+  return String(format: "%02d:%02d:%02d", seconds / 3600, seconds / 60 % 60, seconds % 60)
 }
 
 /// One conversion between the 1280x720 TV design space and native points.
@@ -84,9 +85,4 @@ enum TVSystemAppearancePolicy {
     guard active,windowReady else {return nil}
     switch rawStyle {case 1:return false;case 2:return true;default:return nil}
   }
-}
-
-func tvConnectionDays(since start: Date?, now: Date) -> Int {
-  guard let start else { return 0 }
-  return Int(min(99, max(0, now.timeIntervalSince(start) / 86400)))
 }

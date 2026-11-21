@@ -207,18 +207,14 @@ struct TVToolsView: View {
       menuGroup {
         row(
           "语言", "Language", icon: "globe",
-          subtitle: language == "system"
-            ? text("跟随系统", "System") : TVLanguage(rawValue: language)?.displayName
+          value: languageLabel
         ) { page = "language" }
         menuDivider
         row(
-          "主题", "Theme", icon: "circle.lefthalf.filled", subtitle: themeLabel
+          "主题", "Theme", icon: "circle.lefthalf.filled", value: themeLabel
         ) { page = "theme" }
         menuDivider
-        row(
-          "自启动", "Startup", icon: "power",
-          subtitle: text("启动与自动运行设置", "Startup and auto-run settings")
-        ) { page = "startup" }
+        row("自启动", "Startup", icon: "power") { page = "startup" }
       }
       sectionHeader(text("网络", "Network"))
       menuGroup {
@@ -721,6 +717,11 @@ struct TVToolsView: View {
       controlFocus = next
     }
   }
+  private var languageLabel: String {
+    let selection = TVLanguage(rawValue: language) ?? .system
+    return selection == .system ? text("跟随系统", "System") : selection.displayName
+  }
+
   private var themeLabel: String {
     if themeMode == "system" { return text("自动", "Auto") }
     return (themeMode == "dark" || (themeMode == "legacy" && dark))
@@ -784,7 +785,7 @@ struct TVToolsView: View {
   }
   private func row(
     _ a: String, _ b: String, icon: String, badge: Bool = false, danger: Bool = false,
-    loading: Bool = false, subtitle: String? = nil, controlID: String? = nil,
+    loading: Bool = false, value: String? = nil, controlID: String? = nil,
     action: @escaping () -> Void
   ) -> some View {
     let identifier = controlID ?? "row:" + b
@@ -803,18 +804,19 @@ struct TVToolsView: View {
             Circle().fill(.red).frame(width: tv(8), height: tv(8)).offset(x: tv(3), y: -tv(3))
           }
         }
-        VStack(alignment: .leading, spacing: tv(4)) {
-          Text(text(a, b)).font(TVFont.regular(16)).foregroundStyle(
-            danger ? TVTheme.danger : TVTheme.textPrimary)
-          if let subtitle {
-            Text(subtitle).font(TVFont.regular(14)).foregroundStyle(TVTheme.textSecondary)
-          }
-        }
+        Text(text(a, b)).font(TVFont.regular(16)).foregroundStyle(
+          danger ? TVTheme.danger : TVTheme.textPrimary)
         Spacer()
         if loading {
           ProgressView()
         } else {
-          MaterialIcon(glyph: .chevronRight, size: 24, color: TVTheme.outline)
+          HStack(spacing: tv(4)) {
+            if let value {
+              Text(value).font(TVFont.regular(14)).foregroundStyle(TVTheme.textSecondary)
+                .lineLimit(1)
+            }
+            MaterialIcon(glyph: .chevronRight, size: 24, color: TVTheme.outline)
+          }
         }
       }.padding(.horizontal, tv(16)).padding(.vertical, tv(8)).frame(
         maxWidth: .infinity, minHeight: tv(56)

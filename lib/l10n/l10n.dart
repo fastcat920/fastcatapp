@@ -10635,6 +10635,11 @@ class AppLocalizations {
     return Intl.message('QR Login', name: 'xboardQrLogin', desc: '', args: []);
   }
 
+  /// `Scan`
+  String get xboardScan {
+    return Intl.message('Scan', name: 'xboardScan', desc: '', args: []);
+  }
+
   /// `Account Login`
   String get xboardAccountLogin {
     return Intl.message(

@@ -142,13 +142,27 @@ void main() {
           findsNothing);
       final auth = container.read(xboardUserProvider.notifier) as _Auth;
       final refresh = find.byKey(const Key('tv-account-plan-refresh'));
+      final planTitle =
+          find.descendant(of: refresh, matching: find.text('Test plan'));
+      final spinner = find.descendant(
+          of: refresh, matching: find.byType(CircularProgressIndicator));
       final planHeight = tester.getSize(refresh).height;
+      final titleBounds = tester.getRect(planTitle);
       expect(planHeight, 148);
+      expect(spinner, findsNothing);
       await tester.tap(refresh);
       await tester.tap(refresh);
       await tester.pump();
       expect(auth.refreshes, 1);
       expect(tester.getSize(refresh).height, planHeight);
+      expect(tester.getRect(planTitle), titleBounds);
+      expect(spinner, findsOneWidget);
+      expect(tester.getCenter(spinner).dx,
+          greaterThan(tester.getCenter(refresh).dx));
+      expect(
+          tester.getCenter(spinner).dy, lessThan(tester.getCenter(refresh).dy));
+      expect(find.text(AppLocalizations.current.xboardSyncingSubscription),
+          findsNothing);
       expect(auth.importRequested, isFalse);
       expect(
           tester
@@ -160,6 +174,7 @@ void main() {
       auth.refreshGate.complete();
       await tester.pumpAndSettle();
       expect(tester.getSize(refresh).height, planHeight);
+      expect(spinner, findsNothing);
       final updated = tester
           .widget<SubscriptionUsageCard>(find.byType(SubscriptionUsageCard));
       expect(updated.isSyncing, isFalse);

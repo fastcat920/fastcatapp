@@ -436,11 +436,7 @@ class _XBoardConnectButtonState extends ConsumerState<XBoardConnectButton>
           final measuredTextWidth = globalState.measure
                   .computeTextSize(
                     Text(
-                      _showProgress
-                          ? _busyLabel(context)
-                          : utils.getTimeDifference(
-                              DateTime.now(),
-                            ),
+                      _showProgress ? _busyLabel(context) : '999:59:59',
                       style: context.textTheme.titleMedium?.toSoftBold,
                     ),
                   )
@@ -474,16 +470,17 @@ class _XBoardConnectButtonState extends ConsumerState<XBoardConnectButton>
         child: Consumer(
           builder: (_, ref, __) {
             final runTime = ref.watch(runTimeProvider);
-            final text = _showProgress
-                ? _busyLabel(context)
-                : utils.getTimeText(runTime);
+            final style =
+                Theme.of(context).textTheme.titleMedium?.toSoftBold.copyWith(
+                      color: Colors.white,
+                    );
+            if (_showProgress) {
+              return _LeftScrollingText(
+                  text: _busyLabel(context), style: style);
+            }
             return _ConnectionTimerLabel(
-              runTime: _showProgress ? null : runTime,
-              text: text,
-              style:
-                  Theme.of(context).textTheme.titleMedium?.toSoftBold.copyWith(
-                        color: Colors.white,
-                      ),
+              runTime: runTime,
+              style: style,
             );
           },
         ),
@@ -639,31 +636,35 @@ class _XBoardConnectButtonState extends ConsumerState<XBoardConnectButton>
                                                         .clamp(2.0, 4.0)),
                                                 Consumer(
                                                   builder: (_, ref, __) {
-                                                    final runTime = ref
-                                                        .watch(runTimeProvider);
-                                                    final l10n =
-                                                        AppLocalizations.of(
-                                                            context);
-                                                    final label = isStart
-                                                        ? utils.getTimeText(
-                                                            runTime)
-                                                        : l10n.tapToConnect;
-                                                    return _ConnectionTimerLabel(
-                                                      runTime: isStart
-                                                          ? runTime
-                                                          : null,
-                                                      text: label,
-                                                      style: Theme.of(context)
-                                                          .textTheme
-                                                          .labelSmall
-                                                          ?.copyWith(
-                                                            color: iconColor,
-                                                            fontSize:
-                                                                (outerSize *
-                                                                        0.07)
-                                                                    .clamp(9.0,
-                                                                        12.0),
-                                                          ),
+                                                    final style = Theme.of(
+                                                            context)
+                                                        .textTheme
+                                                        .labelSmall
+                                                        ?.copyWith(
+                                                          color: iconColor,
+                                                          fontSize: (outerSize *
+                                                                  0.07)
+                                                              .clamp(9.0, 12.0),
+                                                        );
+                                                    if (!isStart) {
+                                                      return _LeftScrollingText(
+                                                        text:
+                                                            AppLocalizations.of(
+                                                                    context)
+                                                                .tapToConnect,
+                                                        style: style,
+                                                      );
+                                                    }
+                                                    return Padding(
+                                                      padding: const EdgeInsets
+                                                          .symmetric(
+                                                          horizontal: 8),
+                                                      child:
+                                                          _ConnectionTimerLabel(
+                                                        runTime: ref.watch(
+                                                            runTimeProvider),
+                                                        style: style,
+                                                      ),
                                                     );
                                                   },
                                                 ),
@@ -800,22 +801,21 @@ class _LeftScrollingTextState extends State<_LeftScrollingText> {
 }
 
 class _ConnectionTimerLabel extends StatelessWidget {
-  const _ConnectionTimerLabel(
-      {required this.runTime, required this.text, this.style});
+  const _ConnectionTimerLabel({required this.runTime, this.style});
   final int? runTime;
-  final String text;
   final TextStyle? style;
   @override
   Widget build(BuildContext context) {
-    final days = ((runTime ?? 0) ~/ Duration.millisecondsPerDay).clamp(0, 99);
-    final chinese = Localizations.localeOf(context).languageCode == 'zh';
-    return Column(mainAxisSize: MainAxisSize.min, children: [
-      _LeftScrollingText(text: text, style: style),
-      if (days > 0) ...[
-        const SizedBox(height: 8),
-        Text(chinese ? '$days 天' : '$days ${days == 1 ? "day" : "days"}',
-            style: style),
-      ],
-    ]);
+    return FittedBox(
+      fit: BoxFit.scaleDown,
+      child: Text(
+        utils.getTimeText(runTime),
+        maxLines: 1,
+        softWrap: false,
+        style: (style ?? const TextStyle()).copyWith(
+          fontFeatures: const [FontFeature.tabularFigures()],
+        ),
+      ),
+    );
   }
 }

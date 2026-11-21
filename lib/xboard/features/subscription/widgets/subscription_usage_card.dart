@@ -87,9 +87,36 @@ class SubscriptionUsageCard extends ConsumerWidget {
         profileSubscriptionInfo: profileSubscriptionInfo,
       );
     }
-    if (isSyncing) {
-      return _buildSyncingCard(theme, context);
-    }
+    final content = _buildCardContent(theme, context, ref, subscriptionStatus);
+    return Stack(
+      fit: StackFit.passthrough,
+      children: [
+        content,
+        if (isSyncing)
+          PositionedDirectional(
+            top: 14 + topOffset,
+            end: 16,
+            child: IgnorePointer(
+              child: SizedBox.square(
+                dimension: 16,
+                child: CircularProgressIndicator(
+                  strokeWidth: 2,
+                  semanticsLabel:
+                      AppLocalizations.of(context).xboardSyncingSubscription,
+                ),
+              ),
+            ),
+          ),
+      ],
+    );
+  }
+
+  Widget _buildCardContent(
+    ThemeData theme,
+    BuildContext context,
+    WidgetRef ref,
+    SubscriptionStatusResult? subscriptionStatus,
+  ) {
     if (profileSubscriptionInfo == null &&
         userInfo == null &&
         subscriptionInfo == null) {
@@ -154,46 +181,12 @@ class SubscriptionUsageCard extends ConsumerWidget {
     );
   }
 
-  Widget _buildSyncingCard(ThemeData theme, BuildContext context) {
-    final isDark = theme.brightness == Brightness.dark;
-    return Container(
-      decoration: BoxDecoration(
-        color: isDark
-            ? theme.colorScheme.surfaceContainerHighest.withValues(alpha: 0.15)
-            : Colors.white,
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: XbUiTokens.cardBorder(context)),
-        boxShadow: isDark
-            ? null
-            : [
-                BoxShadow(
-                  color: Theme.of(context).colorScheme.primary.withAlpha(15),
-                  blurRadius: 16,
-                  offset: const Offset(0, 4),
-                ),
-              ],
-      ),
-      padding: const EdgeInsets.all(16),
-      child: Row(
-        children: [
-          const SizedBox(
-            width: 24,
-            height: 24,
-            child: CircularProgressIndicator(strokeWidth: 2.4),
-          ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Text(
-              AppLocalizations.of(context).xboardSyncingSubscription,
-              style: theme.textTheme.bodyMedium?.copyWith(
-                color: theme.colorScheme.onSurface.withValues(alpha: 0.75),
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
+  // Read-only summaries can be tapped to refresh. Reserve the indicator's
+  // space even when idle so a long title does not shift during a refresh.
+  Widget _reserveRefreshSpace(Widget child) => showActions
+      ? child
+      : Padding(
+          padding: const EdgeInsetsDirectional.only(end: 24), child: child);
 
   Widget _buildStatusCard(SubscriptionStatusResult statusResult,
       ThemeData theme, BuildContext context) {
@@ -287,13 +280,13 @@ class SubscriptionUsageCard extends ConsumerWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(
+                    _reserveRefreshSpace(Text(
                       statusText,
                       style: theme.textTheme.titleMedium?.copyWith(
                         fontWeight: XbFontWeight.bold,
                         color: statusColor,
                       ),
-                    ),
+                    )),
                     const SizedBox(height: 2),
                     Text(
                       statusDetail,
@@ -634,7 +627,7 @@ class SubscriptionUsageCard extends ConsumerWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
+          _reserveRefreshSpace(Text(
             planName.isNotEmpty
                 ? planName
                 : AppLocalizations.of(context).xboardSubscription,
@@ -642,7 +635,7 @@ class SubscriptionUsageCard extends ConsumerWidget {
               fontWeight: XbFontWeight.semibold,
             ),
             overflow: TextOverflow.ellipsis,
-          ),
+          )),
           if (expiryText != null) ...[
             const SizedBox(height: 5),
             Text(
@@ -873,23 +866,17 @@ class SubscriptionUsageCard extends ConsumerWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           // ── 套餐名 ──
-          Row(
-            children: [
-              Expanded(
-                child: Text(
-                  planName.isNotEmpty
-                      ? planName
-                      : AppLocalizations.of(context).xboardSubscription,
-                  style: theme.textTheme.titleMedium?.copyWith(
-                    fontWeight: XbFontWeight.semibold,
-                    color: cardTextColor,
-                    letterSpacing: 0.3,
-                  ),
-                  overflow: TextOverflow.ellipsis,
-                ),
-              ),
-            ],
-          ),
+          _reserveRefreshSpace(Text(
+            planName.isNotEmpty
+                ? planName
+                : AppLocalizations.of(context).xboardSubscription,
+            style: theme.textTheme.titleMedium?.copyWith(
+              fontWeight: XbFontWeight.semibold,
+              color: cardTextColor,
+              letterSpacing: 0.3,
+            ),
+            overflow: TextOverflow.ellipsis,
+          )),
 
           if (expiryText != null) ...[
             const SizedBox(height: 4),

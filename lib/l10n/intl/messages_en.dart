@@ -3006,6 +3006,7 @@ class MessageLookup extends MessageLookupByLibrary {
     ),
     "xboardRunDiagnosis": MessageLookupByLibrary.simpleMessage("Run check"),
     "xboardRunningTime": m57,
+    "xboardScan": MessageLookupByLibrary.simpleMessage("Scan"),
     "xboardSecureEncryption": MessageLookupByLibrary.simpleMessage(
       "Secure encryption",
     ),

@@ -76,16 +76,14 @@ class Utils {
     return "${getDateStringLast2(inHours)}:${getDateStringLast2(inMinutes)}:${getDateStringLast2(inSeconds)}";
   }
 
-  String getTimeText(int? timeStamp) {
-    if (timeStamp == null) {
-      return '00:00:00';
-    }
-    final diff = (timeStamp ~/ 1000).clamp(0, 99 * 86400);
-    final inHours = diff ~/ 3600 % 24;
-    final inMinutes = (diff / 60 % 60).floor();
-    final inSeconds = (diff % 60).floor();
-
-    return "${getDateStringLast2(inHours)}:${getDateStringLast2(inMinutes)}:${getDateStringLast2(inSeconds)}";
+  String getTimeText(int? elapsedMilliseconds) {
+    const maxSeconds = 1000 * Duration.secondsPerHour - 1;
+    final seconds =
+        ((elapsedMilliseconds ?? 0) ~/ Duration.millisecondsPerSecond)
+            .clamp(0, maxSeconds);
+    final hours = seconds ~/ Duration.secondsPerHour;
+    final minutes = seconds ~/ Duration.secondsPerMinute % 60;
+    return '${hours.toString().padLeft(2, '0')}:${getDateStringLast2(minutes)}:${getDateStringLast2(seconds % 60)}';
   }
 
   Locale? getLocaleForString(String? localString) {

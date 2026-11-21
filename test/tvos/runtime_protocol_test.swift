@@ -82,14 +82,16 @@ struct TVRuntimeProtocolTests {
     }
     precondition(appearance == true)
     let now = Date(timeIntervalSince1970: 500000)
-    precondition(tvConnectionDays(since: now.addingTimeInterval(-86400), now: now) == 1)
-    precondition(tvConnectionDays(since: now.addingTimeInterval(-1000 * 86400), now: now) == 99)
-    precondition(tvConnectionDuration(since: now.addingTimeInterval(-1000 * 86400), now: now) == "00:00:00")
     precondition(tvConnectionDuration(since: nil, now: now) == "00:00:00")
-    precondition(tvConnectionDuration(since: now.addingTimeInterval(-3661), now: now) == "01:01:01")
     precondition(tvConnectionDuration(since: now.addingTimeInterval(5), now: now) == "00:00:00")
-    precondition(
-      tvConnectionDuration(since: now.addingTimeInterval(-400000), now: now) == "15:06:40")
+    for (elapsed, label): (TimeInterval, String) in [
+      (3661.9, "01:01:01"), (86399, "23:59:59"), (86400, "24:00:00"),
+      (2 * 86400 + 44289, "60:18:09"), (400000, "111:06:40"),
+      (3599998, "999:59:58"), (3599999, "999:59:59"), (3600000, "999:59:59"),
+      (99 * 86400, "999:59:59"),
+    ] {
+      precondition(tvConnectionDuration(since: now.addingTimeInterval(-elapsed), now: now) == label)
+    }
     precondition(
       TVCoreProtocol.isAcknowledged(
         String(decoding: TVCoreProtocol.acknowledgement(), as: UTF8.self)))

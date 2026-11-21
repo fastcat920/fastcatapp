@@ -16,6 +16,7 @@ import 'package:fl_clash/xboard/features/settings/pages/fastcat_custom_routing_p
 import 'package:fl_clash/xboard/features/settings/pages/fastcat_dns_settings_page.dart';
 import 'package:fl_clash/xboard/features/shared/styles/styles.dart';
 import 'package:fl_clash/xboard/features/shared/widgets/xb_dialog.dart';
+import 'package:fl_clash/xboard/features/shared/widgets/xb_menu_trailing.dart';
 import 'package:fl_clash/xboard/features/streaming_check/pages/streaming_check_page.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -28,10 +29,10 @@ class FastCatSettingsPage extends ConsumerWidget {
     final l10n = AppLocalizations.of(context);
     final appSetting = ref.watch(appSettingProvider);
     final theme = ref.watch(themeSettingProvider);
+    final zh = Localizations.localeOf(context).languageCode == 'zh';
 
     if (system.isTV && Platform.isAndroid) {
       final hasUpdate = ref.watch(updateCheckProvider).hasUpdate;
-      final zh = Localizations.localeOf(context).languageCode == 'zh';
       return Scaffold(
         appBar: AppBar(
             leadingWidth: system.isTV ? 68 : null,
@@ -48,17 +49,16 @@ class FastCatSettingsPage extends ConsumerWidget {
               _navigationTile(context,
                   icon: Icons.language_outlined,
                   title: l10n.language,
-                  subtitle: _languageLabel(appSetting.locale, l10n),
+                  value: _languageLabel(appSetting.locale, l10n),
                   onTap: () => _chooseLanguage(context, ref)),
               _navigationTile(context,
                   icon: Icons.brightness_6_outlined,
                   title: l10n.theme,
-                  subtitle: _themeLabel(theme.themeMode, l10n),
+                  value: _themeLabel(theme.themeMode, l10n),
                   onTap: () => _chooseTheme(context, ref, theme.themeMode)),
               _navigationTile(context,
                   icon: Icons.power_settings_new_outlined,
                   title: l10n.xboardStartup,
-                  subtitle: l10n.xboardStartupDescription,
                   onTap: () =>
                       _open(context, const FastCatAutoStartSettingsPage())),
             ]),
@@ -112,14 +112,14 @@ class FastCatSettingsPage extends ConsumerWidget {
                         context,
                         icon: Icons.language_outlined,
                         title: l10n.language,
-                        subtitle: _languageLabel(appSetting.locale, l10n),
+                        value: _languageLabel(appSetting.locale, l10n),
                         onTap: () => _chooseLanguage(context, ref),
                       ),
                       _navigationTile(
                         context,
                         icon: Icons.brightness_6_outlined,
                         title: l10n.theme,
-                        subtitle: _themeLabel(theme.themeMode, l10n),
+                        value: _themeLabel(theme.themeMode, l10n),
                         onTap: () =>
                             _chooseTheme(context, ref, theme.themeMode),
                       ),
@@ -127,7 +127,6 @@ class FastCatSettingsPage extends ConsumerWidget {
                         context,
                         icon: Icons.power_settings_new_outlined,
                         title: l10n.xboardStartup,
-                        subtitle: l10n.xboardStartupDescription,
                         onTap: () => _open(
                             context, const FastCatAutoStartSettingsPage()),
                       ),
@@ -135,15 +134,7 @@ class FastCatSettingsPage extends ConsumerWidget {
                         _navigationTile(
                           context,
                           icon: Icons.shield_outlined,
-                          title: Localizations.localeOf(context).languageCode ==
-                                  'zh'
-                              ? '连接保护'
-                              : 'Connection protection',
-                          subtitle: Localizations.localeOf(context)
-                                      .languageCode ==
-                                  'zh'
-                              ? '减少锁屏、清理应用造成的连接中断'
-                              : 'Reduce connection drops when the app is in the background',
+                          title: zh ? '连接保护' : 'Connection protection',
                           onTap: () => _open(
                               context, const FastCatBackgroundProtectionPage()),
                         ),
@@ -156,7 +147,6 @@ class FastCatSettingsPage extends ConsumerWidget {
                         context,
                         icon: Icons.dns_outlined,
                         title: l10n.overrideDns,
-                        subtitle: l10n.dnsDesc,
                         onTap: () =>
                             _open(context, const FastCatDnsSettingsPage()),
                       ),
@@ -164,30 +154,14 @@ class FastCatSettingsPage extends ConsumerWidget {
                         _navigationTile(
                           context,
                           icon: Icons.app_blocking_outlined,
-                          title: Localizations.localeOf(context).languageCode ==
-                                  'zh'
-                              ? '应用排除'
-                              : 'App exclusion',
-                          subtitle:
-                              Localizations.localeOf(context).languageCode ==
-                                      'zh'
-                                  ? '让选中的应用绕过 VPN'
-                                  : 'Let selected apps bypass the VPN',
+                          title: zh ? '应用排除' : 'App exclusion',
                           onTap: () =>
                               _open(context, const FastCatAppExclusionPage()),
                         ),
                       _navigationTile(
                         context,
                         icon: Icons.route_outlined,
-                        title:
-                            Localizations.localeOf(context).languageCode == 'zh'
-                                ? '自定义分流'
-                                : 'Custom routing',
-                        subtitle: Localizations.localeOf(context)
-                                    .languageCode ==
-                                'zh'
-                            ? '为域名和 IP 设置直连或代理'
-                            : 'Set direct or proxy routes for domains and IPs',
+                        title: zh ? '自定义分流' : 'Custom routing',
                         onTap: () =>
                             _open(context, const FastCatCustomRoutingPage()),
                       ),
@@ -244,7 +218,7 @@ class FastCatSettingsPage extends ConsumerWidget {
     BuildContext context, {
     required IconData icon,
     required String title,
-    String? subtitle,
+    String? value,
     bool badge = false,
     required VoidCallback onTap,
   }) =>
@@ -256,9 +230,7 @@ class FastCatSettingsPage extends ConsumerWidget {
               leading: Badge(
                   isLabelVisible: badge, child: _SettingsIcon(icon: icon)),
               title: Text(title),
-              subtitle: subtitle == null ? null : Text(subtitle),
-              trailing: Icon(Icons.chevron_right,
-                  color: Theme.of(context).colorScheme.outline),
+              trailing: XbMenuTrailing(value: value),
               onTap: onTap,
             ),
           ));

@@ -605,16 +605,13 @@ struct TVHomeView: View {
                   ? TVTheme.primary : Color(red: 69 / 255, green: 90 / 255, blue: 100 / 255)))
             if connected {
               TimelineView(.periodic(from: .now, by: 1)) { context in
-                let days = tvConnectionDays(since: VPNManager.shared.connectedSince, now: context.date)
-                VStack(spacing: tv(8)) {
-                  Text(tvConnectionDuration(since: VPNManager.shared.connectedSince, now: context.date))
-                    .monospacedDigit()
-                  if days > 0 {
-                    Text(tvText("\(days) 天", days == 1 ? "1 day" : "\(days) days", language: language))
-                  }
-                }
-                .font(TVFont.regular(labelSize))
-                .foregroundStyle(TVTheme.onPrimary)
+                Text(tvConnectionDuration(since: VPNManager.shared.connectedSince, now: context.date))
+                  .font(TVFont.regular(labelSize))
+                  .monospacedDigit()
+                  .lineLimit(1)
+                  .minimumScaleFactor(0.75)
+                  .frame(maxWidth: innerSize * 0.85)
+                  .foregroundStyle(TVTheme.onPrimary)
               }
             } else {
               Text(tvText("点击连接", "Tap to connect", language: language))

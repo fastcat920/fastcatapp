@@ -1448,6 +1448,7 @@
   "xboardReloadNodes": "Reload",
   "xboardGotIt": "Got it",
   "xboardQrLogin": "QR Login",
+  "xboardScan": "Scan",
   "xboardAccountLogin": "Account Login",
   "xboardQrLoginDescription": "Scan and confirm with a phone already signed in to FastCat",
   "xboardQrGenerating": "Generating QR code…",
