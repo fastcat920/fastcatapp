@@ -24,7 +24,11 @@
 
 - 线上面板没有在本轮部署，新 FCN 节点没有通过真实线上账号订阅在完整 App 中连通；本次不声称公网 App 与线上套餐扣量验收完成。
 - 面板当前工作区无 Composer vendor，尚未运行 Laravel 完整 HTTP/数据库测试；已运行订阅契约测试，不能等同于数据库端到端验收。
-- GitHub v0.5.0 尚未发布。面板生成的下载命令要在发布包上传后使用。本地 Linux 包在 CatNode 的 `artifacts/fcn-v0.5.0/`。
+- 代码已上传 App `3.6.3`、面板 `custom`、CatNode `main`。CatNode v0.5.0 以预发布版提供 Linux amd64/arm64 安装包；以 GitHub Release 页面上的资产为准。线上面板与节点仍需更新。
 - UDP 载荷上限 1100 字节，尚不支持分片。计量失败批次保存在内存中，尚无持久化幂等账本。
 
 详细部署规范见 `/Users/pizihu/Projects/CatNode/deploy/fcn.md`。
+
+## GitHub 与小米安装（2026-11-23）
+
+FCN 接入代码已上传三个仓库，安卓调试包已安装到 Xiaomi 24129PN74C（版本码 14），并确认应用位于前台、进程正常。此项是安装/启动验收，不代表线上 FCN 隧道验收。
