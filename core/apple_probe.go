@@ -1,6 +1,14 @@
 package main
 
-import "github.com/metacubex/mihomo/config"
+import (
+	"sync/atomic"
+
+	"github.com/metacubex/mihomo/config"
+)
+
+// The PacketTunnel advances this whenever its selected physical interface changes.
+// Other platforms and the app's isolated probe leave this counter at zero.
+var applePhysicalPathGeneration atomic.Uint64
 
 func probeIOSConfig(source *config.RawConfig) *config.RawConfig {
 	// Construct an allowlist rather than trusting subscription inbound settings.

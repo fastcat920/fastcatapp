@@ -5,4 +5,4 @@
 #include? "ReleaseSecrets.xcconfig"
 
 APS_ENVIRONMENT=production
-OTHER_LDFLAGS=$(inherited) -lresolv
+OTHER_LDFLAGS=$(inherited) -lresolv -Wl,-u,_fastCatSupportsV2 -Wl,-export_dynamic

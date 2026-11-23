@@ -1,3 +1,4 @@
+import 'package:fl_clash/security/local_test_profile_scope.dart';
 import 'dart:async';
 import 'dart:convert';
 
@@ -42,6 +43,9 @@ class Preferences {
     final configMap = json.decode(configString) as Map<String, dynamic>;
     await _migrateCloseConnectionsDefault(preferences, configMap);
     await _migrateDnsDefaults(preferences, configMap);
+    if (repairLocalTestProfileScope(configMap)) {
+      await preferences?.setString(configKey, json.encode(configMap));
+    }
     return Config.compatibleFromJson(configMap);
   }
 

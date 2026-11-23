@@ -82,29 +82,12 @@ class _AdaptiveShellLayoutState extends ConsumerState<AdaptiveShellLayout> {
     }
   }
 
-  int _getCurrentIndex(BuildContext context, bool isDesktop, bool logCapture) {
+  int _getCurrentIndex(BuildContext context) {
     final location = GoRouterState.of(context).uri.path;
-
-    if (isDesktop) {
-      // 桌面端索引与 _onDestinationSelected 一致
-      const inviteIdx = 2;
-      const mineIdx = 3;
-      const logsIdx = 4;
-
-      if (location == '/') return 0;
-      if (location.startsWith('/plans')) return 1;
-      if (location.startsWith('/invite')) return inviteIdx;
-      if (location.startsWith('/mine')) return mineIdx;
-      if (location.startsWith('/logs') && logCapture) return logsIdx;
-      return 0;
-    } else {
-      // 移动端导航高亮：主页(0) 套餐(1) 邀请(2) 我的(3) [日志(4)]
-      if (location.startsWith('/plans')) return 1;
-      if (location.startsWith('/invite')) return 2;
-      if (location.startsWith('/mine')) return 3;
-      if (location.startsWith('/logs') && logCapture) return 4;
-      return 0;
-    }
+    if (location.startsWith('/plans')) return 1;
+    if (location.startsWith('/invite')) return 2;
+    if (location.startsWith('/mine') || location == '/logs') return 3;
+    return 0;
   }
 
   Future<void> _handleSystemBack(BuildContext context) async {
@@ -119,13 +102,9 @@ class _AdaptiveShellLayoutState extends ConsumerState<AdaptiveShellLayout> {
 
   @override
   Widget build(BuildContext context) {
-    final logCapture = ref.watch(
-      appSettingProvider.select((s) => s.logCapture),
-    );
     final size = MediaQuery.sizeOf(context);
     final useSideNavigation = size.width > size.height || system.isTV;
-    final currentIndex =
-        _getCurrentIndex(context, useSideNavigation, logCapture);
+    final currentIndex = _getCurrentIndex(context);
     // Keep mobile navigation available even when its home announcement card
     // is compacted. Only TV uses the menu-free compact home layout.
     final hideRootNavigation = system.isTV;

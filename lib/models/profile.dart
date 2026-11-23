@@ -55,6 +55,7 @@ class Profile with _$Profile {
     String? label,
     String? currentGroupName,
     @Default("") String url,
+    @Default(false) bool useProvidedUrl,
     DateTime? lastUpdateDate,
     required Duration autoUpdateDuration,
     SubscriptionInfo? subscriptionInfo,
@@ -73,10 +74,12 @@ class Profile with _$Profile {
   factory Profile.normal({
     String? label,
     String url = '',
+    bool useProvidedUrl = false,
   }) {
     return Profile(
       label: label,
       url: url,
+      useProvidedUrl: useProvidedUrl,
       id: DateTime.now().millisecondsSinceEpoch.toString(),
       autoUpdateDuration: defaultUpdateDuration,
     );
@@ -165,7 +168,7 @@ extension ProfileExtension on Profile {
     // 动态获取最新的订阅 URL，并在远程配置提供多个订阅域名时
     // 并发竞速选择最快的可用地址。
     String updateUrl = url;
-    if (url.isNotEmpty) {
+    if (url.isNotEmpty && !useProvidedUrl) {
       try {
         final sdk = XBoardSDK.instance;
         final subscription = await sdk.subscription.getSubscription();

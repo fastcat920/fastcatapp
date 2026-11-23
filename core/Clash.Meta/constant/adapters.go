@@ -55,6 +55,11 @@ const (
 	ZeroTier
 	EasyTier
 	GostRelay
+	FastCatHTTPS
+	FastCatH2
+	FastCatAuto
+	FCNv1
+	FCNv2
 )
 
 const (
@@ -64,6 +69,9 @@ const (
 	DefaultTLSTimeout = DefaultTCPTimeout
 	DefaultTestURL    = "https://www.gstatic.com/generate_204"
 )
+
+// ErrFastCatAutoDialFinished marks an automatic node that has already applied its retry policy.
+var ErrFastCatAutoDialFinished = errors.New("fastcat-auto dial failed")
 
 var ErrNotSupport = errors.New("no support")
 
@@ -202,6 +210,16 @@ func (at AdapterType) String() string {
 		return "Snell"
 	case Socks5:
 		return "Socks5"
+	case FCNv1:
+		return "FCN v1"
+	case FCNv2:
+		return "FCN v2"
+	case FastCatAuto:
+		return "FastCatAuto"
+	case FastCatH2:
+		return "FastCatH2"
+	case FastCatHTTPS:
+		return "FastCatHTTPS"
 	case Http:
 		return "Http"
 	case Vmess:

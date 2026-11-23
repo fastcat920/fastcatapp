@@ -9,7 +9,9 @@ import android.net.Network
 import android.net.NetworkCapabilities
 import android.net.NetworkRequest
 import android.os.Build
+import android.os.Handler
 import android.os.IBinder
+import android.os.Looper
 import android.os.ParcelFileDescriptor
 import android.os.SystemClock
 import android.util.Log
@@ -212,6 +214,31 @@ data object VpnPlugin : FlutterPlugin, MethodChannel.MethodCallHandler {
         override fun onLost(network: Network) {
             networks.remove(network)
             onUpdateNetwork()
+            if (Build.VERSION.SDK_INT < Build.VERSION_CODES.S) physicalPathChanged()
+        }
+    }
+
+    private var bestPhysicalNetwork: Network? = null
+    private val bestPathCallback = object : ConnectivityManager.NetworkCallback() {
+        override fun onAvailable(network: Network) {
+            val old = bestPhysicalNetwork
+            bestPhysicalNetwork = network
+            if (old != null && old != network) physicalPathChanged()
+        }
+
+        override fun onLost(network: Network) {
+            if (bestPhysicalNetwork == network) {
+                bestPhysicalNetwork = null
+                physicalPathChanged()
+            }
+        }
+    }
+
+    private fun physicalPathChanged() {
+        scope.launch(Dispatchers.Main) {
+            if (GlobalState.runState.value == RunState.START) {
+                flutterMethodChannel.invokeMethod("physicalPathChanged", null)
+            }
         }
     }
 
@@ -224,10 +251,17 @@ data object VpnPlugin : FlutterPlugin, MethodChannel.MethodCallHandler {
     private fun registerNetworkCallback() {
         networks.clear()
         connectivity?.registerNetworkCallback(request, callback)
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+            connectivity?.registerBestMatchingNetworkCallback(request, bestPathCallback, Handler(Looper.getMainLooper()))
+        }
     }
 
     private fun unRegisterNetworkCallback() {
         connectivity?.unregisterNetworkCallback(callback)
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+            connectivity?.unregisterNetworkCallback(bestPathCallback)
+            bestPhysicalNetwork = null
+        }
         networks.clear()
         onUpdateNetwork()
     }

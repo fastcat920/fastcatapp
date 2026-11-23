@@ -426,6 +426,15 @@ Future<void> _service(List<String> flags) async {
     }
   };
 
+  vpn?.handlePhysicalPathChanged = () async {
+    final action = core_models.Action(
+      id: 'vpn-path-${DateTime.now().microsecondsSinceEpoch}',
+      method: ActionMethod.clearNetworkCaches,
+      data: null,
+    );
+    await clashLibHandler.invokeAction(json.encode(action));
+  };
+
   vpn?.handleRecoverDataPlane = () async {
     try {
       final closeConnections = core_models.Action(

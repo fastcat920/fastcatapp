@@ -4,7 +4,7 @@ import 'package:app_links/app_links.dart';
 
 import 'print.dart';
 
-typedef InstallConfigCallBack = void Function(String url);
+typedef InstallConfigCallBack = Future<void> Function(String url);
 
 class LinkManager {
   static LinkManager? _instance;
@@ -15,21 +15,15 @@ class LinkManager {
     _appLinks = AppLinks();
   }
 
-  initAppLinksListen(installConfigCallBack) async {
+  initAppLinksListen(InstallConfigCallBack installConfigCallBack) async {
     commonPrint.log("initAppLinksListen");
     destroy();
-    subscription = _appLinks.uriLinkStream.listen(
-      (uri) {
-        commonPrint.log('onAppLink: $uri');
-        if (uri.host == 'install-config') {
-          final parameters = uri.queryParameters;
-          final url = parameters['url'];
-          if (url != null) {
-            installConfigCallBack(url);
-          }
-        }
-      },
-    );
+    subscription = _appLinks.uriLinkStream
+        .where((uri) => uri.host == 'install-config')
+        .asyncMap((uri) async {
+      final url = uri.queryParameters['url'];
+      if (url != null) await installConfigCallBack(url);
+    }).listen((_) {});
   }
 
   destroy() {

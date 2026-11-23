@@ -1,3 +1,4 @@
+import 'security/local_test_profile_scope.dart';
 import 'dart:async';
 import 'package:fl_clash/services/runtime_task_runner.dart';
 import 'package:fl_clash/common/diagnostic_log_buffer.dart';
@@ -26,6 +27,7 @@ import 'security/profile_vault.dart';
 import 'security/profile_yaml_parser.dart';
 import 'xboard/config/xboard_config.dart';
 import 'xboard/features/auth/utils/support_url_helper.dart';
+import 'xboard/features/settings/models/fastcat_paired_config.dart';
 
 typedef UpdateTasks = List<FutureOr Function()>;
 
@@ -173,7 +175,8 @@ class GlobalState {
   Future<bool> handleStart([UpdateTasks? tasks]) =>
       _startRouting(tasks, publish: true);
 
-  Future<bool> prepareStart() => _startRouting(null, publish: false);
+  Future<bool> prepareStart({Future<void> Function()? repairListener}) =>
+      _startRouting(null, publish: false, repairListener: repairListener);
 
   void commitStarted([UpdateTasks? tasks]) {
     startTime ??= DateTime.now();
@@ -181,14 +184,19 @@ class GlobalState {
   }
 
   Future<bool> _startRouting(UpdateTasks? tasks,
-      {required bool publish}) async {
+      {required bool publish, Future<void> Function()? repairListener}) async {
     var listenerStarted = false;
     var vpnStartAttempted = false;
     final vpnService = service;
     try {
       if (!Platform.isIOS) {
-        final listenerResult = await clashCore.startListener();
-        if (listenerResult != true) {
+        var listenerResult = await clashCore.startListener();
+        if (!listenerResult && repairListener != null) {
+          commonPrint.log('VPN listener rejected start, reapplying local profile');
+          await repairListener();
+          listenerResult = await clashCore.startListener();
+        }
+        if (!listenerResult) {
           throw StateError('Clash listener 启动失败');
         }
         listenerStarted = true;
@@ -388,7 +396,8 @@ class GlobalState {
     );
     final params = SetupParams(
       config: clashConfig,
-      selectedMap: config.currentProfile?.selectedMap ?? {},
+      selectedMap: scopedProfileSelections(
+          config.currentProfileId, config.currentProfile?.selectedMap ?? {}),
       testUrl: config.appSetting.testUrl,
     );
     return params;
@@ -500,7 +509,11 @@ class GlobalState {
     final isEnableDns = rawConfig["dns"]["enable"] == true;
     final overrideDns = globalState.config.overrideDns;
     if (overrideDns || !isEnableDns) {
-      final dns = switch (!isEnableDns) {
+      // The Android system resolver can use the VPN DNS address after startup.
+      // Feeding it back into the tunnel resolver can loop cold DNS queries.
+      final useSystemFallback = !isEnableDns &&
+          !(Platform.isAndroid && profileId == fastCatDirectProfileId);
+      final dns = switch (useSystemFallback) {
         true => realPatchConfig.dns.copyWith(
             nameserver: [...realPatchConfig.dns.nameserver, "system://"]),
         false => realPatchConfig.dns,
@@ -543,6 +556,15 @@ class GlobalState {
     ];
 
     _migrateDeprecatedDnsFallbackFilter(rawConfig);
+    if (Platform.isIOS && config.currentProfile == profile) {
+      final paired = await pairedTestRuntimeConfig(
+        rawConfig,
+        activeId: profile.id,
+        profiles: config.profiles,
+        readText: ProfileVault.instance.readText,
+      );
+      if (config.currentProfile == profile) return paired;
+    }
     return rawConfig;
   }
 

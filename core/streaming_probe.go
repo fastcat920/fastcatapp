@@ -2,15 +2,19 @@ package main
 
 import (
 	"context"
+	"crypto/tls"
 	"encoding/json"
 	"fmt"
 	"io"
 	"net"
 	"net/http"
+	"net/http/httptrace"
 	"strings"
 	"sync"
+	"sync/atomic"
 	"time"
 
+	"github.com/metacubex/mihomo/component/fastcatprobe"
 	"github.com/metacubex/mihomo/constant"
 	"github.com/metacubex/mihomo/tunnel"
 )
@@ -25,17 +29,20 @@ type StreamingProbeParams struct {
 	MaxBodySize int64             `json:"max-body-size"`
 	Headers     map[string]string `json:"headers"`
 	NoRedirect  bool              `json:"no-redirect"`
+	PhaseTiming bool              `json:"phase-timing,omitempty"`
 }
 
 type StreamingProbeResult struct {
-	OK         bool              `json:"ok"`
-	StatusCode int               `json:"status-code"`
-	FinalURL   string            `json:"final-url"`
-	Headers    map[string]string `json:"headers"`
-	Body       string            `json:"body"`
-	ElapsedMs  int64             `json:"elapsed-ms"`
-	Truncated  bool              `json:"truncated"`
-	Error      string            `json:"error,omitempty"`
+	OK          bool              `json:"ok"`
+	StatusCode  int               `json:"status-code"`
+	FinalURL    string            `json:"final-url"`
+	Headers     map[string]string `json:"headers"`
+	Body        string            `json:"body"`
+	ElapsedMs   int64             `json:"elapsed-ms"`
+	FirstByteMs *int64            `json:"first-byte-ms,omitempty"`
+	Phases      map[string]any    `json:"phases,omitempty"`
+	Truncated   bool              `json:"truncated"`
+	Error       string            `json:"error,omitempty"`
 }
 
 // A run owns all its concurrent requests. Keep cancellation tombstones briefly
@@ -114,7 +121,18 @@ func handleStreamingProbe(paramsString string) string {
 	started := time.Now()
 	params := &StreamingProbeParams{}
 	result := &StreamingProbeResult{Headers: map[string]string{}}
+	var timing *fastcatprobe.Timing
+	var pathAtStart uint64
 	finish := func() string {
+		if timing != nil {
+			result.Phases = timing.Snapshot()
+			if generation := applePhysicalPathGeneration.Load(); generation != 0 {
+				result.Phases["path-generation"] = generation
+				if generation != pathAtStart {
+					result.Phases["path-changed"] = true
+				}
+			}
+		}
 		result.ElapsedMs = time.Since(started).Milliseconds()
 		data, _ := json.Marshal(result)
 		return string(data)
@@ -127,6 +145,13 @@ func handleStreamingProbe(paramsString string) string {
 	if proxy == nil {
 		result.Error = "proxy not found"
 		return finish()
+	}
+	// These phases describe one CONNECT and one origin request. Following a
+	// redirect could mix clocks from multiple origins and multiple tunnels.
+	if params.PhaseTiming && params.NoRedirect &&
+		(proxy.Type() == constant.FastCatH2 || proxy.Type() == constant.FastCatHTTPS || proxy.Type() == constant.FastCatAuto) {
+		timing = new(fastcatprobe.Timing)
+		pathAtStart = applePhysicalPathGeneration.Load()
 	}
 	timeout := time.Duration(params.Timeout) * time.Millisecond
 	if timeout <= 0 {
@@ -143,7 +168,15 @@ func handleStreamingProbe(paramsString string) string {
 			if err := metadata.SetRemoteAddress(address); err != nil {
 				return nil, err
 			}
-			return proxy.DialContext(ctx, metadata)
+			if timing == nil {
+				return proxy.DialContext(ctx, metadata)
+			}
+			timing.Mark(fastcatprobe.TunnelStart)
+			conn, err := proxy.DialContext(timing.WithContext(ctx), metadata)
+			if err == nil {
+				timing.Mark(fastcatprobe.TunnelReady)
+			}
+			return conn, err
 		},
 	}
 	defer transport.CloseIdleConnections()
@@ -188,12 +221,34 @@ func handleStreamingProbe(paramsString string) string {
 	for key, value := range params.Headers {
 		req.Header.Set(key, value)
 	}
-	response, err := client.Do(req)
+	var firstByteNanos atomic.Int64
+	trace := &httptrace.ClientTrace{GotFirstResponseByte: func() {
+		firstByteNanos.CompareAndSwap(0, time.Since(started).Nanoseconds())
+		timing.Mark(fastcatprobe.FirstByte)
+	}}
+	if timing != nil {
+		trace.TLSHandshakeStart = func() { timing.Mark(fastcatprobe.OriginTLSStart) }
+		trace.TLSHandshakeDone = func(_ tls.ConnectionState, err error) {
+			if err == nil {
+				timing.Mark(fastcatprobe.OriginTLSDone)
+			}
+		}
+		trace.WroteRequest = func(info httptrace.WroteRequestInfo) {
+			if info.Err == nil {
+				timing.Mark(fastcatprobe.RequestWritten)
+			}
+		}
+	}
+	response, err := client.Do(req.WithContext(httptrace.WithClientTrace(req.Context(), trace)))
 	if err != nil {
 		result.Error = err.Error()
 		return finish()
 	}
 	defer response.Body.Close()
+	if nanos := firstByteNanos.Load(); nanos > 0 {
+		ms := time.Duration(nanos).Milliseconds()
+		result.FirstByteMs = &ms
+	}
 	data, readErr := io.ReadAll(io.LimitReader(response.Body, maxBodySize+1))
 	if readErr != nil {
 		result.Error = readErr.Error()

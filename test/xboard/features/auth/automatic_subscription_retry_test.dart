@@ -35,9 +35,11 @@ class _Auth extends XBoardUserAuthNotifier {
 class _Importer extends ProfileImportNotifier {
   _Importer(super.ref);
   int calls = 0;
+  bool? background;
   @override
   Future<bool> importSubscription(String url,
-      {bool forceRefresh = false}) async {
+      {bool forceRefresh = false, bool backgroundAccountSync = false}) async {
+    background = backgroundAccountSync;
     calls++;
     return calls > 1;
   }
@@ -64,6 +66,7 @@ void main() {
       await tester.pump();
       await tester.pump(const Duration(milliseconds: 1300));
       await tester.pump();
+      expect(importer.background, isTrue);
       expect(importer.calls, attempt == 0 ? 1 : 2);
     }
     container.dispose();

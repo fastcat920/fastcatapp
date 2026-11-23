@@ -918,7 +918,7 @@ class XBoardUserAuthNotifier extends Notifier<UserAuthState> {
       _logger.info('[登录后初始化] 导入订阅 ${attempt + 1}/${delays.length}');
       imported = await ref
           .read(profileImportProvider.notifier)
-          .importSubscription(url);
+          .importSubscription(url, backgroundAccountSync: true);
       if (!_isAuthGenerationActive(generation)) return false;
       if (imported && _hasUsableNodes(ref.read(groupsProvider))) break;
       if (imported) {
@@ -987,7 +987,7 @@ class XBoardUserAuthNotifier extends Notifier<UserAuthState> {
         if (!_isAuthGenerationActive(generation)) return;
         succeeded = await ref
             .read(profileImportProvider.notifier)
-            .importSubscription(url);
+            .importSubscription(url, backgroundAccountSync: true);
         _logger.info(
           '[自动刷新] 订阅配置更新${succeeded ? '成功' : '失败，继续使用旧缓存'}',
         );
@@ -1246,6 +1246,7 @@ class XBoardUserAuthNotifier extends Notifier<UserAuthState> {
       _logger.info('[$source] 使用强制刷新模式，跳过重复检测');
       ref.read(profileImportProvider.notifier).importSubscription(
             subscriptionData.subscribeUrl,
+            backgroundAccountSync: true,
             forceRefresh: true,
           );
     } else if (importProfile) {

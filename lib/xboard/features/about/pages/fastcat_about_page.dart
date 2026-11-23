@@ -13,25 +13,14 @@ import 'package:flutter/material.dart';
 import 'package:fl_clash/widgets/tv_focusable.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-class FastCatAboutPage extends ConsumerStatefulWidget {
+class FastCatAboutPage extends ConsumerWidget {
   const FastCatAboutPage({super.key});
 
   @override
-  ConsumerState<FastCatAboutPage> createState() => _FastCatAboutPageState();
-}
-
-class _FastCatAboutPageState extends ConsumerState<FastCatAboutPage> {
-  int _logoTapCount = 0;
-  DateTime? _lastLogoTapAt;
-
-  @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context);
     final update = ref.watch(updateCheckProvider);
     final version = globalState.packageInfo.version;
-    final showLogs = ref.watch(
-      appSettingProvider.select((setting) => setting.logCapture),
-    );
     final configuredLocale = ref.watch(
       appSettingProvider.select((setting) => setting.locale),
     );
@@ -63,25 +52,21 @@ class _FastCatAboutPageState extends ConsumerState<FastCatAboutPage> {
                   sliver: SliverList.list(
                     children: [
                       Center(
-                        child: GestureDetector(
-                          behavior: HitTestBehavior.opaque,
-                          onTap: _onLogoTap,
-                          child: Container(
-                            width: 88,
-                            height: 88,
-                            decoration: BoxDecoration(
-                              color: Theme.of(context)
-                                  .colorScheme
-                                  .primary
-                                  .withValues(alpha: 0.10),
-                              borderRadius: BorderRadius.circular(26),
-                            ),
-                            child: Padding(
-                              padding: const EdgeInsets.all(10),
-                              child: Image.asset(
-                                'assets/images/icon.png',
-                                fit: BoxFit.contain,
-                              ),
+                        child: Container(
+                          width: 88,
+                          height: 88,
+                          decoration: BoxDecoration(
+                            color: Theme.of(context)
+                                .colorScheme
+                                .primary
+                                .withValues(alpha: 0.10),
+                            borderRadius: BorderRadius.circular(26),
+                          ),
+                          child: Padding(
+                            padding: const EdgeInsets.all(10),
+                            child: Image.asset(
+                              'assets/images/icon.png',
+                              fit: BoxFit.contain,
                             ),
                           ),
                         ),
@@ -146,7 +131,7 @@ class _FastCatAboutPageState extends ConsumerState<FastCatAboutPage> {
                               if (!system.isTV) return tile;
                               return TVFocusGroupRow(
                                   index: 0,
-                                  count: showLogs ? 2 : 1,
+                                  count: 1,
                                   child: TVFocusable(
                                       borderRadius: BorderRadius.circular(20),
                                       onPressed: update.isChecking
@@ -154,34 +139,17 @@ class _FastCatAboutPageState extends ConsumerState<FastCatAboutPage> {
                                           : () => _checkUpdate(context, ref),
                                       child: ExcludeFocus(child: tile)));
                             }),
-                            if (showLogs) ...[
+                            if (!system.isTV) ...[
                               Divider(
                                 height: 1,
                                 color: XbUiTokens.cardBorder(context),
                               ),
-                              Builder(builder: (context) {
-                                final tile = ListTile(
-                                  leading: const Icon(Icons.article_outlined),
-                                  title: Text(l10n.logs),
-                                  trailing: const Icon(Icons.chevron_right),
-                                  onTap: () => Navigator.of(context).push(
-                                    MaterialPageRoute<void>(
-                                      builder: (_) => const FastCatLogsPage(),
-                                    ),
-                                  ),
-                                );
-                                if (!system.isTV) return tile;
-                                return TVFocusGroupRow(
-                                    index: 1,
-                                    count: 2,
-                                    child: TVFocusable(
-                                        borderRadius: BorderRadius.circular(20),
-                                        onPressed: () => Navigator.of(context)
-                                            .push(MaterialPageRoute<void>(
-                                                builder: (_) =>
-                                                    const FastCatLogsPage())),
-                                        child: ExcludeFocus(child: tile)));
-                              }),
+                              ListTile(
+                                leading: const Icon(Icons.article_outlined),
+                                title: Text(l10n.logs),
+                                trailing: const Icon(Icons.chevron_right),
+                                onTap: () => _openLogs(context, ref),
+                              ),
                             ],
                           ],
                         ),
@@ -207,30 +175,17 @@ class _FastCatAboutPageState extends ConsumerState<FastCatAboutPage> {
     );
   }
 
-  void _onLogoTap() {
-    if (ref.read(appSettingProvider).logCapture) return;
-    final now = DateTime.now();
-    if (_lastLogoTapAt == null ||
-        now.difference(_lastLogoTapAt!) > const Duration(seconds: 2)) {
-      _logoTapCount = 0;
+  void _openLogs(BuildContext context, WidgetRef ref) {
+    final settings = ref.read(appSettingProvider);
+    if (!settings.logCapture || !settings.openLogs) {
+      ref.read(appSettingProvider.notifier).updateState(
+            (state) => state.copyWith(logCapture: true, openLogs: true),
+          );
     }
-    _lastLogoTapAt = now;
-    _logoTapCount += 1;
-    if (_logoTapCount < 5) return;
-
-    _logoTapCount = 0;
-    ref.read(appSettingProvider.notifier).updateState(
-          (state) => state.copyWith(logCapture: true, openLogs: true),
-        );
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text(_logsEnabledLabel(context))),
+    Navigator.of(context).push(
+      MaterialPageRoute<void>(builder: (_) => const FastCatLogsPage()),
     );
   }
-
-  String _logsEnabledLabel(BuildContext context) =>
-      Localizations.localeOf(context).languageCode == 'zh'
-          ? '日志菜单已显示'
-          : 'Logs menu enabled';
 
   Future<void> _checkUpdate(BuildContext context, WidgetRef ref) async {
     await ref.read(updateCheckProvider.notifier).checkForUpdates(

@@ -7,6 +7,7 @@ import (
 	"errors"
 	"github.com/metacubex/mihomo/adapter"
 	"github.com/metacubex/mihomo/adapter/inbound"
+	"github.com/metacubex/mihomo/adapter/outbound"
 	"github.com/metacubex/mihomo/adapter/outboundgroup"
 	"github.com/metacubex/mihomo/adapter/provider"
 	"github.com/metacubex/mihomo/common/batch"
@@ -328,6 +329,7 @@ func commitSetupConfig(params *SetupParams, nextConfig *config.Config) error {
 	} else {
 		testURL = constant.DefaultTestURL
 	}
+	outbound.ResetFastCatH2Connections()
 	currentConfig = nextConfig
 	sampleAppleMemoryStage("config.apply.before")
 	hub.ApplyConfig(runtimeConfigForApply(currentConfig))

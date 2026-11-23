@@ -1,3 +1,4 @@
+import 'package:fl_clash/security/local_test_profile_scope.dart';
 import 'package:fl_clash/models/models.dart';
 import 'dart:async';
 import 'dart:convert';
@@ -58,25 +59,32 @@ class Service {
       commonPrint.log('[IOSVPN:$attempt] preparing configuration');
       globalState.updateCoreSwitchStatus(CoreSwitchStage.coreConnecting,
           message: '正在准备 VPN 配置');
-      final config = iosProfileConfig(await globalState.patchRawConfig(
-        patchConfig: globalState.config.patchClashConfig,
-      ).timeout(const Duration(seconds: 20)));
+      final config = iosProfileConfig(await globalState
+          .patchRawConfig(
+            patchConfig: globalState.config.patchClashConfig,
+          )
+          .timeout(const Duration(seconds: 20)));
       globalState.updateCoreSwitchStatus(CoreSwitchStage.tunApplying,
           message: '正在启动系统 VPN');
       // JSON is valid YAML; the startup path expects a raw profile, not SetupParams.
       config['rules'] = config.remove('rule') ?? config['rules'] ?? [];
-      config['fastcat-selected-map'] = globalState.config.currentProfile?.selectedMap ?? <String, String>{};
+      config['fastcat-selected-map'] = scopedProfileSelections(
+          globalState.config.currentProfileId,
+          globalState.config.currentProfile?.selectedMap ?? <String, String>{});
       // This will throw PlatformException if VPN start fails.
       // The caller (handleStart) catches this and shows the error.
-      commonPrint.log('[IOSVPN:$attempt] requesting tunnel at ${elapsed.elapsedMilliseconds}ms');
+      commonPrint.log(
+          '[IOSVPN:$attempt] requesting tunnel at ${elapsed.elapsedMilliseconds}ms');
       try {
         final started = await methodChannel.invokeMethod<bool>("start", {
           'config': json.encode(config),
         });
-        commonPrint.log('[IOSVPN:$attempt] tunnel result=$started at ${elapsed.elapsedMilliseconds}ms');
+        commonPrint.log(
+            '[IOSVPN:$attempt] tunnel result=$started at ${elapsed.elapsedMilliseconds}ms');
         return started;
       } catch (error) {
-        commonPrint.log('[IOSVPN:$attempt] tunnel failed at ${elapsed.elapsedMilliseconds}ms: $error');
+        commonPrint.log(
+            '[IOSVPN:$attempt] tunnel failed at ${elapsed.elapsedMilliseconds}ms: $error');
         rethrow;
       }
     }

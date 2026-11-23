@@ -45,9 +45,9 @@ class _FastCatLogsPageState extends ConsumerState<FastCatLogsPage> {
         surfaceTintColor: Colors.transparent,
         actions: [
           _tvAction(IconButton(
-            tooltip: _hideLogsLabel(context),
-            onPressed: _hideLogs,
-            icon: const Icon(Icons.visibility_off_outlined),
+            tooltip: _stopRecordingLabel(context),
+            onPressed: _stopRecording,
+            icon: const Icon(Icons.stop_circle_outlined),
           )),
           _tvAction(IconButton(
             tooltip: l10n.copyLogs,
@@ -161,12 +161,12 @@ class _FastCatLogsPageState extends ConsumerState<FastCatLogsPage> {
           child: button,
         );
 
-  String _hideLogsLabel(BuildContext context) =>
+  String _stopRecordingLabel(BuildContext context) =>
       Localizations.localeOf(context).languageCode == 'zh'
-          ? '隐藏日志'
-          : 'Hide logs';
+          ? '停止记录'
+          : 'Stop recording';
 
-  void _hideLogs() {
+  void _stopRecording() {
     ref.read(appSettingProvider.notifier).updateState(
           (state) => state.copyWith(logCapture: false, openLogs: false),
         );

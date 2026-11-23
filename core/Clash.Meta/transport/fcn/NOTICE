@@ -1,0 +1,1 @@
+Congestion controllers in internal/congestion and internal/congestion_v2 are derived from Mihomo (GPL-3.0); upstream copyright notices are retained.

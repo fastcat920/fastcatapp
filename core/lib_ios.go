@@ -22,6 +22,9 @@ import (
 	"go.yaml.in/yaml/v3"
 )
 
+//export fastCatSupportsV2
+func fastCatSupportsV2() C.int { return 2 }
+
 // ClashCore_init initialises the mihomo core.
 // homeDir: path to writable directory for config/cache files.
 // config:  raw YAML config string.
@@ -476,3 +479,6 @@ func (result ActionResult) send() {
 func nextHandle(action *Action, result ActionResult) bool {
 	return false
 }
+
+//export fastCatSupportsFCN
+func fastCatSupportsFCN() C.int { return 1 }

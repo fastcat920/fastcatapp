@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/metacubex/mihomo/adapter"
+	"github.com/metacubex/mihomo/adapter/outbound"
 	"github.com/metacubex/mihomo/adapter/outboundgroup"
 	"github.com/metacubex/mihomo/common/observable"
 	"github.com/metacubex/mihomo/common/utils"
@@ -80,10 +81,15 @@ func handleStartListener() bool {
 		return false
 	}
 	resolver.ResetConnection()
+	if runtime.GOOS != "android" {
+		startFastCatStartupWarm()
+	}
 	return true
 }
 
 func handleStopListener() bool {
+	stopFastCatStartupWarm()
+	outbound.ResetFastCatH2Connections()
 	runLock.Lock()
 	defer runLock.Unlock()
 	isRunning = false
@@ -107,6 +113,7 @@ func handleShutdown() bool {
 	defer runLock.Unlock()
 	isRunning = false
 	stopListeners()
+	outbound.ResetFastCatH2Connections()
 	executor.Shutdown()
 	runtime.GC()
 	isInit = false
@@ -474,6 +481,7 @@ func handleResetConnections() bool {
 func handleClearNetworkCaches() bool {
 	runLock.Lock()
 	defer runLock.Unlock()
+	outbound.ResetFastCatH2Connections()
 	resolver.ClearCache()
 	if err := resolver.FlushFakeIP(); err != nil {
 		log.Warnln("[Network] flush fake-IP cache failed: %v", err)

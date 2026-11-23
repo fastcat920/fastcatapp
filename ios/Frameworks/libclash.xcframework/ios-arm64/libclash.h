@@ -94,6 +94,7 @@ extern "C" {
 #endif
 
 extern void ClashCore_set_upstream_interface(unsigned int index);
+extern int fastCatSupportsV2(void);
 extern int ClashCore_init(char* homeDir, char* configYaml);
 extern int ClashCore_init_probe(char* homeDir, char* configYaml);
 extern int ClashCore_get_mixed_port(void);
@@ -104,6 +105,7 @@ extern unsigned long long ClashCore_start_packets(void);
 extern void ClashCore_stop_packets(void);
 extern int ClashCore_write_packet(unsigned long long generation, uint8_t* data, int length);
 extern int ClashCore_read_packet(unsigned long long generation, uint8_t* data, int capacity);
+extern int fastCatSupportsFCN(void);
 
 #ifdef __cplusplus
 }

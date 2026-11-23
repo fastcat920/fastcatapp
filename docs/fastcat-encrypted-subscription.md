@@ -171,3 +171,9 @@ flutter test \
 5. 错误 key、未知 kid 或被修改的 tag 必须导致更新失败；
 6. 失败时不得自动降级到 `flag=meta`。
 
+
+## Android 自动双入口节点
+
+Android 在刷新订阅时检查打包的核心是否支持 `fastcat-auto`。支持时以附加的 `fc_auto=1` 参数向原有加密订阅端点声明能力。面板按账户与节点授权签发，节点在首页显示为一个地区，用户按现有流程连接。该能力仅承载 TCP。
+
+同一节点包含 HTTP/2 的 `server`、`port`、`token` 与可选 `sni`，以及 v1 的 `fallback-port`、`fallback-token` 与可选 `fallback-server`、`fallback-sni`。两套令牌由入口服务授权。面板默认关闭该下发路径，配置和按账户签发、撤销及节点同步操作见 catboard 项目的 `docs/fastcat-encrypted-subscription.md`。

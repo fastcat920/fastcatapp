@@ -39,6 +39,7 @@ mixin ClashInterface {
     String? body,
     Map<String, String> headers = const {},
     bool followRedirects = true,
+    bool phaseTiming = false,
     Duration timeout = const Duration(seconds: 8),
     int maxBodySize = 256 * 1024,
   });
@@ -562,6 +563,7 @@ abstract class ClashHandlerInterface with ClashInterface {
     String? body,
     Map<String, String> headers = const {},
     bool followRedirects = true,
+    bool phaseTiming = false,
     Duration timeout = const Duration(seconds: 8),
     int maxBodySize = 256 * 1024,
   }) {
@@ -575,6 +577,7 @@ abstract class ClashHandlerInterface with ClashInterface {
       'max-body-size': maxBodySize,
       'headers': headers,
       'no-redirect': !followRedirects,
+      if (phaseTiming) 'phase-timing': true,
     };
     return invoke<String>(
       method: ActionMethod.streamingProbe,

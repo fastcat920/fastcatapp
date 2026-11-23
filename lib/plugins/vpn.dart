@@ -17,6 +17,7 @@ class Vpn {
   FutureOr<String> Function()? handleGetStartForegroundParams;
   FutureOr<Map<String, Object?>> Function()? handleHeartbeat;
   FutureOr<bool> Function()? handleRecoverDataPlane;
+  FutureOr<void> Function()? handlePhysicalPathChanged;
   FutureOr<bool> Function()? handlePrepareRecovery;
   void Function()? handleAttachMain;
 
@@ -39,6 +40,9 @@ class Vpn {
         case "heartbeat":
           return await handleHeartbeat?.call() ??
               const <String, Object?>{'healthy': false};
+        case "physicalPathChanged":
+          await handlePhysicalPathChanged?.call();
+          return true;
         case "recoverDataPlane":
           return await handleRecoverDataPlane?.call() ?? false;
         case "prepareRecovery":

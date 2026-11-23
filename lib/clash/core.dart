@@ -159,6 +159,7 @@ class ClashCore {
     String? body,
     Map<String, String> headers = const {},
     bool followRedirects = true,
+    bool phaseTiming = false,
     Duration timeout = const Duration(seconds: 8),
     int maxBodySize = 256 * 1024,
   }) async {
@@ -170,6 +171,7 @@ class ClashCore {
       body: body,
       headers: headers,
       followRedirects: followRedirects,
+      phaseTiming: phaseTiming,
       timeout: timeout,
       maxBodySize: maxBodySize,
     );
@@ -258,6 +260,17 @@ class ClashCore {
   }
 
   Future<Delay> getDelay(String url, String proxyName) async {
+    final connected = globalState.isStart;
+    final delay = await _measureDelay(url, proxyName);
+    commonPrint.log('[NodeLatency] ${jsonEncode({
+      'node': proxyName,
+      'vpn': connected ? 'connected' : 'disconnected',
+      'delay_ms': delay.value,
+    })}');
+    return delay;
+  }
+
+  Future<Delay> _measureDelay(String url, String proxyName) async {
     if (Platform.isIOS && globalState.isCoreSwitchingNotifier.value) {
       throw StateError('VPN 正在连接，请稍后测速');
     }

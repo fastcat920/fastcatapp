@@ -1,3 +1,6 @@
+import 'dart:ffi';
+import 'dart:io';
+
 /// 订阅URL辅助工具
 ///
 /// 用于解析和处理订阅URL，提取token等信息
@@ -68,17 +71,59 @@ class SubscriptionUrlHelper {
   }
 
   /// 强制使用独立的 FastCat 加密协议。已有 flag 也会被覆盖，避免静默明文降级。
-  static String ensureFastCatFlag(String url) {
+  static final bool _supportsV2 = _hasCoreSymbol('fastCatSupportsV2');
+  static final bool _supportsAuto =
+      _supportsV2 || _hasCoreSymbol('fastCatSupportsAutoV1');
+
+  static bool _hasCoreSymbol(String name) {
+    if (!Platform.isAndroid && !Platform.isIOS) return false;
+    try {
+      final core = Platform.isAndroid
+          ? DynamicLibrary.open('libclash.so')
+          : DynamicLibrary.process();
+      return core.providesSymbol(name);
+    } on ArgumentError {
+      return false;
+    }
+  }
+
+  static final bool _supportsTransportModes = _nativeV2Version() >= 2;
+
+  static int _nativeV2Version() {
+    if (!_supportsV2) return 0;
+    final core = Platform.isAndroid
+        ? DynamicLibrary.open('libclash.so')
+        : DynamicLibrary.process();
+    return core.lookupFunction<Int32 Function(), int Function()>(
+        'fastCatSupportsV2')();
+  }
+
+  static String ensureFastCatFlag(String url, {bool? supportsAuto, bool? supportsV2, bool? supportsTransportModes, bool? supportsFCN}) {
     const flag = String.fromEnvironment(
       'FASTCAT_SUBSCRIPTION_FLAG',
       defaultValue: 'fastcat-v1',
     );
     try {
       final uri = Uri.parse(url);
-      return uri.replace(queryParameters: {
-        ...uri.queryParameters,
-        'flag': flag,
-      }).toString();
+      final query = Map<String, dynamic>.of(uri.queryParametersAll);
+      query.remove('fc_auto');
+      query.remove('fc_v2');
+      query.remove('fc_transport');
+      query.remove('fc_fcn');
+      if (supportsFCN ?? _hasCoreSymbol('fastCatSupportsFCN')) {
+        query['fc_fcn'] = '1';
+      }
+      query['flag'] = flag;
+      if (supportsAuto ?? _supportsAuto) {
+        query['fc_auto'] = '1';
+        if (supportsV2 ?? _supportsV2) {
+          query['fc_v2'] = '1';
+          if (supportsTransportModes ?? _supportsTransportModes) {
+            query['fc_transport'] = '1';
+          }
+        }
+      }
+      return uri.replace(queryParameters: query).toString();
     } catch (_) {
       return url;
     }

@@ -1,6 +1,9 @@
+import 'package:fl_clash/security/local_test_profile_scope.dart';
 import 'package:fl_clash/enum/enum.dart';
 import 'package:fl_clash/xboard/features/settings/utils/account_routing_store.dart';
 import 'package:fl_clash/xboard/features/auth/providers/xboard_user_provider.dart';
+import 'package:fl_clash/clash/clash.dart';
+import 'package:fl_clash/xboard/features/auth/providers/session_epoch_provider.dart';
 import 'dart:async';
 import 'dart:io';
 import 'package:flutter/foundation.dart';
@@ -49,6 +52,7 @@ class XBoardProfileImportService {
   bool get hasPendingImport => _importDone != null;
   Future<ImportResult> importSubscription(
     String url, {
+    bool backgroundAccountSync = false,
     Function(ImportStatus, double, String?)? onProgress,
   }) async {
     if (_isImporting || _cancelAndWaitFuture != null) {
@@ -74,10 +78,26 @@ class XBoardProfileImportService {
 
       // 用户配置属于本地状态，订阅刷新只能替换远端内容，不能把节点选择
       // 或自定义分流一并覆盖掉。
-      final oldProfile = _ref.read(currentProfileProvider);
-      final oldSelectedMap = oldProfile?.selectedMap ?? {};
+      final epoch = _ref.read(sessionEpochProvider);
+      final active = _ref.read(currentProfileProvider);
+      final oldProfile =
+          keepSelectedSubscription(active, accountSync: backgroundAccountSync)
+              ? latestAccountProfileForUrl(_ref.read(profilesProvider), url)
+              : active;
+      final oldSelectedMap = oldProfile?.type == ProfileType.url
+          ? scopedProfileSelections(
+              oldProfile?.id, oldProfile?.selectedMap ?? {})
+          : <String, String>{};
       final oldOverrideData = oldProfile?.overrideData;
       final routingAccount = _ref.read(userInfoProvider)?.uuid ?? '';
+      void checkOwner() {
+        _throwIfCancelled(cancelToken);
+        if (_ref.read(sessionEpochProvider) != epoch ||
+            (_ref.read(userInfoProvider)?.uuid ?? '') != routingAccount) {
+          throw StateError('Account changed during import');
+        }
+      }
+
       final savedRules = await AccountRoutingStore.load(routingAccount);
 
       final connectivity = _ref.read(serviceConnectivityProvider);
@@ -111,14 +131,49 @@ class XBoardProfileImportService {
                     type: OverrideRuleType.added, addedRules: savedRules)),
       );
 
-      if ((_ref.read(userInfoProvider)?.uuid ?? '') != routingAccount) {
-        throw StateError('Account changed during import');
-      }
       // 2. 先添加新配置（保持 groups 非空，VPN 不断线）
       onProgress?.call(
           ImportStatus.adding, 0.8, appLocalizations.xboardAddingToConfigList);
       _throwIfCancelled(cancelToken);
-      await globalState.appController.runProfileImport(() async {
+      final committed =
+          await globalState.appController.runProfileImport(() async {
+        checkOwner();
+        // Re-check after the download, under the same lock as a user selection.
+        if (keepSelectedSubscription(_ref.read(currentProfileProvider),
+            accountSync: backgroundAccountSync)) {
+          final previous =
+              latestAccountProfileForUrl(_ref.read(profilesProvider), url);
+          var keepId = false;
+          try {
+            final yaml = await ProfileVault.instance.readText(profile.id);
+            final error = await clashCore.validateConfig(yaml);
+            if (error.isNotEmpty) {
+              throw const FormatException('Invalid account profile');
+            }
+            checkOwner();
+            final cache = previous == null
+                ? profile
+                : previous.copyWith(
+                    lastUpdateDate: profile.lastUpdateDate,
+                    subscriptionInfo: profile.subscriptionInfo,
+                  );
+            if (cache.id != profile.id) {
+              await ProfileVault.instance
+                  .copyDownloadedProfile(profile.id, cache.id);
+            }
+            checkOwner();
+            _ref.read(profilesProvider.notifier).setProfile(cache);
+            keepId = cache.id == profile.id;
+            // An inactive refresh owns its staging file only. The active-account
+            // import handles retention after a successful configuration switch.
+            return cache;
+          } finally {
+            if (!keepId &&
+                !_ref.read(profilesProvider).any((p) => p.id == profile.id)) {
+              await _clearProfileFiles(profile.id);
+            }
+          }
+        }
         final rollbackSnapshot = _ProfileImportSnapshot.capture(_ref);
         try {
           _throwIfCancelled(cancelToken);
@@ -141,6 +196,7 @@ class XBoardProfileImportService {
           rollbackSnapshot.profiles,
           _ref.read(profilesProvider),
         );
+        return profileWithSelection;
       });
 
       stopwatch.stop();
@@ -148,7 +204,7 @@ class XBoardProfileImportService {
           ImportStatus.success, 1.0, appLocalizations.xboardImportSuccess);
       _logger.info('订阅配置导入成功，耗时: ${stopwatch.elapsedMilliseconds}ms');
       return ImportResult.success(
-        profile: profileWithSelection,
+        profile: committed,
         duration: stopwatch.elapsed,
       );
     } catch (e) {
@@ -241,8 +297,9 @@ class XBoardProfileImportService {
       }
 
       final retainedIds = plan.profiles.map((profile) => profile.id).toSet();
-      final orphanCount =
-          await ProfileVault.instance.pruneOrphanedProfiles(retainedIds);
+      final orphanCount = await ProfileVault.instance.pruneOrphanedProfiles(
+          retainedIds,
+          minimumOrphanAge: const Duration(hours: 1));
       _logger.info(
         '订阅缓存清理完成: 删除配置=${plan.removedProfiles.length}, '
         '删除孤儿项=$orphanCount, 最多保留=$subscriptionProfileRetentionLimit',
@@ -464,6 +521,10 @@ class XBoardProfileImportService {
   }
 
   Future<void> _addProfile(Profile profile) async {
+    // An import may have started before the user activated a local test.
+    if (isLocalFastCatProfile(_ref.read(currentProfileIdProvider))) {
+      throw StateError('Local test configuration is active');
+    }
     final sw = Stopwatch()..start();
     try {
       // 1. 添加配置到列表

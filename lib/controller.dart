@@ -20,6 +20,7 @@ import 'package:fl_clash/xboard/utils/xboard_notification.dart';
 import 'package:fl_clash/state.dart';
 import 'package:fl_clash/widgets/dialog.dart';
 import 'package:fl_clash/xboard/features/auth/services/device_heartbeat_service.dart';
+import 'package:fl_clash/xboard/features/auth/providers/session_epoch_provider.dart';
 import 'package:fl_clash/xboard/features/auth/utils/customer_service_helper.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter/material.dart';
@@ -125,7 +126,11 @@ class AppController {
     }
   }
 
-  Future<void> restoreProfileConnection() => _restoreVerifiedConnection();
+  Future<void> restoreProfileConnection() async {
+    // A quick reconnect must finish the previous Android listener stop first.
+    await _disconnectCleanupFuture;
+    await _restoreVerifiedConnection();
+  }
 
   Future<void> stopAfterConfigurationFailure() => _rollbackFailedStart();
 
@@ -417,7 +422,9 @@ class AppController {
                     modified != lastProfileModified)) {
               await applyProfile(silence: true);
             }
-            return globalState.prepareStart();
+            return globalState.prepareStart(
+              repairListener: Platform.isAndroid ? _repairAndroidListener : null,
+            );
           },
           verify: _verifyStartedConnection,
           commit: () =>
@@ -888,6 +895,19 @@ class AppController {
       globalState.startTime = null;
       await _restoreVerifiedConnection();
     }
+  }
+
+  Future<void> _repairAndroidListener() async {
+    lastProfileModified = null;
+    if (!await clashCore.isInit && !await clashCore.init()) {
+      throw StateError('Clash core initialization failed');
+    }
+    await _profileApplications.run(() async {
+      await _setupClashConfigWithTun(
+        _ref.read(patchClashConfigProvider),
+        _ref.read(realTunEnableProvider),
+      );
+    });
   }
 
   Future<void> _checkCoreConfigurationResult(String message) async {
@@ -1547,14 +1567,22 @@ class AppController {
 
   initLink() {
     linkManager.initAppLinksListen(
-      (url) async {
+      (String url) async {
+        final zh = Localizations.localeOf(context).languageCode == 'zh';
+        final source = Uri.tryParse(url);
+        if (source == null || source.host.isEmpty ||
+            (source.scheme != 'https' && source.scheme != 'http')) {
+          globalState.showNotifier(appLocalizations.subscriptionImportFailed);
+          return;
+        }
         final res = await globalState.showMessage(
           title: '${appLocalizations.add}${appLocalizations.profile}',
+          confirmText: zh ? '添加并使用' : 'Add and use',
           message: TextSpan(
             children: [
               TextSpan(text: appLocalizations.doYouWantToPass),
               TextSpan(
-                text: ' $url ',
+                text: ' ${source.host} ',
                 style: TextStyle(
                   color: Theme.of(context).colorScheme.primary,
                   decoration: TextDecoration.underline,
@@ -1571,7 +1599,7 @@ class AppController {
         if (res != true) {
           return;
         }
-        addProfileFormURL(url);
+        await addProfileFormURL(url);
       },
     );
   }
@@ -1579,23 +1607,49 @@ class AppController {
   Future<void> importProfileInBackground(String url) =>
       _profileController.importProfileInBackground(url);
 
-  addProfileFormURL(String url) async {
+  Future<void> addProfileFormURL(String url) async {
     if (globalState.navigatorKey.currentState?.canPop() ?? false) {
       globalState.navigatorKey.currentState?.popUntil((route) => route.isFirst);
     }
     toProfiles();
+    final epoch = _ref.read(sessionEpochProvider);
     final commonScaffoldState = globalState.homeScaffoldKey.currentState;
-    if (commonScaffoldState?.mounted != true) return;
-    final profile = await commonScaffoldState?.loadingRun<Profile>(
-      () async {
-        return await Profile.normal(
-          url: url,
-        ).update();
-      },
-      title: '${appLocalizations.add}${appLocalizations.profile}',
-    );
-    if (profile != null) {
-      await addProfile(profile);
+    Future<Profile> fetch() {
+      for (final saved in _ref.read(profilesProvider)) {
+        if (saved.useProvidedUrl && saved.url == url) return saved.update();
+      }
+      return Profile.normal(url: url, useProvidedUrl: true).update();
+    }
+    try {
+      final profile = commonScaffoldState != null && commonScaffoldState.mounted
+          ? await commonScaffoldState.loadingRun<Profile>(fetch,
+              title: '${appLocalizations.add}${appLocalizations.profile}')
+          : await fetch();
+      if (profile == null) return;
+      await runProfileImport(() async {
+        if (_ref.read(sessionEpochProvider) != epoch) {
+          throw StateError('Account changed during import');
+        }
+        final previous = _ref.read(currentProfileIdProvider);
+        await addProfile(profile);
+        _ref.read(currentProfileIdProvider.notifier).value = profile.id;
+        try {
+          await applyProfile(silence: true);
+          await savePreferences();
+        } catch (_) {
+          if (_ref.read(currentProfileIdProvider) == profile.id &&
+              _ref.read(sessionEpochProvider) == epoch) {
+            _ref.read(currentProfileIdProvider.notifier).value = previous;
+            if (previous != null) await applyProfile(silence: true);
+            await savePreferences();
+          }
+          rethrow;
+        }
+      });
+      globalState.showNotifier(
+          '${appLocalizations.add} · ${profile.label ?? Uri.parse(url).host}');
+    } catch (_) {
+      globalState.showNotifier(appLocalizations.subscriptionImportFailed);
     }
   }
 

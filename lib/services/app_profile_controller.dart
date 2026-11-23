@@ -1,3 +1,4 @@
+import 'package:fl_clash/xboard/features/auth/providers/session_epoch_provider.dart';
 import 'dart:async';
 
 import 'package:fl_clash/common/common.dart';
@@ -45,10 +46,21 @@ class AppProfileController {
   }
 
   Future<void> updateProfile(Profile profile) async {
+    final epoch = _ref.read(sessionEpochProvider);
     final newProfile = await profile.update();
-    _ref
-        .read(profilesProvider.notifier)
-        .setProfile(newProfile.copyWith(isUpdating: false));
+    if (_ref.read(sessionEpochProvider) != epoch) return;
+    final current = _ref
+        .read(profilesProvider)
+        .where((p) => p.id == profile.id)
+        .firstOrNull;
+    if (current == null || current.url != profile.url) return;
+    _ref.read(profilesProvider.notifier).setProfile(current.copyWith(
+          url: newProfile.url,
+          label: current.label ?? newProfile.label,
+          lastUpdateDate: newProfile.lastUpdateDate,
+          subscriptionInfo: newProfile.subscriptionInfo,
+          isUpdating: false,
+        ));
     if (profile.id == _ref.read(currentProfileIdProvider)) {
       applyProfileDebounce(silence: true);
     }

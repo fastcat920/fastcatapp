@@ -12,6 +12,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"github.com/metacubex/mihomo/adapter/outbound"
 	"github.com/metacubex/mihomo/component/dialer"
 	"github.com/metacubex/mihomo/component/process"
 	"github.com/metacubex/mihomo/component/resolver"
@@ -30,6 +31,12 @@ import (
 	"time"
 	"unsafe"
 )
+
+//export fastCatSupportsV2
+func fastCatSupportsV2() C.int { return 2 }
+
+//export fastCatSupportsAutoV1
+func fastCatSupportsAutoV1() C.int { return 1 }
 
 type TunHandler struct {
 	listener *sing_tun.Listener
@@ -99,6 +106,8 @@ type androidTunRuntime struct {
 }
 
 func stopTunLocked() {
+	stopFastCatStartupWarm()
+	outbound.ResetFastCatH2Connections()
 	tunRuntime.Store(nil)
 	if tunHandler != nil {
 		tunHandler.close()
@@ -136,6 +145,7 @@ func handleStartTun(fd int, callback unsafe.Pointer) bool {
 	}
 	tunRuntime.Store(&androidTunRuntime{fd: fd, startedAt: time.Now()})
 	log.Infoln("tun_lifecycle event=start outcome=ready")
+	startFastCatStartupWarm()
 	return true
 }
 
@@ -297,3 +307,6 @@ func updateDns(s *C.char) {
 	dnsList := C.GoString(s)
 	handleUpdateDns(dnsList)
 }
+
+//export fastCatSupportsFCN
+func fastCatSupportsFCN() C.int { return 1 }

@@ -30,6 +30,7 @@ _$ProfileImpl _$$ProfileImplFromJson(Map<String, dynamic> json) =>
       label: json['label'] as String?,
       currentGroupName: json['currentGroupName'] as String?,
       url: json['url'] as String? ?? "",
+      useProvidedUrl: json['useProvidedUrl'] as bool? ?? false,
       lastUpdateDate: json['lastUpdateDate'] == null
           ? null
           : DateTime.parse(json['lastUpdateDate'] as String),
@@ -59,6 +60,7 @@ Map<String, dynamic> _$$ProfileImplToJson(_$ProfileImpl instance) =>
       'label': instance.label,
       'currentGroupName': instance.currentGroupName,
       'url': instance.url,
+      'useProvidedUrl': instance.useProvidedUrl,
       'lastUpdateDate': instance.lastUpdateDate?.toIso8601String(),
       'autoUpdateDuration': instance.autoUpdateDuration.inMicroseconds,
       'subscriptionInfo': instance.subscriptionInfo,

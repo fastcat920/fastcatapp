@@ -1,3 +1,4 @@
+import 'package:fl_clash/security/local_test_profile_scope.dart';
 import 'dart:async';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -19,7 +20,11 @@ class ProfileImportNotifier extends StateNotifier<ImportState> {
   ProfileImportNotifier(this._ref) : super(const ImportState());
 
   Future<bool> importSubscription(String url,
-      {bool forceRefresh = false}) async {
+      {bool forceRefresh = false, bool backgroundAccountSync = false}) async {
+    if (isLocalFastCatProfile(_ref.read(currentProfileIdProvider))) {
+      _logger.info('保留当前本地测试配置，不用订阅刷新替换');
+      return false;
+    }
     if (_cancellation != null) return false;
     final generation = ++_generation;
     _logger.info(
@@ -39,6 +44,7 @@ class ProfileImportNotifier extends StateNotifier<ImportState> {
 
       final result = await importService.importSubscription(
         url,
+        backgroundAccountSync: backgroundAccountSync,
         onProgress: (status, progress, message) {
           if (generation != _generation) return;
           state = state.copyWith(

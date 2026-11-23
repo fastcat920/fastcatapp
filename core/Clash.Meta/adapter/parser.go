@@ -27,6 +27,12 @@ func ParseProxy(mapping map[string]any, options ...ProxyOption) (C.Proxy, error)
 		err   error
 	)
 	switch proxyType {
+	case "fcn":
+		option := &outbound.FCNOption{BasicOption: basicOption}
+		err = decoder.Decode(mapping, option)
+		if err == nil {
+			proxy, err = outbound.NewFCN(*option)
+		}
 	case "ss":
 		ssOption := &outbound.ShadowSocksOption{BasicOption: basicOption}
 		err = decoder.Decode(mapping, ssOption)
@@ -48,6 +54,26 @@ func ParseProxy(mapping map[string]any, options ...ProxyOption) (C.Proxy, error)
 			break
 		}
 		proxy, err = outbound.NewSocks5(*socksOption)
+	case "fastcat-auto", "fastcat-auto-ech":
+		option := &outbound.FastCatAutoOption{FastCatHTTPSOption: outbound.FastCatHTTPSOption{BasicOption: basicOption}}
+		err = decoder.Decode(mapping, option)
+		if err == nil && proxyType == "fastcat-auto-ech" && (option.EntryDoH == "" || option.EntryDoHIP == "") {
+			err = fmt.Errorf("fastcat-auto-ech requires entry-doh and entry-doh-ip")
+		}
+		if err == nil {
+			proxy, err = outbound.NewFastCatAuto(*option)
+		}
+	case "fastcat-https", "fastcat-h2":
+		option := &outbound.FastCatHTTPSOption{BasicOption: basicOption}
+		err = decoder.Decode(mapping, option)
+		if err != nil {
+			break
+		}
+		if proxyType == "fastcat-h2" {
+			proxy, err = outbound.NewFastCatH2(*option)
+		} else {
+			proxy, err = outbound.NewFastCatHTTPS(*option)
+		}
 	case "http":
 		httpOption := &outbound.HttpOption{BasicOption: basicOption}
 		err = decoder.Decode(mapping, httpOption)

@@ -13,6 +13,7 @@ import (
 	"sync/atomic"
 	"syscall"
 
+	"github.com/metacubex/mihomo/adapter/outbound"
 	"github.com/metacubex/mihomo/component/dialer"
 	"github.com/metacubex/mihomo/component/resolver"
 )
@@ -27,6 +28,10 @@ var appleUpstreamHook sync.Once
 func ClashCore_set_upstream_interface(index C.uint) {
 	appleUpstreamHook.Do(func() { dialer.DefaultSocketHook = bindAppleUpstreamSocket })
 	previous := appleUpstreamIndex.Swap(uint32(index))
+	if previous != uint32(index) {
+		applePhysicalPathGeneration.Add(1)
+		outbound.ResetFastCatH2Connections()
+	}
 	if previous != 0 && previous != uint32(index) {
 		resolver.ResetConnection()
 		handleCloseConnections()

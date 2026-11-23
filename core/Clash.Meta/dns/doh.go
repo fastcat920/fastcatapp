@@ -36,9 +36,9 @@ const (
 	// connections in HTTP transport.
 	transportDefaultIdleConnTimeout = 5 * time.Minute
 
-	dialTimeout        = 10 * time.Second
+	dialTimeout = 10 * time.Second
 
-	maxElapsedTime  = time.Second * 30
+	maxElapsedTime = time.Second * 30
 )
 
 var DefaultHTTPVersions = []C.HTTPVersion{C.HTTPVersion11, C.HTTPVersion2}
@@ -138,20 +138,13 @@ func (doh *dnsOverHTTPS) ExchangeContext(ctx context.Context, m *D.Msg) (msg *D.
 	// is necessary to make HTTP client usable.  We need to make 2 attempts in
 	// the case when the connection was closed (due to inactivity for example)
 	// AND the server refuses to open a 0-RTT connection.
-	for i := 0; isCached && doh.shouldRetry(err) && i < 2; i++ {
-		client, err = doh.resetClient(ctx, err)
+	for i := 0; isCached && ctx.Err() == nil && doh.shouldRetry(err) && i < 2; i++ {
+		client, err = doh.resetClient(ctx, client, err)
 		if err != nil {
 			return nil, fmt.Errorf("failed to reset http client: %w", err)
 		}
 
 		msg, err = doh.exchangeHTTPS(ctx, client, m)
-	}
-
-	if err != nil && !errors.Is(err, context.Canceled) && !errors.Is(err, context.DeadlineExceeded) {
-		// If the request failed anyway, make sure we don't use this client.
-		_, resErr := doh.resetClient(ctx, err)
-
-		return nil, fmt.Errorf("%w (resErr:%v)", err, resErr)
 	}
 
 	return msg, err
@@ -289,9 +282,15 @@ func (doh *dnsOverHTTPS) shouldRetry(err error) (ok bool) {
 // resetClient triggers re-creation of the *http.Client that is used by this
 // upstream.  This method accepts the error that caused resetting client as
 // depending on the error we may also reset the QUIC config.
-func (doh *dnsOverHTTPS) resetClient(ctx context.Context, resetErr error) (client *http.Client, err error) {
+func (doh *dnsOverHTTPS) resetClient(ctx context.Context, failed *http.Client, resetErr error) (client *http.Client, err error) {
 	doh.clientMu.Lock()
 	defer doh.clientMu.Unlock()
+
+	// A concurrent query may already have replaced the failed client.
+	// Keep its healthy pool instead of closing its active connections.
+	if doh.client != nil && doh.client != failed {
+		return doh.client, nil
+	}
 
 	if errors.Is(resetErr, quic.Err0RTTRejected) {
 		// Reset the TokenStore only if 0-RTT was rejected.

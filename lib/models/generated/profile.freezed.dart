@@ -232,6 +232,7 @@ mixin _$Profile {
   String? get label => throw _privateConstructorUsedError;
   String? get currentGroupName => throw _privateConstructorUsedError;
   String get url => throw _privateConstructorUsedError;
+  bool get useProvidedUrl => throw _privateConstructorUsedError;
   DateTime? get lastUpdateDate => throw _privateConstructorUsedError;
   Duration get autoUpdateDuration => throw _privateConstructorUsedError;
   SubscriptionInfo? get subscriptionInfo => throw _privateConstructorUsedError;
@@ -261,6 +262,7 @@ abstract class $ProfileCopyWith<$Res> {
       String? label,
       String? currentGroupName,
       String url,
+      bool useProvidedUrl,
       DateTime? lastUpdateDate,
       Duration autoUpdateDuration,
       SubscriptionInfo? subscriptionInfo,
@@ -293,6 +295,7 @@ class _$ProfileCopyWithImpl<$Res, $Val extends Profile>
     Object? label = freezed,
     Object? currentGroupName = freezed,
     Object? url = null,
+    Object? useProvidedUrl = null,
     Object? lastUpdateDate = freezed,
     Object? autoUpdateDuration = null,
     Object? subscriptionInfo = freezed,
@@ -319,6 +322,10 @@ class _$ProfileCopyWithImpl<$Res, $Val extends Profile>
           ? _value.url
           : url // ignore: cast_nullable_to_non_nullable
               as String,
+      useProvidedUrl: null == useProvidedUrl
+          ? _value.useProvidedUrl
+          : useProvidedUrl // ignore: cast_nullable_to_non_nullable
+              as bool,
       lastUpdateDate: freezed == lastUpdateDate
           ? _value.lastUpdateDate
           : lastUpdateDate // ignore: cast_nullable_to_non_nullable
@@ -391,6 +398,7 @@ abstract class _$$ProfileImplCopyWith<$Res> implements $ProfileCopyWith<$Res> {
       String? label,
       String? currentGroupName,
       String url,
+      bool useProvidedUrl,
       DateTime? lastUpdateDate,
       Duration autoUpdateDuration,
       SubscriptionInfo? subscriptionInfo,
@@ -423,6 +431,7 @@ class __$$ProfileImplCopyWithImpl<$Res>
     Object? label = freezed,
     Object? currentGroupName = freezed,
     Object? url = null,
+    Object? useProvidedUrl = null,
     Object? lastUpdateDate = freezed,
     Object? autoUpdateDuration = null,
     Object? subscriptionInfo = freezed,
@@ -449,6 +458,10 @@ class __$$ProfileImplCopyWithImpl<$Res>
           ? _value.url
           : url // ignore: cast_nullable_to_non_nullable
               as String,
+      useProvidedUrl: null == useProvidedUrl
+          ? _value.useProvidedUrl
+          : useProvidedUrl // ignore: cast_nullable_to_non_nullable
+              as bool,
       lastUpdateDate: freezed == lastUpdateDate
           ? _value.lastUpdateDate
           : lastUpdateDate // ignore: cast_nullable_to_non_nullable
@@ -493,6 +506,7 @@ class _$ProfileImpl implements _Profile {
       this.label,
       this.currentGroupName,
       this.url = "",
+      this.useProvidedUrl = false,
       this.lastUpdateDate,
       required this.autoUpdateDuration,
       this.subscriptionInfo,
@@ -517,6 +531,9 @@ class _$ProfileImpl implements _Profile {
   @override
   @JsonKey()
   final String url;
+  @override
+  @JsonKey()
+  final bool useProvidedUrl;
   @override
   final DateTime? lastUpdateDate;
   @override
@@ -553,7 +570,7 @@ class _$ProfileImpl implements _Profile {
 
   @override
   String toString() {
-    return 'Profile(id: $id, label: $label, currentGroupName: $currentGroupName, url: $url, lastUpdateDate: $lastUpdateDate, autoUpdateDuration: $autoUpdateDuration, subscriptionInfo: $subscriptionInfo, autoUpdate: $autoUpdate, selectedMap: $selectedMap, unfoldSet: $unfoldSet, overrideData: $overrideData, isUpdating: $isUpdating)';
+    return 'Profile(id: $id, label: $label, currentGroupName: $currentGroupName, url: $url, useProvidedUrl: $useProvidedUrl, lastUpdateDate: $lastUpdateDate, autoUpdateDuration: $autoUpdateDuration, subscriptionInfo: $subscriptionInfo, autoUpdate: $autoUpdate, selectedMap: $selectedMap, unfoldSet: $unfoldSet, overrideData: $overrideData, isUpdating: $isUpdating)';
   }
 
   @override
@@ -566,6 +583,8 @@ class _$ProfileImpl implements _Profile {
             (identical(other.currentGroupName, currentGroupName) ||
                 other.currentGroupName == currentGroupName) &&
             (identical(other.url, url) || other.url == url) &&
+            (identical(other.useProvidedUrl, useProvidedUrl) ||
+                other.useProvidedUrl == useProvidedUrl) &&
             (identical(other.lastUpdateDate, lastUpdateDate) ||
                 other.lastUpdateDate == lastUpdateDate) &&
             (identical(other.autoUpdateDuration, autoUpdateDuration) ||
@@ -592,6 +611,7 @@ class _$ProfileImpl implements _Profile {
       label,
       currentGroupName,
       url,
+      useProvidedUrl,
       lastUpdateDate,
       autoUpdateDuration,
       subscriptionInfo,
@@ -623,6 +643,7 @@ abstract class _Profile implements Profile {
       final String? label,
       final String? currentGroupName,
       final String url,
+      final bool useProvidedUrl,
       final DateTime? lastUpdateDate,
       required final Duration autoUpdateDuration,
       final SubscriptionInfo? subscriptionInfo,
@@ -643,6 +664,8 @@ abstract class _Profile implements Profile {
   String? get currentGroupName;
   @override
   String get url;
+  @override
+  bool get useProvidedUrl;
   @override
   DateTime? get lastUpdateDate;
   @override

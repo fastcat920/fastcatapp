@@ -1,6 +1,6 @@
 module github.com/metacubex/mihomo
 
-go 1.20
+go 1.26.2
 
 require (
 	github.com/bahlo/generic-list-go v0.2.0
@@ -149,3 +149,7 @@ require (
 
 // for https://github.com/golang/protobuf/issues/1704
 replace google.golang.org/protobuf => github.com/metacubex/protobuf-go v0.0.0-20260306035419-7ceee0674686
+
+require github.com/fastcat920/fcn v0.0.0
+
+replace github.com/fastcat920/fcn => ./transport/fcn

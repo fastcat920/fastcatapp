@@ -1,3 +1,4 @@
+import 'package:fl_clash/common/common.dart' show system;
 import 'package:fl_clash/xboard/features/subscription/pages/xboard_home_page.dart';
 import 'package:fl_clash/xboard/features/subscription/pages/subscription_page.dart';
 import 'package:fl_clash/xboard/features/payment/pages/plans.dart';
@@ -24,7 +25,7 @@ import 'shell_layout.dart';
 ///   Branch 1: /plans   — 套餐（桌面 idx 1，移动 idx 1），子路由 /plans/coupons
 ///   Branch 2: /invite  — 邀请（idx 2）
 ///   Branch 3: /mine    — 我的（idx 3），子路由 /mine/gift-card
-///   Branch 4: /logs    — 日志（logCapture 开启时可见，idx 4）
+///   Branch 4: /logs    — 日志旧路由，仅手机和桌面可用
 
 final List<RouteBase> routes = [
   // StatefulShellRoute - 包含导航栏的主框架，保持各分支状态
@@ -145,12 +146,13 @@ final List<RouteBase> routes = [
         ],
       ),
 
-      // Branch 4: 日志（logCapture 开启时在导航栏可见）
+      // Branch 4: 日志旧路由，入口现位于工具设置。
       StatefulShellBranch(
         routes: [
           GoRoute(
             path: '/logs',
             name: 'logs',
+            redirect: (context, state) => system.isTV ? '/' : null,
             pageBuilder: (context, state) => const NoTransitionPage(
               child: FastCatLogsPage(),
             ),

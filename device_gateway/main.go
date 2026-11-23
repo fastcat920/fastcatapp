@@ -45,6 +45,7 @@ const (
 )
 
 type Config struct {
+	DeviceGrantKey           string
 	ListenAddr               string
 	BusinessBaseURLs         []string
 	PublicBaseURL            string
@@ -755,6 +756,7 @@ func loadConfig(logger *log.Logger) (Config, error) {
 	}
 
 	return Config{
+		DeviceGrantKey:           env("FASTCAT_DEVICE_GRANT_KEY", ""),
 		ListenAddr:               env("DG_LISTEN_ADDR", ":8787"),
 		BusinessBaseURLs:         baseURLs,
 		PublicBaseURL:            publicBaseURL,
@@ -1058,8 +1060,9 @@ func (s *Server) handleSubscribe(w http.ResponseWriter, r *http.Request) {
 	}
 	copyProxyHeaders(req.Header, r.Header)
 	req.Header.Del("Authorization")
+	setDeviceGrantProof(req, sessionCtx.Device, s.cfg.DeviceGrantKey, time.Now())
 
-	resp, err := s.client.Do(req)
+	resp, err := fetchDeviceSubscription(s.client, req)
 	if err != nil {
 		s.log.Printf("subscription proxy failed: %v", err)
 		writeError(w, http.StatusBadGateway, "SUBSCRIBE_PROXY_FAILED", "Subscription proxy failed", nil)
@@ -3656,7 +3659,7 @@ func copyProxyHeaders(dst, src http.Header) {
 	for name, values := range src {
 		canonical := http.CanonicalHeaderKey(name)
 		switch canonical {
-		case "Host", "Connection", "Content-Length", "Authorization":
+		case "Host", "Connection", "Content-Length", "Authorization", "X-Fastcat-Device-Grant":
 			continue
 		}
 		for _, value := range values {

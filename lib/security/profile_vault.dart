@@ -6,6 +6,8 @@ import 'package:path/path.dart' as p;
 import '../common/path.dart';
 import '../xboard/security/fastcat_subscription_decoder.dart';
 import 'fastcat_local_cache_codec.dart';
+import 'local_auto_profile.dart';
+import 'local_test_profile_scope.dart';
 
 /// Stores profiles as authenticated encrypted envelopes.
 ///
@@ -29,6 +31,14 @@ class ProfileVault {
   }
 
   Future<String> readText(String profileId) async {
+    final text = await _readStored(profileId);
+    if (profileId == fastCatAutoProfileId && text == localAutoProfileMarker) {
+      return resolveLocalAutoProfile(_readStored);
+    }
+    return text;
+  }
+
+  Future<String> _readStored(String profileId) async {
     await migrateLegacy(profileId);
     final currentPath = await appPath.getProfilePath(profileId);
     Object? currentError;
@@ -66,6 +76,20 @@ class ProfileVault {
     FastCatSubscriptionDecoder.decode(envelope);
     await _atomicWrite(
         await appPath.getProfilePath(profileId), envelope.trim());
+  }
+
+  /// Refresh the existing profile ID, preserving server envelopes byte-for-byte.
+  Future<void> copyDownloadedProfile(String sourceId, String targetId) async {
+    if (sourceId == targetId) return;
+    final path = await appPath.getProfilePath(sourceId);
+    final envelope = await File(path).readAsString();
+    if (FastCatLocalCacheCodec.isLocalEnvelope(envelope)) {
+      final yaml = FastCatLocalCacheCodec.decode(envelope,
+          recordId: _profileRecordId(sourceId));
+      await writeText(targetId, yaml);
+    } else {
+      await writeEncryptedEnvelope(targetId, envelope);
+    }
   }
 
   Future<void> delete(String profileId) async {
@@ -135,7 +159,7 @@ class ProfileVault {
     final yaml = await legacy.readAsString();
     if (yaml.trim().isEmpty) return;
     await writeText(profileId, yaml);
-    if (await readText(profileId) != yaml) {
+    if (await _readStored(profileId) != yaml) {
       throw const FormatException('Profile migration verification failed');
     }
     await legacy.delete();
