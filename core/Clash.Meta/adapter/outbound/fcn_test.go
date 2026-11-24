@@ -2,6 +2,7 @@ package outbound
 
 import (
 	"context"
+	"crypto/x509"
 	"encoding/pem"
 	"io"
 	"net"
@@ -19,8 +20,12 @@ import (
 )
 
 func TestFCNAdapterTCPUDP(t *testing.T) {
-	for _, version := range []int{1, 2} {
-		t.Run(strconv.Itoa(version), func(t *testing.T) {
+	for _, spec := range []struct {
+		version int
+		trust   string
+	}{{1, "ca"}, {2, "ca"}, {1, "spki"}, {2, "spki"}} {
+		version := spec.version
+		t.Run(strconv.Itoa(version)+spec.trust, func(t *testing.T) {
 			identity := httptest.NewTLSServer(nil)
 			identity.Close()
 			cert := identity.TLS.Certificates[0]
@@ -52,7 +57,17 @@ func TestFCNAdapterTCPUDP(t *testing.T) {
 					t.Error("FCN listener did not stop")
 				}
 			}()
-			proxy, err := NewFCN(FCNOption{Name: "FCN", Server: "127.0.0.1", Port: socket.LocalAddr().(*net.UDPAddr).Port, SNI: "example.com", UUID: uuid, Version: version, UDP: true, CAFile: ca})
+			rootFile := ca
+			var pins []string
+			if spec.trust == "spki" {
+				leaf, e := x509.ParseCertificate(cert.Certificate[0])
+				if e != nil {
+					t.Fatal(e)
+				}
+				pins = []string{fcn.PublicKeyPin(leaf)}
+				rootFile = ""
+			}
+			proxy, err := NewFCN(FCNOption{Name: "FCN", Server: "127.0.0.1", Port: socket.LocalAddr().(*net.UDPAddr).Port, SNI: "example.com", UUID: uuid, Version: version, UDP: true, CAFile: rootFile, TrustMode: spec.trust, PublicKeyPins: pins})
 			if err != nil {
 				t.Fatal(err)
 			}

@@ -481,4 +481,4 @@ func nextHandle(action *Action, result ActionResult) bool {
 }
 
 //export fastCatSupportsFCN
-func fastCatSupportsFCN() C.int { return 1 }
+func fastCatSupportsFCN() C.int { return 2 }

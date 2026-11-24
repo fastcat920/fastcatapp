@@ -13,6 +13,8 @@ import (
 )
 
 type Config struct {
+	TrustMode        string
+	PublicKeyPins    []string
 	OpenPacket       func(context.Context, string) (net.PacketConn, net.Addr, error)
 	PrefixRedundancy bool // explicit QUIC kind-2 extension; defaults off
 	// RecoveryAware avoids a recently recovering lane for new streams only.
@@ -47,7 +49,13 @@ type Config struct {
 	PrefixTrace                               bool
 }
 
+// Validate checks transport and server identity settings without opening a socket.
+func (c Config) Validate() error { return c.validate() }
+
 func (c Config) validate() error {
+	if err := c.validateTrust(); err != nil {
+		return err
+	}
 	if c.LocalUDPPort != 0 && (c.LocalUDPPort < 1024 || c.LocalUDPPort > 65535 || c.QUICLanes == 2 && c.LocalUDPPort == 65535) {
 		return ErrProtocol
 	}

@@ -36,3 +36,24 @@ func TestFCNSubscriptionProfiles(t *testing.T) {
 		t.Fatal("closed adapter dialed")
 	}
 }
+
+func TestFCNExplicitPinnedSubscription(t *testing.T) {
+	base := map[string]any{"type": "fcn", "name": "pinned", "server": "node.example", "port": 443, "version": 2, "uuid": "1ed909de-848b-41e7-943f-0f2d49b35f3a", "tls-trust": "spki"}
+	if _, err := ParseProxy(base); err == nil {
+		t.Fatal("missing pin accepted")
+	}
+	base["server-public-key-pins"] = []any{"invalid"}
+	if _, err := ParseProxy(base); err == nil {
+		t.Fatal("invalid pin accepted")
+	}
+	base["server-public-key-pins"] = []any{"sha256/AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA="}
+	p, err := ParseProxy(base)
+	if err != nil {
+		t.Fatal(err)
+	}
+	p.Close()
+	base["tls-trust"] = "ca"
+	if _, err := ParseProxy(base); err == nil {
+		t.Fatal("SPKI pin silently ignored under CA policy")
+	}
+}

@@ -309,4 +309,4 @@ func updateDns(s *C.char) {
 }
 
 //export fastCatSupportsFCN
-func fastCatSupportsFCN() C.int { return 1 }
+func fastCatSupportsFCN() C.int { return 2 }

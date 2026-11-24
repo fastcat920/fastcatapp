@@ -13,6 +13,8 @@ import (
 )
 
 type FCNOption struct {
+	TrustMode     string   `proxy:"tls-trust,omitempty"`
+	PublicKeyPins []string `proxy:"server-public-key-pins,omitempty"`
 	BasicOption
 	Name    string `proxy:"name"`
 	Server  string `proxy:"server"`
@@ -44,9 +46,14 @@ func NewFCN(o FCNOption) (*FCN, error) {
 	if err != nil {
 		return nil, err
 	}
+	cfg.TrustMode = o.TrustMode
+	cfg.PublicKeyPins = append([]string(nil), o.PublicKeyPins...)
 	entry := FastCatHTTPSOption{BasicOption: o.BasicOption, Name: o.Name, Server: o.Server, Port: o.Port, CAFile: o.CAFile}
 	cfg.Roots, err = entry.rootCAs()
 	if err != nil {
+		return nil, err
+	}
+	if err := cfg.Validate(); err != nil {
 		return nil, err
 	}
 	typ := C.FCNv1

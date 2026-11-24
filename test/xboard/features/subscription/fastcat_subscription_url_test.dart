@@ -2,6 +2,19 @@ import 'package:fl_clash/xboard/features/subscription/utils/subscription_url_hel
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
+  test('pinned FCN nodes require the new native capability', () {
+    for (final enabled in [false, true]) {
+      final url = Uri.parse(SubscriptionUrlHelper.ensureFastCatFlag(
+        'https://example.com/subscribe?fc_fcn_pin=1', supportsFCN: true,
+        supportsFCNPinning: enabled));
+      expect(url.queryParameters['fc_fcn_pin'], enabled ? '1' : isNull);
+    }
+    final disabled = Uri.parse(SubscriptionUrlHelper.ensureFastCatFlag(
+      'https://example.com/subscribe?fc_fcn_pin=1', supportsFCN: false,
+      supportsFCNPinning: true));
+    expect(disabled.queryParameters.containsKey('fc_fcn_pin'), isFalse);
+  });
+
   test('FCN capability follows the installed core, never the incoming link', () {
     for (final enabled in [false, true]) {
       final url = Uri.parse(SubscriptionUrlHelper.ensureFastCatFlag(

@@ -5,7 +5,6 @@ import (
 	"crypto/tls"
 	"errors"
 	quic "github.com/metacubex/quic-go"
-	qtls "github.com/metacubex/tls"
 	"golang.org/x/net/http2"
 	"io"
 	"net"
@@ -95,6 +94,7 @@ func NewClient(parent context.Context, c Config, carrier string) (*Client, error
 		return nil, ErrProtocol
 	}
 	c.Key = append([]byte(nil), c.Key...)
+	c.PublicKeyPins = append([]string(nil), c.PublicKeyPins...)
 	ctx, cancel := context.WithCancel(parent)
 	cl := &Client{cfg: c, carrier: carrier, ctx: ctx, cancel: cancel, all: make(map[*physical]bool)}
 	if c.QUICLanes == 2 {
@@ -313,7 +313,7 @@ func (c *Client) connect(parent context.Context) (*physical, error) {
 			attachQUICTrace(qc, stats)
 		}
 		stageStart = time.Now()
-		p.q, e = quic.Dial(ctx, p.pc, addr, &qtls.Config{ServerName: c.cfg.ServerName, RootCAs: c.cfg.Roots, MinVersion: qtls.VersionTLS13, NextProtos: []string{ALPN}}, qc)
+		p.q, e = quic.Dial(ctx, p.pc, addr, c.cfg.quicTLS(), qc)
 		if c.cfg.Trace != nil {
 			c.cfg.Trace(stats.snapshot("quic_handshake", stageStart, e))
 		}
@@ -336,7 +336,7 @@ func (c *Client) connect(parent context.Context) (*physical, error) {
 		if e2 != nil {
 			return nil, e2
 		}
-		p.tcp = tls.Client(raw, &tls.Config{MinVersion: tls.VersionTLS13, ServerName: c.cfg.ServerName, RootCAs: c.cfg.Roots, NextProtos: []string{"h2"}})
+		p.tcp = tls.Client(raw, c.cfg.httpTLS())
 		stageStart = time.Now()
 		e = p.tcp.HandshakeContext(ctx)
 		emitStage(c.cfg.Trace, c.carrier, "tls_handshake", stageStart, e)

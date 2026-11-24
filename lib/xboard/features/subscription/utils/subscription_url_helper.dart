@@ -98,7 +98,15 @@ class SubscriptionUrlHelper {
         'fastCatSupportsV2')();
   }
 
-  static String ensureFastCatFlag(String url, {bool? supportsAuto, bool? supportsV2, bool? supportsTransportModes, bool? supportsFCN}) {
+  static bool _supportsFCNPinning() {
+    if (!_hasCoreSymbol('fastCatSupportsFCN')) return false;
+    final core = Platform.isAndroid
+        ? DynamicLibrary.open('libclash.so') : DynamicLibrary.process();
+    return core.lookupFunction<Int32 Function(), int Function()>(
+        'fastCatSupportsFCN')() >= 2;
+  }
+
+  static String ensureFastCatFlag(String url, {bool? supportsAuto, bool? supportsV2, bool? supportsTransportModes, bool? supportsFCN, bool? supportsFCNPinning}) {
     const flag = String.fromEnvironment(
       'FASTCAT_SUBSCRIPTION_FLAG',
       defaultValue: 'fastcat-v1',
@@ -110,8 +118,12 @@ class SubscriptionUrlHelper {
       query.remove('fc_v2');
       query.remove('fc_transport');
       query.remove('fc_fcn');
+      query.remove('fc_fcn_pin');
       if (supportsFCN ?? _hasCoreSymbol('fastCatSupportsFCN')) {
         query['fc_fcn'] = '1';
+        if (supportsFCNPinning ?? _supportsFCNPinning()) {
+          query['fc_fcn_pin'] = '1';
+        }
       }
       query['flag'] = flag;
       if (supportsAuto ?? _supportsAuto) {
