@@ -137,7 +137,7 @@ func handleStartTun(fd int, callback unsafe.Pointer) bool {
 		runLock.Unlock()
 		listener, err := t.Start(fd, device, stack)
 		if err != nil || listener == nil {
-			log.Errorln("tun_lifecycle event=start outcome=failed")
+			log.Errorln("tun_lifecycle event=start outcome=failed stack=%s error=%v", stack.String(), err)
 			stopTunLocked()
 			return false
 		}
