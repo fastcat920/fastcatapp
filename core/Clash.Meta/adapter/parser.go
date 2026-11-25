@@ -27,6 +27,12 @@ func ParseProxy(mapping map[string]any, options ...ProxyOption) (C.Proxy, error)
 		err   error
 	)
 	switch proxyType {
+	case "fcn-v3":
+		option := &outbound.FCNV3Option{BasicOption: basicOption}
+		err = decoder.Decode(mapping, option)
+		if err == nil {
+			proxy, err = outbound.NewFCNV3(*option)
+		}
 	case "fcn":
 		option := &outbound.FCNOption{BasicOption: basicOption}
 		err = decoder.Decode(mapping, option)

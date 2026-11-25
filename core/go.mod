@@ -139,6 +139,7 @@ require (
 
 require (
 	github.com/fastcat920/fcn v0.0.0
+	github.com/fastcat920/fcnv3 v0.0.0
 	github.com/metacubex/http v0.1.7
 	github.com/metacubex/quic-go v0.61.1-0.20260727080200-2548683b76f4
 	github.com/metacubex/sing-tun v0.4.24
@@ -151,3 +152,5 @@ require (
 )
 
 replace github.com/fastcat920/fcn => ./Clash.Meta/transport/fcn
+
+replace github.com/fastcat920/fcnv3 => ./fcnv3

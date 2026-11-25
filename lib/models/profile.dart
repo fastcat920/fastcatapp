@@ -199,7 +199,7 @@ extension ProfileExtension on Profile {
     }
 
     final response = await request.getFileResponseForUrl(
-        SubscriptionUrlHelper.ensureFastCatFlag(updateUrl));
+        await SubscriptionUrlHelper.ensureFastCatFlagForCore(updateUrl));
     final disposition = response.headers.value("content-disposition");
     final userinfo = response.headers.value('subscription-userinfo');
     final encryptedEnvelope = utf8.decode(response.data);

@@ -111,7 +111,7 @@ func (h *fastCatH3) ListenPacketContext(ctx context.Context, m *C.Metadata) (C.P
 	}
 	// Later destinations on this NAT socket require their own CONNECT-UDP.
 	// Install the same policy before the socket is exposed to any writers.
-	pc.open = func(ctx context.Context, target string) (net.Conn, error) {
+	pc.open = func(ctx context.Context, target string) (fastCatPacketAssociation, error) {
 		return openV2UDP(ctx, h.owner, path, func(attempt context.Context) (net.Conn, error) { return c.DialUDP(attempt, target) })
 	}
 	return NewPacketConn(pc, h), nil
