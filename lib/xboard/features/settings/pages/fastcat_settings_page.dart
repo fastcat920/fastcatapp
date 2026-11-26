@@ -1,4 +1,3 @@
-import 'fastcat_test_node_page.dart';
 import 'package:fl_clash/xboard/features/shared/widgets/tv_page_frame.dart';
 import 'package:fl_clash/widgets/tv_back_button.dart';
 import 'dart:io';
@@ -144,16 +143,6 @@ class FastCatSettingsPage extends ConsumerWidget {
                   _header(context, l10n.network),
                   _SettingsCard(
                     children: [
-                      if (Platform.isIOS || Platform.isAndroid)
-                        _navigationTile(context,
-                            icon: Icons.science_outlined,
-                            title:
-                                Localizations.localeOf(context).languageCode ==
-                                        'zh'
-                                    ? '新协议测试节点'
-                                    : 'New protocol test node',
-                            onTap: () =>
-                                _open(context, const FastCatTestNodePage())),
                       _navigationTile(
                         context,
                         icon: Icons.dns_outlined,
