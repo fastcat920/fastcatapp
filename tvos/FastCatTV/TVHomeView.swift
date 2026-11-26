@@ -352,10 +352,14 @@ struct TVHomeView: View {
         pauseLatency()
         initialLatencyFinished = false
         initialHomeReady = false
-        guard session.token != nil else { return }
+        guard let owner = session.token else { return }
         routeMode = TVRouteMode(rawValue: savedRouteMode) ?? .rule
         selectedNodeName = savedSelectedNode.isEmpty ? nil : savedSelectedNode
-        syncVPNStatus()
+        let status: String = await withCheckedContinuation { continuation in
+          VPNManager.shared.refreshStatus { continuation.resume(returning: $0) }
+        }
+        guard !Task.isCancelled, session.token == owner else { return }
+        syncVPNStatus(status)
         initialHomeReady = true
         scheduleAutoConnect()
         scheduleInitialLatency()
@@ -711,6 +715,8 @@ struct TVHomeView: View {
         .font(TVFont.medium(14))
         .foregroundStyle(connected ? TVTheme.success : TVTheme.textPrimary)
         .frame(height: tv(40))
+        .opacity(initialHomeReady ? 1 : 0)
+        .accessibilityHidden(!initialHomeReady)
       }
       .padding(.horizontal, tv(24))
       .padding(.vertical, tv(18))
@@ -719,6 +725,9 @@ struct TVHomeView: View {
   }
 
   private func connectButton(size: CGFloat) -> some View {
+    let initializing = !initialHomeReady
+    let showProgress = initializing || isConnecting
+    let visuallyConnected = !initializing && connected
     let middleSize = size * 0.89
     let innerSize = size * 0.75
     // size is already in native points; helpers below convert design units.
@@ -730,12 +739,12 @@ struct TVHomeView: View {
       cornerRadius: size / 2, focus: $connectButtonFocused, action: toggleConnection
     ) { _ in
       ZStack {
-        Circle().fill(connected ? TVTheme.primary.opacity(0.10) : .clear)
-        Circle().fill(connected ? TVTheme.primary.opacity(0.10) : .clear)
+        Circle().fill(visuallyConnected ? TVTheme.primary.opacity(0.10) : .clear)
+        Circle().fill(visuallyConnected ? TVTheme.primary.opacity(0.10) : .clear)
           .frame(width: middleSize, height: middleSize)
         Circle()
           .fill(
-            connected
+            visuallyConnected
               ? TVTheme.primary
               : (prefersDarkTheme
                 ? Color(red: 58 / 255, green: 58 / 255, blue: 58 / 255)
@@ -743,51 +752,63 @@ struct TVHomeView: View {
           )
           .frame(width: innerSize, height: innerSize)
           .shadow(
-            color: connected
+            color: visuallyConnected
               ? TVTheme.primary.opacity(prefersDarkTheme ? 0.36 : 0.30)
               : Color.black.opacity(prefersDarkTheme ? 0.30 : 0.10),
-            radius: connected ? tv(18) : tv(12), y: tv(4))
-        if isConnecting {
-          VStack(spacing: tv(5)) {
-            ProgressView().scaleEffect(0.8).tint(connected ? TVTheme.onPrimary : TVTheme.primary)
-            Text(connectionPhase ?? tvText("正在连接", "Connecting", language: language)).font(
-              TVFont.regular(labelSize))
-          }
-          .foregroundStyle(connected ? TVTheme.onPrimary : TVTheme.primary)
-        } else {
-          VStack(spacing: tv(min(max(designSize * 0.03, 2), 4))) {
-            MaterialIcon(
-              glyph: .powerSettingsNew, size: iconSize,
-              color: connected
-                ? TVTheme.onPrimary
-                : (prefersDarkTheme
-                  ? TVTheme.primary : Color(red: 69 / 255, green: 90 / 255, blue: 100 / 255)))
-            if connected {
-              TimelineView(.periodic(from: .now, by: 1)) { context in
-                Text(tvConnectionDuration(since: VPNManager.shared.connectedSince, now: context.date))
-                  .font(TVFont.regular(labelSize))
-                  .monospacedDigit()
-                  .lineLimit(1)
-                  .minimumScaleFactor(0.75)
-                  .frame(maxWidth: innerSize * 0.85)
-                  .foregroundStyle(TVTheme.onPrimary)
-              }
-            } else {
-              Text(tvText("点击连接", "Tap to connect", language: language))
-                .font(TVFont.regular(labelSize))
-                .foregroundStyle(
-                  prefersDarkTheme
-                    ? TVTheme.primary : Color(red: 69 / 255, green: 90 / 255, blue: 100 / 255))
+            radius: visuallyConnected ? tv(18) : tv(12), y: tv(4))
+        ZStack {
+          if showProgress {
+            VStack(spacing: tv(5)) {
+              ProgressView().scaleEffect(0.8).tint(visuallyConnected ? TVTheme.onPrimary : TVTheme.primary)
+              Text(
+                initializing
+                  ? tvText("初始化中", "Initializing", language: language)
+                  : (connectionPhase ?? tvText("正在连接", "Connecting", language: language))
+              )
+              .font(TVFont.regular(labelSize))
+              .lineLimit(1)
             }
+            .foregroundStyle(visuallyConnected ? TVTheme.onPrimary : TVTheme.primary)
+            .transition(.opacity)
+          } else {
+            VStack(spacing: tv(min(max(designSize * 0.03, 2), 4))) {
+              MaterialIcon(
+                glyph: .powerSettingsNew, size: iconSize,
+                color: connected
+                  ? TVTheme.onPrimary
+                  : (prefersDarkTheme
+                    ? TVTheme.primary : Color(red: 69 / 255, green: 90 / 255, blue: 100 / 255)))
+              if connected {
+                TimelineView(.periodic(from: .now, by: 1)) { context in
+                  Text(tvConnectionDuration(since: VPNManager.shared.connectedSince, now: context.date))
+                    .font(TVFont.regular(labelSize))
+                    .monospacedDigit()
+                    .lineLimit(1)
+                    .minimumScaleFactor(0.75)
+                    .frame(maxWidth: innerSize * 0.85)
+                    .foregroundStyle(TVTheme.onPrimary)
+                }
+              } else {
+                Text(tvText("点击连接", "Tap to connect", language: language))
+                  .font(TVFont.regular(labelSize))
+                  .foregroundStyle(
+                    prefersDarkTheme
+                      ? TVTheme.primary : Color(red: 69 / 255, green: 90 / 255, blue: 100 / 255))
+              }
+            }
+            .transition(.opacity)
           }
         }
+        .animation(.easeOut(duration: 0.16), value: showProgress)
       }
       .frame(width: size, height: size)
     }
     .buttonBorderShape(.circle)
     // Keep remote focus while busy; toggleConnection rejects repeat activation.
     .accessibilityLabel(
-      connected
+      initializing
+        ? tvText("初始化中", "Initializing", language: language)
+        : connected
         ? tvText("断开 VPN", "Disconnect VPN", language: language)
         : tvText("连接 VPN", "Connect VPN", language: language))
   }
@@ -1787,9 +1808,9 @@ struct TVHomeView: View {
   }
 
   private func toggleConnection() {
+    guard initialHomeReady, !isConnecting, !isApplyingRouting, !isRefreshingNodes else { return }
     didCheckAutoConnect = true
     autoConnectTask?.cancel()
-    guard !isConnecting, !isApplyingRouting, !isRefreshingNodes else { return }
     errorMessage = nil
     if simulatorPreview {
       errorMessage = "模拟器不支持 VPN，请使用 Apple TV 真机测试"

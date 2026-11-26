@@ -43,11 +43,17 @@ class _XBoardConnectButtonState extends ConsumerState<XBoardConnectButton>
   int _autoConnectGeneration = 0;
   late AnimationController _controller;
   late Animation<double> _animation;
+  late bool _wasInitializing;
   bool isStart = false;
   bool _isCheckingSubscription = false;
   bool _isSwitching = false;
   String? _subscriptionCheckLabel;
   late final FocusNode _tvFocusNode;
+
+  bool get _isInitializing => !globalState.coreStatusReadyNotifier.value;
+
+  bool get _startupFailed =>
+      !_isInitializing && !isStart && !globalState.appState.isInit;
 
   bool get _showProgress => showConnectionProgress(
         ready: globalState.coreStatusReadyNotifier.value,
@@ -73,6 +79,7 @@ class _XBoardConnectButtonState extends ConsumerState<XBoardConnectButton>
     _tvFocusNode = FocusNode(debugLabel: 'home-connect');
     TvFocusRestoration.registerDefault(_tvFocusNode);
     isStart = globalState.appState.runTime != null;
+    _wasInitializing = _isInitializing;
     _controller = AnimationController(
       vsync: this,
       value: isStart ? 1 : 0,
@@ -100,7 +107,6 @@ class _XBoardConnectButtonState extends ConsumerState<XBoardConnectButton>
     globalState.isCoreSwitchingNotifier.addListener(_handleCoreSwitching);
     globalState.coreSwitchStatusNotifier.addListener(_handleCoreSwitching);
     globalState.coreStatusReadyNotifier.addListener(_handleCoreSwitching);
-    globalState.coreStatusRecoveringNotifier.addListener(_handleCoreSwitching);
   }
 
   @override
@@ -113,8 +119,6 @@ class _XBoardConnectButtonState extends ConsumerState<XBoardConnectButton>
     globalState.isCoreSwitchingNotifier.removeListener(_handleCoreSwitching);
     globalState.coreSwitchStatusNotifier.removeListener(_handleCoreSwitching);
     globalState.coreStatusReadyNotifier.removeListener(_handleCoreSwitching);
-    globalState.coreStatusRecoveringNotifier
-        .removeListener(_handleCoreSwitching);
     _controller.dispose();
     super.dispose();
   }
@@ -198,7 +202,12 @@ class _XBoardConnectButtonState extends ConsumerState<XBoardConnectButton>
   }
 
   void _handleCoreSwitching() {
-    if (mounted) setState(() {});
+    if (!mounted) return;
+    if (_wasInitializing && !_isInitializing) {
+      _controller.value = isStart ? 1 : 0;
+    }
+    _wasInitializing = _isInitializing;
+    setState(() {});
   }
 
   Future<void> handleSwitchStart() async {
@@ -282,11 +291,7 @@ class _XBoardConnectButtonState extends ConsumerState<XBoardConnectButton>
 
   String _busyLabel(BuildContext context) {
     final l10n = AppLocalizations.of(context);
-    if (!globalState.coreStatusReadyNotifier.value) {
-      return globalState.coreStatusRecoveringNotifier.value
-          ? l10n.xboardServiceRecovering
-          : l10n.xboardInitializing;
-    }
+    if (_isInitializing) return l10n.xboardInitializing;
     if (_isCheckingSubscription) {
       return _subscriptionCheckLabel ?? l10n.xboardCheckingSubscription;
     }
@@ -396,7 +401,9 @@ class _XBoardConnectButtonState extends ConsumerState<XBoardConnectButton>
   }
 
   updateController() {
+    if (_isInitializing) return;
     WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted || _isInitializing) return;
       if (isStart) {
         _controller.forward();
       } else {
@@ -433,53 +440,71 @@ class _XBoardConnectButtonState extends ConsumerState<XBoardConnectButton>
       child: AnimatedBuilder(
         animation: _controller.view,
         builder: (_, child) {
-          final measuredTextWidth = globalState.measure
-                  .computeTextSize(
-                    Text(
-                      _showProgress ? _busyLabel(context) : '999:59:59',
-                      style: context.textTheme.titleMedium?.toSoftBold,
-                    ),
-                  )
-                  .width +
-              16;
+          final showProgress = _showProgress;
+          final showStartupFailure = _startupFailed && !showProgress;
+          final fixedWidth = _isInitializing || showStartupFailure;
+          final measuredTextWidth = fixedWidth
+              ? 116.0
+              : globalState.measure
+                      .computeTextSize(
+                        Text(
+                          showProgress ? _busyLabel(context) : '999:59:59',
+                          style: context.textTheme.titleMedium?.toSoftBold,
+                        ),
+                      )
+                      .width +
+                  16;
           final labelWidth = measuredTextWidth.clamp(0.0, 116.0);
           return FloatingActionButton.extended(
             clipBehavior: Clip.antiAlias,
             materialTapTargetSize: MaterialTapTargetSize.padded,
             heroTag: 'xboard_connect_button',
             onPressed: _isBusy ? null : handleSwitchStart,
-            icon: _showProgress
-                ? const SizedBox(
-                    width: 20,
-                    height: 20,
-                    child: CircularProgressIndicator(
-                      strokeWidth: 2.5,
-                      color: Colors.white,
-                    ),
-                  )
-                : AnimatedIcon(
-                    icon: AnimatedIcons.play_pause,
-                    progress: _animation,
-                  ),
+            icon: AnimatedSwitcher(
+              duration: const Duration(milliseconds: 160),
+              child: showProgress
+                  ? const SizedBox.square(
+                      dimension: 20,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2.5,
+                        color: Colors.white,
+                      ),
+                    )
+                  : showStartupFailure
+                      ? const Icon(Icons.error_outline)
+                      : AnimatedIcon(
+                          icon: AnimatedIcons.play_pause,
+                          progress: _animation,
+                        ),
+            ),
             label: SizedBox(
-              width: labelWidth * (_showProgress ? 1 : _animation.value),
+              width: labelWidth *
+                  (showProgress || fixedWidth ? 1 : _animation.value),
               child: child!,
             ),
           );
         },
         child: Consumer(
           builder: (_, ref, __) {
-            final runTime = ref.watch(runTimeProvider);
             final style =
                 Theme.of(context).textTheme.titleMedium?.toSoftBold.copyWith(
                       color: Colors.white,
                     );
+            if (_isInitializing || (_startupFailed && !_showProgress)) {
+              final l10n = AppLocalizations.of(context);
+              return _StaticButtonLabel(
+                text: _isInitializing
+                    ? l10n.xboardInitializing
+                    : l10n.xboardInitFailed,
+                style: style,
+              );
+            }
             if (_showProgress) {
               return _LeftScrollingText(
                   text: _busyLabel(context), style: style);
             }
             return _ConnectionTimerLabel(
-              runTime: runTime,
+              runTime: ref.watch(runTimeProvider),
               style: style,
             );
           },
@@ -489,6 +514,10 @@ class _XBoardConnectButtonState extends ConsumerState<XBoardConnectButton>
   }
 
   Widget _buildInlineButton(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+    final visuallyConnected = isStart && !_isInitializing;
+    final showProgress = _showProgress;
+    final showStartupFailure = _startupFailed && !showProgress;
     final colorScheme = Theme.of(context).colorScheme;
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
@@ -496,10 +525,11 @@ class _XBoardConnectButtonState extends ConsumerState<XBoardConnectButton>
         isDark ? const Color(0xFF3A3A3A) : const Color(0xFFF0F4F8);
     final Color onBg = colorScheme.primary;
 
-    final Color glowColor = isStart ? colorScheme.primary : Colors.transparent;
+    final Color glowColor =
+        visuallyConnected ? colorScheme.primary : Colors.transparent;
 
     const IconData btnIcon = Icons.power_settings_new;
-    final Color iconColor = isStart
+    final Color iconColor = visuallyConnected
         ? colorScheme.onPrimary
         : (isDark ? colorScheme.primary : const Color(0xFF455A64));
 
@@ -513,6 +543,10 @@ class _XBoardConnectButtonState extends ConsumerState<XBoardConnectButton>
         final double middleSize = outerSize * 0.89;
         final double btnSize = outerSize * 0.75;
         final double iconSize = outerSize * 0.34;
+        final labelStyle = Theme.of(context).textTheme.labelSmall?.copyWith(
+              color: iconColor,
+              fontSize: (outerSize * 0.07).clamp(9.0, 12.0),
+            );
 
         return Center(
           child: RepaintBoundary(
@@ -541,7 +575,7 @@ class _XBoardConnectButtonState extends ConsumerState<XBoardConnectButton>
                             height: outerSize,
                             decoration: BoxDecoration(
                               shape: BoxShape.circle,
-                              color: isStart
+                              color: visuallyConnected
                                   ? glowColor.withValues(
                                       alpha: isDark ? 0.12 : 0.10)
                                   : Colors.transparent,
@@ -553,7 +587,7 @@ class _XBoardConnectButtonState extends ConsumerState<XBoardConnectButton>
                                 height: middleSize,
                                 decoration: BoxDecoration(
                                   shape: BoxShape.circle,
-                                  color: isStart
+                                  color: visuallyConnected
                                       ? glowColor.withValues(
                                           alpha: isDark ? 0.12 : 0.10)
                                       : Colors.transparent,
@@ -565,16 +599,18 @@ class _XBoardConnectButtonState extends ConsumerState<XBoardConnectButton>
                                     height: btnSize,
                                     decoration: BoxDecoration(
                                       shape: BoxShape.circle,
-                                      color: isStart ? onBg : offBg,
+                                      color: visuallyConnected ? onBg : offBg,
                                       boxShadow: [
                                         BoxShadow(
-                                          color: isStart
+                                          color: visuallyConnected
                                               ? glowColor.withValues(
                                                   alpha: isDark ? 0.36 : 0.30)
                                               : Colors.black.withValues(
                                                   alpha: isDark ? 0.30 : 0.10),
-                                          blurRadius: isStart ? 18 : 12,
-                                          spreadRadius: isStart ? 1 : 0,
+                                          blurRadius:
+                                              visuallyConnected ? 18 : 12,
+                                          spreadRadius:
+                                              visuallyConnected ? 1 : 0,
                                           offset: const Offset(0, 4),
                                         ),
                                       ],
@@ -582,7 +618,7 @@ class _XBoardConnectButtonState extends ConsumerState<XBoardConnectButton>
                                     child: AnimatedSwitcher(
                                       duration:
                                           const Duration(milliseconds: 250),
-                                      child: _showProgress
+                                      child: showProgress
                                           ? Column(
                                               key: const ValueKey('switching'),
                                               mainAxisAlignment:
@@ -606,28 +642,32 @@ class _XBoardConnectButtonState extends ConsumerState<XBoardConnectButton>
                                                 Padding(
                                                   padding: const EdgeInsets
                                                       .symmetric(horizontal: 8),
-                                                  child: _LeftScrollingText(
-                                                    text: _busyLabel(context),
-                                                    style: Theme.of(context)
-                                                        .textTheme
-                                                        .labelSmall
-                                                        ?.copyWith(
-                                                          color: iconColor,
-                                                          fontSize: (outerSize *
-                                                                  0.07)
-                                                              .clamp(9.0, 12.0),
+                                                  child: _isInitializing
+                                                      ? _StaticButtonLabel(
+                                                          text: l10n
+                                                              .xboardInitializing,
+                                                          style: labelStyle,
+                                                        )
+                                                      : _LeftScrollingText(
+                                                          text: _busyLabel(
+                                                              context),
+                                                          style: labelStyle,
                                                         ),
-                                                  ),
                                                 ),
                                               ],
                                             )
                                           : Column(
-                                              key: ValueKey(isStart),
+                                              key: ValueKey((
+                                                isStart,
+                                                showStartupFailure
+                                              )),
                                               mainAxisAlignment:
                                                   MainAxisAlignment.center,
                                               children: [
                                                 Icon(
-                                                  btnIcon,
+                                                  showStartupFailure
+                                                      ? Icons.error_outline
+                                                      : btnIcon,
                                                   size: iconSize * 0.75,
                                                   color: iconColor,
                                                 ),
@@ -636,23 +676,20 @@ class _XBoardConnectButtonState extends ConsumerState<XBoardConnectButton>
                                                         .clamp(2.0, 4.0)),
                                                 Consumer(
                                                   builder: (_, ref, __) {
-                                                    final style = Theme.of(
-                                                            context)
-                                                        .textTheme
-                                                        .labelSmall
-                                                        ?.copyWith(
-                                                          color: iconColor,
-                                                          fontSize: (outerSize *
-                                                                  0.07)
-                                                              .clamp(9.0, 12.0),
-                                                        );
+                                                    if (showStartupFailure) {
+                                                      return _StaticButtonLabel(
+                                                        text: l10n
+                                                            .xboardInitFailed,
+                                                        style: labelStyle,
+                                                      );
+                                                    }
                                                     if (!isStart) {
                                                       return _LeftScrollingText(
                                                         text:
                                                             AppLocalizations.of(
                                                                     context)
                                                                 .tapToConnect,
-                                                        style: style,
+                                                        style: labelStyle,
                                                       );
                                                     }
                                                     return Padding(
@@ -663,7 +700,7 @@ class _XBoardConnectButtonState extends ConsumerState<XBoardConnectButton>
                                                           _ConnectionTimerLabel(
                                                         runTime: ref.watch(
                                                             runTimeProvider),
-                                                        style: style,
+                                                        style: labelStyle,
                                                       ),
                                                     );
                                                   },
@@ -688,6 +725,21 @@ class _XBoardConnectButtonState extends ConsumerState<XBoardConnectButton>
       },
     );
   }
+}
+
+class _StaticButtonLabel extends StatelessWidget {
+  const _StaticButtonLabel({required this.text, this.style});
+
+  final String text;
+  final TextStyle? style;
+
+  @override
+  Widget build(BuildContext context) => Text(
+        text,
+        style: style,
+        maxLines: 1,
+        overflow: TextOverflow.ellipsis,
+      );
 }
 
 class _LeftScrollingText extends StatefulWidget {
