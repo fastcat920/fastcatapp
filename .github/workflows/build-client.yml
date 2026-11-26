@@ -966,8 +966,38 @@ jobs:
         with:
           lfs: true
 
-      - name: Check signing only when signed distribution is requested
-        run: python3 scripts/check_release_readiness.py macos
+      - name: Configure Developer ID signing and notarization
+        env:
+          MACOS_CERTIFICATE_P12_BASE64: ${{ secrets.MACOS_CERTIFICATE_P12_BASE64 }}
+          MACOS_CERTIFICATE_PASSWORD: ${{ secrets.MACOS_CERTIFICATE_PASSWORD }}
+          MACOS_NOTARY_APPLE_ID: ${{ secrets.MACOS_NOTARY_APPLE_ID }}
+          MACOS_NOTARY_APP_PASSWORD: ${{ secrets.MACOS_NOTARY_APP_PASSWORD }}
+        run: |
+          set -euo pipefail
+          : "${MACOS_CERTIFICATE_P12_BASE64:?Missing MACOS_CERTIFICATE_P12_BASE64 secret}"
+          : "${MACOS_CERTIFICATE_PASSWORD:?Missing MACOS_CERTIFICATE_PASSWORD secret}"
+          : "${MACOS_NOTARY_APPLE_ID:?Missing MACOS_NOTARY_APPLE_ID secret}"
+          : "${MACOS_NOTARY_APP_PASSWORD:?Missing MACOS_NOTARY_APP_PASSWORD secret}"
+          umask 077
+          certificate="$(mktemp "$RUNNER_TEMP/fastcat-cert.XXXXXX")"
+          trap 'rm -f "$certificate"' EXIT
+          keychain="$RUNNER_TEMP/fastcat-release.keychain-db"
+          keychain_password="$(openssl rand -hex 32)"
+          printf '::add-mask::%s\n' "$keychain_password"
+          printf '%s' "$MACOS_CERTIFICATE_P12_BASE64" | base64 -D > "$certificate"
+          security create-keychain -p "$keychain_password" "$keychain"
+          security set-keychain-settings -lut 21600 "$keychain"
+          security unlock-keychain -p "$keychain_password" "$keychain"
+          security import "$certificate" -f pkcs12 -k "$keychain" -P "$MACOS_CERTIFICATE_PASSWORD" \
+            -T /usr/bin/codesign -T /usr/bin/security
+          security set-key-partition-list -S apple-tool:,apple: -s -k "$keychain_password" "$keychain" >/dev/null
+          security list-keychains -d user -s "$keychain"
+          security default-keychain -d user -s "$keychain"
+          security find-identity -v -p codesigning "$keychain" |
+            grep -F 'Developer ID Application: FastCat Digital Labs LLC (995AQ265K2)'
+          xcrun notarytool store-credentials fastcat-notary --keychain "$keychain" \
+            --apple-id "$MACOS_NOTARY_APPLE_ID" --team-id 995AQ265K2 \
+            --password "$MACOS_NOTARY_APP_PASSWORD"
 
       - name: Setup Flutter
         uses: subosito/flutter-action@v2
@@ -996,6 +1026,8 @@ jobs:
 
       - name: Build macOS universal DMG
         env:
+          MACOS_SIGN_IDENTITY: "Developer ID Application: FastCat Digital Labs LLC (995AQ265K2)"
+          MACOS_NOTARY_PROFILE: fastcat-notary
           XOR_KEY: ${{ secrets.XOR_KEY }}
           FASTCAT_KEY_CURRENT: ${{ secrets.FASTCAT_KEY_CURRENT }}
           FASTCAT_KEY_NEXT: ${{ secrets.FASTCAT_KEY_NEXT }}

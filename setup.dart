@@ -1489,6 +1489,13 @@ end tell
     required String? archName,
     required String env,
   }) async {
+    final signingIdentity = Platform.environment['MACOS_SIGN_IDENTITY'] ?? '';
+    final notaryProfile = Platform.environment['MACOS_NOTARY_PROFILE'] ?? '';
+    if (signingIdentity.isEmpty != notaryProfile.isEmpty) {
+      throw 'Set both MACOS_SIGN_IDENTITY and MACOS_NOTARY_PROFILE.';
+    }
+    final signRelease = signingIdentity.isNotEmpty;
+    final signingScript = join(current, 'scripts', 'sign_macos_release.sh');
     await _getMacosDependencies();
     _applyMacosTrayTitleFontSize();
 
@@ -1575,16 +1582,30 @@ end tell
       dmgRoot.deleteSync(recursive: true);
     }
     dmgRoot.createSync(recursive: true);
+    final stagedApp = join(dmgRoot.path, "$installedAppName.app");
 
     await Build.exec(
       [
         "cp",
         "-R",
         builtApp.path,
-        join(dmgRoot.path, "$installedAppName.app"),
+        stagedApp,
       ],
       name: "copy macos app to dmg root",
     );
+    if (signRelease) {
+      await Build.exec(
+        [
+          'bash',
+          signingScript,
+          'sign-app',
+          stagedApp,
+          join(current, 'macos', 'Runner', 'Release.entitlements'),
+        ],
+        name: 'sign macOS Release app',
+        runInShell: false,
+      );
+    }
 
     final dmgConfigSourcePath =
         join(current, "macos", "packaging", "dmg", "make_config.json");
@@ -1675,6 +1696,19 @@ end tell
         productName: productName,
         volumeName: dmgVolumeName,
       );
+    }
+    if (signRelease) {
+      try {
+        await Build.exec(
+          ['bash', signingScript, 'notarize-dmg', dmgFile.path],
+          name: 'notarize macOS DMG',
+          runInShell: false,
+        );
+      } catch (_) {
+        // Do not leave a failed distribution candidate in the upload directory.
+        if (dmgFile.existsSync()) dmgFile.deleteSync();
+        rethrow;
+      }
     }
     print("macOS DMG created at: ${dmgFile.path}");
   }
