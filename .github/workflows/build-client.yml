@@ -842,6 +842,8 @@ jobs:
           sudo apt-get install -y \
             clang \
             cmake \
+            libgstreamer1.0-dev \
+            libgstreamer-plugins-base1.0-dev \
             libgtk-3-dev \
             liblzma-dev \
             libsecret-1-dev \
@@ -917,6 +919,8 @@ jobs:
           sudo apt-get install -y \
             clang \
             cmake \
+            libgstreamer1.0-dev \
+            libgstreamer-plugins-base1.0-dev \
             libgtk-3-dev \
             liblzma-dev \
             libsecret-1-dev \
