@@ -1491,7 +1491,10 @@ end tell
   }) async {
     final signingIdentity = Platform.environment['MACOS_SIGN_IDENTITY'] ?? '';
     final notaryProfile = Platform.environment['MACOS_NOTARY_PROFILE'] ?? '';
-    if (signingIdentity.isEmpty != notaryProfile.isEmpty) {
+    final requiresSigning =
+        Platform.environment['FASTCAT_BUILD_CHANNEL'] == 'signed';
+    if (signingIdentity.isEmpty != notaryProfile.isEmpty ||
+        (requiresSigning && signingIdentity.isEmpty)) {
       throw 'Set both MACOS_SIGN_IDENTITY and MACOS_NOTARY_PROFILE.';
     }
     final signRelease = signingIdentity.isNotEmpty;
@@ -1867,8 +1870,7 @@ end tell
     if (!const {'local', 'normal', 'signed'}.contains(buildChannel)) {
       throw StateError('FASTCAT_BUILD_CHANNEL must be local, normal or signed');
     }
-    if (out == 'app' && buildChannel == 'signed' &&
-        (target == Target.windows || target == Target.macos)) {
+    if (out == 'app' && buildChannel == 'signed' && target == Target.windows) {
       throw StateError('Signed ${target.name} packaging requires a verified production signing pipeline. '
           'Normal builds remain available. For Windows, sign the runner before binding the Helper client hash.');
     }
