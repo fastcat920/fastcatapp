@@ -32,12 +32,6 @@ import (
 	"unsafe"
 )
 
-//export fastCatSupportsV2
-func fastCatSupportsV2() C.int { return 2 }
-
-//export fastCatSupportsAutoV1
-func fastCatSupportsAutoV1() C.int { return 1 }
-
 type TunHandler struct {
 	listener *sing_tun.Listener
 	fd       int

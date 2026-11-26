@@ -49,25 +49,17 @@ void main() {
     expect(Uri.parse(result).queryParameters['token'], 'secret');
   });
 
-  test('v2 capability is explicit and cannot be injected by a link', () {
-    const url = 'https://example.com/subscribe?fc_v2=1';
-    for (final enabled in [false, true]) {
-      final result = Uri.parse(SubscriptionUrlHelper.ensureFastCatFlag(url,
-          supportsAuto: true, supportsV2: enabled));
-      expect(result.queryParameters['fc_auto'], '1');
-      expect(result.queryParameters['fc_v2'], enabled ? '1' : isNull);
+  test('removes retired transport flags and preserves FCN capabilities', () {
+    final url = Uri.parse(SubscriptionUrlHelper.ensureFastCatFlag(
+      'https://example.com/subscribe?fc_auto=1&fc_v2=1&fc_transport=1&t=a&t=b#fragment',
+      fcnVersion: 3,
+    ));
+    for (final flag in ['fc_auto', 'fc_v2', 'fc_transport']) {
+      expect(url.queryParameters.containsKey(flag), isFalse);
     }
-  });
-
-  test('only a capable native core advertises automatic nodes', () {
-    const url = 'https://example.com/subscribe?fc_auto=1&t=a&t=b#fragment';
-    final old = Uri.parse(
-        SubscriptionUrlHelper.ensureFastCatFlag(url, supportsAuto: false));
-    final current = Uri.parse(
-        SubscriptionUrlHelper.ensureFastCatFlag(url, supportsAuto: true));
-    expect(old.queryParameters.containsKey('fc_auto'), isFalse);
-    expect(current.queryParametersAll['fc_auto'], ['1']);
-    expect(current.queryParametersAll['t'], ['a', 'b']);
-    expect(current.fragment, 'fragment');
+    expect(url.queryParameters['fc_fcn'], '1');
+    expect(url.queryParameters['fc_fcn_pin'], '1');
+    expect(url.queryParametersAll['t'], ['a', 'b']);
+    expect(url.fragment, 'fragment');
   });
 }

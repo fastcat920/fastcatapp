@@ -73,11 +73,6 @@ class SubscriptionUrlHelper {
     return isEncryptedSubscriptionUrl(url);
   }
 
-  /// 强制使用独立的 FastCat 加密协议。已有 flag 也会被覆盖，避免静默明文降级。
-  static final bool _supportsV2 = _hasCoreSymbol('fastCatSupportsV2');
-  static final bool _supportsAuto =
-      _supportsV2 || _hasCoreSymbol('fastCatSupportsAutoV1');
-
   static bool _hasCoreSymbol(String name) {
     if (!Platform.isAndroid && !Platform.isIOS) return false;
     try {
@@ -88,17 +83,6 @@ class SubscriptionUrlHelper {
     } on ArgumentError {
       return false;
     }
-  }
-
-  static final bool _supportsTransportModes = _nativeV2Version() >= 2;
-
-  static int _nativeV2Version() {
-    if (!_supportsV2) return 0;
-    final core = Platform.isAndroid
-        ? DynamicLibrary.open('libclash.so')
-        : DynamicLibrary.process();
-    return core.lookupFunction<Int32 Function(), int Function()>(
-        'fastCatSupportsV2')();
   }
 
   static int _nativeFCNVersion() {
@@ -143,7 +127,7 @@ class SubscriptionUrlHelper {
 
   static Future<String> ensureFastCatFlagForCore(String url) async {
     final desktop = Platform.isMacOS || Platform.isWindows || Platform.isLinux;
-    final fcnVersion = desktop && shouldUseEncryptedService(url)
+    final fcnVersion = desktop
         ? await _desktopFCNVersion
         : null;
     return ensureFastCatFlag(url, fcnVersion: fcnVersion);
@@ -151,9 +135,6 @@ class SubscriptionUrlHelper {
 
   static String ensureFastCatFlag(
     String url, {
-    bool? supportsAuto,
-    bool? supportsV2,
-    bool? supportsTransportModes,
     bool? supportsFCN,
     bool? supportsFCNPinning,
     int? fcnVersion,
@@ -171,26 +152,17 @@ class SubscriptionUrlHelper {
       query.remove('fc_fcn');
       query.remove('fc_fcn_pin');
       query.remove('fc_fcn3');
-      if (shouldUseEncryptedService(url) &&
-          (fcnVersion ?? _nativeFCNVersion()) >= 3) {
+      final coreVersion = fcnVersion ?? _nativeFCNVersion();
+      if (shouldUseEncryptedService(url) && coreVersion >= 3) {
         query['fc_fcn3'] = '1';
       }
-      if (supportsFCN ?? _hasCoreSymbol('fastCatSupportsFCN')) {
+      if (supportsFCN ?? (coreVersion >= 1)) {
         query['fc_fcn'] = '1';
-        if (supportsFCNPinning ?? (_nativeFCNVersion() >= 2)) {
+        if (supportsFCNPinning ?? (coreVersion >= 2)) {
           query['fc_fcn_pin'] = '1';
         }
       }
       query['flag'] = flag;
-      if (supportsAuto ?? _supportsAuto) {
-        query['fc_auto'] = '1';
-        if (supportsV2 ?? _supportsV2) {
-          query['fc_v2'] = '1';
-          if (supportsTransportModes ?? _supportsTransportModes) {
-            query['fc_transport'] = '1';
-          }
-        }
-      }
       return uri.replace(queryParameters: query).toString();
     } catch (_) {
       return url;
