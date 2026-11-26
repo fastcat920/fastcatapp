@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:fl_clash/common/common.dart';
 import 'package:fl_clash/providers/state.dart';
 import 'package:fl_clash/state.dart';
@@ -39,7 +41,9 @@ class _TrayContainerState extends ConsumerState<TrayManager> with TrayListener {
 
   @override
   void onTrayIconRightMouseDown() {
-    trayManager.popUpContextMenu();
+    // Win32 dismisses a tray menu on outside clicks when its owner is foreground.
+    // ignore: deprecated_member_use
+    trayManager.popUpContextMenu(bringAppToFront: Platform.isWindows);
   }
 
   @override
