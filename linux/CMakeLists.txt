@@ -90,6 +90,18 @@ set_target_properties(${BINARY_NAME}
 # Generated plugin build rules, which manage building the plugins and adding
 # them to the application.
 include(flutter/generated_plugins.cmake)
+# Keep third-party deprecation diagnostics visible with modern Clang.
+if(TARGET tray_manager_plugin)
+  target_compile_options(tray_manager_plugin PRIVATE -Wno-error=deprecated-declarations)
+endif()
+if(TARGET flutter_secure_storage_linux_plugin AND CMAKE_CXX_COMPILER_ID MATCHES "Clang")
+  include(CheckCXXCompilerFlag)
+  check_cxx_compiler_flag("-Wno-error=deprecated-literal-operator" STORAGE_LITERAL_WARNING_SUPPORTED)
+  if(STORAGE_LITERAL_WARNING_SUPPORTED)
+    target_compile_options(flutter_secure_storage_linux_plugin PRIVATE -Wno-error=deprecated-literal-operator)
+  endif()
+endif()
+
 
 
 # === Installation ===
