@@ -37,9 +37,11 @@ type Config struct {
 }
 
 type session struct {
-	quic    *quic.Conn
-	http    *http3.ClientConn
-	binding []byte
+	quic       *quic.Conn
+	http       *http3.ClientConn
+	binding    []byte
+	streams    int // guarded by Client.mu
+	udpStreams int
 }
 
 type Client struct {
@@ -48,17 +50,18 @@ type Client struct {
 	ctx          context.Context
 	cancel       context.CancelFunc
 	mu           sync.Mutex
-	current      *session
+	sessions     [2]*session
 	pending      *connectionAttempt
+	generation   uint64
 	network      string
 	refreshEntry bool
 }
 
 type connectionAttempt struct {
-	done    chan struct{}
-	cancel  context.CancelFunc
-	session *session
-	err     error
+	slot   int
+	done   chan struct{}
+	cancel context.CancelFunc
+	err    error
 }
 
 func NewClient(cfg Config) (*Client, error) {
@@ -179,34 +182,91 @@ func (c *Client) Warm(ctx context.Context) error {
 	return err
 }
 
+type sessionUse uint8
+
+const (
+	sessionWarm sessionUse = iota
+	sessionTCP
+	sessionUDP
+)
+
+var ErrStreamCapacity = errors.New("FCN v3 client stream capacity reached")
+
 func (c *Client) acquire(ctx context.Context) (*session, error) {
-	if err := ctx.Err(); err != nil {
-		return nil, err
-	}
+	s, _, err := c.selectSession(ctx, sessionWarm)
+	return s, err
+}
+
+// Reserve capacity before opening a stream so concurrent callers cannot all
+// choose the same connection. Reuse the first connection with room.
+func (c *Client) selectSession(ctx context.Context, use sessionUse) (*session, func(), error) {
 	c.mu.Lock()
-	if c.ctx.Err() != nil {
+	generation := c.generation
+	for {
+		if err := ctx.Err(); err != nil {
+			c.mu.Unlock()
+			return nil, nil, err
+		}
+		if c.ctx.Err() != nil {
+			c.mu.Unlock()
+			return nil, nil, net.ErrClosed
+		}
+		if c.generation != generation {
+			c.mu.Unlock()
+			return nil, nil, ErrNetworkChanged
+		}
+		vacant := -1
+		for i, s := range c.sessions {
+			if s == nil || s.quic.Context().Err() != nil {
+				if vacant == -1 {
+					vacant = i
+				}
+				continue
+			}
+			if use == sessionWarm {
+				c.mu.Unlock()
+				return s, nil, nil
+			}
+			if s.streams >= connectionStreamLimit || use == sessionUDP && s.udpStreams >= connectionUDPStreamLimit {
+				continue
+			}
+			s.streams++
+			if use == sessionUDP {
+				s.udpStreams++
+			}
+			c.mu.Unlock()
+			return s, func() {
+				c.mu.Lock()
+				s.streams--
+				if use == sessionUDP {
+					s.udpStreams--
+				}
+				c.mu.Unlock()
+			}, nil
+		}
+		attempt := c.pending
+		if attempt == nil {
+			if vacant == -1 {
+				c.mu.Unlock()
+				return nil, nil, ErrStreamCapacity
+			}
+			connectCtx, cancel := context.WithTimeout(c.ctx, setupTimeout)
+			attempt = &connectionAttempt{slot: vacant, done: make(chan struct{}), cancel: cancel}
+			c.pending = attempt
+			go c.completeConnection(connectCtx, attempt, c.refreshEntry)
+		}
 		c.mu.Unlock()
-		return nil, net.ErrClosed
-	}
-	if s := c.current; s != nil && s.quic.Context().Err() == nil {
-		c.mu.Unlock()
-		return s, nil
-	}
-	attempt := c.pending
-	if attempt == nil {
-		connectCtx, cancel := context.WithTimeout(c.ctx, setupTimeout)
-		attempt = &connectionAttempt{done: make(chan struct{}), cancel: cancel}
-		c.pending = attempt
-		go c.completeConnection(connectCtx, attempt, c.refreshEntry)
-	}
-	c.mu.Unlock()
-	select {
-	case <-ctx.Done():
-		return nil, ctx.Err()
-	case <-c.ctx.Done():
-		return nil, net.ErrClosed
-	case <-attempt.done:
-		return attempt.session, attempt.err
+		select {
+		case <-ctx.Done():
+			return nil, nil, ctx.Err()
+		case <-c.ctx.Done():
+			return nil, nil, net.ErrClosed
+		case <-attempt.done:
+			if attempt.err != nil {
+				return nil, nil, attempt.err
+			}
+		}
+		c.mu.Lock()
 	}
 }
 
@@ -225,28 +285,44 @@ func (c *Client) completeConnection(ctx context.Context, attempt *connectionAtte
 	default:
 		c.pending = nil
 		if err == nil {
-			c.current = s
+			c.sessions[attempt.slot] = s
 			c.refreshEntry = false
 		}
 	}
 	if err != nil && s != nil {
 		s.quic.CloseWithError(0, "")
-		s = nil
 	}
-	attempt.session, attempt.err = s, err
+	attempt.err = err
 	close(attempt.done)
 }
 
 func (c *Client) Close() error {
 	c.cancel()
 	c.mu.Lock()
-	s := c.current
-	c.current = nil
+	sessions := c.detachSessionsLocked()
 	c.mu.Unlock()
-	if s != nil {
-		return s.quic.CloseWithError(0, "")
+	return closeSessions(sessions)
+}
+
+func (c *Client) detachSessionsLocked() [2]*session {
+	old := c.sessions
+	c.sessions = [2]*session{}
+	c.generation++
+	if c.pending != nil {
+		c.pending.cancel()
+		c.pending = nil
 	}
-	return nil
+	return old
+}
+
+func closeSessions(sessions [2]*session) error {
+	var err error
+	for _, s := range sessions {
+		if s != nil {
+			err = errors.Join(err, s.quic.CloseWithError(0, ""))
+		}
+	}
+	return err
 }
 
 // Dial opens one CONNECT stream. Up to 8 KiB can be written after the TLS
@@ -261,12 +337,13 @@ func (c *Client) Dial(ctx context.Context, target string) (net.Conn, error) {
 	defer cancel()
 	stopClient := context.AfterFunc(c.ctx, cancel)
 	defer stopClient()
-	s, e := c.acquire(setup)
+	s, release, e := c.selectSession(setup, sessionTCP)
 	if e != nil {
 		return nil, e
 	}
 	stream, e := s.http.OpenRequestStream(setup)
 	if e != nil {
+		release()
 		return nil, e
 	}
 	abort := func() { stream.CancelRead(cancelCode); stream.CancelWrite(cancelCode) }
@@ -277,6 +354,7 @@ func (c *Client) Dial(ctx context.Context, target string) (net.Conn, error) {
 	stopped := stop()
 	if e != nil || !stopped || setup.Err() != nil {
 		abort()
+		release()
 		if e != nil {
 			return nil, e
 		}
@@ -285,7 +363,7 @@ func (c *Client) Dial(ctx context.Context, target string) (net.Conn, error) {
 		}
 		return nil, context.Canceled
 	}
-	conn := &streamConn{stream: stream, local: s.quic.LocalAddr(), remote: s.quic.RemoteAddr(), ready: make(chan struct{})}
+	conn := &streamConn{stream: stream, local: s.quic.LocalAddr(), remote: s.quic.RemoteAddr(), ready: make(chan struct{}), release: release}
 	go conn.readDecision()
 	return conn, nil
 }
@@ -302,6 +380,7 @@ type streamConn struct {
 	readDeadline, writeDeadline time.Time
 	deadlineChanged             chan struct{}
 	closeOnce                   sync.Once
+	release                     func()
 }
 
 func (c *streamConn) readDecision() {
@@ -312,8 +391,7 @@ func (c *streamConn) readDecision() {
 		e = fmt.Errorf("%w (HTTP %d)", ErrRejected, response.StatusCode)
 	}
 	if e != nil {
-		c.stream.CancelRead(cancelCode)
-		c.stream.CancelWrite(cancelCode)
+		c.Close()
 	}
 	c.result = e
 	close(c.ready)
@@ -416,7 +494,13 @@ func (c *streamConn) CloseWrite() error {
 }
 
 func (c *streamConn) Close() error {
-	c.closeOnce.Do(func() { c.stream.CancelRead(cancelCode); c.stream.CancelWrite(cancelCode) })
+	c.closeOnce.Do(func() {
+		c.stream.CancelRead(cancelCode)
+		c.stream.CancelWrite(cancelCode)
+		if c.release != nil {
+			c.release()
+		}
+	})
 	return nil
 }
 

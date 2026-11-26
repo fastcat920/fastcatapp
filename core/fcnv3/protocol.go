@@ -18,12 +18,14 @@ import (
 )
 
 const (
-	authHeader      = "Proxy-Authorization"
-	authPrefix      = "FCN3 "
-	exporterLabel   = "EXPORTER-FCN-v3-CONNECT"
-	setupTimeout    = 8 * time.Second
-	earlyWriteLimit = 8 * 1024
-	cancelCode      = quic.StreamErrorCode(0x10c) // H3_REQUEST_CANCELLED
+	connectionStreamLimit    = 16
+	connectionUDPStreamLimit = 8
+	authHeader               = "Proxy-Authorization"
+	authPrefix               = "FCN3 "
+	exporterLabel            = "EXPORTER-FCN-v3-CONNECT"
+	setupTimeout             = 8 * time.Second
+	earlyWriteLimit          = 8 * 1024
+	cancelCode               = quic.StreamErrorCode(0x10c) // H3_REQUEST_CANCELLED
 )
 
 var ErrRejected = errors.New("FCN v3 CONNECT rejected")

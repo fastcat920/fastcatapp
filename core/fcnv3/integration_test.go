@@ -460,3 +460,58 @@ func newTestClient(t *testing.T, config Config) *Client {
 	t.Cleanup(func() { client.Close() })
 	return client
 }
+
+func TestTCPUsesSecondConnectionOnlyAtCapacity(t *testing.T) {
+	target, _ := startTestEcho(t)
+	server, config := startTestServer(t, target)
+	client := newTestClient(t, config)
+	ctx, cancel := context.WithTimeout(t.Context(), 10*time.Second)
+	defer cancel()
+	if err := client.UpdateNetwork("first"); err != nil {
+		t.Fatal(err)
+	}
+	primary, err := client.acquire(ctx)
+	if err != nil {
+		t.Fatal(err)
+	}
+	streams := make([]*streamConn, 2*connectionStreamLimit)
+	var secondaryAddr string
+	for i := range streams {
+		streams[i] = dialTestStream(t, ctx, client, target)
+		checkEcho(t, streams[i], []byte("active"))
+		addr := streams[i].LocalAddr().String()
+		switch {
+		case i < connectionStreamLimit:
+			if addr != primary.quic.LocalAddr().String() {
+				t.Fatal("opened another connection before reaching capacity")
+			}
+		case i == connectionStreamLimit:
+			secondaryAddr = addr
+			if addr == primary.quic.LocalAddr().String() {
+				t.Fatal("capacity did not open the second connection")
+			}
+		default:
+			if addr != secondaryAddr {
+				t.Fatal("opened more than two connections")
+			}
+		}
+	}
+	if _, err := client.Dial(ctx, target); !errors.Is(err, ErrStreamCapacity) {
+		t.Fatalf("dial above two-connection capacity = %v", err)
+	}
+	checkEcho(t, streams[1], []byte("existing primary stream"))
+	checkEcho(t, streams[connectionStreamLimit], []byte("existing secondary stream"))
+	if err := streams[0].Close(); err != nil {
+		t.Fatal(err)
+	}
+	waitForUDPLeases(t, server, len(streams)-1)
+	replacement := dialTestStream(t, ctx, client, target)
+	checkEcho(t, replacement, []byte("reused capacity"))
+	if replacement.LocalAddr().String() != primary.quic.LocalAddr().String() {
+		t.Fatal("did not reuse released primary capacity")
+	}
+	if err := client.UpdateNetwork("second"); err != nil {
+		t.Fatal(err)
+	}
+	waitForUDPLeases(t, server, 0)
+}

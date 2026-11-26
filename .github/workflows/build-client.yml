@@ -114,6 +114,12 @@ jobs:
       - name: Provider cache and path regressions (nested Mihomo module)
         working-directory: core/Clash.Meta
         run: go test -race ./component/resource ./constant
+      - name: FCN adapter and subscription regression tests
+        working-directory: core/Clash.Meta
+        run: go test -race ./adapter ./config -run 'TestParseFCNV3PanelNode|TestRetiredFastCatProxiesAreRemovedFromGroups'
+      - name: FCN v3 transport regression tests
+        working-directory: core/fcnv3
+        run: go test -race ./...
       - name: Device gateway regression tests
         working-directory: device_gateway
         env:

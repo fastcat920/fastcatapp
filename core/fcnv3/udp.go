@@ -142,18 +142,20 @@ func (c *Client) DialUDP(ctx context.Context, target string) (*UDPAssociation, e
 	defer cancel()
 	stopClient := context.AfterFunc(c.ctx, cancel)
 	defer stopClient()
-	s, err := c.acquire(setup)
+	s, release, err := c.selectSession(setup, sessionUDP)
 	if err != nil {
 		return nil, err
 	}
 	if err := requireUDPSettings(setup, s.quic, s.http, true); err != nil {
+		release()
 		return nil, err
 	}
 	stream, err := s.http.OpenRequestStream(setup)
 	if err != nil {
+		release()
 		return nil, err
 	}
-	association := &UDPAssociation{stream: stream}
+	association := &UDPAssociation{stream: stream, release: release}
 	stop := context.AfterFunc(setup, func() { association.Close() })
 	req := udpRequest(c.cfg.Endpoint, target)
 	req.Header.Set(authHeader, authValueFor(udpAuthKind, c.key, s.binding, c.cfg.Account, target, stream.StreamID()))
@@ -190,6 +192,7 @@ func (c *Client) DialUDP(ctx context.Context, target string) (*UDPAssociation, e
 type UDPAssociation struct {
 	stream    *http3.RequestStream
 	closeOnce sync.Once
+	release   func()
 }
 
 // SendDatagram submits one UDP payload. QUIC may discard it after submission.
@@ -222,6 +225,9 @@ func (a *UDPAssociation) Close() error {
 	a.closeOnce.Do(func() {
 		a.stream.CancelRead(cancelCode)
 		a.stream.CancelWrite(cancelCode)
+		if a.release != nil {
+			a.release()
+		}
 	})
 	return nil
 }

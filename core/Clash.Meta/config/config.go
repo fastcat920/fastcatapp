@@ -896,8 +896,15 @@ func parseProxies(cfg *RawConfig) (proxies map[string]C.Proxy, providersMap map[
 	proxies["PASS-RULE"] = adapter.NewProxy(outbound.NewPassRule())
 	proxyList = append(proxyList, "DIRECT", "REJECT")
 
-	// parse proxy
+	// Keep mixed subscriptions usable after the old FastCat transport is retired.
+	retired := make(map[string]struct{})
 	for idx, mapping := range proxiesConfig {
+		if adapter.IsRetiredFastCatProxy(mapping) {
+			if name, ok := mapping["name"].(string); ok {
+				retired[name] = struct{}{}
+			}
+			continue
+		}
 		proxy, err := adapter.ParseProxy(mapping, adapter.WithTunnelForAPI(T.Tunnel))
 		if err != nil {
 			return nil, nil, fmt.Errorf("proxy %d: %w", idx, err)
@@ -921,6 +928,33 @@ func parseProxies(cfg *RawConfig) (proxies map[string]C.Proxy, providersMap map[
 			hasGlobal = true
 		}
 		proxyList = append(proxyList, groupName)
+	}
+
+	for _, mapping := range groupsConfig {
+		if len(retired) == 0 {
+			break
+		}
+		switch members := mapping["proxies"].(type) {
+		case []string:
+			names := slices.DeleteFunc(slices.Clone(members), func(name string) bool {
+				_, removed := retired[name]
+				return removed && proxies[name] == nil && !slices.Contains(proxyList, name)
+			})
+			if len(names) == 0 && len(members) > 0 {
+				names = []string{"REJECT"}
+			}
+			mapping["proxies"] = names
+		case []any:
+			filtered := slices.DeleteFunc(slices.Clone(members), func(member any) bool {
+				name, ok := member.(string)
+				_, removed := retired[name]
+				return ok && removed && proxies[name] == nil && !slices.Contains(proxyList, name)
+			})
+			if len(filtered) == 0 && len(members) > 0 {
+				filtered = []any{"REJECT"}
+			}
+			mapping["proxies"] = filtered
+		}
 	}
 
 	// check if any loop exists and sort the ProxyGroups

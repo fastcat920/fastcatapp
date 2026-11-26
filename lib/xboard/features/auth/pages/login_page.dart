@@ -8,7 +8,6 @@ import 'package:fl_clash/l10n/l10n.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'register_page.dart';
-import '../../settings/pages/fastcat_direct_page.dart';
 import 'forgot_password_page.dart';
 import 'package:fl_clash/xboard/features/auth/utils/customer_service_helper.dart';
 import 'package:fl_clash/xboard/features/shared/shared.dart';
@@ -1086,14 +1085,6 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                                       ),
                                     ),
                                     SizedBox(height: compactBrand ? 10 : 14),
-                                    if (showFastCatDirect)
-                                      TextButton(
-                                        onPressed: () => Navigator.of(context).push(
-                                          MaterialPageRoute(builder: (_) => const FastCatDirectPage()),
-                                        ),
-                                        child: Text(Localizations.localeOf(context).languageCode == 'zh'
-                                            ? 'FastCat v2 直连' : 'FastCat v2 Direct'),
-                                      ),
                                     // 保持左右分布，并相对登录按钮边缘略微内收
                                     Padding(
                                       padding: const EdgeInsets.symmetric(

@@ -329,11 +329,11 @@ func (s *Server) authenticateFor(kind string, sc *serverConnection, value, targe
 	switch {
 	case account >= 32:
 		return "", nil, nil, "account_stream_limit"
-	case connection >= 16:
+	case connection >= connectionStreamLimit:
 		return "", nil, nil, "connection_stream_limit"
 	case isUDP && udp >= 32:
 		return "", nil, nil, "udp_stream_limit"
-	case isUDP && connectionUDP >= 8:
+	case isUDP && connectionUDP >= connectionUDPStreamLimit:
 		return "", nil, nil, "udp_connection_stream_limit"
 	}
 	var ctx context.Context

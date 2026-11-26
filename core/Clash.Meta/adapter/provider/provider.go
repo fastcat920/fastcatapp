@@ -446,6 +446,9 @@ func NewProxiesParser(pdName string, tunnel C.Tunnel, filter string, excludeFilt
 					return nil, fmt.Errorf("proxy %d override error: %w", idx, err)
 				}
 
+				if adapter.IsRetiredFastCatProxy(mapping) {
+					continue
+				}
 				proxy, err := adapter.ParseProxy(mapping, adapter.WithTunnelForAPI(tunnel), adapter.WithProviderName(pdName))
 				if err != nil {
 					return nil, fmt.Errorf("proxy %d error: %w", idx, err)

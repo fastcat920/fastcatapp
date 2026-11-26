@@ -139,8 +139,10 @@ func TestHTTP3ConnectUDP(t *testing.T) {
 		for i := range associations {
 			associations[i] = dialTestUDP(t, ctx, client, target)
 		}
-		if _, err := client.DialUDP(ctx, target); !errors.Is(err, ErrRejected) {
-			t.Fatalf("association above per-connection quota = %v, want ErrRejected", err)
+		overflow := dialTestUDP(t, ctx, client, target)
+		checkUDPEcho(t, ctx, overflow, []byte("second connection"))
+		if err := overflow.Close(); err != nil {
+			t.Fatal(err)
 		}
 		if err := associations[0].stream.Close(); err != nil {
 			t.Fatal(err)

@@ -30,15 +30,8 @@ func (c *Client) UpdateNetwork(id string) error {
 	if resolver, ok := c.cfg.EntryDNS.(interface{ ResetNetwork() }); ok {
 		resolver.ResetNetwork()
 	}
-	old := c.current
-	c.current = nil
-	if a := c.pending; a != nil {
-		c.pending = nil
-		a.cancel()
-	}
+	old := c.detachSessionsLocked()
 	c.mu.Unlock()
-	if old != nil {
-		old.quic.CloseWithError(0, "")
-	}
+	_ = closeSessions(old)
 	return nil
 }
