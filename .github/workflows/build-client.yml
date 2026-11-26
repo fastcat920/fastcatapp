@@ -814,7 +814,7 @@ jobs:
 
   linux_amd64:
     name: Linux amd64
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     if: github.event_name == 'push' || inputs.build_linux
     steps:
       - name: Checkout
