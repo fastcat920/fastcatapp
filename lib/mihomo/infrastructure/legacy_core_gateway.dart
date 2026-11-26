@@ -1,3 +1,4 @@
+import 'package:fl_clash/models/core.dart';
 import 'package:fl_clash/services/core_switch_status.dart';
 import 'package:fl_clash/state.dart';
 
@@ -36,10 +37,12 @@ class LegacyCoreGateway implements CoreGateway {
   List<MihomoGroup> getGroups() {
     return globalState.appController.getCurrentGroups().map((group) {
       final nodes = group.all.map((proxy) {
+        final delay = _getNodeDelayResult(proxy.name, testUrl: group.testUrl);
         return MihomoNode(
           name: proxy.name,
           type: proxy.type,
-          delayMs: getNodeDelay(proxy.name, testUrl: group.testUrl),
+          delayMs: delay?.value,
+          timedOut: delay?.effectiveFailureKind == DelayFailureKind.timeout,
         );
       }).toList(growable: false);
       final selected = globalState.appController
@@ -86,7 +89,10 @@ class LegacyCoreGateway implements CoreGateway {
       globalState.appController.applyUserConfiguration();
 
   @override
-  int? getNodeDelay(String nodeName, {String? testUrl}) {
+  int? getNodeDelay(String nodeName, {String? testUrl}) =>
+      _getNodeDelayResult(nodeName, testUrl: testUrl)?.value;
+
+  Delay? _getNodeDelayResult(String nodeName, {String? testUrl}) {
     final state = globalState.appController.getProxyCardState(nodeName);
     final resolvedName = state.proxyName.isEmpty ? nodeName : state.proxyName;
     final resolvedUrl = globalState.appController.getRealTestUrl(

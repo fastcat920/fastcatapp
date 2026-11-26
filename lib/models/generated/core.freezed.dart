@@ -2153,6 +2153,11 @@ mixin _$Delay {
   String get name => throw _privateConstructorUsedError;
   String get url => throw _privateConstructorUsedError;
   int? get value => throw _privateConstructorUsedError;
+  @JsonKey(
+      name: 'failure-kind',
+      includeIfNull: false,
+      unknownEnumValue: JsonKey.nullForUndefinedEnumValue)
+  DelayFailureKind? get failureKind => throw _privateConstructorUsedError;
 
   /// Serializes this Delay to a JSON map.
   Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
@@ -2168,7 +2173,15 @@ abstract class $DelayCopyWith<$Res> {
   factory $DelayCopyWith(Delay value, $Res Function(Delay) then) =
       _$DelayCopyWithImpl<$Res, Delay>;
   @useResult
-  $Res call({String name, String url, int? value});
+  $Res call(
+      {String name,
+      String url,
+      int? value,
+      @JsonKey(
+          name: 'failure-kind',
+          includeIfNull: false,
+          unknownEnumValue: JsonKey.nullForUndefinedEnumValue)
+      DelayFailureKind? failureKind});
 }
 
 /// @nodoc
@@ -2189,6 +2202,7 @@ class _$DelayCopyWithImpl<$Res, $Val extends Delay>
     Object? name = null,
     Object? url = null,
     Object? value = freezed,
+    Object? failureKind = freezed,
   }) {
     return _then(_value.copyWith(
       name: null == name
@@ -2203,6 +2217,10 @@ class _$DelayCopyWithImpl<$Res, $Val extends Delay>
           ? _value.value
           : value // ignore: cast_nullable_to_non_nullable
               as int?,
+      failureKind: freezed == failureKind
+          ? _value.failureKind
+          : failureKind // ignore: cast_nullable_to_non_nullable
+              as DelayFailureKind?,
     ) as $Val);
   }
 }
@@ -2214,7 +2232,15 @@ abstract class _$$DelayImplCopyWith<$Res> implements $DelayCopyWith<$Res> {
       __$$DelayImplCopyWithImpl<$Res>;
   @override
   @useResult
-  $Res call({String name, String url, int? value});
+  $Res call(
+      {String name,
+      String url,
+      int? value,
+      @JsonKey(
+          name: 'failure-kind',
+          includeIfNull: false,
+          unknownEnumValue: JsonKey.nullForUndefinedEnumValue)
+      DelayFailureKind? failureKind});
 }
 
 /// @nodoc
@@ -2233,6 +2259,7 @@ class __$$DelayImplCopyWithImpl<$Res>
     Object? name = null,
     Object? url = null,
     Object? value = freezed,
+    Object? failureKind = freezed,
   }) {
     return _then(_$DelayImpl(
       name: null == name
@@ -2247,14 +2274,27 @@ class __$$DelayImplCopyWithImpl<$Res>
           ? _value.value
           : value // ignore: cast_nullable_to_non_nullable
               as int?,
+      failureKind: freezed == failureKind
+          ? _value.failureKind
+          : failureKind // ignore: cast_nullable_to_non_nullable
+              as DelayFailureKind?,
     ));
   }
 }
 
 /// @nodoc
 @JsonSerializable()
-class _$DelayImpl implements _Delay {
-  const _$DelayImpl({required this.name, required this.url, this.value});
+class _$DelayImpl extends _Delay {
+  const _$DelayImpl(
+      {required this.name,
+      required this.url,
+      this.value,
+      @JsonKey(
+          name: 'failure-kind',
+          includeIfNull: false,
+          unknownEnumValue: JsonKey.nullForUndefinedEnumValue)
+      this.failureKind})
+      : super._();
 
   factory _$DelayImpl.fromJson(Map<String, dynamic> json) =>
       _$$DelayImplFromJson(json);
@@ -2265,10 +2305,16 @@ class _$DelayImpl implements _Delay {
   final String url;
   @override
   final int? value;
+  @override
+  @JsonKey(
+      name: 'failure-kind',
+      includeIfNull: false,
+      unknownEnumValue: JsonKey.nullForUndefinedEnumValue)
+  final DelayFailureKind? failureKind;
 
   @override
   String toString() {
-    return 'Delay(name: $name, url: $url, value: $value)';
+    return 'Delay(name: $name, url: $url, value: $value, failureKind: $failureKind)';
   }
 
   @override
@@ -2278,12 +2324,14 @@ class _$DelayImpl implements _Delay {
             other is _$DelayImpl &&
             (identical(other.name, name) || other.name == name) &&
             (identical(other.url, url) || other.url == url) &&
-            (identical(other.value, value) || other.value == value));
+            (identical(other.value, value) || other.value == value) &&
+            (identical(other.failureKind, failureKind) ||
+                other.failureKind == failureKind));
   }
 
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
-  int get hashCode => Object.hash(runtimeType, name, url, value);
+  int get hashCode => Object.hash(runtimeType, name, url, value, failureKind);
 
   /// Create a copy of Delay
   /// with the given fields replaced by the non-null parameter values.
@@ -2301,11 +2349,17 @@ class _$DelayImpl implements _Delay {
   }
 }
 
-abstract class _Delay implements Delay {
+abstract class _Delay extends Delay {
   const factory _Delay(
       {required final String name,
       required final String url,
-      final int? value}) = _$DelayImpl;
+      final int? value,
+      @JsonKey(
+          name: 'failure-kind',
+          includeIfNull: false,
+          unknownEnumValue: JsonKey.nullForUndefinedEnumValue)
+      final DelayFailureKind? failureKind}) = _$DelayImpl;
+  const _Delay._() : super._();
 
   factory _Delay.fromJson(Map<String, dynamic> json) = _$DelayImpl.fromJson;
 
@@ -2315,6 +2369,12 @@ abstract class _Delay implements Delay {
   String get url;
   @override
   int? get value;
+  @override
+  @JsonKey(
+      name: 'failure-kind',
+      includeIfNull: false,
+      unknownEnumValue: JsonKey.nullForUndefinedEnumValue)
+  DelayFailureKind? get failureKind;
 
   /// Create a copy of Delay
   /// with the given fields replaced by the non-null parameter values.

@@ -1146,6 +1146,7 @@
   "xboardSubmitOrder": "提交订单",
   "xboardSubmitting": "提交中...",
   "xboardTestLatency": "测试延迟",
+  "xboardLatencyTestFailed": "测速失败",
   "xboardTicketClosed": "已关闭",
   "xboardTicketDescription": "问题描述",
   "xboardTicketDescriptionHint": "请详细描述你遇到的问题",

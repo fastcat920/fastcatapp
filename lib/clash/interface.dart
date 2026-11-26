@@ -523,6 +523,7 @@ abstract class ClashHandlerInterface with ClashInterface {
             name: proxyName,
             value: -1,
             url: url,
+            failureKind: DelayFailureKind.timeout,
           ),
         );
       },

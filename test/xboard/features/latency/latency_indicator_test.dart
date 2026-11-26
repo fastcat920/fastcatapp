@@ -5,6 +5,31 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
+  testWidgets('failure tooltip distinguishes a known timeout', (tester) async {
+    Future<void> show({required bool timedOut}) =>
+        tester.pumpWidget(MaterialApp(
+          locale: const Locale('zh', 'CN'),
+          localizationsDelegates: const [
+            AppLocalizations.delegate,
+            ...GlobalMaterialLocalizations.delegates,
+          ],
+          supportedLocales: AppLocalizations.delegate.supportedLocales,
+          home: Scaffold(
+            body: LatencyIndicator(delayValue: -1, timedOut: timedOut),
+          ),
+        ));
+
+    await show(timedOut: false);
+    await tester.pumpAndSettle();
+    expect(find.byTooltip('测速失败'), findsOneWidget);
+    expect(find.byTooltip('超时'), findsNothing);
+
+    await show(timedOut: true);
+    await tester.pumpAndSettle();
+    expect(find.byTooltip('超时'), findsOneWidget);
+    expect(find.byTooltip('测速失败'), findsNothing);
+  });
+
   for (final brightness in Brightness.values) {
     testWidgets('signal states, no visible numbers, and taps: $brightness',
         (tester) async {

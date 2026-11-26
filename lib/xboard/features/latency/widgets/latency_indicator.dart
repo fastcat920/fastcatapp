@@ -6,12 +6,14 @@ import 'package:fl_clash/l10n/l10n.dart';
 /// callers with a separate testing flag should normalize an idle zero to null.
 class LatencyIndicator extends StatelessWidget {
   final int? delayValue;
+  final bool timedOut;
   final VoidCallback? onTap;
   final bool isCompact;
   final bool showIcon;
   const LatencyIndicator(
       {super.key,
       required this.delayValue,
+      this.timedOut = false,
       this.onTap,
       this.isCompact = false,
       this.showIcon = true});
@@ -30,11 +32,12 @@ class LatencyIndicator extends StatelessWidget {
             ? XbUiStatusColor.pending(context)
             : XbUiStatusColor.success(context);
     final l10n = AppLocalizations.of(context);
-    final label = testing
-        ? l10n.xboardTesting
-        : failed
-            ? l10n.xboardTimeout
-            : l10n.xboardTestLatency;
+    final label = switch ((testing, failed, timedOut)) {
+      (true, _, _) => l10n.xboardTesting,
+      (_, true, true) => l10n.xboardTimeout,
+      (_, true, false) => l10n.xboardLatencyTestFailed,
+      _ => l10n.xboardTestLatency,
+    };
     final Widget icon = testing
         ? SizedBox.square(
             dimension: 14,
@@ -52,14 +55,19 @@ class LatencyIndicator extends StatelessWidget {
                     inactiveColor: theme.colorScheme.onSurface
                         .withValues(alpha: dark ? 0.22 : 0.14),
                     backgroundColor: theme.colorScheme.surface));
+    final indicator = GestureDetector(
+      behavior: HitTestBehavior.opaque,
+      onTap: testing ? null : onTap,
+      child: SizedBox(width: 32, height: 28, child: Center(child: icon)),
+    );
     return Semantics(
-        label: label,
-        button: onTap != null && !testing,
-        child: GestureDetector(
-            behavior: HitTestBehavior.opaque,
-            onTap: testing ? null : onTap,
-            child:
-                SizedBox(width: 32, height: 28, child: Center(child: icon))));
+      label: label,
+      button: onTap != null && !testing,
+      child: failed
+          ? Tooltip(
+              message: label, excludeFromSemantics: true, child: indicator)
+          : indicator,
+    );
   }
 }
 
@@ -123,7 +131,7 @@ class LatencyQuality {
   static const int fair = 200;
   static const int poor = 500;
   static String getQualityLevel(int delay) {
-    if (delay < 0) return '超时';
+    if (delay < 0) return '测速失败';
     if (delay <= excellent) return '优秀';
     if (delay <= good) return '良好';
     if (delay <= fair) return '一般';
@@ -132,7 +140,7 @@ class LatencyQuality {
   }
 
   static String getQualityDescription(int delay) {
-    if (delay < 0) return '连接超时，请检查网络';
+    if (delay < 0) return '测速失败，请重试';
     if (delay <= excellent) return '网络质量优秀，适合所有应用';
     if (delay <= good) return '网络质量良好，适合大多数应用';
     if (delay <= fair) return '网络质量一般，可用于基本应用';

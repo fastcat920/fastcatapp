@@ -8,7 +8,7 @@ import 'core.dart';
 
 part 'generated/app.freezed.dart';
 
-typedef DelayMap = Map<String, Map<String, int?>>;
+typedef DelayMap = Map<String, Map<String, Delay>>;
 
 @freezed
 class AppState with _$AppState {

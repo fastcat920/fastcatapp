@@ -1146,6 +1146,7 @@
   "xboardSubmitOrder": "Submit order",
   "xboardSubmitting": "Submitting...",
   "xboardTestLatency": "Test latency",
+  "xboardLatencyTestFailed": "Latency test failed",
   "xboardTicketClosed": "Closed",
   "xboardTicketDescription": "Description",
   "xboardTicketDescriptionHint": "Describe your issue in detail",

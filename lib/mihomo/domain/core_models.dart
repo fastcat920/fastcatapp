@@ -5,14 +5,15 @@ class MihomoNode {
     required this.name,
     required this.type,
     this.delayMs,
+    this.timedOut = false,
   });
 
   final String name;
   final String type;
   final int? delayMs;
+  final bool timedOut;
 
   bool get hasDelay => delayMs != null && delayMs! >= 0;
-  bool get timedOut => delayMs != null && delayMs! < 0;
 }
 
 class MihomoGroup {

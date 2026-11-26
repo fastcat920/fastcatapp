@@ -8340,6 +8340,16 @@ class AppLocalizations {
     );
   }
 
+  /// `Latency test failed`
+  String get xboardLatencyTestFailed {
+    return Intl.message(
+      'Latency test failed',
+      name: 'xboardLatencyTestFailed',
+      desc: '',
+      args: [],
+    );
+  }
+
   /// `Closed`
   String get xboardTicketClosed {
     return Intl.message(

@@ -143,15 +143,28 @@ class InvokeMessage with _$InvokeMessage {
       _$InvokeMessageFromJson(json);
 }
 
+enum DelayFailureKind { timeout, failed }
+
 @freezed
 class Delay with _$Delay {
+  const Delay._();
+
   const factory Delay({
     required String name,
     required String url,
     int? value,
+    @JsonKey(
+      name: 'failure-kind',
+      includeIfNull: false,
+      unknownEnumValue: JsonKey.nullForUndefinedEnumValue,
+    )
+    DelayFailureKind? failureKind,
   }) = _Delay;
 
   factory Delay.fromJson(Map<String, Object?> json) => _$DelayFromJson(json);
+
+  DelayFailureKind? get effectiveFailureKind =>
+      (value ?? 0) < 0 ? failureKind ?? DelayFailureKind.failed : null;
 }
 
 @freezed

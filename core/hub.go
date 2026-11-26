@@ -4,6 +4,7 @@ import (
 	"context"
 	"core/state"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"github.com/metacubex/mihomo/adapter"
 	"github.com/metacubex/mihomo/adapter/outbound"
@@ -233,6 +234,7 @@ func handleAsyncTestDelay(paramsString string, fn func(string)) {
 
 		if proxy == nil {
 			delayData.Value = -1
+			delayData.FailureKind = "failed"
 			data, _ := json.Marshal(delayData)
 			fn(string(data))
 			return false, nil
@@ -248,27 +250,40 @@ func handleAsyncTestDelay(paramsString string, fn func(string)) {
 		probeStarted := time.Now()
 		delay, err := proxy.URLTest(ctx, testUrl, expectedStatus)
 		category := "success"
+		failureKind := ""
 		if err != nil {
 			category = classifyProxyFailure(err, "success")
-			if isTimeoutError(err) {
+			failureKind = delayFailureKind(err)
+			if failureKind == "timeout" {
 				category = "timeout"
 			}
 		} else if delay == 0 {
 			category = "zero_delay"
+			failureKind = "failed"
 		}
 		logAppleDiagnostic(fmt.Sprintf("[AppleProbe] elapsedMs=%d category=%s", time.Since(probeStarted).Milliseconds(), category))
-		if err != nil || delay == 0 {
+		delayData.Value = int32(delay)
+		if failureKind != "" {
 			delayData.Value = -1
-			data, _ := json.Marshal(delayData)
-			fn(string(data))
-			return false, nil
+			delayData.FailureKind = failureKind
 		}
 
-		delayData.Value = int32(delay)
 		data, _ := json.Marshal(delayData)
 		fn(string(data))
 		return false, nil
 	})
+}
+
+func delayFailureKind(err error) string {
+	if errors.Is(err, context.DeadlineExceeded) {
+		return "timeout"
+	}
+	for cause := err; cause != nil; cause = errors.Unwrap(cause) {
+		if timeout, ok := cause.(interface{ Timeout() bool }); ok && timeout.Timeout() {
+			return "timeout"
+		}
+	}
+	return "failed"
 }
 
 func handleDiagnoseProxy(paramsString string) string {

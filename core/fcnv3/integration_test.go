@@ -12,6 +12,7 @@ import (
 	"math/big"
 	"net"
 	"net/url"
+	"sync"
 	"sync/atomic"
 	"testing"
 	"time"
@@ -147,6 +148,110 @@ func TestHTTP3Connect(t *testing.T) {
 	if got := accepted.Load(); got != 53 || blockedAccepted.Load() != 0 {
 		t.Fatalf("upstream accept counts = (%d allowed, %d forbidden), want (53, 0)", got, blockedAccepted.Load())
 	}
+}
+
+type blockedTCPUpstream struct {
+	net.Conn
+	writeStarted chan struct{}
+	closed       chan struct{}
+	writeOnce    sync.Once
+	closeOnce    sync.Once
+}
+
+func (c *blockedTCPUpstream) Write(payload []byte) (int, error) {
+	c.writeOnce.Do(func() { close(c.writeStarted) })
+	return c.Conn.Write(payload)
+}
+
+func (c *blockedTCPUpstream) CloseWrite() error { return nil }
+
+func (c *blockedTCPUpstream) Close() error {
+	err := c.Conn.Close()
+	c.closeOnce.Do(func() { close(c.closed) })
+	return err
+}
+
+func TestTCPFullCancellationReleasesBlockedStream(t *testing.T) {
+	echo, _ := startTestEcho(t)
+	upstream, silentPeer := net.Pipe()
+	defer silentPeer.Close()
+	defer upstream.Close()
+	blocked := &blockedTCPUpstream{
+		Conn: upstream, writeStarted: make(chan struct{}), closed: make(chan struct{}),
+	}
+	rejections := make(chan [2]string, 4)
+	server, config := startTestServer(t, echo, func(cfg *ServerConfig) {
+		cfg.Targets = nil
+		cfg.Dispatch = func(setup, _ context.Context, request DispatchRequest) (net.Conn, error) {
+			switch request.Target {
+			case "hold.example:443":
+				return blocked, nil
+			case "echo.example:443":
+				return (&net.Dialer{}).DialContext(setup, "tcp", echo)
+			default:
+				return nil, errors.New("unknown local test target")
+			}
+		}
+		cfg.OnConnectRejected = func(network, reason string) { rejections <- [2]string{network, reason} }
+	})
+	config.AllowDomainTargets = true
+	client := newTestClient(t, config)
+	ctx, cancel := context.WithTimeout(t.Context(), 10*time.Second)
+	defer cancel()
+
+	held := dialTestStream(t, ctx, client, "hold.example:443")
+	if _, err := held.Write([]byte("blocked upload")); err != nil {
+		t.Fatal(err)
+	}
+	select {
+	case <-blocked.writeStarted:
+	case <-ctx.Done():
+		t.Fatal("server never began the blocked upstream write")
+	}
+
+	existing := make([]*streamConn, 15)
+	for i := range existing {
+		existing[i] = dialTestStream(t, ctx, client, "echo.example:443")
+		checkEcho(t, existing[i], []byte("established stream"))
+	}
+	pooled, err := client.acquire(ctx)
+	if err != nil {
+		t.Fatal(err)
+	}
+	for range 2 {
+		if status := connectStatus(t, ctx, pooled, "echo.example:443", testAccount, testSecret); status != http.StatusForbidden {
+			t.Fatalf("CONNECT at the stream limit = %d, want %d", status, http.StatusForbidden)
+		}
+	}
+	select {
+	case got := <-rejections:
+		if want := [2]string{"tcp", "connection_stream_limit"}; got != want {
+			t.Fatalf("CONNECT diagnostic = %v, want %v", got, want)
+		}
+	default:
+		t.Fatal("CONNECT rejection did not report its reason")
+	}
+	select {
+	case got := <-rejections:
+		t.Fatalf("same rejection was reported twice: %v", got)
+	default:
+	}
+
+	if err := held.Close(); err != nil {
+		t.Fatal(err)
+	}
+	select {
+	case <-blocked.closed:
+	case <-time.After(time.Second):
+		t.Fatal("full stream cancellation left the upstream blocked")
+	}
+	waitForUDPLeases(t, server, len(existing))
+	replacement := dialTestStream(t, ctx, client, "echo.example:443")
+	if replacement.LocalAddr().String() != pooled.quic.LocalAddr().String() {
+		t.Fatal("opening a replacement stream changed the QUIC connection")
+	}
+	checkEcho(t, replacement, []byte("reused stream slot"))
+	checkEcho(t, existing[0], []byte("existing stream still transfers"))
 }
 
 func TestProofBindsConnectionStreamAndTarget(t *testing.T) {

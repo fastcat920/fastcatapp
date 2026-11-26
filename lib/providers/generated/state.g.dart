@@ -764,7 +764,7 @@ class _GetRealTestUrlProviderElement extends AutoDisposeProviderElement<String>
   String? get testUrl => (origin as GetRealTestUrlProvider).testUrl;
 }
 
-String _$getDelayHash() => r'dce84ddf50c9db5a1a9b2fb87b1a9cf66d145a46';
+String _$getDelayHash() => r'fb915ad551c27e10b829f3dc71e2ca7e1716b877';
 
 /// See also [getDelay].
 @ProviderFor(getDelay)
@@ -908,6 +908,153 @@ class _GetDelayProviderElement extends AutoDisposeProviderElement<int?>
   String get proxyName => (origin as GetDelayProvider).proxyName;
   @override
   String? get testUrl => (origin as GetDelayProvider).testUrl;
+}
+
+String _$getDelayResultHash() => r'a85d0974da90ee7b38cb722c3d79ce2cefe3c177';
+
+/// See also [getDelayResult].
+@ProviderFor(getDelayResult)
+const getDelayResultProvider = GetDelayResultFamily();
+
+/// See also [getDelayResult].
+class GetDelayResultFamily extends Family<Delay?> {
+  /// See also [getDelayResult].
+  const GetDelayResultFamily();
+
+  /// See also [getDelayResult].
+  GetDelayResultProvider call({
+    required String proxyName,
+    String? testUrl,
+  }) {
+    return GetDelayResultProvider(
+      proxyName: proxyName,
+      testUrl: testUrl,
+    );
+  }
+
+  @override
+  GetDelayResultProvider getProviderOverride(
+    covariant GetDelayResultProvider provider,
+  ) {
+    return call(
+      proxyName: provider.proxyName,
+      testUrl: provider.testUrl,
+    );
+  }
+
+  static const Iterable<ProviderOrFamily>? _dependencies = null;
+
+  @override
+  Iterable<ProviderOrFamily>? get dependencies => _dependencies;
+
+  static const Iterable<ProviderOrFamily>? _allTransitiveDependencies = null;
+
+  @override
+  Iterable<ProviderOrFamily>? get allTransitiveDependencies =>
+      _allTransitiveDependencies;
+
+  @override
+  String? get name => r'getDelayResultProvider';
+}
+
+/// See also [getDelayResult].
+class GetDelayResultProvider extends AutoDisposeProvider<Delay?> {
+  /// See also [getDelayResult].
+  GetDelayResultProvider({
+    required String proxyName,
+    String? testUrl,
+  }) : this._internal(
+          (ref) => getDelayResult(
+            ref as GetDelayResultRef,
+            proxyName: proxyName,
+            testUrl: testUrl,
+          ),
+          from: getDelayResultProvider,
+          name: r'getDelayResultProvider',
+          debugGetCreateSourceHash:
+              const bool.fromEnvironment('dart.vm.product')
+                  ? null
+                  : _$getDelayResultHash,
+          dependencies: GetDelayResultFamily._dependencies,
+          allTransitiveDependencies:
+              GetDelayResultFamily._allTransitiveDependencies,
+          proxyName: proxyName,
+          testUrl: testUrl,
+        );
+
+  GetDelayResultProvider._internal(
+    super._createNotifier, {
+    required super.name,
+    required super.dependencies,
+    required super.allTransitiveDependencies,
+    required super.debugGetCreateSourceHash,
+    required super.from,
+    required this.proxyName,
+    required this.testUrl,
+  }) : super.internal();
+
+  final String proxyName;
+  final String? testUrl;
+
+  @override
+  Override overrideWith(
+    Delay? Function(GetDelayResultRef provider) create,
+  ) {
+    return ProviderOverride(
+      origin: this,
+      override: GetDelayResultProvider._internal(
+        (ref) => create(ref as GetDelayResultRef),
+        from: from,
+        name: null,
+        dependencies: null,
+        allTransitiveDependencies: null,
+        debugGetCreateSourceHash: null,
+        proxyName: proxyName,
+        testUrl: testUrl,
+      ),
+    );
+  }
+
+  @override
+  AutoDisposeProviderElement<Delay?> createElement() {
+    return _GetDelayResultProviderElement(this);
+  }
+
+  @override
+  bool operator ==(Object other) {
+    return other is GetDelayResultProvider &&
+        other.proxyName == proxyName &&
+        other.testUrl == testUrl;
+  }
+
+  @override
+  int get hashCode {
+    var hash = _SystemHash.combine(0, runtimeType.hashCode);
+    hash = _SystemHash.combine(hash, proxyName.hashCode);
+    hash = _SystemHash.combine(hash, testUrl.hashCode);
+
+    return _SystemHash.finish(hash);
+  }
+}
+
+@Deprecated('Will be removed in 3.0. Use Ref instead')
+// ignore: unused_element
+mixin GetDelayResultRef on AutoDisposeProviderRef<Delay?> {
+  /// The parameter `proxyName` of this provider.
+  String get proxyName;
+
+  /// The parameter `testUrl` of this provider.
+  String? get testUrl;
+}
+
+class _GetDelayResultProviderElement extends AutoDisposeProviderElement<Delay?>
+    with GetDelayResultRef {
+  _GetDelayResultProviderElement(super.provider);
+
+  @override
+  String get proxyName => (origin as GetDelayResultProvider).proxyName;
+  @override
+  String? get testUrl => (origin as GetDelayResultProvider).testUrl;
 }
 
 String _$selectedMapHash() => r'0d7a3610d9005e74e1a88595d7e22897dc8240a5';

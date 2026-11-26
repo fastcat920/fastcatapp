@@ -213,6 +213,9 @@ _$DelayImpl _$$DelayImplFromJson(Map<String, dynamic> json) => _$DelayImpl(
       name: json['name'] as String,
       url: json['url'] as String,
       value: (json['value'] as num?)?.toInt(),
+      failureKind: $enumDecodeNullable(
+          _$DelayFailureKindEnumMap, json['failure-kind'],
+          unknownValue: JsonKey.nullForUndefinedEnumValue),
     );
 
 Map<String, dynamic> _$$DelayImplToJson(_$DelayImpl instance) =>
@@ -220,7 +223,14 @@ Map<String, dynamic> _$$DelayImplToJson(_$DelayImpl instance) =>
       'name': instance.name,
       'url': instance.url,
       'value': instance.value,
+      if (_$DelayFailureKindEnumMap[instance.failureKind] case final value?)
+        'failure-kind': value,
     };
+
+const _$DelayFailureKindEnumMap = {
+  DelayFailureKind.timeout: 'timeout',
+  DelayFailureKind.failed: 'failed',
+};
 
 _$NowImpl _$$NowImplFromJson(Map<String, dynamic> json) => _$NowImpl(
       name: json['name'] as String,

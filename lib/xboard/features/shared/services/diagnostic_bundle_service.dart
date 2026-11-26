@@ -454,12 +454,11 @@ class DiagnosticBundleService {
       final name = node.name;
       if (!seen.add(name)) continue;
       nodeIndex++;
-      final delay = node.delayMs;
-      final value = delay == null
-          ? 'not_tested'
-          : delay < 0
-              ? 'timeout'
-              : '${delay}ms';
+      final value = switch (node.delayMs) {
+        null => 'not_tested',
+        < 0 => node.timedOut ? 'timeout' : 'failed',
+        final delay => '${delay}ms',
+      };
       buffer.writeln('- node_$nodeIndex: $value');
     }
     if (seen.isEmpty) buffer.writeln('status: no_available_nodes');

@@ -2160,6 +2160,9 @@ class MessageLookup extends MessageLookupByLibrary {
     "xboardKeepSubscriptionLinkSafe": MessageLookupByLibrary.simpleMessage(
       "Please keep your subscription link safe and don\'t share with others",
     ),
+    "xboardLatencyTestFailed": MessageLookupByLibrary.simpleMessage(
+      "Latency test failed",
+    ),
     "xboardLater": MessageLookupByLibrary.simpleMessage("Later"),
     "xboardLoadFailedCheckNetwork": MessageLookupByLibrary.simpleMessage(
       "Failed to load. Check your network.",

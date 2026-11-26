@@ -270,14 +270,23 @@ func (s *Server) handleUDP(w http.ResponseWriter, r *http.Request) {
 	writer, canRelay := w.(http3.HTTPStreamer)
 	settings, hasSettings := w.(http3.Settingser)
 	auth := r.Header.Values(authHeader)
-	if err != nil || !s.enableUDP || (!allowed && s.dispatch == nil) || !bound || !streamID || !canRelay || !hasSettings ||
-		r.ProtoMajor != 3 || len(auth) != 1 || !validUDPCapsuleHeaders(r.Header) {
-		http.Error(w, "Forbidden", http.StatusForbidden)
+	switch {
+	case !bound:
+		s.rejectConnect(w, "udp", "binding_unavailable")
+		return
+	case !s.enableUDP:
+		s.rejectConnect(w, "udp", "udp_disabled")
+		return
+	case err != nil || !streamID || !canRelay || !hasSettings || r.ProtoMajor != 3 || len(auth) != 1 || !validUDPCapsuleHeaders(r.Header):
+		s.rejectConnect(w, "udp", "invalid_request")
+		return
+	case !allowed && s.dispatch == nil:
+		s.rejectConnect(w, "udp", "target_not_allowed")
 		return
 	}
-	account, lease, release, ok := s.authenticateFor(udpAuthKind, sc, auth[0], target, body.StreamID())
-	if !ok {
-		http.Error(w, "Forbidden", http.StatusForbidden)
+	account, lease, release, rejection := s.authenticateFor(udpAuthKind, sc, auth[0], target, body.StreamID())
+	if rejection != "" {
+		s.rejectConnect(w, "udp", rejection)
 		return
 	}
 	defer release()
@@ -290,7 +299,7 @@ func (s *Server) handleUDP(w http.ResponseWriter, r *http.Request) {
 	setup, cancelSetup := context.WithTimeout(ctx, 4*time.Second)
 	defer cancelSetup()
 	if err := requireUDPSettings(setup, sc.conn, settings, false); err != nil {
-		http.Error(w, "Forbidden", http.StatusForbidden)
+		s.rejectConnect(w, "udp", "udp_settings_failed")
 		return
 	}
 	up, err := s.dialTarget(setup, ctx, sc, account, "udp", target)
@@ -300,7 +309,7 @@ func (s *Server) handleUDP(w http.ResponseWriter, r *http.Request) {
 	}
 	defer up.Close()
 	if setup.Err() != nil {
-		http.Error(w, "Forbidden", http.StatusForbidden)
+		s.rejectConnect(w, "udp", "setup_canceled")
 		return
 	}
 	controller := http.NewResponseController(w)

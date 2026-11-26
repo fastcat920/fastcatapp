@@ -47,30 +47,36 @@ type ServerConfig struct {
 	// ECHKeys enables both ECH key rotation and the ECH requirement for CONNECT.
 	// A nil value leaves the phase-one TLS behavior in effect.
 	ECHKeys []tls.EncryptedClientHelloKey
+	// OnConnectRejected reports rate-limited categories without request data.
+	// It may be called concurrently for different networks or reasons.
+	OnConnectRejected func(network, reason string)
 }
 
 type Server struct {
-	tls            *tls.Config
-	echKeys        atomic.Pointer[[]tls.EncryptedClientHelloKey]
-	http           *http3.Server
-	targets        map[string]struct{}
-	udpTargets     map[string]struct{}
-	udpIdleTimeout time.Duration
-	adaptiveWrites bool
-	padding        bool
-	quicTrace      func(context.Context, bool, quic.ConnectionID) qlogwriter.Trace
-	configureQUIC  func(*quic.Conn)
-	dispatch       func(context.Context, context.Context, DispatchRequest) (net.Conn, error)
-	enableUDP      bool
-	ctx            context.Context
-	cancel         context.CancelFunc
-	mu             sync.Mutex
-	keys           map[string][32]byte
-	leases         map[*lease]struct{}
-	listening      bool
-	listener       *quic.Listener
-	peers          chan struct{}
-	addressPeers   map[string]int
+	tls                 *tls.Config
+	echKeys             atomic.Pointer[[]tls.EncryptedClientHelloKey]
+	http                *http3.Server
+	targets             map[string]struct{}
+	udpTargets          map[string]struct{}
+	udpIdleTimeout      time.Duration
+	adaptiveWrites      bool
+	padding             bool
+	quicTrace           func(context.Context, bool, quic.ConnectionID) qlogwriter.Trace
+	configureQUIC       func(*quic.Conn)
+	dispatch            func(context.Context, context.Context, DispatchRequest) (net.Conn, error)
+	enableUDP           bool
+	ctx                 context.Context
+	cancel              context.CancelFunc
+	mu                  sync.Mutex
+	keys                map[string][32]byte
+	leases              map[*lease]struct{}
+	listening           bool
+	listener            *quic.Listener
+	peers               chan struct{}
+	addressPeers        map[string]int
+	onConnectRejected   func(network, reason string)
+	rejectionMu         sync.Mutex
+	nextRejectionReport map[[2]string]time.Time
 }
 
 type lease struct {
@@ -132,7 +138,11 @@ func NewServer(cfg ServerConfig) (*Server, error) {
 	ctx, cancel := context.WithCancel(context.Background())
 	s := &Server{tls: tc, targets: targets, ctx: ctx, cancel: cancel, leases: make(map[*lease]struct{}), peers: make(chan struct{}, 64),
 		addressPeers: make(map[string]int), udpTargets: udpTargets, udpIdleTimeout: udpIdle, adaptiveWrites: cfg.AdaptiveWrites, padding: cfg.Padding, quicTrace: cfg.QUICTrace,
-		configureQUIC: cfg.ConfigureQUIC, dispatch: cfg.Dispatch, enableUDP: len(udpTargets) > 0 || cfg.Dispatch != nil && cfg.EnableUDP}
+		configureQUIC: cfg.ConfigureQUIC, dispatch: cfg.Dispatch, enableUDP: len(udpTargets) > 0 || cfg.Dispatch != nil && cfg.EnableUDP,
+		onConnectRejected: cfg.OnConnectRejected}
+	if s.onConnectRejected != nil {
+		s.nextRejectionReport = make(map[[2]string]time.Time)
+	}
 	requireECH := echKeys != nil
 	if requireECH {
 		s.echKeys.Store(&echKeys)
@@ -288,12 +298,17 @@ func (s *Server) ReplaceCredentials(creds []Credential) error {
 	return nil
 }
 
-func (s *Server) authenticateFor(kind string, sc *serverConnection, value, target string, id quic.StreamID) (string, context.Context, func(), bool) {
+func (s *Server) authenticateFor(kind string, sc *serverConnection, value, target string, id quic.StreamID) (accountID string, life context.Context, release func(), rejection string) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 	name, key, ok := verifyValueFor(kind, value, sc.binding, target, id, s.keys)
-	if !ok || len(s.leases) >= 128 || s.ctx.Err() != nil {
-		return "", nil, nil, false
+	switch {
+	case !ok:
+		return "", nil, nil, "authentication_failed"
+	case s.ctx.Err() != nil:
+		return "", nil, nil, "server_closing"
+	case len(s.leases) >= 128:
+		return "", nil, nil, "global_stream_limit"
 	}
 	isUDP := kind == udpAuthKind
 	account, connection, udp, connectionUDP := 0, 0, 0, 0
@@ -311,8 +326,15 @@ func (s *Server) authenticateFor(kind string, sc *serverConnection, value, targe
 			}
 		}
 	}
-	if account >= 32 || connection >= 16 || isUDP && (udp >= 32 || connectionUDP >= 8) {
-		return "", nil, nil, false
+	switch {
+	case account >= 32:
+		return "", nil, nil, "account_stream_limit"
+	case connection >= 16:
+		return "", nil, nil, "connection_stream_limit"
+	case isUDP && udp >= 32:
+		return "", nil, nil, "udp_stream_limit"
+	case isUDP && connectionUDP >= 8:
+		return "", nil, nil, "udp_connection_stream_limit"
 	}
 	var ctx context.Context
 	var cancel context.CancelFunc
@@ -328,7 +350,24 @@ func (s *Server) authenticateFor(kind string, sc *serverConnection, value, targe
 		delete(s.leases, l)
 		s.mu.Unlock()
 		cancel()
-	}, true
+	}, ""
+}
+
+func (s *Server) rejectConnect(w http.ResponseWriter, network, reason string) {
+	if s.onConnectRejected != nil {
+		key := [2]string{network, reason}
+		s.rejectionMu.Lock()
+		now := time.Now()
+		report := !now.Before(s.nextRejectionReport[key])
+		if report {
+			s.nextRejectionReport[key] = now.Add(10 * time.Second)
+		}
+		s.rejectionMu.Unlock()
+		if report {
+			s.onConnectRejected(network, reason)
+		}
+	}
+	http.Error(w, "Forbidden", http.StatusForbidden)
 }
 
 func (s *Server) dialTarget(setup, lifetime context.Context, sc *serverConnection, account, network, target string) (net.Conn, error) {
@@ -368,13 +407,20 @@ func (s *Server) handle(w http.ResponseWriter, r *http.Request) {
 	body, streamID := r.Body.(interface{ StreamID() quic.StreamID })
 	writer, canRelay := w.(http3.HTTPStreamer)
 	auth := r.Header.Values(authHeader)
-	if e != nil || target != r.Host || (!allowed && s.dispatch == nil) || !known || !streamID || !canRelay || len(auth) != 1 || r.Proto != "HTTP/3.0" {
-		http.Error(w, "Forbidden", http.StatusForbidden)
+	switch {
+	case !known:
+		s.rejectConnect(w, "tcp", "binding_unavailable")
+		return
+	case e != nil || target != r.Host || !streamID || !canRelay || len(auth) != 1 || r.Proto != "HTTP/3.0":
+		s.rejectConnect(w, "tcp", "invalid_request")
+		return
+	case !allowed && s.dispatch == nil:
+		s.rejectConnect(w, "tcp", "target_not_allowed")
 		return
 	}
-	account, ctx, release, ok := s.authenticateFor("CONNECT", sc, auth[0], target, body.StreamID())
-	if !ok {
-		http.Error(w, "Forbidden", http.StatusForbidden)
+	account, ctx, release, rejection := s.authenticateFor("CONNECT", sc, auth[0], target, body.StreamID())
+	if rejection != "" {
+		s.rejectConnect(w, "tcp", rejection)
 		return
 	}
 	defer release()
@@ -392,7 +438,7 @@ func (s *Server) handle(w http.ResponseWriter, r *http.Request) {
 	}
 	defer up.Close()
 	if ctx.Err() != nil {
-		http.Error(w, "Forbidden", http.StatusForbidden)
+		s.rejectConnect(w, "tcp", "lease_canceled")
 		return
 	}
 	tcp, halfClose := up.(halfCloseConn)
@@ -434,6 +480,16 @@ func relay(ctx context.Context, stream *http3.Stream, tcp halfCloseConn, downlin
 	}
 	stop := context.AfterFunc(ctx, abort)
 	defer stop()
+	// A peer cancellation must close the upstream even when neither relay
+	// direction is currently blocked on QUIC. Local FIN preserves the upload.
+	sendContext := stream.Context()
+	stopRemoteCancel := context.AfterFunc(sendContext, func() {
+		var streamError *quic.StreamError
+		if errors.As(context.Cause(sendContext), &streamError) && streamError.Remote && streamError.ErrorCode == cancelCode {
+			abort()
+		}
+	})
+	defer stopRemoteCancel()
 	upload := make(chan error, 1)
 	go func() {
 		_, e := io.Copy(tcp, stream)

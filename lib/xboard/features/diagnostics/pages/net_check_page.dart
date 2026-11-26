@@ -644,9 +644,13 @@ class _NetCheckPageState extends ConsumerState<NetCheckPage> {
           .timeout(const Duration(seconds: 8));
       final value = delay.value;
       if (value == null || value <= 0) {
+        final failureLabel =
+            delay.effectiveFailureKind == DelayFailureKind.timeout
+                ? l10n.xboardTimeout
+                : l10n.xboardLatencyTestFailed;
         return _StepResult.fail(
           l10n.xboardCurrentNode,
-          '$resolvedName · ${l10n.xboardTimeout}',
+          '$resolvedName · $failureLabel',
         );
       }
       return _StepResult(
